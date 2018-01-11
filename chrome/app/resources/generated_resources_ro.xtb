@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Activat – setări personalizate</translation>
 <translation id="1493892686965953381">Se așteaptă <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Încă <ph name="NUM_PRINTERS" /> dispozitive disponibile.</translation>
-<translation id="1497284176235884849">Fișierul PPD trimis nu este valid.</translation>
 <translation id="1497522201463361063">Nu s-a putut redenumi „<ph name="FILE_NAME" />”. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Dispozitiv necunoscut [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Acest cont de proprietar trebuie să fie primul conectat într-o sesiune de conectare multiplă.</translation>
@@ -1774,7 +1773,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3697100740575341996">Administratorul IT a dezactivat accesoriile Chrome pentru dispozitivul dvs. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Adresă de e-mail</translation>
 <translation id="3702500414347826004">Paginile de pornire au fost modificate pentru a include <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Întreabă-mă când un site dorește să afișeze textul și imaginile pe care le copiezi în clipboard</translation>
 <translation id="370415077757856453">JavaScript blocat</translation>
 <translation id="3704331259350077894">Încetarea operării</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4270393598798225102">Versiunea <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nicio potrivire</translation>
 <translation id="4275830172053184480">Reporniți gadgetul</translation>
-<translation id="4276216215490044084">Nu se poate încărca fișierul PPD mare. Dimensiunea maximă este 250 KB.</translation>
 <translation id="4278390842282768270">Se permite</translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="4282196459431406533">Smart Lock este activat</translation>
@@ -2202,7 +2199,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4430369329743628066">Marcajul a fost adăugat</translation>
 <translation id="443464694732789311">Continuați</translation>
 <translation id="4439318412377770121">Dorești să înregistrezi dispozitivul <ph name="DEVICE_NAME" /> în Dispozitive Google Cloud?</translation>
-<translation id="4439612350502082674">Nu se poate adăuga imprimanta. Repornește și încearcă din nou.</translation>
 <translation id="4441124369922430666">Doriți ca această aplicație să fie lansată automat la pornirea dispozitivului?</translation>
 <translation id="444134486829715816">Extinde...</translation>
 <translation id="4441548209689510310">Afișează opțiunile pentru verificarea ortografiei</translation>
@@ -2433,7 +2429,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4839303808932127586">Sal&amp;vează videoclipul ca...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elemente selectate</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Încă una}few{ Încă #}other{Încă #}}</translation>
-<translation id="4840626203080576849">Întreabă-mă când un site dorește să afișeze textul și imaginile pe care le copiezi în clipboard (recomandat)</translation>
 <translation id="4842976633412754305">Pagina încearcă să încarce scripturi din surse neautentificate.</translation>
 <translation id="4844333629810439236">Alte tastaturi</translation>
 <translation id="4846680374085650406">Urmați recomandarea administratorului pentru această setare.</translation>
@@ -2700,7 +2695,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="5254368820972107711">Afișează fișierele care trebuie eliminate</translation>
 <translation id="52550593576409946">Aplicația de tip chioșc nu a putut fi lansată.</translation>
 <translation id="5255315797444241226">Expresia de acces pe care ai introdus-o nu este corectă.</translation>
-<translation id="5259571578888203461">Nu permite site-urilor să vadă textul și imaginile pe care le copiezi în clipboard</translation>
 <translation id="5260508466980570042">Ne pare rău, adresa de e-mail sau parola nu a putut fi verificată. Încearcă din nou.</translation>
 <translation id="5261683757250193089">Deschide în Magazinul web</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accesează fișierele de oriunde, chiar și offline.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="5972708806901999743">Mută în partea de sus</translation>
 <translation id="5972826969634861500">Pornește <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Micșorează</translation>
-<translation id="5975730206036440725">Nu se poate găsi fișierul PPD. Asigură-te că Chromebookul este online și încearcă din nou.</translation>
 <translation id="5975792506968920132">Procent de încărcare a bateriei</translation>
 <translation id="5976160379964388480">Altele</translation>
 <translation id="5978264784700053212">Centru de mesaje</translation>
@@ -3216,7 +3209,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6042850536017090003">Atinge Notificările pentru aplicații.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> trimite conținutul unei file Chrome către <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Terminat!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> trimite conținutul unei file Chrome și conținutul audio către <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Pentru a ieși din ecranul complet, apasă lung |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
@@ -3383,7 +3375,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6311220991371174222">Nu se poate porni Chrome, deoarece a apărut o eroare la deschiderea profilului. Repornește Chrome.</translation>
 <translation id="6312403991423642364">Eroare de rețea necunoscută</translation>
 <translation id="6313641880021325787">IEȘI DIN RV</translation>
-<translation id="6314335155547195432">Generează o parolă</translation>
 <translation id="6314819609899340042">Ai activat funcțiile de remediere a erorilor pe acest dispozitiv <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Paginile de pornire au fost modificate pentru a include <ph name="URL" />. Pentru a dezactiva extensiile care îți modifică pagina de pornire, dă clic pe Restabilește.</translation>
 <translation id="6315493146179903667">Toate în față</translation>
@@ -3421,7 +3412,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configurează Smart Lock pentru Android</translation>
 <translation id="6374469231428023295">Încearcă din nou</translation>
-<translation id="6377158645544167202">Nu se poate conecta imprimanta. Asigură-te că este pornită și conectată la Chromebook prin Wi-Fi sau USB.</translation>
 <translation id="6380143666419481200">Acceptați și continuați</translation>
 <translation id="6383051423892982287">Criptează datele sincronizate folosind propria <ph name="BEGIN_LINK" />expresie de acces<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Schimbați setările de căutare la: <ph name="SEARCH_HOST" /></translation>
@@ -3578,7 +3568,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6606070663386660533">Fila 8</translation>
 <translation id="6607272825297743757">Informațiile fișierului</translation>
 <translation id="6607831829715835317">Mai multe instru&amp;mente</translation>
-<translation id="6610183966322615106">Eroare la adăugarea imprimantei</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6613452264606394692">Marchează această pagină pentru a o putea accesa din nou rapid</translation>
 <translation id="6615455863669487791">Afișați</translation>

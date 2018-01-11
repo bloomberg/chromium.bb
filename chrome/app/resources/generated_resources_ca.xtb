@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Sincronització activada: configuració personalitzada</translation>
 <translation id="1493892686965953381">S'està esperant <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Hi ha disponibles <ph name="NUM_PRINTERS" /> dispositius més.</translation>
-<translation id="1497284176235884849">El fitxer PPD proporcionat no és vàlid.</translation>
 <translation id="1497522201463361063">No es pot canviar el nom a "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Dispositiu desconegut [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Aquest compte de propietari ha de ser el primer compte amb la sessió iniciada en un inici de sessió múltiple.</translation>
@@ -1772,7 +1771,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3697100740575341996">L'administrador de TI ha desactivat Chrome Goodies per al vostre dispositiu. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Adreça electrònica</translation>
 <translation id="3702500414347826004">Les pàgines d'inici han canviat per incloure <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Pregunta'm quan un lloc web vulgui veure text i imatges copiats al porta-retalls</translation>
 <translation id="370415077757856453">S'ha bloquejat JavaScript</translation>
 <translation id="3704331259350077894">Cessament d'activitats</translation>
 <translation id="3705722231355495246">-</translation>
@@ -1831,7 +1829,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostra la drecera d'aplicacions</translation>
 <translation id="3785852283863272759">Envia la ubicació de la pàgina per correu electrònic</translation>
-<translation id="3786301125658655746">Esteu fora de línia</translation>
+<translation id="3786301125658655746">No tens connexió</translation>
 <translation id="3788401245189148511">Podria:</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME" /> només funciona a l'escriptori.</translation>
@@ -2119,7 +2117,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="4270393598798225102">Versió <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Cap coincidència</translation>
 <translation id="4275830172053184480">Reinici del dispositiu</translation>
-<translation id="4276216215490044084">No es poden carregar fitxers PPD grans. La mida màxima és de 250 kB.</translation>
 <translation id="4278390842282768270">Permeses</translation>
 <translation id="4281844954008187215">Termes i condicions</translation>
 <translation id="4282196459431406533">Smart Lock està activat</translation>
@@ -2199,7 +2196,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="4430369329743628066">S'ha afegit a les adreces d'interès</translation>
 <translation id="443464694732789311">Continua</translation>
 <translation id="4439318412377770121">Voleu registrar <ph name="DEVICE_NAME" /> a Dispositius Google Cloud?</translation>
-<translation id="4439612350502082674">La impressora no es pot afegir. Reinicia i torna-ho a provar.</translation>
 <translation id="4441124369922430666">Voleu que aquesta aplicació s'iniciï automàticament en engegar l'ordinador?</translation>
 <translation id="444134486829715816">Amplia...</translation>
 <translation id="4441548209689510310">Mostra les opcions del corrector ortogràfic</translation>
@@ -2431,7 +2427,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="4839303808932127586">De&amp;sa el vídeo com a...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elements seleccionats</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 més}other{# més}}</translation>
-<translation id="4840626203080576849">Pregunta'm quan un lloc web vulgui veure text i imatges copiats al porta-retalls (opció recomanada)</translation>
 <translation id="4842976633412754305">Aquesta pàgina està provant de carregar scripts de fonts no autenticades.</translation>
 <translation id="4844333629810439236">Altres teclats</translation>
 <translation id="4846680374085650406">Esteu seguint la recomanació de l'administració per a aquesta configuració.</translation>
@@ -2699,7 +2694,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5254368820972107711">Mostra els fitxers que cal suprimir</translation>
 <translation id="52550593576409946">L'aplicació Quiosc no es pot iniciar.</translation>
 <translation id="5255315797444241226">La frase de contrasenya que heu introduït no és correcta.</translation>
-<translation id="5259571578888203461">No permetis que els llocs web vegin el text i les imatges que copies al porta-retalls</translation>
 <translation id="5260508466980570042">No s'ha pogut verificar el correu electrònic o la contrasenya. Torna-ho a provar.</translation>
 <translation id="5261683757250193089">Obre a Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accediu a fitxers des de qualsevol lloc, fins i tot sense connexió.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="5972708806901999743">Mou a la part superior</translation>
 <translation id="5972826969634861500">Inicia <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Redueix</translation>
-<translation id="5975730206036440725">No hem trobat el fitxer PPD. Comprova que Chromebook estigui en línia i torna-ho a provar.</translation>
 <translation id="5975792506968920132">Percentatge de pujada de la bateria</translation>
 <translation id="5976160379964388480">Altres</translation>
 <translation id="5978264784700053212">Centre de missatges</translation>
@@ -3216,7 +3209,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="6042850536017090003">Toca Notificacions d'aplicacions</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> està compartint una pestanya de Chrome amb <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Fet!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> està compartint una pestanya de Chrome i àudio amb <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Mantén premut |<ph name="ACCELERATOR" />| per sortir del mode de pantalla completa</translation>
 <translation id="6049065490165456785">Foto de la càmera interna</translation>
@@ -3383,7 +3375,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6311220991371174222">Chrome no es pot iniciar perquè s'ha produït un error mentre obries el perfil. Prova de reiniciar Chrome.</translation>
 <translation id="6312403991423642364">Error de xarxa desconegut</translation>
 <translation id="6313641880021325787">SURT DEL MODE RV</translation>
-<translation id="6314335155547195432">Genera una contrasenya</translation>
 <translation id="6314819609899340042">Heu activat correctament les funcions de depuració en aquest dispositiu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Les pàgines d'inici han canviat per incloure <ph name="URL" />. Per desactivar les extensions que canvien la pàgina d'inici, fes clic a Restaura.</translation>
 <translation id="6315493146179903667">Porta-ho tot al davant</translation>
@@ -3421,7 +3412,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configura Smart Lock per a Android</translation>
 <translation id="6374469231428023295">Torna-ho a provar</translation>
-<translation id="6377158645544167202">La impressora no es pot connectar. Comprova que estigui encesa i connectada a Chromebook per Wi-Fi o USB.</translation>
 <translation id="6380143666419481200">Accepta i continua</translation>
 <translation id="6383051423892982287">Encripta les dades sincronitzades amb la teva <ph name="BEGIN_LINK" />frase de contrasenya de sincronització<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Canvia la configuració de la cerca a: <ph name="SEARCH_HOST" /></translation>
@@ -3577,7 +3567,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6606070663386660533">Pestanya 8</translation>
 <translation id="6607272825297743757">Informació del fitxer</translation>
 <translation id="6607831829715835317">Més eine&amp;s</translation>
-<translation id="6610183966322615106">S'ha produït un error en afegir la impressora</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6613452264606394692">Afegeix aquesta pàgina a les adreces d'interès per poder-hi tornar ràpidament</translation>
 <translation id="6615455863669487791">Mostra-m'ho</translation>

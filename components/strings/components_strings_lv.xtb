@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Nepieciešama autentiskuma noteikšana</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="20817612488360358">Ir iestatīta datora starpniekserveru iestatījumu lietošana, bet ir norādīta arī atklāta starpniekservera konfigurācija.</translation>
-<translation id="2086652334978798447">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties pārlūkā Chrome.</translation>
 <translation id="2091887806945687916">Signāls</translation>
 <translation id="2094505752054353250">Domēni nesaskan</translation>
 <translation id="2096368010154057602">Departaments</translation>
@@ -640,7 +639,6 @@
 <translation id="5633066919399395251">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var mēģināt jūsu datorā instalēt bīstamas programmas, kas zog vai izdzēš informāciju (piemēram, fotoattēlus, paroles, ziņojumus un kredītkaršu datus). <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="563324245173044180">Bloķēts maldinošs saturs</translation>
 <translation id="5659593005791499971">E-pasts</translation>
-<translation id="5669703222995421982">Saņemiet personalizētu saturu</translation>
 <translation id="5675650730144413517">Šī lapa nedarbojas</translation>
 <translation id="5685654322157854305">Pievienot nosūtīšanas adresi</translation>
 <translation id="5689199277474810259">Eksportēt JSON formātā</translation>
@@ -811,7 +809,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> neatbilst drošības standartiem.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> par šo problēmu.</translation>
 <translation id="7219179957768738017">Savienojums izmanto <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Nevar eksportēt paroles uz mapi “<ph name="FOLDER" />”.</translation>
 <translation id="7220786058474068424">Notiek apstrāde</translation>
 <translation id="724691107663265825">Vietnē ir ļaunprātīga programmatūra</translation>
 <translation id="724975217298816891">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC. Pēc apstiprināšanas kartes informācija tiks kopīgota ar šo vietni.</translation>

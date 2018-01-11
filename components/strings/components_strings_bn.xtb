@@ -150,7 +150,6 @@
 <translation id="2065985942032347596">প্রমাণীকরণ প্রয়োজন</translation>
 <translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="20817612488360358">সিস্টেম প্রক্সি সেটিংস ব্যবহার করার জন্য সেট আছে কিন্তু একটি সুনির্দিষ্ট প্রক্সি কনফিগারেশনও নির্দিষ্ট করা আছে৷</translation>
-<translation id="2086652334978798447">Google দ্বারা প্রস্তাবিত ব্যক্তিগতকৃত সামগ্রী পেতে, Chrome এ সাইন ইন করুন।</translation>
 <translation id="2091887806945687916">আওয়াজ</translation>
 <translation id="2094505752054353250">ডোমেন মেলেনি</translation>
 <translation id="2096368010154057602">বিভাগ</translation>
@@ -642,7 +641,6 @@
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> এ যে আক্রমণকারীরা এই মুহূর্তে সক্রিয় আছে, তারা আপনার কম্পিউটারে এমন বিপজ্জনক প্রোগ্রাম ইনস্টল করে দিতে পারে যেগুলি আপনার তথ্যের (যেমন ফটো, পাসওয়ার্ড, মেসেজ এবং ক্রেডিট কার্ড) ক্ষতি করতে বা সেগুলি চুরি করতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">প্রতারণামূলক কন্টেন্ট ব্লক করা হয়েছে।</translation>
 <translation id="5659593005791499971">ইমেল</translation>
-<translation id="5669703222995421982">ব্যক্তিগতকৃত সামগ্রী পান</translation>
 <translation id="5675650730144413517">এই পৃষ্ঠাটি কাজ করছে না</translation>
 <translation id="5685654322157854305">শিপিং ঠিকানা যোগ করুন</translation>
 <translation id="5689199277474810259">JSON এ রপ্তানি করুন</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> নিরাপত্তা মান মেনে চলে না।</translation>
 <translation id="721197778055552897">এই সমস্যাটি সম্পর্কে <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" />৷</translation>
 <translation id="7219179957768738017">এই সংযোগটি <ph name="SSL_VERSION" />টি ব্যবহার করে</translation>
-<translation id="7220019174139618249">"<ph name="FOLDER" />" এ পাসওয়ার্ড এক্সপোর্ট করাযাবে না</translation>
 <translation id="7220786058474068424">প্রক্রিয়ায় রয়েছে</translation>
 <translation id="724691107663265825">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="724975217298816891">আপনার কার্ডের বিবরণ আপডেট করার জন্য মেয়াদ শেষের তারিখ এবং <ph name="CREDIT_CARD" /> এর CVC  লিখুন। আপনি নিশ্চিত করলে, আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>

@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">Bật - cài đặt tùy chỉnh</translation>
 <translation id="1493892686965953381">Đang đợi <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> thiết bị hiện có khác.</translation>
-<translation id="1497284176235884849">PPD đã cung cấp là không hợp lệ.</translation>
 <translation id="1497522201463361063">Không thể đổi tên "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Thiết bị không xác định [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Tài khoản của chủ sở hữu này phải là tài khoản đăng nhập đầu tiên trong phiên đăng nhập nhiều tài khoản.</translation>
@@ -1775,7 +1774,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3697100740575341996">Quản trị viên CNTT của bạn đã tắt Chrome Goodies cho thiết bị của bạn. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Địa chỉ email</translation>
 <translation id="3702500414347826004">Trang khởi động của bạn đã được thay đổi để bao gồm <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Hỏi khi có một trang web muốn xem văn bản và hình ảnh mà bạn đã sao chép sang khay nhớ tạm</translation>
 <translation id="370415077757856453">Đã chặn Javascript</translation>
 <translation id="3704331259350077894">Dừng Hoạt động</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2123,7 +2121,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4270393598798225102">Phiên bản <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Không có kết quả phù hợp</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
-<translation id="4276216215490044084">Không thể tải PPD lớn. Kích thước tối đa là 250kB.</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
 <translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="4282196459431406533">Đã bật Smart Lock</translation>
@@ -2203,7 +2200,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4430369329743628066">Đã thêm dấu trang</translation>
 <translation id="443464694732789311">Tiếp tục</translation>
 <translation id="4439318412377770121">Bạn có muốn đăng ký <ph name="DEVICE_NAME" /> với Google Cloud Devices không?</translation>
-<translation id="4439612350502082674">Không thể thêm máy in. Hãy khởi động lại và thử lần nữa.</translation>
 <translation id="4441124369922430666">Bạn có muốn tự động khởi động ứng dụng này khi máy bật không?</translation>
 <translation id="444134486829715816">Mở rộng...</translation>
 <translation id="4441548209689510310">Hiển thị tùy chọn kiểm tra lỗi chính tả</translation>
@@ -2434,7 +2430,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4839303808932127586">Lưu &amp;video thành...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> mục được chọn</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 mục khác}other{# mục khác}}</translation>
-<translation id="4840626203080576849">Hỏi khi có một trang web muốn xem văn bản và hình ảnh mà bạn sao chép sang khay nhớ tạm (được đề xuất)</translation>
 <translation id="4842976633412754305">Trang này đang cố gắng tải tập lệnh từ nguồn chưa được xác thực.</translation>
 <translation id="4844333629810439236">Các bàn phím khác</translation>
 <translation id="4846680374085650406">Bạn đang theo khuyến cáo của quản trị viên về cài đặt này.</translation>
@@ -2701,7 +2696,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="5254368820972107711">Hiển thị các tệp cần xóa</translation>
 <translation id="52550593576409946">Không thể chạy ứng dụng Kiosk.</translation>
 <translation id="5255315797444241226">Cụm mật khẩu bạn đã nhập không chính xác.</translation>
-<translation id="5259571578888203461">Không cho phép các trang web xem văn bản và hình ảnh mà bạn sao chép vào khay nhớ tạm</translation>
 <translation id="5260508466980570042">Rất tiếc, không thể xác minh được email hoặc mật khẩu của bạn. Vui lòng thử lại.</translation>
 <translation id="5261683757250193089">Mở trong Cửa hàng trực tuyến</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Truy cập tệp từ mọi nơi, ngay cả khi ngoại tuyến.<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="5972708806901999743">Chuyển lên trên cùng</translation>
 <translation id="5972826969634861500">Khởi động <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
-<translation id="5975730206036440725">Không thể tìm thấy PPD. Hãy kiểm tra để đảm bảo Chromebook của bạn kết nối mạng và thử lại.</translation>
 <translation id="5975792506968920132">Phần trăm sạc pin</translation>
 <translation id="5976160379964388480">Khác</translation>
 <translation id="5978264784700053212">Trung tâm thông báo</translation>
@@ -3217,7 +3210,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="6042850536017090003">Nhấn vào Thông báo của ứng dụng.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> đang chia sẻ một tab trong Chrome với <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Xong!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> đang chia sẻ âm thanh và một tab trong Chrome với <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Hãy nhấn và giữ |<ph name="ACCELERATOR" />| để thoát khỏi toàn màn hình</translation>
 <translation id="6049065490165456785">Ảnh từ máy ảnh nội bộ</translation>
@@ -3384,7 +3376,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6311220991371174222">Không thể khởi động Chrome do đã xảy ra lỗi khi mở hồ sơ của bạn. Hãy thử khởi động lại Chrome.</translation>
 <translation id="6312403991423642364">Lỗi mạng không xác định</translation>
 <translation id="6313641880021325787">THOÁT VR</translation>
-<translation id="6314335155547195432">Tạo mật khẩu</translation>
 <translation id="6314819609899340042">Bạn đã bật thành công tính năng gỡ lỗi trên thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> này.</translation>
 <translation id="6315343732431721770">Trang khởi động của bạn đã được thay đổi để bao gồm <ph name="URL" />. Để tắt tiện ích thay đổi trang khởi động của bạn, hãy nhấp vào Khôi phục.</translation>
 <translation id="6315493146179903667">Đưa Tất cả lên Trước</translation>
@@ -3422,7 +3413,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Thiết lập Smart Lock dành cho Android</translation>
 <translation id="6374469231428023295">Thử lại</translation>
-<translation id="6377158645544167202">Không thể kết nối máy in. Hãy kiểm tra để đảm bảo máy in bật và kết nối với Chromebook qua Wi-Fi hoặc USB.</translation>
 <translation id="6380143666419481200">Đồng ý và tiếp tục</translation>
 <translation id="6383051423892982287">Mã hóa dữ liệu đã đồng bộ hóa bằng <ph name="BEGIN_LINK" />cụm mật khẩu đồng bộ hóa<ph name="END_LINK" /> của riêng bạn</translation>
 <translation id="6384275966486438344">Thay đổi cài đặt tìm kiếm của bạn thành: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Thông tin tệp</translation>
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
-<translation id="6610183966322615106">Lỗi khi thêm máy in</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6613452264606394692">Quay lại đây nhanh chóng bằng cách đánh dấu trang này</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
@@ -3795,7 +3784,7 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6978121630131642226">Công cụ Tìm kiếm</translation>
 <translation id="6978611942794658017">Tệp này dành cho PC sử dụng phần mềm Windows. Tệp này không tương thích với thiết bị chạy Chrome OS của bạn. Vui lòng tìm kiếm ứng dụng thay thế phù hợp trong Cửa hàng Chrome trực tuyến.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Toàn bộ thời gian</translation>
+<translation id="6979737339423435258">Từ trước đến nay</translation>
 <translation id="6980462514016882061">Google có thể sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="6983201004195852174">Nhấn và giữ Tìm kiếm, sau đó nhấp hoặc kéo để chọn nội dung cần đọc to</translation>

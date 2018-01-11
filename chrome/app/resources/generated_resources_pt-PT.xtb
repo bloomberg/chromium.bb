@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">Ativado - definições personalizadas</translation>
 <translation id="1493892686965953381">A aguardar <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Mais <ph name="NUM_PRINTERS" /> dispositivos disponíveis.</translation>
-<translation id="1497284176235884849">O PPD fornecido é inválido.</translation>
 <translation id="1497522201463361063">Não é possível mudar o nome de "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Dispositivo desconhecido [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Esta conta de proprietário tem de ser a primeira conta com início de sessão integrado.</translation>
@@ -1776,7 +1775,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3697100740575341996">O gestor de TI desativou os Diversos do Chrome para o seu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Endereço de email</translation>
 <translation id="3702500414347826004">As suas páginas iniciais foram alteradas para incluir <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Perguntar quando um site pretender ver o texto e as imagens que copia para a área de transferência</translation>
 <translation id="370415077757856453">JavaScript bloqueado</translation>
 <translation id="3704331259350077894">Cessação da operação</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2124,7 +2122,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Sem correspondências</translation>
 <translation id="4275830172053184480">Reiniciar o dispositivo</translation>
-<translation id="4276216215490044084">Não é possível carregar PPDs grandes. O tamanho máximo é 250 kB.</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="4282196459431406533">O Smart Lock está ativado</translation>
@@ -2204,7 +2201,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="4430369329743628066">Marcador adicionado</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="4439318412377770121">Pretende registar o <ph name="DEVICE_NAME" /> no Google Cloud Devices?</translation>
-<translation id="4439612350502082674">Não é possível adicionar a impressora. Reinicie e tente novamente.</translation>
 <translation id="4441124369922430666">Pretende iniciar automaticamente esta aplicação quando o computador é ligado?</translation>
 <translation id="444134486829715816">Expandir...</translation>
 <translation id="4441548209689510310">Mostrar opções de verificação ortográfica</translation>
@@ -2435,7 +2431,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="4839303808932127586">Guardar &amp;vídeo como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> itens selecionados</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}other{Mais #}}</translation>
-<translation id="4840626203080576849">Perguntar quando um site pretender ver o texto e as imagens que copia para a área de transferência (recomendado)</translation>
 <translation id="4842976633412754305">Esta página está a tentar carregar scripts de origens não autenticadas.</translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Está a seguir a recomendação do gestor para esta definição.</translation>
@@ -2702,7 +2697,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="5254368820972107711">Mostrar ficheiros a remover</translation>
 <translation id="52550593576409946">Não foi possível iniciar a aplicação de quiosque.</translation>
 <translation id="5255315797444241226">A frase de acesso introduzida está incorrecta.</translation>
-<translation id="5259571578888203461">Não permita que os sites vejam o texto e as imagens que copia para a área de transferência.</translation>
 <translation id="5260508466980570042">Lamentamos, mas não foi possível confirmar o seu email ou palavra-passe. Tente novamente.</translation>
 <translation id="5261683757250193089">Abrir na Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Aceda a ficheiros a partir de qualquer local, mesmo offline.<ph name="MARKUP_2" />
@@ -3177,7 +3171,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5972708806901999743">Mover para o início</translation>
 <translation id="5972826969634861500">Iniciar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Reduzir</translation>
-<translation id="5975730206036440725">Não é possível encontrar o PPD. Verifique se o Chromebook está online e tente novamente.</translation>
 <translation id="5975792506968920132">Percentagem de carga da bateria</translation>
 <translation id="5976160379964388480">Outros</translation>
 <translation id="5978264784700053212">Centro de mensagens</translation>
@@ -3219,7 +3212,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6042850536017090003">Toque em Notificações de aplicações.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> está a partilhar um separador do Chrome com <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Concluído.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> está a partilhar um separador do Chrome e o áudio com <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Prima |<ph name="ACCELERATOR" />| sem soltar para sair do modo de ecrã inteiro.</translation>
 <translation id="6049065490165456785">Fotografia tirada com a câmara interna</translation>
@@ -3386,7 +3378,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6311220991371174222">Não é possível iniciar o Chrome porque ocorreu um erro ao abrir o seu perfil. Experimente reiniciar o Chrome.</translation>
 <translation id="6312403991423642364">Erro de rede desconhecido</translation>
 <translation id="6313641880021325787">SAIR DA RV</translation>
-<translation id="6314335155547195432">Gerar palavra-passe</translation>
 <translation id="6314819609899340042">Ativou com êxito as funcionalidades de depuração neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">As suas páginas iniciais foram alteradas para incluir <ph name="URL" />. Para desativar as extensões que alteram a sua página inicial, clique em Restaurar.</translation>
 <translation id="6315493146179903667">Trazer tudo para a frente</translation>
@@ -3424,7 +3415,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configurar o Smart Lock para Android</translation>
 <translation id="6374469231428023295">Tentar novamente</translation>
-<translation id="6377158645544167202">Não é possível utilizar a impressora. Verifique se a impressão está ligada e associada ao Chromebook por Wi-Fi ou USB.</translation>
 <translation id="6380143666419481200">Aceitar e continuar</translation>
 <translation id="6383051423892982287">Encriptar dados sincronizados com a sua própria <ph name="BEGIN_LINK" />frase de acesso de sincronização<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Alterar as definições de pesquisa para: <ph name="SEARCH_HOST" /></translation>
@@ -3581,7 +3571,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6606070663386660533">Separador 8</translation>
 <translation id="6607272825297743757">Informações do ficheiro</translation>
 <translation id="6607831829715835317">Mais ferrament&amp;as</translation>
-<translation id="6610183966322615106">Erro ao adicionar impressora</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6613452264606394692">Volte aqui rapidamente ao adicionar esta página aos marcadores</translation>
 <translation id="6615455863669487791">Mostrar</translation>

@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">Ενεργοποίηση - προσαρμοσμένες ρυθμίσεις</translation>
 <translation id="1493892686965953381">Αναμονή για <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> ακόμα διαθέσιμες συσκευές.</translation>
-<translation id="1497284176235884849">Το παρεχόμενο PPD δεν είναι έγκυρο.</translation>
 <translation id="1497522201463361063">Δεν είναι δυνατή η μετονομασία του "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Άγνωστη συσκευή [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Αυτός ο λογαριασμός κατόχου θα πρέπει να είναι ο πρώτος συνδεδεμένος λογαριασμός σε μια περίοδο σύνδεσης πολλαπλών συνδέσεων.</translation>
@@ -1775,7 +1774,6 @@
 <translation id="3697100740575341996">Ο διαχειριστής τεχνολογιών πληροφορικής έχει απενεργοποιήσει τις κορυφαίες λειτουργίες του Chrome για τη συσκευή σας. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="3702500414347826004">Η σελίδα εκκίνησής σας άλλαξε ώστε να συμπεριλάβει το <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Να γίνεται ερώτηση όταν ένας ιστότοπος θέλει να δει κείμενο και εικόνες που αντιγράφετε στο πρόχειρο</translation>
 <translation id="370415077757856453">Η JavaScript αποκλείστηκε</translation>
 <translation id="3704331259350077894">Παύση λειτουργίας</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2123,7 +2121,6 @@
 <translation id="4270393598798225102">Έκδοση <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Δεν υπάρχουν αντιστοιχίες</translation>
 <translation id="4275830172053184480">Επανεκκινήστε τη συσκευή σας</translation>
-<translation id="4276216215490044084">Δεν είναι δυνατή η φόρτωση μεγάλου PPD. Το μέγιστο μέγεθος είναι 250 KB.</translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="4282196459431406533">Το Smart Lock είναι ενεργοποιημένο</translation>
@@ -2203,7 +2200,6 @@
 <translation id="4430369329743628066">Προστέθηκε σελιδοδείκτης</translation>
 <translation id="443464694732789311">Συνέχεια</translation>
 <translation id="4439318412377770121">Θέλετε να κάνατε εγγραφή του <ph name="DEVICE_NAME" /> στις Συσκευές Google Cloud;</translation>
-<translation id="4439612350502082674">Δεν είναι δυνατή η προσθήκη του εκτυπωτή. Επανεκκινήστε και δοκιμάστε ξανά.</translation>
 <translation id="4441124369922430666">Θέλετε να ξεκινά αυτόματα αυτή η εφαρμογή όταν η συσκευή τίθεται σε λειτουργία;</translation>
 <translation id="444134486829715816">Ανάπτυξη...</translation>
 <translation id="4441548209689510310">Εμφάνιση επιλογών ορθογραφικού ελέγχου</translation>
@@ -2434,7 +2430,6 @@
 <translation id="4839303808932127586">Αποθήκευση&amp; βίντεο ως...</translation>
 <translation id="4839847978919684242">Έχουν επιλεγεί <ph name="SELCTED_FILES_COUNT" /> στοιχεία</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ακόμη}other{# ακόμη}}</translation>
-<translation id="4840626203080576849">Να γίνεται ερώτηση όταν ένας ιστότοπος θέλει να δει κείμενο και εικόνες που αντιγράφετε στο πρόχειρο (συνιστάται)</translation>
 <translation id="4842976633412754305">Αυτή η σελίδα προσπαθεί να φορτώσει σενάρια από μη εξουσιοδοτημένες πηγές.</translation>
 <translation id="4844333629810439236">Άλλα πληκτρολόγια</translation>
 <translation id="4846680374085650406">Ακολουθείτε την πρόταση του διαχειριστή για αυτήν τη ρύθμιση.</translation>
@@ -2701,7 +2696,6 @@
 <translation id="5254368820972107711">Εμφάνιση αρχείων για κατάργηση</translation>
 <translation id="52550593576409946">Δεν ήταν δυνατή η εκκίνηση της εφαρμογής Kiosk.</translation>
 <translation id="5255315797444241226">Η φράση πρόσβασης που έχετε εισαγάγει είναι εσφαλμένη.</translation>
-<translation id="5259571578888203461">Να μην επιτρέπεται στους ιστοτόπους να βλέπουν κείμενο και εικόνες που αντιγράφετε στο πρόχειρο</translation>
 <translation id="5260508466980570042">Λυπούμαστε, δεν ήταν δυνατή η επαλήθευση της διεύθυνσής σας ηλεκτρονικού ταχυδρομείου ή του κωδικού πρόσβασής σας. Δοκιμάστε ξανά.</translation>
 <translation id="5261683757250193089">Άνοιγμα στο Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Αποκτήστε πρόσβαση στα αρχεία σας από οπουδήποτε, ακόμη και εκτός σύνδεσης.<ph name="MARKUP_2" />
@@ -3176,7 +3170,6 @@
 <translation id="5972708806901999743">Μετακίνηση στην κορυφή</translation>
 <translation id="5972826969634861500">Έναρξη του <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Σμίκρυνση</translation>
-<translation id="5975730206036440725">Δεν είναι δυνατή η εύρεση του PPD. Βεβαιωθείτε ότι το Chromebook σας είναι συνδεδεμένο και δοκιμάστε ξανά.</translation>
 <translation id="5975792506968920132">Ποσοστό φόρτισης μπαταρίας</translation>
 <translation id="5976160379964388480">Άλλα</translation>
 <translation id="5978264784700053212">Κέντρο μηνυμάτων</translation>
@@ -3218,7 +3211,6 @@
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="6042850536017090003">Πατήστε στις Ειδοποιήσεις εφαρμογών.</translation>
 <translation id="6043317578411397101">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome με το <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Τέλος!</translation>
 <translation id="6044805581023976844">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome και ήχο με το <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Πατήστε παρατεταμένα το πλήκτρο |<ph name="ACCELERATOR" />|, για να εξέλθετε από την πλήρη οθόνη</translation>
 <translation id="6049065490165456785">Φωτογραφία από την εσωτερική φωτογραφική μηχανή</translation>
@@ -3385,7 +3377,6 @@
 <translation id="6311220991371174222">Η εκκίνηση του Chrome δεν είναι δυνατή επειδή προέκυψε ένα πρόβλημα κατά το άνοιγμα του προφίλ σας. Δοκιμάστε να επανεκκινήσετε τον Chrome.</translation>
 <translation id="6312403991423642364">Άγνωστο σφάλμα δικτύου</translation>
 <translation id="6313641880021325787">ΕΞΟΔΟΣ ΑΠΟ VR</translation>
-<translation id="6314335155547195432">Δημ.κωδ.πρόσβασης</translation>
 <translation id="6314819609899340042">Έχετε ενεργοποιήσει με επιτυχία τις λειτουργίες εντοπισμού σφαλμάτων σε αυτήν τη συσκευή <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Οι σελίδες εκκίνησής σας άλλαξαν ώστε να συμπεριλάβουν <ph name="URL" />. Για να απενεργοποιήσετε τις επεκτάσεις που αλλάζουν τη σελίδα εκκίνησής σας, κάντε κλικ στην "Επαναφορά".</translation>
 <translation id="6315493146179903667">Μεταφορά Όλων στο Προσκήνιο</translation>
@@ -3423,7 +3414,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Ρυθμίστε το Smart Lock για το Android</translation>
 <translation id="6374469231428023295">Δοκιμάστε ξανά</translation>
-<translation id="6377158645544167202">Δεν είναι δυνατή η σύνδεση του εκτυπωτή. Βεβαιωθείτε ότι ο εκτυπωτής είναι ενεργοποιημένος και ότι είναι συνδεδεμένος στο Chromebook μέσω Wi-Fi ή USB.</translation>
 <translation id="6380143666419481200">Αποδοχή και συνέχεια</translation>
 <translation id="6383051423892982287">Κρυπτογράφηση συγχρονισμένων δεδομένων με τη δική σας <ph name="BEGIN_LINK" />φράση πρόσβασης συγχρονισμού<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST" /></translation>
@@ -3580,7 +3570,6 @@
 <translation id="6606070663386660533">Καρτέλα 8</translation>
 <translation id="6607272825297743757">Πληροφορίες αρχείου</translation>
 <translation id="6607831829715835317">Περισσότερα εργαλεία</translation>
-<translation id="6610183966322615106">Σφάλμα κατά την προσθήκη εκτυπωτή</translation>
 <translation id="6612358246767739896">Προστατευμένο περιεχόμενο</translation>
 <translation id="6613452264606394692">Προσθέστε σελιδοδείκτη σε αυτήν τη σελίδα για να επιστρέψετε εδώ γρήγορα</translation>
 <translation id="6615455863669487791">Εμφάνιση</translation>

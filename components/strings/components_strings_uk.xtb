@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Потрібна автентифікація</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="20817612488360358">Системні параметри проксі-сервера налаштовано для використання, але чітко вказано налаштування проксі-сервера.</translation>
-<translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
 <translation id="2091887806945687916">Сигнал</translation>
 <translation id="2094505752054353250">Невідповідність домену</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш комп’ютер небезпечні програми, що викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення та дані кредитних карток). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Заблоковано оманливий вміст.</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
-<translation id="5669703222995421982">Отримувати персоналізовані пропозиції</translation>
 <translation id="5675650730144413517">Сторінка не працює</translation>
 <translation id="5685654322157854305">Додати адресу доставки</translation>
 <translation id="5689199277474810259">Експортувати у формат JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423">Хост <ph name="HOST_NAME" /> не відповідає стандартам безпеки.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про цю проблему.</translation>
 <translation id="7219179957768738017">З'єднання використовує версію <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Не вдається експортувати паролі в папку "<ph name="FOLDER" />"</translation>
 <translation id="7220786058474068424">Обробка</translation>
 <translation id="724691107663265825">Сайт містить зловмисне програмне забезпечення</translation>
 <translation id="724975217298816891">Введіть термін дії та код CVC картки <ph name="CREDIT_CARD" />, щоб оновити її дані. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>

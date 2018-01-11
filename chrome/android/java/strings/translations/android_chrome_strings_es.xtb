@@ -85,7 +85,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1671236975893690980">Descarga pendiente…</translation>
 <translation id="169033420419426091">No se ha podido descargar <ph name="FILE_NAME" /> porque falta la tarjeta SD.</translation>
-<translation id="1709438864123551175">Ahorro de Datos</translation>
+<translation id="1709438864123551175">Ahorro de datos</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver contenido de realidad virtual, actualiza Servicios RV de Google</translation>
 <translation id="1742134235943978220">Se ha traducido al <ph name="TARGET_LANGUAGE" />.</translation>
@@ -174,7 +174,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2501278716633472235">Volver</translation>
 <translation id="2503472621226270518">Mostrar panel de navegación</translation>
 <translation id="2512222046227390255">Autocompletar formularios</translation>
-<translation id="2526148617758225454">Ahorro de Datos está activado. Puedes administrarlo en la configuración.</translation>
+<translation id="2526148617758225454">El ahorro de datos está activado. Puedes administrarlo en la configuración.</translation>
 <translation id="2532336938189706096">Vista web</translation>
 <translation id="2536728043171574184">Viendo una copia sin conexión de esta página</translation>
 <translation id="2546283357679194313">Cookies y datos de sitios</translation>
@@ -256,7 +256,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3341058695485821946">Consulta la cantidad de datos que has ahorrado</translation>
 <translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
-<translation id="3365671512111106261">No disponible cuando se activa Ahorro de Datos</translation>
+<translation id="3365671512111106261">No disponible cuando se activa el ahorro de datos</translation>
 <translation id="3367813778245106622">Vuelve a iniciar sesión para que comience la sincronización</translation>
 <translation id="3384347053049321195">Compartir imagen</translation>
 <translation id="3386292677130313581">Preguntar antes de permitir que los sitios web detecten tu ubicación (recomendado)</translation>
@@ -294,7 +294,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3662546969139119822">Ningún elemento del historial</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
 <translation id="3682249951633602029">Cualquier usuario que pueda ver el archivo de contraseñas exportado podrá ver tus contraseñas.</translation>
-<translation id="3712575778697986964">¿Quieres vaciar el historial de Ahorro de Datos?</translation>
+<translation id="3712575778697986964">¿Quieres vaciar el historial de ahorro de datos?</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
 <translation id="3734660163659757482">Desliza hacia arriba para ver marcadores y más</translation>
@@ -407,10 +407,10 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Abre una pestaña nueva</translation>
 <translation id="4759238208242260848">Descargas</translation>
-<translation id="4766369052440583386">Ahorro de Datos activado</translation>
+<translation id="4766369052440583386">Ahorro de datos activado</translation>
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
-<translation id="4807963036345170158">Ahorro de Datos desactivado</translation>
+<translation id="4807963036345170158">Ahorro de datos desactivado</translation>
 <translation id="4811736444948656478">El panel de navegación ocupa la mitad inferior de la pantalla</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>

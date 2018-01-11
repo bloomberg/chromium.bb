@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">ഇഷ്‌ടാനുസൃത ക്രമീകരണം ഓണാക്കുക</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />-നായി കാത്തിരിക്കുന്നു...</translation>
 <translation id="1495486559005647033">ലഭ്യമായ മറ്റ് <ph name="NUM_PRINTERS" /> ഉപകരണങ്ങ‌ൾ.</translation>
-<translation id="1497284176235884849">നൽകിയ PPD തെറ്റാണ്.</translation>
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" എന്നതിന്റെ പേരുമാറ്റാനായില്ല. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">അറിഞ്ഞുകൂടാത്ത ഉപകരണം [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">ഒന്നിലധികം സൈൻ ഇൻ സെഷനിൽ സൈൻ ഇൻ ചെയ്തിരിക്കുന്ന ആദ്യ അക്കൗണ്ട്, ഈ ഉടമ അക്കൗണ്ടായിരിക്കണം.</translation>
@@ -1772,7 +1771,6 @@
 <translation id="3697100740575341996">നിങ്ങളുടെ IT അഡ്‌മിനിസ്‌ട്രേറ്റർ നിങ്ങളുടെ ഉപകരണത്തിനായി Chrome Goodies പ്രവർത്തനരഹിതമാക്കി. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ഇമെയില്‍ വിലാസങ്ങള്‍</translation>
 <translation id="3702500414347826004"><ph name="URL" /> ഉൾപ്പെടുത്താൻ നിങ്ങളുടെ ആരംഭ പേജുകൾ മാറ്റിയിരിക്കുന്നു.</translation>
-<translation id="3703669627274482482">നിങ്ങൾ ക്ലിപ്‌ബോർഡിലേക്ക് പകർത്തുന്ന ടെക്‌സ്റ്റും ചിത്രങ്ങളും കാണാൻ ഒരു സൈറ്റ് താൽപ്പര്യപ്പെടുമ്പോൾ ചോദിക്കുക</translation>
 <translation id="370415077757856453">JavaScript ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="3704331259350077894">പ്രവര്‍ത്തന വിരാമം</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2119,7 +2117,6 @@
 <translation id="4270393598798225102"><ph name="NUMBER" /> പതിപ്പ്</translation>
 <translation id="4271396100647220620">ഒന്നും യോജിക്കുന്നില്ല</translation>
 <translation id="4275830172053184480">നിങ്ങളുടെ ഉപകരണം പുനരാരംഭിക്കുക</translation>
-<translation id="4276216215490044084">വലിയ PPD ലോഡ് ചെയ്യാനാകില്ല. പരമാവധി വല‌ുപ്പം 250kB ആണ്.</translation>
 <translation id="4278390842282768270">അനുവദനീയം</translation>
 <translation id="4281844954008187215">സേവന നിബന്ധനകൾ</translation>
 <translation id="4282196459431406533">Smart Lock ഓണാണ്</translation>
@@ -2199,7 +2196,6 @@
 <translation id="4430369329743628066">ബുക്ക്‌മാർക്ക് ചേർത്തു</translation>
 <translation id="443464694732789311">തുടരുക</translation>
 <translation id="4439318412377770121">Google ക്ലൗഡ് ഉപകരണങ്ങളിൽ <ph name="DEVICE_NAME" /> രജിസ്റ്റർ ചെയ്യണോ?</translation>
-<translation id="4439612350502082674">പ്രിന്‍റർ ചേർക്കാനാകില്ല. പുനരാരംഭിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="4441124369922430666">മെഷീൻ ഓണാകുമ്പോൾ ഈ അപ്ലിക്കേഷൻ സ്വയമേവ ആരംഭിക്കാൻ നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="444134486829715816">വികസിപ്പിക്കുക...</translation>
 <translation id="4441548209689510310">അക്ഷരത്തെറ്റ് പരിശോധന ഓപ്‌ഷനുകൾ കാണിക്കുക</translation>
@@ -2430,7 +2426,6 @@
 <translation id="4839303808932127586">വീഡിയോ ഇതുപോലെ സം&amp;രക്ഷിക്കുക...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> ഇനങ്ങൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 എണ്ണം കൂടി}other{# എണ്ണം കൂടി}}</translation>
-<translation id="4840626203080576849">നിങ്ങൾ ക്ലിപ്‌ബോർഡിലേക്ക് പകർത്തുന്ന ടെക്‌സ്റ്റും ചിത്രങ്ങളും കാണാൻ ഒരു സൈറ്റ് താൽപ്പര്യപ്പെടുമ്പോൾ ചോദിക്കുക (ശുപാർശ ചെയ്യപ്പെടുന്നു)</translation>
 <translation id="4842976633412754305">ഈ പേജ്, പ്രാമാണീകരിക്കാത്ത ഉറവിടങ്ങളിൽ നിന്ന് സ്‌ക്രിപ്‌റ്റുകൾ ലോഡുചെയ്യാൻ ശ്രമിക്കുന്നു.</translation>
 <translation id="4844333629810439236">മറ്റ് കീബോർഡുകൾ</translation>
 <translation id="4846680374085650406">നിങ്ങൾ ഈ ക്രമീകരണത്തിനായി അഡ്‌മിനിസ്‌ട്രേറ്ററുടെ ശുപാർശ പാലിക്കുന്നു.</translation>
@@ -2697,7 +2692,6 @@
 <translation id="5254368820972107711">നീക്കംചെയ്യേണ്ട ഫയലുകൾ കാണിക്കുക</translation>
 <translation id="52550593576409946">കിയോസ്‌ക് അപ്ലിക്കേഷൻ സമാരംഭിക്കാനായില്ല.</translation>
 <translation id="5255315797444241226">നിങ്ങള്‍ നല്‍കിയ പാസ്ഫ്രേസ് തെറ്റാണ്.</translation>
-<translation id="5259571578888203461">നിങ്ങൾ ക്ലിപ്‌ബോർഡിലേക്ക് പകർത്തുന്ന ടെക്‌സ്‌റ്റുകളും ചിത്രങ്ങളും കാണാൻ സൈറ്റുകളെ അനുവദിക്കരുത്</translation>
 <translation id="5260508466980570042">ക്ഷമിക്കൂ, നിങ്ങളുടെ ഇമെയില്‍ അല്ലെങ്കില്‍ രഹസ്യവാക്ക് പരിശോധിക്കാന്‍ കഴിഞ്ഞില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5261683757250193089">വെബ് സ്‌റ്റോറിൽ തുറക്കുക</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ഓഫ്‌ലൈനിൽ ആണെങ്കിൽപ്പോലും എവിടെനിന്നും ഫയലുകൾ ആക്‌സസ് ചെയ്യുക.<ph name="MARKUP_2" />
@@ -3171,7 +3165,6 @@
 <translation id="5972708806901999743">മുകളിലേക്ക് നീക്കുക</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> ആരംഭിക്കുക</translation>
 <translation id="5975083100439434680">സൂം ഔട്ട്</translation>
-<translation id="5975730206036440725">PPD കണ്ടെത്താനാകില്ല. നിങ്ങളുടെ Chromebook ഓൺലൈനിലാണോ എന്ന് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5975792506968920132">ബാറ്ററി ചാർജ്ജ് ശതമാനം</translation>
 <translation id="5976160379964388480">മറ്റുള്ളവര്‍</translation>
 <translation id="5978264784700053212">സന്ദേശ കേന്ദ്രം</translation>
@@ -3213,7 +3206,6 @@
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="6042850536017090003">ആപ്പ് അറിയിപ്പുകളിൽ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> എന്നതുമായി ഒരു Chrome ടാബ് പങ്കിടുന്നു.</translation>
-<translation id="6043357981274314628">പൂര്‍ത്തിയായിരിക്കുന്നു!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> എന്നതുമായി ഒരു Chrome ടാബും ഓഡിയോയും പങ്കിടുന്നു.</translation>
 <translation id="6049004884579590341">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കാൻ, |<ph name="ACCELERATOR" />| അമർത്തിപ്പിടിക്കുക‌</translation>
 <translation id="6049065490165456785">ആന്തരിക ക്യാമറയിൽ നിന്നുള്ള ഫോട്ടോ</translation>
@@ -3380,7 +3372,6 @@
 <translation id="6311220991371174222">നിങ്ങളുടെ പ്രൊഫൈൽ തുറക്കുമ്പോൾ എന്തോ കുഴപ്പമുണ്ടായതിനാൽ Chrome ആരംഭിക്കാനാവില്ല. Chrome പുനഃരാരംഭിക്കുന്നത് പരീക്ഷിച്ചുനോക്കൂ.</translation>
 <translation id="6312403991423642364">അറിയാത്ത നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="6313641880021325787">VR-ൽ നിന്ന് പുറത്തുകടക്കുക</translation>
-<translation id="6314335155547195432">പാസ്‌വേഡ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="6314819609899340042">നിങ്ങൾ ഈ <ph name="IDS_SHORT_PRODUCT_NAME" /> ഉപകരണത്തിലെ ഡീബഗ്ഗിംഗ് ഫീച്ചറുകൾ പ്രവർത്തനക്ഷമമാക്കി.</translation>
 <translation id="6315343732431721770"><ph name="URL" /> ഉൾപ്പെടുത്താൻ നിങ്ങളുടെ ആരംഭ പേജുകളെ മാറ്റിയിരിക്കുന്നു. ആരംഭ പേജിൽ മാറ്റം വരുത്തുന്ന വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമാക്കാൻ, 'പുനഃസ്ഥാപിക്കുക' ക്ലിക്കുചെയ്യുക.</translation>
 <translation id="6315493146179903667">എല്ലാം മുന്നിലേക്ക് കൊണ്ടുവരുക</translation>
@@ -3418,7 +3409,6 @@
 <translation id="6374077068638737855">ഐസ്‌വീസൽ</translation>
 <translation id="6374108032506706911">Android-നുള്ള Smart Lock സജ്ജമാക്കുക</translation>
 <translation id="6374469231428023295">വീണ്ടും ശ്രമിക്കുക</translation>
-<translation id="6377158645544167202">പ്രിന്‍റർ കണക്റ്റ് ചെയ്യാനാകില്ല. പ്രിന്‍റർ ഓണാണോ എന്നും വൈഫൈയോ USB-യോ ഉപയോഗിച്ച് Chromebook-ലേക്ക് കണക്റ്റ് ചെയ്‌‌തിട്ടുണ്ടോ എന്നും പരിശോധിക്കുക.</translation>
 <translation id="6380143666419481200">അംഗീകരിച്ച് തുടരുക</translation>
 <translation id="6383051423892982287">നിങ്ങളുടെ സ്വന്തം <ph name="BEGIN_LINK" />പാസ്‌ഫ്രെയ്‌സ് സമന്വയിപ്പിക്കൽ<ph name="END_LINK" /> ഉപയോഗിച്ച് സമന്വയിപ്പിച്ച വിവരങ്ങൾ എൻക്രി‌പ്‌റ്റുചെയ്യുക</translation>
 <translation id="6384275966486438344">നിങ്ങളുടെ തിരയൽ ക്രമീകരണങ്ങൾ മാറ്റുക: <ph name="SEARCH_HOST" /></translation>
@@ -3576,7 +3566,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6606070663386660533">ടാബ് 8</translation>
 <translation id="6607272825297743757">ഫയൽ വിവരം</translation>
 <translation id="6607831829715835317">കൂടുതൽ ഉപക&amp;രണങ്ങൾ</translation>
-<translation id="6610183966322615106">പ്രിന്റർ ചേർക്കുന്നതിൽ പിശക്</translation>
 <translation id="6612358246767739896">പരിരക്ഷിത ഉള്ളടക്കം</translation>
 <translation id="6613452264606394692">ഈ പേജ് ബുക്ക്‌മാർക്ക് ചെയ്താൽ വേഗത്തിൽ ഇവിടെ മടങ്ങിയെത്താൻ കഴിയും</translation>
 <translation id="6615455863669487791">എന്നെ കാണിക്കുക</translation>

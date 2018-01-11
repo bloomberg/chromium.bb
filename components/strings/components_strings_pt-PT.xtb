@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Autenticação necessária</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="20817612488360358">As definições de proxy do sistema estão definidas para serem utilizadas, mas também está especificada uma configuração de proxy explícita.</translation>
-<translation id="2086652334978798447">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
 <translation id="2094505752054353250">Falta de correspondência de domínio</translation>
 <translation id="2096368010154057602">Departamento</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">Os atacantes atualmente em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem tentar instalar programas perigosos no seu computador que roubem ou eliminem as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Conteúdo fraudulento bloqueado.</translation>
 <translation id="5659593005791499971">Email</translation>
-<translation id="5669703222995421982">Obter conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está a funcionar</translation>
 <translation id="5685654322157854305">Adicionar morada para envio</translation>
 <translation id="5689199277474810259">Exportar para JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não respeita os padrões de segurança.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">A ligação utiliza <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Não é possível exportar as palavras-passe para "<ph name="FOLDER" />"</translation>
 <translation id="7220786058474068424">A processar</translation>
 <translation id="724691107663265825">O site que pretende visitar contém software malicioso</translation>
 <translation id="724975217298816891">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>

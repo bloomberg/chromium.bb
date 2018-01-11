@@ -766,11 +766,11 @@
 <translation id="3711895659073496551">Felfüggesztés</translation>
 <translation id="3732106275571017176">A beállítás lehetővé teszi a felhasználók számára a Google-fiókok közötti váltást a böngészőablak tartalomterületén belül, miután bejelentkeztek <ph name="PRODUCT_OS_NAME" />-eszközükbe.
 
-      Ha a házirend beállítása „hamis”, nem engedélyezett a másik fiókba történő bejelentkezés a nem inkognitómódban használt böngésző tartalomterületén.
+Ha a házirend beállítása „hamis”, nem engedélyezett a másik fiókba történő bejelentkezés a nem inkognitómódban használt böngésző tartalomterületén.
 
-      Ha a házirend nincs beállítva, vagy értéke „igaz”, az alapértelmezett beállítás van használatban: engedélyezett a másik fiókba történő bejelentkezés a böngésző tartalomterületéről, kivéve alfiókok esetén, amelyeknél ez a lehetőség le van tiltva a nem inkognitómódban használt tartalomterületeken.
+Ha a házirend nincs beállítva, vagy értéke „igaz”, az alapértelmezett beállítás van használatban: engedélyezett a másik fiókba történő bejelentkezés a böngésző tartalomterületéről, kivéve gyermek fiókok esetén, amelyeknél ez a lehetőség le van tiltva a nem inkognitómódban használt tartalomterületeken.
 
-      Ha nem szeretné engedélyezni a másik fiókba történő bejelentkezést inkognitómódban, fontolja meg a mód letiltását az IncognitoModeAvailability házirenddel.</translation>
+Ha nem szeretné engedélyezni a másik fiókba történő bejelentkezést inkognitómódban, fontolja meg a mód letiltását az IncognitoModeAvailability házirenddel.</translation>
 <translation id="3736879847913515635">Engedélyezi a személyek hozzáadását a felhasználókezelőben</translation>
 <translation id="3737544779868348650">Eszköz hálózati gazdagépneve</translation>
 <translation id="3750220015372671395">Kulcslétrehozás letiltása a következő webhelyeken</translation>

@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">راستی‌آزمایی لازم است</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
-<translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
 <translation id="2091887806945687916">صدا</translation>
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
 <translation id="2096368010154057602">حوزه</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">شاید درحال‌حاضر مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> در تلاش باشند برنامه‌های خطرناکی در رایانه‌تان نصب کنند که اطلاعات شما (مانند عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) را به سرقت می‌برند یا حذف می‌کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">محتوای فریب‌دهنده مسدود شد.</translation>
 <translation id="5659593005791499971">رایانامه</translation>
-<translation id="5669703222995421982">دریافت محتوای شخصی‌سازی‌شده</translation>
 <translation id="5675650730144413517">این صفحه کار نمی‌کند</translation>
 <translation id="5685654322157854305">افزودن نشانی تحویل کالا</translation>
 <translation id="5689199277474810259">‏صادر کردن به JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">اتصال از <ph name="SSL_VERSION" /> استفاده می‌کند.</translation>
-<translation id="7220019174139618249">گذرواژه‌ها در «<ph name="FOLDER" />» صادر نمی‌شوند</translation>
 <translation id="7220786058474068424">درحال پردازش</translation>
 <translation id="724691107663265825">این وب‌سایت بدافزار دارد</translation>
 <translation id="724975217298816891">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید شدن، جزئیات کارتتان با این سایت به اشتراک گذاشته می‌شود.</translation>

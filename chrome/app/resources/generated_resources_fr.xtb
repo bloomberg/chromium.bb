@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Activée – Paramètres personnalisés</translation>
 <translation id="1493892686965953381">En attente de <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> autres périphériques disponibles</translation>
-<translation id="1497284176235884849">Le fichier PPD fourni est incorrect.</translation>
 <translation id="1497522201463361063">Impossible de renommer "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Appareil inconnu [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Ce compte de propriétaire doit être le premier compte à être connecté lors de sessions de connexion multicompte.</translation>
@@ -1774,7 +1773,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3697100740575341996">Votre administrateur informatique a désactivé les avantages Google Chrome pour votre appareil. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Adresse e-mail</translation>
 <translation id="3702500414347826004">Vos pages de démarrage ont été modifiées pour inclure <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Me demander lorsqu'un site souhaite afficher le texte et les images que je copie dans le Presse-papiers</translation>
 <translation id="370415077757856453">JavaScript bloqué</translation>
 <translation id="3704331259350077894">Arrêt du fonctionnement</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Aucune correspondance</translation>
 <translation id="4275830172053184480">Redémarrer l'appareil</translation>
-<translation id="4276216215490044084">Impossible de charger un fichier PPD volumineux. La taille maximale est 250 Ko.</translation>
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="4282196459431406533">Smart Lock est activé</translation>
@@ -2202,7 +2199,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4430369329743628066">Favori ajouté</translation>
 <translation id="443464694732789311">Continuer</translation>
 <translation id="4439318412377770121">Voulez-vous vous enregistrer l'appareil <ph name="DEVICE_NAME" /> dans Google Cloud Devices ?</translation>
-<translation id="4439612350502082674">Impossible d'ajouter l'imprimante. Redémarrez et réessayez.</translation>
 <translation id="4441124369922430666">Voulez-vous démarrer automatiquement cette application à la mise sous tension de l'ordinateur ?</translation>
 <translation id="444134486829715816">Développer...</translation>
 <translation id="4441548209689510310">Afficher les options du correcteur orthographique</translation>
@@ -2433,7 +2429,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4839303808932127586">En&amp;registrer la vidéo sous...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> éléments sélectionnés</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
-<translation id="4840626203080576849">Me demander lorsqu'un site souhaite afficher le texte et les images que je copie dans le Presse-papiers (recommandé)</translation>
 <translation id="4842976633412754305">Cette page tente de charger des scripts à partir de sources non authentifiées.</translation>
 <translation id="4844333629810439236">Autres claviers</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
@@ -2700,7 +2695,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5254368820972107711">Affichez les fichiers à supprimer</translation>
 <translation id="52550593576409946">Impossible de lancer l'application kiosque.</translation>
 <translation id="5255315797444241226">La phrase secrète saisie est incorrecte.</translation>
-<translation id="5259571578888203461">Interdire aux sites de voir le texte et les images que vous copiez dans le presse-papiers</translation>
 <translation id="5260508466980570042">Adresse e-mail ou mot de passe incorrect. Veuillez réessayer.</translation>
 <translation id="5261683757250193089">Ouvrir sur le Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accédez à vos fichiers où que vous soyez, même hors connexion.<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5972708806901999743">Déplacer vers le haut</translation>
 <translation id="5972826969634861500">Lancer <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
-<translation id="5975730206036440725">Impossible de trouver le fichier PPD. Vérifiez que votre Chromebook est en ligne et réessayez.</translation>
 <translation id="5975792506968920132">Pourcentage de chargement de la batterie</translation>
 <translation id="5976160379964388480">Autres</translation>
 <translation id="5978264784700053212">Centre de messagerie</translation>
@@ -3217,7 +3210,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6042850536017090003">Appuyez sur "Notifications d'applications".</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> partage un onglet Chrome avec <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Terminé</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> partage un onglet Chrome et un contenu audio avec <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Appuyez de manière prolongée sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran</translation>
 <translation id="6049065490165456785">Photo d'un appareil photo interne</translation>
@@ -3384,7 +3376,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6311220991371174222">Impossible de démarrer Chrome, car une erreur s'est produite lors de l'ouverture de votre profil. Essayez de relancer Chrome.</translation>
 <translation id="6312403991423642364">Erreur de réseau inconnue.</translation>
 <translation id="6313641880021325787">QUITTER LA RV</translation>
-<translation id="6314335155547195432">Générer mot de passe</translation>
 <translation id="6314819609899340042">Les fonctionnalités de débogage ont été activées sur cet appareil <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Vos pages de démarrage ont été modifiées pour inclure <ph name="URL" />. Pour désactiver les extensions qui changent vos pages de démarrage, cliquez sur "Restaurer".</translation>
 <translation id="6315493146179903667">Tout ramener au premier plan</translation>
@@ -3422,7 +3413,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configurer Smart Lock pour Android</translation>
 <translation id="6374469231428023295">Réessayer</translation>
-<translation id="6377158645544167202">Impossible de connecter l'imprimante. Vérifiez que l'imprimante est sous tension et connectée à votre Chromebook par Wi-Fi ou USB.</translation>
 <translation id="6380143666419481200">Accepter et continuer</translation>
 <translation id="6383051423892982287">Chiffrer les données synchronisées avec votre propre <ph name="BEGIN_LINK" />phrase secrète de synchronisation<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Modifier les paramètres de la recherche pour utiliser l'adresse <ph name="SEARCH_HOST" />.</translation>
@@ -3579,7 +3569,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">Informations sur le fichier</translation>
 <translation id="6607831829715835317">Plus d'outi&amp;ls</translation>
-<translation id="6610183966322615106">Erreur lors de l'ajout de l'imprimante</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6613452264606394692">Revenez facilement sur cette page en l'ajoutant à vos favoris</translation>
 <translation id="6615455863669487791">Démonstration</translation>
@@ -4021,7 +4010,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> pages sur <ph name="PRINTER_NAME" /></translation>
 <translation id="7361039089383199231">$1 octets</translation>
 <translation id="7361297102842600584">Faites un clic droit pour exécuter <ph name="PLUGIN_NAME" />.</translation>
-<translation id="7364796246159120393">Choisissez un fichier</translation>
+<translation id="7364796246159120393">Choisir un fichier</translation>
 <translation id="7366415735885268578">Ajouter un site</translation>
 <translation id="7366909168761621528">Données de navigation</translation>
 <translation id="7371006317849674875">Heure de début</translation>

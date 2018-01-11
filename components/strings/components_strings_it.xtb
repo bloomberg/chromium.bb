@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Autenticazione richiesta</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
-<translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
 <translation id="2091887806945687916">Audio</translation>
 <translation id="2094505752054353250">Dominio non corrispondente</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
@@ -638,7 +637,6 @@
 <translation id="5633066919399395251">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di installare sul tuo computer programmi pericolosi che carpiscono o eliminano le tue informazioni (ad esempio, foto, password, messaggi e carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Contenuti ingannevoli bloccati.</translation>
 <translation id="5659593005791499971">Email</translation>
-<translation id="5669703222995421982">Ricevi contenuti suggeriti appositamente per te</translation>
 <translation id="5675650730144413517">La pagina non funziona</translation>
 <translation id="5685654322157854305">Aggiungi l'indirizzo di spedizione</translation>
 <translation id="5689199277474810259">Esporta in JSON</translation>
@@ -808,7 +806,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non è conforme agli standard di sicurezza.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> su questo problema.</translation>
 <translation id="7219179957768738017">La connessione utilizza <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Impossibile esportare le password in "<ph name="FOLDER" />"</translation>
 <translation id="7220786058474068424">Elaborazione in corso</translation>
 <translation id="724691107663265825">Il sito che stai per visitare contiene malware</translation>
 <translation id="724975217298816891">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /> per aggiornare i relativi dettagli. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>

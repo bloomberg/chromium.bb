@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">オン - カスタム設定</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> を待機しています...</translation>
 <translation id="1495486559005647033">利用可能なデバイスが <ph name="NUM_PRINTERS" /> 個あります。</translation>
-<translation id="1497284176235884849">指定された PPD が無効です。</translation>
 <translation id="1497522201463361063">ファイル「<ph name="FILE_NAME" />」の名前を変更することができません。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">不明なデバイス [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">この所有者アカウントは、マルチログイン セッションで最初にログインするアカウントである必要があります。</translation>
@@ -1775,7 +1774,6 @@
 <translation id="3697100740575341996">IT 管理者が、お使いのデバイスに対して Chrome Goodies を無効にしています。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">メール アドレス</translation>
 <translation id="3702500414347826004">起動ページに <ph name="URL" /> が追加されました。</translation>
-<translation id="3703669627274482482">サイトがクリップボードにコピーされているテキストや画像にアクセスする際に確認する</translation>
 <translation id="370415077757856453">JavaScript がブロックされました</translation>
 <translation id="3704331259350077894">処理が停止した</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2123,7 +2121,6 @@
 <translation id="4270393598798225102">バージョン <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">一致する結果は見つかりませんでした</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
-<translation id="4276216215490044084">サイズの大きい PPD を読み込めません。最大サイズは 250 KB です。</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="4282196459431406533">Smart Lock が有効です</translation>
@@ -2203,7 +2200,6 @@
 <translation id="4430369329743628066">ブックマークを追加しました</translation>
 <translation id="443464694732789311">続行</translation>
 <translation id="4439318412377770121"><ph name="DEVICE_NAME" /> を Google クラウド デバイスに登録しますか？</translation>
-<translation id="4439612350502082674">プリンタを追加できません。再起動してもう一度お試しください。</translation>
 <translation id="4441124369922430666">マシンの起動時にこのアプリを自動的に起動しますか？</translation>
 <translation id="444134486829715816">展開...</translation>
 <translation id="4441548209689510310">スペルチェック オプションを表示</translation>
@@ -2434,7 +2430,6 @@
 <translation id="4839303808932127586">名前を付けて動画を保存(&amp;V)...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> 個のアイテムを選択</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{他 1 件}other{他 # 件}}</translation>
-<translation id="4840626203080576849">サイトがクリップボードにコピーされているテキストや画像にアクセスする際に確認する（推奨）</translation>
 <translation id="4842976633412754305">このページは承認されていないソースからのスクリプトを読み込もうとしています。</translation>
 <translation id="4844333629810439236">他のキーボード</translation>
 <translation id="4846680374085650406">管理者が推奨する設定を使用しています。</translation>
@@ -2701,7 +2696,6 @@
 <translation id="5254368820972107711">削除されるファイルを表示</translation>
 <translation id="52550593576409946">キオスク アプリケーションを起動できませんでした。</translation>
 <translation id="5255315797444241226">入力したパスフレーズが正しくありません。</translation>
-<translation id="5259571578888203461">クリップボードにコピーしたテキストや画像へのアクセスをサイトに許可しない</translation>
 <translation id="5260508466980570042">メールまたはパスワードを確認できませんでした。もう一度お試しください。</translation>
 <translation id="5261683757250193089">ウェブストアで開く</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />どこからでも、オフラインでもファイルにアクセス<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@
 <translation id="5972708806901999743">トップに移動</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> を起動</translation>
 <translation id="5975083100439434680">縮小する</translation>
-<translation id="5975730206036440725">PPD が見つかりません。Chromebook がオンラインであることを確認してもう一度お試しください。</translation>
 <translation id="5975792506968920132">バッテリー残量（%）</translation>
 <translation id="5976160379964388480">その他</translation>
 <translation id="5978264784700053212">メッセージ センター</translation>
@@ -3217,7 +3210,6 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="6042850536017090003">[アプリの通知] をタップします。</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> の Chrome タブを共有しています。</translation>
-<translation id="6043357981274314628">完了しました。</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> の Chrome タブと音声を共有しています。</translation>
 <translation id="6049004884579590341">全画面表示を終了するには |<ph name="ACCELERATOR" />| キーを押し続けます</translation>
 <translation id="6049065490165456785">内蔵カメラの写真</translation>
@@ -3384,7 +3376,6 @@
 <translation id="6311220991371174222">プロフィールを開こうとして問題が発生したため、Chrome を起動できません。Chrome を再起動してみてください。</translation>
 <translation id="6312403991423642364">ネットワークが不明なためエラーが発生しました</translation>
 <translation id="6313641880021325787">VR を終了</translation>
-<translation id="6314335155547195432">パスワードを生成</translation>
 <translation id="6314819609899340042">この <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスでデバッグ機能が有効になりました。</translation>
 <translation id="6315343732431721770">起動ページに <ph name="URL" /> が追加されました。起動ページを変更する拡張機能を無効にするには、[復元] をクリックしてください。</translation>
 <translation id="6315493146179903667">すべてを手前に移動</translation>
@@ -3422,7 +3413,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Smart Lock for Android を設定してください</translation>
 <translation id="6374469231428023295">再試行</translation>
-<translation id="6377158645544167202">プリンタに接続できません。プリンタの電源が入っていて、Chromebook と Wi-Fi または USB 経由で接続されていることを確認してください。</translation>
 <translation id="6380143666419481200">同意して続行</translation>
 <translation id="6383051423892982287">同期データを<ph name="BEGIN_LINK" />同期パスフレーズ<ph name="END_LINK" />で暗号化する</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@
 <translation id="6606070663386660533">タブ 8</translation>
 <translation id="6607272825297743757">ファイル情報</translation>
 <translation id="6607831829715835317">その他のツール(&amp;L)</translation>
-<translation id="6610183966322615106">プリンタの追加中にエラーが発生しました</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6613452264606394692">このページをブックマークすると、すばやくこのページに戻ることができます</translation>
 <translation id="6615455863669487791">表示</translation>

@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Изисква се удостоверяване на самоличността</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
-<translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несъответствие в домейна</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">Извършители на атака, понастоящем използващи <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, може да опитат да инсталират опасни програми на компютъра ви, които крадат или изтриват информацията ви (например снимки, пароли, съобщения и номера на кредитни карти). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Блокирахме измамно съдържание.</translation>
 <translation id="5659593005791499971">Имейл</translation>
-<translation id="5669703222995421982">Получаване на персонализирано съдържание</translation>
 <translation id="5675650730144413517">Тази страница не работи</translation>
 <translation id="5685654322157854305">Добавяне на адрес за доставка</translation>
 <translation id="5689199277474810259">Експортиране във формат JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не се придържа към стандартите за сигурност.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за този проблем.</translation>
 <translation id="7219179957768738017">Връзката използва <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Паролите не могат да бъдат експортирани в папката „<ph name="FOLDER" />“</translation>
 <translation id="7220786058474068424">Обработва се</translation>
 <translation id="724691107663265825">На хоризонта се задава сайт със злонамерен софтуер</translation>
 <translation id="724975217298816891">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си. След като я потвърдите, те ще бъдат споделени с този сайт.</translation>

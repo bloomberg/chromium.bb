@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">ต้องมีการตรวจสอบความถูกต้อง</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="20817612488360358">มีการกำหนดให้ใช้การตั้งค่าพร็อกซีระบบ แต่ก็มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจนไว้ด้วยเช่นกัน</translation>
-<translation id="2086652334978798447">หากต้องการรับคำแนะนำเนื้อหาที่เหมาะสำหรับคุณจาก Google ให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2091887806945687916">เสียง</translation>
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
 <translation id="2096368010154057602">จังหวัด</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">ผู้โจมตีที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งจะขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในคอมพิวเตอร์ของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">บล็อกเนื้อหาที่หลอกลวงแล้ว</translation>
 <translation id="5659593005791499971">อีเมล</translation>
-<translation id="5669703222995421982">รับเนื้อหาที่ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5675650730144413517">หน้านี้ใช้ไม่ได้</translation>
 <translation id="5685654322157854305">เพิ่มที่อยู่สำหรับจัดส่ง</translation>
 <translation id="5689199277474810259">ส่งออกไปยัง JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ไม่เป็นไปตามมาตรฐานความปลอดภัย</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /> เกี่ยวกับปัญหานี้</translation>
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
-<translation id="7220019174139618249">ส่งออกรหัสผ่านไปยัง "<ph name="FOLDER" />" ไม่ได้</translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
 <translation id="724691107663265825">ไซต์ที่จะเปิดมีมัลแวร์</translation>
 <translation id="724975217298816891">ป้อนวันหมดอายุและ CVC สำหรับ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อคุณยืนยันแล้ว รายละเอียดบัตรของคุณจะแชร์กับเว็บไซต์นี้</translation>

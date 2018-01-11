@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">사용 - 맞춤 설정</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />을(를) 기다리는 중...</translation>
 <translation id="1495486559005647033">사용 가능한 다른 기기가 <ph name="NUM_PRINTERS" />개 있습니다.</translation>
-<translation id="1497284176235884849">입력한 PPD가 잘못되었습니다.</translation>
 <translation id="1497522201463361063">'<ph name="FILE_NAME" />'의 이름을 변경할 수 없습니다. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">알 수 없는 기기[<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">이 소유자 계정이 멀티 로그인 세션에서 처음으로 로그인하는 계정이 되어야 합니다.</translation>
@@ -1775,7 +1774,6 @@
 <translation id="3697100740575341996">IT 관리자가 내 기기에 Chrome Goodies를 이용할 수 없도록 설정했습니다. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">이메일 주소</translation>
 <translation id="3702500414347826004">시작 페이지가 <ph name="URL" />을(를) 포함하도록 변경되었습니다.</translation>
-<translation id="3703669627274482482">사이트에서 사용자가 클립보드에 복사한 텍스트 및 이미지를 보려는 경우 확인</translation>
 <translation id="370415077757856453">자바스크립트가 차단됨</translation>
 <translation id="3704331259350077894">작업 중단</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@
 <translation id="4270393598798225102">버전 <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">일치하는 항목이 없습니다.</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
-<translation id="4276216215490044084">큰 PPD를 로드할 수 없습니다. 최대 크기는 250KB입니다.</translation>
 <translation id="4278390842282768270">허용됨</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="4282196459431406533">Smart Lock이 사용 설정됨</translation>
@@ -2202,7 +2199,6 @@
 <translation id="4430369329743628066">북마크 추가됨</translation>
 <translation id="443464694732789311">계속</translation>
 <translation id="4439318412377770121"><ph name="DEVICE_NAME" />을(를) Google 클라우드 기기에 등록하시겠습니까?</translation>
-<translation id="4439612350502082674">프린터를 추가할 수 없습니다. 다시 시작한 후 시도해 보세요.</translation>
 <translation id="4441124369922430666">컴퓨터를 켤 때 이 앱을 자동으로 시작하시겠습니까?</translation>
 <translation id="444134486829715816">펼치기...</translation>
 <translation id="4441548209689510310">맞춤법 검사기 옵션 표시</translation>
@@ -2433,7 +2429,6 @@
 <translation id="4839303808932127586">동영상을 다른 이름으로 저장...(&amp;V)</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" />개의 항목이 선택됨</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1개 더보기}other{#개 더보기}}</translation>
-<translation id="4840626203080576849">사이트에서 사용자가 클립보드에 복사한 텍스트 및 이미지를 보려는 경우 확인(권장)</translation>
 <translation id="4842976633412754305">이 페이지가 인증되지 않은 소스에서 스크립트를 로드하려고 시도하고 있습니다.</translation>
 <translation id="4844333629810439236">기타 키보드</translation>
 <translation id="4846680374085650406">이 설정에 대한 관리자 권장사항을 따릅니다.</translation>
@@ -2700,7 +2695,6 @@
 <translation id="5254368820972107711">삭제할 파일 표시</translation>
 <translation id="52550593576409946">키오스크 애플리케이션을 실행할 수 없습니다.</translation>
 <translation id="5255315797444241226">입력한 암호가 잘못되었습니다.</translation>
-<translation id="5259571578888203461">사이트에서 사용자가 클립보드에 복사한 텍스트 및 이미지를 확인하도록 허용하지 않음</translation>
 <translation id="5260508466980570042">이메일 또는 비밀번호를 확인할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="5261683757250193089">웹 스토어에서 열기</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />오프라인을 비롯하여 어디에서나 파일에 액세스하세요.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@
 <translation id="5972708806901999743">위로 이동</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> 시작</translation>
 <translation id="5975083100439434680">축소</translation>
-<translation id="5975730206036440725">PPD를 찾을 수 없습니다. Chromebook이 온라인 상태인지 확인하고 다시 시도해 보세요.</translation>
 <translation id="5975792506968920132">배터리 충전율</translation>
 <translation id="5976160379964388480">기타</translation>
 <translation id="5978264784700053212">메시지 센터</translation>
@@ -3216,7 +3209,6 @@
 <translation id="6042308850641462728">더보기</translation>
 <translation id="6042850536017090003">앱 알림을 탭하세요.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) Chrome 탭을 공유 중입니다.</translation>
-<translation id="6043357981274314628">완료</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) Chrome 탭과 오디오를 공유 중입니다.</translation>
 <translation id="6049004884579590341">전체화면을 종료하려면 |<ph name="ACCELERATOR" />|을(를) 길게 누르기</translation>
 <translation id="6049065490165456785">내부 카메라의 사진</translation>
@@ -3383,7 +3375,6 @@
 <translation id="6311220991371174222">프로필을 여는 동안 문제가 발생했기 때문에 Chrome을 시작할 수 없습니다. Chrome을 다시 시작해 보세요.</translation>
 <translation id="6312403991423642364">알려지지 않은 네트워크 오류</translation>
 <translation id="6313641880021325787">VR 종료</translation>
-<translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6314819609899340042">이 <ph name="IDS_SHORT_PRODUCT_NAME" /> 기기에서 디버깅 기능을 사용 설정했습니다.</translation>
 <translation id="6315343732431721770">시작 페이지가 <ph name="URL" />을(를) 포함하도록 변경되었습니다. 시작 페이지를 변경하는 확장 프로그램을 사용하지 않으려면 복원을 클릭하세요.</translation>
 <translation id="6315493146179903667">앞으로 모두 가져오기</translation>
@@ -3421,7 +3412,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Android용 Smart Lock 설정</translation>
 <translation id="6374469231428023295">다시 시도</translation>
-<translation id="6377158645544167202">프린터를 연결할 수 없습니다. 프린터가 켜져 있으며 Wi-Fi 또는 USB를 통해 Chromebook에 연결되어 있는지 확인하세요.</translation>
 <translation id="6380143666419481200">동의 및 계속</translation>
 <translation id="6383051423892982287">나만의 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />로 동기화 데이터 암호화</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST" /></translation>
@@ -3578,7 +3568,6 @@
 <translation id="6606070663386660533">탭 8</translation>
 <translation id="6607272825297743757">파일 정보</translation>
 <translation id="6607831829715835317">도구 더보기</translation>
-<translation id="6610183966322615106">프린터 추가 도중 오류 발생</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6613452264606394692">이 페이지를 북마크에 추가하여 빠르게 다시 방문하세요.</translation>
 <translation id="6615455863669487791">표시</translation>

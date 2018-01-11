@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">Vklopljeno – nastavitve po meri</translation>
 <translation id="1493892686965953381">Čakanje na <ph name="LOAD_STATE_PARAMETER" /> ...</translation>
 <translation id="1495486559005647033">Število drugih razpoložljivih naprav: <ph name="NUM_PRINTERS" />.</translation>
-<translation id="1497284176235884849">Navedena datoteka PPD ni veljavna.</translation>
 <translation id="1497522201463361063">Datoteke »<ph name="FILE_NAME" />« ni mogoče preimenovati. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Neznana naprava [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">V seji prijave z več računi mora biti ta račun lastnika prvi prijavljeni račun.</translation>
@@ -1775,7 +1774,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3697100740575341996">Skrbnik za IT je za vašo napravo onemogočil dodatke za Chrome. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-poštni naslov</translation>
 <translation id="3702500414347826004">Začetne strani so bile spremenjene in vsebujejo <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Vprašaj, ko si želi spletno mesto ogledati besedilo in slike, ki jih kopirate v odložišče</translation>
 <translation id="370415077757856453">JavaScript je blokiran</translation>
 <translation id="3704331259350077894">Prenehanje operacije</translation>
 <translation id="3705722231355495246">–</translation>
@@ -2123,7 +2121,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4270393598798225102">Različica <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ni ujemanj</translation>
 <translation id="4275830172053184480">Znova zaženite napravo.</translation>
-<translation id="4276216215490044084">Velikih datotek PPD ni mogoče naložiti. Največja velikost je 250 KB.</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="4282196459431406533">Smart Lock je vklopljen</translation>
@@ -2203,7 +2200,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4430369329743628066">Zaznamek dodan</translation>
 <translation id="443464694732789311">Naprej</translation>
 <translation id="4439318412377770121">Ali želite registrirati napravo <ph name="DEVICE_NAME" /> kot Googlovo napravo v oblaku?</translation>
-<translation id="4439612350502082674">Tiskalnika ni mogoče dodati. Znova zaženite Chromebook in poskusite znova.</translation>
 <translation id="4441124369922430666">Ali želite samodejno zagnati to aplikacijo, ko se naprava vklopi?</translation>
 <translation id="444134486829715816">Razširi ...</translation>
 <translation id="4441548209689510310">Pokaži možnosti preverjanja črkovanja</translation>
@@ -2434,7 +2430,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4839303808932127586">Shr&amp;ani videoposnetek kot ...</translation>
 <translation id="4839847978919684242">Št. izbranih elementov: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Še 1}one{Še #}two{Še #}few{Še #}other{Še #}}</translation>
-<translation id="4840626203080576849">Vprašaj, ko želi spletno mesto videti besedilo in slike, ki jih kopirate v odložišče (priporočljivo)</translation>
 <translation id="4842976633412754305">Ta stran poskuša naložiti skripte iz virov, ki nimajo preverjene pristnosti.</translation>
 <translation id="4844333629810439236">Druge tipkovnice</translation>
 <translation id="4846680374085650406">Upoštevate priporočila skrbnika za to nastavitev.</translation>
@@ -2701,7 +2696,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="5254368820972107711">Prikaz datotek, ki jih želite odstraniti</translation>
 <translation id="52550593576409946">Aplikacije Kiosk ni bilo mogoče zagnati.</translation>
 <translation id="5255315797444241226">Geslo, ki ste ga vnesli, je napačno.</translation>
-<translation id="5259571578888203461">Spletnim mestom ne dovoli ogleda besedila in slik, ki jih kopirate v odložišče</translation>
 <translation id="5260508466980570042">Žal vašega e-poštnega naslova ali gesla ni bilo mogoče preveriti. Poskusite znova.</translation>
 <translation id="5261683757250193089">Odpiranje v Spletni trgovini</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Dostopajte do datotek povsod, tudi brez povezave.<ph name="MARKUP_2" />
@@ -3176,7 +3170,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5972708806901999743">Premakni na vrh</translation>
 <translation id="5972826969634861500">Zaženi <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
-<translation id="5975730206036440725">Datoteke PPD ni mogoče najti. Preverite, ali je Chromebook povezan v splet, in poskusite znova.</translation>
 <translation id="5975792506968920132">Napolnjenost akumulatorja</translation>
 <translation id="5976160379964388480">Drugo</translation>
 <translation id="5978264784700053212">Center za sporočanje</translation>
@@ -3218,7 +3211,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6042308850641462728">Več</translation>
 <translation id="6042850536017090003">Dotaknite se obvestil aplikacij.</translation>
 <translation id="6043317578411397101">Aplikacija <ph name="APP_NAME" /> je v skupno rabo z zavihkom <ph name="TAB_NAME" /> dala Chromov zavihek.</translation>
-<translation id="6043357981274314628">Končano.</translation>
 <translation id="6044805581023976844">Aplikacija <ph name="APP_NAME" /> je v skupno rabo z zavihkom <ph name="TAB_NAME" /> dala Chromov zavihek in zvok.</translation>
 <translation id="6049004884579590341">Pridržite |<ph name="ACCELERATOR" />| za zapiranje celozaslonskega načina</translation>
 <translation id="6049065490165456785">Fotografija iz notranjega fotoaparata</translation>
@@ -3385,7 +3377,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6311220991371174222">Chroma ni mogoče zagnati, ker je prišlo do težave pri odpiranju profila. Poskusite znova zagnati Chrome.</translation>
 <translation id="6312403991423642364">Neznana napaka v omrežju</translation>
 <translation id="6313641880021325787">ZAPRI NAVIDEZNO RESNIČNOST</translation>
-<translation id="6314335155547195432">Generate Password</translation>
 <translation id="6314819609899340042">V napravi <ph name="IDS_SHORT_PRODUCT_NAME" /> ste uspešno omogočili funkcije za odpravljanje napak.</translation>
 <translation id="6315343732431721770">Začetne strani so bile spremenjene in vsebujejo <ph name="URL" />. Če želite onemogočiti razširitve, ki spreminjajo začetno stran, kliknite »Obnovi«.</translation>
 <translation id="6315493146179903667">Postavi vse v ospredje</translation>
@@ -3423,7 +3414,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Nastavitev funkcije Smart Lock za Android</translation>
 <translation id="6374469231428023295">Vnovični poskus</translation>
-<translation id="6377158645544167202">Tiskalnika ni mogoče povezati. Preverite, ali je tiskalnik vklopljen in povezan s Chromebookom prek omrežja Wi-Fi ali z USB-jem.</translation>
 <translation id="6380143666419481200">Sprejmite in nadaljujte</translation>
 <translation id="6383051423892982287">Šifriranje sinhroniziranih podatkov z vašim <ph name="BEGIN_LINK" />geslom za šifriranje<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Sprememba nastavitev iskanja na: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6606070663386660533">Zavihek 8</translation>
 <translation id="6607272825297743757">Podatki o datoteki</translation>
 <translation id="6607831829715835317">Več orodij</translation>
-<translation id="6610183966322615106">Napaka pri dodajanju tiskalnika</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6613452264606394692">Hitro se vrnite na to stran tako, da jo dodate med zaznamke</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>

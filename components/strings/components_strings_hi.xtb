@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">प्रमाणीकरण आवश्यक</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी निर्दिष्ट है.</translation>
-<translation id="2086652334978798447">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="2091887806945687916">ध्वनि</translation>
 <translation id="2094505752054353250">डोमेन का गलत-मिलान</translation>
 <translation id="2096368010154057602">विभाग</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">इस समय <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर आपके कंप्यूटर पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराते हैं या उसे हटा देते हैं. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">भ्रामक सामग्री ब्लॉक की गई.</translation>
 <translation id="5659593005791499971">ईमेल</translation>
-<translation id="5669703222995421982">खास आपके लिए बनी सामग्री पाएं</translation>
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
 <translation id="5685654322157854305">शिपिंग पता जोड़ें</translation>
 <translation id="5689199277474810259">JSON में निर्यात करें</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> सुरक्षा मानकों का पालन नहीं करता.</translation>
 <translation id="721197778055552897">इस समस्या के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">कनेक्‍शन <ph name="SSL_VERSION" /> का उपयोग करता है.</translation>
-<translation id="7220019174139618249">पासवर्ड "<ph name="FOLDER" />" में निर्यात नहीं किए जा सकते</translation>
 <translation id="7220786058474068424">संसाधित हो रहा है</translation>
 <translation id="724691107663265825">साइट में आगे मैलवेयर हैं</translation>
 <translation id="724975217298816891">अपने कार्ड विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> का समय समाप्ति दिनांक और CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ साझा किए जाएंगे.</translation>

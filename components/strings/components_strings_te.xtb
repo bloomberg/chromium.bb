@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">ప్రామాణీకరణ అవసరం</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="20817612488360358">సిస్టమ్ ప్రాక్సీ సెట్టింగ్‌లు ఉపయోగించడానికి సెట్ చేయబడ్డాయి కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ కూడా పేర్కొనబడింది.</translation>
-<translation id="2086652334978798447">Google సూచించే వ్యక్తిగతీకృత కంటెంట్‌ను పొందడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="2091887806945687916">ధ్వని</translation>
 <translation id="2094505752054353250">డొమైన్ సరిపోలలేదు</translation>
 <translation id="2096368010154057602">శాఖ</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లో హ్యాకర్‌లు మీ సమాచారాన్ని (ఉదాహరణకు, ఫోటోలు, పాస్‌వర్డ్‌లు, సందేశాలు మరియు క్రెడిట్ కార్డ్‌లు) దొంగిలించగల లేదా తొలగించగల హానికరమైన ప్రోగ్రామ్‌లను మీ కంప్యూటర్‌లో ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">మోసపూరితమైన కంటెంట్ బ్లాక్ చేయబడింది.</translation>
 <translation id="5659593005791499971">ఇమెయిల్</translation>
-<translation id="5669703222995421982">వ్యక్తిగతీకరించిన కంటెంట్‌ను పొందండి</translation>
 <translation id="5675650730144413517">ఈ పేజీ పని చేయడం లేదు</translation>
 <translation id="5685654322157854305">షిప్పింగ్ చిరునామాను జోడించండి</translation>
 <translation id="5689199277474810259">JSONకు ఎగుమతి చేయి</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> భద్రతా ప్రమాణాలకు కట్టుబడి లేదు.</translation>
 <translation id="721197778055552897">ఈ సమస్య గురించి <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి <ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">కనెక్షన్ <ph name="SSL_VERSION" />ని ఉపయోగిస్తుంది.</translation>
-<translation id="7220019174139618249">"<ph name="FOLDER" />"కు పాస్‌వర్డ్‌‌లను ఎగుమతి చేయడం సాధ్యపడలేదు.</translation>
 <translation id="7220786058474068424">ప్రాసెస్ చేస్తోంది</translation>
 <translation id="724691107663265825">సైట్ మున్ముందు మాల్వేర్ కలిగి ఉంది</translation>
 <translation id="724975217298816891">మీ కార్డ్ వివరాలను నవీకరించడానికి <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీ మరియు CVCని నమోదు చేయండి. మీరు నిర్ధారించిన తర్వాత, మీ కార్డ్ వివరాలు ఈ సైట్‌తో భాగస్వామ్యం చేయబడతాయి.</translation>

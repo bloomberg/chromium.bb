@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">認証が必要</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
-<translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
 <translation id="2091887806945687916">音声</translation>
 <translation id="2094505752054353250">ドメインが一致しません</translation>
 <translation id="2096368010154057602">県</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって、お使いのパソコン上に危険なプログラム（写真、パスワード、メッセージ、クレジット カードなどの情報を盗んだり削除したりするプログラム）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">不正の可能性があるコンテンツがブロックされました。</translation>
 <translation id="5659593005791499971">メール</translation>
-<translation id="5669703222995421982">自分向けのコンテンツを表示</translation>
 <translation id="5675650730144413517">このページは動作していません</translation>
 <translation id="5685654322157854305">配送先住所を追加</translation>
 <translation id="5689199277474810259">JSON にエクスポート</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
-<translation id="7220019174139618249">パスワードを「<ph name="FOLDER" />」にエクスポートできません</translation>
 <translation id="7220786058474068424">処理しています</translation>
 <translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました</translation>
 <translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>

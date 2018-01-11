@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">需要进行身份验证</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
-<translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2094505752054353250">网域不匹配</translation>
 <translation id="2096368010154057602">省</translation>
@@ -638,7 +637,6 @@
 <translation id="5633066919399395251">攻击者可能会试图通过 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在您的计算机上安装危险程序，以窃取或删除您的信息（如照片、密码、通讯内容和信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">欺骗性内容已被拦截。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
-<translation id="5669703222995421982">获取个性化内容</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5685654322157854305">添加送货地址</translation>
 <translation id="5689199277474810259">导出为 JSON 格式</translation>
@@ -808,7 +806,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合相关安全标准。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
-<translation id="7220019174139618249">无法将密码导出到“<ph name="FOLDER" />”</translation>
 <translation id="7220786058474068424">正在处理</translation>
 <translation id="724691107663265825">您要访问的网站包含恶意软件</translation>
 <translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情。在您确认后，您的信用卡详情将与此网站共享。</translation>

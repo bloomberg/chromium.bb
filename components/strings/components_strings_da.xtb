@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">Godkendelse påkrævet</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
-<translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Uoverensstemmelse mellem domæner</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">Brugere med ondsindede hensigter, der i øjeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan forsøge at installere farlige programmer på din computer, der stjæler eller sletter dine oplysninger (f.eks. fotos, adgangskoder, beskeder og kreditkort). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Vildledende indhold er blokeret.</translation>
 <translation id="5659593005791499971">E-mail</translation>
-<translation id="5669703222995421982">Få tilpasset indhold</translation>
 <translation id="5675650730144413517">Denne side virker ikke</translation>
 <translation id="5685654322157854305">Tilføj leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér i JSON</translation>
@@ -812,7 +810,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> overholder ikke sikkerhedsstandarderne.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>
 <translation id="7219179957768738017">Forbindelsen bruger <ph name="SSL_VERSION" />.</translation>
-<translation id="7220019174139618249">Adgangskoderne kan ikke eksporteres til "<ph name="FOLDER" />"</translation>
 <translation id="7220786058474068424">Behandler</translation>
 <translation id="724691107663265825">Det site, du er på vej til, indeholder malware</translation>
 <translation id="724975217298816891">Opdater dine kortoplysninger ved at indtaste udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>

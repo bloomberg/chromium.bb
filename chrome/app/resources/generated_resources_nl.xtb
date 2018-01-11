@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Aan - aangepaste instellingen</translation>
 <translation id="1493892686965953381">Wachten op <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> andere beschikbare apparaten.</translation>
-<translation id="1497284176235884849">Opgegeven PPD is ongeldig.</translation>
 <translation id="1497522201463361063">Kan de naam van '<ph name="FILE_NAME" />' niet wijzigen. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Onbekend apparaat [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Dit eigenaarsaccount is het eerste account waarop moet worden ingelogd wanneer meerdere inlogsessies worden uitgevoerd.</translation>
@@ -1774,7 +1773,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3697100740575341996">Je IT-beheerder heeft Chrome Goodies uitgeschakeld voor je apparaat. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mailadres</translation>
 <translation id="3702500414347826004">Je startpagina's zijn gewijzigd en bevatten nu ook <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Vragen wanneer een site tekst en afbeeldingen wil bekijken die je naar het klembord kopieert</translation>
 <translation id="370415077757856453">JavaScript geblokkeerd</translation>
 <translation id="3704331259350077894">Activiteit gestaakt</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4270393598798225102">Versie <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Geen overeenkomsten</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
-<translation id="4276216215490044084">Kan grote PPD niet laden. Maximum grootte is 250 KB.</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="4282196459431406533">Smart Lock is ingeschakeld</translation>
@@ -2202,7 +2199,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4430369329743628066">Bladwijzer toegevoegd</translation>
 <translation id="443464694732789311">Doorgaan</translation>
 <translation id="4439318412377770121">Wil je de <ph name="DEVICE_NAME" /> registreren voor Google Cloud Devices?</translation>
-<translation id="4439612350502082674">Kan printer niet toevoegen. Start opnieuw en probeer het nogmaals.</translation>
 <translation id="4441124369922430666">Wil je dat deze app automatisch start wanneer het apparaat wordt ingeschakeld?</translation>
 <translation id="444134486829715816">Uitvouwen...</translation>
 <translation id="4441548209689510310">Opties voor spellingcontrole weergeven</translation>
@@ -2433,7 +2429,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4839303808932127586">&amp;Video opslaan als...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items geselecteerd</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Nog 1 item}other{Nog # items}}</translation>
-<translation id="4840626203080576849">Vragen wanneer een site de tekst en afbeeldingen wil bekijken die je naar het klembord kopieert (aanbevolen)</translation>
 <translation id="4842976633412754305">Deze pagina probeert scripts van niet-geverifieerde bronnen te laden.</translation>
 <translation id="4844333629810439236">Andere toetsenborden</translation>
 <translation id="4846680374085650406">Je volgt de aanbeveling van de beheerder voor deze instelling.</translation>
@@ -2701,7 +2696,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5254368820972107711">Bestanden weergeven die worden verwijderd</translation>
 <translation id="52550593576409946">Kiosk-app kan niet worden gestart.</translation>
 <translation id="5255315797444241226">De ingevoerde wachtwoordzin is onjuist.</translation>
-<translation id="5259571578888203461">Niet toestaan dat sites tekst en afbeeldingen bekijken die je kopieert naar het klembord</translation>
 <translation id="5260508466980570042">Je e-mailadres of wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
 <translation id="5261683757250193089">Openen in Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Open bestanden op alle locaties, zelfs offline.<ph name="MARKUP_2" /> 
@@ -3175,7 +3169,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5972708806901999743">Verplaatsen naar boven</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> starten</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
-<translation id="5975730206036440725">Kan PPD niet vinden. Controleer of je Chromebook online is en probeer het opnieuw.</translation>
 <translation id="5975792506968920132">Percentage acculading</translation>
 <translation id="5976160379964388480">Overige</translation>
 <translation id="5978264784700053212">Berichtencentrum</translation>
@@ -3217,7 +3210,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6042850536017090003">Tik op App-meldingen.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> deelt een Chrome-tabblad met <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Klaar</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> deelt een Chrome-tabblad en audio met <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Houd |<ph name="ACCELERATOR" />| ingedrukt om volledig scherm af te sluiten</translation>
 <translation id="6049065490165456785">Foto via interne camera</translation>
@@ -3384,7 +3376,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6311220991371174222">Kan Chrome niet starten omdat er een fout is opgetreden bij het openen van je profiel. Probeer Chrome opnieuw te starten.</translation>
 <translation id="6312403991423642364">Onbekende netwerkfout</translation>
 <translation id="6313641880021325787">VR AFSLUITEN</translation>
-<translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6314819609899340042">Je hebt foutopsporingsfuncties ingeschakeld voor dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat.</translation>
 <translation id="6315343732431721770">Je startpagina is gewijzigd en bevat nu ook <ph name="URL" />. Als je extensies wilt uitschakelen die je startpagina wijzigen, klik je op Herstellen.</translation>
 <translation id="6315493146179903667">Alles op voorgrond</translation>
@@ -3422,7 +3413,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Smart Lock voor Android instellen</translation>
 <translation id="6374469231428023295">Opnieuw proberen</translation>
-<translation id="6377158645544167202">Kan geen verbinding maken met printer. Controleer of de printer is ingeschakeld en via wifi of USB is verbonden met je Chromebook.</translation>
 <translation id="6380143666419481200">Accepteren en doorgaan</translation>
 <translation id="6383051423892982287">Gesynchroniseerde gegevens versleutelen met je eigen <ph name="BEGIN_LINK" />wachtwoordzin voor synchronisatie<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Je zoekinstellingen wijzigen in: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6606070663386660533">Tabblad 8</translation>
 <translation id="6607272825297743757">Bestandsinformatie</translation>
 <translation id="6607831829715835317">Meer hu&amp;lpprogramma's</translation>
-<translation id="6610183966322615106">Fout bij toevoegen van printer</translation>
 <translation id="6612358246767739896">Beveiligde content</translation>
 <translation id="6613452264606394692">Keer hier snel terug door een bladwijzer voor deze pagina in te stellen</translation>
 <translation id="6615455863669487791">Weergeven</translation>

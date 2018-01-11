@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Activada: configuración personalizada</translation>
 <translation id="1493892686965953381">Esperando <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Otros <ph name="NUM_PRINTERS" /> dispositivos disponibles.</translation>
-<translation id="1497284176235884849">El archivo PPD proporcionado no es válido</translation>
 <translation id="1497522201463361063">No se puede cambiar el nombre del archivo "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Dispositivo desconocido [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">La cuenta de este propietario debe ser la primera cuenta que ha iniciado sesión en un inicio de sesión múltiple.</translation>
@@ -1774,7 +1773,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3697100740575341996">El administrador de TI ha inhabilitado el canjeo de ofertas de Chrome en tu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Dirección de correo electrónico</translation>
 <translation id="3702500414347826004">Tus páginas de inicio se han cambiado para incluir <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Preguntar cuando un sitio web quiera ver el texto y las imágenes que copias en el portapapeles</translation>
 <translation id="370415077757856453">JavaScript bloqueado</translation>
 <translation id="3704331259350077894">Cese de la operación</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2121,7 +2119,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4270393598798225102">Versión <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Sin resultados</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
-<translation id="4276216215490044084">No se pueden cargar archivos PPD grandes. El tamaño máximo es 250 kB.</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="4282196459431406533">Smart Lock está activado</translation>
@@ -2201,7 +2198,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4430369329743628066">Añadida a Marcadores</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="4439318412377770121">¿Quieres registrar <ph name="DEVICE_NAME" /> en Google Cloud Devices?</translation>
-<translation id="4439612350502082674">No se puede añadir la impresora. Reinicia y vuelve a intentarlo.</translation>
 <translation id="4441124369922430666">¿Quieres que esta aplicación se inicie de forma automática cuando se active el ordenador?</translation>
 <translation id="444134486829715816">Ampliar...</translation>
 <translation id="4441548209689510310">Mostrar opciones de revisión ortográfica</translation>
@@ -2432,7 +2428,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4839303808932127586">Gu&amp;ardar vídeo como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementos seleccionados</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 más}other{# más}}</translation>
-<translation id="4840626203080576849">Preguntar cuando un sitio web quiera ver el texto y las imágenes que copias en el portapapeles (recomendado)</translation>
 <translation id="4842976633412754305">Esta página está intentando cargar scripts de fuentes no autorizadas.</translation>
 <translation id="4844333629810439236">Otros teclados</translation>
 <translation id="4846680374085650406">Estás siguiendo la recomendación del administrador para esta opción.</translation>
@@ -2698,7 +2693,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5254368820972107711">Mostrar archivos que se van a eliminar</translation>
 <translation id="52550593576409946">La aplicación de kiosco no se ha podido iniciar.</translation>
 <translation id="5255315797444241226">La frase de contraseña introducida no es correcta.</translation>
-<translation id="5259571578888203461">No permitir que los sitios web vean el texto y las imágenes que copias en el portapapeles</translation>
 <translation id="5260508466980570042">Tu dirección de correo electrónico y tu contraseña no se han podido verificar. Vuelve a intentarlo.</translation>
 <translation id="5261683757250193089">Abrir en Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accede a los archivos desde cualquier lugar, incluso sin conexión.<ph name="MARKUP_2" />
@@ -3172,7 +3166,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5972708806901999743">Mover al principio</translation>
 <translation id="5972826969634861500">Iniciar <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Reducir</translation>
-<translation id="5975730206036440725">No se encuentra el archivo PPD. Comprueba que el Chromebook esté conectado y vuelve a intentarlo.</translation>
 <translation id="5975792506968920132">Porcentaje de carga de batería</translation>
 <translation id="5976160379964388480">Otros</translation>
 <translation id="5978264784700053212">Centro de mensajes</translation>
@@ -3214,7 +3207,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6042308850641462728">Más</translation>
 <translation id="6042850536017090003">Toca Notificaciones de aplicaciones.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> está compartiendo una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Listo.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> está compartiendo audio y una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Mantén pulsado |<ph name="ACCELERATOR" />| para salir del modo pantalla completa</translation>
 <translation id="6049065490165456785">Foto de cámara interna</translation>
@@ -3381,7 +3373,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6311220991371174222">No se puede iniciar Chrome porque se ha producido un error al abrir el perfil. Prueba a reiniciar el navegador.</translation>
 <translation id="6312403991423642364">Error desconocido de red</translation>
 <translation id="6313641880021325787">SALIR DE RV</translation>
-<translation id="6314335155547195432">Generar contraseña</translation>
 <translation id="6314819609899340042">Has habilitado correctamente funciones de depuración en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Tus páginas de inicio han cambiado para incluir <ph name="URL" />. Para inhabilitar las extensiones que cambian la página de inicio, haz clic en Restaurar.</translation>
 <translation id="6315493146179903667">Traer todo al frente</translation>
@@ -3419,7 +3410,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configurar Smart Lock para Android</translation>
 <translation id="6374469231428023295">Volver a intentarlo</translation>
-<translation id="6377158645544167202">No se puede conectar la impresora. Comprueba que esté encendida y conectada a tu Chromebook por red Wi‑Fi o USB.</translation>
 <translation id="6380143666419481200">Aceptar y continuar</translation>
 <translation id="6383051423892982287">Cifrar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Cambiar configuración de búsqueda por: <ph name="SEARCH_HOST" /></translation>
@@ -3575,7 +3565,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6606070663386660533">Pestaña 8</translation>
 <translation id="6607272825297743757">Información del archivo</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
-<translation id="6610183966322615106">No se ha podido añadir la impresora</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6613452264606394692">Añade esta página a marcadores para volver a ella rápidamente</translation>
 <translation id="6615455863669487791">Ver</translation>

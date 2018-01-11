@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">开启 - 自定义设置</translation>
 <translation id="1493892686965953381">正在等待<ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">另外<ph name="NUM_PRINTERS" />个可用的设备。</translation>
-<translation id="1497284176235884849">所提供的 PPD 无效。</translation>
 <translation id="1497522201463361063">无法重命名“<ph name="FILE_NAME" />”。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">未知设备 [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">在多帐号登录会话中，此所有者帐号必须是最先登录的帐号。</translation>
@@ -1768,7 +1767,6 @@
 <translation id="3697100740575341996">您的 IT 管理员已停用了您设备的 Chrome 附赠服务。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">电子邮件地址</translation>
 <translation id="3702500414347826004">您的启动页已更改，添加了 <ph name="URL" />。</translation>
-<translation id="3703669627274482482">当网站想要查看您复制到剪贴板的文字和图片时询问您</translation>
 <translation id="370415077757856453">已拦截 JavaScript</translation>
 <translation id="3704331259350077894">操作终止</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2115,7 +2113,6 @@
 <translation id="4270393598798225102">版本 <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">找不到相符的结果</translation>
 <translation id="4275830172053184480">重启您的设备</translation>
-<translation id="4276216215490044084">无法加载大型 PPD。大小上限为 250kB。</translation>
 <translation id="4278390842282768270">允许</translation>
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="4282196459431406533">Smart Lock 已开启</translation>
@@ -2195,7 +2192,6 @@
 <translation id="4430369329743628066">已添加书签</translation>
 <translation id="443464694732789311">继续</translation>
 <translation id="4439318412377770121">要将“<ph name="DEVICE_NAME" />”注册到Google Cloud Devices吗？</translation>
-<translation id="4439612350502082674">无法添加打印机。请重新启动并重试。</translation>
 <translation id="4441124369922430666">要在设备开启时自动启动此应用吗？</translation>
 <translation id="444134486829715816">展开...</translation>
 <translation id="4441548209689510310">显示拼写检查选项</translation>
@@ -2426,7 +2422,6 @@
 <translation id="4839303808932127586">视频另存为(&amp;V)...</translation>
 <translation id="4839847978919684242">已经选择 <ph name="SELCTED_FILES_COUNT" /> 个文件或目录</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{另外 1 项内容}other{另外 # 项内容}}</translation>
-<translation id="4840626203080576849">当网站想要查看您复制到剪贴板的文字和图片时询问您（建议）</translation>
 <translation id="4842976633412754305">此网页正试图从未经验证的来源加载脚本。</translation>
 <translation id="4844333629810439236">其他键盘布局</translation>
 <translation id="4846680374085650406">您目前所采用的是管理员的建议设置。</translation>
@@ -2692,7 +2687,6 @@
 <translation id="5254368820972107711">显示将被移除的文件</translation>
 <translation id="52550593576409946">无法启动自助服务终端应用。</translation>
 <translation id="5255315797444241226">您输入的密码不正确。</translation>
-<translation id="5259571578888203461">不允许网站查看您复制到剪贴板的文字和图片</translation>
 <translation id="5260508466980570042">抱歉，您的电子邮件地址或密码无法进行验证，请重试。</translation>
 <translation id="5261683757250193089">在 Chrome 网上应用店中打开</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />可随时随地访问文件，即使处于离线状态也没关系。<ph name="MARKUP_2" />Google 云端硬盘上的文件是最新的，并可通过任意设备访问。<ph name="MARKUP_3" /><ph name="MARKUP_4" />可确保文件安全。<ph name="MARKUP_5" />无论您的设备出现什么状况，您的文件都会安全地存储在 Google 云端硬盘上。<ph name="MARKUP_6" /><ph name="MARKUP_7" />文件集中存储，方便您与他人在同一个地方共享、创建和协作处理<ph name="MARKUP_8" />文件。<ph name="MARKUP_9" /></translation>
@@ -3161,7 +3155,6 @@
 <translation id="5972708806901999743">移到顶部</translation>
 <translation id="5972826969634861500">启动<ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">缩小</translation>
-<translation id="5975730206036440725">找不到所提供的 PPD。请确保您的 Chromebook 已连接到网络，然后重试。</translation>
 <translation id="5975792506968920132">电池充电百分比</translation>
 <translation id="5976160379964388480">其他</translation>
 <translation id="5978264784700053212">消息中心</translation>
@@ -3203,7 +3196,6 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="6042850536017090003">点按“应用通知”。</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页。</translation>
-<translation id="6043357981274314628">已完成！</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页和音频。</translation>
 <translation id="6049004884579590341">按住 |<ph name="ACCELERATOR" />| 即可退出全屏模式</translation>
 <translation id="6049065490165456785">内部相机中的照片</translation>
@@ -3370,7 +3362,6 @@
 <translation id="6311220991371174222">打开您的个人资料时出了点问题，无法启动 Chrome。请尝试重新启动 Chrome。</translation>
 <translation id="6312403991423642364">未知网络错误</translation>
 <translation id="6313641880021325787">退出虚拟实境</translation>
-<translation id="6314335155547195432">生成密码</translation>
 <translation id="6314819609899340042">已在此<ph name="IDS_SHORT_PRODUCT_NAME" />设备上成功启用调试功能。</translation>
 <translation id="6315343732431721770">您的启动页已更改，添加了 <ph name="URL" />。要停用会更改您的启动页的扩展程序，请点击“恢复”。</translation>
 <translation id="6315493146179903667">前置全部窗口</translation>
@@ -3408,7 +3399,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">设置 Smart Lock（Android 版）</translation>
 <translation id="6374469231428023295">重试</translation>
-<translation id="6377158645544167202">无法连接该打印机。请确保该打印机已开机，并已通过 Wi-Fi 或 USB 连接到您的 Chromebook。</translation>
 <translation id="6380143666419481200">接受并继续</translation>
 <translation id="6383051423892982287">使用您自己的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密已同步的数据</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST" /></translation>
@@ -3564,7 +3554,6 @@
 <translation id="6606070663386660533">标签页 8</translation>
 <translation id="6607272825297743757">文件信息</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
-<translation id="6610183966322615106">添加打印机时出错</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6613452264606394692">只需为此网页添加书签，便可在需要时快速返回到此处</translation>
 <translation id="6615455863669487791">显示图标</translation>

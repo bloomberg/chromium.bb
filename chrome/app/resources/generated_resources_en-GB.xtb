@@ -328,7 +328,6 @@
 <translation id="1487335504823219454">On – customised settings</translation>
 <translation id="1493892686965953381">Waiting for <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> other available devices.</translation>
-<translation id="1497284176235884849">Provided PPD is invalid.</translation>
 <translation id="1497522201463361063">Unable to rename "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Unknown device [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">This owner account has to be the first signed-in account in a multiple sign-in session.</translation>
@@ -1774,7 +1773,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3697100740575341996">Your IT administrator has disabled Chrome Goodies for your device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="3702500414347826004">Your start-up pages were changed to include <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Ask when a site wants to see text and images that you copy to the clipboard</translation>
 <translation id="370415077757856453">JavaScript blocked</translation>
 <translation id="3704331259350077894">Cessation of Operation</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No matches</translation>
 <translation id="4275830172053184480">Restart your device</translation>
-<translation id="4276216215490044084">Can't load large PPD. Maximum size is 250 KB.</translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="4282196459431406533">Smart Lock is turned on</translation>
@@ -2202,7 +2199,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4430369329743628066">Bookmark added</translation>
 <translation id="443464694732789311">Continue</translation>
 <translation id="4439318412377770121">Do you wish to register <ph name="DEVICE_NAME" /> to Google Cloud Devices?</translation>
-<translation id="4439612350502082674">Can't add printer. Restart and try again.</translation>
 <translation id="4441124369922430666">Do you want to automatically start this app when the machine turns on?</translation>
 <translation id="444134486829715816">Expand...</translation>
 <translation id="4441548209689510310">Show spell check options</translation>
@@ -2433,7 +2429,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4839303808932127586">Sa&amp;ve video as...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items selected</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{One more}other{# more}}</translation>
-<translation id="4840626203080576849">Ask when a site wants to see text and images that you copy to the clipboard (recommended)</translation>
 <translation id="4842976633412754305">This page is trying to load scripts from unauthenticated sources.</translation>
 <translation id="4844333629810439236">Other keyboards</translation>
 <translation id="4846680374085650406">You are following the administrator's recommendation for this setting.</translation>
@@ -2700,7 +2695,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5254368820972107711">Show files to be removed</translation>
 <translation id="52550593576409946">Kiosk application could not be launched.</translation>
 <translation id="5255315797444241226">The passphrase that you've entered is incorrect.</translation>
-<translation id="5259571578888203461">Do not allow sites to see text and images that you copy to the clipboard</translation>
 <translation id="5260508466980570042">Sorry, your email or password could not be verified. Please try again.</translation>
 <translation id="5261683757250193089">Open in Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Access files from everywhere, even offline.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5972708806901999743">Move to the top</translation>
 <translation id="5972826969634861500">Start <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Zoom out</translation>
-<translation id="5975730206036440725">Can't find PPD. Check that your Chromebook is online and try again.</translation>
 <translation id="5975792506968920132">Battery Charge Percentage</translation>
 <translation id="5976160379964388480">Others</translation>
 <translation id="5978264784700053212">Message centre</translation>
@@ -3216,7 +3209,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6042308850641462728">More</translation>
 <translation id="6042850536017090003">Tap on App notifications.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> is sharing a Chrome tab with <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Done!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> is sharing a Chrome tab and audio with <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Press and hold |<ph name="ACCELERATOR" />| to exit full screen</translation>
 <translation id="6049065490165456785">Photo from internal camera</translation>
@@ -3383,7 +3375,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6311220991371174222">Cannot start Chrome because something went wrong when opening your profile. Try to restart Chrome.</translation>
 <translation id="6312403991423642364">Unknown network error</translation>
 <translation id="6313641880021325787">EXIT VR</translation>
-<translation id="6314335155547195432">Generate Password</translation>
 <translation id="6314819609899340042">You have successfully enabled debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device.</translation>
 <translation id="6315343732431721770">Your start-up pages were changed to include <ph name="URL" />. To disable extensions that change your start-up page, click Restore.</translation>
 <translation id="6315493146179903667">Bring All to Front</translation>
@@ -3421,7 +3412,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Set up Smart Lock for Android</translation>
 <translation id="6374469231428023295">Try Again</translation>
-<translation id="6377158645544167202">Can't connect printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.</translation>
 <translation id="6380143666419481200">Accept and continue</translation>
 <translation id="6383051423892982287">Encrypt synced data with your own <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST" /></translation>
@@ -3578,7 +3568,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6606070663386660533">Tab 8</translation>
 <translation id="6607272825297743757">File info</translation>
 <translation id="6607831829715835317">More too&amp;ls</translation>
-<translation id="6610183966322615106">Error adding printer</translation>
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6613452264606394692">Get back here fast by bookmarking this page</translation>
 <translation id="6615455863669487791">Show me</translation>

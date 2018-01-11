@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">開啟 - 自訂設定</translation>
 <translation id="1493892686965953381">正在等待 <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">還有 <ph name="NUM_PRINTERS" /> 個可用裝置。</translation>
-<translation id="1497284176235884849">提供的 PPD 無效。</translation>
 <translation id="1497522201463361063">無法重新命名「<ph name="FILE_NAME" />」。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">不明裝置 [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">擁有者帳戶必須是多重登入工作階段中第一個登入的帳戶。</translation>
@@ -1774,7 +1773,6 @@
 <translation id="3697100740575341996">IT 管理員已在你的裝置上停用 Chrome Goodies。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">電子郵件地址</translation>
 <translation id="3702500414347826004">你的起始網頁已變更為包含 <ph name="URL" />。</translation>
-<translation id="3703669627274482482">當網站要讀取你複製到剪貼簿的文字和圖片時，必須先詢問你</translation>
 <translation id="370415077757856453">已封鎖 JavaScript</translation>
 <translation id="3704331259350077894">操作停止</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2121,7 +2119,6 @@
 <translation id="4270393598798225102">第 <ph name="NUMBER" /> 版</translation>
 <translation id="4271396100647220620">找不到相符的項目</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
-<translation id="4276216215490044084">無法載入大型 PPD。大小上限為 250KB。</translation>
 <translation id="4278390842282768270">允許</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="4282196459431406533">Smart Lock 已啟用</translation>
@@ -2201,7 +2198,6 @@
 <translation id="4430369329743628066">已新增書籤</translation>
 <translation id="443464694732789311">繼續</translation>
 <translation id="4439318412377770121">你要將 <ph name="DEVICE_NAME" /> 註冊到 Google 雲端裝置嗎？</translation>
-<translation id="4439612350502082674">無法新增印表機。請重新啟動後再試一次。</translation>
 <translation id="4441124369922430666">你要在裝置開機時自動啟動這個應用程式嗎？</translation>
 <translation id="444134486829715816">展開...</translation>
 <translation id="4441548209689510310">顯示拼字檢查選項</translation>
@@ -2432,7 +2428,6 @@
 <translation id="4839303808932127586">將影片另存為(&amp;V)...</translation>
 <translation id="4839847978919684242">已選取 <ph name="SELCTED_FILES_COUNT" /> 個項目</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{還有 1 個項目}other{還有 # 個項目}}</translation>
-<translation id="4840626203080576849">當網站要讀取你複製到剪貼簿的文字和圖片時，必須先詢問你 (建議使用)</translation>
 <translation id="4842976633412754305">這個網頁正在嘗試載入來源未經驗證的指令碼。</translation>
 <translation id="4844333629810439236">其他鍵盤</translation>
 <translation id="4846680374085650406">你目前所採用的是管理員的建議設定。</translation>
@@ -2698,7 +2693,6 @@
 <translation id="5254368820972107711">顯示將被移除的檔案</translation>
 <translation id="52550593576409946">Kiosk 應用程式無法啟動。</translation>
 <translation id="5255315797444241226">你輸入的通關密語不正確。</translation>
-<translation id="5259571578888203461">禁止網站查看你複製到剪貼簿的文字和圖片</translation>
 <translation id="5260508466980570042">抱歉，系統無法驗證你的電子郵件地址或密碼，請再試一次。</translation>
 <translation id="5261683757250193089">開啟線上應用程式商店</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />隨時隨地存取檔案，甚至可離線存取。<ph name="MARKUP_2" />
@@ -3172,7 +3166,6 @@
 <translation id="5972708806901999743">移至頂端</translation>
 <translation id="5972826969634861500">啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">縮小</translation>
-<translation id="5975730206036440725">找不到 PPD，請確認 Chromebook 已連上網路，然後再試一次。</translation>
 <translation id="5975792506968920132">電池充電百分比</translation>
 <translation id="5976160379964388480">其他</translation>
 <translation id="5978264784700053212">訊息中心</translation>
@@ -3214,7 +3207,6 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="6042850536017090003">輕觸 [應用程式通知]。</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁。</translation>
-<translation id="6043357981274314628">完成！</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁和音訊。</translation>
 <translation id="6049004884579590341">按住 |<ph name="ACCELERATOR" />| 即可結束全螢幕模式</translation>
 <translation id="6049065490165456785">內部相機中的相片</translation>
@@ -3381,7 +3373,6 @@
 <translation id="6311220991371174222">開啟你的設定檔時發生錯誤，因此無法啟動 Chrome，請嘗試重新啟動。</translation>
 <translation id="6312403991423642364">不明的網路錯誤</translation>
 <translation id="6313641880021325787">結束 VR</translation>
-<translation id="6314335155547195432">產生密碼</translation>
 <translation id="6314819609899340042">你已成功在 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上啟用偵錯功能。</translation>
 <translation id="6315343732431721770">你的起始網頁已變更為包含 <ph name="URL" />。如要將變更起始網頁的擴充功能停用，請按一下 [還原]。</translation>
 <translation id="6315493146179903667">全部移至最上層</translation>
@@ -3419,7 +3410,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">設定 Android Smart Lock</translation>
 <translation id="6374469231428023295">再試一次</translation>
-<translation id="6377158645544167202">無法連上印表機。請確認印表機已開啟，且已透過 Wi-Fi 或 USB 連上你的 Chromebook。</translation>
 <translation id="6380143666419481200">接受並繼續</translation>
 <translation id="6383051423892982287">使用你的<ph name="BEGIN_LINK" />同步通關密語<ph name="END_LINK" />將經過同步處理的資料加密</translation>
 <translation id="6384275966486438344">將你的搜尋設定變更為：<ph name="SEARCH_HOST" /></translation>
@@ -3575,7 +3565,6 @@
 <translation id="6606070663386660533">分頁 8</translation>
 <translation id="6607272825297743757">檔案資訊</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
-<translation id="6610183966322615106">新增印表機時發生錯誤</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6613452264606394692">將此頁加入書籤，方便你快速返回</translation>
 <translation id="6615455863669487791">顯示</translation>

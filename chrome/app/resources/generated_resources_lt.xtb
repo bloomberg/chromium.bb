@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Įjungta – tinkinti nustatymai</translation>
 <translation id="1493892686965953381">Laukiama <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Kitų pasiekiamų įrenginių: <ph name="NUM_PRINTERS" />.</translation>
-<translation id="1497284176235884849">Pateiktas PPD yra netinkamas.</translation>
 <translation id="1497522201463361063">Nepavyko pervardyti „<ph name="FILE_NAME" />“. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Nežinomas įrenginys [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Kelių paskyrų sesijoje pirmiausia turi būti prisijungta naudojant šią savininko paskyrą.</translation>
@@ -1774,7 +1773,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3697100740575341996">IT administratorius jūsų įrenginyje neleido naudingų „Chrome“ funkcijų. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">El. pašto adresas</translation>
 <translation id="3702500414347826004">Paleidimo puslapiai pakeisti siekiant įtraukti <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Paklausti, kai svetainė nori matyti tekstą ir vaizdus, kuriuos nukopijuojate į iškarpinę</translation>
 <translation id="370415077757856453">„JavaScript“ užblokuotas</translation>
 <translation id="3704331259350077894">Operacijos nutraukimas</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4270393598798225102"><ph name="NUMBER" /> versija</translation>
 <translation id="4271396100647220620">Nėra atitikčių</translation>
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
-<translation id="4276216215490044084">Nepavyko įkelti didelio PPD. Didžiausias galimas dydis yra 250 kB.</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
 <translation id="4282196459431406533">„Smart Lock“ įjungta</translation>
@@ -2202,7 +2199,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4430369329743628066">Žymė pridėta</translation>
 <translation id="443464694732789311">Tęsti</translation>
 <translation id="4439318412377770121">Ar norite registruoti „<ph name="DEVICE_NAME" />“ kaip „Google“ debesies įrenginį?</translation>
-<translation id="4439612350502082674">Nepavyko pridėti spausdintuvo. Paleiskite iš naujo ir bandykite dar kartą.</translation>
 <translation id="4441124369922430666">Norite automatiškai paleisti šią programą, kai įjungiamas įrenginys?</translation>
 <translation id="444134486829715816">Išskleisti...</translation>
 <translation id="4441548209689510310">Rodyti rašybos tikrinimo parinktis</translation>
@@ -2433,7 +2429,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4839303808932127586">Iš&amp;saugoti vaizdo įrašą kaip...</translation>
 <translation id="4839847978919684242">Pasirinkta elementų: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Dar 1}one{Dar #}few{Dar #}many{Dar #}other{Dar #}}</translation>
-<translation id="4840626203080576849">Paklausti, kai svetainė nori matyti tekstą ir vaizdus, kuriuos nukopijuojate į iškarpinę (rekomenduojama)</translation>
 <translation id="4842976633412754305">Šis puslapis bando įkelti scenarijus iš neautentifikuotų šaltinių.</translation>
 <translation id="4844333629810439236">Kitos klaviatūros</translation>
 <translation id="4846680374085650406">Jūs vadovaujatės administratoriaus rekomendacija dėl šio nustatymo.</translation>
@@ -2700,7 +2695,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5254368820972107711">Rodyti norimus pašalinti failus</translation>
 <translation id="52550593576409946">Nepavyko paleisti viešojo terminalo programos.</translation>
 <translation id="5255315797444241226">Įvesta slaptafrazė neteisinga.</translation>
-<translation id="5259571578888203461">Neleisti svetainėms peržiūrėti teksto ir vaizdų, kuriuos nukopijavote į iškarpinę</translation>
 <translation id="5260508466980570042">Atsiprašome, el. pašto ir slaptažodžio patvirtinti nepavyko. Bandykite dar kartą.</translation>
 <translation id="5261683757250193089">Atidaryti internetinėje parduotuvėje</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Pasiekite failus iš visur, net neprisijungę.<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5972708806901999743">Perkelti į viršų</translation>
 <translation id="5972826969634861500">Paleisti „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="5975083100439434680">Tolinti</translation>
-<translation id="5975730206036440725">Nepavyko rasti PPD. Patikrinkite, ar „Chromebook“ prijungtas, ir bandykite dar kartą.</translation>
 <translation id="5975792506968920132">Akumuliatoriaus įkrovimo procentas</translation>
 <translation id="5976160379964388480">Kita</translation>
 <translation id="5978264784700053212">Pranešimų centras</translation>
@@ -3217,7 +3210,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6042850536017090003">Palieskite programos pranešimus.</translation>
 <translation id="6043317578411397101">„<ph name="APP_NAME" />“ bendrina „Chrome“ skirtuką su <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Atlikta!</translation>
 <translation id="6044805581023976844">„<ph name="APP_NAME" />“ bendrina „Chrome“ skirtuką ir garsą su <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Paspauskite ir palaikykite |<ph name="ACCELERATOR" />|, kad išeitumėte iš viso ekrano režimo.</translation>
 <translation id="6049065490165456785">Vidiniu fotoaparatu daryta nuotrauka</translation>
@@ -3384,7 +3376,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6311220991371174222">Negalima paleisti „Chrome“, nes atidarant jūsų profilį įvyko klaida. Pabandykite paleisti „Chrome“ iš naujo.</translation>
 <translation id="6312403991423642364">Nežinoma tinklo klaida</translation>
 <translation id="6313641880021325787">IŠEITI IŠ VR</translation>
-<translation id="6314335155547195432">Generuoti slaptažodį</translation>
 <translation id="6314819609899340042">Sėkmingai įgalinote derinimo funkcijas šiame „<ph name="IDS_SHORT_PRODUCT_NAME" />“ įrenginyje.</translation>
 <translation id="6315343732431721770">Paleidimo puslapiai pakeisti į <ph name="URL" />. Kad išjungtumėte plėtinius, kurie pakeičia paleidimo puslapį, spustelėkite „Atkurti“.</translation>
 <translation id="6315493146179903667">Viską iškelti į priekį</translation>
@@ -3422,7 +3413,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">„Smart Lock“, skirtos „Android“, nustatymas</translation>
 <translation id="6374469231428023295">Bandyti dar kartą</translation>
-<translation id="6377158645544167202">Nepavyko prijungti spausdintuvo. Patikrinkite, ar spausdintuvas yra įjungtas ir prijungtas prie „Chromebook“ naudojant „Wi-Fi“ arba USB.</translation>
 <translation id="6380143666419481200">Sutikti ir tęsti</translation>
 <translation id="6383051423892982287">Šifruokite sinchronizuojamus duomenis taikydami savo <ph name="BEGIN_LINK" />sinchronizavimo slaptafrazę<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Pakeiskite paieškos nustatymus į: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6606070663386660533">8 skirtukas</translation>
 <translation id="6607272825297743757">Failo informacija</translation>
 <translation id="6607831829715835317">Daugiau įrank&amp;ių</translation>
-<translation id="6610183966322615106">Klaida pridedant spausdintuvą</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6613452264606394692">Grįžkite čia greičiau ir patogiau pasižymėję šį puslapį</translation>
 <translation id="6615455863669487791">Rodyti</translation>
