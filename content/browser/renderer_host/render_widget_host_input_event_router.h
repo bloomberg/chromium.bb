@@ -146,9 +146,18 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
                                     blink::WebGestureEvent* event,
                                     const ui::LatencyInfo& latency);
+
+  RenderWidgetHostViewBase* FindTouchpadGestureEvent(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebGestureEvent& event) const;
   void RouteTouchpadGestureEvent(RenderWidgetHostViewBase* root_view,
                                  blink::WebGestureEvent* event,
                                  const ui::LatencyInfo& latency);
+  void DispatchTouchpadGestureEvent(
+      RenderWidgetHostViewBase* root_view,
+      RenderWidgetHostViewBase* target,
+      const blink::WebGestureEvent& touchpad_gesture_event,
+      const ui::LatencyInfo& latency);
 
   // MouseMove/Enter/Leave events might need to be processed by multiple frames
   // in different processes for MouseEnter and MouseLeave event handlers to
