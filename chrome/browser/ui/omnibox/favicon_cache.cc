@@ -6,6 +6,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 
 namespace {
@@ -18,10 +19,15 @@ size_t GetFaviconCacheSize() {
 
 }  // namespace
 
-FaviconCache::FaviconCache(favicon::FaviconService* favicon_service)
+FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
+                           history::HistoryService* history_service)
     : favicon_service_(favicon_service),
+      history_observer_(this),
       mru_cache_(GetFaviconCacheSize()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (history_service)
+    history_observer_.Add(history_service);
+}
 
 FaviconCache::~FaviconCache() {}
 
@@ -72,4 +78,25 @@ void FaviconCache::OnFaviconFetched(
     std::move(callback).Run(result.image);
   }
   pending_requests_.erase(it);
+}
+
+void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
+                                 bool all_history,
+                                 bool expired,
+                                 const history::URLRows& deleted_rows,
+                                 const std::set<GURL>& favicon_urls) {
+  // We only care about actual user (or sync) deletions.
+  if (expired)
+    return;
+
+  if (all_history) {
+    mru_cache_.Clear();
+    return;
+  }
+
+  for (const history::URLRow& row : deleted_rows) {
+    auto it = mru_cache_.Peek(row.url());
+    if (it != mru_cache_.end())
+      mru_cache_.Erase(it);
+  }
 }
