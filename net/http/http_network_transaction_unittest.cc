@@ -6879,6 +6879,82 @@ TEST_F(HttpNetworkTransactionTest, FlushSocketPoolOnLowMemoryNotifications) {
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
+// Disable idle socket closing on memory pressure.
+// Grab a socket, use it, and put it back into the pool. Then, make
+// low memory notification and ensure the socket pool is NOT flushed.
+TEST_F(HttpNetworkTransactionTest, NoFlushSocketPoolOnLowMemoryNotifications) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.load_flags = 0;
+
+  // Disable idle socket closing on memory pressure.
+  session_deps_.disable_idle_sockets_close_on_memory_pressure = true;
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  MockRead data_reads[] = {
+      // A part of the response body is received with the response headers.
+      MockRead("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhel"),
+      // The rest of the response body is received in two parts.
+      MockRead("lo"), MockRead(" world"),
+      MockRead("junk"),  // Should not be read!!
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(response->headers);
+  std::string status_line = response->headers->GetStatusLine();
+  EXPECT_EQ("HTTP/1.1 200 OK", status_line);
+
+  // Make memory critical notification and ensure the transaction still has been
+  // operating right.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  // Socket should not be flushed as long as it is not idle.
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello world", response_data);
+
+  // Empty the current queue.  This is necessary because idle sockets are
+  // added to the connection pool asynchronously with a PostTask.
+  base::RunLoop().RunUntilIdle();
+
+  // We now check to make sure the socket was added back to the pool.
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+  // Idle sockets should NOT be flushed on moderate memory pressure.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+  // Idle sockets should NOT be flushed on critical memory pressure.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+}
+
 // Grab an SSL socket, use it, and put it back into the pool. Then, make
 // low memory notification and ensure the socket pool is flushed.
 TEST_F(HttpNetworkTransactionTest, FlushSSLSocketPoolOnLowMemoryNotifications) {

@@ -325,7 +325,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       net_log(nullptr),
-      http_09_on_non_default_ports_enabled(false) {
+      http_09_on_non_default_ports_enabled(false),
+      disable_idle_sockets_close_on_memory_pressure(false) {
   // Note: The CancelledTransaction test does cleanup by running all
   // tasks in the message loop (RunAllPending).  Unfortunately, that
   // doesn't clean up tasks on the host resolver thread; and
@@ -379,6 +380,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_http2_alternative_service;
   params.http_09_on_non_default_ports_enabled =
       session_deps->http_09_on_non_default_ports_enabled;
+  params.disable_idle_sockets_close_on_memory_pressure =
+      session_deps->disable_idle_sockets_close_on_memory_pressure;
   return params;
 }
 

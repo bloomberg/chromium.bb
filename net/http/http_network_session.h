@@ -205,6 +205,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.
     bool http_09_on_non_default_ports_enabled;
+
+    // If true, idle sockets won't be closed when memory pressure happens.
+    bool disable_idle_sockets_close_on_memory_pressure;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.

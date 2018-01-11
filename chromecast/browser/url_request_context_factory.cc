@@ -320,6 +320,10 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   session_params->enable_quic = base::FeatureList::IsEnabled(kEnableQuic);
   LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = "
             << session_params->enable_quic;
+
+  // Do not close idle sockets on memory pressure, otherwise it will open too
+  // much connections to the server.
+  session_params->disable_idle_sockets_close_on_memory_pressure = true;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
