@@ -58,6 +58,7 @@ const MenuSource = {
   ITEM: 1,
   TREE: 2,
   TOOLBAR: 3,
+  LIST: 4,
 };
 
 /**
