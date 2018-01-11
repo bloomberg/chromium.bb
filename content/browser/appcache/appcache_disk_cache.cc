@@ -372,7 +372,7 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   // Service pending calls that were queued up while we were initializing.
   for (PendingCalls::const_iterator iter = pending_calls_.begin();
        iter < pending_calls_.end(); ++iter) {
-    int rv = net::ERR_FAILED;
+    rv = net::ERR_FAILED;
     switch (iter->call_type) {
       case CREATE:
         rv = CreateEntry(iter->key, iter->entry, iter->callback);

@@ -51,10 +51,12 @@ Status ReadIndexes(LevelDBDatabase* db,
   std::unique_ptr<LevelDBIterator> it = db->CreateIterator();
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
-    StringPiece slice(it->Key());
     IndexMetaDataKey meta_data_key;
-    bool ok = IndexMetaDataKey::Decode(&slice, &meta_data_key);
-    DCHECK(ok);
+    {
+      StringPiece slice(it->Key());
+      bool ok = IndexMetaDataKey::Decode(&slice, &meta_data_key);
+      DCHECK(ok);
+    }
     if (meta_data_key.meta_data_type() != IndexMetaDataKey::NAME) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
       // Possible stale metadata due to http://webkit.org/b/85557 but don't fail
@@ -150,18 +152,20 @@ Status ReadObjectStores(
   std::unique_ptr<LevelDBIterator> it = db->CreateIterator();
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
-    StringPiece slice(it->Key());
     ObjectStoreMetaDataKey meta_data_key;
-    bool ok =
-        ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key) && slice.empty();
-    DCHECK(ok);
-    if (!ok || meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
-      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
-      // Possible stale metadata, but don't fail the load.
-      s = it->Next();
-      if (!s.ok())
-        break;
-      continue;
+    {
+      StringPiece slice(it->Key());
+      bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key) &&
+                slice.empty();
+      DCHECK(ok);
+      if (!ok || meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
+        // Possible stale metadata, but don't fail the load.
+        s = it->Next();
+        if (!s.ok())
+          break;
+        continue;
+      }
     }
 
     int64_t object_store_id = meta_data_key.ObjectStoreId();

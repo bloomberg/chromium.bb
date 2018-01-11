@@ -260,9 +260,9 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           std::unique_ptr<base::ListValue> scope(
               std::make_unique<base::ListValue>());
           for (const auto& id : transaction->scope()) {
-            const auto& it = db->metadata().object_stores.find(id);
-            if (it != db->metadata().object_stores.end())
-              scope->AppendString(it->second.name);
+            const auto& stores_it = db->metadata().object_stores.find(id);
+            if (stores_it != db->metadata().object_stores.end())
+              scope->AppendString(stores_it->second.name);
           }
 
           transaction_info->Set("scope", std::move(scope));
