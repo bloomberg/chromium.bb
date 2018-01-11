@@ -64941,6 +64941,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Plugin.AvailabilityStatus.WidevineCdm"
     enum="PluginAvailabilityStatus">
+  <obsolete>
+    Deprecated as of 01/2017 (M65).
+  </obsolete>
   <owner>xhwang@chromium.org</owner>
   <summary>
     The availability status of Widevine CDM. In normal cases, this is reported

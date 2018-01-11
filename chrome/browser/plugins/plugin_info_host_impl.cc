@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -55,7 +54,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
@@ -93,29 +91,6 @@ class ShutdownNotifierFactory
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
 };
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-enum PluginAvailabilityStatusForUMA {
-  PLUGIN_NOT_REGISTERED,
-  PLUGIN_AVAILABLE,
-  PLUGIN_DISABLED,
-  PLUGIN_AVAILABILITY_STATUS_MAX
-};
-
-static void SendPluginAvailabilityUMA(const std::string& mime_type,
-                                      PluginAvailabilityStatusForUMA status) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  // Only report results for Widevine CDM.
-  if (mime_type != kWidevineCdmPluginMimeType)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION("Plugin.AvailabilityStatus.WidevineCdm", status,
-                            PLUGIN_AVAILABILITY_STATUS_MAX);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-}
-
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Returns whether a request from a plugin to load |resource| from a renderer
@@ -272,43 +247,6 @@ void PluginInfoHostImpl::PluginsLoaded(
     GetPluginInfoFinish(params, std::move(output), std::move(callback),
                         std::move(plugin_metadata));
   }
-}
-
-void PluginInfoHostImpl::IsInternalPluginAvailableForMimeType(
-    const std::string& mime_type,
-    const IsInternalPluginAvailableForMimeTypeCallback& callback) {
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::vector<WebPluginInfo> plugins;
-  PluginService::GetInstance()->GetInternalPlugins(&plugins);
-
-  bool is_plugin_disabled = false;
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    const WebPluginInfo& plugin = plugins[i];
-    const std::vector<content::WebPluginMimeType>& mime_types =
-        plugin.mime_types;
-    for (size_t j = 0; j < mime_types.size(); ++j) {
-      if (mime_types[j].mime_type == mime_type) {
-        if (!context_.IsPluginEnabled(plugin)) {
-          is_plugin_disabled = true;
-          break;
-        }
-        std::vector<chrome::mojom::PluginParamPtr> params;
-        for (const auto& p : mime_types[j].additional_params) {
-          params.emplace_back(chrome::mojom::PluginParam::New(p.name, p.value));
-        }
-        std::move(callback).Run(std::move(params));
-        SendPluginAvailabilityUMA(mime_type, PLUGIN_AVAILABLE);
-        return;
-      }
-    }
-  }
-
-  std::move(callback).Run(base::nullopt);
-  SendPluginAvailabilityUMA(
-      mime_type, is_plugin_disabled ? PLUGIN_DISABLED : PLUGIN_NOT_REGISTERED);
-#else
-  mojo::ReportBadMessage("Not supported. Must set enable_libary_cdms.");
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
 void PluginInfoHostImpl::Context::DecidePluginStatus(

@@ -136,10 +136,6 @@ class PluginInfoHostImpl
                      const std::string& mime_type,
                      const GetPluginInfoCallback& callback) override;
 
-  void IsInternalPluginAvailableForMimeType(
-      const std::string& mime_type,
-      const IsInternalPluginAvailableForMimeTypeCallback& callback) override;
-
   // |params| wraps the parameters passed to |OnGetPluginInfo|, because
   // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.
   void PluginsLoaded(const GetPluginInfo_Params& params,
