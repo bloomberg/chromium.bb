@@ -121,7 +121,7 @@ const char kMalwareDelayedLoadsPage[] =
     "/safe_browsing/malware_delayed_loads.html";
 const char kMalwareIFrame[] = "/safe_browsing/malware_iframe.html";
 const char kMalwareImg[] = "/safe_browsing/malware_image.png";
-const char kMalwareWebSocketPage[] = "/safe_browsing/malware_websocket.html";
+const char kMalwareJsRequestPage[] = "/safe_browsing/malware_js_request.html";
 const char kMalwareWebSocketPath[] = "/safe_browsing/malware-ws";
 const char kNeverCompletesPath[] = "/never_completes";
 const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
@@ -188,29 +188,82 @@ std::unique_ptr<net::test_server::HttpResponse> HandleWebSocketRequests(
   return base::MakeUnique<QuasiWebSocketHttpResponse>(request);
 }
 
-// Return a new URL with ?type=<param> appended.
-GURL AddTypeParam(const GURL& base_url, const std::string& param) {
+enum class ContextType { kWindow, kWorker, kSharedWorker, kServiceWorker };
+
+enum class JsRequestType {
+  kWebSocket,
+  // Load a URL using the Fetch API.
+  kFetch
+};
+
+struct JsRequestTestParam {
+  JsRequestTestParam(ContextType in_context_type, JsRequestType in_request_type)
+      : context_type(in_context_type), request_type(in_request_type) {}
+
+  ContextType context_type;
+  JsRequestType request_type;
+};
+
+std::string ContextTypeToString(ContextType context_type) {
+  switch (context_type) {
+    case ContextType::kWindow:
+      return "window";
+    case ContextType::kWorker:
+      return "worker";
+    case ContextType::kSharedWorker:
+      return "shared-worker";
+    case ContextType::kServiceWorker:
+      return "service-worker";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+std::string JsRequestTypeToString(JsRequestType request_type) {
+  switch (request_type) {
+    case JsRequestType::kWebSocket:
+      return "websocket";
+    case JsRequestType::kFetch:
+      return "fetch";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+// Return a new URL with ?contextType=<context_type>&requestType=<request_type>
+// appended.
+GURL AddJsRequestParam(const GURL& base_url, const JsRequestTestParam& param) {
   GURL::Replacements add_query;
-  std::string query = "type=" + param;
+  std::string query =
+      "contextType=" + ContextTypeToString(param.context_type) +
+      "&requestType=" + JsRequestTypeToString(param.request_type);
   add_query.SetQueryStr(query);
   return base_url.ReplaceComponents(add_query);
 }
 
-// Given the URL of the malware_websocket.html page, calculate the URL of the
+// Given the URL of the malware_js_request.html page, calculate the URL of the
 // WebSocket it will fetch.
 GURL ConstructWebSocketURL(const GURL& main_url) {
-  // This constructs the URL with the same logic as malware_websocket.html.
+  // This constructs the URL with the same logic as malware_js_request.html.
   GURL resolved = main_url.Resolve(kMalwareWebSocketPath);
   GURL::Replacements replace_scheme;
   replace_scheme.SetSchemeStr("ws");
   return resolved.ReplaceComponents(replace_scheme);
 }
 
+GURL ConstructJsRequestURL(const GURL& base_url, JsRequestType request_type) {
+  return request_type == JsRequestType::kWebSocket
+             ? ConstructWebSocketURL(base_url)
+             : base_url.Resolve(kMalwarePage);
+}
+
 // Navigate |browser| to |url| and wait for the title to change to "NOT BLOCKED"
-// or "ERROR". This is specific to the tests using malware_websocket.html.
+// or "ERROR". This is specific to the tests using malware_js_request.html.
 // Returns the new title.
-std::string WebSocketNavigateAndWaitForTitle(Browser* browser,
-                                             const GURL& url) {
+std::string JsRequestTestNavigateAndWaitForTitle(Browser* browser,
+                                                 const GURL& url) {
   auto expected_title = base::ASCIIToUTF16("ERROR");
   content::TitleWatcher title_watcher(
       browser->tab_strip_model()->GetActiveWebContents(), expected_title);
@@ -1643,8 +1696,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 
 // Parameterised fixture to permit running the same test for Window and Worker
 // scopes.
-class SafeBrowsingServiceWebSocketTest
-    : public ::testing::WithParamInterface<std::string>,
+class SafeBrowsingServiceJsRequestTest
+    : public ::testing::WithParamInterface<JsRequestTestParam>,
       public SafeBrowsingServiceTest {
  public:
   void MarkAsMalware(const GURL& url) {
@@ -1654,15 +1707,16 @@ class SafeBrowsingServiceWebSocketTest
   }
 };
 
-using SafeBrowsingServiceWebSocketInterstitialTest =
-    SafeBrowsingServiceWebSocketTest;
+using SafeBrowsingServiceJsRequestInterstitialTest =
+    SafeBrowsingServiceJsRequestTest;
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketInterstitialTest,
-                       MalwareWebSocketBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
-  GURL websocket_url = ConstructWebSocketURL(base_url);
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceJsRequestInterstitialTest,
+                       MalwareBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
+  JsRequestTestParam param = GetParam();
+  GURL js_request_url = ConstructJsRequestURL(base_url, param.request_type);
 
-  MarkAsMalware(websocket_url);
+  MarkAsMalware(js_request_url);
 
   // Brute force method for waiting for the interstitial to be displayed.
   content::WindowedNotificationObserver load_stop_observer(
@@ -1675,8 +1729,9 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketInterstitialTest,
           },
           base::Unretained(this)));
 
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
-  ui_test_utils::NavigateToURL(browser(), AddTypeParam(base_url, GetParam()));
+  EXPECT_CALL(observer_,
+              OnSafeBrowsingHit(IsUnsafeResourceFor(js_request_url)));
+  ui_test_utils::NavigateToURL(browser(), AddJsRequestParam(base_url, param));
 
   // If the interstitial fails to be displayed, the test will hang here.
   load_stop_observer.Wait();
@@ -1687,21 +1742,26 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketInterstitialTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    SafeBrowsingServiceWebSocketInterstitialTest,
-    ::testing::Values("window", "worker"));
+    SafeBrowsingServiceJsRequestInterstitialTest,
+    ::testing::Values(
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch)));
 
-using SafeBrowsingServiceWebSocketNoInterstitialTest =
-    SafeBrowsingServiceWebSocketTest;
+using SafeBrowsingServiceJsRequestNoInterstitialTest =
+    SafeBrowsingServiceJsRequestTest;
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketNoInterstitialTest,
-                       MalwareWebSocketBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
-  GURL websocket_url = ConstructWebSocketURL(base_url);
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceJsRequestNoInterstitialTest,
+                       MalwareBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
+  JsRequestTestParam param = GetParam();
+  GURL js_request_url = ConstructJsRequestURL(base_url, param.request_type);
 
-  MarkAsMalware(websocket_url);
+  MarkAsMalware(js_request_url);
 
-  auto new_title = WebSocketNavigateAndWaitForTitle(
-      browser(), AddTypeParam(base_url, GetParam()));
+  auto new_title = JsRequestTestNavigateAndWaitForTitle(
+      browser(), AddJsRequestParam(base_url, param));
 
   EXPECT_EQ("ERROR", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
@@ -1712,18 +1772,23 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketNoInterstitialTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    SafeBrowsingServiceWebSocketNoInterstitialTest,
-    ::testing::Values("shared-worker", "service-worker"));
+    SafeBrowsingServiceJsRequestNoInterstitialTest,
+    ::testing::Values(JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kFetch),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kFetch)));
 
-using SafeBrowsingServiceWebSocketSafeTest = SafeBrowsingServiceWebSocketTest;
+using SafeBrowsingServiceJsRequestSafeTest = SafeBrowsingServiceJsRequestTest;
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketSafeTest,
-                       UnknownWebSocketNotBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceJsRequestSafeTest, NotBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
 
-  // Wait for the WebSocket connection attempt to complete.
-  auto new_title = WebSocketNavigateAndWaitForTitle(
-      browser(), AddTypeParam(base_url, GetParam()));
+  auto new_title = JsRequestTestNavigateAndWaitForTitle(
+      browser(), AddJsRequestParam(base_url, GetParam()));
   EXPECT_EQ("NOT BLOCKED", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
   EXPECT_FALSE(got_hit_report());
@@ -1731,8 +1796,19 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketSafeTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    SafeBrowsingServiceWebSocketSafeTest,
-    ::testing::Values("window", "worker", "shared-worker", "service-worker"));
+    SafeBrowsingServiceJsRequestSafeTest,
+    ::testing::Values(
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kSharedWorker,
+                           JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kServiceWorker,
+                           JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kServiceWorker,
+                           JsRequestType::kFetch)));
 #endif  // defined(ENABLE_FLAKY_PVER3_TESTS)
 
 class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
@@ -2444,23 +2520,24 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckBrowseUrl) {
 
 // Parameterised fixture to permit running the same test for Window and Worker
 // scopes.
-class V4SafeBrowsingServiceWebSocketTest
-    : public ::testing::WithParamInterface<std::string>,
+class V4SafeBrowsingServiceJsRequestTest
+    : public ::testing::WithParamInterface<JsRequestTestParam>,
       public V4SafeBrowsingServiceTest {};
 
-using V4SafeBrowsingServiceWebSocketInterstitialTest =
-    V4SafeBrowsingServiceWebSocketTest;
+using V4SafeBrowsingServiceJsRequestInterstitialTest =
+    V4SafeBrowsingServiceJsRequestTest;
 
 // This is almost identical to
 // SafeBrowsingServiceWebSocketTest.MalwareWebSocketBlocked. That test will be
 // deleted when the old database backend is removed.
-IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketInterstitialTest,
-                       MalwareWebSocketBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
-  GURL websocket_url = ConstructWebSocketURL(base_url);
-  GURL page_url = AddTypeParam(base_url, GetParam());
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestInterstitialTest,
+                       MalwareBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
+  JsRequestTestParam param = GetParam();
+  GURL js_request_url = ConstructJsRequestURL(base_url, param.request_type);
+  GURL page_url = AddJsRequestParam(base_url, param);
 
-  MarkUrlForMalwareUnexpired(websocket_url);
+  MarkUrlForMalwareUnexpired(js_request_url);
 
   // Brute force method for waiting for the interstitial to be displayed.
   content::WindowedNotificationObserver load_stop_observer(
@@ -2473,7 +2550,8 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketInterstitialTest,
           },
           base::Unretained(this)));
 
-  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
+  EXPECT_CALL(observer_,
+              OnSafeBrowsingHit(IsUnsafeResourceFor(js_request_url)));
   ui_test_utils::NavigateToURL(browser(), page_url);
 
   // If the interstitial fails to be displayed, the test will hang here.
@@ -2481,27 +2559,33 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketInterstitialTest,
 
   EXPECT_TRUE(ShowingInterstitialPage());
   EXPECT_TRUE(got_hit_report());
-  EXPECT_EQ(websocket_url, hit_report().malicious_url);
+  EXPECT_EQ(js_request_url, hit_report().malicious_url);
   EXPECT_EQ(page_url, hit_report().page_url);
   EXPECT_TRUE(hit_report().is_subresource);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        V4SafeBrowsingServiceWebSocketInterstitialTest,
-                        ::testing::Values("window", "worker"));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    V4SafeBrowsingServiceJsRequestInterstitialTest,
+    ::testing::Values(
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch)));
 
-using V4SafeBrowsingServiceWebSocketNoInterstitialTest =
-    V4SafeBrowsingServiceWebSocketTest;
+using V4SafeBrowsingServiceJsRequestNoInterstitialTest =
+    V4SafeBrowsingServiceJsRequestTest;
 
-IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketNoInterstitialTest,
-                       MalwareWebSocketBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestNoInterstitialTest,
+                       MalwareBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
+  JsRequestTestParam param = GetParam();
+  MarkUrlForMalwareUnexpired(
+      ConstructJsRequestURL(base_url, param.request_type));
 
-  MarkUrlForMalwareUnexpired(ConstructWebSocketURL(base_url));
-
-  // Load the parent page without marking the WebSocket as malware.
-  auto new_title = WebSocketNavigateAndWaitForTitle(
-      browser(), AddTypeParam(base_url, GetParam()));
+  // Load the parent page after marking the JS request as malware.
+  auto new_title = JsRequestTestNavigateAndWaitForTitle(
+      browser(), AddJsRequestParam(base_url, param));
 
   EXPECT_EQ("ERROR", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
@@ -2510,20 +2594,28 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketNoInterstitialTest,
   EXPECT_FALSE(got_hit_report());
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        V4SafeBrowsingServiceWebSocketNoInterstitialTest,
-                        ::testing::Values("shared-worker", "service-worker"));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    V4SafeBrowsingServiceJsRequestNoInterstitialTest,
+    ::testing::Values(JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kFetch),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kFetch)));
 
-using V4SafeBrowsingServiceWebSocketSafeTest =
-    V4SafeBrowsingServiceWebSocketTest;
+using V4SafeBrowsingServiceJsRequestSafeTest =
+    V4SafeBrowsingServiceJsRequestTest;
 
-IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketSafeTest,
-                       UnknownWebSocketNotBlocked) {
-  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestSafeTest,
+                       RequestNotBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
 
-  // Load the parent page without marking the WebSocket as malware.
-  auto new_title = WebSocketNavigateAndWaitForTitle(
-      browser(), AddTypeParam(base_url, GetParam()));
+  // Load the parent page without marking the JS request as malware.
+  auto new_title = JsRequestTestNavigateAndWaitForTitle(
+      browser(), AddJsRequestParam(base_url, GetParam()));
 
   EXPECT_EQ("NOT BLOCKED", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
@@ -2532,8 +2624,19 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketSafeTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    V4SafeBrowsingServiceWebSocketSafeTest,
-    ::testing::Values("window", "worker", "shared-worker", "service-worker"));
+    V4SafeBrowsingServiceJsRequestSafeTest,
+    ::testing::Values(
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kSharedWorker,
+                           JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kServiceWorker,
+                           JsRequestType::kWebSocket),
+        JsRequestTestParam(ContextType::kWindow, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kWorker, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
+        JsRequestTestParam(ContextType::kServiceWorker,
+                           JsRequestType::kFetch)));
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   GURL original_url = embedded_test_server()->GetURL(kEmptyPage);

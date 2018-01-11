@@ -667,6 +667,8 @@ source_set("common") {
     "renderer/aw_render_thread_observer.h",
     "renderer/aw_render_view_ext.cc",
     "renderer/aw_render_view_ext.h",
+    "renderer/aw_url_loader_throttle_provider.cc",
+    "renderer/aw_url_loader_throttle_provider.h",
     "renderer/print_render_frame_observer.cc",
     "renderer/print_render_frame_observer.h",
   ]

@@ -709,6 +709,9 @@ void RenderThreadImpl::Init(
   resource_dispatcher_.reset(
       new ResourceDispatcher(message_loop()->task_runner()));
   quota_dispatcher_.reset(new QuotaDispatcher(message_loop()->task_runner()));
+  url_loader_throttle_provider_ =
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kFrame);
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(resource_task_queue, registry.get());

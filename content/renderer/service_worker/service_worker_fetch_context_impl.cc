@@ -6,20 +6,25 @@
 
 #include "base/feature_list.h"
 #include "content/public/common/content_features.h"
+#include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/loader/web_url_request_util.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const GURL& worker_script_url,
     ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info,
-    int service_worker_provider_id)
+    int service_worker_provider_id,
+    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
     : worker_script_url_(worker_script_url),
       url_loader_factory_getter_info_(
           std::move(url_loader_factory_getter_info)),
-      service_worker_provider_id_(service_worker_provider_id) {}
+      service_worker_provider_id_(service_worker_provider_id),
+      throttle_provider_(std::move(throttle_provider)) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -45,6 +50,10 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_originated_from_service_worker(true);
   extra_data->set_initiated_in_secure_context(true);
+  if (throttle_provider_) {
+    extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
+        MSG_ROUTING_NONE, request.Url(), WebURLRequestToResourceType(request)));
+  }
   request.SetExtraData(extra_data);
 }
 

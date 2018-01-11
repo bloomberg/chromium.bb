@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
@@ -63,6 +62,7 @@
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/tts_dispatcher.h"
+#include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -79,7 +79,6 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
-#include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
 #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -326,22 +325,6 @@ class MediaLoadDeferrer : public content::RenderFrameObserver {
 
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
-
-chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
-  content::RenderFrame* render_frame =
-      content::RenderFrame::FromRoutingID(render_frame_id);
-  if (!render_frame)
-    return nullptr;
-  prerender::PrerenderHelper* helper =
-      prerender::PrerenderHelper::Get(render_frame);
-  if (!helper)
-    return nullptr;
-
-  auto* canceler = new chrome::mojom::PrerenderCancelerPtr;
-  render_frame->GetRemoteInterfaces()->GetInterface(canceler);
-  base::MessageLoop::current()->task_runner()->DeleteSoon(FROM_HERE, canceler);
-  return canceler->get();
-}
 
 #if defined(OS_WIN)
 // Binds |module_event_sink| to the provided |interface_ptr_info|. This function
@@ -1313,41 +1296,7 @@ bool ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    content::ResourceType resource_type,
-    std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
     GURL* new_url) {
-  RenderFrame* render_frame = content::RenderFrame::FromWebFrame(frame);
-  int render_frame_id =
-      render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
-  // Don't add these throttles for frame requests, because they've already been
-  // added in the browser.
-  if (!content::IsResourceTypeFrame(resource_type)) {
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      InitSafeBrowsingIfNecessary();
-      throttles->push_back(
-          base::MakeUnique<safe_browsing::RendererURLLoaderThrottle>(
-              safe_browsing_.get(), render_frame_id));
-    }
-
-    auto* prerender_helper = prerender::PrerenderHelper::Get(
-        render_frame->GetRenderView()->GetMainRenderFrame());
-    if (prerender_helper) {
-      auto throttle = std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-          prerender_helper->prerender_mode(),
-          prerender_helper->histogram_prefix(),
-          base::BindOnce(GetPrerenderCanceller, render_frame_id),
-          base::MessageLoop::current()->task_runner());
-      prerender_helper->AddThrottle(throttle->AsWeakPtr());
-      if (prerender_helper->prerender_mode() == prerender::PREFETCH_ONLY) {
-        prerender_dispatcher_->IncrementPrefetchCount();
-        throttle->set_destruction_closure(base::BindOnce(
-            &prerender::PrerenderDispatcher::DecrementPrefetchCount,
-            base::Unretained(prerender_dispatcher_.get())));
-      }
-      throttles->push_back(std::move(throttle));
-    }
-  }
-
 // Check whether the request should be allowed. If not allowed, we reset the
 // URL to something invalid to prevent the request and cause an error.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1762,4 +1711,10 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
       "more information.",
       url::Origin::Create(url).Serialize().c_str(), in_future_string);
   return true;
+}
+
+std::unique_ptr<content::URLLoaderThrottleProvider>
+ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
+    content::URLLoaderThrottleProviderType provider_type) {
+  return std::make_unique<URLLoaderThrottleProviderImpl>(provider_type, this);
 }

@@ -12,9 +12,11 @@
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/appcache_info.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/appcache/appcache_dispatcher.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -257,7 +259,9 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   DCHECK(url_loader_factory_getter);
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
-      url_loader_factory_getter->GetClonedInfo());
+      url_loader_factory_getter->GetClonedInfo(),
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kWorker));
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
