@@ -364,6 +364,7 @@ class CORE_EXPORT Node : public EventTarget {
   // This can happen when handling queued events (e.g. during execCommand())
   ShadowRoot* ContainingShadowRoot() const;
   ShadowRoot* YoungestShadowRoot() const;
+  bool IsInUserAgentShadowRoot() const;
 
   // Returns nullptr, a child of ShadowRoot, or a legacy shadow root.
   Node* NonBoundaryShadowTreeRootNode();

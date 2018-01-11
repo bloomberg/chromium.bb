@@ -36,6 +36,9 @@ class HTMLDetailsElement final : public HTMLElement {
 
   Element* FindMainSummary() const;
 
+  // Used for slot assignment.
+  static bool IsFirstSummary(const Node&);
+
  private:
   explicit HTMLDetailsElement(Document&);
 

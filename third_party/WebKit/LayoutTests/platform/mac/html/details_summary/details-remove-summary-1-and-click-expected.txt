@@ -9,4 +9,4 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (16,0) size 47x18
             text run at (16,0) width 47: "Details"
         LayoutBlockFlow {DIV} at (0,18) size 800x0
-caret: position 0 of child 0 {DIV} of {#document-fragment} of child 0 {SUMMARY} of child 0 {CONTENT} of {#document-fragment} of child 1 {DETAILS} of body
+caret: position 0 of child 0 {DIV} of {#document-fragment} of child 0 {SUMMARY} of child 0 {SLOT} of {#document-fragment} of child 1 {DETAILS} of body
