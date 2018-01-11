@@ -85,9 +85,10 @@ void InitializeColorSchemes() {
   normal_scheme.url_bar_separator = 0xFF9E9E9E;
   normal_scheme.url_bar.deemphasized = 0xFF5A5A5A;
   normal_scheme.url_bar.emphasized = SK_ColorBLACK;
-  normal_scheme.url_bar.secure = gfx::kGoogleGreen700;
-  normal_scheme.url_bar.insecure = gfx::kGoogleRed700;
-  normal_scheme.url_bar.offline_page_warning = 0xFF242424;
+  normal_scheme.url_bar.default_icon = 0xFF535353;
+  normal_scheme.url_bar.dangerous_icon = gfx::kGoogleRed700;
+  normal_scheme.url_bar.offline_page_warning =
+      normal_scheme.url_bar.default_icon;
   normal_scheme.url_bar.separator = normal_scheme.url_bar_separator;
   normal_scheme.prompt_foreground = 0xCC000000;
   normal_scheme.prompt_primary_button_colors.foreground = 0xA6000000;
@@ -207,13 +208,12 @@ void InitializeColorSchemes() {
   incognito_scheme.back_button.foreground = incognito_scheme.element_foreground;
   incognito_scheme.back_button.foreground_disabled = 0x33E6E6E6;
   incognito_scheme.url_bar_separator = 0x1FFFFFFF;
-  incognito_scheme.url_bar.secure = 0xFFFFFFFF;
-  incognito_scheme.url_bar.insecure = incognito_scheme.url_bar.secure;
-  incognito_scheme.url_bar.emphasized = incognito_scheme.url_bar.secure;
   incognito_scheme.url_bar.deemphasized = 0xCCFFFFFF;
-  incognito_scheme.url_bar.offline_page_warning =
-      incognito_scheme.url_bar.secure;
-  incognito_scheme.url_bar_separator = incognito_scheme.url_bar_separator;
+  incognito_scheme.url_bar.emphasized = SK_ColorWHITE;
+  incognito_scheme.url_bar.default_icon = SK_ColorWHITE;
+  incognito_scheme.url_bar.dangerous_icon = SK_ColorWHITE;
+  incognito_scheme.url_bar.offline_page_warning = SK_ColorWHITE;
+  incognito_scheme.url_bar.separator = incognito_scheme.url_bar_separator;
   incognito_scheme.prompt_foreground = 0xCCFFFFFF;
   incognito_scheme.prompt_primary_button_colors.foreground = 0xD9000000;
   incognito_scheme.prompt_primary_button_colors.foreground_disabled =
@@ -291,7 +291,8 @@ static_assert(kUrlBarColorsSize == sizeof(UrlBarColors),
 
 bool UrlBarColors::operator==(const UrlBarColors& other) const {
   return deemphasized == other.deemphasized && emphasized == other.emphasized &&
-         secure == other.secure && insecure == other.insecure &&
+         default_icon == other.default_icon &&
+         dangerous_icon == other.dangerous_icon &&
          offline_page_warning == other.offline_page_warning &&
          separator == other.separator;
 }

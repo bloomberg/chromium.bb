@@ -28,8 +28,8 @@ struct UrlBarColors {
   bool operator!=(const UrlBarColors& other) const;
   SkColor deemphasized = SK_ColorBLACK;
   SkColor emphasized = SK_ColorBLACK;
-  SkColor secure = SK_ColorBLACK;
-  SkColor insecure = SK_ColorBLACK;
+  SkColor default_icon = SK_ColorBLACK;
+  SkColor dangerous_icon = SK_ColorBLACK;
   SkColor offline_page_warning = SK_ColorBLACK;
   SkColor separator = SK_ColorBLACK;
 };
