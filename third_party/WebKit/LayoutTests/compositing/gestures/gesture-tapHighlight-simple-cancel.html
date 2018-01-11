@@ -3,14 +3,7 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 <script src="../../resources/run-after-layout-and-paint.js"></script>
-<style>
-/* Don't test active state.  Technically sending a second showPress before
-   the first has been completed is illegal, so whether or not blink clears the
-   active state on the first node irrelevant.
-*/
-a, a:active {
-  color: #00c;
-}
+<link rel="stylesheet" href="resources/link-highlight-style.css">
 </style>
 </head>
 <body onload="runTest();" onclick="doNothing();">
