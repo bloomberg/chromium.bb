@@ -354,8 +354,10 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
 }
 
 void WindowState::UpdateSnappedWidthRatio(const WMEvent* event) {
-  if (!IsSnapped())
+  if (!IsSnapped()) {
+    snapped_width_ratio_.reset();
     return;
+  }
 
   const WMEventType type = event->type();
   // Initializes |snapped_width_ratio_| whenever |event| is snapping event.
@@ -363,13 +365,16 @@ void WindowState::UpdateSnappedWidthRatio(const WMEvent* event) {
       type == WM_EVENT_CYCLE_SNAP_LEFT || type == WM_EVENT_CYCLE_SNAP_RIGHT) {
     // Since |UpdateSnappedWidthRatio()| is called post WMEvent taking effect,
     // |window_|'s bounds is in a correct state for ratio update.
-    snapped_width_ratio_ = GetCurrentSnappedWidthRatio(window_);
+    snapped_width_ratio_ =
+        base::make_optional(GetCurrentSnappedWidthRatio(window_));
     return;
   }
 
   // |snapped_width_ratio_| under snapped state may change due to bounds event.
-  if (event->IsBoundsEvent())
-    snapped_width_ratio_ = GetCurrentSnappedWidthRatio(window_);
+  if (event->IsBoundsEvent()) {
+    snapped_width_ratio_ =
+        base::make_optional(GetCurrentSnappedWidthRatio(window_));
+  }
 }
 
 void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
@@ -486,8 +491,10 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     return;
   gfx::Rect maximized_bounds =
       ScreenUtil::GetMaximizedWindowBoundsInParent(window_);
-  bounds->set_width(
-      static_cast<int>(snapped_width_ratio_ * maximized_bounds.width()));
+  if (snapped_width_ratio_) {
+    bounds->set_width(
+        static_cast<int>(*snapped_width_ratio_ * maximized_bounds.width()));
+  }
   if (GetStateType() == mojom::WindowStateType::LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
   else if (GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED)

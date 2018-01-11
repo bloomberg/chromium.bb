@@ -206,7 +206,7 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
                 kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
   EXPECT_EQ(expected, window->GetBoundsInScreen());
-  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
 
   // Drag to change snapped window width.
   const int kIncreasedWidth = 225;
@@ -219,18 +219,18 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
   expected.set_width(expected.width() + kIncreasedWidth);
   EXPECT_EQ(expected, window->GetBoundsInScreen());
   EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
-  EXPECT_EQ(0.75f, window_state->snapped_width_ratio());
+  EXPECT_EQ(0.75f, *window_state->snapped_width_ratio());
 
   // Another cycle snap left event will restore window state to normal.
   window_state->OnWMEvent(&cycle_snap_left);
   EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state->GetStateType());
-  EXPECT_EQ(0.75f, window_state->snapped_width_ratio());
+  EXPECT_FALSE(window_state->snapped_width_ratio());
 
   // Another cycle snap left event will snap window and reset snapped width
   // ratio.
   window_state->OnWMEvent(&cycle_snap_left);
   EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
-  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
 }
 
 // Test that snapping left/right preserves the restore bounds.
