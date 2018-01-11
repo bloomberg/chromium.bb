@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "ash/app_list/model/speech/speech_ui_model_observer.h"
+#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/strings/string16.h"
 
 namespace app_list {
