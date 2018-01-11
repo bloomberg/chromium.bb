@@ -22,7 +22,7 @@ class StubGpuPlatformSupportHost : public GpuPlatformSupportHost {
       const base::Callback<void(IPC::Message*)>& send_callback) override {}
 
   void OnChannelDestroyed(int host_id) override {}
-  bool OnMessageReceived(const IPC::Message&) override { return false; }
+  void OnMessageReceived(const IPC::Message&) override {}
 };
 
 }  // namespace

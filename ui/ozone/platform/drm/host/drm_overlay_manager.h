@@ -11,6 +11,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -69,6 +70,12 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // for validation and/or validated.
   base::MRUCache<OverlaySurfaceCandidateList, OverlayValidationCacheValue>
       cache_;
+  // The cache can be accessed from multiple threads in some cases (e.g. with
+  // --mus, it can be accessed from the UI thread, and the window-service
+  // thread.)
+  // TODO(rjkroege): In the future (with --enable-viz), this code will not need
+  // the lock, but will require farther refactoring.
+  base::Lock cache_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
 };
