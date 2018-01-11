@@ -1576,6 +1576,123 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(kAttackInitialURL, shell()->web_contents()->GetVisibleURL());
 }
 
+// Ensures that deleting a speculative RenderFrameHost trying to commit a
+// navigation to the pending NavigationEntry will not crash if it happens
+// because a new navigation to the same pending NavigationEntry started. This is
+// a regression test for crbug.com/796135.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    DeleteSpeculativeRFHPedningCommitOfPendingEntryOnInterrupted) {
+  const std::string kOriginalPath = "/original.html";
+  const std::string kFirstRedirectPath = "/redirect1.html";
+  const std::string kSecondRedirectPath = "/reidrect2.html";
+  ControllableHttpResponse original_response1(embedded_test_server(),
+                                              kOriginalPath);
+  ControllableHttpResponse original_response2(embedded_test_server(),
+                                              kOriginalPath);
+  ControllableHttpResponse original_response3(embedded_test_server(),
+                                              kOriginalPath);
+  ControllableHttpResponse first_redirect_response(embedded_test_server(),
+                                                   kFirstRedirectPath);
+  ControllableHttpResponse second_redirect_response(embedded_test_server(),
+                                                    kSecondRedirectPath);
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  const GURL kOriginalURL =
+      embedded_test_server()->GetURL("a.com", kOriginalPath);
+  const GURL kFirstRedirectURL =
+      embedded_test_server()->GetURL("b.com", kFirstRedirectPath);
+  const GURL kSecondRedirectURL =
+      embedded_test_server()->GetURL("c.com", kSecondRedirectPath);
+
+  // First navigate to the initial URL. This page will have a cross-site
+  // redirect.
+  shell()->LoadURL(kOriginalURL);
+  original_response1.WaitForRequest();
+  original_response1.Send(
+      "HTTP/1.1 302 FOUND\r\n"
+      "Location: " +
+      kFirstRedirectURL.spec() +
+      "\r\n"
+      "\r\n");
+  original_response1.Done();
+  first_redirect_response.WaitForRequest();
+  first_redirect_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  first_redirect_response.Send(
+      "<html>"
+      "<body></body>"
+      "</html>");
+  first_redirect_response.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(kFirstRedirectURL, shell()->web_contents()->GetVisibleURL());
+
+  // Now reload the original request, but redirect to yet another site.
+  TestNavigationManager first_reload(shell()->web_contents(), kOriginalURL);
+  shell()->web_contents()->GetController().Reload(
+      ReloadType::ORIGINAL_REQUEST_URL, false);
+  EXPECT_TRUE(first_reload.WaitForRequestStart());
+  first_reload.ResumeNavigation();
+
+  original_response2.WaitForRequest();
+  original_response2.Send(
+      "HTTP/1.1 302 FOUND\r\n"
+      "Location: " +
+      kSecondRedirectURL.spec() +
+      "\r\n"
+      "\r\n");
+  original_response2.Done();
+  second_redirect_response.WaitForRequest();
+  second_redirect_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  EXPECT_TRUE(first_reload.WaitForResponse());
+  first_reload.ResumeNavigation();
+
+  // The navigation is ready to commit: it has been handed to the speculative
+  // RenderFrameHost for commit.
+  RenderFrameHostImpl* speculative_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->render_manager()
+          ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+
+  // The user requests a new reload while the previous reload hasn't committed
+  // yet. The navigation start deletes the speculative RenderFrameHost that was
+  // supposed to commit the browser-initiated navigation. This should not crash.
+  TestNavigationManager second_reload(shell()->web_contents(), kOriginalURL);
+  shell()->web_contents()->GetController().Reload(
+      ReloadType::ORIGINAL_REQUEST_URL, false);
+  EXPECT_TRUE(second_reload.WaitForRequestStart());
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  EXPECT_FALSE(speculative_rfh);
+
+  // The second reload results in a 204.
+  second_reload.ResumeNavigation();
+  original_response3.WaitForRequest();
+  original_response3.Send(
+      "HTTP/1.1 204 OK\r\n"
+      "Connection: close\r\n"
+      "\r\n");
+  second_reload.WaitForNavigationFinished();
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  EXPECT_FALSE(speculative_rfh);
+}
+
 // Test for crbug.com/9682.  We should not show the URL for a pending renderer-
 // initiated navigation in a new tab if it is not the initial navigation.  In
 // this case, the renderer will not notify us of a modification, so we cannot
