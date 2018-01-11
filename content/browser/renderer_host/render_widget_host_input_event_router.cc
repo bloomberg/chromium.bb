@@ -251,41 +251,34 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   return {target, false, transformed_point};
 }
 
-RenderWidgetHostViewBase*
+RenderWidgetTargetResult
 RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
     RenderWidgetHostViewBase* root_view,
-    const blink::WebMouseWheelEvent& event,
-    gfx::PointF* transformed_point) const {
+    const blink::WebMouseWheelEvent& event) const {
   RenderWidgetHostViewBase* target = nullptr;
+  gfx::PointF transformed_point;
   if (root_view->IsMouseLocked()) {
     target = root_view->GetRenderWidgetHostImpl()
                  ->delegate()
                  ->GetMouseLockWidget()
                  ->GetView();
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), target, transformed_point)) {
-      return nullptr;
-    }
-  } else if (root_view->wheel_scroll_latching_enabled()) {
+    return {target, false, transformed_point};
+  }
+
+  if (root_view->wheel_scroll_latching_enabled()) {
     if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       auto result = FindViewAtLocation(
           root_view, event.PositionInWidget(), event.PositionInScreen(),
-          viz::EventSource::MOUSE, transformed_point);
-      // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
-      target = result.view;
-    } else if (wheel_target_.target) {
-      target = wheel_target_.target;
-      *transformed_point = event.PositionInWidget() + wheel_target_.delta;
+          viz::EventSource::MOUSE, &transformed_point);
+      return {result.view, result.should_query_view, transformed_point};
     }
-  } else {  // !root_view->IsMouseLocked() &&
-    // !root_view->wheel_scroll_latching_enabled()
-    auto result = FindViewAtLocation(
-        root_view, event.PositionInWidget(), event.PositionInScreen(),
-        viz::EventSource::MOUSE, transformed_point);
-    // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
-    target = result.view;
+    return {target, false, transformed_point};
   }
-  return target;
+
+  auto result = FindViewAtLocation(root_view, event.PositionInWidget(),
+                                   event.PositionInScreen(),
+                                   viz::EventSource::MOUSE, &transformed_point);
+  return {result.view, result.should_query_view, transformed_point};
 }
 
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
@@ -357,6 +350,9 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
     RenderWidgetHostViewBase* target,
     const blink::WebMouseEvent& mouse_event,
     const ui::LatencyInfo& latency) {
+  if (!target)
+    return;
+
   if (mouse_event.GetType() == blink::WebInputEvent::kMouseUp)
     mouse_capture_target_.target = nullptr;
   else if (mouse_event.GetType() == blink::WebInputEvent::kMouseDown)
@@ -381,43 +377,63 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseWheelEvent* event,
     const ui::LatencyInfo& latency) {
-  gfx::PointF transformed_point;
-  RenderWidgetHostViewBase* const target =
-      FindMouseWheelEventTarget(root_view, *event, &transformed_point);
+  event_targeter_->FindTargetAndDispatch(root_view, *event, latency);
+}
 
-  if (root_view->wheel_scroll_latching_enabled()) {
-    if (event->phase == blink::WebMouseWheelEvent::kPhaseBegan) {
+void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
+    RenderWidgetHostViewBase* root_view,
+    RenderWidgetHostViewBase* target,
+    const blink::WebMouseWheelEvent& mouse_wheel_event,
+    const ui::LatencyInfo& latency) {
+  if (!root_view->IsMouseLocked() &&
+      root_view->wheel_scroll_latching_enabled()) {
+    if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       wheel_target_.target = target;
-      wheel_target_.delta = transformed_point - event->PositionInWidget();
-    } else if (!wheel_target_.target &&
-               (event->phase == blink::WebMouseWheelEvent::kPhaseEnded ||
-                event->momentum_phase ==
-                    blink::WebMouseWheelEvent::kPhaseEnded) &&
-               bubbling_gesture_scroll_target_.target) {
-      // Send a GSE to the bubbling target and cancel scroll bubbling since
-      // the wheel target view is destroyed and the wheel end event won't get
-      // processed.
-      blink::WebGestureEvent fake_scroll_update =
-          DummyGestureScrollUpdate(event->TimeStampSeconds());
-      fake_scroll_update.source_device = blink::kWebGestureDeviceTouchpad;
-      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           fake_scroll_update);
-      bubbling_gesture_scroll_target_.target = nullptr;
-      first_bubbling_scroll_target_.target = nullptr;
+    } else {
+      if (wheel_target_.target) {
+        DCHECK(!target);
+        target = wheel_target_.target;
+      } else if ((mouse_wheel_event.phase ==
+                      blink::WebMouseWheelEvent::kPhaseEnded ||
+                  mouse_wheel_event.momentum_phase ==
+                      blink::WebMouseWheelEvent::kPhaseEnded) &&
+                 bubbling_gesture_scroll_target_.target) {
+        // Send a GSE to the bubbling target and cancel scroll bubbling since
+        // the wheel target view is destroyed and the wheel end event won't get
+        // processed.
+        blink::WebGestureEvent fake_scroll_update =
+            DummyGestureScrollUpdate(mouse_wheel_event.TimeStampSeconds());
+        fake_scroll_update.source_device = blink::kWebGestureDeviceTouchpad;
+        SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                             fake_scroll_update);
+        bubbling_gesture_scroll_target_.target = nullptr;
+        first_bubbling_scroll_target_.target = nullptr;
+      }
     }
   }
 
   if (!target) {
-    root_view->WheelEventAck(*event, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    root_view->WheelEventAck(mouse_wheel_event,
+                             INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
 
-  event->SetPositionInWidget(transformed_point.x(), transformed_point.y());
-  target->ProcessMouseWheelEvent(*event, latency);
+  gfx::PointF point_in_target;
+  if (!root_view->TransformPointToCoordSpaceForView(
+          mouse_wheel_event.PositionInWidget(), target, &point_in_target)) {
+    root_view->WheelEventAck(mouse_wheel_event,
+                             INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    return;
+  }
+
+  blink::WebMouseWheelEvent event = mouse_wheel_event;
+  event.SetPositionInWidget(point_in_target.x(), point_in_target.y());
+  target->ProcessMouseWheelEvent(event, latency);
 
   DCHECK(root_view->wheel_scroll_latching_enabled() || !wheel_target_.target);
-  if (event->phase == blink::WebMouseWheelEvent::kPhaseEnded ||
-      event->momentum_phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+  if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+      mouse_wheel_event.momentum_phase ==
+          blink::WebMouseWheelEvent::kPhaseEnded) {
     wheel_target_.target = nullptr;
   }
 }
@@ -1188,6 +1204,9 @@ RenderWidgetHostInputEventRouter::FindTargetSynchronously(
   if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
     return FindMouseEventTarget(
         root_view, static_cast<const blink::WebMouseEvent&>(event));
+  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
+    return FindMouseWheelEventTarget(
+        root_view, static_cast<const blink::WebMouseWheelEvent&>(event));
   }
   // TODO(crbug.com/796656): Handle other types of events.
   NOTREACHED();
@@ -1203,6 +1222,11 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     DispatchMouseEvent(root_view, target,
                        static_cast<const blink::WebMouseEvent&>(event),
                        latency);
+    return;
+  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
+    DispatchMouseWheelEvent(
+        root_view, target, static_cast<const blink::WebMouseWheelEvent&>(event),
+        latency);
     return;
   }
   // TODO(crbug.com/796656): Handle other types of events.
