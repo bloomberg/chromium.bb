@@ -73,7 +73,8 @@ class MemlogConnectionManager {
                        mojom::ProfilingClientPtr client,
                        mojo::ScopedHandle sender_pipe_end,
                        mojo::ScopedHandle receiver_pipe_end,
-                       mojom::ProcessType process_type);
+                       mojom::ProcessType process_type,
+                       profiling::mojom::StackMode stack_mode);
 
   std::vector<base::ProcessId> GetConnectionPids();
 
@@ -89,7 +90,8 @@ class MemlogConnectionManager {
       bool strip_path_from_mapped_files,
       bool success,
       AllocationCountMap counts,
-      AllocationTracker::ContextMap context);
+      AllocationTracker::ContextMap context,
+      AllocationTracker::AddressToStringMap mapped_strings);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker

@@ -14,12 +14,6 @@
 
 namespace profiling {
 
-namespace {
-
-using AddressVector = base::StackVector<Address, kMaxStackEntries>;
-
-}  // namespace
-
 MemlogStreamParser::Block::Block(std::unique_ptr<char[]> d, size_t s)
     : data(std::move(d)), size(s) {}
 
@@ -70,6 +64,9 @@ bool MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
         break;
       case kBarrierPacketType:
         status = ParseBarrier();
+        break;
+      case kStringMappingPacketType:
+        status = ParseStringMapping();
         break;
       default:
         // Invalid message type.
@@ -215,7 +212,31 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseBarrier() {
   return READ_OK;
 }
 
+MemlogStreamParser::ReadStatus MemlogStreamParser::ParseStringMapping() {
+  StringMappingPacket string_mapping_packet;
+  if (!PeekBytes(sizeof(StringMappingPacket), &string_mapping_packet))
+    return READ_NO_DATA;
+
+  if (!AreBytesAvailable(sizeof(StringMappingPacket) +
+                         string_mapping_packet.string_len))
+    return READ_NO_DATA;
+
+  // Everything will fit, mark header consumed.
+  ConsumeBytes(sizeof(StringMappingPacket));
+
+  // Treat the incoming characters as an opaque blob. It should not contain null
+  // characters but a malicious attacker could change that.
+  std::string str;
+
+  str.resize(string_mapping_packet.string_len);
+  ReadBytes(string_mapping_packet.string_len, &str[0]);
+
+  receiver_->OnStringMapping(string_mapping_packet, str);
+  return READ_OK;
+}
+
 void MemlogStreamParser::SetErrorState() {
+  LOG(ERROR) << "MemlogStreamParser parsing error";
   error_ = true;
   receiver_->OnComplete();
 }

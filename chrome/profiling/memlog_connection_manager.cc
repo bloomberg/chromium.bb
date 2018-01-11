@@ -110,7 +110,8 @@ void MemlogConnectionManager::OnNewConnection(
     mojom::ProfilingClientPtr client,
     mojo::ScopedHandle sender_pipe_end,
     mojo::ScopedHandle receiver_pipe_end,
-    mojom::ProcessType process_type) {
+    mojom::ProcessType process_type,
+    profiling::mojom::StackMode stack_mode) {
   base::AutoLock lock(connections_lock_);
 
   // Attempting to start profiling on an already profiled processs should have
@@ -157,7 +158,7 @@ void MemlogConnectionManager::OnNewConnection(
       base::Bind(&MemlogReceiverPipe::StartReadingOnIOThread, new_pipe));
 
   // Request the client start sending us data.
-  connection->client->StartProfiling(std::move(sender_pipe_end));
+  connection->client->StartProfiling(std::move(sender_pipe_end), stack_mode);
 
   connections_[pid] = std::move(connection);  // Transfers ownership.
 }
@@ -250,7 +251,8 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     bool strip_path_from_mapped_files,
     bool success,
     AllocationCountMap counts,
-    AllocationTracker::ContextMap context) {
+    AllocationTracker::ContextMap context,
+    AllocationTracker::AddressToStringMap mapped_strings) {
   // All code paths through here must issue the callback when waiting_responses
   // is 0 or the browser will wait forever for the dump.
   DCHECK(tracking->waiting_responses > 0);
@@ -282,6 +284,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.allocs = std::move(counts);
   params.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);
   params.context_map = std::move(context);
+  params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;
   params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
   params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;

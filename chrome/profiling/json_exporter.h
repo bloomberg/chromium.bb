@@ -32,6 +32,10 @@ struct ExportParams {
   // what the context_id in the allocation mean.
   std::map<std::string, int> context_map;
 
+  // Some addresses represent strings rather than instruction pointers.
+  // The strings are assumed to already be escaped for JSON.
+  std::unordered_map<uint64_t, std::string> mapped_strings;
+
   // The type of browser [browser, renderer, gpu] that is being heap-dumped.
   mojom::ProcessType process_type = mojom::ProcessType::OTHER;
 

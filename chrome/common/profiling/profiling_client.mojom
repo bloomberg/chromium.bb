@@ -4,6 +4,18 @@
 
 module profiling.mojom;
 
+// The data that is recorded for an allocation stack.
+enum StackMode {
+  // Instruction addresses from unwinding the stack.
+  NATIVE,
+
+  // Uses trace events as identifiers.
+  PSEUDO,
+
+  // Uses a combination of trace events and selective native addresses.
+  MIXED
+};
+
 // This interface is implemented by "memlog clients" (profiled processes that
 // can send memory allocation events to the profiling process). These functions
 // are called by the profiling process to control the senders.
@@ -11,7 +23,9 @@ interface ProfilingClient {
   // Start recording allocations and sending them to the profiling process via
   // |sender_pipe|. There is currently no mechanism to stop recording
   // allocations.
-  StartProfiling(handle memlog_sender_pipe);
+  // |stack_mode| refers to the type of data that should be recorded for each
+  // allocation.
+  StartProfiling(handle memlog_sender_pipe, StackMode stack_mode);
 
   // Flushes the memlog pipe associated with this client. A barrier packet is
   // set over the memlog pipe with the given identifier. This allows the

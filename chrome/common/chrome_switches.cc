@@ -476,6 +476,10 @@ const char kMemlogModeGpu[] = "gpu";
 const char kMemlogModeManual[] = "manual";
 const char kMemlogModeMinimal[] = "minimal";
 const char kMemlogModeRendererSampling[] = "renderer-sampling";
+const char kMemlogStackMode[] = "memlog-stack-mode";
+const char kMemlogStackModeMixed[] = "mixed";
+const char kMemlogStackModeNative[] = "native";
+const char kMemlogStackModePseudo[] = "pseudo";
 
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
