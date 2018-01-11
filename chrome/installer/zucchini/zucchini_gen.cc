@@ -367,8 +367,8 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
     return GenerateRaw(old_image, new_image, patch_writer);
   }
 
-  if (old_element->region() != old_image.region() ||
-      new_element->region() != new_image.region()) {
+  if (old_element->region() != old_image.local_region() ||
+      new_element->region() != new_image.local_region()) {
     LOG(ERROR) << "Ensemble patching is currently unsupported.";
     return status::kStatusFatal;
   }
@@ -394,7 +394,7 @@ status::Code GenerateRaw(ConstBufferView old_image,
       MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality());
 
   PatchElementWriter patch_element(
-      {Element(old_image.region()), Element(new_image.region())});
+      {Element(old_image.local_region()), Element(new_image.local_region())});
   if (!GenerateRawElement(old_sa, old_image, new_image, &patch_element))
     return status::kStatusFatal;
   patch_writer->AddElement(std::move(patch_element));
