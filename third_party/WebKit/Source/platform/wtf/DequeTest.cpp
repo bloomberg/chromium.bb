@@ -542,6 +542,8 @@ TEST(DequeTest, emplace_front) {
   EXPECT_EQ(2, deque[1].value2);
 }
 
-}  // anonymous namespace
+static_assert(!IsTraceable<Deque<int>>::value,
+              "Deque<int> must not be traceable.");
 
+}  // anonymous namespace
 }  // namespace WTF
