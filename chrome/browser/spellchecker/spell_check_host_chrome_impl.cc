@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spell_check_host_impl.h"
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -16,22 +16,22 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-SpellCheckHostImpl::SpellCheckHostImpl(
+SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
     const service_manager::Identity& renderer_identity)
     : renderer_identity_(renderer_identity) {}
 
-SpellCheckHostImpl::~SpellCheckHostImpl() = default;
+SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
 
 // static
-void SpellCheckHostImpl::Create(
+void SpellCheckHostChromeImpl::Create(
     spellcheck::mojom::SpellCheckHostRequest request,
     const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<SpellCheckHostImpl>(source_info.identity),
+      base::MakeUnique<SpellCheckHostChromeImpl>(source_info.identity),
       std::move(request));
 }
 
-void SpellCheckHostImpl::RequestDictionary() {
+void SpellCheckHostChromeImpl::RequestDictionary() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // The renderer has requested that we initialize its spellchecker. This
@@ -50,8 +50,8 @@ void SpellCheckHostImpl::RequestDictionary() {
   // more than once if we get requests from different renderers.
 }
 
-void SpellCheckHostImpl::NotifyChecked(const base::string16& word,
-                                       bool misspelled) {
+void SpellCheckHostChromeImpl::NotifyChecked(const base::string16& word,
+                                             bool misspelled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SpellcheckService* spellcheck = GetSpellcheckService();
@@ -61,7 +61,7 @@ void SpellCheckHostImpl::NotifyChecked(const base::string16& word,
     spellcheck->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }
 
-void SpellCheckHostImpl::CallSpellingService(
+void SpellCheckHostChromeImpl::CallSpellingService(
     const base::string16& text,
     CallSpellingServiceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -82,7 +82,7 @@ void SpellCheckHostImpl::CallSpellingService(
           renderer_identity_.user_id());
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
-      base::BindOnce(&SpellCheckHostImpl::CallSpellingServiceDone,
+      base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,
                      base::Unretained(this), base::Passed(&callback)));
 #else
   std::move(callback).Run(false, std::vector<SpellCheckResult>());
@@ -90,7 +90,7 @@ void SpellCheckHostImpl::CallSpellingService(
 }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-void SpellCheckHostImpl::CallSpellingServiceDone(
+void SpellCheckHostChromeImpl::CallSpellingServiceDone(
     CallSpellingServiceCallback callback,
     bool success,
     const base::string16& text,
@@ -111,7 +111,7 @@ void SpellCheckHostImpl::CallSpellingServiceDone(
 }
 
 // static
-std::vector<SpellCheckResult> SpellCheckHostImpl::FilterCustomWordResults(
+std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
     const std::string& text,
     const SpellcheckCustomDictionary& custom_dictionary,
     const std::vector<SpellCheckResult>& service_results) {
@@ -126,6 +126,6 @@ std::vector<SpellCheckResult> SpellCheckHostImpl::FilterCustomWordResults(
 }
 #endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
-SpellcheckService* SpellCheckHostImpl::GetSpellcheckService() const {
+SpellcheckService* SpellCheckHostChromeImpl::GetSpellcheckService() const {
   return SpellcheckServiceFactory::GetForRenderer(renderer_identity_);
 }

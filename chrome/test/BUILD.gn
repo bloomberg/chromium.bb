@@ -3133,7 +3133,8 @@ test("unit_tests") {
     ]
 
     if (!use_browser_spellchecker) {
-      sources += [ "../browser/spellchecker/spell_check_host_impl_unittest.cc" ]
+      sources +=
+          [ "../browser/spellchecker/spell_check_host_chrome_impl_unittest.cc" ]
     }
   }
 

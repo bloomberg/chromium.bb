@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spell_check_host_impl.h"
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -19,9 +19,9 @@
 #error !BUILDFLAG(USE_BROWSER_SPELLCHECKER) is required for these tests.
 #endif
 
-class TestSpellCheckHostImpl {
+class TestSpellCheckHostChromeImpl {
  public:
-  TestSpellCheckHostImpl()
+  TestSpellCheckHostChromeImpl()
       : spellcheck_(base::MakeUnique<SpellcheckService>(&testing_profile_)) {}
 
   SpellcheckCustomDictionary& GetCustomDictionary() const {
@@ -34,7 +34,7 @@ class TestSpellCheckHostImpl {
   std::vector<SpellCheckResult> FilterCustomWordResults(
       const std::string& text,
       const std::vector<SpellCheckResult>& service_results) const {
-    return SpellCheckHostImpl::FilterCustomWordResults(
+    return SpellCheckHostChromeImpl::FilterCustomWordResults(
         text, GetCustomDictionary(), service_results);
   }
 
@@ -43,18 +43,18 @@ class TestSpellCheckHostImpl {
   TestingProfile testing_profile_;
   std::unique_ptr<SpellcheckService> spellcheck_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSpellCheckHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestSpellCheckHostChromeImpl);
 };
 
 // Spelling corrections of custom dictionary words should be removed from the
 // results returned by the remote Spelling service.
-TEST(SpellCheckHostImplTest, CustomSpellingResults) {
+TEST(SpellCheckHostChromeImplTest, CustomSpellingResults) {
   std::vector<SpellCheckResult> service_results;
   service_results.push_back(SpellCheckResult(SpellCheckResult::SPELLING, 0, 6,
                                              base::ASCIIToUTF16("Hello")));
   service_results.push_back(SpellCheckResult(SpellCheckResult::SPELLING, 7, 5,
                                              base::ASCIIToUTF16("World")));
-  TestSpellCheckHostImpl host_impl;
+  TestSpellCheckHostChromeImpl host_impl;
   host_impl.GetCustomDictionary().AddWord("Helllo");
   std::vector<SpellCheckResult> results =
       host_impl.FilterCustomWordResults("Helllo Warld", service_results);
@@ -70,13 +70,13 @@ TEST(SpellCheckHostImplTest, CustomSpellingResults) {
 
 // Spelling corrections of words that are not in the custom dictionary should
 // be retained in the results returned by the remote Spelling service.
-TEST(SpellCheckHostImplTest, SpellingServiceResults) {
+TEST(SpellCheckHostChromeImplTest, SpellingServiceResults) {
   std::vector<SpellCheckResult> service_results;
   service_results.push_back(SpellCheckResult(SpellCheckResult::SPELLING, 0, 6,
                                              base::ASCIIToUTF16("Hello")));
   service_results.push_back(SpellCheckResult(SpellCheckResult::SPELLING, 7, 5,
                                              base::ASCIIToUTF16("World")));
-  TestSpellCheckHostImpl host_impl;
+  TestSpellCheckHostChromeImpl host_impl;
   host_impl.GetCustomDictionary().AddWord("Hulo");
   std::vector<SpellCheckResult> results =
       host_impl.FilterCustomWordResults("Helllo Warld", service_results);
