@@ -43,11 +43,6 @@ class NotifierController {
                                   const message_center::NotifierId& notifier_id,
                                   bool enabled) = 0;
 
-  // Called when the advanced settings button has been clicked.
-  virtual void OnNotifierAdvancedSettingsRequested(
-      Profile* profile,
-      const message_center::NotifierId& notifier_id) {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotifierController);
 };

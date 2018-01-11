@@ -50,7 +50,7 @@ WebPageNotifierController::GetNotifierList(Profile* profile) {
     HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
         url, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &info);
     notifiers.push_back(ash::mojom::NotifierUiData::New(
-        notifier_id, name, false /* has_advanced_settings */,
+        notifier_id, name,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
         info.source == content_settings::SETTING_SOURCE_POLICY,
         gfx::ImageSkia()));

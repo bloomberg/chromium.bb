@@ -51,20 +51,10 @@ ExtensionNotifierController::GetNotifierList(Profile* profile) {
 
     message_center::NotifierId notifier_id(
         message_center::NotifierId::APPLICATION, extension->id());
-    // This may be null in unit tests.
-    extensions::EventRouter* event_router =
-        extensions::EventRouter::Get(profile);
-    bool has_advanced_settings_button =
-        event_router
-            ? event_router->ExtensionHasEventListener(
-                  extension->id(),
-                  extensions::api::notifications::OnShowSettings::kEventName)
-            : false;
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
     ui_data.push_back(ash::mojom::NotifierUiData::New(
         notifier_id, base::UTF8ToUTF16(extension->name()),
-        has_advanced_settings_button,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
         false /* enforced */, gfx::ImageSkia()));
     app_icon_loader_->FetchImage(extension->id());
@@ -80,21 +70,6 @@ void ExtensionNotifierController::SetNotifierEnabled(
   NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
       notifier_id, enabled);
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
-}
-
-void ExtensionNotifierController::OnNotifierAdvancedSettingsRequested(
-    Profile* profile,
-    const message_center::NotifierId& notifier_id) {
-  const std::string& extension_id = notifier_id.id;
-
-  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::NOTIFICATIONS_ON_SHOW_SETTINGS,
-      extensions::api::notifications::OnShowSettings::kEventName,
-      std::move(args)));
-  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void ExtensionNotifierController::OnAppImageUpdated(
