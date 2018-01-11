@@ -11,7 +11,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
-#include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -36,7 +35,16 @@ class WebRTCInternalsUIObserver;
 class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                                        public ui::SelectFileDialog::Listener {
  public:
+  // Ensures that no previous instantiation of the class was performed, then
+  // instantiates the class and returns the object. Subsequent calls to
+  // GetInstance() will return this object.
+  static WebRTCInternals* CreateSingletonInstance();
+
+  // Returns the object previously constructed using CreateSingletonInstance().
+  // Can be null in tests.
   static WebRTCInternals* GetInstance();
+
+  ~WebRTCInternals() override;
 
   // This method is called when a PeerConnection is created.
   // |render_process_id| is the id of the render process (not OS pid), which is
@@ -116,7 +124,6 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // The default ctor sets |aggregate_updates_ms| to 500ms.
   WebRTCInternals();
   WebRTCInternals(int aggregate_updates_ms, bool should_block_power_saving);
-  ~WebRTCInternals() override;
 
   // This allows unit-tests to override to using either a mock, or a locally
   // scoped, version of WebRtcEventLogManager.
@@ -125,7 +132,6 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   device::mojom::WakeLockPtr wake_lock_;
 
  private:
-  friend struct base::LazyInstanceTraitsBase<WebRTCInternals>;
   FRIEND_TEST_ALL_PREFIXES(WebRtcAudioDebugRecordingsBrowserTest,
                            CallWithAudioDebugRecordings);
   FRIEND_TEST_ALL_PREFIXES(WebRtcAudioDebugRecordingsBrowserTest,
@@ -134,6 +140,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                            TwoCallsWithAudioDebugRecordings);
   FRIEND_TEST_ALL_PREFIXES(WebRtcInternalsTest,
                            AudioDebugRecordingsFileSelectionCanceled);
+
+  static WebRTCInternals* g_webrtc_internals;
 
   void SendUpdate(const char* command,
                   std::unique_ptr<base::Value> value);
