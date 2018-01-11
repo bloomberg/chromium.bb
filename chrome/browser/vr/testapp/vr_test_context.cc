@@ -52,6 +52,7 @@ constexpr float kDefaultViewScaleFactor = 1.2f;
 constexpr float kMinViewScaleFactor = 0.5f;
 constexpr float kMaxViewScaleFactor = 5.0f;
 constexpr float kViewScaleAdjustmentFactor = 0.2f;
+constexpr float kPageLoadTimeMilliseconds = 500;
 
 constexpr gfx::Point3F kLaserOrigin = {0.5f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
@@ -138,6 +139,11 @@ void VrTestContext::DrawFrame() {
   if (model_->web_vr.has_produced_frames()) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
   }
+
+  auto load_progress = (current_time - page_load_start_).InMilliseconds() /
+                       kPageLoadTimeMilliseconds;
+  ui_->SetLoading(load_progress < 1.0f);
+  ui_->SetLoadProgress(std::min(load_progress, 1.0f));
 }
 
 void VrTestContext::HandleInput(ui::Event* event) {
@@ -193,6 +199,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_O:
         CycleOrigin();
+        model_->can_navigate_back = !model_->can_navigate_back;
         break;
       case ui::DomCode::US_C:
         model_->can_apply_new_background = true;
@@ -451,9 +458,13 @@ void VrTestContext::Navigate(GURL gurl) {
   ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
                      &toolbar::kHttpIcon, base::string16(), true, false);
   ui_->SetToolbarState(state);
+  page_load_start_ = base::TimeTicks::Now();
 }
 
-void VrTestContext::NavigateBack() {}
+void VrTestContext::NavigateBack() {
+  page_load_start_ = base::TimeTicks::Now();
+}
+
 void VrTestContext::ExitCct() {}
 
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
@@ -503,7 +514,7 @@ void VrTestContext::CycleOrigin() {
        security_state::SecurityLevel::SECURE, &toolbar::kHttpsValidIcon,
        base::UTF8ToUTF16("Secure"), true, false},
       {GURL("https://www.domain.com/path/segment/directory/file.html"),
-       security_state::SecurityLevel::DANGEROUS, &toolbar::kHttpsValidIcon,
+       security_state::SecurityLevel::DANGEROUS, &toolbar::kHttpsInvalidIcon,
        base::UTF8ToUTF16("Dangerous"), true, false},
       {GURL("https://www.domain.com/path/segment/directory/file.html"),
        security_state::SecurityLevel::HTTP_SHOW_WARNING,

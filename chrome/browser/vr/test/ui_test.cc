@@ -144,6 +144,7 @@ void UiTest::VerifyOnlyElementsVisible(
 }
 
 int UiTest::NumVisibleInTree(UiElementName name) const {
+  OnBeginFrame();
   auto* root = scene_->GetUiElementByName(name);
   EXPECT_NE(root, nullptr);
   if (!root) {

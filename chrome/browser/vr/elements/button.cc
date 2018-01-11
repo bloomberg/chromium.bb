@@ -69,12 +69,12 @@ void Button::SetButtonColors(const ButtonColors& colors) {
 }
 
 void Button::HandleHoverEnter() {
-  hovered_ = true;
+  hovered_ = enabled_;
   OnStateUpdated();
 }
 
 void Button::HandleHoverMove(const gfx::PointF& position) {
-  hovered_ = hit_plane_->LocalHitTest(position);
+  hovered_ = hit_plane_->LocalHitTest(position) && enabled_;
   OnStateUpdated();
 }
 
@@ -84,7 +84,7 @@ void Button::HandleHoverLeave() {
 }
 
 void Button::HandleButtonDown() {
-  down_ = true;
+  down_ = enabled_;
   OnStateUpdated();
 }
 
