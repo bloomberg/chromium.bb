@@ -30,12 +30,15 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace data_reduction_proxy {
 
 namespace {
 
 const char kDefaultTestUrl[] = "http://google.com";
+const int kMemoryKb = 1024;
 
 data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
     content::WebContents* web_contents,
@@ -130,6 +133,24 @@ class TestDataReductionProxyMetricsObserver
     return pingback_client_;
   }
 
+  void RequestProcessDump(
+      base::ProcessId pid,
+      memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
+          callback) override {
+    memory_instrumentation::mojom::GlobalMemoryDumpPtr global_dump(
+        memory_instrumentation::mojom::GlobalMemoryDump::New());
+
+    memory_instrumentation::mojom::ProcessMemoryDumpPtr pmd(
+        memory_instrumentation::mojom::ProcessMemoryDump::New());
+    pmd->pid = pid;
+    pmd->process_type = memory_instrumentation::mojom::ProcessType::RENDERER;
+    pmd->os_dump = memory_instrumentation::mojom::OSMemDump::New();
+    pmd->os_dump->private_footprint_kb = kMemoryKb;
+
+    global_dump->process_dumps.push_back(std::move(pmd));
+    callback.Run(true, std::move(global_dump));
+  }
+
  private:
   content::WebContents* web_contents_;
   TestPingbackClient* pingback_client_;
@@ -214,6 +235,10 @@ class DataReductionProxyMetricsObserverTest
     ExpectEqualOrUnset(timing_.paint_timing->first_image_paint,
                        pingback_client_->timing()->first_image_paint);
     EXPECT_EQ(opt_out_expected_, pingback_client_->timing()->opt_out_occurred);
+    EXPECT_EQ(timing_.document_timing->load_event_start
+                  ? static_cast<int64_t>(kMemoryKb)
+                  : 0,
+              pingback_client_->timing()->renderer_memory_usage_kb);
   }
 
   void ValidateLoFiInPingback(bool lofi_expected) {

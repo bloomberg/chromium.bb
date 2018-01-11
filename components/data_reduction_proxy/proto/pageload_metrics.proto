@@ -29,6 +29,7 @@ message RecordPageloadMetricsRequest {
 
 // Metrics for a single pageload.
 message PageloadMetrics {
+  // Next ID: 21
   reserved 3;
 
   // The possible effective connection type values.
@@ -114,4 +115,10 @@ message PageloadMetrics {
   // The name of the finch group for the data reduction proxy holdback
   // experiment. This can be an empty string if not included in a finch group.
   optional string holdback_group = 19;
+
+  // Kilobytes of memory used by the main renderer process related to this page
+  // load. Recorded after load event starts. 0 if the page closed before or
+  // shortly after load event or the memory dump failed.
+  // Out of process frames will not be tracked in this estimate.
+  optional int64 renderer_memory_usage_kb = 20;
 }

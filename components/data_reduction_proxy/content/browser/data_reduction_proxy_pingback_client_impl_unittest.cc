@@ -45,6 +45,7 @@ static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
 static const int64_t kBytes = 10000;
 static const int64_t kBytesOriginal = 1000000;
+static const int64_t kRendererMemory = 1024;
 
 }  // namespace
 
@@ -128,7 +129,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
-        app_background_occurred, opt_out_occurred);
+        app_background_occurred, opt_out_occurred, kRendererMemory);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -224,6 +225,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
+  EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   EXPECT_EQ(std::string(), pageload_metrics.holdback_group());
   EXPECT_EQ(base::SysInfo::AmountOfPhysicalMemory() / 1024,
             batched_request.device_info().total_device_memory_kb());
@@ -343,6 +345,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(
         PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
         pageload_metrics.effective_connection_type());
+    EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   }
 
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
