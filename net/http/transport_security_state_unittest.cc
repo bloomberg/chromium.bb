@@ -3585,7 +3585,7 @@ TEST_F(TransportSecurityStateStaticTest, OptionalHSTSCertPins) {
   EXPECT_TRUE(HasStaticPublicKeyPins("googlesyndication.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("doubleclick.net"));
   EXPECT_TRUE(HasStaticPublicKeyPins("ad.doubleclick.net"));
-  EXPECT_FALSE(HasStaticPublicKeyPins("learn.doubleclick.net"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("redirector.gvt1.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("a.googlegroups.com"));
 }
 
