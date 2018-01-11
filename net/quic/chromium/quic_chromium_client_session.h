@@ -40,6 +40,7 @@
 #include "net/quic/core/quic_spdy_client_session_base.h"
 #include "net/quic/core/quic_time.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/spdy/chromium/http2_priority_dependencies.h"
 #include "net/spdy/chromium/multiplexed_session.h"
 #include "net/spdy/chromium/server_push_delegate.h"
 
@@ -344,6 +345,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       int max_migrations_to_non_default_network_on_path_degrading,
       int yield_after_packets,
       QuicTime::Delta yield_after_duration,
+      bool headers_include_h2_stream_dependency,
       int cert_verify_flags,
       const QuicConfig& config,
       QuicCryptoClientConfig* crypto_config,
@@ -407,7 +409,16 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const QuicSocketAddress& peer_address) override;
 
   // QuicSpdySession methods:
+  size_t WriteHeaders(QuicStreamId id,
+                      SpdyHeaderBlock headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicReferenceCountedPointer<QuicAckListenerInterface>
+                          ack_listener) override;
   void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) override;
+  void UnregisterStreamPriority(QuicStreamId id) override;
+  void UpdateStreamPriority(QuicStreamId id,
+                            SpdyPriority new_priority) override;
 
   // QuicSession methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
@@ -742,6 +753,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // sockets_.size(). Then in MigrateSessionOnError, check to see if
   // the current sockets_.size() == the passed in value.
   bool migration_pending_;  // True while migration is underway.
+
+  // If true, client headers will include HTTP/2 stream dependency info derived
+  // from SpdyPriority.
+  bool headers_include_h2_stream_dependency_;
+  Http2PriorityDependencies priority_dependency_state_;
+
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);

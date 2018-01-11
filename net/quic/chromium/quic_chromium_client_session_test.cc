@@ -82,10 +82,12 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
 };
 
 class QuicChromiumClientSessionTest
-    : public ::testing::TestWithParam<QuicTransportVersion> {
+    : public ::testing::TestWithParam<std::tuple<QuicTransportVersion, bool>> {
  public:
   QuicChromiumClientSessionTest()
-      : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+      : version_(std::get<0>(GetParam())),
+        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()),
         default_read_(new MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)),
         socket_data_(
@@ -94,16 +96,18 @@ class QuicChromiumClientSessionTest
         helper_(&clock_, &random_),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
         destination_(kServerHostname, kServerPort),
-        client_maker_(GetParam(),
+        client_maker_(version_,
                       0,
                       &clock_,
                       kServerHostname,
-                      Perspective::IS_CLIENT),
-        server_maker_(GetParam(),
+                      Perspective::IS_CLIENT,
+                      client_headers_include_h2_stream_dependency_),
+        server_maker_(version_,
                       0,
                       &clock_,
                       kServerHostname,
-                      Perspective::IS_SERVER) {
+                      Perspective::IS_SERVER,
+                      false) {
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
@@ -130,7 +134,7 @@ class QuicChromiumClientSessionTest
         0, QuicSocketAddress(QuicSocketAddressImpl(kIpEndPoint)), &helper_,
         &alarm_factory_, writer, true, Perspective::IS_CLIENT,
         SupportedVersions(
-            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, GetParam())));
+            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, version_)));
     session_.reset(new TestingQuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
@@ -144,10 +148,10 @@ class QuicChromiumClientSessionTest
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-        /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
-        &push_promise_index_, &test_push_delegate_,
-        base::ThreadTaskRunnerHandle::Get().get(),
+        /*cert_verify_flags=*/0, client_headers_include_h2_stream_dependency_,
+        DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN",
+        base::TimeTicks::Now(), base::TimeTicks::Now(), &push_promise_index_,
+        &test_push_delegate_, base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, &net_log_));
 
     scoped_refptr<X509Certificate> cert(
@@ -179,13 +183,15 @@ class QuicChromiumClientSessionTest
   }
 
   QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return test::GetNthClientInitiatedStreamId(GetParam(), n);
+    return test::GetNthClientInitiatedStreamId(version_, n);
   }
 
   QuicStreamId GetNthServerInitiatedStreamId(int n) {
-    return test::GetNthServerInitiatedStreamId(GetParam(), n);
+    return test::GetNthServerInitiatedStreamId(version_, n);
   }
 
+  const QuicTransportVersion version_;
+  const bool client_headers_include_h2_stream_dependency_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   QuicCryptoClientConfig crypto_config_;
   TestNetLog net_log_;
@@ -211,9 +217,11 @@ class QuicChromiumClientSessionTest
   ProofVerifyDetailsChromium verify_details_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicChromiumClientSessionTest,
-                        ::testing::ValuesIn(AllSupportedTransportVersions()));
+INSTANTIATE_TEST_CASE_P(
+    VersionIncludeStreamDependencySequnece,
+    QuicChromiumClientSessionTest,
+    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
+                       ::testing::Bool()));
 
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
@@ -291,7 +299,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
       session_->CreateHandle(destination_);
   EXPECT_TRUE(handle->IsConnected());
   EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(GetParam(), handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(server_id_, handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -319,7 +327,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is closed.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(GetParam(), handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(server_id_, handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -343,7 +351,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is deleted.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(GetParam(), handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(server_id_, handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);

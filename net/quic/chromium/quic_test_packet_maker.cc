@@ -24,18 +24,25 @@ QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
 
 }  // namespace
 
-QuicTestPacketMaker::QuicTestPacketMaker(QuicTransportVersion version,
-                                         QuicConnectionId connection_id,
-                                         MockClock* clock,
-                                         const std::string& host,
-                                         Perspective perspective)
+QuicTestPacketMaker::QuicTestPacketMaker(
+    QuicTransportVersion version,
+    QuicConnectionId connection_id,
+    MockClock* clock,
+    const std::string& host,
+    Perspective perspective,
+    bool client_headers_include_h2_stream_dependency)
     : version_(version),
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
       spdy_request_framer_(SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(SpdyFramer::ENABLE_COMPRESSION),
-      perspective_(perspective) {}
+      perspective_(perspective),
+      client_headers_include_h2_stream_dependency_(
+          client_headers_include_h2_stream_dependency) {
+  DCHECK(!(perspective_ == Perspective::IS_SERVER &&
+           client_headers_include_h2_stream_dependency_));
+}
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {}
 
@@ -380,12 +387,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     size_t* spdy_headers_frame_length,
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
-  SpdySerializedFrame spdy_frame;
-  SpdyHeadersIR headers_frame(stream_id, std::move(headers));
-  headers_frame.set_fin(fin);
-  headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
-  headers_frame.set_has_priority(true);
-  spdy_frame = spdy_request_framer_.SerializeFrame(headers_frame);
+  SpdySerializedFrame spdy_frame =
+      MakeSpdyHeadersFrame(stream_id, fin, priority, std::move(headers));
 
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
@@ -462,12 +465,8 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
     QuicStreamOffset* offset,
     std::string* stream_data) {
   InitializeHeader(packet_number, should_include_version);
-  SpdySerializedFrame spdy_frame;
-  SpdyHeadersIR headers_frame(stream_id, std::move(headers));
-  headers_frame.set_fin(fin);
-  headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
-  headers_frame.set_has_priority(true);
-  spdy_frame = spdy_request_framer_.SerializeFrame(headers_frame);
+  SpdySerializedFrame spdy_frame =
+      MakeSpdyHeadersFrame(stream_id, fin, priority, std::move(headers));
   *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
 
   if (spdy_headers_frame_length)
@@ -486,6 +485,38 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
 
     return MakePacket(header_, QuicFrame(&frame));
   }
+}
+
+SpdySerializedFrame QuicTestPacketMaker::MakeSpdyHeadersFrame(
+    QuicStreamId stream_id,
+    bool fin,
+    SpdyPriority priority,
+    SpdyHeaderBlock headers) {
+  SpdyHeadersIR headers_frame(stream_id, std::move(headers));
+  headers_frame.set_fin(fin);
+  headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
+  headers_frame.set_has_priority(true);
+
+  if (client_headers_include_h2_stream_dependency_) {
+    // Parent stream is the most recently created stream of the next higher
+    // priority (i.e. next lower SpdyPriority value).
+    QuicStreamId parent_stream_id = 0;
+    for (int p = priority; p >= 0; --p) {
+      if (!priority_id_lists_[p].empty()) {
+        parent_stream_id = priority_id_lists_[p].back();
+        break;
+      }
+    }
+    priority_id_lists_[priority].push_back(stream_id);
+
+    headers_frame.set_parent_stream_id(parent_stream_id);
+    headers_frame.set_exclusive(true);
+  } else {
+    headers_frame.set_parent_stream_id(0);
+    headers_frame.set_exclusive(false);
+  }
+
+  return spdy_request_framer_.SerializeFrame(headers_frame);
 }
 
 // Convenience method for calling MakeRequestHeadersPacket with nullptr for
@@ -713,6 +744,21 @@ QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
       kHeadersStreamId, false, 0,
       QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, QuicFrame(&quic_frame));
+}
+
+void QuicTestPacketMaker::ClientUpdateWithStreamDestruction(
+    QuicStreamId stream_id) {
+  DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
+  if (client_headers_include_h2_stream_dependency_) {
+    for (auto& list : priority_id_lists_) {
+      for (auto it = list.begin(); it != list.end(); ++it) {
+        if (*it == stream_id) {
+          list.erase(it);
+          return;
+        }
+      }
+    }
+  }
 }
 
 }  // namespace test

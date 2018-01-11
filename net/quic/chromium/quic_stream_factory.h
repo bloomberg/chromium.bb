@@ -240,6 +240,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool allow_server_migration,
       bool race_cert_verification,
       bool estimate_initial_rtt,
+      bool headers_include_h2_stream_dependency,
       const QuicTagVector& connection_options,
       const QuicTagVector& client_connection_options,
       bool enable_token_binding);
@@ -555,6 +556,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // If true, estimate the initial RTT based on network type.
   bool estimate_initial_rtt;
+
+  // If true, client headers will include HTTP/2 stream dependency info
+  // derived from SpdyPriority.
+  bool headers_include_h2_stream_dependency_;
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;

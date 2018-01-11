@@ -763,4 +763,15 @@ TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialDisable) {
 #endif
 }
 
+TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["headers_include_h2_stream_dependency"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_headers_include_h2_stream_dependency);
+}
+
 }  // namespace network_session_configurator

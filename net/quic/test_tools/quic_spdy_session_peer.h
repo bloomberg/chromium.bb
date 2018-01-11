@@ -39,6 +39,8 @@ class QuicSpdySessionPeer {
       SpdyHeaderBlock headers,
       bool fin,
       SpdyPriority priority,
+      QuicStreamId parent_stream_id,
+      bool exclusive,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
   // Helper functions for stream ids, to allow test logic to abstract
   // over the HTTP stream numbering scheme (i.e. whether one or

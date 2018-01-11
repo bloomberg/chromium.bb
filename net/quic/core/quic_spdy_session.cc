@@ -400,10 +400,21 @@ size_t QuicSpdySession::WriteHeaders(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
-    QuicReferenceCountedPointer<QuicAckListenerInterface>
-        ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+  return WriteHeadersImpl(id, std::move(headers), fin, priority, 0, false,
+                          std::move(ack_listener));
+}
+
+size_t QuicSpdySession::WriteHeaders(
+    QuicStreamId id,
+    SpdyHeaderBlock headers,
+    bool fin,
+    SpdyPriority priority,
+    QuicStreamId parent_stream_id,
+    bool exclusive,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return WriteHeadersImpl(id, std::move(headers), fin, priority,
-                          std::move(ack_notifier_delegate));
+                          parent_stream_id, exclusive, std::move(ack_listener));
 }
 
 size_t QuicSpdySession::WriteHeadersImpl(
@@ -411,18 +422,32 @@ size_t QuicSpdySession::WriteHeadersImpl(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
-    QuicReferenceCountedPointer<QuicAckListenerInterface>
-        ack_notifier_delegate) {
+    QuicStreamId parent_stream_id,
+    bool exclusive,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   SpdyHeadersIR headers_frame(id, std::move(headers));
   headers_frame.set_fin(fin);
   if (perspective() == Perspective::IS_CLIENT) {
     headers_frame.set_has_priority(true);
     headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
+    headers_frame.set_parent_stream_id(parent_stream_id);
+    headers_frame.set_exclusive(exclusive);
   }
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false,
-      std::move(ack_notifier_delegate));
+      std::move(ack_listener));
+  return frame.size();
+}
+
+size_t QuicSpdySession::WritePriority(QuicStreamId id,
+                                      QuicStreamId parent_stream_id,
+                                      int weight,
+                                      bool exclusive) {
+  SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(priority_frame));
+  headers_stream_->WriteOrBufferData(
+      QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
 }
 

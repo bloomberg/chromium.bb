@@ -98,6 +98,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool allow_server_migration = data_provider.ConsumeBool();
   bool race_cert_verification = data_provider.ConsumeBool();
   bool estimate_initial_rtt = data_provider.ConsumeBool();
+  bool headers_include_h2_stream_dependency = data_provider.ConsumeBool();
   bool enable_token_binding = data_provider.ConsumeBool();
 
   env->crypto_client_stream_factory.AddProofVerifyDetails(&env->verify_details);
@@ -136,8 +137,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
           allow_server_migration, race_cert_verification, estimate_initial_rtt,
-          env->connection_options, env->client_connection_options,
-          enable_token_binding);
+          headers_include_h2_stream_dependency, env->connection_options,
+          env->client_connection_options, enable_token_binding);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;

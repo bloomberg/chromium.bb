@@ -31,7 +31,8 @@ class QuicTestPacketMaker {
                       QuicConnectionId connection_id,
                       MockClock* clock,
                       const std::string& host,
-                      Perspective perspective);
+                      Perspective perspective,
+                      bool client_headers_include_h2_stream_dependency);
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
@@ -247,6 +248,12 @@ class QuicTestPacketMaker {
   SpdyHeaderBlock GetResponseHeaders(const std::string& status,
                                      const std::string& alt_svc);
 
+  // Tests where a stream is destroyed followed by generating a request header
+  // for a different stream should call this after the first stream is
+  // destroyed. This updates |priority_id_lists_| so that the HTTP2 stream
+  // dependency info in generated request headers are correct.
+  void ClientUpdateWithStreamDestruction(QuicStreamId stream_id);
+
  private:
   std::unique_ptr<QuicReceivedPacket> MakePacket(const QuicPacketHeader& header,
                                                  const QuicFrame& frame);
@@ -257,6 +264,11 @@ class QuicTestPacketMaker {
   void InitializeHeader(QuicPacketNumber packet_number,
                         bool should_include_version);
 
+  SpdySerializedFrame MakeSpdyHeadersFrame(QuicStreamId stream_id,
+                                           bool fin,
+                                           SpdyPriority priority,
+                                           SpdyHeaderBlock headers);
+
   QuicTransportVersion version_;
   QuicConnectionId connection_id_;
   MockClock* clock_;  // Owned by QuicStreamFactory.
@@ -266,6 +278,13 @@ class QuicTestPacketMaker {
   MockRandom random_generator_;
   QuicPacketHeader header_;
   Perspective perspective_;
+
+  // If true, generated request headers will include HTTP2 stream dependency
+  // info.
+  bool client_headers_include_h2_stream_dependency_;
+  // Keeps track of the stream IDs for which request headers have been created,
+  // grouped by SpdyPriority.
+  std::vector<QuicStreamId> priority_id_lists_[kV3LowestPriority + 1];
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestPacketMaker);
 };

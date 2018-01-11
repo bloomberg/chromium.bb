@@ -304,8 +304,12 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   MockClock clock_;
   MockRandom random_generator_{0};
   QuicTestPacketMaker client_maker_{
-      HttpNetworkSession::Params().quic_supported_versions[0], 0, &clock_,
-      kServerHostname, Perspective::IS_CLIENT};
+      HttpNetworkSession::Params().quic_supported_versions[0],
+      0,
+      &clock_,
+      kServerHostname,
+      Perspective::IS_CLIENT,
+      false};
 
  protected:
   BoundTestNetLog net_log_;

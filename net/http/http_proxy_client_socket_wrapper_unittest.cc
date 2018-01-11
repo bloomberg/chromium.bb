@@ -58,7 +58,7 @@ class MockSSLConfigService : public SSLConfigService {
 namespace test {
 
 class HttpProxyClientSocketWrapperTest
-    : public ::testing::TestWithParam<QuicTransportVersion> {
+    : public ::testing::TestWithParam<std::tuple<QuicTransportVersion, bool>> {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
@@ -73,17 +73,20 @@ class HttpProxyClientSocketWrapperTest
             new ChannelIDService(new DefaultChannelIDStore(nullptr))),
         cert_transparency_verifier_(new DoNothingCTVerifier()),
         random_generator_(0),
-        quic_version_(GetParam()),
+        quic_version_(std::get<0>(GetParam())),
+        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         client_maker_(quic_version_,
                       0,
                       &clock_,
                       kProxyHost,
-                      Perspective::IS_CLIENT),
+                      Perspective::IS_CLIENT,
+                      client_headers_include_h2_stream_dependency_),
         server_maker_(quic_version_,
                       0,
                       &clock_,
                       kProxyHost,
-                      Perspective::IS_SERVER),
+                      Perspective::IS_SERVER,
+                      false),
         header_stream_offset_(0),
         response_offset_(0),
         store_server_configs_in_properties_(false),
@@ -128,8 +131,8 @@ class HttpProxyClientSocketWrapperTest
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
-        connection_options_, client_connection_options_,
-        /*enable_token_binding=*/false));
+        client_headers_include_h2_stream_dependency_, connection_options_,
+        client_connection_options_, /*enable_token_binding=*/false));
   }
 
   void PopulateConnectRequestIR(SpdyHeaderBlock* block) {
@@ -207,7 +210,8 @@ class HttpProxyClientSocketWrapperTest
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
 
-  QuicTransportVersion quic_version_;
+  const QuicTransportVersion quic_version_;
+  const bool client_headers_include_h2_stream_dependency_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   QuicStreamOffset header_stream_offset_;
@@ -281,9 +285,11 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   EXPECT_TRUE(mock_quic_data_.AllWriteDataConsumed());
 }
 
-INSTANTIATE_TEST_CASE_P(Version,
-                        HttpProxyClientSocketWrapperTest,
-                        ::testing::ValuesIn(AllSupportedTransportVersions()));
+INSTANTIATE_TEST_CASE_P(
+    VersionIncludeStreamDependencySequnece,
+    HttpProxyClientSocketWrapperTest,
+    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
+                       ::testing::Bool()));
 
 };  // namespace test
 };  // namespace net
