@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -16,6 +17,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 using gpu::gles2::GLES2Interface;
@@ -60,6 +63,50 @@ class TextureIdAllocator {
   DISALLOW_COPY_AND_ASSIGN(TextureIdAllocator);
 };
 
+LayerTreeResourceProvider::Settings::Settings(
+    viz::ContextProvider* compositor_context_provider,
+    bool delegated_sync_points_required,
+    const viz::ResourceSettings& resource_settings)
+    : yuv_highbit_resource_format(resource_settings.high_bit_for_testing
+                                      ? viz::R16_EXT
+                                      : viz::LUMINANCE_8),
+      use_gpu_memory_buffer_resources(
+          resource_settings.use_gpu_memory_buffer_resources),
+      delegated_sync_points_required(delegated_sync_points_required) {
+  if (!compositor_context_provider) {
+    // Pick an arbitrary limit here similar to what hardware might.
+    max_texture_size = 16 * 1024;
+    best_texture_format = viz::RGBA_8888;
+    return;
+  }
+
+  const auto& caps = compositor_context_provider->ContextCapabilities();
+  use_texture_storage = caps.texture_storage;
+  use_texture_format_bgra = caps.texture_format_bgra8888;
+  use_texture_usage_hint = caps.texture_usage;
+  use_texture_npot = caps.texture_npot;
+  use_sync_query = caps.sync_query;
+  use_texture_storage_image = caps.texture_storage_image;
+
+  if (caps.disable_one_component_textures) {
+    yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
+  } else {
+    yuv_resource_format = caps.texture_rg ? viz::RED_8 : viz::LUMINANCE_8;
+    if (resource_settings.use_r16_texture && caps.texture_norm16)
+      yuv_highbit_resource_format = viz::R16_EXT;
+    else if (caps.texture_half_float_linear)
+      yuv_highbit_resource_format = viz::LUMINANCE_F16;
+  }
+
+  GLES2Interface* gl = compositor_context_provider->ContextGL();
+  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+
+  best_texture_format =
+      viz::PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra);
+  best_render_buffer_format = viz::PlatformColor::BestSupportedTextureFormat(
+      caps.render_buffer_format_bgra8888);
+}
+
 namespace {
 // The resource id in LayerTreeResourceProvider starts from 1 to avoid
 // conflicts with id from DisplayResourceProvider.
@@ -95,12 +142,14 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
     const viz::ResourceSettings& resource_settings)
-    : ResourceProvider(compositor_context_provider,
-                       shared_bitmap_manager,
-                       delegated_sync_points_required,
-                       resource_settings),
+    : ResourceProvider(compositor_context_provider),
+      settings_(compositor_context_provider,
+                delegated_sync_points_required,
+                resource_settings),
+      shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
+  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   GLES2Interface* gl = ContextGL();
   texture_id_allocator_ = std::make_unique<TextureIdAllocator>(
       gl, resource_settings.texture_id_allocation_chunk_size);
@@ -118,6 +167,26 @@ LayerTreeResourceProvider::~LayerTreeResourceProvider() {
   GLES2Interface* gl = ContextGL();
   if (gl)
     gl->Finish();
+}
+
+gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
+    gpu::gles2::GLES2Interface* gl) {
+  DCHECK(gl);
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  DCHECK(sync_token.HasData() ||
+         gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
+  return sync_token;
+}
+
+gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
+    gpu::raster::RasterInterface* ri) {
+  DCHECK(ri);
+  gpu::SyncToken sync_token;
+  ri->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  DCHECK(sync_token.HasData() ||
+         ri->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
+  return sync_token;
 }
 
 gpu::SyncToken LayerTreeResourceProvider::GetSyncTokenForResources(
@@ -628,6 +697,114 @@ void LayerTreeResourceProvider::UnlockForWrite(
   resource->locked_for_write = false;
 }
 
+void LayerTreeResourceProvider::FlushPendingDeletions() const {
+  if (auto* gl = ContextGL())
+    gl->ShallowFlushCHROMIUM();
+}
+
+GLenum LayerTreeResourceProvider::GetImageTextureTarget(
+    const gpu::Capabilities& caps,
+    gfx::BufferUsage usage,
+    viz::ResourceFormat format) const {
+  return gpu::GetBufferTextureTarget(usage, BufferFormat(format), caps);
+}
+
+bool LayerTreeResourceProvider::IsTextureFormatSupported(
+    viz::ResourceFormat format) const {
+  gpu::Capabilities caps;
+  if (compositor_context_provider_)
+    caps = compositor_context_provider_->ContextCapabilities();
+
+  switch (format) {
+    case viz::ALPHA_8:
+    case viz::RGBA_4444:
+    case viz::RGBA_8888:
+    case viz::RGB_565:
+    case viz::LUMINANCE_8:
+      return true;
+    case viz::BGRA_8888:
+      return caps.texture_format_bgra8888;
+    case viz::ETC1:
+      return caps.texture_format_etc1;
+    case viz::RED_8:
+      return caps.texture_rg;
+    case viz::R16_EXT:
+      return caps.texture_norm16;
+    case viz::LUMINANCE_F16:
+    case viz::RGBA_F16:
+      return caps.texture_half_float_linear;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool LayerTreeResourceProvider::IsRenderBufferFormatSupported(
+    viz::ResourceFormat format) const {
+  gpu::Capabilities caps;
+  if (compositor_context_provider_)
+    caps = compositor_context_provider_->ContextCapabilities();
+
+  switch (format) {
+    case viz::RGBA_4444:
+    case viz::RGBA_8888:
+    case viz::RGB_565:
+      return true;
+    case viz::BGRA_8888:
+      return caps.render_buffer_format_bgra8888;
+    case viz::RGBA_F16:
+      // TODO(ccameron): This will always return false on pixel tests, which
+      // makes it un-test-able until we upgrade Mesa.
+      // https://crbug.com/687720
+      return caps.texture_half_float_linear &&
+             caps.color_buffer_half_float_rgba;
+    case viz::LUMINANCE_8:
+    case viz::ALPHA_8:
+    case viz::RED_8:
+    case viz::ETC1:
+    case viz::LUMINANCE_F16:
+    case viz::R16_EXT:
+      // We don't currently render into these formats. If we need to render into
+      // these eventually, we should expand this logic.
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool LayerTreeResourceProvider::IsGpuMemoryBufferFormatSupported(
+    viz::ResourceFormat format,
+    gfx::BufferUsage usage) const {
+  switch (format) {
+    case viz::BGRA_8888:
+    case viz::RED_8:
+    case viz::R16_EXT:
+    case viz::RGBA_4444:
+    case viz::RGBA_8888:
+    case viz::ETC1:
+    case viz::RGBA_F16:
+      return true;
+    // These formats have no BufferFormat equivalent.
+    case viz::ALPHA_8:
+    case viz::LUMINANCE_8:
+    case viz::RGB_565:
+    case viz::LUMINANCE_F16:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
+    int bits) const {
+  if (bits > 8) {
+    return settings_.yuv_highbit_resource_format;
+  } else {
+    return settings_.yuv_resource_format;
+  }
+}
+
 LayerTreeResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
     LayerTreeResourceProvider* resource_provider,
     viz::ResourceId resource_id)
@@ -700,7 +877,7 @@ void LayerTreeResourceProvider::ScopedWriteLockGL::LazyAllocate(
     return;
   allocated_ = true;
 
-  const ResourceProvider::Settings& settings = resource_provider_->settings_;
+  const Settings& settings = resource_provider_->settings_;
 
   gl->BindTexture(target_, texture_id);
 
@@ -827,6 +1004,39 @@ LayerTreeResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
       resource_provider_->GetResource(resource_id_);
   resource->SetSynchronized();
   resource_provider_->UnlockForWrite(resource);
+}
+
+LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
+    GrContext* gr_context,
+    GLuint texture_id,
+    GLenum texture_target,
+    const gfx::Size& size,
+    viz::ResourceFormat format,
+    bool use_distance_field_text,
+    bool can_use_lcd_text,
+    int msaa_sample_count) {
+  GrGLTextureInfo texture_info;
+  texture_info.fID = texture_id;
+  texture_info.fTarget = texture_target;
+  GrBackendTexture backend_texture(size.width(), size.height(),
+                                   ToGrPixelConfig(format), texture_info);
+  uint32_t flags =
+      use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
+  // Use unknown pixel geometry to disable LCD text.
+  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
+  if (can_use_lcd_text) {
+    // LegacyFontHost will get LCD text and skia figures out what type to use.
+    surface_props =
+        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+  }
+  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
+      nullptr, &surface_props);
+}
+
+LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
+  if (surface_)
+    surface_->prepareForExternalIO();
 }
 
 void LayerTreeResourceProvider::ValidateResource(viz::ResourceId id) const {

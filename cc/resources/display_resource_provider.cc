@@ -15,6 +15,27 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
+class ScopedSetActiveTexture {
+ public:
+  ScopedSetActiveTexture(GLES2Interface* gl, GLenum unit)
+      : gl_(gl), unit_(unit) {
+    DCHECK_EQ(GL_TEXTURE0, DisplayResourceProvider::GetActiveTextureUnit(gl_));
+
+    if (unit_ != GL_TEXTURE0)
+      gl_->ActiveTexture(unit_);
+  }
+
+  ~ScopedSetActiveTexture() {
+    // Active unit being GL_TEXTURE0 is effectively the ground state.
+    if (unit_ != GL_TEXTURE0)
+      gl_->ActiveTexture(GL_TEXTURE0);
+  }
+
+ private:
+  GLES2Interface* gl_;
+  GLenum unit_;
+};
+
 namespace {
 // The resource id in DisplayResourceProvider starts from 2 to avoid
 // conflicts with id from LayerTreeResourceProvider.
@@ -23,13 +44,10 @@ const unsigned int kDisplayInitialResourceId = 2;
 
 DisplayResourceProvider::DisplayResourceProvider(
     viz::ContextProvider* compositor_context_provider,
-    viz::SharedBitmapManager* shared_bitmap_manager,
-    const viz::ResourceSettings& resource_settings)
-    : ResourceProvider(compositor_context_provider,
-                       shared_bitmap_manager,
-                       false,
-                       resource_settings),
-      next_id_(kDisplayInitialResourceId) {}
+    viz::SharedBitmapManager* shared_bitmap_manager)
+    : ResourceProvider(compositor_context_provider),
+      next_id_(kDisplayInitialResourceId),
+      shared_bitmap_manager_(shared_bitmap_manager) {}
 
 DisplayResourceProvider::~DisplayResourceProvider() {
   while (!children_.empty())
@@ -72,7 +90,34 @@ void DisplayResourceProvider::SendPromotionHints(
     UnlockForRead(id);
   }
 }
+
+bool DisplayResourceProvider::IsBackedBySurfaceTexture(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->is_backed_by_surface_texture;
+}
+
+bool DisplayResourceProvider::WantsPromotionHintForTesting(viz::ResourceId id) {
+  return wants_promotion_hints_set_.count(id) > 0;
+}
+
+size_t DisplayResourceProvider::CountPromotionHintRequestsForTesting() {
+  return wants_promotion_hints_set_.size();
+}
+
 #endif
+bool DisplayResourceProvider::IsOverlayCandidate(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->is_overlay_candidate;
+}
+
+viz::ResourceType DisplayResourceProvider::GetResourceType(viz::ResourceId id) {
+  return GetResource(id)->type;
+}
+
+gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->buffer_format;
+}
 
 void DisplayResourceProvider::WaitSyncToken(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
@@ -380,6 +425,56 @@ DisplayResourceProvider::GetChildToParentMap(int child) const {
   DCHECK(it != children_.end());
   DCHECK(!it->second.marked_for_deletion);
   return it->second.child_to_parent_map;
+}
+
+GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
+                                                GLenum unit,
+                                                GLenum filter) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  GLES2Interface* gl = ContextGL();
+  ResourceMap::iterator it = resources_.find(resource_id);
+  DCHECK(it != resources_.end());
+  viz::internal::Resource* resource = &it->second;
+  DCHECK(resource->lock_for_read_count);
+  DCHECK(!resource->locked_for_write);
+
+  ScopedSetActiveTexture scoped_active_tex(gl, unit);
+  GLenum target = resource->target;
+  gl->BindTexture(target, resource->gl_id);
+  GLenum min_filter = filter;
+  if (filter == GL_LINEAR) {
+    switch (resource->mipmap_state) {
+      case viz::internal::Resource::INVALID:
+        break;
+      case viz::internal::Resource::GENERATE:
+        DCHECK(compositor_context_provider_);
+        DCHECK(
+            compositor_context_provider_->ContextCapabilities().texture_npot);
+        gl->GenerateMipmap(target);
+        resource->mipmap_state = viz::internal::Resource::VALID;
+      // fall-through
+      case viz::internal::Resource::VALID:
+        min_filter = GL_LINEAR_MIPMAP_LINEAR;
+        break;
+    }
+  }
+  if (min_filter != resource->min_filter) {
+    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, min_filter);
+    resource->min_filter = min_filter;
+  }
+  if (filter != resource->filter) {
+    gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+    resource->filter = filter;
+  }
+
+  return target;
+}
+
+GLint DisplayResourceProvider::GetActiveTextureUnit(
+    gpu::gles2::GLES2Interface* gl) {
+  GLint active_unit = 0;
+  gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
+  return active_unit;
 }
 
 DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(

@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 
 namespace gpu {
 namespace raster {
@@ -60,7 +60,7 @@ class CC_EXPORT StagingBufferPool
 
   StagingBufferPool(base::SequencedTaskRunner* task_runner,
                     viz::RasterContextProvider* worker_context_provider,
-                    ResourceProvider* resource_provider,
+                    LayerTreeResourceProvider* resource_provider,
                     bool use_partial_raster,
                     int max_staging_buffer_usage_in_bytes);
   void Shutdown();
@@ -96,7 +96,7 @@ class CC_EXPORT StagingBufferPool
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   viz::RasterContextProvider* const worker_context_provider_;
-  ResourceProvider* const resource_provider_;
+  LayerTreeResourceProvider* const resource_provider_;
   const bool use_partial_raster_;
 
   mutable base::Lock lock_;

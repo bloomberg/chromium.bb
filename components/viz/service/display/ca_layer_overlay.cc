@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
@@ -75,7 +75,7 @@ bool FilterOperationSupported(const cc::FilterOperation& operation) {
 }
 
 CALayerResult FromRenderPassQuad(
-    cc::ResourceProvider* resource_provider,
+    cc::DisplayResourceProvider* resource_provider,
     const RenderPassDrawQuad* quad,
     const base::flat_map<RenderPassId, cc::FilterOperations*>&
         render_pass_filters,
@@ -104,9 +104,10 @@ CALayerResult FromRenderPassQuad(
   return CA_LAYER_SUCCESS;
 }
 
-CALayerResult FromStreamVideoQuad(cc::ResourceProvider* resource_provider,
-                                  const StreamVideoDrawQuad* quad,
-                                  CALayerOverlay* ca_layer_overlay) {
+CALayerResult FromStreamVideoQuad(
+    cc::DisplayResourceProvider* resource_provider,
+    const StreamVideoDrawQuad* quad,
+    CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return CA_LAYER_FAILED_STREAM_VIDEO_NOT_CANDIDATE;
@@ -131,7 +132,7 @@ CALayerResult FromSolidColorDrawQuad(const SolidColorDrawQuad* quad,
   return CA_LAYER_SUCCESS;
 }
 
-CALayerResult FromTextureQuad(cc::ResourceProvider* resource_provider,
+CALayerResult FromTextureQuad(cc::DisplayResourceProvider* resource_provider,
                               const TextureDrawQuad* quad,
                               CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
@@ -159,7 +160,7 @@ CALayerResult FromTextureQuad(cc::ResourceProvider* resource_provider,
   return CA_LAYER_SUCCESS;
 }
 
-CALayerResult FromTileQuad(cc::ResourceProvider* resource_provider,
+CALayerResult FromTileQuad(cc::DisplayResourceProvider* resource_provider,
                            const TileDrawQuad* quad,
                            CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
@@ -176,7 +177,7 @@ CALayerResult FromTileQuad(cc::ResourceProvider* resource_provider,
 class CALayerOverlayProcessor {
  public:
   CALayerResult FromDrawQuad(
-      cc::ResourceProvider* resource_provider,
+      cc::DisplayResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const DrawQuad* quad,
       const base::flat_map<RenderPassId, cc::FilterOperations*>&
@@ -276,7 +277,7 @@ CALayerOverlay::CALayerOverlay(const CALayerOverlay& other) = default;
 CALayerOverlay::~CALayerOverlay() {}
 
 bool ProcessForCALayerOverlays(
-    cc::ResourceProvider* resource_provider,
+    cc::DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
     const base::flat_map<RenderPassId, cc::FilterOperations*>&

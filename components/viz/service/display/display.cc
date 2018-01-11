@@ -204,8 +204,7 @@ void Display::SetOutputIsSecure(bool secure) {
 
 void Display::InitializeRenderer() {
   resource_provider_ = std::make_unique<cc::DisplayResourceProvider>(
-      output_surface_->context_provider(), bitmap_manager_,
-      settings_.resource_settings);
+      output_surface_->context_provider(), bitmap_manager_);
 
   if (output_surface_->context_provider()) {
     if (!settings_.use_skia_renderer) {
