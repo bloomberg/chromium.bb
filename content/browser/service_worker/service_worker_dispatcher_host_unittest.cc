@@ -270,73 +270,65 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
-  // |kProviderId| must be -2 when PlzNavigate is enabled to match the
-  // pre-created provider host. Otherwise |kProviderId| is just a dummy value.
-  const int kProviderId = (IsBrowserSideNavigationEnabled() ? -2 : 1001);
   int process_id = helper_->mock_render_process_id();
 
-  // Setup ServiceWorkerProviderHostInfo.
-  ServiceWorkerProviderHostInfo host_info_1(
-      kProviderId, 1 /* route_id */,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
-  ServiceWorkerProviderHostInfo host_info_2(
-      kProviderId, 1 /* route_id */,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
-  ServiceWorkerProviderHostInfo host_info_3(
-      kProviderId, 1 /* route_id */,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
-  RemoteProviderInfo remote_info_1 = SetupProviderHostInfoPtrs(&host_info_1);
-  RemoteProviderInfo remote_info_2 = SetupProviderHostInfoPtrs(&host_info_2);
-  RemoteProviderInfo remote_info_3 = SetupProviderHostInfoPtrs(&host_info_3);
-
-  // PlzNavigate
   std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-  if (IsBrowserSideNavigationEnabled()) {
-    navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    ASSERT_TRUE(navigation_handle_core);
-    // ProviderHost should be created before OnProviderCreated.
-    navigation_handle_core->DidPreCreateProviderHost(
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            context()->AsWeakPtr(), true /* are_ancestors_secure */,
-            base::Callback<WebContents*(void)>()));
-  }
+
+  // Prepare the first navigation handle to create provider host.
+  const int kProviderId1 = -2;
+  navigation_handle_core =
+      CreateNavigationHandleCore(helper_->context_wrapper());
+  ASSERT_TRUE(navigation_handle_core);
+  std::unique_ptr<ServiceWorkerProviderHost> host1 =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context()->AsWeakPtr(), true /* are_ancestors_secure */,
+          base::RepeatingCallback<WebContents*(void)>());
+  EXPECT_EQ(kProviderId1, host1->provider_id());
+  ServiceWorkerProviderHostInfo host_info_1(
+      host1->provider_id(), 1 /* route_id */, host1->provider_type(),
+      host1->is_parent_frame_secure());
+  ServiceWorkerProviderHostInfo host_info_1_copy(
+      host1->provider_id(), 1 /* route_id */, host1->provider_type(),
+      host1->is_parent_frame_secure());
+  RemoteProviderInfo remote_info_1 = SetupProviderHostInfoPtrs(&host_info_1);
+  navigation_handle_core->DidPreCreateProviderHost(std::move(host1));
 
   dispatcher_host_->OnProviderCreated(std::move(host_info_1));
-  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId1));
 
   // Two with the same ID should be seen as a bad message.
-  dispatcher_host_->OnProviderCreated(std::move(host_info_2));
+  dispatcher_host_->OnProviderCreated(std::move(host_info_1_copy));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 
   // Releasing the interface pointer destroys the counterpart.
   remote_info_1.host_ptr.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId1));
 
-  // PlzNavigate
   // Prepare another navigation handle to create another provider host.
-  if (IsBrowserSideNavigationEnabled()) {
-    navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    ASSERT_TRUE(navigation_handle_core);
-    // ProviderHost should be created before OnProviderCreated.
-    navigation_handle_core->DidPreCreateProviderHost(
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            context()->AsWeakPtr(), true /* are_ancestors_secure */,
-            base::Callback<WebContents*(void)>()));
-  }
+  const int kProviderId2 = -3;
+  navigation_handle_core =
+      CreateNavigationHandleCore(helper_->context_wrapper());
+  ASSERT_TRUE(navigation_handle_core);
+  // ProviderHost should be created before OnProviderCreated.
+  std::unique_ptr<ServiceWorkerProviderHost> host2 =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context()->AsWeakPtr(), true /* are_ancestors_secure */,
+          base::RepeatingCallback<WebContents*(void)>());
+  EXPECT_EQ(kProviderId2, host2->provider_id());
+  ServiceWorkerProviderHostInfo host_info_2(
+      host2->provider_id(), 2 /* route_id */, host2->provider_type(),
+      host2->is_parent_frame_secure());
+  RemoteProviderInfo remote_info_2 = SetupProviderHostInfoPtrs(&host_info_2);
+  navigation_handle_core->DidPreCreateProviderHost(std::move(host2));
 
   // Deletion of the dispatcher_host should cause providers for that
   // process to get deleted as well.
-  dispatcher_host_->OnProviderCreated(std::move(host_info_3));
-  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
+  dispatcher_host_->OnProviderCreated(std::move(host_info_2));
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId2));
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
   dispatcher_host_ = nullptr;
-  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId2));
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
