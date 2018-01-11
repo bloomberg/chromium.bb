@@ -32,7 +32,6 @@ struct UrlBarColors {
   SkColor insecure = SK_ColorBLACK;
   SkColor offline_page_warning = SK_ColorBLACK;
   SkColor separator = SK_ColorBLACK;
-  ButtonColors back_button;
 };
 
 struct ColorScheme {
@@ -87,6 +86,10 @@ struct ColorScheme {
   ButtonColors prompt_secondary_button_colors;
   ButtonColors prompt_primary_button_colors;
 
+  ButtonColors back_button;
+  SkColor url_bar_separator;
+
+  // These colors feed the URL origin texture.
   UrlBarColors url_bar;
 
   SkColor dimmer_outer;

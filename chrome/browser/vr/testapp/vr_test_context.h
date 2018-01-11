@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "base/time/time.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -85,9 +86,9 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   bool fullscreen_ = false;
   bool incognito_ = false;
-
   bool show_web_vr_splash_screen_ = false;
   bool voice_search_enabled_ = false;
+  base::TimeTicks page_load_start_;
 
   ControllerModel last_controller_model_;
 

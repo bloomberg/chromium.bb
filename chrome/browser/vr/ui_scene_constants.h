@@ -59,7 +59,14 @@ static constexpr float kUrlBarDistance = 2.4f;
 static constexpr float kUrlBarWidthDMM = 0.672f;
 static constexpr float kUrlBarHeightDMM = 0.088f;
 static constexpr float kUrlBarVerticalOffsetDMM = -0.516f;
-static constexpr float kUrlBarRotationRad = -0.175f;
+static constexpr float kUrlBarRotationRad = gfx::DegToRad(-10.0f);
+static constexpr float kUrlBarBackButtonWidthDMM = 0.087f;
+static constexpr float kUrlBarBackButtonIconSizeDMM = 0.048f;
+static constexpr float kUrlBarBackButtonIconOffsetDMM = 0.0045f;
+static constexpr float kUrlBarSeparatorWidthDMM = 0.002f;
+static constexpr float kUrlBarOriginRegionWidthDMM = 0.583f;
+static constexpr float kUrlBarOriginContentWidthDMM = 0.556f;
+static constexpr float kUrlBarOriginContentOffsetDMM = 0.007f;
 
 static constexpr float kOverlayPlaneDistance = 2.3f;
 

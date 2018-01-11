@@ -23,6 +23,12 @@ TEST(Button, Hover) {
   button.set_hover_offset(0.04f);
   button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
   EXPECT_NE(xform.ToString(), button.hit_plane()->LocalTransform().ToString());
+  button.OnHoverLeave();
+
+  button.set_enabled(false);
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  EXPECT_EQ(xform.ToString(), button.hit_plane()->LocalTransform().ToString());
+  button.OnHoverLeave();
 }
 
 }  // namespace vr

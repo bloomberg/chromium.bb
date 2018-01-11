@@ -51,7 +51,11 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kContentQuad,
     kContentQuadShadow,
     kBackplane,
-    kUrlBar,
+    kUrlBarBackButton,
+    kUrlBarBackButtonIcon,
+    kUrlBarSeparator,
+    kUrlBarOriginRegion,
+    kUrlBarOriginContent,
     kUnderDevelopmentNotice,
     kController,
     kReticle,
@@ -63,31 +67,6 @@ const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kBackgroundTop,   kBackgroundBottom,    kCeiling,        kFloor,
     kExitPrompt,      kExitPromptBackplane, kController,     kReticle,
     kLaser,
-};
-const std::set<UiElementName> kHitTestableElements = {
-    kFloor,
-    kCeiling,
-    kBackplane,
-    kKeyboard,
-    kContentQuad,
-    kAudioCaptureIndicator,
-    kVideoCaptureIndicator,
-    kScreenCaptureIndicator,
-    kBluetoothConnectedIndicator,
-    kLocationAccessIndicator,
-    kExitPrompt,
-    kExitPromptBackplane,
-    kAudioPermissionPrompt,
-    kAudioPermissionPromptBackplane,
-    kUrlBar,
-    kOmniboxContainer,
-    kLoadingIndicator,
-    kWebVrTimeoutSpinner,
-    kWebVrTimeoutMessage,
-    kWebVrTimeoutMessageIcon,
-    kWebVrTimeoutMessageText,
-    kWebVrTimeoutMessageButtonText,
-    kSpeechRecognitionResultBackplane,
 };
 const std::set<UiElementType> kHitTestableElementTypes = {
     kTypeButtonHitTarget,         kTypeTextInputText,
@@ -706,25 +685,6 @@ TEST_F(UiTest, PropagateContentBoundsOnFullscreen) {
 
   ui_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
   OnBeginFrame();
-}
-
-TEST_F(UiTest, HitTestableElements) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  for (const auto& element : scene_->root_element()) {
-    if (element.type() != kTypeNone) {
-      const bool should_be_hit_testable =
-          kHitTestableElementTypes.find(element.type()) !=
-          kHitTestableElementTypes.end();
-      EXPECT_EQ(should_be_hit_testable, element.hit_testable())
-          << "element type: " << UiElementTypeToString(element.type());
-    } else {
-      const bool should_be_hit_testable =
-          kHitTestableElements.find(element.name()) !=
-          kHitTestableElements.end();
-      EXPECT_EQ(should_be_hit_testable, element.hit_testable())
-          << "element name: " << UiElementNameToString(element.name());
-    }
-  }
 }
 
 TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
