@@ -100,12 +100,14 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Returns the mode specified by the command line or via about://flags.
   static Mode GetModeForStartup();
   static Mode ConvertStringToMode(const std::string& input);
+  static profiling::mojom::StackMode GetStackModeForStartup();
   bool ShouldProfileNonRendererProcessType(int process_type);
 
   // Launches the profiling process and returns a pointer to it.
   static ProfilingProcessHost* Start(
       content::ServiceManagerConnection* connection,
-      Mode mode);
+      Mode mode,
+      profiling::mojom::StackMode stack_mode);
 
   // Returns true if Start() has been called.
   static bool has_started() { return has_started_; }
@@ -252,6 +254,10 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // The mode determines which processes should be profiled.
   Mode mode_;
   base::Lock mode_lock_;
+
+  // The stack mode determines the type of information that is stored for each
+  // stack.
+  profiling::mojom::StackMode stack_mode_;
 
   // Whether or not the profiling host is started.
   static bool has_started_;

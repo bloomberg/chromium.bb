@@ -34,6 +34,7 @@ jboolean TestAndroidShim::RunTestForMode(
   profiling::ProfilingTestDriver::Options options;
   options.mode = profiling::ProfilingProcessHost::ConvertStringToMode(
       base::android::ConvertJavaStringToUTF8(mode));
+  options.stack_mode = profiling::mojom::StackMode::NATIVE;
   options.profiling_already_started = true;
   return driver.RunTest(options);
 }

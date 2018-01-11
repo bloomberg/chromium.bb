@@ -18,6 +18,8 @@ class DummyMemlogReceiver : public profiling::MemlogReceiver {
   void OnFree(const FreePacket& free_packet) override {}
   void OnBarrier(const BarrierPacket& barrier_packet) override {}
   void OnComplete() override {}
+  void OnStringMapping(const StringMappingPacket& string_mapping_packet,
+                       const std::string& str) override {}
 };
 
 }  // namespace

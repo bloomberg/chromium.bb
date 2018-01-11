@@ -1,6 +1,9 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// We use a custom stream format for performance, since we're potentially
+// sending a packet for every malloc and free.
 
 #ifndef CHROME_COMMON_PROFILING_MEMLOG_STREAM_H_
 #define CHROME_COMMON_PROFILING_MEMLOG_STREAM_H_
@@ -16,9 +19,10 @@ namespace profiling {
 // coverage of the stream parser.
 constexpr uint32_t kStreamSignature = 0xF6103B71;
 
-constexpr uint32_t kAllocPacketType = 0xA1A1A1A1;
-constexpr uint32_t kFreePacketType = 0xFEFEFEFE;
-constexpr uint32_t kBarrierPacketType = 0xBABABABA;
+constexpr uint32_t kAllocPacketType = 0xF6103B72;
+constexpr uint32_t kFreePacketType = 0xF6103B73;
+constexpr uint32_t kBarrierPacketType = 0xF6103B74;
+constexpr uint32_t kStringMappingPacketType = 0xF6103B75;
 
 constexpr uint32_t kMaxStackEntries = 256;
 constexpr uint32_t kMaxContextLen = 256;
@@ -68,6 +72,19 @@ struct BarrierPacket {
 
   uint32_t barrier_id;
 };
+
+// Clients will sometimes use pointers to const strings in place of instruction
+// addresses in AllocPackets. Prior to using such a pointer, the client should
+// send a StringMappingPacket to inform the profiling service.
+struct StringMappingPacket {
+  const uint32_t op = kStringMappingPacketType;
+  uint64_t address;
+  uint32_t string_len;
+
+  // Immediately followed by |string_len| bytes of string (not null
+  // terminated).
+};
+
 #pragma pack(pop)
 
 }  // namespace profiling

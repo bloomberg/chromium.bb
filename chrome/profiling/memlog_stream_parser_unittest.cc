@@ -70,6 +70,19 @@ class TestReceiver : public MemlogReceiver {
     last_barrier_.barrier_id = barrier.barrier_id;
   }
 
+  int string_mapping_count() const { return string_mapping_count_; }
+  const StringMappingPacket& last_string_mapping() const {
+    return last_string_mapping_;
+  }
+  const char* last_raw_string() const { return last_raw_string_.c_str(); }
+
+  void OnStringMapping(const StringMappingPacket& string_mapping,
+                       const std::string& str) override {
+    string_mapping_count_++;
+    memcpy(&last_string_mapping_, &string_mapping, sizeof(StringMappingPacket));
+    last_raw_string_ = str;
+  }
+
   bool got_complete() const { return got_complete_; }
   void OnComplete() override {
     ASSERT_FALSE(got_complete_);  // Don't expect more than one.
@@ -90,6 +103,10 @@ class TestReceiver : public MemlogReceiver {
 
   int barrier_count_ = 0;
   BarrierPacket last_barrier_;
+
+  int string_mapping_count_ = 0;
+  StringMappingPacket last_string_mapping_;
+  std::string last_raw_string_;
 
   bool got_complete_ = false;
 };
@@ -231,6 +248,25 @@ TEST(MemlogStreamParser, Barrier) {
   EXPECT_EQ(1, receiver.barrier_count());
 
   EXPECT_EQ(barrier_id, receiver.last_barrier().barrier_id);
+}
+
+TEST(MemlogStreamParser, StringMapping) {
+  TestReceiver receiver;
+  scoped_refptr<MemlogStreamParser> parser(new MemlogStreamParser(&receiver));
+  SendHeader(parser);
+
+  const std::string kDummyText = "kDummyText";
+
+  StringMappingPacket p;
+  p.address = 0x1234;
+  p.string_len = static_cast<uint32_t>(kDummyText.size());
+  SendData(parser, &p, sizeof(StringMappingPacket));
+  SendData(parser, kDummyText.data(), kDummyText.size());
+
+  EXPECT_EQ(1, receiver.string_mapping_count());
+  EXPECT_EQ(p.address, receiver.last_string_mapping().address);
+  EXPECT_EQ(p.string_len, receiver.last_string_mapping().string_len);
+  EXPECT_EQ(kDummyText, receiver.last_raw_string());
 }
 
 }  // namespace profiling

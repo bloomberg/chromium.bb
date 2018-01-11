@@ -1021,6 +1021,16 @@ const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
      switches::kMemlog, switches::kMemlogModeManual},
 };
 
+const FeatureEntry::Choice kOOPHPStackModeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
+    {flag_descriptions::kOOPHPStackModeNative, switches::kMemlogStackMode,
+     switches::kMemlogStackModeNative},
+    {flag_descriptions::kOOPHPStackModePseudo, switches::kMemlogStackMode,
+     switches::kMemlogStackModePseudo},
+    {flag_descriptions::kOOPHPStackModeMixed, switches::kMemlogStackMode,
+     switches::kMemlogStackModeMixed},
+};
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
@@ -3175,6 +3185,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kOutOfProcessHeapProfilingKeepSmallAllocationsDescription,
      kOsAll, SINGLE_VALUE_TYPE(switches::kMemlogKeepSmallAllocations)},
+
+    {"memlog-stack-mode", flag_descriptions::kOOPHPStackModeName,
+     flag_descriptions::kOOPHPStackModeDescription, kOsAll,
+     MULTI_VALUE_TYPE(kOOPHPStackModeChoices)},
 
     {"omnibox-ui-elide-suggestion-url-after-host",
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,

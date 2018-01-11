@@ -167,8 +167,8 @@ void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
 }
 
 // Inserts or retrieves the ID for a string in the string table.
-size_t AddOrGetString(std::string str, StringTable* string_table) {
-  auto result = string_table->emplace(std::move(str), string_table->size());
+size_t AddOrGetString(const std::string& str, StringTable* string_table) {
+  auto result = string_table->emplace(str, string_table->size());
   // "result.first" is an iterator into the map.
   return result.first->second;
 }
@@ -211,23 +211,31 @@ size_t AddOrGetBacktraceNode(BacktraceNode node,
 // Returns the index into nodes of the node to reference for this stack. That
 // node will reference its parent node, etc. to allow the full stack to
 // be represented.
-size_t AppendBacktraceStrings(const Backtrace& backtrace,
-                              BacktraceTable* backtrace_table,
-                              StringTable* string_table) {
+size_t AppendBacktraceStrings(
+    const Backtrace& backtrace,
+    BacktraceTable* backtrace_table,
+    StringTable* string_table,
+    const std::unordered_map<uint64_t, std::string>& mapped_strings) {
   int parent = -1;
   // Addresses must be outputted in reverse order.
   for (const Address& addr : base::Reversed(backtrace.addrs())) {
-    static constexpr char kPcPrefix[] = "pc:";
-    // std::numeric_limits<>::digits gives the number of bits in the value.
-    // Dividing by 4 gives the number of hex digits needed to store the value.
-    // Adding to sizeof(kPcPrefix) yields the buffer size needed including the
-    // null terminator.
-    static constexpr int kBufSize =
-        sizeof(kPcPrefix) +
-        (std::numeric_limits<decltype(addr.value)>::digits / 4);
-    char buf[kBufSize];
-    snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr.value);
-    size_t sid = AddOrGetString(buf, string_table);
+    size_t sid;
+    auto it = mapped_strings.find(addr.value);
+    if (it != mapped_strings.end()) {
+      sid = AddOrGetString(it->second, string_table);
+    } else {
+      static constexpr char kPcPrefix[] = "pc:";
+      // std::numeric_limits<>::digits gives the number of bits in the value.
+      // Dividing by 4 gives the number of hex digits needed to store the value.
+      // Adding to sizeof(kPcPrefix) yields the buffer size needed including the
+      // null terminator.
+      static constexpr int kBufSize =
+          sizeof(kPcPrefix) +
+          (std::numeric_limits<decltype(addr.value)>::digits / 4);
+      char buf[kBufSize];
+      snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr.value);
+      sid = AddOrGetString(buf, string_table);
+    }
     parent = AddOrGetBacktraceNode(BacktraceNode(sid, parent), backtrace_table);
   }
   return parent;  // Last item is the end of this stack.
@@ -450,7 +458,8 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   BacktraceTable nodes;
   VLOG(1) << "Number of backtraces " << backtraces.size();
   for (auto& bt : backtraces)
-    bt.second = AppendBacktraceStrings(*bt.first, &nodes, &string_table);
+    bt.second = AppendBacktraceStrings(*bt.first, &nodes, &string_table,
+                                       params.mapped_strings);
 
   // Maps section.
   out << "\"maps\": {\n";

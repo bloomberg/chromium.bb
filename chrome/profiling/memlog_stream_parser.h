@@ -64,6 +64,7 @@ class MemlogStreamParser : public MemlogStreamReceiver {
   ReadStatus ParseAlloc();
   ReadStatus ParseFree();
   ReadStatus ParseBarrier();
+  ReadStatus ParseStringMapping();
 
   void SetErrorState();
 

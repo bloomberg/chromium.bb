@@ -329,6 +329,12 @@ extern const char kEnableOutOfProcessHeapProfilingModeRendererSampling[];
 extern const char kOutOfProcessHeapProfilingKeepSmallAllocations[];
 extern const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[];
 
+extern const char kOOPHPStackModeName[];
+extern const char kOOPHPStackModeDescription[];
+extern const char kOOPHPStackModeMixed[];
+extern const char kOOPHPStackModeNative[];
+extern const char kOOPHPStackModePseudo[];
+
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
 

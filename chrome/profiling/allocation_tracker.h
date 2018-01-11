@@ -6,6 +6,7 @@
 #define CHROME_PROFILING_ALLOCATION_TRACKER_H_
 
 #include <map>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,12 +26,13 @@ class AllocationTracker : public MemlogReceiver {
  public:
   using CompleteCallback = base::OnceClosure;
   using ContextMap = std::map<std::string, int>;
+  using AddressToStringMap = std::unordered_map<uint64_t, std::string>;
 
   // Callback for taking an asynchronous snapshot. The first parameter is a
   // success parameter. This class will always set it to true, but this is
   // useful for calling code that must handle failure.
-  using SnapshotCallback =
-      base::OnceCallback<void(bool, AllocationCountMap, ContextMap)>;
+  using SnapshotCallback = base::OnceCallback<
+      void(bool, AllocationCountMap, ContextMap, AddressToStringMap)>;
 
   AllocationTracker(CompleteCallback complete_cb,
                     BacktraceStorage* backtrace_storage);
@@ -42,6 +44,8 @@ class AllocationTracker : public MemlogReceiver {
                std::string&& context) override;
   void OnFree(const FreePacket& free_packet) override;
   void OnBarrier(const BarrierPacket& barrier_packet) override;
+  void OnStringMapping(const StringMappingPacket& string_mapping_packet,
+                       const std::string& str) override;
   void OnComplete() override;
 
   // Registers the given snapshot closure to be executed when the given barrier
@@ -65,6 +69,8 @@ class AllocationTracker : public MemlogReceiver {
   std::map<uint32_t, RunnerSnapshotCallbackPair> registered_snapshot_callbacks_;
 
   BacktraceStorage* backtrace_storage_;
+
+  AddressToStringMap mapped_strings_;
 
   // Need to track all live objects. Since the free information doesn't have
   // the metadata, we can't keep a map of counts indexed by just the metadata

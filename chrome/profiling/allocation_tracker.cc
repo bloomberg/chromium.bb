@@ -5,6 +5,7 @@
 #include "chrome/profiling/allocation_tracker.h"
 
 #include "base/callback.h"
+#include "base/json/string_escape.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/profiling/backtrace_storage.h"
 
@@ -71,12 +72,23 @@ void AllocationTracker::OnBarrier(const BarrierPacket& barrier_packet) {
   pair.first->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](SnapshotCallback cb, AllocationCountMap counts,
-             ContextMap context) {
-            std::move(cb).Run(true, std::move(counts), std::move(context));
+          [](SnapshotCallback cb, AllocationCountMap counts, ContextMap context,
+             AddressToStringMap mapped_strings) {
+            std::move(cb).Run(true, std::move(counts), std::move(context),
+                              mapped_strings);
           },
           std::move(pair.second), AllocationEventSetToCountMap(live_allocs_),
-          context_));
+          context_, mapped_strings_));
+}
+
+void AllocationTracker::OnStringMapping(
+    const StringMappingPacket& string_mapping_packet,
+    const std::string& str) {
+  std::string dest;
+
+  // Escape the strings before saving them, to simplify exporting a heap dump.
+  base::EscapeJSONString(str, false /* put_in_quotes */, &dest);
+  mapped_strings_[string_mapping_packet.address] = std::move(dest);
 }
 
 void AllocationTracker::OnComplete() {
