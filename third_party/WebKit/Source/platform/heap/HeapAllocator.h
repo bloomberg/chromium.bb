@@ -53,7 +53,7 @@ class PLATFORM_EXPORT HeapAllocator {
 
  public:
   using Visitor = blink::Visitor;
-  static const bool kIsGarbageCollected = true;
+  static constexpr bool kIsGarbageCollected = true;
 
   template <typename T>
   static size_t MaxElementCountInBackingStore() {
