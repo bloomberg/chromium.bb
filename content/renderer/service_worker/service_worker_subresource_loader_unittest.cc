@@ -318,10 +318,12 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory>
   CreateSubresourceLoaderFactory() {
-    auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-        &fake_container_host_);
+    if (!connector_) {
+      connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
+          &fake_container_host_);
+    }
     return std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
-        connector, loader_factory_getter_);
+        connector_, loader_factory_getter_);
   }
 
   // Starts |request| using |loader_factory| and sets |out_loader| and
@@ -350,6 +352,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<ControllerServiceWorkerConnector> connector_;
 
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;
@@ -445,6 +448,45 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
     EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
     EXPECT_EQ(3, fake_controller_.fetch_event_count());
     EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
+  }
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
+  const GURL kScope("https://www.example.com/");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory();
+  {
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo.png"));
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    fake_controller_.RunUntilFetchEvent();
+
+    EXPECT_EQ(request.url, fake_controller_.fetch_event_request().url);
+    EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
+    EXPECT_EQ(1, fake_controller_.fetch_event_count());
+    EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+  }
+
+  // Make the connector have no controller.
+  connector_->ResetControllerConnection(nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    // This should fallback to the network.
+    ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/foo2.png"));
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<TestURLLoaderClient> client;
+    StartRequest(factory.get(), request, &loader, &client);
+    client->RunUntilComplete();
+
+    EXPECT_TRUE(client->has_received_completion());
+    EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
+
+    EXPECT_EQ(1, fake_controller_.fetch_event_count());
+    EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
   }
 }
 

@@ -207,6 +207,21 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // the network provider has already been discarded. In that case, We don't
   // need to return an error as the client must be shutting down.
   if (!controller) {
+    auto controller_state = controller_connector_->state();
+    if (controller_state ==
+        ControllerServiceWorkerConnector::State::kNoController) {
+      // The controller was lost after this loader or its loader factory was
+      // created.
+      default_loader_factory_getter_->GetNetworkLoaderFactory()
+          ->CreateLoaderAndStart(url_loader_binding_.Unbind(), routing_id_,
+                                 request_id_, options_, resource_request_,
+                                 std::move(url_loader_client_),
+                                 traffic_annotation_);
+      DeleteSoon();
+      return;
+    }
+    DCHECK_EQ(ControllerServiceWorkerConnector::State::kNoContainerHost,
+              controller_state);
     SettleInflightFetchRequestIfNeeded();
     return;
   }

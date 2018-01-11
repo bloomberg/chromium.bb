@@ -30,8 +30,36 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
     virtual void OnConnectionClosed() = 0;
   };
 
+  enum class State {
+    // The controller connection is dropped. Calling
+    // GetControllerServiceWorker() in this state will result in trying to
+    // get the new controller pointer from the browser.
+    kDisconnected,
+
+    // The controller connection is established.
+    kConnected,
+
+    // It is notified that the client lost the controller. This could only
+    // happen due to an exceptional condition like the service worker could
+    // no longer be read from the script cache. Calling
+    // GetControllerServiceWorker() in this state will always return nullptr.
+    kNoController,
+
+    // The container host is shutting down. Calling
+    // GetControllerServiceWorker() in this state will always return nullptr.
+    kNoContainerHost,
+  };
+
+  // Use this ctor when no |controller_ptr| is available at creation time.
+  // |state_| is set to kDisconnected. TODO(kinuko): deprecate this one.
   explicit ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHost* container_host);
+
+  // Use this ctor when |controller_ptr| is given by the browser at the
+  // creation time. |state_| is set to either kConnected or kNoController.
+  ControllerServiceWorkerConnector(
+      mojom::ServiceWorkerContainerHost* container_host,
+      mojom::ControllerServiceWorkerPtr controller_ptr);
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
@@ -41,12 +69,20 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   void RemoveObserver(Observer* observer);
 
   void OnContainerHostConnectionClosed();
+  void OnControllerConnectionClosed();
+
+  // Resets the controller connection with the given |controller_ptr|, this
+  // can be called when a new controller is given, e.g. due to claim().
+  void ResetControllerConnection(
+      mojom::ControllerServiceWorkerPtr controller_ptr);
+
+  State state() const { return state_; }
 
  private:
+  State state_ = State::kDisconnected;
+
   friend class base::RefCounted<ControllerServiceWorkerConnector>;
   ~ControllerServiceWorkerConnector();
-
-  void OnControllerConnectionClosed();
 
   // Connection to the ServiceWorkerProviderHost that lives in the
   // browser process. This is used to (re-)obtain Mojo connection to

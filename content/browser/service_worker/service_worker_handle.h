@@ -36,10 +36,17 @@ class CONTENT_EXPORT ServiceWorkerHandle
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerVersion* version);
+  // Does the same, but with a specific |handle_id|.
+  static std::unique_ptr<ServiceWorkerHandle> CreateWithID(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      ServiceWorkerVersion* version,
+      int handle_id);
 
   ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
                       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-                      ServiceWorkerVersion* version);
+                      ServiceWorkerVersion* version,
+                      int handle_id);
   ~ServiceWorkerHandle() override;
 
   // ServiceWorkerVersion::Listener overrides.

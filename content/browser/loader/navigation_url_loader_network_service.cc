@@ -406,7 +406,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
     // See if the next handler wants to handle the request.
     if (handler_index_ < handlers_.size()) {
-      DCHECK(!subresource_loader_params_);
       auto* next_handler = handlers_[handler_index_++].get();
       next_handler->MaybeCreateLoader(
           *resource_request_, resource_context_,

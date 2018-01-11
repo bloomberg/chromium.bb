@@ -4,11 +4,12 @@
 
 module content.mojom;
 
-import "mojo/common/time.mojom";
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
 import "content/public/common/url_loader.mojom";
-import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
+import "mojo/common/time.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_event_status.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
+import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 
 // S13nServiceWorker:
 // Represents a service worker that is a 'controller'.
@@ -44,4 +45,16 @@ interface ControllerServiceWorker {
 
   // Connects a new pipe to this controller instance.
   Clone(ControllerServiceWorker& controller);
+};
+
+// A convenient struct that packs necessary information for a service worker
+// client to talk to and set up its controller. Used to propagate controller
+// information from the browser process to the renderer process on navigation
+// commit, and also as a parameter of ServiceWorkerContainer.SetController().
+struct ControllerServiceWorkerInfo {
+  // S13nServiceWorker:
+  // Non-null if the controller has fetch event handlers.
+  ControllerServiceWorker? endpoint;
+
+  blink.mojom.ServiceWorkerObjectInfo object_info;
 };
