@@ -105,10 +105,8 @@ base::Value* FindHeapsV2(base::ProcessId pid, base::Value* dump_json) {
   return nullptr;
 }
 
-constexpr uint64_t kNullParent = std::numeric_limits<uint64_t>::max();
 struct Node {
   uint64_t name_id;
-  uint64_t parent_id = kNullParent;
   std::string name;
 };
 using NodeMap = std::unordered_map<uint64_t, Node>;
@@ -119,7 +117,6 @@ bool ParseNodes(base::Value* heaps_v2, NodeMap* output) {
   for (const base::Value& node_value : nodes->GetList()) {
     const base::Value* id = node_value.FindKey("id");
     const base::Value* name_sid = node_value.FindKey("name_sid");
-    const base::Value* parent = node_value.FindKey("parent");
     if (!id || !name_sid) {
       LOG(ERROR) << "Node missing id or name_sid field";
       return false;
@@ -127,7 +124,6 @@ bool ParseNodes(base::Value* heaps_v2, NodeMap* output) {
 
     Node node;
     node.name_id = name_sid->GetInt();
-    node.parent_id = parent ? parent->GetInt() : kNullParent;
     (*output)[id->GetInt()] = node;
   }
 
@@ -284,13 +280,8 @@ bool ValidateDump(base::Value* heaps_v2,
       return false;
     }
 
-    // Nodes are stored in reverse order. Find the root node to get the name for
-    // the relevant frame.
     int node_id = nodes_list[browser_alloc_index].GetInt();
     auto it = node_map.find(node_id);
-    while (it != node_map.end() && it->second.parent_id != kNullParent) {
-      it = node_map.find(it->second.parent_id);
-    }
 
     if (it == node_map.end()) {
       LOG(ERROR) << "Failed to find root for node with id: " << node_id;
