@@ -8,6 +8,8 @@ source_set("adaptive") {
     "primary_toolbar_coordinator.mm",
     "secondary_toolbar_coordinator.h",
     "secondary_toolbar_coordinator.mm",
+    "toolbar_coordinator_adaptor.h",
+    "toolbar_coordinator_adaptor.mm",
   ]
   deps = [
     ":adaptive_ui",
@@ -15,6 +17,7 @@ source_set("adaptive") {
     "//components/google/core/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/location_bar",
     "//ios/chrome/browser/ui/omnibox",
@@ -24,6 +27,8 @@ source_set("adaptive") {
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/browser/web_state_list",
     "//ios/web",
   ]

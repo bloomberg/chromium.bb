@@ -58,16 +58,8 @@
 
 #pragma mark - ChromeCoordinator
 
-- (instancetype)
-initWithToolsMenuConfigurationProvider:(id)configurationProvider
-                            dispatcher:(id)dispatcher
-                          browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithBaseViewController:nil browserState:browserState];
-  if (self) {
-    // TODO(crbug.com/799422): Initialize the toolsMenu.
-    _dispatcher = dispatcher;
-  }
-  return self;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+  return [super initWithBaseViewController:nil browserState:browserState];
 }
 
 - (void)start {
@@ -151,6 +143,32 @@ initWithToolsMenuConfigurationProvider:(id)configurationProvider
   OmniboxViewIOS* omniboxViewIOS =
       static_cast<OmniboxViewIOS*>(_locationBar.get()->GetLocationEntry());
   return omniboxViewIOS->IsPopupOpen();
+}
+
+#pragma mark - ToolbarCoordinating
+
+- (void)updateToolbarState {
+}
+
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+}
+
+- (BOOL)isShowingToolsMenu {
+  return NO;
+}
+
+#pragma mark - ToolbarCommands
+
+- (void)contractToolbar {
+  // TODO(crbug.com/801082): Implement that.
+}
+
+- (void)triggerToolsMenuButtonAnimation {
+  // TODO(crbug.com/801083): Implement that.
+}
+
+- (void)navigateToMemexTabSwitcher {
+  // TODO(crbug.com/799601): Delete this once it is not needed.
 }
 
 #pragma mark - OmniboxFocuser

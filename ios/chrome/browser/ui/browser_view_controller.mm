@@ -1935,13 +1935,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
 
   if (base::FeatureList::IsEnabled(kAdaptiveToolbar)) {
-    _topToolbarCoordinator = [[PrimaryToolbarCoordinator alloc]
-        initWithToolsMenuConfigurationProvider:self
-                                    dispatcher:self.dispatcher
-                                  browserState:_browserState];
+    _topToolbarCoordinator =
+        [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
     _topToolbarCoordinator.delegate = self;
     _topToolbarCoordinator.URLLoader = self;
     _topToolbarCoordinator.webStateList = [_model webStateList];
+    _topToolbarCoordinator.dispatcher = self.dispatcher;
     [_topToolbarCoordinator start];
     _bottomToolbarCoordinator = [[SecondaryToolbarCoordinator alloc]
         initWithBaseViewController:nil

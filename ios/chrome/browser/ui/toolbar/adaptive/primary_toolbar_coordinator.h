@@ -7,12 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@class CommandDispatcher;
 @protocol ToolbarCommands;
 @protocol ToolbarCoordinatorDelegate;
 @protocol ToolsMenuConfigurationProvider;
@@ -22,13 +22,9 @@ class WebStateList;
 // Coordinator for the primary toolbar. In an adaptive toolbar paradigm, this is
 // the toolbar always displayed.
 @interface PrimaryToolbarCoordinator
-    : ChromeCoordinator<PrimaryToolbarCoordinator>
+    : ChromeCoordinator<PrimaryToolbarCoordinator, ToolbarCommands>
 
-- (instancetype)
-initWithToolsMenuConfigurationProvider:
-    (id<ToolsMenuConfigurationProvider>)configurationProvider
-                            dispatcher:(CommandDispatcher*)dispatcher
-                          browserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
