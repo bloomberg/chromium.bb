@@ -1158,11 +1158,19 @@ TEST_P(FrameProcessorTest, OOOKeyframePts_1) {
     SeekStream(audio_.get(), Milliseconds(100));
     CheckReadsThenReadStalls(audio_.get(), "500");  // Verifies PTS
   } else {
-    CheckExpectedRangesByTimestamp(
-        audio_.get(), "{ [0,10) [100,110) [500,510) [1000,1010) }");
-    CheckReadsThenReadStalls(audio_.get(), "0");
-    SeekStream(audio_.get(), Milliseconds(100));
-    CheckReadsThenReadStalls(audio_.get(), "100");
+    // Note that the PTS discontinuity (100ms) in the first ProcessFrames()
+    // call, above, overlaps the previously buffered range [0,1010), so the
+    // frame at 100ms is processed with an adjusted coded frame group start to
+    // be 0.001ms, which is just after the highest timestamp before it in the
+    // overlapped range. This enables it to be continuous with the frame before
+    // it.
+    // TODO(wolenetz): Likewise, fix MergeWithAdjacentRangeIfNecessary() to
+    // consider range start times, so that there is no resulting discontinuity
+    // between it and the next frame (at 1000ms) in the result of the overlap
+    // append. See https://crbug.com/791095.
+    CheckExpectedRangesByTimestamp(audio_.get(),
+                                   "{ [0,110) [500,510) [1000,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 100");
     SeekStream(audio_.get(), Milliseconds(500));
     CheckReadsThenReadStalls(audio_.get(), "500");
     SeekStream(audio_.get(), Milliseconds(1000));
@@ -1185,11 +1193,18 @@ TEST_P(FrameProcessorTest, OOOKeyframePts_2) {
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) }");
     CheckReadsThenReadStalls(audio_.get(), "0 1000 100");  // Verifies PTS
   } else {
-    CheckExpectedRangesByTimestamp(audio_.get(),
-                                   "{ [0,10) [100,110) [1000,1010) }");
-    CheckReadsThenReadStalls(audio_.get(), "0");
-    SeekStream(audio_.get(), Milliseconds(100));
-    CheckReadsThenReadStalls(audio_.get(), "100");
+    // Note that the PTS discontinuity (100ms) in the first ProcessFrames()
+    // call, above, overlaps the previously buffered range [0,1010), so the
+    // frame at 100ms is processed with an adjusted coded frame group start to
+    // be 0.001ms, which is just after the highest timestamp before it in the
+    // overlapped range. This enables it to be continuous with the frame before
+    // it.
+    // TODO(wolenetz): Likewise, fix MergeWithAdjacentRangeIfNecessary() to
+    // consider range start times, so that there is no resulting discontinuity
+    // between it and the next frame (at 1000ms) in the result of the overlap
+    // append. See https://crbug.com/791095.
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,110) [1000,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 100");
     SeekStream(audio_.get(), Milliseconds(1000));
     CheckReadsThenReadStalls(audio_.get(), "1000");
   }
@@ -1538,10 +1553,15 @@ TEST_P(FrameProcessorTest,
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
   // Note that this buffered range discontinuity is due to unclarified MSE spec
-  // around handling this kind of SAP Type 2 sequence. In particular, we don't
-  // "grow" the [155,165) range start time earlier based on nonkeyframes with
-  // PTS < the keyframe at 155ms.
-  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,140) [155,165) }");
+  // around handling this kind of SAP Type 2 sequence. In particular, though we
+  // don't "grow" the [155,165) range start time earlier based on new
+  // nonkeyframes with PTS < the keyframe at 155ms, we do help prevent
+  // discontinuity from being introduced on this kind of overlap.
+  // TODO(wolenetz): Fix MergeWithAdjacentRangeIfNecessary() to understand that,
+  // though the next buffered GOP keyframe after 130 is at 155, it is continuous
+  // with overlapping append's adjusted group start time of 140.001ms. See
+  // https://crbug.com/791095.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,140) [140,165) }");
   CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
   SeekStream(video_.get(), Milliseconds(155));
   CheckReadsThenReadStalls(video_.get(), "155 145");

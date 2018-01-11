@@ -873,9 +873,9 @@ TEST_P(SourceBufferStreamTest,
   NewCodedFrameGroupAppend("20K 50K 80K 110D10K");
 
   // Verify that the buffered ranges are updated properly and we don't crash.
-  CheckExpectedRangesByTimestamp("{ [20,150) }");
+  CheckExpectedRangesByTimestamp("{ [0,150) }");
 
-  SeekToTimestampMs(20);
+  SeekToTimestampMs(0);
   CheckExpectedBuffers("20K 50K 80K 110K 120K");
 }
 
@@ -5124,16 +5124,20 @@ TEST_P(SourceBufferStreamTest,
 TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_RemoveGOP_ThenAppend_2) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
+  // Though we signal 45ms, it's adjusted internally (due to detected overlap)
+  // to be 40.001ms (which is just beyond the highest buffered timestamp at or
+  // before 45ms) to help prevent potential discontinuity across the front of
+  // the overlapping append.
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(45));
   RemoveInMs(30, 60, 60);
   CheckExpectedRangesByTimestamp("{ [0,30) }");
 
   AppendBuffers("2000K 2010");
-  CheckExpectedRangesByTimestamp("{ [0,30) [45,2020) }");
+  CheckExpectedRangesByTimestamp("{ [0,30) [40,2020) }");
   Seek(0);
   CheckExpectedBuffers("0K 10 20");
   CheckNoNextBuffer();
-  SeekToTimestampMs(45);
+  SeekToTimestampMs(40);
   CheckExpectedBuffers("2000K 2010");
   CheckNoNextBuffer();
   SeekToTimestampMs(1000);
