@@ -1793,7 +1793,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.dispatch_type =
       blink::WebInputEvent::DispatchType::kEventNonBlocking;
   router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
-
   scroll_end_observer.Wait();
 }
 
@@ -2296,12 +2295,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollEventToOOPIF) {
       child_node->current_frame_host()->GetRenderWidgetHost());
 
   // Send a ui::ScrollEvent that will hit test to the child frame.
+  InputEventAckWaiter waiter(
+      child_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kMouseWheel);
   ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(75, 75),
                                ui::EventTimeForNow(), ui::EF_NONE,
                                0, 10,     // Offsets
                                0, 10,  // Offset ordinals
                                2);
   rwhv_parent->OnScrollEvent(&scroll_event);
+  waiter.Wait();
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
@@ -6670,7 +6673,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   // Send a mouse wheel event to child.
   gfx::Rect bounds = child_rwhv->GetViewBounds();
   gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
+  InputEventAckWaiter waiter(child_rwhv->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseWheel);
   SendMouseWheel(pos);
+  waiter.Wait();
 
   if (child_rwhv->wheel_scroll_latching_enabled())
     EXPECT_EQ(child_rwhv, router->wheel_target_.target);
@@ -6679,12 +6685,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
 
   // Send a mouse wheel event to the main frame. If wheel scroll latching is
   // enabled it will be still routed to child till the end of current scrolling
-  // sequence.
+  // sequence. Since wheel scroll latching is enabled by default, we always do
+  // sync targeting so InputEventAckWaiter is not needed here.
+  TestInputEventObserver child_frame_monitor(child_rwhv->GetRenderWidgetHost());
   SendMouseWheel(pos);
   if (child_rwhv->wheel_scroll_latching_enabled())
     EXPECT_EQ(child_rwhv, router->wheel_target_.target);
   else
     EXPECT_EQ(nullptr, router->wheel_target_.target);
+  // Verify that this a mouse wheel event was sent to the child frame renderer.
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
 
   // Kill the wheel target view process. This must reset the wheel_target_.
   RenderProcessHost* child_process =
