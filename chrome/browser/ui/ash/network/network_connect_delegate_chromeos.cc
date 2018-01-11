@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_connect_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 
-#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/net/network_state_notifier.h"
+#include "chrome/browser/ui/ash/network/enrollment_dialog_view.h"
+#include "chrome/browser/ui/ash/network/network_state_notifier.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
-
-namespace chromeos {
 
 namespace {
 
 bool IsUIAvailable() {
   // UI is available when screen is unlocked.
-  return !ScreenLocker::default_screen_locker() ||
-         !ScreenLocker::default_screen_locker()->locked();
+  return !chromeos::ScreenLocker::default_screen_locker() ||
+         !chromeos::ScreenLocker::default_screen_locker()->locked();
 }
 
 }  // namespace
 
 NetworkConnectDelegateChromeOS::NetworkConnectDelegateChromeOS()
-    : network_state_notifier_(new NetworkStateNotifier()) {}
+    : network_state_notifier_(new chromeos::NetworkStateNotifier()) {}
 
 NetworkConnectDelegateChromeOS::~NetworkConnectDelegateChromeOS() {}
 
@@ -45,8 +43,8 @@ bool NetworkConnectDelegateChromeOS::ShowEnrollNetwork(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return false;
-  return enrollment::CreateEnrollmentDialog(network_id,
-                                            nullptr /* owning_window */);
+  return chromeos::enrollment::CreateEnrollmentDialog(
+      network_id, nullptr /* owning_window */);
 }
 
 void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
@@ -67,5 +65,3 @@ void NetworkConnectDelegateChromeOS::ShowMobileActivationError(
     const std::string& network_id) {
   network_state_notifier_->ShowMobileActivationErrorForGuid(network_id);
 }
-
-}  // namespace chromeos

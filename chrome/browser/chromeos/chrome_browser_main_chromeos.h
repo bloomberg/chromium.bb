@@ -28,7 +28,6 @@ class VoiceInteractionControllerClient;
 namespace chromeos {
 
 class ArcKioskAppManager;
-class DataPromoNotification;
 class EventRewriterController;
 class EventRewriterDelegateImpl;
 class ExtensionVolumeObserver;
@@ -90,7 +89,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<ExtensionVolumeObserver> extension_volume_observer_;
   std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
-  std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
   std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;

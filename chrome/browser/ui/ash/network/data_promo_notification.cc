@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/data_promo_notification.h"
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -13,9 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/mobile_config.h"
-#include "chrome/browser/chromeos/net/network_state_notifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/network/network_state_notifier.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -42,7 +41,9 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
+using chromeos::MobileConfig;
+using chromeos::NetworkHandler;
+using chromeos::NetworkState;
 
 namespace {
 
@@ -128,35 +129,35 @@ bool DataSaverSwitchDemoMode() {
   return value == chromeos::switches::kDataSaverPromptDemoMode;
 }
 
-const chromeos::MobileConfig::Carrier* GetCarrier(
-    const NetworkState* cellular) {
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceState(cellular->device_path());
+const MobileConfig::Carrier* GetCarrier(const NetworkState* cellular) {
+  const chromeos::DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          cellular->device_path());
   std::string carrier_id = device ? device->operator_name() : "";
   if (carrier_id.empty()) {
     NET_LOG_ERROR("Empty carrier ID for cellular network",
-                  device ? device->path(): "No device");
+                  device ? device->path() : "No device");
     return nullptr;
   }
 
-  chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
+  MobileConfig* config = MobileConfig::GetInstance();
   if (!config->IsReady())
     return nullptr;
 
   return config->GetCarrier(carrier_id);
 }
 
-const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
-    const chromeos::MobileConfig::Carrier* carrier) {
-  const chromeos::MobileConfig::CarrierDeal* deal = carrier->GetDefaultDeal();
+const MobileConfig::CarrierDeal* GetCarrierDeal(
+    const MobileConfig::Carrier* carrier) {
+  const MobileConfig::CarrierDeal* deal = carrier->GetDefaultDeal();
   if (deal) {
     // Check deal for validity.
     int carrier_deal_promo_pref = GetCarrierDealPromoShown();
     if (carrier_deal_promo_pref >= deal->notification_count())
       return NULL;
     const std::string locale = g_browser_process->GetApplicationLocale();
-    std::string deal_text = deal->GetLocalizedString(locale,
-                                                     "notification_text");
+    std::string deal_text =
+        deal->GetLocalizedString(locale, "notification_text");
     NET_LOG_DEBUG("Carrier Deal Found", deal_text);
     if (deal_text.empty())
       return NULL;
@@ -183,15 +184,14 @@ void NotificationClicked(const std::string& network_id,
 // DataPromoNotification
 
 DataPromoNotification::DataPromoNotification()
-    : notifications_shown_(false),
-      weak_ptr_factory_(this) {
+    : notifications_shown_(false), weak_ptr_factory_(this) {
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 }
 
 DataPromoNotification::~DataPromoNotification() {
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-        this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
 }
 
@@ -217,14 +217,15 @@ void DataPromoNotification::DefaultNetworkChanged(const NetworkState* network) {
 void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   // Do not show notifications to unauthenticated users, or when requesting a
   // network connection, or if there's no default_network.
-  if (!LoginState::Get()->IsUserAuthenticated())
+  if (!chromeos::LoginState::Get()->IsUserAuthenticated())
     return;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network)
     return;
-  if (NetworkHandler::Get()->network_connection_handler()->
-      HasPendingConnectRequest())
+  if (NetworkHandler::Get()
+          ->network_connection_handler()
+          ->HasPendingConnectRequest())
     return;
 
   if (!DataSaverSwitchDemoMode() &&
@@ -331,5 +332,3 @@ bool DataPromoNotification::ShowDataSaverNotification() {
 
   return true;
 }
-
-}  // namespace chromeos

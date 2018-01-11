@@ -24,11 +24,13 @@ class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
 class ChromeShellContentState;
+class DataPromoNotification;
 class ImeControllerClient;
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
 class LoginScreenClient;
 class MediaClient;
+class NetworkConnectDelegateChromeOS;
 class NightLightClient;
 class SessionControllerClient;
 class SystemTrayClient;
@@ -61,6 +63,9 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   void PostMainMessageLoopRun() override;
 
  private:
+  // Initialized in PreProfileInit in all configs before Shell init:
+  std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
+
   // Initialized in PreProfileInit if ash config != MASH:
   std::unique_ptr<AshShellInit> ash_shell_init_;
 
@@ -70,7 +75,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
 
-  // Initialized in PreProfileInit in all configs:
+  // Initialized in PreProfileInit in all configs after Shell init:
   std::unique_ptr<AccessibilityControllerClient>
       accessibility_controller_client_;
   std::unique_ptr<ChromeNewWindowClient> chrome_new_window_client_;
@@ -98,6 +103,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<MediaClient> media_client_;
 
   // Initialized in PostBrowserStart in all configs:
+  std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<NightLightClient> night_light_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);

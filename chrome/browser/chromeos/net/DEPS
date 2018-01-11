@@ -1,23 +1,14 @@
 include_rules = [
   # Chrome under mustash cannot call directly into ash internals.
   "-ash",
-  "+ash/public",
-  "+ash/system/network",
   "+components/captive_portal",
 ]
 
 specific_include_rules = {
-  # TODO(jamescook): Eliminate these.
+  # TODO(mash): Eliminate these.
   "network_portal_notification_controller\.cc": [
     "+ash/system/system_notifier.h",
     "+ash/system/tray/system_tray_notifier.h",
     "+ash/shell.h",
-  ],
-  "network_state_notifier\.cc": [
-    "+ash/system/system_notifier.h",
-    "+ash/resources/grit/ash_resources.h",
-  ],
-  "tether_notification_presenter\.cc": [
-    "+ash/system/system_notifier.h",
   ],
 }

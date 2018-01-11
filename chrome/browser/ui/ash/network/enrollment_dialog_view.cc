@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/ui/ash/network/enrollment_dialog_view.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -99,8 +99,7 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ENROLLMENT);
 }
 
-EnrollmentDialogView::~EnrollmentDialogView() {
-}
+EnrollmentDialogView::~EnrollmentDialogView() {}
 
 // static
 void EnrollmentDialogView::ShowDialog(gfx::NativeWindow owning_window,
@@ -169,24 +168,24 @@ void EnrollmentDialogView::InitDialog() {
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL,  // Horizontal resize.
-                     views::GridLayout::FILL,  // Vertical resize.
-                     1,   // Resize weight.
+  columns->AddColumn(views::GridLayout::FILL,      // Horizontal resize.
+                     views::GridLayout::FILL,      // Vertical resize.
+                     1,                            // Resize weight.
                      views::GridLayout::USE_PREF,  // Size type.
-                     0,   // Ignored for USE_PREF.
-                     0);  // Minimum size.
+                     0,                            // Ignored for USE_PREF.
+                     0);                           // Minimum size.
   columns = grid_layout->AddColumnSet(1);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   columns->AddPaddingColumn(
       0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
-  columns->AddColumn(views::GridLayout::LEADING,  // Horizontal leading.
-                     views::GridLayout::FILL,     // Vertical resize.
-                     1,   // Resize weight.
+  columns->AddColumn(views::GridLayout::LEADING,   // Horizontal leading.
+                     views::GridLayout::FILL,      // Vertical resize.
+                     1,                            // Resize weight.
                      views::GridLayout::USE_PREF,  // Size type.
-                     0,   // Ignored for USE_PREF.
-                     0);  // Minimum size.
+                     0,                            // Ignored for USE_PREF.
+                     0);                           // Minimum size.
 
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(label);
@@ -222,9 +221,10 @@ class DialogEnrollmentDelegate {
 DialogEnrollmentDelegate::DialogEnrollmentDelegate(
     gfx::NativeWindow owning_window,
     const std::string& network_name,
-    Profile* profile) : owning_window_(owning_window),
-                        network_name_(network_name),
-                        profile_(profile) {}
+    Profile* profile)
+    : owning_window_(owning_window),
+      network_name_(network_name),
+      profile_(profile) {}
 
 DialogEnrollmentDelegate::~DialogEnrollmentDelegate() {}
 
@@ -243,9 +243,7 @@ bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
       // If this is a "standard" scheme, like http, ftp, etc., then open that in
       // the enrollment dialog.
       NET_LOG_EVENT("Showing enrollment dialog", network_name_);
-      EnrollmentDialogView::ShowDialog(owning_window_,
-                                       network_name_,
-                                       profile_,
+      EnrollmentDialogView::ShowDialog(owning_window_, network_name_, profile_,
                                        uri, post_action);
       return true;
     }

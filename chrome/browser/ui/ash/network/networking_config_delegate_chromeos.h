@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_
-#define CHROME_BROWSER_UI_ASH_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_ASH_NETWORK_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_NETWORK_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_
 
 #include <string>
 
@@ -33,4 +33,4 @@ class NetworkingConfigDelegateChromeos : public ash::NetworkingConfigDelegate {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_ASH_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_ASH_NETWORK_NETWORKING_CONFIG_DELEGATE_CHROMEOS_H_

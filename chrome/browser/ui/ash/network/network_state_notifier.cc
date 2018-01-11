@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_state_notifier.h"
+#include "chrome/browser/ui/ash/network/network_state_notifier.h"
 
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/system/system_notifier.h"
@@ -350,7 +350,7 @@ void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
   if (NetworkState::StateIsConnected(state) ||
       NetworkState::StateIsConnecting(state)) {
     // Network is no longer in an error state. This can happen if an
-    // unexpected idle state transition occurs, see crbug.com/333955.
+    // unexpected idle state transition occurs, see http://crbug.com/333955.
     return;
   }
   ShowConnectErrorNotification(error_name, service_path, shill_properties);
@@ -466,8 +466,9 @@ void NetworkStateNotifier::ShowVpnDisconnectedNotification(
   ShowErrorNotification(
       vpn->path(), kNetworkConnectNotificationId, shill::kTypeVPN,
       l10n_util::GetStringUTF16(IDS_NETWORK_VPN_CONNECTION_LOST_TITLE),
-      error_msg, base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
-                            weak_ptr_factory_.GetWeakPtr(), vpn->guid()));
+      error_msg,
+      base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                 weak_ptr_factory_.GetWeakPtr(), vpn->guid()));
 }
 
 void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
