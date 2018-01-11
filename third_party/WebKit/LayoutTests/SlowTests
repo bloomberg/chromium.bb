@@ -462,3 +462,5 @@ crbug.com/779965 external/wpt/beacon/headers/header-content-type.html [ Slow ]
 
 # This page loads slow in real browser, and can timeout in SPv2 layout test.
 crbug.com/779366 fast/shapes/crash-allocating-very-large-raster-shape.html [ Slow ]
+
+crbug.com/787971 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Slow ]

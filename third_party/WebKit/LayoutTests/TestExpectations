@@ -2557,6 +2557,7 @@ crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-us
 # ====== Random order flaky tests end here ======
 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
+# TO BE REMOVED AFTER NEXT IMPORT (crbug.com/801357)
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_bits.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_keys.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.worker.html [ Failure ]
@@ -2575,6 +2576,7 @@ crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/hmac.worker.html [ Failur
 crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/rsa_pkcs.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/rsa_pss.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.worker.html [ Failure ]
+# END OF TO-BE-REMOVED
 crbug.com/709227 external/wpt/console/console-count-label-conversion.any.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-count-label-conversion.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.html [ Failure ]
@@ -3303,6 +3305,7 @@ crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSASSA-PKCS1-v1
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Pass Timeout ]
+crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
@@ -3551,9 +3554,6 @@ crbug.com/799127 [ Mac ] external/wpt/resource-timing/test_resource_timing.html 
 crbug.com/799127 [ Mac ] external/wpt/dom/events/Event-timestamp-high-resolution.html [ Failure ]
 crbug.com/799137 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
-
-# Sheriff failures 2018-01-05
-crbug.com/799547 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
 
 # Sheriff failures 2018-01-08
 # This test fails consistently on Nexus4 - see bug for info.
