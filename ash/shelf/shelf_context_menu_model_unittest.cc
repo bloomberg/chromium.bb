@@ -296,5 +296,25 @@ TEST_F(ShelfContextMenuModelTest, DisableAlignmentMenuOnTabletMode) {
   EXPECT_TRUE(menu2.IsVisibleAt(1));
 }
 
+TEST_F(ShelfContextMenuModelTest, CommandIdsMatchEnumsForHistograms) {
+  // Tests that CommandId enums are not changed as the values are used in
+  // histograms.
+  EXPECT_EQ(500, ShelfContextMenuModel::MENU_AUTO_HIDE);
+  EXPECT_EQ(501, ShelfContextMenuModel::MENU_ALIGNMENT_MENU);
+  EXPECT_EQ(502, ShelfContextMenuModel::MENU_ALIGNMENT_LEFT);
+  EXPECT_EQ(503, ShelfContextMenuModel::MENU_ALIGNMENT_RIGHT);
+  EXPECT_EQ(504, ShelfContextMenuModel::MENU_ALIGNMENT_BOTTOM);
+  EXPECT_EQ(505, ShelfContextMenuModel::MENU_CHANGE_WALLPAPER);
+}
+
+TEST_F(ShelfContextMenuModelTest, ShelfContextMenuOptions) {
+  // Tests that there are exactly 3 shelf context menu options. If you're adding
+  // a context menu option ensure that you have added the enum to
+  // tools/metrics/enums.xml and that you haven't modified the order of the
+  // existing enums.
+  ShelfContextMenuModel menu(MenuItemList(), nullptr, GetPrimaryDisplay().id());
+  EXPECT_EQ(3, menu.GetItemCount());
+}
+
 }  // namespace
 }  // namespace ash

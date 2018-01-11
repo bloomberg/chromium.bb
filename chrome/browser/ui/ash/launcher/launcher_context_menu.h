@@ -16,16 +16,21 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
   // Menu item command ids, used by subclasses and tests.
+  // These are used in histograms, do not remove/renumber entries. Only add at
+  // the end just before MENU_ITEM_COUNT. If you're adding to this enum with the
+  // intention that it will be logged, add checks to ensure stability of the
+  // enum and update the ChromeOSUICommands enum listing in
+  // tools/metrics/histograms/enums.xml.
   enum MenuItem {
-    MENU_OPEN_NEW,
-    MENU_CLOSE,
-    MENU_PIN,
-    LAUNCH_TYPE_PINNED_TAB,
-    LAUNCH_TYPE_REGULAR_TAB,
-    LAUNCH_TYPE_FULLSCREEN,
-    LAUNCH_TYPE_WINDOW,
-    MENU_NEW_WINDOW,
-    MENU_NEW_INCOGNITO_WINDOW,
+    MENU_OPEN_NEW = 0,
+    MENU_CLOSE = 1,
+    MENU_PIN = 2,
+    LAUNCH_TYPE_PINNED_TAB = 3,
+    LAUNCH_TYPE_REGULAR_TAB = 4,
+    LAUNCH_TYPE_FULLSCREEN = 5,
+    LAUNCH_TYPE_WINDOW = 6,
+    MENU_NEW_WINDOW = 7,
+    MENU_NEW_INCOGNITO_WINDOW = 8,
     MENU_ITEM_COUNT
   };
 

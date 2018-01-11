@@ -42,6 +42,9 @@ enum ModalType {
 // TODO(varunjain): Remove MENU_SOURCE_NONE (crbug.com/250964)
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
+// These are used in histograms, do not remove/renumber entries. Only add at the
+// end just before MENU_SOURCE_TYPE_LAST. Also remember to update the
+// MenuSourceType enum listing in tools/metrics/histograms/enums.xml.
 enum MenuSourceType {
   MENU_SOURCE_NONE = 0,
   MENU_SOURCE_MOUSE = 1,
