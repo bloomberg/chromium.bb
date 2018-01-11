@@ -21,7 +21,7 @@ namespace {
 static const int kTestDurationSecs = 2;
 static const int kNumPeerConnections = 3;
 #else
-static const int kTestDurationSecs = 10;
+static const int kTestDurationSecs = 60;
 static const int kNumPeerConnections = 10;
 #endif
 }  // namespace
