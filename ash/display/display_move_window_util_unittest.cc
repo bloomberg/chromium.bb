@@ -105,7 +105,7 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
   EXPECT_EQ(GetDefaultLeftSnappedBoundsInDisplay(
                 screen->GetDisplayNearestWindow(window)),
             window->GetBoundsInScreen());
-  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
   HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection::kRight);
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
             screen->GetDisplayNearestWindow(window).id());
@@ -114,7 +114,7 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
   EXPECT_EQ(GetDefaultLeftSnappedBoundsInDisplay(
                 screen->GetDisplayNearestWindow(window)),
             window->GetBoundsInScreen());
-  EXPECT_EQ(0.5f, window_state->snapped_width_ratio());
+  EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
 }
 
 // A horizontal layout for three displays. They are perfectly horizontally

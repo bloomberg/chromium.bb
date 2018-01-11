@@ -195,7 +195,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Updates |snapped_width_ratio_| based on |event|.
   void UpdateSnappedWidthRatio(const WMEvent* event);
-  float snapped_width_ratio() const { return snapped_width_ratio_; }
+  base::Optional<float> snapped_width_ratio() const {
+    return snapped_width_ratio_;
+  }
 
   // True if the window should be unminimized to the restore bounds, as
   // opposed to the window's current bounds. |unminimized_to_restore_bounds_| is
@@ -409,10 +411,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool cached_always_on_top_;
   bool allow_set_bounds_direct_ = false;
 
-  // Saves the ratio between snapped window width and display workarea width. It
-  // is used to update snapped window width on AdjustSnappedBounds() when
-  // handling workspace events.
-  float snapped_width_ratio_ = 0.5f;
+  // A property to save the ratio between snapped window width and display
+  // workarea width. It is used to update snapped window width on
+  // AdjustSnappedBounds() when handling workspace events.
+  base::Optional<float> snapped_width_ratio_;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get
