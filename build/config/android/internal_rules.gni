@@ -1479,6 +1479,10 @@ if (enable_java_templates) {
         ]
       }
 
+      if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
+        args += [ "--no-xml-namespaces" ]
+      }
+
       if (defined(invoker.version_code)) {
         args += [
           "--version-code",
