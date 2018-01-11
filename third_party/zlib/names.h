@@ -160,7 +160,7 @@
 #define crc_fold_init Cr_z_crc_fold_init
 #define crc_reset Cr_z_crc_reset
 #define fill_window_sse Cr_z_fill_window_sse
-#define read_buf Cr_z_read_buf
+#define deflate_read_buf Cr_z_deflate_read_buf
 #define x86_check_features Cr_z_x86_check_features
 /* FIXME: x86_cpu_enable_ssse3 wasn't part of the simd.patch */
 #define x86_cpu_enable_ssse3 Cr_z_x86_cpu_enable_ssse3

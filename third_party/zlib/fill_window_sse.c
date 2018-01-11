@@ -26,7 +26,7 @@
         }\
     }\
 
-extern int read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
+extern int deflate_read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
 
 void fill_window_sse(deflate_state *s)
 {
@@ -117,7 +117,9 @@ void fill_window_sse(deflate_state *s)
          */
         Assert(more >= 2, "more < 2");
 
-        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = deflate_read_buf(s->strm,
+                             s->window + s->strstart + s->lookahead,
+                             more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */

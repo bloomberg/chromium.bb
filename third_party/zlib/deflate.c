@@ -87,7 +87,7 @@ local block_state deflate_huff   OF((deflate_state *s, int flush));
 local void lm_init        OF((deflate_state *s));
 local void putShortMSB    OF((deflate_state *s, uInt b));
 local void flush_pending  OF((z_streamp strm));
-unsigned ZLIB_INTERNAL read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
+unsigned ZLIB_INTERNAL deflate_read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
 #ifdef ASMV
 #  pragma message("Assembler code may have bugs -- use at your own risk")
       void match_init OF((void)); /* asm code initialization */
@@ -429,7 +429,7 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
         strm->adler = adler32(strm->adler, dictionary, dictLength);
-    s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
+    s->wrap = 0;                    /* avoid computing Adler-32 in deflate_read_buf */
 
     /* if dictionary would fill window, just replace the history */
     if (dictLength >= s->w_size) {
@@ -756,7 +756,7 @@ local void putShortMSB (s, b)
  * Flush as much pending output as possible. All deflate() output, except for
  * some deflate_stored() output, goes through this function so some
  * applications may wish to modify it to avoid allocating a large
- * strm->next_out buffer and copying into it. (See also read_buf()).
+ * strm->next_out buffer and copying into it. (See also deflate_read_buf()).
  */
 local void flush_pending(strm)
     z_streamp strm;
@@ -1193,7 +1193,7 @@ int ZEXPORT deflateCopy (dest, source)
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-ZLIB_INTERNAL unsigned read_buf(strm, buf, size)
+ZLIB_INTERNAL unsigned deflate_read_buf(strm, buf, size)
     z_streamp strm;
     Bytef *buf;
     unsigned size;
@@ -1576,7 +1576,7 @@ local void fill_window_c(s)
          */
         Assert(more >= 2, "more < 2");
 
-        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = deflate_read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
@@ -1765,7 +1765,7 @@ local block_state deflate_stored(s, flush)
          * the check value.
          */
         if (len) {
-            read_buf(s->strm, s->strm->next_out, len);
+            deflate_read_buf(s->strm, s->strm->next_out, len);
             s->strm->next_out += len;
             s->strm->avail_out -= len;
             s->strm->total_out += len;
@@ -1828,7 +1828,7 @@ local block_state deflate_stored(s, flush)
     if (have > s->strm->avail_in)
         have = s->strm->avail_in;
     if (have) {
-        read_buf(s->strm, s->window + s->strstart, have);
+        deflate_read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
     }
     if (s->high_water < s->strstart)
