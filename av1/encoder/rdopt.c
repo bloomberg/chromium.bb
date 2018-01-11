@@ -2498,6 +2498,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
 #endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
     }
+    if (n == TX_4X4) break;
   }
   mbmi->tx_size = best_tx_size;
   mbmi->tx_type = best_tx_type;
