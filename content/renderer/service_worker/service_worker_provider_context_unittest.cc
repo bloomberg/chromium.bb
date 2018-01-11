@@ -384,16 +384,12 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   base::RunLoop().RunUntilIdle();
 
   // The passed reference should be owned by the provider client (but the
-  // reference is immediately released due to limitation of the mock provider
-  // client. See the comment on dispatchMessageEvent() of the mock).
+  // reference is immediately released by the mock provider client).
   EXPECT_TRUE(client->was_dispatch_message_event_called());
-  ASSERT_EQ(2UL, ipc_sink()->message_count());
-  EXPECT_EQ(static_cast<uint32_t>(
-                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
-            ipc_sink()->GetMessageAt(0)->type());
+  ASSERT_EQ(1UL, ipc_sink()->message_count());
   EXPECT_EQ(static_cast<uint32_t>(
                 ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
-            ipc_sink()->GetMessageAt(1)->type());
+            ipc_sink()->GetMessageAt(0)->type());
 }
 
 TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
@@ -448,27 +444,18 @@ TEST_F(ServiceWorkerProviderContextTest,
       std::move(info), thread_safe_sender());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
-  // Should return a registration object newly created with incrementing
-  // the refcounts.
+  // Should return a newly created registration object which adopts all
+  // references to the remote instances of ServiceWorkerRegistrationObjectHost
+  // and ServiceWorkerHandle in the browser process.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
       provider_context->TakeRegistrationForServiceWorkerGlobalScope(
           blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_TRUE(registration);
   EXPECT_EQ(registration_id, registration->RegistrationId());
   EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
-  ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(static_cast<uint32_t>(
-                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
-            ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(static_cast<uint32_t>(
-                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
-            ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(static_cast<uint32_t>(
-                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
-            ipc_sink()->GetMessageAt(2)->type());
+  ASSERT_EQ(0UL, ipc_sink()->message_count());
 
   ipc_sink()->ClearMessages();
-
   // The registration dtor decrements the refcounts.
   registration = nullptr;
   ASSERT_EQ(3UL, ipc_sink()->message_count());
