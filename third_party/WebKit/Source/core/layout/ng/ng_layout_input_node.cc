@@ -128,7 +128,7 @@ void NGLayoutInputNode::IntrinsicSize(
   *default_intrinsic_size =
       NGLogicalSize(box_intrinsic_size.Width(), box_intrinsic_size.Height());
 
-  LayoutReplaced::IntrinsicSizingInfo legacy_sizing_info;
+  IntrinsicSizingInfo legacy_sizing_info;
 
   ToLayoutReplaced(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);
   if (legacy_sizing_info.has_width)

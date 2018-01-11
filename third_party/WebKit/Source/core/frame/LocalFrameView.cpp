@@ -1460,6 +1460,19 @@ LayoutReplaced* LocalFrameView::EmbeddedReplacedContent() const {
   return nullptr;
 }
 
+bool LocalFrameView::GetIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
+    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+    return true;
+  }
+  return false;
+}
+
+bool LocalFrameView::HasIntrinsicSizingInfo() const {
+  return EmbeddedReplacedContent();
+}
+
 void LocalFrameView::UpdateGeometries() {
   HeapVector<Member<EmbeddedContentView>> views;
   ForAllChildViewsAndPlugins(

@@ -153,10 +153,18 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
   return CompositingReason::kNone;
 }
 
-LayoutReplaced* LayoutEmbeddedObject::EmbeddedReplacedContent() const {
+bool LayoutEmbeddedObject::NeedsPreferredWidthsRecalculation() const {
+  if (LayoutEmbeddedContent::NeedsPreferredWidthsRecalculation())
+    return true;
+  LocalFrameView* frame_view = ChildFrameView();
+  return frame_view && frame_view->HasIntrinsicSizingInfo();
+}
+
+bool LayoutEmbeddedObject::GetNestedIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
   if (LocalFrameView* frame_view = ChildFrameView())
-    return frame_view->EmbeddedReplacedContent();
-  return nullptr;
+    return frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info);
+  return false;
 }
 
 }  // namespace blink

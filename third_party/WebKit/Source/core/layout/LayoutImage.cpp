@@ -325,6 +325,15 @@ bool LayoutImage::NeedsPreferredWidthsRecalculation() const {
   return EmbeddedReplacedContent();
 }
 
+bool LayoutImage::GetNestedIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
+    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+    return true;
+  }
+  return false;
+}
+
 LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
   if (!image_resource_)
     return nullptr;

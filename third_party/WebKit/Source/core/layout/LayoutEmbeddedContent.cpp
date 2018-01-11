@@ -141,12 +141,6 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   return false;
 }
 
-bool LayoutEmbeddedContent::NeedsPreferredWidthsRecalculation() const {
-  if (LayoutReplaced::NeedsPreferredWidthsRecalculation())
-    return true;
-  return EmbeddedReplacedContent();
-}
-
 bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
