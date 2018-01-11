@@ -14,8 +14,8 @@ import "url/mojo/origin.mojom";
 struct PlaybackProperties {
   AudioCodec audio_codec;  // Note: We may not know the codec during all
   VideoCodec video_codec;  // playbacks (HLS, remoting, etc).
-  bool has_audio;          // Note: Due to the above, we also need these bools
-  bool has_video;          // for audio and video presence.
+  bool has_audio;          // Note: Due to the above, we also need these
+  bool has_video;          // booleans for audio and video presence.
   bool is_background;      // Is report for playback in the background?
   bool is_mse;
   bool is_eme;
@@ -46,13 +46,22 @@ interface WatchTimeRecorder {
   // |watch_time| is the elapsed media (not wall clock) time for |key|.
   RecordWatchTime(WatchTimeKey key, mojo.common.mojom.TimeDelta watch_time);
 
-  // Request finalization (recording to UMA and UKM) for the given keys.
-  // If no keys are specified, all currently held keys will be finalized.
+  // Request finalization (recording to UMA) for the given keys. If no keys are
+  // specified, all currently held keys will be finalized.
   FinalizeWatchTime(array<WatchTimeKey> watch_time_keys);
 
   // Called when a playback ends in error. The status is reported to UKM when
   // finalizing UKM watch time.
   OnError(PipelineStatus status);
+
+  // Lazily sets the audio or video decoder name respectively. Must only be
+  // called once. If these values change, a new recorder should be created.
+  //
+  // Note: We have setters for these instead of putting them in the properties
+  // structure because we don't know decoder name for cast/remoting/hls and we
+  // don't have a convenient hook to tell us those cases are engaged
+  SetAudioDecoderName(string name);
+  SetVideoDecoderName(string name);
 
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,

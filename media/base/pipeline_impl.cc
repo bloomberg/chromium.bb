@@ -652,6 +652,21 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
 
+  if (!stats.audio_decoder_name.empty() &&
+      shared_state_.statistics.audio_decoder_name != stats.audio_decoder_name) {
+    shared_state_.statistics.audio_decoder_name = stats.audio_decoder_name;
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&PipelineImpl::OnAudioDecoderChange,
+                                  weak_pipeline_, stats.audio_decoder_name));
+  }
+  if (!stats.video_decoder_name.empty() &&
+      shared_state_.statistics.video_decoder_name != stats.video_decoder_name) {
+    shared_state_.statistics.video_decoder_name = stats.video_decoder_name;
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoDecoderChange,
+                                  weak_pipeline_, stats.video_decoder_name));
+  }
+
   if (stats.video_frame_duration_average != kNoTimestamp) {
     shared_state_.statistics.video_frame_duration_average =
         stats.video_frame_duration_average;
@@ -1383,6 +1398,24 @@ void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {
 
   DCHECK(client_);
   client_->OnVideoAverageKeyframeDistanceUpdate();
+}
+
+void PipelineImpl::OnAudioDecoderChange(const std::string& name) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
+
+  DCHECK(client_);
+  client_->OnAudioDecoderChange(name);
+}
+
+void PipelineImpl::OnVideoDecoderChange(const std::string& name) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
+
+  DCHECK(client_);
+  client_->OnVideoDecoderChange(name);
 }
 
 void PipelineImpl::OnSeekDone() {

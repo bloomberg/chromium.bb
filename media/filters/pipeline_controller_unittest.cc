@@ -140,6 +140,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoConfigChange(const VideoDecoderConfig& config) {}
   void OnVideoOpacityChange(bool opaque) override {}
   void OnVideoAverageKeyframeDistanceUpdate() override {}
+  void OnAudioDecoderChange(const std::string& name) override {}
+  void OnVideoDecoderChange(const std::string& name) override {}
 
   base::MessageLoop message_loop_;
 

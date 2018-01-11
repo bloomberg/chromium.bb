@@ -297,6 +297,10 @@ void MojoRenderer::OnVideoConfigChange(const VideoDecoderConfig& config) {
 void MojoRenderer::OnStatisticsUpdate(const PipelineStatistics& stats) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!client_) {
+    pending_stats_ = stats;
+    return;
+  }
   client_->OnStatisticsUpdate(stats);
 }
 
@@ -364,6 +368,10 @@ void MojoRenderer::OnInitialized(media::RendererClient* client, bool success) {
 
   base::ResetAndReturn(&init_cb_).Run(
       success ? PIPELINE_OK : PIPELINE_ERROR_INITIALIZATION_FAILED);
+
+  if (client_ && pending_stats_.has_value())
+    client_->OnStatisticsUpdate(pending_stats_.value());
+  pending_stats_.reset();
 }
 
 void MojoRenderer::OnFlushed() {

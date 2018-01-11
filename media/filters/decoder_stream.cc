@@ -328,6 +328,8 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     return;
   }
 
+  // Send logs and statistics updates including the decoder name.
+  traits_.ReportStatistics(statistics_cb_, 0);
   media_log_->SetBooleanProperty(GetStreamTypeString() + "_dds",
                                  !!decrypting_demuxer_stream_);
   media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",

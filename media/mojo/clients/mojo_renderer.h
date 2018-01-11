@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
 #include "media/base/demuxer_stream.h"
@@ -159,6 +160,8 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   // Lock used to serialize access for |time_interpolator_|.
   mutable base::Lock lock_;
   media::TimeDeltaInterpolator media_time_interpolator_;
+
+  base::Optional<PipelineStatistics> pending_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRenderer);
 };

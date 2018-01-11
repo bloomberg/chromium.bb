@@ -351,8 +351,12 @@ void ConvertProtoToPipelineStatistics(
   // This field is not used by the rpc field.
   stats->video_frames_decoded_power_efficient = 0;
 
-  // This field was added after the initial message definition. Check that
-  // sender provided the value.
+  // The following fields were added after the initial message definition. Check
+  // that sender provided the values.
+  if (stats_message.has_audio_decoder_name())
+    stats->audio_decoder_name = stats_message.audio_decoder_name();
+  if (stats_message.has_video_decoder_name())
+    stats->video_decoder_name = stats_message.video_decoder_name();
   if (stats_message.has_video_frame_duration_average_usec()) {
     stats->video_frame_duration_average = base::TimeDelta::FromMicroseconds(
         stats_message.video_frame_duration_average_usec());
