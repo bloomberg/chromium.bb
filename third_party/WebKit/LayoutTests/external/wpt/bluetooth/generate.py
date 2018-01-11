@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# TODO(509038): Delete this file once all generated script tests have been
-# migrated to wpt/. A copy of this file already exists in wpt/bluetooth that
-# generates bluetooth tests inside of wpt/.
+# TODO(509038): Delete the file in LayoutTests/bluetooth after all the script
+# tests have been migrated to this directory.
 """Generator script for Web Bluetooth LayoutTests.
 
 For each script-tests/X.js creates the following test files depending on the
@@ -60,6 +59,7 @@ import fnmatch
 import os
 import re
 import sys
+import logging
 
 TEMPLATES_DIR = 'script-tests'
 
@@ -78,7 +78,11 @@ def GetGeneratedTests():
 
     # Read Base Test Template.
     base_template_file_handle = open(
-        os.path.join(bluetooth_tests_dir, TEMPLATES_DIR, 'base_test_template.html'))
+        os.path.join(
+            bluetooth_tests_dir,
+            TEMPLATES_DIR,
+            'base_test_html.template'
+        ), 'r')
     base_template_file_data = base_template_file_handle.read().decode('utf-8')
     base_template_file_handle.close()
 
@@ -95,7 +99,7 @@ def GetGeneratedTests():
     # Generate Test Files
     for template in available_templates:
         # Read template
-        template_file_handle = open(template)
+        template_file_handle = open(template, 'r')
         template_file_data = template_file_handle.read().decode('utf-8')
         template_file_handle.close()
 
@@ -136,16 +140,17 @@ def GetGeneratedTests():
             # Get test file name
             group_dir = os.path.basename(os.path.abspath(os.path.join(template, os.pardir)))
 
-            call_test_file_name = 'gen-{}{}.html'.format(template_name, '-with-uuid' if uuid_suffix else '')
+            call_test_file_name = 'gen-{}{}.https.html'.format(template_name, '-with-uuid' if uuid_suffix else '')
             call_test_file_path = os.path.join(bluetooth_tests_dir, group_dir, function_name, call_test_file_name)
 
             yield GeneratedTest(call_test_file_data, call_test_file_path, template)
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     previous_generated_files = set()
     current_path = os.path.dirname(os.path.realpath(__file__))
     for root, _, filenames in os.walk(current_path):
-        for filename in fnmatch.filter(filenames, 'gen-*.html'):
+        for filename in fnmatch.filter(filenames, 'gen-*.https.html'):
             previous_generated_files.add(os.path.join(root, filename))
 
     generated_files = set()
@@ -153,10 +158,13 @@ def main():
         prev_len = len(generated_files)
         generated_files.add(generated_test.path)
         if prev_len == len(generated_files):
-            print 'Generated the same test twice for template:\n{}'.format(
-                generated_test.template)
+            logging.info('Generated the same test twice for template:\n%s',
+                       generated_test.template)
 
         # Create or open test file
+        directory = os.path.dirname(generated_test.path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         test_file_handle = open(generated_test.path, 'wb')
 
         # Write contents
@@ -165,15 +173,15 @@ def main():
 
     new_generated_files = generated_files - previous_generated_files
     if len(new_generated_files) != 0:
-        print 'Newly generated tests:'
+        logging.info('Newly generated tests:')
         for generated_file in new_generated_files:
-            print generated_file
+              logging.info(generated_file)
 
     obsolete_files = previous_generated_files - generated_files
     if len(obsolete_files) != 0:
-        print 'The following files might be obsolete:'
+        logging.warning('The following files might be obsolete:')
         for generated_file in obsolete_files:
-            print generated_file
+            logging.warning(generated_file)
 
 
 
