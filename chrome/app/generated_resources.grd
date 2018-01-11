@@ -10747,14 +10747,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         Communications
       </message>
     </if>
-    <if expr="chromeos">
-      <message name="IDS_BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a narrow angle coverage. Only the user in front of the device (i.e. you) will be listened to. This is typically presented to users in a drop-down list of device choices.">
-        Default (pick up just you)
-      </message>
-      <message name="IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a wide angle coverage. All the sounds in the vicinity will be listend to. This is typically presented to users in a drop-down list of device choices.">
-        Default (pick up everything)
-      </message>
-    </if>
 
     <if expr="is_android">
       <!-- Data Use -->

@@ -24,10 +24,6 @@ enum MessageId {
 #if defined(OS_WIN)
   COMMUNICATIONS_AUDIO_DEVICE_NAME,
 #endif
-#if defined(OS_CHROMEOS)
-  BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
-  BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
-#endif
 };
 
 // Implementations are expected to convert MessageIds to generated_resources.grd
