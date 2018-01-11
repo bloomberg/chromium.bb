@@ -21,7 +21,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SelectionPopupControllerImpl;
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
