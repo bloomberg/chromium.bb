@@ -23,25 +23,34 @@ class MessagePortProviderBrowserTest : public ContentBrowserTest {
 
 // Verify that messages can be posted to main frame.
 IN_PROC_BROWSER_TEST_F(MessagePortProviderBrowserTest, PostMessage) {
-  const std::string data =
-      "<!DOCTYPE html><html><body>"
-      "    <script type=\"text/javascript\">"
-      "        onmessage = function (e) { document.title = e.data; }"
-      "   </script>"
-      "</body></html>";
-  const base::string16 target_origin(base::UTF8ToUTF16("http://baseurl"));
-  const GURL base_url(target_origin);
-  const GURL history_url;
-  // Load data. Blocks until it is done.
-  content::LoadDataWithBaseURL(shell(), history_url, data, base_url);
-  const base::string16 source_origin(base::UTF8ToUTF16("source"));
-  const base::string16 message(base::UTF8ToUTF16("success"));
-  content::TitleWatcher title_watcher(shell()->web_contents(), message);
-  MessagePortProvider::PostMessageToFrame(shell()->web_contents(),
-                                          source_origin,
-                                          target_origin,
-                                          message);
-  EXPECT_EQ(message, title_watcher.WaitAndGetTitle());
+  // Listen for a message.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(ExecuteScript(shell(), R"(
+      onmessage = function(e) {
+          domAutomationController.send(e.origin + ':' + e.data);
+      } )"));
+
+  // Post a message.
+  const std::string target_origin(url.GetOrigin().spec());
+  const std::string source_origin("https://source.origin.com");
+  const std::string message("success");
+  DOMMessageQueue msg_queue;
+  MessagePortProvider::PostMessageToFrame(
+      shell()->web_contents(), base::UTF8ToUTF16(source_origin),
+      base::UTF8ToUTF16(target_origin), base::UTF8ToUTF16(message));
+
+  // Verify that the message was received (and had the expected payload).
+  std::string expected_test_reply;
+  expected_test_reply += '"';
+  expected_test_reply += source_origin;
+  expected_test_reply += ':';
+  expected_test_reply += message;
+  expected_test_reply += '"';
+  std::string actual_test_reply;
+  EXPECT_TRUE(msg_queue.WaitForMessage(&actual_test_reply));
+  EXPECT_EQ(expected_test_reply, actual_test_reply);
 }
 
 }  // namespace content
