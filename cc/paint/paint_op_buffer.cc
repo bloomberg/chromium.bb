@@ -2112,6 +2112,11 @@ void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
     if (!second)
       break;
 
+    if (second->GetType() == PaintOpType::Restore) {
+      // Drop a SaveLayerAlpha/Restore combo.
+      continue;
+    }
+
     // Find a nested drawing PaintOp to replace |second| if possible, while
     // holding onto the pointer to |second| in case we can't find a nested
     // drawing op to replace it with.
@@ -2119,11 +2124,6 @@ void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
 
     const PaintOp* third = nullptr;
     if (draw_op) {
-      if (draw_op->GetType() == PaintOpType::Restore) {
-        // Drop a SaveLayerAlpha/Restore combo.
-        continue;
-      }
-
       third = NextUnfoldedOp();
       if (third && third->GetType() == PaintOpType::Restore) {
         auto* save_op = static_cast<const SaveLayerAlphaOp*>(current_op_);
