@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/data_promo_notification.h"
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -23,6 +23,9 @@
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/message_center/message_center.h"
+
+using chromeos::DBusThreadManager;
+using chromeos::LoginState;
 
 namespace {
 
@@ -53,7 +56,6 @@ class NetworkConnectTestDelegate : public chromeos::NetworkConnect::Delegate {
 
 }  // namespace
 
-namespace chromeos {
 namespace test {
 
 class DataPromoNotificationTest : public testing::Test {
@@ -64,9 +66,9 @@ class DataPromoNotificationTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDataSaverPrompt);
+        chromeos::switches::kEnableDataSaverPrompt);
     DBusThreadManager::Initialize();
-    NetworkHandler::Initialize();
+    chromeos::NetworkHandler::Initialize();
     data_promo_notification_.reset(new DataPromoNotification);
     SetupUser();
     SetupNetworkShillState();
@@ -84,15 +86,15 @@ class DataPromoNotificationTest : public testing::Test {
     profile_manager_.reset();
     user_manager_enabler_.reset();
     data_promo_notification_.reset();
-    NetworkHandler::Shutdown();
+    chromeos::NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     testing::Test::TearDown();
   }
 
  protected:
   void SetupUser() {
-    std::unique_ptr<FakeChromeUserManager> user_manager(
-        new FakeChromeUserManager());
+    std::unique_ptr<chromeos::FakeChromeUserManager> user_manager =
+        std::make_unique<chromeos::FakeChromeUserManager>();
     const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
     user_manager->AddUser(test_account_id);
     user_manager->LoginUser(test_account_id);
@@ -104,8 +106,8 @@ class DataPromoNotificationTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_manager_->SetLoggedIn(true);
 
-    ProfileHelper::GetProfileByUserIdHashForTest(
-        ProfileHelper::GetUserIdHashByUserIdForTesting(
+    chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
+        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
             test_account_id.GetUserEmail()));
 
     ASSERT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
@@ -119,7 +121,7 @@ class DataPromoNotificationTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Create a cellular device with provider.
-    ShillDeviceClient::TestInterface* device_test =
+    chromeos::ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
     device_test->AddDevice(kCellularDevicePath, shill::kTypeCellular,
@@ -131,7 +133,7 @@ class DataPromoNotificationTest : public testing::Test {
                                    shill::kHomeProviderProperty, home_provider);
 
     // Create a cellular network and activate it.
-    ShillServiceClient::TestInterface* service_test =
+    chromeos::ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     service_test->AddService(kCellularServicePath, kCellularGuid,
@@ -169,4 +171,3 @@ TEST_F(DataPromoNotificationTest, DataSaverNotification) {
 }
 
 }  // namespace test
-}  // namespace chromeos

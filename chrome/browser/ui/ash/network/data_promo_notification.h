@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_STATUS_DATA_PROMO_NOTIFICATION_H_
-#define CHROME_BROWSER_CHROMEOS_STATUS_DATA_PROMO_NOTIFICATION_H_
+#ifndef CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_
+#define CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -11,14 +11,12 @@
 
 class PrefRegistrySimple;
 
-namespace chromeos {
-
 // This class is responsible for triggering cellular network related
 // notifications, specifically:
 // * "Chrome will use mobile data..." when Cellular is the Default network
 //   for the first time.
 // * Data Promotion notifications when available / appropriate.
-class DataPromoNotification : public NetworkStateHandlerObserver {
+class DataPromoNotification : public chromeos::NetworkStateHandlerObserver {
  public:
   DataPromoNotification();
   ~DataPromoNotification() override;
@@ -27,8 +25,8 @@ class DataPromoNotification : public NetworkStateHandlerObserver {
 
  private:
   // NetworkStateHandlerObserver
-  void NetworkPropertiesUpdated(const NetworkState* network) override;
-  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
   // Shows 3G promo notification if needed.
   void ShowOptionalMobileDataPromoNotification();
@@ -45,6 +43,4 @@ class DataPromoNotification : public NetworkStateHandlerObserver {
   DISALLOW_COPY_AND_ASSIGN(DataPromoNotification);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_STATUS_DATA_PROMO_NOTIFICATION_H_
+#endif  // CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_

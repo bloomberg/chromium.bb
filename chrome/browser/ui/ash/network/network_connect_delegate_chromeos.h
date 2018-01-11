@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_ASH_NETWORK_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_NETWORK_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
 
 #include <memory>
 #include <string>
@@ -12,10 +12,11 @@
 #include "chromeos/network/network_connect.h"
 
 namespace chromeos {
-
 class NetworkStateNotifier;
+}
 
-class NetworkConnectDelegateChromeOS : public NetworkConnect::Delegate {
+class NetworkConnectDelegateChromeOS
+    : public chromeos::NetworkConnect::Delegate {
  public:
   NetworkConnectDelegateChromeOS();
   ~NetworkConnectDelegateChromeOS() override;
@@ -29,11 +30,9 @@ class NetworkConnectDelegateChromeOS : public NetworkConnect::Delegate {
   void ShowMobileActivationError(const std::string& network_id) override;
 
  private:
-  std::unique_ptr<NetworkStateNotifier> network_state_notifier_;
+  std::unique_ptr<chromeos::NetworkStateNotifier> network_state_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectDelegateChromeOS);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_ASH_NETWORK_NETWORK_CONNECT_DELEGATE_CHROMEOS_H_
