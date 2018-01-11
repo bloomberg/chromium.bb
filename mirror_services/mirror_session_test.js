@@ -4,85 +4,115 @@
 
 goog.setTestOnly();
 goog.require('mr.Route');
+goog.require('mr.TabUtils');
 goog.require('mr.mirror.Session');
 
-describe('Tests mr.mirror.Session', function() {
-
+describe('Tests mr.mirror.Session', () => {
   let mirrorRoute;
   let session;
+  let onActivityUpdated;
 
-  beforeEach(function() {
+  function expectNormalSession(s) {
+    expect(s.tabId).toBe(47);
+    expect(s.tab).not.toBe(null);
+    expect(s.isRemoting).toBe(false);
+    expect(s.activity.getRouteDescription())
+        .toBe('Casting tab (news.google.com)');
+    expect(s.activity.getRouteMediaStatus()).toBe('Google News');
+    expect(s.activity.getCastRemoteTitle()).toBe('Casting tab');
+  }
+
+  function expectIncognitoSession(s) {
+    expect(s.tabId).toBe(47);
+    expect(s.tab).not.toBe(null);
+    expect(s.isRemoting).toBe(false);
+    expect(s.activity.getRouteDescription())
+        .toBe('Casting tab (news.google.com)');
+    expect(s.activity.getRouteMediaStatus()).toBe('Google News');
+    expect(s.activity.getCastRemoteTitle()).toBe('Casting active');
+  }
+
+  beforeEach(() => {
+    window['mojo'] = null;  // Workaround to allow tests to run in Jasmine
+                            // without mojo bindings
     mirrorRoute = new mr.Route(
-        'routeId', 'presentationId', 'sinkId', 'tab:47', true, null);
-    session = new mr.mirror.Session(mirrorRoute);
-    spyOn(session, 'sendMetadataToSinkInternal');
-    spyOn(session, 'onRouteUpdated');
+        'routeId', 'presentationId', 'sinkId',
+        'urn:x-org.chromium.media:source:tab:47', true, null);
+    onActivityUpdated = jasmine.createSpy();
+    session = new mr.mirror.Session(mirrorRoute, onActivityUpdated);
+    session.tabId = 47;
+    spyOn(session, 'sendActivityToSink');
   });
 
-  it('has default data', function() {
+  it('has default data for a tab mirroring route', () => {
     expect(session.route).toBe(mirrorRoute);
-    expect(session.isIncognito).toBe(false);
-    expect(session.iconUrl).toBeNull();
-    expect(session.localTitle).toBeNull();
-    expect(session.remoteTitle).toBeNull();
+    expect(session.tabId).toBe(47);
+    expect(session.tab).toBe(null);
+    expect(session.isRemoting).toBe(false);
+    expect(session.activity.getRouteDescription()).toBe('Casting tab');
+    expect(session.activity.getRouteMediaStatus()).toBe('');
+    expect(session.activity.getCastRemoteTitle()).toBe('Casting tab');
   });
 
-  describe('setMetadata', function() {
-    it('sets all fields with normal tab', function() {
-      session.setMetadata(
-          'Google News', 'news.google.com (Tab)',
-          'http://news.google.com/icon.png');
-      expect(session.iconUrl).toBe('http://news.google.com/icon.png');
-      expect(session.localTitle).toBe('Google News');
-      expect(session.remoteTitle).toBe('news.google.com (Tab)');
-    });
-    it('sets some fields with incognito tab', function() {
-      session.isIncognito = true;
-      session.setMetadata(
-          'Google News', 'news.google.com (Tab)',
-          'http://news.google.com/icon.png');
-      expect(session.iconUrl).toBeNull();
-      expect(session.localTitle).toBe('Google News');
-      expect(session.remoteTitle).toBeNull();
-    });
-    it('sets some fields with OTR route', function() {
-      mirrorRoute.offTheRecord = true;
-      session.setMetadata(
-          'Google News', 'news.google.com (Tab)',
-          'http://news.google.com/icon.png');
-      expect(session.iconUrl).toBeNull();
-      expect(session.localTitle).toBe('Google News');
-      expect(session.remoteTitle).toBeNull();
-    });
-    it('is called with tab info', function() {
-      session.updateTabInfo({
-        incognito: false,
-        title: 'Google News',
-        url: 'http://news.google.com/',
-        favIconUrl: 'http://news.google.com/icon.png'
+  describe('onTabUpdated', () => {
+    it('sets all fields with normal tab', () => {
+      session.onTabUpdated(47, {'status': 'complete'}, {
+        'title': 'Google News',
+        'url': 'https://news.google.com',
+        'incognito': false
       });
-      expect(session.isIncognito).toBe(false);
-      expect(session.iconUrl).toBe('http://news.google.com/icon.png');
-      expect(session.localTitle).toBe('Google News');
-      expect(session.remoteTitle).toBe('news.google.com (Tab)');
-      expect(session.onRouteUpdated).toHaveBeenCalled();
+      expect(session.sendActivityToSink).toHaveBeenCalled();
+      expect(onActivityUpdated).toHaveBeenCalled();
+      expectNormalSession(session);
+    });
+    it('sets some fields with incognito tab', () => {
+      session.onTabUpdated(47, {'status': 'complete'}, {
+        'title': 'Google News',
+        'url': 'https://news.google.com',
+        'incognito': true
+      });
+      expect(session.sendActivityToSink).toHaveBeenCalled();
+      expect(onActivityUpdated).toHaveBeenCalled();
+      expectIncognitoSession(session);
+    });
+    it('sets some fields with OTR route', () => {
+      mirrorRoute.offTheRecord = true;
+      otrSession = new mr.mirror.Session(mirrorRoute, onActivityUpdated);
+      otrSession.tabId = 47;
+      spyOn(otrSession, 'sendActivityToSink');
+      otrSession.onTabUpdated(47, {'status': 'complete'}, {
+        'title': 'Google News',
+        'url': 'https://news.google.com',
+        'incognito': true
+      });
+      expect(otrSession.sendActivityToSink).toHaveBeenCalled();
+      expect(onActivityUpdated).toHaveBeenCalled();
+      expectIncognitoSession(otrSession);
     });
   });
 
-  describe('sendMetadataToSink', function() {
-    it('sends metadata for normal tab', function() {
-      session.sendMetadataToSink();
-      expect(session.sendMetadataToSinkInternal).toHaveBeenCalled();
+  describe('setTabId', () => {
+    beforeEach((done) => {
+      spyOn(mr.TabUtils, 'getTab').and.returnValue(Promise.resolve({
+        'title': 'CNN',
+        'url': 'https://www.cnn.com',
+        'incognito': false
+      }));
+      session.setTabId(48);
+      done();
     });
-    it('does not send metadata for incognito tab', function() {
-      session.isIncognito = true;
-      session.sendMetadataToSink();
-      expect(session.sendMetadataToSinkInternal).not.toHaveBeenCalled();
-    });
-    it('does not send metadata for OTR route', function() {
-      mirrorRoute.offTheRecord = true;
-      session.sendMetadataToSink();
-      expect(session.sendMetadataToSinkInternal).not.toHaveBeenCalled();
+
+    it('updates the tab', (done) => {
+      expect(session.sendActivityToSink).toHaveBeenCalled();
+      expect(onActivityUpdated).toHaveBeenCalled();
+      expect(session.tabId).toBe(48);
+      expect(session.tab).not.toBe(null);
+      expect(session.isRemoting).toBe(false);
+      expect(session.activity.getRouteDescription())
+          .toBe('Casting tab (www.cnn.com)');
+      expect(session.activity.getRouteMediaStatus()).toBe('CNN');
+      expect(session.activity.getCastRemoteTitle()).toBe('Casting tab');
+      done();
     });
   });
 });

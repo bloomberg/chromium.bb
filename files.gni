@@ -7,7 +7,7 @@ mr_module_names = [
 ]
 mr_module_specs = [
   "module=common:8",
-  "module=mirroring_common:74:common",
+  "module=mirroring_common:75:common",
   "module=background_script:4:mirroring_common",
 ]
 mr_module_files = [
@@ -33,9 +33,10 @@ mr_module_files = [
   "module.js",
   "utils/event_analytics.js",
   "utils/media_source_utils.js",
-  "utils/tab_utils.js",
   "mirror_services/mirror_service.js",
   "mirror_services/mirror_service_name.js",
+  "mirror_services/mirror_activity.js",
+  "utils/tab_utils.js",
   "mirror_services/mirror_session.js",
   "mirror_services/mirror_settings.js",
   "webrtc/messages.js",
@@ -113,6 +114,7 @@ mr_test_files = [
   "manager/mr_event_senders/throttling_sender_test.js",
   "manager/provider_manager_test.js",
   "manager/route_id_test.js",
+  "mirror_services/mirror_activity_test.js",
   "mirror_services/mirror_analytics_test.js",
   "mirror_services/mirror_session_test.js",
   "mirror_services/mirror_settings_test.js",

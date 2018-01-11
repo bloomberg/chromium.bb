@@ -22,7 +22,6 @@ goog.require('mr.Logger');
 goog.require('mr.MediaSourceUtils');
 goog.require('mr.MirrorAnalytics');
 goog.require('mr.Module');
-goog.require('mr.TabUtils');
 goog.require('mr.mirror.CaptureParameters');
 goog.require('mr.mirror.CaptureSurfaceType');
 goog.require('mr.mirror.Error');
@@ -106,61 +105,62 @@ mr.mirror.Service = class extends mr.Module {
     if (!this.initialized_) {
       return mr.CancellablePromise.reject(Error('Not initialized'));
     }
+    const promise = new Promise((resolve, reject) => {
+      this.stopCurrentMirroring()
+          .then(() => {
+            const captureParams = mr.mirror.Service.createCaptureParameters_(
+                sourceUrn, mirrorSettings, opt_presentationId);
+            return new mr.mirror.MirrorMediaStream(captureParams).start();
+          })
+          .then(stream => {
+            if (this.currentMediaStream_) {
+              stream.stop();
+              throw new mr.mirror.Error('Cannot start multiple streams');
+            }
+            this.currentMediaStream_ = stream;
+            this.currentMediaStream_.setOnStreamEnded(this.cleanup_.bind(this));
+            if (opt_streamStartedCallback) {
+              // Yuck.  Converting a CancellablePromise to a plain Promise
+              // prevents cancellation from propagating correctly.
+              return opt_streamStartedCallback(route).promise;
+            }
+            return route;
+          })
+          .then(updatedRoute => {
+            if (this.currentSession) {
+              throw new mr.mirror.Error('Cannot start multiple sessions');
+            }
+            if (!this.currentMediaStream_) {
+              throw new mr.mirror.Error(
+                  'Media stream ended before session could start.');
+            }
+            this.currentSession =
+                this.createMirrorSession(mirrorSettings, updatedRoute);
+            this.currentSession.setOnActivityUpdate(
+                this.mirrorServiceCallbacks_.handleMirrorActivityUpdate.bind(
+                    this.mirrorServiceCallbacks_));
+            return this.currentSession.start(/** @type {!MediaStream} */ (
+                this.currentMediaStream_.getMediaStream()));
+          })
+          .then(() => {
+            if (mr.MediaSourceUtils.isTabMirrorSource(sourceUrn) &&
+                !chrome.tabs.onUpdated.hasListener(this.onTabUpdated_)) {
+              chrome.tabs.onUpdated.addListener(this.onTabUpdated_);
+            }
+            return this.postProcessMirroring_(route, sourceUrn, mirrorSettings);
+          })
+          .then(() => {
+            resolve(route);
+          })
+          .catch(err => {
 
-    return mr.CancellablePromise.forPromise(
-        this.ensureMirroringOfSourceIsAllowed_(
-                sourceUrn, route.mirrorInitData.tabId)
-            .then(() => {
-              return this.stopCurrentMirroring();
-            })
-            .then(() => {
-              const captureParams = mr.mirror.Service.createCaptureParameters_(
-                  sourceUrn, mirrorSettings, opt_presentationId);
-              return new mr.mirror.MirrorMediaStream(captureParams).start();
-            })
-            .then(stream => {
-              if (this.currentMediaStream_) {
-                stream.stop();
-                throw new mr.mirror.Error('Cannot start multiple streams');
-              }
-              this.currentMediaStream_ = stream;
-              this.currentMediaStream_.setOnStreamEnded(
-                  this.cleanup_.bind(this));
-              if (opt_streamStartedCallback) {
-                // Yuck.  Converting a CancellablePromise to a plain Promise
-                // prevents cancellation from propagating correctly.
-                return opt_streamStartedCallback(route).promise;
-              }
-              return route;
-            })
-            .then(updatedRoute => {
-              if (this.currentSession) {
-                throw new mr.mirror.Error('Cannot start multiple sessions');
-              }
-              if (!this.currentMediaStream_) {
-                throw new mr.mirror.Error(
-                    'Media stream ended before session could start.');
-              }
-              this.currentSession =
-                  this.createMirrorSession(mirrorSettings, updatedRoute);
-              return this.currentSession.start(/** @type {!MediaStream} */ (
-                  this.currentMediaStream_.getMediaStream()));
-            })
-            .then(() => {
-              if (mr.MediaSourceUtils.isTabMirrorSource(sourceUrn) &&
-                  !chrome.tabs.onUpdated.hasListener(this.onTabUpdated_)) {
-                chrome.tabs.onUpdated.addListener(this.onTabUpdated_);
-              }
-              return this.postProcessMirroring_(
-                  route, sourceUrn, mirrorSettings);
-            })
-            .then(null, err => {
-
-              this.onStartError_(/** @type {!Error} */ (err));
-              return this.cleanup_().then(() => {
-                throw err;
-              });
-            }));
+            this.onStartError_(/** @type {!Error} */ (err));
+            return this.cleanup_().then(() => {
+              reject(err);
+            });
+          });
+    });
+    return mr.CancellablePromise.forPromise(promise);
   }
 
   /**
@@ -183,37 +183,9 @@ mr.mirror.Service = class extends mr.Module {
     if (!this.initialized_) {
       return mr.CancellablePromise.reject(Error('Not initialized'));
     }
-    return mr.CancellablePromise.forPromise(
-        this.ensureMirroringOfSourceIsAllowed_(sourceUrn, opt_tabId)
-            .then(this.doUpdateMirroring_.bind(
-                this, route, sourceUrn, mirrorSettings, opt_presentationId,
-                opt_streamStartedCallback)));
-  }
-
-  /**
-   * @param {string} sourceUrn
-   * @param {?number=} opt_tabId Tab ID to mirror if tab mirroring.
-   * @return {!Promise<void>} Resolved if mirroring of the source is allowed
-   *     under current conditions, or rejected if not.
-   * @private
-   */
-  ensureMirroringOfSourceIsAllowed_(sourceUrn, opt_tabId) {
-    if (!mr.MediaSourceUtils.isTabMirrorSource(sourceUrn)) {
-      return Promise.resolve();
-    }
-
-    if (!opt_tabId) {
-      return Promise.reject(new mr.mirror.Error('BUG: Tab ID is required.'));
-    }
-
-
-    return mr.TabUtils.getTab(/** @type {number} */ (opt_tabId)).then(tab => {
-      if (!tab.active) {
-        throw new mr.mirror.Error(
-            'Tab to be mirrored is not active',
-            mr.MirrorAnalytics.CapturingFailure.TAB_FAIL);
-      }
-    });
+    return mr.CancellablePromise.forPromise(this.doUpdateMirroring_(
+        route, sourceUrn, mirrorSettings, opt_presentationId,
+        opt_streamStartedCallback));
   }
 
   /**
@@ -245,61 +217,59 @@ mr.mirror.Service = class extends mr.Module {
     }
 
     let streamSwapped = false;
-    return Promise.resolve()
-        .then(() => {
-          const captureParams = mr.mirror.Service.createCaptureParameters_(
-              sourceUrn, mirrorSettings, opt_presentationId);
-          return new mr.mirror.MirrorMediaStream(captureParams).start();
-        })
-        .then(stream => {
-          if (this.currentMediaStream_) {
-            this.currentMediaStream_.setOnStreamEnded(null);
-            this.currentMediaStream_.stop();
-            this.recordStreamEnded();
-          }
+    return new Promise((resolve, reject) => {
+      const captureParams = mr.mirror.Service.createCaptureParameters_(
+          sourceUrn, mirrorSettings, opt_presentationId);
+      new mr.mirror.MirrorMediaStream(captureParams)
+          .start()
+          .then(stream => {
+            if (this.currentMediaStream_) {
+              this.currentMediaStream_.setOnStreamEnded(null);
+              this.currentMediaStream_.stop();
+              this.recordStreamEnded();
+            }
+            this.currentMediaStream_ = stream;
+            this.currentMediaStream_.setOnStreamEnded(this.cleanup_.bind(this));
+            streamSwapped = true;
 
-          this.currentMediaStream_ = stream;
-          this.currentMediaStream_.setOnStreamEnded(this.cleanup_.bind(this));
-          streamSwapped = true;
-
-          if (opt_streamStartedCallback) {
-            return opt_streamStartedCallback(route).promise;
-          }
-          return route;
-        })
-        .then(updatedRoute => {
-          if (!this.currentSession) {
-            throw new mr.mirror.Error('Session ended while updating stream');
-          }
-          if (!this.currentMediaStream_) {
-            throw new mr.mirror.Error(
-                'Media stream ended before session could be updated.');
-          }
-          this.currentSession.onRouteUpdated();
-          return this.currentSession.updateStream(
-              /** @type {!MediaStream} */ (
-                  this.currentMediaStream_.getMediaStream()));
-        })
-        .then(this.postProcessMirroring_.bind(
-            this, route, sourceUrn, mirrorSettings))
-        .then(null, err => {
-          this.onStartError_(/** @type {!Error} */ (err));
-          if (streamSwapped) {
-            return this.cleanup_().then(() => {
-              throw err;
-            });
-          } else {
-            throw err;
-          }
-        });
+            if (opt_streamStartedCallback) {
+              return opt_streamStartedCallback(route).promise;
+            }
+            return route;
+          })
+          .then(_ => {
+            if (!this.currentSession) {
+              throw new mr.mirror.Error('Session ended while updating stream');
+            }
+            if (!this.currentMediaStream_) {
+              throw new mr.mirror.Error(
+                  'Media stream ended before session could be updated.');
+            }
+            return this.currentSession.updateStream(
+                /** @type {!MediaStream} */ (
+                    this.currentMediaStream_.getMediaStream()));
+          })
+          .then(this.postProcessMirroring_.bind(
+              this, route, sourceUrn, mirrorSettings))
+          .then(() => resolve(route))
+          .catch(err => {
+            this.onStartError_(/** @type {!Error} */ (err));
+            if (streamSwapped) {
+              return this.cleanup_().then(() => {
+                reject(err);
+              });
+            } else {
+              reject(err);
+            }
+          });
+    });
   }
 
   /**
    * @param {!mr.Route} route
    * @param {string} sourceUrn
    * @param {!mr.mirror.Settings} mirrorSettings
-   * @return {!Promise<!mr.Route>} Resolves to the route for the current
-   *     session.
+   * @return {!Promise<void>} Resolves when done.
    * @private
    */
   postProcessMirroring_(route, sourceUrn, mirrorSettings) {
@@ -311,41 +281,20 @@ mr.mirror.Service = class extends mr.Module {
         return;
       }
       if (mr.MediaSourceUtils.isTabMirrorSource(sourceUrn)) {
-        // For tab mirroring, we send metadata to sink only after we have
-        // obtained tab info.
-        this.currentSession
-            .updateTabInfoWithTabId(
-                /** @type {number} */ (route.mirrorInitData.tabId))
-            .then(
-                () => {
-                  this.mirrorServiceCallbacks_.onMirrorContentTitleUpdated(
-                      this.currentSession.getRoute());
-                  this.currentSession.sendMetadataToSink();
-                  this.recordTabMirrorStartSuccess();
-                  resolve(this.currentSession.getRoute());
-                },
-                /** Error */
-                err => {
-                  this.logger.error('Failed to obtain initial tab info.', err);
-                  reject(err);
-                });
-        return;
+        this.currentSession.setTabId(
+            /** @type {number} */ (route.mirrorInitData.tabId));
+        this.recordTabMirrorStartSuccess();
       } else if (mr.MediaSourceUtils.isPresentationSource(sourceUrn)) {
-        const metadata = `Capturing ${route.mediaSource}`;
-        this.currentSession.setMetadata(metadata, metadata, null);
-        this.currentSession.sendMetadataToSink();
         this.recordOffscreenTabMirrorStartSuccess();
       } else {
-        this.currentSession.setMetadata(
-            'Capturing Desktop', 'Capturing Desktop', null);
-        this.currentSession.sendMetadataToSink();
         this.recordDesktopMirrorStartSuccess();
       }
       this.checkCaptureIssues_(
           mirrorSettings,
           /** @type {!mr.mirror.MirrorMediaStream} */
           (this.currentMediaStream_));
-      resolve(this.currentSession.getRoute());
+      this.currentSession.onActivityUpdated();
+      resolve();
     });
   }
 
@@ -454,26 +403,8 @@ mr.mirror.Service = class extends mr.Module {
    */
   handleTabUpdate_(tabId, changeInfo, tab) {
     mr.EventAnalytics.recordEvent(mr.EventAnalytics.Event.TABS_ON_UPDATED);
-    if (!this.currentSession || !this.currentSession.tabId ||
-        this.currentSession.tabId != tabId)
-      return;
-    if (mr.mirror.Service.isTabUpdateComplete_(changeInfo, tab)) {
-      this.currentSession.updateTabInfo(tab);
-      this.mirrorServiceCallbacks_.onMirrorContentTitleUpdated(
-          this.currentSession.getRoute());
-      this.currentSession.sendMetadataToSink();
-    }
-  }
-
-  /**
-   * @param {!TabChangeInfo} changeInfo The changes to the state of the tab.
-   * @param {!Tab} tab The tab.
-   * @return {boolean} True if the tab update is complete.
-   * @private
-   */
-  static isTabUpdateComplete_(changeInfo, tab) {
-    return changeInfo.status == 'complete' ||
-        (!!changeInfo.favIconUrl && tab.status == 'complete');
+    this.currentSession &&
+        this.currentSession.onTabUpdated(tabId, changeInfo, tab);
   }
 
   /**

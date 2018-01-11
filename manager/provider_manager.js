@@ -792,9 +792,12 @@ mr.ProviderManager = class extends mr.Module {
   /**
    * @override
    */
-  onMirrorContentTitleUpdated(route) {
+  handleMirrorActivityUpdate(route, mirrorActivity) {
     const provider = this.routeIdToProvider_.get(route.id);
-    if (provider) this.onRouteUpdated(provider, route);
+    if (provider) {
+      this.onRouteUpdated(provider, route);
+      provider.onMirrorActivityUpdated(route.id, mirrorActivity);
+    }
   }
 
   /**

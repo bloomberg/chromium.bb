@@ -362,6 +362,11 @@ const DialProvider = class {
   /**
    * @override
    */
+  onMirrorActivityUpdated(routeId, mirrorActivity) {}
+
+  /**
+   * @override
+   */
   sendRouteMessage(routeId, message, opt_extraInfo) {
     return Promise.reject(Error('DIAL sending messages is not supported'));
   }

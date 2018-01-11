@@ -12,6 +12,7 @@ goog.provide('mr.Provider');
 goog.provide('mr.ProviderName');
 
 goog.require('mr.CancellablePromise');
+goog.require('mr.mirror.Activity');
 
 /**
  * @enum {string}
@@ -163,6 +164,15 @@ mr.Provider = class {
    *  Null if no mirror service is supported on the sink.
    */
   getMirrorServiceName(sinkId) {}
+
+  /**
+   * Tells the provider that the mirroring activity description for the
+   * mirroring route |routeId| has changed.  The provider can synchronize this
+   * with its own state.
+   * @param {string} routeId
+   * @param {!mr.mirror.Activity} mirrorActivity
+   */
+  onMirrorActivityUpdated(routeId, mirrorActivity) {}
 
   /**
    * Whether this provider can route media |sourceUrn| to sink |sinkId|.

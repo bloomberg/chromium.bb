@@ -14,7 +14,7 @@ goog.provide('mr.ProviderManagerRouteCallbacks');
 goog.provide('mr.ProviderManagerSinkCallbacks');
 
 goog.require('mr.EventTarget');
-
+goog.require('mr.mirror.Activity');
 
 
 /**
@@ -120,13 +120,13 @@ mr.ProviderManagerMirrorServiceCallbacks = class {
   onMirrorSessionEnded(routeId) {}
 
   /**
-   * Invoked by mirror service when the title of the content being mirrored
-   * is changed.
-   * @param {!mr.Route} route The route that is associated with the mirror
-   * session
-   *    and contains the updated title.
+   * Invoked by the mirror service when the mirroring activity description for
+   * mirroring route |route| has changed.
+   *
+   * @param {!mr.Route} route
+   * @param {!mr.mirror.Activity} mirrorActivity
    */
-  onMirrorContentTitleUpdated(route) {}
+  handleMirrorActivityUpdate(route, mirrorActivity) {}
 };
 
 

@@ -10,6 +10,7 @@
 goog.provide('mr.mirror.Session');
 
 goog.require('mr.TabUtils');
+goog.require('mr.mirror.Activity');
 
 
 /**
@@ -18,8 +19,9 @@ goog.require('mr.TabUtils');
 mr.mirror.Session = class {
   /**
    * @param {!mr.Route} route
+   * @param {?function(!mr.Route, !mr.mirror.Activity)=} onActivityUpdate
    */
-  constructor(route) {
+  constructor(route, onActivityUpdate = null) {
     /**
      * The media route associated with this mirror session.
      * @protected @const {!mr.Route}
@@ -27,105 +29,95 @@ mr.mirror.Session = class {
     this.route = route;
 
     /**
-     * Whether the tab being mirrored is in a incognito window.
-     * Valid for tab mirroring.
-     * @protected {boolean}
+     * Called when this.activity_ has changed.
+     * @private {?function(!mr.Route, !mr.mirror.Activity)}
      */
-    this.isIncognito = false;
+    this.onActivityUpdate_ = onActivityUpdate;
 
     /**
-     * The URL of the icon associated with the content being mirrored.  This may
-     * be sent to the mirroring receiver for non-incognito routes and tabs.
-     *
-     * @protected {?string}
+     * The activity description for keeping UI strings up to date.
+     * @protected {!mr.mirror.Activity}
      */
-    this.iconUrl = null;
-
-    /**
-     * The title for local display.
-     * For tab mirroring, it is tab title.
-     * @protected {?string}
-     */
-    this.localTitle = null;
-
-    /**
-     * The title for sink media metadata.  This may be sent to the mirroring
-     * receiver for non-incognito routes and tabs.  For tab mirroring, it is
-     * '<tab
-     * domain> (Tab)'.
-     *
-     * @protected {?string}
-     */
-    this.remoteTitle = null;
+    this.activity = mr.mirror.Activity.createFromRoute(route);
 
     /** @type {?number} */
     this.tabId = null;
+
+    /** @type {?Tab} */
+    this.tab = null;
+
+    /** @type {boolean} */
+    this.isRemoting = false;
   }
 
   /**
-   * @param {string} localTitle The title for local display.
-   * @param {string} remoteTitle The title for sink media metadata, which is
-   *    given to other senders.
-   * @param {?string} iconUrl The URL of the icon associated with the content
-   *    being mirrored.
+   * Sets the callback for handling activity updates.
+   * @param {!function(!mr.Route, !mr.mirror.Activity)} onActivityUpdate
    */
-  setMetadata(localTitle, remoteTitle, iconUrl) {
-    this.route.description = this.localTitle = localTitle;
-    if (!this.isIncognito && !this.route.offTheRecord) {
-      this.remoteTitle = remoteTitle;
-      this.iconUrl = iconUrl;
+  setOnActivityUpdate(onActivityUpdate) {
+    this.onActivityUpdate_ = onActivityUpdate;
+  }
+
+  /**
+   * @param {number} tabId The id of the tab being captured, if any.
+   * @return {!Promise<void>}
+   */
+  setTabId(tabId) {
+    if (this.tabId != tabId) {
+      this.tabId = tabId;
+      return mr.TabUtils.getTab(tabId).then((tab) => {
+        this.tab = tab;
+        this.onActivityUpdated();
+      });
     } else {
-      this.remoteTitle = null;
-      this.iconUrl = null;
+      return Promise.resolve();
     }
-    // Route description may have been updated.
-    this.onRouteUpdated();
   }
 
   /**
-   * Sends metadata about the content being mirrored to the sink,
-   * if the content is not from an incognito tab or profile.
+   * Handles tab updated event.
+   *
+   * @param {number} tabId the ID of the tab.
+   * @param {!TabChangeInfo} changeInfo The changes to the state of the tab.
+   * @param {!Tab} tab The tab.
    */
-  sendMetadataToSink() {
-    if (!this.isIncognito && !this.route.offTheRecord)
-      this.sendMetadataToSinkInternal();
+  onTabUpdated(tabId, changeInfo, tab) {
+    if (tabId != this.tabId) return;
+    if (changeInfo.status == 'complete' ||
+        (!!changeInfo.favIconUrl && tab.status == 'complete')) {
+      this.tab = tab;
+      this.onActivityUpdated();
+    }
   }
 
   /**
-   * @param {number} tabId The id of the tab being captured.
-   * @return {!Promise} Resolved after the session is updated with tab
-   *     info.
+   * Called when the activity object for the mirror session needs to be updated.
+   * This happens when e.g. the tab being mirrored navigates, changes title, or
+   * switches in or out of media remoting.
    */
-  updateTabInfoWithTabId(tabId) {
-    this.tabId = tabId;
-    return mr.TabUtils.getTab(tabId).then(this.updateTabInfo.bind(this));
-  }
-
-  /**
-   * @param {!Tab} tab The tab being captured.
-   */
-  updateTabInfo(tab) {
-    this.isIncognito = tab.incognito;
-    const url = new URL(tab.url);
-    this.setMetadata(
-        tab.title,
-        url.protocol == 'file:' ? 'Local content (Tab)' :
-                                  url.hostname + ' (Tab)',
-        tab.favIconUrl);
-  }
-
-  /**
-   * @return {?string}
-   */
-  getLocalTitle() {
-    return this.localTitle;
-  }
-
-  /**
-   * @return {?string}
-   */
-  getIconUrl() {
-    return this.iconUrl;
+  onActivityUpdated() {
+    if (this.tab) {
+      this.activity.setContentTitle(this.tab.title);
+      this.activity.setIncognito(this.tab.incognito);
+      const url = new URL(this.tab.url);
+      if (url.protocol == 'file:') {
+        this.activity.setType(mr.mirror.Activity.Type.MIRROR_FILE);
+        this.activity.setOrigin(null);
+      } else {
+        this.activity.setType(
+            this.isRemoting ? mr.mirror.Activity.Type.MEDIA_REMOTING :
+                              mr.mirror.Activity.Type.MIRROR_TAB);
+        if (url.protocol == 'https:') {
+          // OK to drop the protocol for secure origins.
+          this.activity.setOrigin(url.origin.substr(8));
+        } else {
+          this.activity.setOrigin(url.origin);
+        }
+      }
+    }
+    this.route.description = this.activity.getRouteDescription();
+    this.onActivityUpdate_ && this.onActivityUpdate_(this.route, this.activity);
+    this.sendActivityToSink();
   }
 
   /**
@@ -174,13 +166,7 @@ mr.mirror.Session = class {
   }
 
   /**
-   * Sends meta data to sink.
-   * For example, when tab navigates, meta data info needs to be updated.
+   * Sends updated activity info directly to the sink.
    */
-  sendMetadataToSinkInternal() {}
-
-  /**
-   * Notifies the session that the associated route has been updated.
-   */
-  onRouteUpdated() {}
+  sendActivityToSink() {}
 };

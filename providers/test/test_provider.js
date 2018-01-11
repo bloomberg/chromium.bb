@@ -313,6 +313,11 @@ mr.TestProvider = class {
   /**
    * @override
    */
+  onMirrorActivityUpdated(routeId, mirrorActivity) {}
+
+  /**
+   * @override
+   */
   canRoute(sourceUrn, sinkId) {
     if (!this.isValidSource_(sourceUrn)) {
       return false;
