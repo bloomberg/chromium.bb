@@ -225,15 +225,19 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #endif  // defined(OS_WIN)
 
+  bool password_protection_available = false;
 #if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::ChromePasswordProtectionService* password_protection =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(profile);
+  password_protection_available = !!password_protection;
   if (password_protection) {
     AddSettingsPageUIHandler(
         base::MakeUnique<ChangePasswordHandler>(profile, password_protection));
   }
 #endif
+  html_source->AddBoolean("passwordProtectionAvailable",
+                          password_protection_available);
 
 #if defined(OS_CHROMEOS)
   chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =
