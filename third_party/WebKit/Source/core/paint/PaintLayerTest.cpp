@@ -1184,4 +1184,41 @@ TEST_P(PaintLayerTest, FrameViewContentSize) {
             GetDocument().View()->ContentsSize());
 }
 
+TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+    </style>
+    <div style='width: 200px; height: 200px; background-color: blue;
+                clip-path: url(#clip)' id='content'></div>
+    <svg>
+      <clipPath id='clip'>
+        <path d='M50,50h100v100h-100z'/>
+      </clipPath>
+    </svg>
+  )HTML");
+
+  auto* content = GetDocument().getElementById("content");
+  auto* body = GetDocument().body();
+
+  // A hit test on the content div within the clip should hit it.
+  EXPECT_EQ(content, GetDocument().ElementFromPoint(125, 75));
+  EXPECT_EQ(content, GetDocument().ElementFromPoint(75, 125));
+
+  // A hit test on the content div outside the clip should not hit it.
+  EXPECT_EQ(body, GetDocument().ElementFromPoint(151, 60));
+  EXPECT_EQ(body, GetDocument().ElementFromPoint(60, 151));
+
+  // Zoom the page by 2x,
+  GetDocument().GetFrame()->SetPageZoomFactor(2);
+
+  // A hit test on the content div within the clip should hit it.
+  EXPECT_EQ(content, GetDocument().ElementFromPoint(125, 75));
+  EXPECT_EQ(content, GetDocument().ElementFromPoint(75, 125));
+
+  // A hit test on the content div outside the clip should not hit it.
+  EXPECT_EQ(body, GetDocument().ElementFromPoint(151, 60));
+  EXPECT_EQ(body, GetDocument().ElementFromPoint(60, 151));
+}
+
 }  // namespace blink
