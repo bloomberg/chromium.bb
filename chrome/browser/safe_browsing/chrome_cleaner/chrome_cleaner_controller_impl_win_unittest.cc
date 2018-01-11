@@ -75,8 +75,8 @@ class MockChromeCleanerControllerObserver
   MOCK_METHOD1(OnIdle, void(ChromeCleanerController::IdleReason));
   MOCK_METHOD0(OnReporterRunning, void());
   MOCK_METHOD0(OnScanning, void());
-  MOCK_METHOD1(OnInfected, void(const ChromeCleanerScannerResults&));
-  MOCK_METHOD1(OnCleaning, void(const ChromeCleanerScannerResults&));
+  MOCK_METHOD2(OnInfected, void(bool, const ChromeCleanerScannerResults&));
+  MOCK_METHOD2(OnCleaning, void(bool, const ChromeCleanerScannerResults&));
   MOCK_METHOD0(OnRebootRequired, void());
   MOCK_METHOD0(OnRebootFailed, void());
   MOCK_METHOD1(OnLogsEnabledChanged, void(bool));
@@ -510,8 +510,8 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   }
 
   if (ExpectedOnInfectedCalled()) {
-    EXPECT_CALL(mock_observer_, OnInfected(_))
-        .WillOnce(DoAll(SaveArg<0>(&scanner_results_on_infected),
+    EXPECT_CALL(mock_observer_, OnInfected(_, _))
+        .WillOnce(DoAll(SaveArg<1>(&scanner_results_on_infected),
                         InvokeWithoutArgs([this, profile1]() {
                           controller_->ReplyWithUserResponse(profile1,
                                                              user_response_);
@@ -521,14 +521,14 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
     if (user_response_ == UserResponse::kAcceptedWithoutLogs)
       EXPECT_CALL(mock_observer_, OnLogsEnabledChanged(false));
   } else {
-    EXPECT_CALL(mock_observer_, OnInfected(_)).Times(0);
+    EXPECT_CALL(mock_observer_, OnInfected(_, _)).Times(0);
   }
 
   if (ExpectedOnCleaningCalled()) {
-    EXPECT_CALL(mock_observer_, OnCleaning(_))
-        .WillOnce(SaveArg<0>(&scanner_results_on_cleaning));
+    EXPECT_CALL(mock_observer_, OnCleaning(_, _))
+        .WillOnce(SaveArg<1>(&scanner_results_on_cleaning));
   } else {
-    EXPECT_CALL(mock_observer_, OnCleaning(_)).Times(0);
+    EXPECT_CALL(mock_observer_, OnCleaning(_, _)).Times(0);
   }
 
   if (ExpectedOnRebootRequiredCalled()) {

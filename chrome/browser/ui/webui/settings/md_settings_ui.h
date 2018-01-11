@@ -50,7 +50,7 @@ class MdSettingsUI : public content::WebUIController,
   base::Time load_start_time_;
 
 #if defined(OS_WIN)
-  void UpdateCleanupDataSource(bool cleanupEnabled, bool partnerPowered);
+  void UpdateCleanupDataSource(bool cleanupEnabled);
   std::unique_ptr<safe_browsing::ChromeCleanerStateChangeObserver>
       cleanup_observer_;
 #endif

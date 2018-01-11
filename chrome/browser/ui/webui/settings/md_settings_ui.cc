@@ -211,9 +211,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   userInitiatedCleanupsEnabled = safe_browsing::UserInitiatedCleanupsEnabled();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (cleaner_controller->IsPoweredByPartner())
-    html_source->AddBoolean("cleanupPoweredByPartner", true);
-
   html_source->AddResourcePath("partner-logo.svg", IDR_CHROME_CLEANUP_PARTNER);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   exclude_from_gzip.push_back("partner-logo.svg");
@@ -358,14 +355,12 @@ void MdSettingsUI::DocumentOnLoadCompletedInMainFrame() {
 }
 
 #if defined(OS_WIN)
-void MdSettingsUI::UpdateCleanupDataSource(bool cleanupEnabled,
-                                           bool partnerPowered) {
+void MdSettingsUI::UpdateCleanupDataSource(bool cleanupEnabled) {
   DCHECK(web_ui());
   Profile* profile = Profile::FromWebUI(web_ui());
 
   std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
   update->SetBoolean("chromeCleanupEnabled", cleanupEnabled);
-  update->SetBoolean("cleanupPoweredByPartner", partnerPowered);
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUISettingsHost,
                                    std::move(update));

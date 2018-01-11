@@ -11,16 +11,18 @@
 namespace safe_browsing {
 
 // A helper class which automatically starts observing |ChromeCleanerController|
-// when instantiated and calls the given callback with new |show_cleanup| and
-// |powered_by_partner| values if either of them changed.
-// Un-registerers itself as an observer on deletion.
-// Since ChromeCleanupController lives and has its methods called on the UI
-// thread, this class should live on and be destroyed on the UI thread as well
-// to guarantee that a state change does not race the destructor.
+// when instantiated and calls the given callback with a new |show_cleanup|
+// value if it changed. Un-registerers itself as an observer on deletion. Since
+// ChromeCleanupController lives and has its methods called on the UI thread,
+// this class should live on and be destroyed on the UI thread as well to
+// guarantee that a state change does not race the destructor.
+//
+// TODO(crbug.com/800507): Remove this once user-initiated cleanups is enabled
+//                         by default.
 class ChromeCleanerStateChangeObserver
     : public ChromeCleanerController::Observer {
  public:
-  typedef base::RepeatingCallback<void(bool showCleanup, bool partnerPowered)>
+  typedef base::RepeatingCallback<void(bool showCleanup)>
       OnShowCleanupUIChangeCallback;
 
   ChromeCleanerStateChangeObserver(
@@ -31,8 +33,10 @@ class ChromeCleanerStateChangeObserver
   void OnIdle(ChromeCleanerController::IdleReason idle_reason) override;
   void OnScanning() override;
   void OnReporterRunning() override;
-  void OnInfected(const ChromeCleanerScannerResults& scanner_results) override;
-  void OnCleaning(const ChromeCleanerScannerResults& scanner_results) override;
+  void OnInfected(bool is_powered_by_partner,
+                  const ChromeCleanerScannerResults& scanner_results) override;
+  void OnCleaning(bool is_powered_by_partner,
+                  const ChromeCleanerScannerResults& scanner_results) override;
   void OnRebootRequired() override;
   void OnLogsEnabledChanged(bool logs_enabled) override;
 
@@ -45,7 +49,6 @@ class ChromeCleanerStateChangeObserver
   // Raw pointer to a singleton. Must outlive this object.
   ChromeCleanerController* controller_;
   bool cached_should_show_cleanup_in_settings_ui_;
-  bool cached_cleanup_powered_by_partner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerStateChangeObserver);
 };

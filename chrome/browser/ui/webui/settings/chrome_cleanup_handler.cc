@@ -176,14 +176,18 @@ void ChromeCleanupHandler::OnReporterRunning() {
 }
 
 void ChromeCleanupHandler::OnInfected(
+    bool is_powered_by_partner,
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-infected",
+                    base::Value(is_powered_by_partner),
                     GetScannerResultsAsDictionary(scanner_results));
 }
 
 void ChromeCleanupHandler::OnCleaning(
+    bool is_powered_by_partner,
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-cleaning",
+                    base::Value(is_powered_by_partner),
                     GetScannerResultsAsDictionary(scanner_results));
 }
 

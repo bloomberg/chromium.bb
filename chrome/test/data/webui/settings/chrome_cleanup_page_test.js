@@ -149,7 +149,9 @@ function startCleanupFromInfected(
   const scannerResults = {'files': files, 'registryKeys': registryKeys};
 
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
-  cr.webUIListenerCallback('chrome-cleanup-on-infected', scannerResults);
+  cr.webUIListenerCallback(
+      'chrome-cleanup-on-infected', true /* isPoweredByPartner */,
+      scannerResults);
   Polymer.dom.flush();
 
   const showItemsButton = chromeCleanupPage.$$('#show-items-button');
@@ -183,7 +185,8 @@ function startCleanupFromInfected(
       .then(function(logsUploadEnabled) {
         assertFalse(logsUploadEnabled);
         cr.webUIListenerCallback(
-            'chrome-cleanup-on-cleaning', defaultScannerResults);
+            'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
+            defaultScannerResults);
         Polymer.dom.flush();
 
         const spinner = chromeCleanupPage.$$('#waiting-spinner');
@@ -207,7 +210,9 @@ function rebootFromRebootRequired() {
  */
 function cleanupFailure(userInitiatedCleanupsEnabled) {
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
-  cr.webUIListenerCallback('chrome-cleanup-on-cleaning', defaultScannerResults);
+  cr.webUIListenerCallback(
+      'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
+      defaultScannerResults);
   cr.webUIListenerCallback(
       'chrome-cleanup-on-idle',
       settings.ChromeCleanupIdleReason.CLEANING_FAILED);
@@ -228,7 +233,9 @@ function cleanupFailure(userInitiatedCleanupsEnabled) {
  *     cleanup feature is enabled.
  */
 function cleanupSuccess(userInitiatedCleanupsEnabled) {
-  cr.webUIListenerCallback('chrome-cleanup-on-cleaning', defaultScannerResults);
+  cr.webUIListenerCallback(
+      'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
+      defaultScannerResults);
   cr.webUIListenerCallback(
       'chrome-cleanup-on-idle',
       settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED);
@@ -251,7 +258,8 @@ function cleanupSuccess(userInitiatedCleanupsEnabled) {
 function testLogsUploading(testingScanOffered) {
   if (testingScanOffered) {
     cr.webUIListenerCallback(
-        'chrome-cleanup-on-infected', defaultScannerResults);
+        'chrome-cleanup-on-infected', true /* isPoweredByPartner */,
+        defaultScannerResults);
   } else {
     cr.webUIListenerCallback(
         'chrome-cleanup-on-idle', settings.ChromeCleanupIdleReason.INITIAL);
@@ -274,6 +282,24 @@ function testLogsUploading(testingScanOffered) {
       .then(function(logsUploadEnabled) {
         assertTrue(logsUploadEnabled);
       });
+}
+
+/**
+ * @param {boolean} onInfected Whether to test the case where current state is
+ *     INFECTED, as opposed to CLEANING.
+ * @param {boolean} isPoweredByPartner Whether to test the case when scan
+ *     results are provided by a partner.
+ */
+function testPartnerLogoShown(onInfected, isPoweredByPartner) {
+  cr.webUIListenerCallback(
+      onInfected ? 'chrome-cleanup-on-infected' : 'chrome-cleanup-on-cleaning',
+      isPoweredByPartner, defaultScannerResults);
+  Polymer.dom.flush();
+
+  const poweredByContainerControl =
+      chromeCleanupPage.$$('#powered-by-container');
+  assertTrue(!!poweredByContainerControl);
+  assertNotEquals(poweredByContainerControl.hidden, isPoweredByPartner);
 }
 
 suite('ChromeCleanupHandler_UserInitiatedCleanupsDisabled', function() {
@@ -366,6 +392,26 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsDisabled', function() {
 
   test('logsUploadingOnInfected', function() {
     return testLogsUploading(false /* testingScanOffered */);
+  });
+
+  test('onInfectedResultsProvidedByPartner_True', function() {
+    return testPartnerLogoShown(
+        true /* onInfected */, true /* isPoweredByPartner */);
+  });
+
+  test('onInfectedResultsProvidedByPartner_False', function() {
+    return testPartnerLogoShown(
+        true /* onInfected */, false /* isPoweredByPartner */);
+  });
+
+  test('onCleaningResultsProvidedByPartner_True', function() {
+    return testPartnerLogoShown(
+        false /* onInfected */, true /* isPoweredByPartner */);
+  });
+
+  test('onCleaningResultsProvidedByPartner_False', function() {
+    return testPartnerLogoShown(
+        false /* onInfected */, false /* isPoweredByPartner */);
   });
 });
 
@@ -593,5 +639,25 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
 
   test('logsUploadingOnInfected', function() {
     return testLogsUploading(false /* testingScanOffered */);
+  });
+
+  test('onInfectedResultsProvidedByPartner_True', function() {
+    return testPartnerLogoShown(
+        true /* onInfected */, true /* isPoweredByPartner */);
+  });
+
+  test('onInfectedResultsProvidedByPartner_False', function() {
+    return testPartnerLogoShown(
+        true /* onInfected */, false /* isPoweredByPartner */);
+  });
+
+  test('onCleaningResultsProvidedByPartner_True', function() {
+    return testPartnerLogoShown(
+        false /* onInfected */, true /* isPoweredByPartner */);
+  });
+
+  test('onCleaningResultsProvidedByPartner_False', function() {
+    return testPartnerLogoShown(
+        false /* onInfected */, false /* isPoweredByPartner */);
   });
 });

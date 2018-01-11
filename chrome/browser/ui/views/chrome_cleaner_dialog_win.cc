@@ -219,6 +219,7 @@ void ChromeCleanerDialog::OnScanning() {
 }
 
 void ChromeCleanerDialog::OnCleaning(
+    bool is_powered_by_partner,
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   Abort();
 }
