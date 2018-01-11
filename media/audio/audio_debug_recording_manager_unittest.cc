@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/test_message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_debug_recording_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,9 +58,11 @@ class MockAudioDebugRecordingHelper : public AudioDebugRecordingHelper {
   MockAudioDebugRecordingHelper(
       const AudioParameters& params,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      AudioDebugRecordingHelper::CreateFileCallback create_file_callback,
       base::OnceClosure on_destruction_closure)
       : AudioDebugRecordingHelper(params,
                                   std::move(task_runner),
+                                  std::move(create_file_callback),
                                   base::OnceClosure()),
         on_destruction_closure_in_mock_(std::move(on_destruction_closure)) {
     if (g_expect_enable_after_create_helper)
@@ -98,7 +100,11 @@ class AudioDebugRecordingManagerUnderTest : public AudioDebugRecordingManager {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::OnceClosure on_destruction_closure) override {
     return std::make_unique<MockAudioDebugRecordingHelper>(
-        params, std::move(task_runner), std::move(on_destruction_closure));
+        params, std::move(task_runner),
+        base::BindRepeating(
+            [](const base::FilePath& file_name,
+               base::OnceCallback<void(base::File)> reply_callback) {}),
+        std::move(on_destruction_closure));
   }
 
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingManagerUnderTest);
@@ -108,7 +114,7 @@ class AudioDebugRecordingManagerUnderTest : public AudioDebugRecordingManager {
 class AudioDebugRecordingManagerTest : public ::testing::Test {
  public:
   AudioDebugRecordingManagerTest()
-      : manager_(message_loop_.task_runner()),
+      : manager_(scoped_task_environment_.GetMainThreadTaskRunner()),
         base_file_path_(base::FilePath::FromUTF8Unsafe("base_path")) {}
 
   ~AudioDebugRecordingManagerTest() override = default;
@@ -120,11 +126,10 @@ class AudioDebugRecordingManagerTest : public ::testing::Test {
     return manager_.RegisterDebugRecordingSource(kFileNameExtension, params);
   }
 
- private:
-  // Must come before |manager_|, so that it's inialized before it.
-  base::TestMessageLoop message_loop_;
-
  protected:
+  // The test task environment.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   AudioDebugRecordingManagerUnderTest manager_;
   base::FilePath base_file_path_;
 
