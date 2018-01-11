@@ -1198,33 +1198,33 @@ bool ChromeContentRendererClient::ShouldTrackUseCounter(const GURL& url) {
   return !is_instant_ntp;
 }
 
-void ChromeContentRendererClient::GetNavigationErrorStrings(
+void ChromeContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
     const blink::WebURLError& web_error,
     std::string* error_html,
     base::string16* error_description) {
-  GetNavigationErrorStringsInternal(
+  PrepareErrorPageInternal(
       render_frame, failed_request,
       error_page::Error::NetError(web_error.url(), web_error.reason(),
                                   web_error.has_copy_in_cache()),
       error_html, error_description);
 }
 
-void ChromeContentRendererClient::GetNavigationErrorStringsForHttpStatusError(
+void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
     const GURL& unreachable_url,
     int http_status,
     std::string* error_html,
     base::string16* error_description) {
-  GetNavigationErrorStringsInternal(
+  PrepareErrorPageInternal(
       render_frame, failed_request,
       error_page::Error::HttpError(unreachable_url, http_status), error_html,
       error_description);
 }
 
-void ChromeContentRendererClient::GetNavigationErrorStringsInternal(
+void ChromeContentRendererClient::PrepareErrorPageInternal(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
     const error_page::Error& error,
@@ -1233,11 +1233,8 @@ void ChromeContentRendererClient::GetNavigationErrorStringsInternal(
   bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   bool is_ignoring_cache =
       failed_request.GetCacheMode() == FetchCacheMode::kBypassCache;
-  if (error_html) {
-    NetErrorHelper::Get(render_frame)
-        ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);
-  }
-
+  NetErrorHelper::Get(render_frame)
+      ->PrepareErrorPage(error, is_post, is_ignoring_cache, error_html);
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
         error.domain(), error.reason(), is_post);

@@ -1766,15 +1766,15 @@ class RendererErrorPageTest : public RenderViewImplTest {
       return url == "http://example.com/suppress";
     }
 
-    void GetNavigationErrorStrings(content::RenderFrame* render_frame,
-                                   const blink::WebURLRequest& failed_request,
-                                   const blink::WebURLError& error,
-                                   std::string* error_html,
-                                   base::string16* error_description) override {
+    void PrepareErrorPage(content::RenderFrame* render_frame,
+                          const blink::WebURLRequest& failed_request,
+                          const blink::WebURLError& error,
+                          std::string* error_html,
+                          base::string16* error_description) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
-    void GetNavigationErrorStringsForHttpStatusError(
+    void PrepareErrorPageForHttpStatusError(
         content::RenderFrame* render_frame,
         const blink::WebURLRequest& failed_request,
         const GURL& url,

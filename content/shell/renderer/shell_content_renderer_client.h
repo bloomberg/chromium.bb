@@ -28,12 +28,12 @@ class ShellContentRendererClient : public ContentRendererClient {
   void RenderThreadStarted() override;
   void RenderViewCreated(RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
-  void GetNavigationErrorStrings(RenderFrame* render_frame,
-                                 const blink::WebURLRequest& failed_request,
-                                 const blink::WebURLError& error,
-                                 std::string* error_html,
-                                 base::string16* error_description) override;
-  void GetNavigationErrorStringsForHttpStatusError(
+  void PrepareErrorPage(RenderFrame* render_frame,
+                        const blink::WebURLRequest& failed_request,
+                        const blink::WebURLError& error,
+                        std::string* error_html,
+                        base::string16* error_description) override;
+  void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,

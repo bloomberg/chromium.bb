@@ -676,11 +676,11 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   UpdateErrorPage();
 }
 
-void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
-                                      const error_page::Error& error,
-                                      bool is_failed_post,
-                                      bool is_ignoring_cache,
-                                      std::string* error_html) {
+void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
+                                          const error_page::Error& error,
+                                          bool is_failed_post,
+                                          bool is_ignoring_cache,
+                                          std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
     // If navigation corrections were needed before, that should have been
     // cancelled earlier by starting a new page load (Which has now failed).
@@ -691,19 +691,21 @@ void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
         new ErrorPageInfo(error, is_failed_post, is_ignoring_cache));
     pending_error_page_info_->navigation_correction_params.reset(
         new NavigationCorrectionParams(navigation_correction_params_));
-    GetErrorHtmlForMainFrame(pending_error_page_info_.get(), error_html);
+    PrepareErrorPageForMainFrame(pending_error_page_info_.get(), error_html);
   } else {
     // These values do not matter, as error pages in iframes hide the buttons.
     bool reload_button_in_page;
     bool show_saved_copy_button_in_page;
     bool show_cached_copy_button_in_page;
     bool download_button_in_page;
-
-    delegate_->GenerateLocalizedErrorPage(
-        error, is_failed_post,
-        false /* No diagnostics dialogs allowed for subframes. */, nullptr,
-        &reload_button_in_page, &show_saved_copy_button_in_page,
-        &show_cached_copy_button_in_page, &download_button_in_page, error_html);
+    if (error_html) {
+      delegate_->GenerateLocalizedErrorPage(
+          error, is_failed_post,
+          false /* No diagnostics dialogs allowed for subframes. */, nullptr,
+          &reload_button_in_page, &show_saved_copy_button_in_page,
+          &show_cached_copy_button_in_page, &download_button_in_page,
+          error_html);
+    }
   }
 }
 
@@ -739,7 +741,7 @@ void NetErrorHelperCore::OnSetNavigationCorrectionInfo(
   navigation_correction_params_.search_url = search_url;
 }
 
-void NetErrorHelperCore::GetErrorHtmlForMainFrame(
+void NetErrorHelperCore::PrepareErrorPageForMainFrame(
     ErrorPageInfo* pending_error_page_info,
     std::string* error_html) {
   std::string error_param;
@@ -762,14 +764,15 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
     pending_error_page_info->needs_dns_updates = true;
     error = GetUpdatedError(error);
   }
-
-  delegate_->GenerateLocalizedErrorPage(
-      error, pending_error_page_info->was_failed_post,
-      can_show_network_diagnostics_dialog_, nullptr,
-      &pending_error_page_info->reload_button_in_page,
-      &pending_error_page_info->show_saved_copy_button_in_page,
-      &pending_error_page_info->show_cached_copy_button_in_page,
-      &pending_error_page_info->download_button_in_page, error_html);
+  if (error_html) {
+    delegate_->GenerateLocalizedErrorPage(
+        error, pending_error_page_info->was_failed_post,
+        can_show_network_diagnostics_dialog_, nullptr,
+        &pending_error_page_info->reload_button_in_page,
+        &pending_error_page_info->show_saved_copy_button_in_page,
+        &pending_error_page_info->show_cached_copy_button_in_page,
+        &pending_error_page_info->download_button_in_page, error_html);
+  }
 }
 
 void NetErrorHelperCore::UpdateErrorPage() {
@@ -833,7 +836,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   } else {
     // Since |navigation_correction_params| in |pending_error_page_info_| is
     // NULL, this won't trigger another attempt to load corrections.
-    GetErrorHtmlForMainFrame(pending_error_page_info_.get(), &error_html);
+    PrepareErrorPageForMainFrame(pending_error_page_info_.get(), &error_html);
   }
 
   // TODO(mmenke):  Once the new API is in place, look into replacing this
