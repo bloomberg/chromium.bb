@@ -4,6 +4,8 @@
 
 #include "platform/scheduler/util/tracing_helper.h"
 
+#include <unordered_set>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -11,7 +13,18 @@ namespace scheduler {
 
 namespace {
 
-struct {} g_object;
+const char* g_last_state = nullptr;
+
+void ExpectTraced(const char* state) {
+  EXPECT_TRUE(state);
+  EXPECT_TRUE(g_last_state);
+  EXPECT_STREQ(state, g_last_state);
+  g_last_state = nullptr;
+}
+
+void ExpectNotTraced() {
+  EXPECT_FALSE(g_last_state);
+}
 
 const char* SignOfInt(int value) {
   if (value > 0) {
@@ -23,15 +36,50 @@ const char* SignOfInt(int value) {
   }
 }
 
+class TraceableStateForTest
+    : public TraceableState<int, kTracingCategoryNameDefault> {
+ public:
+  TraceableStateForTest(TraceableVariableController* controller)
+      : TraceableState(0, "State", controller, controller, SignOfInt) {
+    // We shouldn't expect trace in constructor here because mock isn't set yet.
+    mock_trace_for_test_ = &MockTrace;
+  }
+
+  TraceableStateForTest& operator =(const int& value) {
+    Assign(value);
+    return *this;
+  }
+
+  static void MockTrace(const char* state) {
+    EXPECT_TRUE(state);
+    EXPECT_FALSE(g_last_state);  // No unexpected traces.
+    g_last_state = state;
+  }
+};
+
 }  // namespace
 
-// TODO(kraynov): Tracing tests.
+// TODO(kraynov): TraceableCounter tests.
 
-TEST(TracingHelperTest, Operators) {
+TEST(TracingHelperTest, TraceableState) {
+  TraceableVariableController controller;
+  TraceableStateForTest state(&controller);
+  controller.OnTraceLogEnabled();
+  ExpectTraced("zero");
+  state = 0;
+  ExpectNotTraced();
+  state = 1;
+  ExpectTraced("positive");
+  state = -1;
+  ExpectTraced("negative");
+}
+
+TEST(TracingHelperTest, TraceableStateOperators) {
+  TraceableVariableController controller;
   TraceableState<int, kTracingCategoryNameDebug> x(
-      -1, "X", &g_object, SignOfInt);
+      -1, "X", &controller, &controller, SignOfInt);
   TraceableState<int, kTracingCategoryNameDebug> y(
-      1, "Y", &g_object, SignOfInt);
+      1, "Y", &controller, &controller, SignOfInt);
   EXPECT_EQ(0, x + y);
   EXPECT_FALSE(x == y);
   EXPECT_TRUE(x != y);

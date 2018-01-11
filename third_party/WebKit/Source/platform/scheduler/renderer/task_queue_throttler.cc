@@ -15,7 +15,6 @@
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/throttled_time_domain.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -65,9 +64,11 @@ base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
 }  // namespace
 
 TaskQueueThrottler::TaskQueueThrottler(
-    RendererSchedulerImpl* renderer_scheduler)
+    RendererSchedulerImpl* renderer_scheduler,
+    TraceableVariableController* tracing_controller)
     : control_task_queue_(renderer_scheduler->ControlTaskQueue()),
       renderer_scheduler_(renderer_scheduler),
+      tracing_controller_(tracing_controller),
       tick_clock_(renderer_scheduler->tick_clock()),
       time_domain_(new ThrottledTimeDomain()),
       allow_throttling_(true),
@@ -282,8 +283,11 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
 
 CPUTimeBudgetPool* TaskQueueThrottler::CreateCPUTimeBudgetPool(
     const char* name) {
-  CPUTimeBudgetPool* time_budget_pool =
-      new CPUTimeBudgetPool(name, this, tick_clock_->NowTicks());
+  CPUTimeBudgetPool* time_budget_pool = new CPUTimeBudgetPool(
+      name,
+      this,
+      tracing_controller_,
+      tick_clock_->NowTicks());
   budget_pools_[time_budget_pool] = base::WrapUnique(time_budget_pool);
   return time_budget_pool;
 }
