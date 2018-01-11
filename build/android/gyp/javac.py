@@ -20,6 +20,41 @@ sys.path.append(build_utils.COLORAMA_ROOT)
 import colorama
 
 
+ERRORPRONE_WARNINGS_TO_TURN_OFF = [
+  # TODO(crbug.com/801208): Follow steps in bug.
+  'FloatingPointLiteralPrecision',
+  # TODO(crbug.com/801210): Follow steps in bug.
+  'SynchronizeOnNonFinalField',
+  # TODO(crbug.com/801253): Follow steps in bug.
+  'JavaLangClash',
+  # TODO(crbug.com/801256): Follow steps in bug.
+  'ParameterName',
+  # TODO(crbug.com/801261): Follow steps in bug
+  'ArgumentSelectionDefectChecker',
+  # TODO(crbug.com/801268): Follow steps in bug.
+  'NarrowingCompoundAssignment',
+  # Android platform default is always UTF-8.
+  # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
+  'DefaultCharset',
+  # Low priority since the alternatives still work.
+  'JdkObsolete',
+  # We don't use that many lambdas.
+  'FunctionalInterfaceClash',
+  # There are lots of times when we just want to post a task.
+  'FutureReturnValueIgnored',
+  # Nice to be explicit about operators, but not necessary.
+  'OperatorPrecedence',
+  # Just false positives in our code.
+  'ThreadJoinLoop',
+  # Alias of ParameterName warning
+  'NamedParameters',
+]
+
+ERRORPRONE_WARNINGS_TO_ERROR = [
+  # Add warnings to this after fixing/suppressing all instances in our codebase.
+]
+
+
 def ColorJavacOutput(output):
   fileline_prefix = r'(?P<fileline>(?P<file>[-.\w/\\]+.java):(?P<line>[0-9]+):)'
   warning_re = re.compile(
@@ -398,6 +433,12 @@ def main(argv):
     # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
     '-sourcepath', ':',
   ))
+
+  if options.use_errorprone_path:
+    for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
+      javac_cmd.append('-Xep:{}:OFF'.format(warning))
+    for warning in ERRORPRONE_WARNINGS_TO_ERROR:
+      javac_cmd.append('-Xep:{}:ERROR'.format(warning))
 
   if options.java_version:
     javac_cmd.extend([
