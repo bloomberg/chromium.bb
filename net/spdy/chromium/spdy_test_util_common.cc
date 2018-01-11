@@ -810,10 +810,8 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
   SpdyHeaderBlock push_promise_header_block;
   push_promise_header_block[kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
-  SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
-                                 std::move(push_promise_header_block));
-  SpdySerializedFrame push_promise_frame(
-      response_spdy_framer_.SerializeFrame(push_promise));
+  SpdySerializedFrame push_promise_frame(ConstructSpdyPushPromise(
+      associated_stream_id, stream_id, std::move(push_promise_header_block)));
 
   SpdyHeaderBlock headers_header_block;
   headers_header_block[kHttp2StatusHeader] = "200";
@@ -837,10 +835,8 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
   SpdyHeaderBlock push_promise_header_block;
   push_promise_header_block[kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
-  SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
-                                 std::move(push_promise_header_block));
-  SpdySerializedFrame push_promise_frame(
-      response_spdy_framer_.SerializeFrame(push_promise));
+  SpdySerializedFrame push_promise_frame(ConstructSpdyPushPromise(
+      associated_stream_id, stream_id, std::move(push_promise_header_block)));
 
   SpdyHeaderBlock headers_header_block;
   headers_header_block["hello"] = "bye";
@@ -854,10 +850,10 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
   return CombineFrames({&push_promise_frame, &headers_frame});
 }
 
-SpdySerializedFrame SpdyTestUtil::ConstructInitialSpdyPushFrame(
-    SpdyHeaderBlock headers,
-    int stream_id,
-    int associated_stream_id) {
+SpdySerializedFrame SpdyTestUtil::ConstructSpdyPushPromise(
+    SpdyStreamId associated_stream_id,
+    SpdyStreamId stream_id,
+    SpdyHeaderBlock headers) {
   SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
                                  std::move(headers));
   return SpdySerializedFrame(

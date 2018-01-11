@@ -748,8 +748,8 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatusOnPushedStream) {
   SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   AddRead(reply);
 
-  SpdySerializedFrame push_promise(spdy_util_.ConstructInitialSpdyPushFrame(
-      spdy_util_.ConstructGetHeaderBlock(kPushUrl), 2, 1));
+  SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
+      1, 2, spdy_util_.ConstructGetHeaderBlock(kPushUrl)));
   AddRead(push_promise);
 
   SpdySerializedFrame priority(
@@ -864,8 +864,8 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
   SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   AddRead(reply);
 
-  SpdySerializedFrame push_promise(spdy_util_.ConstructInitialSpdyPushFrame(
-      spdy_util_.ConstructGetHeaderBlock(kPushUrl), 2, 1));
+  SpdySerializedFrame push_promise(spdy_util_.ConstructSpdyPushPromise(
+      1, 2, spdy_util_.ConstructGetHeaderBlock(kPushUrl)));
   AddRead(push_promise);
 
   SpdySerializedFrame priority(

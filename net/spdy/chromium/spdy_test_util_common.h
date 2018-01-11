@@ -373,10 +373,10 @@ class SpdyTestUtil {
                                            RequestPriority priority,
                                            const HostPortPair& host_port_pair);
 
-  // Constructs a SPDY PUSH_PROMISE frame.
+  // Constructs a PUSH_PROMISE frame and a HEADERS frame on the pushed stream.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.
-  // Returns a SpdySerializedFrame.
+  // Returns a SpdySerializedFrame object with the two frames concatenated.
   SpdySerializedFrame ConstructSpdyPush(const char* const extra_headers[],
                                         int extra_header_count,
                                         int stream_id,
@@ -390,9 +390,11 @@ class SpdyTestUtil {
                                         const char* status,
                                         const char* location);
 
-  SpdySerializedFrame ConstructInitialSpdyPushFrame(SpdyHeaderBlock headers,
-                                                    int stream_id,
-                                                    int associated_stream_id);
+  // Constructs a PUSH_PROMISE frame.
+  SpdySerializedFrame ConstructSpdyPushPromise(
+      SpdyStreamId associated_stream_id,
+      SpdyStreamId stream_id,
+      SpdyHeaderBlock headers);
 
   SpdySerializedFrame ConstructSpdyPushHeaders(
       int stream_id,
