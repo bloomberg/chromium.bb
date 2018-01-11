@@ -116,11 +116,7 @@ void OutOfMemoryReporter::OnCrashDumpProcessed(
   if (details.process_host_id != crashed_render_process_id_)
     return;
 
-  if (details.process_type == content::PROCESS_TYPE_RENDERER &&
-      details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
-      details.file_size == 0 &&
-      details.app_state ==
-          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+  if (breakpad::CrashDumpManager::IsForegroundOom(details)) {
     OnForegroundOOMDetected(web_contents()->GetLastCommittedURL(),
                             *last_committed_source_id_);
   }

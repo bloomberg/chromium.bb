@@ -7,10 +7,13 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -19,6 +22,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/common/child_process_host.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -35,11 +39,33 @@ static const char kHistogramSucceeded[] =
     "DataReductionProxy.Pingback.Succeeded";
 static const char kHistogramAttempted[] =
     "DataReductionProxy.Pingback.Attempted";
+static const char kHistogramCrash[] = "DataReductionProxy.Pingback.CrashAction";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CrashAction {
+  // A crash was detected.
+  kDetected = 0,
+  // The crash dump was analyzed and the information was queued to be sent.
+  kAnalsisSucceeded = 1,
+  // The crash dump was not analyzed successfully, but the information was
+  // queued to be sent.
+  kAnalysisFailed = 2,
+  // The crash dump was not even attempted to be analyzed, but the information
+  // was queued to be sent.
+  kNotAnalyzed = 3,
+  // The crash dump was successfully sent to the server.
+  kSentSuccessfully = 4,
+  // The crash dump request completed unsuccessfully.
+  kSendUnuccessful = 5,
+  kLast = kSendUnuccessful + 1,
+};
 
 // Adds the relevant information to |request| for this page load based on page
 // timing and data reduction proxy state.
 void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               const DataReductionProxyPageLoadTiming& timing,
+                              PageloadMetrics_RendererCrashType crash_type,
                               PageloadMetrics* request) {
   request->set_session_key(request_data.session_key());
   request->set_holdback_group(params::HoldbackFieldTrialGroup());
@@ -99,6 +125,8 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_original_page_size_bytes(timing.original_network_bytes);
   request->set_renderer_memory_usage_kb(timing.renderer_memory_usage_kb);
 
+  request->set_renderer_crash_type(crash_type);
+
   if (request_data.page_id()) {
     request->set_page_id(request_data.page_id().value());
   }
@@ -150,10 +178,24 @@ std::string AddBatchInfoAndSerializeRequest(
 }  // namespace
 
 DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
-    net::URLRequestContextGetter* url_request_context)
+    net::URLRequestContextGetter* url_request_context,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : url_request_context_(url_request_context),
       pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
-      pingback_reporting_fraction_(0.0) {}
+      pingback_reporting_fraction_(0.0),
+      current_fetcher_message_count_(0u),
+      current_fetcher_crash_count_(0u),
+      ui_task_runner_(std::move(ui_task_runner)),
+#if defined(OS_ANDROID)
+      scoped_observer_(this),
+      weak_factory_(this) {
+  auto* crash_manager = breakpad::CrashDumpManager::GetInstance();
+  DCHECK(crash_manager);
+  scoped_observer_.Add(crash_manager);
+#else
+      weak_factory_(this){
+#endif
+}
 
 DataReductionProxyPingbackClientImpl::~DataReductionProxyPingbackClientImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -163,7 +205,24 @@ void DataReductionProxyPingbackClientImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(source == current_fetcher_.get());
-  UMA_HISTOGRAM_BOOLEAN(kHistogramSucceeded, source->GetStatus().is_success());
+  // For each message in the batched message, we should report UMA.
+  // Historically, batched requests are not common, so this loop usually only
+  // has 1 iteration.
+  for (size_t message = 0u; message < current_fetcher_message_count_;
+       ++message) {
+    UMA_HISTOGRAM_BOOLEAN(kHistogramSucceeded,
+                          source->GetStatus().is_success());
+  }
+
+  // For each crash we should report UMA.
+  for (size_t crash = 0u; crash < current_fetcher_crash_count_; ++crash) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHistogramCrash,
+        (source->GetStatus().is_success() ? CrashAction::kSentSuccessfully
+                                          : CrashAction::kSendUnuccessful),
+        CrashAction::kLast);
+  }
+
   current_fetcher_.reset();
   if (metrics_request_.pageloads_size() > 0) {
     CreateFetcherForDataAndStart();
@@ -179,8 +238,94 @@ void DataReductionProxyPingbackClientImpl::SendPingback(
   if (!send_pingback)
     return;
 
+  if (timing.host_id != content::ChildProcessHost::kInvalidUniqueID) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramCrash, CrashAction::kDetected,
+                              CrashAction::kLast);
+#if defined(OS_ANDROID)
+    // Defer sending the report until the crash is processed.
+    AddRequestToCrashMap(request_data, timing);
+#else
+    // Don't analyze non-Android crashes.
+    UMA_HISTOGRAM_ENUMERATION(kHistogramCrash, CrashAction::kNotAnalyzed,
+                              CrashAction::kLast);
+    CreateReport(request_data, timing,
+                 PageloadMetrics_RendererCrashType_NOT_ANALYZED);
+#endif
+    return;
+  }
+  CreateReport(request_data, timing,
+               PageloadMetrics_RendererCrashType_NO_CRASH);
+}
+
+#if defined(OS_ANDROID)
+void DataReductionProxyPingbackClientImpl::OnCrashDumpProcessed(
+    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto iter = crash_map_.find(details.process_host_id);
+  if (iter == crash_map_.end())
+    return;
+  const CrashPageLoadInformation& crash_page_load_information = iter->second;
+
+  UMA_HISTOGRAM_ENUMERATION(kHistogramCrash, CrashAction::kAnalsisSucceeded,
+                            CrashAction::kLast);
+
+  bool renderer_foreground_oom =
+      breakpad::CrashDumpManager::IsForegroundOom(details);
+  CreateReport(std::get<0>(crash_page_load_information),
+               std::get<1>(crash_page_load_information),
+               renderer_foreground_oom
+                   ? PageloadMetrics_RendererCrashType_ANDROID_FOREGROUND_OOM
+                   : PageloadMetrics_RendererCrashType_OTHER_CRASH);
+  crash_map_.erase(iter);
+}
+
+void DataReductionProxyPingbackClientImpl::AddRequestToCrashMap(
+    const DataReductionProxyData& request_data,
+    const DataReductionProxyPageLoadTiming& timing) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // It is guaranteed that |AddRequestToCrashMap| is called before
+  // |OnCrashDumpProcessed| due to the nature of both events being triggered
+  // from the channel closing, and SendPingback being called on the same stack,
+  // while OnCrashDumpProcessed is called from a PostTask.
+  crash_map_.insert(
+      std::make_pair(timing.host_id, std::make_tuple(request_data, timing)));
+  // If the crash hasn't been processed in 5 seconds, send the report without it
+  // being analyzed. 5 seconds should be enough time for breakpad to process the
+  // dump, while being short enough that the user will probably not shutdown the
+  // app.
+  ui_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyPingbackClientImpl::RemoveFromCrashMap,
+                     weak_factory_.GetWeakPtr(), timing.host_id),
+      base::TimeDelta::FromSeconds(5));
+}
+
+void DataReductionProxyPingbackClientImpl::RemoveFromCrashMap(
+    int process_host_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto iter = crash_map_.find(process_host_id);
+  if (iter == crash_map_.end())
+    return;
+  const CrashPageLoadInformation& crash_page_load_information = iter->second;
+
+  UMA_HISTOGRAM_ENUMERATION(kHistogramCrash, CrashAction::kAnalysisFailed,
+                            CrashAction::kLast);
+
+  CreateReport(std::get<0>(crash_page_load_information),
+               std::get<1>(crash_page_load_information),
+               PageloadMetrics_RendererCrashType_NOT_ANALYZED);
+  crash_map_.erase(iter);
+}
+
+#endif
+
+void DataReductionProxyPingbackClientImpl::CreateReport(
+    const DataReductionProxyData& request_data,
+    const DataReductionProxyPageLoadTiming& timing,
+    PageloadMetrics_RendererCrashType crash_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
-  AddDataToPageloadMetrics(request_data, timing, pageload_metrics);
+  AddDataToPageloadMetrics(request_data, timing, crash_type, pageload_metrics);
   if (current_fetcher_.get())
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());
@@ -192,6 +337,16 @@ void DataReductionProxyPingbackClientImpl::CreateFetcherForDataAndStart() {
   DCHECK_GE(metrics_request_.pageloads_size(), 1);
   std::string serialized_request =
       AddBatchInfoAndSerializeRequest(&metrics_request_, CurrentTime());
+
+  current_fetcher_message_count_ = metrics_request_.pageloads_size();
+  current_fetcher_crash_count_ = 0u;
+  for (const auto& iter : metrics_request_.pageloads()) {
+    if (iter.renderer_crash_type() !=
+        PageloadMetrics_RendererCrashType_NO_CRASH) {
+      ++current_fetcher_crash_count_;
+    }
+  }
+
   metrics_request_.Clear();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("data_reduction_proxy_pingback", R"(

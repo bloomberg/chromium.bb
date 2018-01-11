@@ -8130,6 +8130,29 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Network change event"/>
 </enum>
 
+<enum name="DataReductionProxyPingbackCrashAction">
+  <int value="0" label="Detected">
+    A crash was detected during the page load.
+  </int>
+  <int value="1" label="Dump analysis succeeded">
+    A crash was analyzed and the report was added to the pending pingback.
+  </int>
+  <int value="2" label="Dump analysis did not finish">
+    A crash was attempted to be analyzed did not finish before the report was
+    sent.
+  </int>
+  <int value="3" label="Dump not analyzed">
+    A crash was not analyzed and the report was added to the pending pingback.
+    This is default behavior for non-Android crashes.
+  </int>
+  <int value="4" label="Send succeeded">
+    A crash report was successfully uploaded.
+  </int>
+  <int value="5" label="Send failed">
+    A crash report was attempted to be sent, but did not upload successfully.
+  </int>
+</enum>
+
 <enum name="DataReductionProxyProbeURLFetchResult">
   <int value="0" label="Internet disconnected"/>
   <int value="1" label="Probe failed, proxy disabled"/>
