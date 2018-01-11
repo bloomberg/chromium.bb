@@ -294,7 +294,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // If we are resuming from a break token our start border and padding is
   // within a previous fragment.
   intrinsic_block_size_ =
-      BreakToken() ? LayoutUnit() : border_scrollbar_padding_.block_start;
+      is_resuming_ ? LayoutUnit() : border_scrollbar_padding_.block_start;
 
   NGMarginStrut input_margin_strut = ConstraintSpace().MarginStrut();
 
