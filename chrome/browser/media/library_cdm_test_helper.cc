@@ -18,23 +18,23 @@
 #include "media/base/media_switches.h"
 #include "media/cdm/cdm_paths.h"
 
-void RegisterExternalClearKey(base::CommandLine* command_line,
-                              bool expect_cdm_exists) {
+void RegisterClearKeyCdm(base::CommandLine* command_line,
+                         bool use_wrong_cdm_path) {
   base::FilePath cdm_path;
   base::PathService::Get(base::DIR_MODULE, &cdm_path);
+  std::string cdm_library_name =
+      use_wrong_cdm_path ? "invalidcdmname" : media::kClearKeyCdmLibraryName;
   cdm_path = cdm_path
                  .Append(media::GetPlatformSpecificDirectory(
                      media::kClearKeyCdmBaseDirectory))
-                 .AppendASCII(base::GetNativeLibraryName(
-                     media::kClearKeyCdmLibraryName));
-  DCHECK_EQ(expect_cdm_exists, base::PathExists(cdm_path))
-      << cdm_path.MaybeAsASCII();
+                 .AppendASCII(base::GetNativeLibraryName(cdm_library_name));
 
   // Append the switch to register the Clear Key CDM path.
   command_line->AppendSwitchNative(switches::kClearKeyCdmPathForTesting,
                                    cdm_path.value());
 
-  // Also register the pepper plugin.
+  // Also register the pepper plugin. No need to use the wrong cdm path here as
+  // the key system will not be supported, and we will never load the CDM.
   // TODO(crbug.com/772160) Remove this when pepper CDM support removed.
   RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
                     media::kClearKeyCdmAdapterFileName,

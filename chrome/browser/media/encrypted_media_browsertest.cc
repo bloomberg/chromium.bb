@@ -309,7 +309,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     if (IsExternalClearKey(key_system)) {
-      RegisterExternalClearKey(command_line);
+      RegisterClearKeyCdm(command_line);
 
       // TODO(xhwang): Update ScopedFeatureList::InitWithFeatures() to accept
       // vectors so that we can simplify this block.

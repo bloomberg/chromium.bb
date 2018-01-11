@@ -13,9 +13,9 @@ namespace base {
 class CommandLine;
 }
 
-// Registers external clear key CDM in |command_line|.
-void RegisterExternalClearKey(base::CommandLine* command_line,
-                              bool expect_cdm_exists = true);
+// Registers ClearKeyCdm in |command_line|.
+void RegisterClearKeyCdm(base::CommandLine* command_line,
+                         bool use_wrong_cdm_path = false);
 
 bool IsLibraryCdmRegistered(const std::string& cdm_guid);
 
