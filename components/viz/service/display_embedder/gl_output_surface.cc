@@ -158,10 +158,12 @@ void GLOutputSurface::LatencyInfoCompleted(
 
 void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
                                                base::TimeDelta interval) {
-  // TODO(brianderson): We should not be receiving 0 intervals.
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-      timebase,
-      interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
+  if (synthetic_begin_frame_source_) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
+        timebase,
+        interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
+  }
 }
 
 void GLOutputSurface::OnPresentation(

@@ -28,5 +28,5 @@ struct BeginFrameArgs {
 struct BeginFrameAck {
   uint64 source_id;
   uint64 sequence_number;
-  // |has_damage| is implicit through IPC message name, so not transmitted.
+  bool has_damage;
 };

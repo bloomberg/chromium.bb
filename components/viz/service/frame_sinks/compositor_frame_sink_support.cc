@@ -146,11 +146,12 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
                ack.sequence_number);
   DCHECK_GE(ack.sequence_number, BeginFrameArgs::kStartingFrameNumber);
 
-  // |has_damage| is not transmitted, but false by default.
-  DCHECK(!ack.has_damage);
+  // Override the has_damage flag (ignoring invalid data from clients).
+  BeginFrameAck modified_ack(ack);
+  modified_ack.has_damage = false;
 
   if (current_surface_id_.is_valid())
-    surface_manager_->SurfaceModified(current_surface_id_, ack);
+    surface_manager_->SurfaceModified(current_surface_id_, modified_ack);
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
@@ -177,7 +178,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
   uint64_t frame_index = ++last_frame_index_;
   ++ack_pending_count_;
 
-  // |has_damage| is not transmitted.
+  // Override the has_damage flag (ignoring invalid data from clients).
   frame.metadata.begin_frame_ack.has_damage = true;
   BeginFrameAck ack = frame.metadata.begin_frame_ack;
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);

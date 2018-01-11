@@ -2230,6 +2230,8 @@ jumbo_source_set("browser") {
     sources += [
       "compositor/browser_compositor_output_surface.cc",
       "compositor/browser_compositor_output_surface.h",
+      "compositor/external_begin_frame_controller_client_impl.cc",
+      "compositor/external_begin_frame_controller_client_impl.h",
       "compositor/gpu_browser_compositor_output_surface.cc",
       "compositor/gpu_browser_compositor_output_surface.h",
       "compositor/gpu_output_surface_mac.cc",
