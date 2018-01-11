@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
@@ -356,15 +357,20 @@ TEST_F(SpdyStreamTest, PushedStream) {
 
   const SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
                            PRIVACY_MODE_DISABLED);
+  const GURL pushed_url(kPushUrl);
+  HttpRequestInfo push_request;
+  push_request.url = pushed_url;
+  push_request.method = "GET";
   base::WeakPtr<SpdySession> session_with_pushed_stream;
   SpdyStreamId pushed_stream_id;
   spdy_session_pool(session)->push_promise_index()->ClaimPushedStream(
-      key, GURL(kPushUrl), &session_with_pushed_stream, &pushed_stream_id);
+      key, pushed_url, push_request, &session_with_pushed_stream,
+      &pushed_stream_id);
   EXPECT_EQ(session.get(), session_with_pushed_stream.get());
   EXPECT_EQ(2u, pushed_stream_id);
 
   SpdyStream* push_stream;
-  EXPECT_THAT(session->GetPushedStream(GURL(kPushUrl), pushed_stream_id, IDLE,
+  EXPECT_THAT(session->GetPushedStream(pushed_url, pushed_stream_id, IDLE,
                                        &push_stream, NetLogWithSource()),
               IsOk());
   ASSERT_TRUE(push_stream);

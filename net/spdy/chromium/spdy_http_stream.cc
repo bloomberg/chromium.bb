@@ -78,10 +78,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
     return ERR_CONNECTION_CLOSED;
 
   request_info_ = request_info;
-  // TODO(bnc): Remove condition on method once pushed headers are properly
-  // validated.  https://crbug.com/554220.
-  if (request_info_->method == "GET" &&
-      pushed_stream_id_ != kNoPushedStreamFound) {
+  if (pushed_stream_id_ != kNoPushedStreamFound) {
     int error =
         spdy_session_->GetPushedStream(request_info_->url, pushed_stream_id_,
                                        priority, &stream_, stream_net_log);
