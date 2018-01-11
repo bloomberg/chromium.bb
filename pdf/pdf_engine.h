@@ -301,6 +301,10 @@ class PDFEngine {
   virtual int GetNumberOfPages() = 0;
   // Gets the 0-based page number of |destination|, or -1 if it does not exist.
   virtual int GetNamedDestinationPage(const std::string& destination) = 0;
+  // Transforms an (x, y) point in page coordinates to screen coordinates.
+  virtual std::pair<int, int> TransformPagePoint(
+      int page_index,
+      std::pair<int, int> page_xy) = 0;
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
   // Gets the rectangle of the page including shadow.
