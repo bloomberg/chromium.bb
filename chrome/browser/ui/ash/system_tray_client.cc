@@ -14,7 +14,7 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -284,7 +284,7 @@ void SystemTrayClient::ShowHelp() {
 void SystemTrayClient::ShowAccessibilityHelp() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
-  chromeos::accessibility::ShowAccessibilityHelp(displayer.browser());
+  chromeos::AccessibilityManager::ShowAccessibilityHelp(displayer.browser());
 }
 
 void SystemTrayClient::ShowAccessibilitySettings() {

@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
