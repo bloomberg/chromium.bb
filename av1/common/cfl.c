@@ -36,11 +36,11 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   cfl->use_dc_pred_cache = 0;
   cfl->dc_pred_is_cached[CFL_PRED_U] = 0;
   cfl->dc_pred_is_cached[CFL_PRED_V] = 0;
-#if CONFIG_DEBUG
+#if CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
   cfl_clear_sub8x8_val(cfl);
   cfl->store_counter = 0;
   cfl->last_compute_counter = 0;
-#endif  // CONFIG_DEBUG
+#endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
 }
 
 void cfl_store_dc_pred(MACROBLOCKD *const xd, const uint8_t *input,
@@ -205,7 +205,7 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   // Do not call cfl_compute_parameters multiple time on the same values.
   assert(cfl->are_parameters_computed == 0);
 
-#if CONFIG_DEBUG
+#if CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     const uint16_t compute_counter = cfl->sub8x8_val[0];
@@ -225,7 +225,7 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
     }
     cfl->last_compute_counter = compute_counter;
   }
-#endif  // CONFIG_DEBUG
+#endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
 
   cfl_subtract_average(cfl, tx_size);
   cfl->are_parameters_computed = 1;
@@ -453,7 +453,7 @@ static INLINE void sub8x8_adjust_offset(const CFL_CTX *cfl, int *row_out,
     (*col_out)++;
   }
 }
-#if CONFIG_DEBUG
+#if CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
 // Since the chroma surface of sub8x8 block span across multiple luma blocks,
 // this function validates that the reconstructed luma area required to predict
 // the chroma block using CfL has been stored during the previous luma encode.
@@ -510,7 +510,7 @@ static void sub8x8_set_val(CFL_CTX *cfl, int row, int col, TX_SIZE y_tx_size) {
     assert(found);
   }
 }
-#endif  // CONFIG_DEBUG
+#endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
 
 void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
                   BLOCK_SIZE bsize) {
@@ -525,9 +525,9 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
     assert(!((col & 1) && tx_size_wide[tx_size] != 4));
     assert(!((row & 1) && tx_size_high[tx_size] != 4));
     sub8x8_adjust_offset(cfl, &row, &col);
-#if CONFIG_DEBUG
+#if CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
     sub8x8_set_val(cfl, row, col, tx_size);
-#endif  // CONFIG_DEBUG
+#endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
   }
   cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size_wide[tx_size],
             tx_size_high[tx_size], get_bitdepth_data_path_index(xd));
@@ -542,14 +542,14 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   assert(is_cfl_allowed(&xd->mi[0]->mbmi));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     sub8x8_adjust_offset(cfl, &row, &col);
-#if CONFIG_DEBUG
+#if CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
     // Point to the last transform block inside the partition.
     const int off_row =
         row + (mi_size_high[bsize] - tx_size_high_unit[tx_size]);
     const int off_col =
         col + (mi_size_wide[bsize] - tx_size_wide_unit[tx_size]);
     sub8x8_set_val(cfl, off_row, off_col, tx_size);
-#endif  // CONFIG_DEBUG
+#endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
   }
   const int width = max_intra_block_width(xd, bsize, AOM_PLANE_Y, tx_size);
   const int height = max_intra_block_height(xd, bsize, AOM_PLANE_Y, tx_size);
