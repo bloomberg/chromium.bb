@@ -211,13 +211,7 @@ class MessagingApiTest : public ExtensionApiTest,
   DISALLOW_COPY_AND_ASSIGN(MessagingApiTest);
 };
 
-// Failing on linux-chromeos-rel: http://crbug.com/798560
-#if defined(OS_CHROMEOS)
-#define MAYBE_Messaging DISABLED_Messaging
-#else
-#define MAYBE_Messaging Messaging
-#endif
-IN_PROC_BROWSER_TEST_P(MessagingApiTest, MAYBE_Messaging) {
+IN_PROC_BROWSER_TEST_P(MessagingApiTest, Messaging) {
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }
 
