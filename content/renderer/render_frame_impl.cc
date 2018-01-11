@@ -4241,14 +4241,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // before updating the current history item.
   SendUpdateState();
 
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-
-  if (internal_data->must_reset_scroll_and_scale_state()) {
-    render_view_->webview()->ResetScrollAndScaleState();
-    internal_data->set_must_reset_scroll_and_scale_state(false);
-  }
-
   service_manager::mojom::InterfaceProviderRequest
       remote_interface_provider_request;
   if (!navigation_state->WasWithinSameDocument() &&
@@ -4286,11 +4278,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     }
   }
 
-  bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
-
-  NotifyObserversOfNavigationCommit(is_new_navigation,
-                                    navigation_state->WasWithinSameDocument());
-
   // Notify the MediaPermissionDispatcher that its connection will be closed
   // due to a navigation to a different document.
   if (media_permission_dispatcher_ &&
@@ -4298,24 +4285,19 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     media_permission_dispatcher_->OnNavigation();
   }
 
-  if (!frame_->Parent()) {  // Only for top frames.
-    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-    if (render_thread_impl) {  // Can be NULL in tests.
-      render_thread_impl->histogram_customizer()->
-          RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
-                                    RenderView::GetRenderViewCount());
-    }
-  }
+  UpdateStateForCommit(item, commit_type);
 
-  // Remember that we've already processed this request, so we don't update
-  // the session history again.  We do this regardless of whether this is
-  // a session history navigation, because if we attempted a session history
-  // navigation without valid HistoryItem state, WebCore will think it is a
-  // new navigation.
-  navigation_state->set_request_committed(true);
+  // This invocation must precede any calls to allowScripts(), allowImages(), or
+  // allowPlugins() for the new page. This ensures that when these functions
+  // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
+  // process has already been informed of the provisional load committing.
+  GetFrameHost()->DidCommitProvisionalLoad(
+      MakeDidCommitProvisionalLoadParams(commit_type),
+      std::move(remote_interface_provider_request));
 
-  SendDidCommitProvisionalLoad(frame_, commit_type,
-                               std::move(remote_interface_provider_request));
+  // If we end up reusing this WebRequest (for example, due to a #ref click),
+  // we don't want the transition type to persist.  Just clear it.
+  navigation_state->set_transition_type(ui::PAGE_TRANSITION_LINK);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
@@ -5329,49 +5311,6 @@ const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
                        : RenderFrameImpl::FromWebFrame(frame_->LocalRoot());
 }
 
-// Tell the embedding application that the URL of the active page has changed.
-void RenderFrameImpl::SendDidCommitProvisionalLoad(
-    blink::WebLocalFrame* frame,
-    blink::WebHistoryCommitType commit_type,
-    service_manager::mojom::InterfaceProviderRequest
-        remote_interface_provider_request) {
-  DCHECK_EQ(frame_, frame);
-
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
-
-  // Set the correct engagement level on the frame, and wipe the cached origin
-  // so this will not be reused accidentally.
-  if (url::Origin(frame_->GetSecurityOrigin()) == engagement_level_.first) {
-    frame_->SetEngagementLevel(engagement_level_.second);
-    engagement_level_.first = url::Origin();
-  }
-
-  // Set the correct high media engagement bit on the frame, and wipe the cached
-  // origin so this will not be reused accidentally.
-  if (url::Origin(frame_->GetSecurityOrigin()) ==
-      high_media_engagement_origin_) {
-    frame_->SetHasHighMediaEngagement(true);
-    high_media_engagement_origin_ = url::Origin();
-  }
-
-  UpdateZoomLevel();
-
-  // This invocation must precede any calls to allowScripts(), allowImages(), or
-  // allowPlugins() for the new page. This ensures that when these functions
-  // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
-  // process has already been informed of the provisional load committing.
-  GetFrameHost()->DidCommitProvisionalLoad(
-      MakeDidCommitProvisionalLoadParams(commit_type),
-      std::move(remote_interface_provider_request));
-
-  // If we end up reusing this WebRequest (for example, due to a #ref click),
-  // we don't want the transition type to persist.  Just clear it.
-  navigation_state->set_transition_type(ui::PAGE_TRANSITION_LINK);
-}
-
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     blink::WebHistoryCommitType commit_type) {
@@ -5633,6 +5572,57 @@ void RenderFrameImpl::NotifyObserversOfNavigationCommit(bool is_new_navigation,
     for (auto& observer : observers_) {
       observer.DidCommitProvisionalLoad(is_new_navigation, is_same_document);
     }
+  }
+}
+
+void RenderFrameImpl::UpdateStateForCommit(
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+
+  bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
+  NotifyObserversOfNavigationCommit(is_new_navigation,
+                                    navigation_state->WasWithinSameDocument());
+
+  if (internal_data->must_reset_scroll_and_scale_state()) {
+    render_view_->webview()->ResetScrollAndScaleState();
+    internal_data->set_must_reset_scroll_and_scale_state(false);
+  }
+  UpdateZoomLevel();
+
+  if (!frame_->Parent()) {  // Only for top frames.
+    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+    if (render_thread_impl) {  // Can be NULL in tests.
+      render_thread_impl->histogram_customizer()->RenderViewNavigatedToHost(
+          GURL(GetLoadingUrl()).host(), RenderView::GetRenderViewCount());
+    }
+  }
+
+  // Remember that we've already processed this request, so we don't update
+  // the session history again.  We do this regardless of whether this is
+  // a session history navigation, because if we attempted a session history
+  // navigation without valid HistoryItem state, WebCore will think it is a
+  // new navigation.
+  navigation_state->set_request_committed(true);
+
+  // Set the correct engagement level on the frame, and wipe the cached origin
+  // so this will not be reused accidentally.
+  if (url::Origin(frame_->GetSecurityOrigin()) == engagement_level_.first) {
+    frame_->SetEngagementLevel(engagement_level_.second);
+    engagement_level_.first = url::Origin();
+  }
+
+  // Set the correct high media engagement bit on the frame, and wipe the cached
+  // origin so this will not be reused accidentally.
+  if (url::Origin(frame_->GetSecurityOrigin()) ==
+      high_media_engagement_origin_) {
+    frame_->SetHasHighMediaEngagement(true);
+    high_media_engagement_origin_ = url::Origin();
   }
 }
 
