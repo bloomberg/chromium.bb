@@ -165,6 +165,11 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
       ui::MenuModelDelegate* menu_model_delegate) override;
   MenuModelDelegate* GetMenuModelDelegate() const override;
 
+  // Sets |histogram_name_|.
+  void set_histogram_name(const std::string& histogram_name) {
+    histogram_name_ = histogram_name;
+  }
+
  protected:
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
@@ -177,6 +182,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   struct Item;
 
   typedef std::vector<Item> ItemVector;
+
+  // Records the command for UMA.
+  void RecordHistogram(int command_id) const;
 
   // Returns |index|.
   int ValidateItemIndex(int index) const;
@@ -194,6 +202,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   Delegate* delegate_;
 
   MenuModelDelegate* menu_model_delegate_;
+
+  // The UMA histogram name that is be used to log command ids.
+  std::string histogram_name_;
 
   base::WeakPtrFactory<SimpleMenuModel> method_factory_;
 

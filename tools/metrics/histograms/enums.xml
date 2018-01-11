@@ -4868,6 +4868,41 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="255" label="Unspecified/unknown error in user-mode"/>
 </enum>
 
+<enum name="ChromeOSUICommands">
+<!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
+
+  <int value="0" label="Launch App"/>
+  <int value="1" label="Close"/>
+  <int value="2" label="Toggle Pin"/>
+  <int value="3" label="Open in a pinned tab"/>
+  <int value="4" label="Open in a regular tab"/>
+  <int value="5" label="Open in fullscreen"/>
+  <int value="6" label="Open in window"/>
+  <int value="7" label="Open in a new window"/>
+  <int value="8" label="Open in a new incognito window"/>
+  <int value="100" label="Launch New"/>
+  <int value="101" label="Toggle Pin"/>
+  <int value="102" label="Show App Info"/>
+  <int value="103" label="Options"/>
+  <int value="104" label="Uninstall"/>
+  <int value="105" label="Remove From Folder"/>
+  <int value="106" label="Open in New Window"/>
+  <int value="107" label="Open in New Incognito Window"/>
+  <int value="108" label="Install"/>
+  <int value="200" label="Open in a pinned tab"/>
+  <int value="201" label="Open in a regular tab."/>
+  <int value="202" label="Open in fullscreen"/>
+  <int value="203" label="Open in a window"/>
+  <int value="500" label="Toggle Auto Hide"/>
+  <int value="501" label="Shelf Alignment Menu"/>
+  <int value="502" label="Shelf Alignment Left"/>
+  <int value="503" label="Shelf Alignment Right"/>
+  <int value="504" label="Shelf Alignment Bottom"/>
+  <int value="505" label="Change Wallpaper"/>
+<!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
+
+</enum>
+
 <enum name="ChromeOSUserImageId">
   <summary>
     Indices of the default images as defined in
@@ -28201,6 +28236,20 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Normal"/>
   <int value="1" label="Throttled"/>
   <int value="2" label="Suspended"/>
+</enum>
+
+<enum name="MenuSourceType">
+  <int value="0" label="None"/>
+  <int value="1" label="Mouse"/>
+  <int value="2" label="Keyboard"/>
+  <int value="3" label="Touch"/>
+  <int value="4" label="Touch Edit Menu"/>
+  <int value="5" label="Long Press"/>
+  <int value="6" label="Long Tap"/>
+  <int value="7" label="Touch Handle"/>
+  <int value="8" label="Stylus"/>
+  <int value="9" label="Adjust Selection"/>
+  <int value="10" label="Adjust Selection Reset"/>
 </enum>
 
 <enum name="MessageLoopProblems">

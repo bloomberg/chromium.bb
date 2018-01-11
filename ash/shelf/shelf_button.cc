@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -335,6 +336,8 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
   destroyed_flag_ = &destroyed;
 
   Button::ShowContextMenu(p, source_type);
+  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.ShelfButton",
+                            source_type, ui::MENU_SOURCE_TYPE_LAST);
 
   if (!destroyed) {
     destroyed_flag_ = nullptr;

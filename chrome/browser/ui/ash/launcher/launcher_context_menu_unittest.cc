@@ -358,4 +358,40 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
 }
 
+TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
+  // Tests that CommandId enums are not changed as the values are used in
+  // histograms.
+  EXPECT_EQ(0, LauncherContextMenu::MENU_OPEN_NEW);
+  EXPECT_EQ(1, LauncherContextMenu::MENU_CLOSE);
+  EXPECT_EQ(2, LauncherContextMenu::MENU_PIN);
+  EXPECT_EQ(3, LauncherContextMenu::LAUNCH_TYPE_PINNED_TAB);
+  EXPECT_EQ(4, LauncherContextMenu::LAUNCH_TYPE_REGULAR_TAB);
+  EXPECT_EQ(5, LauncherContextMenu::LAUNCH_TYPE_FULLSCREEN);
+  EXPECT_EQ(6, LauncherContextMenu::LAUNCH_TYPE_WINDOW);
+  EXPECT_EQ(7, LauncherContextMenu::MENU_NEW_WINDOW);
+  EXPECT_EQ(8, LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW);
+}
+
+TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
+  // Tests that there are 4 ARC app context menu options. If you're
+  // adding a context menu option ensure that you have added the enum to
+  // tools/metrics/enums.xml and that you haven't modified the order of the
+  // existing enums.
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList(
+      std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
+                                       arc_test().fake_apps().begin() + 1));
+  const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
+
+  controller()->PinAppWithID(app_id);
+  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
+  ASSERT_TRUE(item);
+  int64_t primary_id = GetPrimaryDisplay().id();
+  std::unique_ptr<LauncherContextMenu> menu =
+      std::make_unique<ArcLauncherContextMenu>(controller(), item, primary_id);
+
+  // Test that there are 4 items in an ARC app context menu.
+  EXPECT_EQ(4, menu->GetItemCount());
+}
+
 }  // namespace
