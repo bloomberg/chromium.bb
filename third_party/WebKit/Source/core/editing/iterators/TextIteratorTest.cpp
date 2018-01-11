@@ -35,6 +35,7 @@
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/forms/TextControlElement.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
 namespace text_iterator_test {
@@ -133,6 +134,19 @@ Range* TextIteratorTest::GetBodyRange() const {
   range->selectNode(GetDocument().body());
   return range;
 }
+
+class ParameterizedTextIteratorTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      private ScopedLayoutNGPaintFragmentsForTest,
+      public TextIteratorTest {
+ public:
+  ParameterizedTextIteratorTest()
+      : ScopedLayoutNGForTest(GetParam()),
+        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, ParameterizedTextIteratorTest, ::testing::Bool());
 
 TEST_F(TextIteratorTest, BitStackOverflow) {
   const unsigned kBitsInWord = sizeof(unsigned) * 8;
@@ -1011,6 +1025,11 @@ TEST_F(TextIteratorTest, BasicIterationInputiWithBr) {
   const Position end = Position::LastPositionInNode(*shadow_root);
   GetDocument().UpdateStyleAndLayout();
   EXPECT_EQ("[b]", IteratePartial<DOMTree>(start, end));
+}
+
+TEST_P(ParameterizedTextIteratorTest, NoZWSForSpaceAfterNoWrapSpace) {
+  SetBodyContent("<span style='white-space: nowrap'>foo </span> bar");
+  EXPECT_EQ("[foo ][bar]", Iterate<DOMTree>());
 }
 
 }  // namespace text_iterator_test

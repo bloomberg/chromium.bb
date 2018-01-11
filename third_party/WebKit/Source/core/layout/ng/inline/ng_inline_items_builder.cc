@@ -177,8 +177,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   // https://drafts.csswg.org/css-text-3/#collapse
   if (last_collapsible_space_ == CollapsibleSpace::kSpaceNoWrap &&
       IsCollapsibleSpace(string[start]) && style->AutoWrap()) {
-    AppendBreakOpportunity(style, layout_object);
-    start++;
+    AppendBreakOpportunity(style, nullptr);
     last_collapsible_space_ = CollapsibleSpace::kSpace;
   }
 
