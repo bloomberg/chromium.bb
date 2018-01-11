@@ -18,6 +18,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/socks_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 // Fuzzer for SocksClientSocket.  Only covers the SOCKS4 handshake.
 //
@@ -58,8 +59,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   socket_handle->SetSocket(std::move(fuzzed_socket));
 
   net::HostResolver::RequestInfo request_info(net::HostPortPair("foo", 80));
+
   net::SOCKSClientSocket socket(std::move(socket_handle), request_info,
-                                net::DEFAULT_PRIORITY, &mock_host_resolver);
+                                net::DEFAULT_PRIORITY, &mock_host_resolver,
+                                TRAFFIC_ANNOTATION_FOR_TESTS);
   int result = socket.Connect(callback.callback());
   callback.GetResult(result);
   return 0;

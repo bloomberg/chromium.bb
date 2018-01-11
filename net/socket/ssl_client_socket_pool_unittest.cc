@@ -36,6 +36,7 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_certificate_data.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,7 +110,8 @@ class SSLClientSocketPoolTest : public testing::Test {
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
                                   true,
-                                  HostPortPair("sockshost", 443))),
+                                  HostPortPair("sockshost", 443),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS)),
         socks_socket_pool_(kMaxSockets,
                            kMaxSocketsPerGroup,
                            &transport_socket_pool_),

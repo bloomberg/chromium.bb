@@ -62,7 +62,8 @@ SOCKSClientSocket::SOCKSClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const HostResolver::RequestInfo& req_info,
     RequestPriority priority,
-    HostResolver* host_resolver)
+    HostResolver* host_resolver,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : transport_(std::move(transport_socket)),
       next_state_(STATE_NONE),
       completed_handshake_(false),
@@ -72,7 +73,8 @@ SOCKSClientSocket::SOCKSClientSocket(
       host_resolver_(host_resolver),
       host_request_info_(req_info),
       priority_(priority),
-      net_log_(transport_->socket()->NetLog()) {}
+      net_log_(transport_->socket()->NetLog()),
+      traffic_annotation_(traffic_annotation) {}
 
 SOCKSClientSocket::~SOCKSClientSocket() {
   Disconnect();
@@ -362,7 +364,8 @@ int SOCKSClientSocket::DoHandshakeWrite() {
          handshake_buf_len);
   return transport_->socket()->Write(
       handshake_buf_.get(), handshake_buf_len,
-      base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
+      base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)),
+      traffic_annotation_);
 }
 
 int SOCKSClientSocket::DoHandshakeWriteComplete(int result) {

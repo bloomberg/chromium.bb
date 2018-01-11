@@ -118,7 +118,8 @@ std::unique_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
   connection->SetSocket(std::unique_ptr<StreamSocket>(tcp_sock_));
   return std::unique_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
       std::move(connection),
-      HostResolver::RequestInfo(HostPortPair(hostname, port))));
+      HostResolver::RequestInfo(HostPortPair(hostname, port)),
+      TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
 // Tests a complete SOCKS5 handshake and the disconnection.
@@ -399,7 +400,8 @@ TEST_F(SOCKS5ClientSocketTest, Tag) {
   connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
   SOCKS5ClientSocket socket(
       std::move(connection),
-      HostResolver::RequestInfo(HostPortPair("localhost", 80)));
+      HostResolver::RequestInfo(HostPortPair("localhost", 80)),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)

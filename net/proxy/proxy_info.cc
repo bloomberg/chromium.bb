@@ -96,4 +96,10 @@ void ProxyInfo::Reset() {
   did_use_pac_script_ = false;
 }
 
+const NetworkTrafficAnnotationTag ProxyInfo::traffic_annotation() const {
+  // TODO(crbug.com/656607): Get appropriate annotation from the origin of
+  // config_source_.
+  return NO_TRAFFIC_ANNOTATION_BUG_656607;
+}
+
 }  // namespace net
