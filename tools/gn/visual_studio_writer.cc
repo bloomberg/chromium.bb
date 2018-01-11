@@ -512,6 +512,8 @@ bool VisualStudioWriter::WriteProjectFileContents(
 
   project.SubElement("PropertyGroup", XmlAttributes("Label", "UserMacros"));
 
+  std::string ninja_target = GetNinjaTarget(target);
+
   {
     std::unique_ptr<XmlElementWriter> properties =
         project.SubElement("PropertyGroup");
@@ -524,8 +526,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
     }
     properties->SubElement("TargetName")->Text("$(ProjectName)");
     if (target->output_type() != Target::GROUP) {
-      properties->SubElement("TargetPath")
-          ->Text("$(OutDir)\\$(ProjectName)$(TargetExt)");
+      properties->SubElement("TargetPath")->Text("$(OutDir)\\" + ninja_target);
     }
   }
 
@@ -635,8 +636,6 @@ bool VisualStudioWriter::WriteProjectFileContents(
       XmlAttributes("Project",
                     "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"));
   project.SubElement("ImportGroup", XmlAttributes("Label", "ExtensionTargets"));
-
-  std::string ninja_target = GetNinjaTarget(target);
 
   {
     std::unique_ptr<XmlElementWriter> build =
