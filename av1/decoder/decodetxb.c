@@ -67,6 +67,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #else
   FRAME_COUNTS *const counts = xd->counts;
 #endif
+  const int32_t max_value = (1 << (7 + xd->bd)) - 1;
+  const int32_t min_value = -(1 << (7 + xd->bd));
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -349,7 +351,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
         if (signs[pos]) t = -t;
-        tcoeffs[pos] = t;
+        tcoeffs[pos] = clamp(t, min_value, max_value);
         continue;
       }
       // decode 0-th order Golomb code
@@ -371,7 +373,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
       if (signs[pos]) t = -t;
-      tcoeffs[pos] = (tran_low_t)t;
+      tcoeffs[pos] = clamp((tran_low_t)t, min_value, max_value);
     }
   }
 
