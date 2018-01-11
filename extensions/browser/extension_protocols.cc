@@ -628,12 +628,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
     }
   }
 
-  if (g_test_handler) {
-    net::URLRequestJob* test_job =
-        g_test_handler->Run(request, network_delegate, relative_path);
-    if (test_job)
-      return test_job;
-  }
+  if (g_test_handler)
+    g_test_handler->Run(&directory_path, &relative_path);
 
   ContentVerifyJob* verify_job = nullptr;
   ContentVerifier* verifier = extension_info_map_->content_verifier();
@@ -909,6 +905,9 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
         return;
       }
     }
+
+    if (g_test_handler)
+      g_test_handler->Run(&directory_path, &relative_path);
 
     if (!extension_info_map_) {
       extension_info_map_ =

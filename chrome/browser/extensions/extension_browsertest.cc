@@ -85,30 +85,25 @@ namespace {
 // Maps all chrome-extension://<id>/_test_resources/foo requests to
 // chrome/test/data/extensions/foo. This is what allows us to share code between
 // tests without needing to duplicate files in each extension.
-net::URLRequestJob* ExtensionProtocolTestHandler(
-    const base::FilePath& test_dir_root,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const base::FilePath& relative_path) {
+void ExtensionProtocolTestHandler(const base::FilePath& test_dir_root,
+                                  base::FilePath* directory_path,
+                                  base::FilePath* relative_path) {
   // Only map paths that begin with _test_resources.
   if (!base::FilePath(FILE_PATH_LITERAL("_test_resources"))
-           .IsParent(relative_path)) {
-    return nullptr;
+           .IsParent(*relative_path)) {
+    return;
   }
 
-  // Replace _test_resources/foo with chrome/test/data/foo.
+  // Replace _test_resources/foo with chrome/test/data/extensions/foo.
+  *directory_path = test_dir_root;
   std::vector<base::FilePath::StringType> components;
-  relative_path.GetComponents(&components);
+  relative_path->GetComponents(&components);
   DCHECK_GT(components.size(), 1u);
-  base::FilePath resource_path = test_dir_root;
+  base::FilePath new_relative_path;
   for (size_t i = 1u; i < components.size(); ++i)
-    resource_path = resource_path.Append(components[i]);
+    new_relative_path = new_relative_path.Append(components[i]);
 
-  return new net::URLRequestFileJob(
-      request, network_delegate, resource_path,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  *relative_path = new_relative_path;
 }
 
 }  // namespace
