@@ -148,6 +148,14 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
   // the end of the range.
   bool BelongsToRange(DecodeTimestamp timestamp) const;
 
+  // Returns the highest time from among GetStartTimestamp() and frame decode
+  // timestamp (in order in |buffers_| beginning at the first keyframe at or
+  // before |timestamp|) for buffers in this range up to and including
+  // |timestamp|.
+  // Note that |timestamp| must belong to this range.
+  DecodeTimestamp FindHighestBufferedTimestampAtOrBefore(
+      DecodeTimestamp timestamp) const;
+
   // Gets the timestamp for the keyframe that is after |timestamp|. If
   // there isn't a keyframe in the range after |timestamp| then kNoTimestamp
   // is returned. If |timestamp| is in the "gap" between the value  returned by

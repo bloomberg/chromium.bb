@@ -501,6 +501,54 @@ bool SourceBufferRangeByPts::BelongsToRange(base::TimeDelta timestamp) const {
           (GetStartTimestamp() <= timestamp && timestamp <= GetEndTimestamp()));
 }
 
+base::TimeDelta SourceBufferRangeByPts::FindHighestBufferedTimestampAtOrBefore(
+    base::TimeDelta timestamp) const {
+  DVLOG(1) << __func__;
+  DVLOG(4) << ToStringForDebugging();
+
+  DCHECK(!buffers_.empty());
+  DCHECK(BelongsToRange(timestamp));
+
+  if (keyframe_map_.begin()->first > timestamp) {
+    // If the first keyframe in the range starts after |timestamp|, then
+    // return the range start time (which could be earlier due to coded frame
+    // group signalling.)
+    base::TimeDelta range_start = GetStartTimestamp();
+    DCHECK(timestamp >= range_start) << "BelongsToRange() semantics failed.";
+    return range_start;
+  }
+
+  if (keyframe_map_.begin()->first == timestamp) {
+    return timestamp;
+  }
+
+  KeyframeMap::const_iterator key_iter = GetFirstKeyframeAtOrBefore(timestamp);
+  DCHECK(key_iter != keyframe_map_.end())
+      << "BelongsToRange() semantics failed.";
+  DCHECK(key_iter->first <= timestamp);
+
+  // Scan forward in |buffers_| to find the highest frame with timestamp <=
+  // |timestamp|. Stop once a frame with timestamp > |timestamp| is encountered.
+  size_t key_index = key_iter->second - keyframe_map_index_base_;
+  SourceBufferRange::BufferQueue::const_iterator search_iter =
+      buffers_.begin() + key_index;
+  CHECK(search_iter != buffers_.end());
+  base::TimeDelta cur_frame_time = (*search_iter)->timestamp();
+  base::TimeDelta result = cur_frame_time;
+  while (true) {
+    result = std::max(result, cur_frame_time);
+    search_iter++;
+    if (search_iter == buffers_.end())
+      return result;
+    cur_frame_time = (*search_iter)->timestamp();
+    if (cur_frame_time > timestamp)
+      return result;
+  }
+
+  NOTREACHED();
+  return base::TimeDelta();
+}
+
 base::TimeDelta SourceBufferRangeByPts::NextKeyframeTimestamp(
     base::TimeDelta timestamp) const {
   DVLOG(1) << __func__;

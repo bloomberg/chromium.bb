@@ -425,6 +425,9 @@ class MEDIA_EXPORT SourceBufferStream {
                             size_t bytes_to_free,
                             DecodeTimestamp* end_removal_timestamp);
   bool RangeBelongsToRange(RangeClass* range, DecodeTimestamp timestamp) const;
+  DecodeTimestamp RangeFindHighestBufferedTimestampAtOrBefore(
+      RangeClass* range,
+      DecodeTimestamp timestamp) const;
   void RangeSeek(RangeClass* range, DecodeTimestamp timestamp);
   DecodeTimestamp RangeNextKeyframeTimestamp(RangeClass* range,
                                              DecodeTimestamp timestamp);
