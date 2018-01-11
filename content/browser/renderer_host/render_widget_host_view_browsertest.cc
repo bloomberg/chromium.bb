@@ -47,10 +47,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -1035,11 +1031,6 @@ class CompositingRenderWidgetHostViewBrowserTestHiDPI
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestHiDPI,
                        ScrollOffset) {
-// TODO(sadrul): enable for mus: http://crbug.com/798904.
-#if defined(USE_AURA)
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-#endif
   const int kContentHeight = 2000;
   const int kScrollAmount = 100;
 
