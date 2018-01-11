@@ -359,11 +359,18 @@ void surface_set_opaque_region(wl_client* client,
   GetUserDataAs<Surface>(resource)->SetOpaqueRegion(cc::Region(region));
 }
 
+static SkIRect make_largest_skirect() {
+  // we use half the limit, so that the resulting width/height will not
+  // overflow.
+  const int32_t limit = std::numeric_limits<int32_t>::max() >> 1;
+  return {-limit, -limit, limit, limit};
+}
+
 void surface_set_input_region(wl_client* client,
                               wl_resource* resource,
                               wl_resource* region_resource) {
   SkRegion region = region_resource ? *GetUserDataAs<SkRegion>(region_resource)
-                                    : SkRegion(SkIRect::MakeLargest());
+                                    : SkRegion(make_largest_skirect());
   GetUserDataAs<Surface>(resource)->SetInputRegion(cc::Region(region));
 }
 

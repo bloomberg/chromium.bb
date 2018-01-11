@@ -224,10 +224,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SMALLRECT_AA
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_RECTMAKELARGEST
-#define SK_SUPPORT_LEGACY_RECTMAKELARGEST
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_TILED_BITMAPS
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
@@ -240,8 +236,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #ifndef SK_SUPPORT_LEGACY_DASH_CULL_PATH
 #define SK_SUPPORT_LEGACY_DASH_CULL_PATH
 #endif
-
-
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

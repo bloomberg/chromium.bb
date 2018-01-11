@@ -1008,9 +1008,21 @@ std::vector<uint8_t> test_uint8s = {
     0, 255, 128, 10, 45,
 };
 
+static SkRect make_largest_skrect() {
+  const float limit = std::numeric_limits<float>::max();
+  return {-limit, -limit, limit, limit};
+}
+
+static SkIRect make_largest_skirect() {
+  // we use half the limit, so that the resulting width/height will not
+  // overflow.
+  const int32_t limit = std::numeric_limits<int32_t>::max() >> 1;
+  return {-limit, -limit, limit, limit};
+}
+
 std::vector<SkRect> test_rects = {
     SkRect::MakeXYWH(1, 2.5, 3, 4), SkRect::MakeXYWH(0, 0, 0, 0),
-    SkRect::MakeLargest(),          SkRect::MakeXYWH(0.5f, 0.5f, 8.2f, 8.2f),
+    make_largest_skrect(),          SkRect::MakeXYWH(0.5f, 0.5f, 8.2f, 8.2f),
     SkRect::MakeXYWH(-1, -1, 0, 0), SkRect::MakeXYWH(-100, -101, -102, -103),
     SkRect::MakeXYWH(0, 0, 0, 0),   SkRect::MakeXYWH(0, 0, 0, 0),
     SkRect::MakeXYWH(0, 0, 0, 0),   SkRect::MakeXYWH(0, 0, 0, 0),
@@ -1029,7 +1041,7 @@ std::vector<SkRRect> test_rrects = {
 
 std::vector<SkIRect> test_irects = {
     SkIRect::MakeXYWH(1, 2, 3, 4),   SkIRect::MakeXYWH(0, 0, 0, 0),
-    SkIRect::MakeLargest(),          SkIRect::MakeXYWH(0, 0, 10, 10),
+    make_largest_skirect(),          SkIRect::MakeXYWH(0, 0, 10, 10),
     SkIRect::MakeXYWH(-1, -1, 0, 0), SkIRect::MakeXYWH(-100, -101, -102, -103)};
 
 std::vector<SkMatrix> test_matrices = {

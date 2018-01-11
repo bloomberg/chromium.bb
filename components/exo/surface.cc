@@ -718,7 +718,14 @@ bool Surface::FillsBoundsOpaquely() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer, private:
 
-Surface::State::State() : input_region(SkRegion(SkIRect::MakeLargest())) {}
+static SkIRect make_largest_skirect() {
+  // we use half the limit, so that the resulting width/height will not
+  // overflow.
+  const int32_t limit = std::numeric_limits<int32_t>::max() >> 1;
+  return {-limit, -limit, limit, limit};
+}
+
+Surface::State::State() : input_region(SkRegion(make_largest_skirect())) {}
 
 Surface::State::~State() = default;
 
