@@ -23,6 +23,7 @@
 
 #include "core/layout/svg/LayoutSVGRoot.h"
 
+#include "core/frame/FrameOwner.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
@@ -97,16 +98,14 @@ bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
     return false;
 
   LocalFrame* frame = GetNode()->GetDocument().GetFrame();
-  if (!frame)
+  if (!frame || !frame->GetDocument()->IsSVGDocument())
     return false;
 
   // If our frame has an owner layoutObject, we're embedded through eg.
   // object/embed/iframe, but we only negotiate if we're in an SVG document
   // inside a embedded object (object/embed).
-  if (!frame->OwnerLayoutObject() ||
-      !frame->OwnerLayoutObject()->IsEmbeddedObject())
-    return false;
-  return frame->GetDocument()->IsSVGDocument();
+  LayoutObject* owner_layout_object = frame->OwnerLayoutObject();
+  return owner_layout_object && owner_layout_object->IsEmbeddedObject();
 }
 
 LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalWidth(
@@ -250,6 +249,39 @@ void LayoutSVGRoot::WillBeDestroyed() {
   LayoutReplaced::WillBeDestroyed();
 }
 
+bool LayoutSVGRoot::IntrinsicSizeIsFontMetricsDependent() const {
+  const SVGSVGElement& svg = ToSVGSVGElement(*GetNode());
+  return svg.width()->CurrentValue()->IsFontRelative() ||
+         svg.height()->CurrentValue()->IsFontRelative();
+}
+
+bool LayoutSVGRoot::StyleChangeAffectsIntrinsicSize(
+    const ComputedStyle& old_style) const {
+  const ComputedStyle& style = StyleRef();
+  // If the writing mode changed from a horizontal mode to a vertical
+  // mode, or vice versa, then our intrinsic dimensions will have
+  // changed.
+  if (old_style.IsHorizontalWritingMode() != style.IsHorizontalWritingMode())
+    return true;
+  // If our intrinsic dimensions depend on font metrics (by using 'em', 'ex' or
+  // any other font-relative unit), any changes to the font may change said
+  // dimensions.
+  if (IntrinsicSizeIsFontMetricsDependent() &&
+      old_style.GetFont() != style.GetFont())
+    return true;
+  return false;
+}
+
+void LayoutSVGRoot::IntrinsicDimensionsChanged() const {
+  // TODO(fs): Merge with IntrinsicSizeChanged()? (from LayoutReplaced)
+  // Ignore changes to intrinsic dimensions if the <svg> is not in an SVG
+  // document, or not embedded in a way that supports/allows size negotiation.
+  if (!IsEmbeddedThroughFrameContainingSVGDocument())
+    return;
+  if (FrameOwner* frame_owner = GetFrame()->Owner())
+    frame_owner->IntrinsicDimensionsChanged();
+}
+
 void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
                                    const ComputedStyle* old_style) {
   if (diff.NeedsFullLayout())
@@ -258,6 +290,12 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
     // Box decorations may have appeared/disappeared - recompute status.
     has_box_decoration_background_ = StyleRef().HasBoxDecorationBackground();
   }
+
+  // If we previously didn't have any computed style, we wouldn't have been
+  // able to determine our intrinsic dimensions, so in that case always
+  // initiate a size negotiation.
+  if (!old_style || StyleChangeAffectsIntrinsicSize(*old_style))
+    IntrinsicDimensionsChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
   SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());

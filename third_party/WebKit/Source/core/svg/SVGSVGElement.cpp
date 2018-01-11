@@ -274,6 +274,8 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
         SetNeedsStyleRecalc(kLocalStyleChange,
                             StyleChangeReasonForTracing::Create(
                                 StyleChangeReason::kSVGContainerSizeChange));
+        if (layout_object)
+          ToLayoutSVGRoot(layout_object)->IntrinsicDimensionsChanged();
       }
     } else {
       InvalidateSVGPresentationAttributeStyle();
@@ -286,8 +288,11 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (SVGFitToViewBox::IsKnownAttribute(attr_name)) {
     update_relative_lengths_or_view_box = true;
     InvalidateRelativeLengthClients();
-    if (LayoutObject* object = GetLayoutObject())
+    if (LayoutObject* object = GetLayoutObject()) {
       object->SetNeedsTransformUpdate();
+      if (attr_name == SVGNames::viewBoxAttr && object->IsSVGRoot())
+        ToLayoutSVGRoot(object)->IntrinsicDimensionsChanged();
+    }
   }
 
   if (update_relative_lengths_or_view_box ||
