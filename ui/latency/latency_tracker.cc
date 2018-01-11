@@ -26,6 +26,8 @@ std::string LatencySourceEventTypeToInputModalityString(
   switch (type) {
     case ui::SourceEventType::WHEEL:
       return "Wheel";
+    case ui::SourceEventType::MOUSE:
+      return "Mouse";
     case ui::SourceEventType::TOUCH:
       return "Touch";
     case ui::SourceEventType::KEY_PRESS:
@@ -91,12 +93,12 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
 
   ui::SourceEventType source_event_type = latency.source_event_type();
   if (source_event_type == ui::SourceEventType::WHEEL ||
+      source_event_type == ui::SourceEventType::MOUSE ||
       source_event_type == ui::SourceEventType::TOUCH ||
       source_event_type == ui::SourceEventType::KEY_PRESS) {
     ComputeEndToEndLatencyHistograms(gpu_swap_begin_component,
                                      gpu_swap_end_component, latency);
   }
-
 }
 
 void LatencyTracker::ReportRapporScrollLatency(
@@ -216,9 +218,13 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
   } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                                  &original_component)) {
-    if (input_modality == "KeyPress") {
+    if (latency.source_event_type() == SourceEventType::KEY_PRESS) {
       UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
           "Event.Latency.EndToEnd.KeyPress", original_component,
+          gpu_swap_begin_component);
+    } else if (latency.source_event_type() == SourceEventType::MOUSE) {
+      UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
+          "Event.Latency.EndToEnd.Mouse", original_component,
           gpu_swap_begin_component);
     }
     return;

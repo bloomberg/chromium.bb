@@ -116,6 +116,7 @@ enum LatencyComponentType {
 enum SourceEventType {
   UNKNOWN,
   WHEEL,
+  MOUSE,
   TOUCH,
   KEY_PRESS,
   FRAME,

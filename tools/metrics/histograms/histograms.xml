@@ -20695,6 +20695,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.EndToEnd.Mouse" units="microseconds">
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Time between the OS receiving a mouse event and the resulting GPU frame
+    swap. If no swap was induced by the event, no recording is made.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.HitTest" units="microseconds">
   <owner>dtapuska@chromium.org</owner>
   <summary>
