@@ -38,6 +38,9 @@ class WindowAndroidObserver;
 // WindowAndroid is also the root of a ViewAndroid tree.
 class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
  public:
+  static WindowAndroid* FromJavaWindowAndroid(
+      const base::android::JavaParamRef<jobject>& jwindow_android);
+
   WindowAndroid(JNIEnv* env, jobject obj, int display_id);
 
   ~WindowAndroid() override;

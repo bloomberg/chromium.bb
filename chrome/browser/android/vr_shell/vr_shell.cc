@@ -993,7 +993,7 @@ void VrShell::OnAssetsComponentReady() {
 jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& delegate,
-                           jlong window_android,
+                           const JavaParamRef<jobject>& jwindow_android,
                            jboolean for_web_vr,
                            jboolean web_vr_autopresentation_expected,
                            jboolean in_cct,
@@ -1019,7 +1019,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       vr::AssetsLoader::GetInstance()->ComponentReady();
 
   return reinterpret_cast<intptr_t>(new VrShell(
-      env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
+      env, obj, ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android),
       ui_initial_state,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering,

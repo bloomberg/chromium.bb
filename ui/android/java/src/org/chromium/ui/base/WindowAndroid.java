@@ -584,7 +584,8 @@ public class WindowAndroid {
      * the object has not been previously initialized.
      * @return A pointer to the c++ AndroidWindow.
      */
-    public long getNativePointer() {
+    @CalledByNative
+    private long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
             mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId());
             nativeSetVSyncPaused(mNativeWindowAndroid, mVSyncPaused);

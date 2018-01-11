@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -40,11 +41,12 @@ ContentViewRenderView::~ContentViewRenderView() {
 }
 
 // static
-static jlong JNI_ContentViewRenderView_Init(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj,
-                                            jlong native_root_window) {
+static jlong JNI_ContentViewRenderView_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jroot_window_android) {
   gfx::NativeWindow root_window =
-      reinterpret_cast<gfx::NativeWindow>(native_root_window);
+      ui::WindowAndroid::FromJavaWindowAndroid(jroot_window_android);
   ContentViewRenderView* content_view_render_view =
       new ContentViewRenderView(env, obj, root_window);
   return reinterpret_cast<intptr_t>(content_view_render_view);
