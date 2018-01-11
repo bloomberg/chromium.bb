@@ -73,12 +73,12 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_media_foundation_vea_on_windows7 =
         prefs.enable_media_foundation_vea_on_windows7();
     out->disable_software_rasterizer = prefs.disable_software_rasterizer();
+    out->log_gpu_control_list_decisions =
+        prefs.log_gpu_control_list_decisions();
     out->compile_shader_always_succeeds =
         prefs.compile_shader_always_succeeds();
     out->disable_gl_error_limit = prefs.disable_gl_error_limit();
     out->disable_glsl_translator = prefs.disable_glsl_translator();
-    out->disable_gpu_driver_bug_workarounds =
-        prefs.disable_gpu_driver_bug_workarounds();
     out->disable_shader_name_hashing = prefs.disable_shader_name_hashing();
     out->enable_gpu_command_logging = prefs.enable_gpu_command_logging();
     out->enable_gpu_debugging = prefs.enable_gpu_debugging();
@@ -111,6 +111,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
         return false;
       out->texture_target_exception_list.push_back(usage_format);
     }
+
+    out->disable_gpu_driver_bug_workarounds =
+        prefs.disable_gpu_driver_bug_workarounds();
+    out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
     return true;
   }
 
@@ -162,6 +166,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool disable_software_rasterizer(const gpu::GpuPreferences& prefs) {
     return prefs.disable_software_rasterizer;
   }
+  static bool log_gpu_control_list_decisions(const gpu::GpuPreferences& prefs) {
+    return prefs.log_gpu_control_list_decisions;
+  }
   static bool compile_shader_always_succeeds(const gpu::GpuPreferences& prefs) {
     return prefs.compile_shader_always_succeeds;
   }
@@ -170,10 +177,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool disable_glsl_translator(const gpu::GpuPreferences& prefs) {
     return prefs.disable_glsl_translator;
-  }
-  static bool disable_gpu_driver_bug_workarounds(
-      const gpu::GpuPreferences& prefs) {
-    return prefs.disable_gpu_driver_bug_workarounds;
   }
   static bool disable_shader_name_hashing(const gpu::GpuPreferences& prefs) {
     return prefs.disable_shader_name_hashing;
@@ -233,8 +236,15 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     return prefs.disable_biplanar_gpu_memory_buffers_for_video_frames;
   }
   static const std::vector<gfx::BufferUsageAndFormat>&
-  texture_target_exception_list(const gpu::GpuPreferences& input) {
-    return input.texture_target_exception_list;
+  texture_target_exception_list(const gpu::GpuPreferences& prefs) {
+    return prefs.texture_target_exception_list;
+  }
+  static bool disable_gpu_driver_bug_workarounds(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.disable_gpu_driver_bug_workarounds;
+  }
+  static bool ignore_gpu_blacklist(const gpu::GpuPreferences& prefs) {
+    return prefs.ignore_gpu_blacklist;
   }
 };
 

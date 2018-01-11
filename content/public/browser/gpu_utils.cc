@@ -80,14 +80,14 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 #endif
   gpu_preferences.disable_software_rasterizer =
       command_line->HasSwitch(switches::kDisableSoftwareRasterizer);
+  gpu_preferences.log_gpu_control_list_decisions =
+      command_line->HasSwitch(switches::kLogGpuControlListDecisions);
   gpu_preferences.compile_shader_always_succeeds =
       command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
   gpu_preferences.disable_gl_error_limit =
       command_line->HasSwitch(switches::kDisableGLErrorLimit);
   gpu_preferences.disable_glsl_translator =
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
-  gpu_preferences.disable_gpu_driver_bug_workarounds =
-      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
   gpu_preferences.disable_shader_name_hashing =
       command_line->HasSwitch(switches::kDisableShaderNameHashing);
   gpu_preferences.enable_gpu_command_logging =
@@ -133,6 +133,10 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       (gpu_preferences.single_process || gpu_preferences.in_process_gpu);
   gpu_preferences.gpu_sandbox_start_early =
       command_line->HasSwitch(switches::kGpuSandboxStartEarly);
+  gpu_preferences.disable_gpu_driver_bug_workarounds =
+      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
+  gpu_preferences.ignore_gpu_blacklist =
+      command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;

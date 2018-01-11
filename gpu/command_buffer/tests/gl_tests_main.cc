@@ -31,8 +31,12 @@ int RunHelper(base::TestSuite* testSuite) {
   base::FeatureList::InitializeInstance(std::string(), std::string());
   gpu::GPUInfo gpu_info;
   gpu::CollectBasicGraphicsInfo(&gpu_info);
-  gpu::GLManager::g_gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-      gpu_info, base::CommandLine::ForCurrentProcess());
+  gpu::GLManager::g_gpu_feature_info =
+      gpu::ComputeGpuFeatureInfo(gpu_info,
+                                 false,  // ignore_gpu_blacklist
+                                 false,  // disable_gpu_driver_bug_workarounds
+                                 false,  // log_gpu_control_list_decisions
+                                 base::CommandLine::ForCurrentProcess());
   gl::init::InitializeGLNoExtensionsOneOff();
   gl::init::SetDisabledExtensionsPlatform(
       gpu::GLManager::g_gpu_feature_info.disabled_extensions);

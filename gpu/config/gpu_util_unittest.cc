@@ -126,7 +126,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info =
-        ComputeGpuFeatureInfo(gpu_info, &command_line);
+        ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_FALSE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -138,7 +138,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
                                    "1");
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info =
-        ComputeGpuFeatureInfo(gpu_info, &command_line);
+        ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_TRUE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -150,7 +150,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     gpu_info.gpu.vendor_id = 0xbad9;
     gpu_info.gpu.device_id = 0xbad9;
     GpuFeatureInfo gpu_feature_info =
-        ComputeGpuFeatureInfo(gpu_info, &command_line);
+        ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_TRUE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -165,7 +165,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     gpu_info.gpu.vendor_id = 0xbad9;
     gpu_info.gpu.device_id = 0xbad9;
     GpuFeatureInfo gpu_feature_info =
-        ComputeGpuFeatureInfo(gpu_info, &command_line);
+        ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_FALSE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }

@@ -35,11 +35,11 @@ struct GpuPreferences {
   bool enable_nv12_dxgi_video;
   bool enable_media_foundation_vea_on_windows7;
   bool disable_software_rasterizer;
+  bool log_gpu_control_list_decisions;
 
   bool compile_shader_always_succeeds;
   bool disable_gl_error_limit;
   bool disable_glsl_translator;
-  bool disable_gpu_driver_bug_workarounds;
   bool disable_shader_name_hashing;
   bool enable_gpu_command_logging;
   bool enable_gpu_debugging;
@@ -59,4 +59,7 @@ struct GpuPreferences {
   bool use_passthrough_cmd_decoder;
   bool disable_biplanar_gpu_memory_buffers_for_video_frames;
   array<gfx.mojom.BufferUsageAndFormat> texture_target_exception_list;
+
+  bool disable_gpu_driver_bug_workarounds;
+  bool ignore_gpu_blacklist;
 };

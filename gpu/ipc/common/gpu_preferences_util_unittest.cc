@@ -84,10 +84,10 @@ TEST(GpuPreferencesUtilTest, MAYBE_EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_nv12_dxgi_video, true)
     GPU_PREFERENCES_FIELD(enable_media_foundation_vea_on_windows7, true)
     GPU_PREFERENCES_FIELD(disable_software_rasterizer, true)
+    GPU_PREFERENCES_FIELD(log_gpu_control_list_decisions, true)
     GPU_PREFERENCES_FIELD(compile_shader_always_succeeds, true)
     GPU_PREFERENCES_FIELD(disable_gl_error_limit, true)
     GPU_PREFERENCES_FIELD(disable_glsl_translator, true)
-    GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
     GPU_PREFERENCES_FIELD(disable_shader_name_hashing, true)
     GPU_PREFERENCES_FIELD(enable_gpu_command_logging, true)
     GPU_PREFERENCES_FIELD(enable_gpu_debugging, true)
@@ -105,6 +105,10 @@ TEST(GpuPreferencesUtilTest, MAYBE_EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_gpu_service_logging, true)
     GPU_PREFERENCES_FIELD(enable_gpu_service_tracing, true)
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)
+    GPU_PREFERENCES_FIELD(disable_biplanar_gpu_memory_buffers_for_video_frames,
+                          true)
+    GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
+    GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
 
     // Make sure every field is encoded/decoded.
     std::string encoded = GpuPreferencesToSwitchValue(input_prefs);
