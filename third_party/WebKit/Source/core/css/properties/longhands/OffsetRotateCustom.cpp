@@ -22,7 +22,7 @@ const CSSValue* OffsetRotate::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.OffsetRotate().type == kOffsetRotationAuto)
+  if (style.OffsetRotate().type == OffsetRotationType::kAuto)
     list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
   list->Append(*CSSPrimitiveValue::Create(
       style.OffsetRotate().angle, CSSPrimitiveValue::UnitType::kDegrees));

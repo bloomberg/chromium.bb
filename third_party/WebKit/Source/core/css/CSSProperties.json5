@@ -1887,7 +1887,7 @@
       field_group: "*",
       field_template: "external",
       include_paths: ["core/style/StyleOffsetRotation.h"],
-      default_value: "StyleOffsetRotation(0, kOffsetRotationAuto)",
+      default_value: "StyleOffsetRotation(0, OffsetRotationType::kAuto)",
       type_name: "StyleOffsetRotation",
       converter: "ConvertOffsetRotate",
     },

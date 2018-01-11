@@ -1019,7 +1019,7 @@ void ComputedStyle::ApplyMotionPathTransform(
                                                  angle);
   }
 
-  if (rotate.type == kOffsetRotationFixed)
+  if (rotate.type == OffsetRotationType::kFixed)
     angle = 0;
 
   float origin_shift_x = 0;
