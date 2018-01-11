@@ -278,9 +278,9 @@ PaintOp::SerializeOptions::SerializeOptions(
     TransferCacheSerializeHelper* transfer_cache,
     SkCanvas* canvas,
     const SkMatrix& original_ctm)
-    : image_provider(image_provider),
-      transfer_cache(transfer_cache),
+    : transfer_cache(transfer_cache),
       canvas(canvas),
+      image_provider(image_provider),
       original_ctm(original_ctm) {}
 
 size_t AnnotateOp::Serialize(const PaintOp* base_op,
@@ -357,7 +357,6 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
                               void* memory,
                               size_t size,
                               const SerializeOptions& options) {
-  DCHECK(options.canvas);
   auto* op = static_cast<const DrawImageOp*>(base_op);
   PaintOpWriter helper(memory, size, options.transfer_cache,
                        options.image_provider);
@@ -377,7 +376,6 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
                                   void* memory,
                                   size_t size,
                                   const SerializeOptions& options) {
-  DCHECK(options.canvas);
   auto* op = static_cast<const DrawImageRectOp*>(base_op);
   PaintOpWriter helper(memory, size, options.transfer_cache,
                        options.image_provider);
@@ -1709,6 +1707,9 @@ void PaintOp::Raster(SkCanvas* canvas, const PlaybackParams& params) const {
 size_t PaintOp::Serialize(void* memory,
                           size_t size,
                           const SerializeOptions& options) const {
+  DCHECK(options.transfer_cache);
+  DCHECK(options.canvas);
+
   // Need at least enough room for a skip/type header.
   if (size < 4)
     return 0u;

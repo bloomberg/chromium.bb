@@ -122,9 +122,12 @@ class CC_PAINT_EXPORT PaintOp {
                      SkCanvas* canvas,
                      const SkMatrix& original_ctm);
 
-    ImageProvider* image_provider = nullptr;
+    // Required.
     TransferCacheSerializeHelper* transfer_cache = nullptr;
     SkCanvas* canvas = nullptr;
+
+    // Optional.
+    ImageProvider* image_provider = nullptr;
     SkMatrix original_ctm = SkMatrix::I();
     // The flags to use when serializing this op. This can be used to override
     // the flags serialized with the op. Valid only for PaintOpWithFlags.
