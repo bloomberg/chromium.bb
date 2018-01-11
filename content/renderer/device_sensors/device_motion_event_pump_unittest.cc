@@ -368,6 +368,34 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
       DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
 }
 
+TEST_F(DeviceMotionEventPumpTest,
+       NotFireEventWhenSensorReadingTimeStampIsZero) {
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  FireEvent();
+  EXPECT_FALSE(listener()->did_change_device_motion());
+
+  sensor_provider()->SetAccelerometerData(1, 2, 3);
+  FireEvent();
+  EXPECT_FALSE(listener()->did_change_device_motion());
+
+  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
+  FireEvent();
+  EXPECT_FALSE(listener()->did_change_device_motion());
+
+  sensor_provider()->SetGyroscopeData(7, 8, 9);
+  FireEvent();
+  // Event is fired only after all the available sensors have data.
+  EXPECT_TRUE(listener()->did_change_device_motion());
+
+  motion_pump()->Stop();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+}
+
 // Confirm that the frequency of pumping events is not greater than 60Hz.
 // A rate above 60Hz would allow for the detection of keystrokes.
 // (crbug.com/421691)
@@ -381,7 +409,9 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
+  sensor_provider()->SetAccelerometerData(1, 2, 3);
   sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
+  sensor_provider()->SetGyroscopeData(7, 8, 9);
 
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
