@@ -34,7 +34,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
@@ -1397,92 +1396,44 @@ public class ContentViewCoreImpl
         return mFullscreenRequiredForOrientationLock;
     }
 
-    @NativeClassQualifiedName("ContentViewCore")
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             WindowAndroid window, float dipScale);
-    @NativeClassQualifiedName("ContentViewCore")
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeUpdateWindowAndroid(long nativeContentViewCore, WindowAndroid window);
-    @NativeClassQualifiedName("ContentViewCore")
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCore);
-    @NativeClassQualifiedName("ContentViewCore")
     private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetDIPScale(long nativeContentViewCore, float dipScale);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
             long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeScrollBegin(long nativeContentViewCore, long timeMs, float x, float y,
             float hintX, float hintY, boolean targetViewport, boolean fromGamepad);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeScrollEnd(long nativeContentViewCore, long timeMs);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeScrollBy(
             long nativeContentViewCore, long timeMs, float x, float y, float deltaX, float deltaY);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeFlingStart(long nativeContentViewCore, long timeMs, float x, float y,
             float vx, float vy, boolean targetViewport, boolean fromGamepad);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeFlingCancel(
             long nativeContentViewCore, long timeMs, boolean fromGamepad);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeDoubleTap(long nativeContentViewCore, long timeMs, float x, float y);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetTextHandlesTemporarilyHidden(
             long nativeContentViewCore, boolean hidden);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeResetGestureDetection(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeContentViewCore, boolean enabled);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCore, boolean enabled);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSelectPopupMenuItems(
             long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeWasResized(long nativeContentViewCore);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetTextTrackSettings(long nativeContentViewCore,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
             String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
             String textTrackTextShadow, String textTrackTextSize);
-
-    @NativeClassQualifiedName("ContentViewCore")
     private native void nativeSetBackgroundOpaque(long nativeContentViewCore, boolean opaque);
 }
