@@ -1407,7 +1407,29 @@ void DisplayManager::ClearTouchCalibrationData(
   }
   UpdateDisplaysWith(display_info_list);
 }
+
+void DisplayManager::UpdateZoomFactor(int64_t display_id, float zoom_factor) {
+  DCHECK(zoom_factor > 0);
+  DCHECK_NE(display_id, kInvalidDisplayId);
+
+  display_zoom_factors_[display_id] = zoom_factor;
+
+  for (const auto& display : active_display_list_) {
+    if (display.id() == display_id) {
+      UpdateDisplays();
+      break;
+    }
+  }
+}
 #endif
+
+float DisplayManager::GetZoomFactorForDisplay(int64_t display_id) const {
+  // If there is no entry for the given display id, then the zoom factor is
+  // still at its default level of 100% zoom.
+  if (!base::ContainsKey(display_zoom_factors_, display_id))
+    return 1.f;
+  return display_zoom_factors_.at(display_id);
+}
 
 void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
     MultiDisplayMode mode) {
@@ -1857,6 +1879,9 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   Display new_display(display_info.id());
   gfx::Rect bounds_in_native(display_info.size_in_pixel());
   float device_scale_factor = display_info.GetEffectiveDeviceScaleFactor();
+
+  // Apply the zoom factor for the display.
+  device_scale_factor *= GetZoomFactorForDisplay(id);
 
   // Simply set the origin to (0,0).  The primary display's origin is
   // always (0,0) and the bounds of non-primary display(s) will be updated
