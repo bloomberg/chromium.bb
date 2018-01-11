@@ -144,10 +144,10 @@ TEST_F(BufferViewTest, CanAccess) {
   EXPECT_FALSE(buffer.can_access<uint8_t>(0xFFFFFFFF));
 }
 
-TEST_F(BufferViewTest, Region) {
+TEST_F(BufferViewTest, LocalRegion) {
   ConstBufferView view(std::begin(bytes_), kLen);
 
-  BufferRegion region = view.region();
+  BufferRegion region = view.local_region();
   EXPECT_EQ(0U, region.offset);
   EXPECT_EQ(kLen, region.size);
 }
