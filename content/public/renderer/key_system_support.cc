@@ -12,9 +12,6 @@
 
 namespace content {
 
-// TODO(jrummell): As this is replacing IsInternalPluginAvailableForMimeType(),
-// remove it. As well, widevine_cdm_component_installer no longer needs to
-// register additional parameters as they are now no longer used.
 bool IsKeySystemSupported(
     const std::string& key_system,
     std::vector<media::VideoCodec>* supported_video_codecs,
