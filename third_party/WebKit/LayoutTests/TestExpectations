@@ -3020,7 +3020,7 @@ crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.html [ Timeout Pass ]
 
-crbug.com/798116 [ Win7 ] fast/forms/select/listbox-in-multi-column.html [ Skip ]
+crbug.com/798116 [ Win7 ] fast/forms/select/listbox-in-multi-column.html [ Pass Timeout Crash ]
 
 # These imported tests exercise tens of thousands of code points and generate large results. Marked slow, but still timeout.
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-japanese [ Timeout Pass ]
