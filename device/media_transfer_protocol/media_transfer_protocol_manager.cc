@@ -90,13 +90,13 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  const std::vector<std::string> GetStorages() const override {
+  void GetStorages(GetStoragesCallback callback) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> storages;
     storages.reserve(storage_info_map_.size());
     for (const auto& info : storage_info_map_)
       storages.push_back(info.first);
-    return storages;
+    std::move(callback).Run(storages);
   }
 
   // MediaTransferProtocolManager override.

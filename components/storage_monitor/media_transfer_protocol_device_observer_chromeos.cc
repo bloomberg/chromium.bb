@@ -124,7 +124,8 @@ MediaTransferProtocolDeviceObserverChromeOS::
         device::MediaTransferProtocolManager* mtp_manager)
     : mtp_manager_(mtp_manager),
       get_storage_info_func_(&GetStorageInfo),
-      notifications_(receiver) {
+      notifications_(receiver),
+      weak_ptr_factory_(this) {
   mtp_manager_->AddObserver(this);
   EnumerateStorages();
 }
@@ -137,7 +138,8 @@ MediaTransferProtocolDeviceObserverChromeOS::
         GetStorageInfoFunc get_storage_info_func)
     : mtp_manager_(mtp_manager),
       get_storage_info_func_(get_storage_info_func),
-      notifications_(receiver) {}
+      notifications_(receiver),
+      weak_ptr_factory_(this) {}
 
 MediaTransferProtocolDeviceObserverChromeOS::
     ~MediaTransferProtocolDeviceObserverChromeOS() {
@@ -222,8 +224,14 @@ void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
 }
 
 void MediaTransferProtocolDeviceObserverChromeOS::EnumerateStorages() {
+  mtp_manager_->GetStorages(base::BindOnce(
+        &MediaTransferProtocolDeviceObserverChromeOS::OnReceivedStorages,
+        weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaTransferProtocolDeviceObserverChromeOS::OnReceivedStorages(
+    const std::vector<std::string>& storages) {
   typedef std::vector<std::string> StorageList;
-  StorageList storages = mtp_manager_->GetStorages();
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {
     StorageChanged(true, *storage_iter);
