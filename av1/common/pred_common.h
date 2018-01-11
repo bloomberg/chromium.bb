@@ -330,22 +330,31 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p6(
 // left of the entries corresponding to real blocks.
 // The prediction flags in these dummy entries are initialized to 0.
 static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
-  const int max_tx_size = max_txsize_lookup[xd->mi[0]->mbmi.sb_type];
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const TX_SIZE max_tx_size =
+      max_txsize_rect_lookup[is_inter_block(mbmi)][mbmi->sb_type];
+  const int max_tx_wide = tx_size_wide[max_tx_size];
+  const int max_tx_high = tx_size_high[max_tx_size];
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int has_above = xd->up_available;
   const int has_left = xd->left_available;
-  int above_ctx = (has_above && !above_mbmi->skip)
-                      ? (int)txsize_sqr_map[above_mbmi->tx_size]
-                      : max_tx_size;
-  int left_ctx = (has_left && !left_mbmi->skip)
-                     ? (int)txsize_sqr_map[left_mbmi->tx_size]
-                     : max_tx_size;
 
-  if (!has_left) left_ctx = above_ctx;
-
-  if (!has_above) above_ctx = left_ctx;
-  return (above_ctx + left_ctx) > max_tx_size + TX_SIZE_LUMA_MIN;
+  if (!has_above || above_mbmi->skip) {
+    if (!has_left || left_mbmi->skip) {
+      return 1;
+    } else {
+      return 2 * tx_size_high[left_mbmi->tx_size] > max_tx_high;
+    }
+  } else {
+    if (!has_left || left_mbmi->skip) {
+      return 2 * tx_size_wide[above_mbmi->tx_size] > max_tx_wide;
+    } else {
+      const int above_ctx = (int)tx_size_wide[above_mbmi->tx_size];
+      const int left_ctx = (int)tx_size_high[left_mbmi->tx_size];
+      return 2 * (above_ctx + left_ctx) > max_tx_wide + max_tx_high;
+    }
+  }
 }
 
 #ifdef __cplusplus
