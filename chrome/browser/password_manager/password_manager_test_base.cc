@@ -562,6 +562,12 @@ void PasswordManagerBrowserTestBase::WaitForElementValue(
           "    } else {"
           "      window.domAutomationController.send(%d);"
           "    }"
+          // This script should never send more than one message because only 1
+          // message is expected. Any further messages might be processed in
+          // subsequent script executions, that could lead to failures or
+          // flakiness. Leaving onchange handler would cause sending messages
+          // on any further onchange events.
+          "    element.onchange = undefined;"
           "  };"
           "}",
           RETURN_CODE_OK, iframe_id.c_str(), iframe_id.c_str(),
@@ -602,6 +608,12 @@ void PasswordManagerBrowserTestBase::WaitForElementValue(
           "    } else {"
           "      window.domAutomationController.send(%d);"
           "    }"
+          // This script should never send more than one message because only 1
+          // message is expected. Any further messages might be processed in
+          // subsequent script executions, that could lead to failures or
+          // flakiness. Leaving onchange handler would cause sending messages
+          // on any further onchange events.
+          "    element.onchange = undefined;"
           "  };"
           "}",
           RETURN_CODE_OK, form_id.c_str(), elements_index,
