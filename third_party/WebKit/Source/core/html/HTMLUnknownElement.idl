@@ -29,5 +29,7 @@
 
 // https://html.spec.whatwg.org/#elements-in-the-dom
 
-interface HTMLUnknownElement : HTMLElement {
+[
+    Exposed=Window
+] interface HTMLUnknownElement : HTMLElement {
 };
