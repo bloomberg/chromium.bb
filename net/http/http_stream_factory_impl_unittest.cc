@@ -2222,20 +2222,25 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 
 class HttpStreamFactoryBidirectionalQuicTest
     : public ::testing::Test,
-      public ::testing::WithParamInterface<QuicTransportVersion> {
+      public ::testing::WithParamInterface<
+          std::tuple<QuicTransportVersion, bool>> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
-        client_packet_maker_(GetParam(),
+        version_(std::get<0>(GetParam())),
+        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+        client_packet_maker_(version_,
                              0,
                              &clock_,
                              "www.example.org",
-                             Perspective::IS_CLIENT),
-        server_packet_maker_(GetParam(),
+                             Perspective::IS_CLIENT,
+                             client_headers_include_h2_stream_dependency_),
+        server_packet_maker_(version_,
                              0,
                              &clock_,
                              "www.example.org",
-                             Perspective::IS_SERVER),
+                             Perspective::IS_SERVER,
+                             false),
         random_generator_(0),
         proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
@@ -2253,7 +2258,9 @@ class HttpStreamFactoryBidirectionalQuicTest
   void Initialize() {
     params_.enable_quic = true;
     params_.quic_supported_versions =
-        test::SupportedTransportVersions(GetParam());
+        test::SupportedTransportVersions(version_);
+    params_.quic_headers_include_h2_stream_dependency =
+        client_headers_include_h2_stream_dependency_;
 
     HttpNetworkSession::Context session_context;
     session_context.http_server_properties = &http_server_properties_;
@@ -2306,10 +2313,12 @@ class HttpStreamFactoryBidirectionalQuicTest
   const GURL default_url_;
 
   QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return test::GetNthClientInitiatedStreamId(GetParam(), n);
+    return test::GetNthClientInitiatedStreamId(version_, n);
   }
 
  private:
+  const QuicTransportVersion version_;
+  const bool client_headers_include_h2_stream_dependency_;
   MockClock clock_;
   test::QuicTestPacketMaker client_packet_maker_;
   test::QuicTestPacketMaker server_packet_maker_;
@@ -2329,9 +2338,11 @@ class HttpStreamFactoryBidirectionalQuicTest
   HttpNetworkSession::Params params_;
 };
 
-INSTANTIATE_TEST_CASE_P(Version,
-                        HttpStreamFactoryBidirectionalQuicTest,
-                        ::testing::ValuesIn(AllSupportedTransportVersions()));
+INSTANTIATE_TEST_CASE_P(
+    VersionIncludeStreamDependencySequnece,
+    HttpStreamFactoryBidirectionalQuicTest,
+    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
+                       ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {

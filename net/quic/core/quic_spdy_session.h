@@ -92,6 +92,23 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       SpdyPriority priority,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
+  // |parent_stream_id| and |exclusive| are HTTP2 stream dependency info.
+  virtual size_t WriteHeaders(
+      QuicStreamId id,
+      SpdyHeaderBlock headers,
+      bool fin,
+      SpdyPriority priority,
+      QuicStreamId parent_stream_id,
+      bool exclusive,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+
+  // Writes a PRIORITY frame the to peer. Returns the size in bytes of the
+  // resulting PRIORITY frame.
+  size_t WritePriority(QuicStreamId id,
+                       QuicStreamId parent_stream_id,
+                       int weight,
+                       bool exclusive);
+
   // Write |headers| for |promised_stream_id| on |original_stream_id| in a
   // PUSH_PROMISE frame to peer.
   // Return the size, in bytes, of the resulting PUSH_PROMISE frame.
@@ -109,13 +126,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   virtual void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta);
 
   // Called by the stream on creation to set priority in the write blocked list.
-  void RegisterStreamPriority(QuicStreamId id, SpdyPriority priority);
+  virtual void RegisterStreamPriority(QuicStreamId id, SpdyPriority priority);
   // Called by the stream on deletion to clear priority crom the write blocked
   // list.
-  void UnregisterStreamPriority(QuicStreamId id);
+  virtual void UnregisterStreamPriority(QuicStreamId id);
   // Called by the stream on SetPriority to update priority on the write blocked
   // list.
-  void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
+  virtual void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
 
   void OnConfigNegotiated() override;
 
@@ -226,6 +243,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       SpdyHeaderBlock headers,
       bool fin,
       SpdyPriority priority,
+      QuicStreamId parent_stream_id,
+      bool exclusive,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   std::unique_ptr<QuicHeadersStream> headers_stream_;

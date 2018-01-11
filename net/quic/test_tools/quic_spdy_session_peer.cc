@@ -55,8 +55,11 @@ size_t QuicSpdySessionPeer::WriteHeadersImpl(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
+    QuicStreamId parent_stream_id,
+    bool exclusive,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return session->WriteHeadersImpl(id, std::move(headers), fin, priority,
+                                   parent_stream_id, exclusive,
                                    std::move(ack_listener));
 }
 

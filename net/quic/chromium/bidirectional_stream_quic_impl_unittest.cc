@@ -380,7 +380,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 }  // namespace
 
 class BidirectionalStreamQuicImplTest
-    : public ::testing::TestWithParam<QuicTransportVersion> {
+    : public ::testing::TestWithParam<std::tuple<QuicTransportVersion, bool>> {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
@@ -398,21 +398,25 @@ class BidirectionalStreamQuicImplTest
   };
 
   BidirectionalStreamQuicImplTest()
-      : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+      : version_(std::get<0>(GetParam())),
+        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()),
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
         stream_id_(GetNthClientInitiatedStreamId(0)),
-        client_maker_(GetParam(),
+        client_maker_(version_,
                       connection_id_,
                       &clock_,
                       kDefaultServerHostName,
-                      Perspective::IS_CLIENT),
-        server_maker_(GetParam(),
+                      Perspective::IS_CLIENT,
+                      client_headers_include_h2_stream_dependency_),
+        server_maker_(version_,
                       connection_id_,
                       &clock_,
                       kDefaultServerHostName,
-                      Perspective::IS_SERVER),
+                      Perspective::IS_SERVER,
+                      false),
         random_generator_(0),
         destination_(kDefaultServerHostName, kDefaultServerPort) {
     IPAddress ip(192, 0, 2, 33);
@@ -479,7 +483,7 @@ class BidirectionalStreamQuicImplTest
         new QuicChromiumPacketWriter(socket.get(), runner_.get()),
         true /* owns_writer */, Perspective::IS_CLIENT,
         SupportedVersions(
-            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, GetParam())));
+            net::ParsedQuicVersion(net::PROTOCOL_QUIC_CRYPTO, version_)));
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 
@@ -498,8 +502,9 @@ class BidirectionalStreamQuicImplTest
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
-        /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", dns_start, dns_end, &push_promise_index_, nullptr,
+        client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
+        DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN", dns_start,
+        dns_end, &push_promise_index_, nullptr,
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
@@ -750,10 +755,12 @@ class BidirectionalStreamQuicImplTest
   QuicChromiumClientSession* session() const { return session_.get(); }
 
   QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return test::GetNthClientInitiatedStreamId(GetParam(), n);
+    return test::GetNthClientInitiatedStreamId(version_, n);
   }
 
  protected:
+  const QuicTransportVersion version_;
+  const bool client_headers_include_h2_stream_dependency_;
   BoundTestNetLog net_log_;
   scoped_refptr<TestTaskRunner> runner_;
   std::unique_ptr<MockWrite[]> mock_writes_;
@@ -782,9 +789,11 @@ class BidirectionalStreamQuicImplTest
   HostPortPair destination_;
 };
 
-INSTANTIATE_TEST_CASE_P(Version,
-                        BidirectionalStreamQuicImplTest,
-                        ::testing::ValuesIn(AllSupportedTransportVersions()));
+INSTANTIATE_TEST_CASE_P(
+    Version,
+    BidirectionalStreamQuicImplTest,
+    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
+                       ::testing::Bool()));
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);

@@ -258,8 +258,9 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
     EXPECT_CALL(session_,
                 WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
         .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
-    QuicSpdySessionPeer::WriteHeadersImpl(
-        &session_, stream_id, headers_.Clone(), fin, priority, nullptr);
+    QuicSpdySessionPeer::WriteHeadersImpl(&session_, stream_id,
+                                          headers_.Clone(), fin, priority, 0,
+                                          false, nullptr);
 
     // Parse the outgoing data and check that it matches was was written.
     if (is_request) {
