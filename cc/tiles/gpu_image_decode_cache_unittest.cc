@@ -1815,6 +1815,29 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForImageDifferentColorSpace) {
   cache->UnrefImage(third_draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest, GetTaskForLargeImageNonSRGBColorSpace) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
+
+  // Create an image that's too large to cache.
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(1, 24000));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  cache->UnrefImage(draw_image);
+}
+
 TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
   auto cache = CreateCache();
   bool is_decomposable = true;

@@ -221,6 +221,10 @@ sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrContext* context,
 // called while holding the context lock.
 void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
                                     sk_sp<SkImage>&& image) {
+  // No need to do anything for a non-texture-backed images.
+  if (!image->isTextureBacked())
+    return;
+
   sk_sp<SkImage> image_owned =
       TakeOwnershipOfSkImageBacking(context->GrContext(), std::move(image));
   // If context is lost, we may get a null image here.
