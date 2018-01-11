@@ -48,7 +48,7 @@ void ShowSingletonTabOverwritingNTP(Browser* browser,
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (contents) {
-    const GURL& contents_url = contents->GetURL();
+    const GURL& contents_url = contents->GetVisibleURL();
     if (contents_url == chrome::kChromeUINewTabURL ||
         search::IsInstantNTP(contents) || contents_url == url::kAboutBlankURL) {
       int tab_index = GetIndexOfExistingTab(browser, local_params);
@@ -97,7 +97,7 @@ int GetIndexOfExistingTab(Browser* browser, const NavigateParams& params) {
     content::WebContents* tab =
         browser->tab_strip_model()->GetWebContentsAt(tab_index);
 
-    GURL tab_url = tab->GetURL();
+    GURL tab_url = tab->GetVisibleURL();
 
     // Skip view-source tabs. This is needed because RewriteURLIfNecessary
     // removes the "view-source:" scheme which leads to incorrect matching.

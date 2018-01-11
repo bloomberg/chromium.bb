@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -633,8 +634,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
 
-// This test verifies that navigating to a singleton doesn't mistakenly
-// pick the current browser.
+// This test verifies that we're picking the correct browser and tab to
+// switch to. It verifies that we don't recommend the active tab, and that,
+// when switching, we don't mistakenly pick the current browser.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
   // Make singleton tab.
   NavigateParams params1(MakeNavigateParams());
@@ -644,17 +646,29 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
   Navigate(&params1);
   Browser* save_browser = browser();
 
-  // Make new window.
+  // Make a new window.
   NavigateParams params2(MakeNavigateParams());
   params2.disposition = WindowOpenDisposition::NEW_WINDOW;
   params2.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&params2);
 
+  ChromeAutocompleteProviderClient client(browser()->profile());
+  // We avoid recommending the active tab, because during navigation, we
+  // actively avoid it (because the user almost certainly doesn't want to
+  // switch to the tab they're already on). While we are not on the target
+  // tab, make sure the provider client recommends our it.
+  EXPECT_TRUE(client.IsTabOpenWithURL(params1.url));
+
   // Navigate to the singleton again.
   params1.disposition = WindowOpenDisposition::SINGLETON_TAB;
   Navigate(&params1);
 
+  // Make sure we chose the browser with the tab, not simply the current
+  // browser.
   EXPECT_EQ(save_browser, browser());
+  // Now that we're on the tab, make sure the provider client doesn't
+  // recommend it.
+  EXPECT_FALSE(client.IsTabOpenWithURL(params1.url));
 }
 
 // This test verifies that navigation to a singleton prefers the latest
