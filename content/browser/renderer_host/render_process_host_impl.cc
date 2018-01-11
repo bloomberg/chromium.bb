@@ -1342,6 +1342,15 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       shared_bitmap_allocation_notifier_impl_(
           viz::ServerSharedBitmapManager::current()),
       weak_factory_(this) {
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // WebRTCInternals' constructor needs to be invoked from a scope that allows
+  // blocking. By doing it now, we make sure no later scope triggers
+  // construction at a potentially illegal time.
+  // TODO(eladalon): Remove the necessity for this; it is brittle.
+  // https://crbug.com/792847
+  WebRTCInternals::GetInstance();
+#endif
+
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -3931,10 +3940,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   GetProcessResourceCoordinator()->SetPID(base::GetProcId(GetHandle()));
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals->IsAudioDebugRecordingsEnabled()) {
+  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
     EnableAudioDebugRecordings(
-        webrtc_internals->GetAudioDebugRecordingsFilePath());
+        WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
   }
 #endif
 }
@@ -4067,10 +4075,9 @@ void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   aec_dump_consumers_.push_back(id);
 
-  WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals->IsAudioDebugRecordingsEnabled()) {
+  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
     base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(
-        webrtc_internals->GetAudioDebugRecordingsFilePath());
+        WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
     EnableAecDumpForId(file_with_extensions, id);
   }
 }
