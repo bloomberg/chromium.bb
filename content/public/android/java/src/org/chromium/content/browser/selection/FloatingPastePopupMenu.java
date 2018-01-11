@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.content.browser.selection;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.content.R;
-import org.chromium.content.browser.SelectionPopupControllerImpl;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
