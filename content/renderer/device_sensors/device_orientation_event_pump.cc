@@ -174,8 +174,14 @@ bool DeviceOrientationEventPump::SensorsReadyOrErrored() const {
 
 void DeviceOrientationEventPump::GetDataFromSharedMemory(
     device::OrientationData* data) {
+  data->all_available_sensors_are_active = true;
+
   if (!absolute_ && relative_orientation_sensor_.SensorReadingCouldBeRead()) {
     // For DeviceOrientation Event, this provides relative orientation data.
+    data->all_available_sensors_are_active =
+        relative_orientation_sensor_.reading.timestamp() != 0.0;
+    if (!data->all_available_sensors_are_active)
+      return;
     data->alpha = relative_orientation_sensor_.reading.orientation_euler.z;
     data->beta = relative_orientation_sensor_.reading.orientation_euler.x;
     data->gamma = relative_orientation_sensor_.reading.orientation_euler.y;
@@ -192,6 +198,10 @@ void DeviceOrientationEventPump::GetDataFromSharedMemory(
     //
     // For DeviceOrientation Event, this provides absolute orientation data if
     // relative orientation data is not available.
+    data->all_available_sensors_are_active =
+        absolute_orientation_sensor_.reading.timestamp() != 0.0;
+    if (!data->all_available_sensors_are_active)
+      return;
     data->alpha = absolute_orientation_sensor_.reading.orientation_euler.z;
     data->beta = absolute_orientation_sensor_.reading.orientation_euler.x;
     data->gamma = absolute_orientation_sensor_.reading.orientation_euler.y;
@@ -209,6 +219,9 @@ void DeviceOrientationEventPump::GetDataFromSharedMemory(
 
 bool DeviceOrientationEventPump::ShouldFireEvent(
     const device::OrientationData& data) const {
+  if (!data.all_available_sensors_are_active)
+    return false;
+
   if (!data.has_alpha && !data.has_beta && !data.has_gamma) {
     // no data can be provided, this is an all-null event.
     return true;
