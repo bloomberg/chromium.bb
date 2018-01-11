@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.selection;
+package org.chromium.content.browser;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -40,7 +40,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
-import org.chromium.content.browser.ContentClassFactory;
+import org.chromium.content.browser.input.FloatingPastePopupMenu;
+import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
+import org.chromium.content.browser.input.LegacyPastePopupMenu;
+import org.chromium.content.browser.input.PastePopupMenu;
+import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
@@ -260,7 +264,7 @@ public class SelectionPopupControllerImpl
     /**
      * Update the container view.
      */
-    public void setContainerView(View view) {
+    void setContainerView(View view) {
         assert view != null;
 
         // Cleans up action mode before switching to a new container view.
@@ -427,40 +431,39 @@ public class SelectionPopupControllerImpl
 
         if (!supportsFloatingActionMode() && !canPaste() && mNonSelectionCallback == null) return;
         destroyPastePopup();
-        PastePopupMenu.PastePopupMenuDelegate delegate =
-                new PastePopupMenu.PastePopupMenuDelegate() {
-                    @Override
-                    public void paste() {
-                        SelectionPopupControllerImpl.this.paste();
-                        mWebContents.dismissTextHandles();
-                    }
+        PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
+            @Override
+            public void paste() {
+                SelectionPopupControllerImpl.this.paste();
+                mWebContents.dismissTextHandles();
+            }
 
-                    @Override
-                    public void pasteAsPlainText() {
-                        SelectionPopupControllerImpl.this.pasteAsPlainText();
-                        mWebContents.dismissTextHandles();
-                    }
+            @Override
+            public void pasteAsPlainText() {
+                SelectionPopupControllerImpl.this.pasteAsPlainText();
+                mWebContents.dismissTextHandles();
+            }
 
-                    @Override
-                    public boolean canPaste() {
-                        return SelectionPopupControllerImpl.this.canPaste();
-                    }
+            @Override
+            public boolean canPaste() {
+                return SelectionPopupControllerImpl.this.canPaste();
+            }
 
-                    @Override
-                    public void selectAll() {
-                        SelectionPopupControllerImpl.this.selectAll();
-                    }
+            @Override
+            public void selectAll() {
+                SelectionPopupControllerImpl.this.selectAll();
+            }
 
-                    @Override
-                    public boolean canSelectAll() {
-                        return SelectionPopupControllerImpl.this.canSelectAll();
-                    }
+            @Override
+            public boolean canSelectAll() {
+                return SelectionPopupControllerImpl.this.canSelectAll();
+            }
 
-                    @Override
-                    public boolean canPasteAsPlainText() {
-                        return SelectionPopupControllerImpl.this.canPasteAsPlainText();
-                    }
-                };
+            @Override
+            public boolean canPasteAsPlainText() {
+                return SelectionPopupControllerImpl.this.canPasteAsPlainText();
+            }
+        };
         Context windowContext = mWindowAndroid.getContext().get();
         if (windowContext == null) return;
         if (supportsFloatingActionMode()) {
@@ -484,7 +487,7 @@ public class SelectionPopupControllerImpl
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
-    public void destroyPastePopup() {
+    void destroyPastePopup() {
         if (isPastePopupShowing()) {
             mPastePopupMenu.hide();
             mPastePopupMenu = null;
@@ -527,13 +530,13 @@ public class SelectionPopupControllerImpl
     /**
      * @see ActionMode#onWindowFocusChanged()
      */
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
+    void onWindowFocusChanged(boolean hasWindowFocus) {
         if (supportsFloatingActionMode() && isActionModeValid()) {
             mActionMode.onWindowFocusChanged(hasWindowFocus);
         }
     }
 
-    public void setScrollInProgress(boolean touchScrollInProgress, boolean scrollInProgress) {
+    void setScrollInProgress(boolean touchScrollInProgress, boolean scrollInProgress) {
         mScrollInProgress = scrollInProgress;
 
         // The active fling count reflected in |scrollInProgress| isn't reliable with WebView,
@@ -920,7 +923,7 @@ public class SelectionPopupControllerImpl
      * Perform a select all action.
      */
     @VisibleForTesting
-    public void selectAll() {
+    void selectAll() {
         mWebContents.selectAll();
         mClassificationResult = null;
         // Even though the above statement logged a SelectAll user action, we want to
@@ -936,7 +939,7 @@ public class SelectionPopupControllerImpl
      * Perform a cut (to clipboard) action.
      */
     @VisibleForTesting
-    public void cut() {
+    void cut() {
         mWebContents.cut();
     }
 
@@ -944,7 +947,7 @@ public class SelectionPopupControllerImpl
      * Perform a copy (to clipboard) action.
      */
     @VisibleForTesting
-    public void copy() {
+    void copy() {
         mWebContents.copy();
     }
 
@@ -952,7 +955,7 @@ public class SelectionPopupControllerImpl
      * Perform a paste action.
      */
     @VisibleForTesting
-    public void paste() {
+    void paste() {
         mWebContents.paste();
     }
 
@@ -968,7 +971,7 @@ public class SelectionPopupControllerImpl
      * Perform a share action.
      */
     @VisibleForTesting
-    public void share() {
+    void share() {
         RecordUserAction.record("MobileActionMode.Share");
         String query = sanitizeQuery(getSelectedText(), MAX_SHARE_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
@@ -1014,7 +1017,7 @@ public class SelectionPopupControllerImpl
      * Perform a search action.
      */
     @VisibleForTesting
-    public void search() {
+    void search() {
         RecordUserAction.record("MobileActionMode.WebSearch");
         String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
@@ -1035,7 +1038,7 @@ public class SelectionPopupControllerImpl
      * @return true if the current selection is of password type.
      */
     @VisibleForTesting
-    public boolean isSelectionPassword() {
+    boolean isSelectionPassword() {
         return mIsPasswordType;
     }
 
@@ -1098,7 +1101,7 @@ public class SelectionPopupControllerImpl
         }
     }
 
-    public void restoreSelectionPopupsIfNecessary() {
+    void restoreSelectionPopupsIfNecessary() {
         if (hasSelection() && !isActionModeValid()) {
             showActionModeOrClearOnFailure();
         }
@@ -1291,17 +1294,17 @@ public class SelectionPopupControllerImpl
         }
     }
 
-    public void destroyActionModeAndUnselect() {
+    void destroyActionModeAndUnselect() {
         mUnselectAllOnDismiss = true;
         finishActionMode();
     }
 
-    public void destroyActionModeAndKeepSelection() {
+    void destroyActionModeAndKeepSelection() {
         mUnselectAllOnDismiss = false;
         finishActionMode();
     }
 
-    public void updateSelectionState(boolean editable, boolean isPassword) {
+    void updateSelectionState(boolean editable, boolean isPassword) {
         if (!editable) destroyPastePopup();
         if (editable != isFocusedNodeEditable() || isPassword != isSelectionPassword()) {
             mEditable = editable;
