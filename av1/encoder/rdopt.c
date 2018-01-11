@@ -1893,7 +1893,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_TXK_SEL
   // full forward transform and quantization
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT) {
+  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT ||
+      cpi->sf.optimize_coefficients == NO_TRELLIS_OPT) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_B);
   } else {
@@ -3537,7 +3538,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                       NULL, 0, bw, bh);
   }
 
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT) {
+  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT ||
+      cpi->sf.optimize_coefficients == NO_TRELLIS_OPT) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_B);
 
@@ -8702,8 +8704,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
       // during luma RDO, so we can store reconstructed luma values
       memcpy(x->blk_skip[0], ctx->blk_skip[0],
              sizeof(uint8_t) * ctx->num_4x4_blk);
-      av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y, 1, mi_row,
-                                   mi_col);
+      av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y, x->optimize,
+                                   mi_row, mi_col);
       xd->cfl.store_y = 0;
     }
 #endif  // CONFIG_CFL

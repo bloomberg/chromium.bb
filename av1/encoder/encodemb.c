@@ -749,7 +749,8 @@ void av1_encode_sb(const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  struct encode_b_args arg = { cpi, x, &ctx, &mbmi->skip, NULL, NULL, 1 };
+  struct encode_b_args arg = { cpi,  x,    &ctx,       &mbmi->skip,
+                               NULL, NULL, x->optimize };
   int plane;
 
   mbmi->skip = 1;

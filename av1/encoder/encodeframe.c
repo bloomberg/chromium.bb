@@ -4467,7 +4467,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_CFL
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
-      av1_encode_intra_block_plane(cpi, x, bsize, plane, 1, mi_row, mi_col);
+      av1_encode_intra_block_plane(cpi, x, bsize, plane, x->optimize, mi_row,
+                                   mi_col);
     }
 #if CONFIG_CFL
     xd->cfl.store_y = 0;
