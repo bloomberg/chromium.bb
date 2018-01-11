@@ -11,7 +11,7 @@
 // wrapper for building without NDK platform level support, it is not a
 // general-use header and is not complete.
 //
-// TODO(crbug.com/771171): Delete this file when third_party/android_tools/ndk/
+// TODO(crbug.com/771171): Delete this file when third_party/android_ndk/
 // is updated to a version that contains the android/hardware_buffer.h file.
 //
 // Please refer to the API documentation for details:

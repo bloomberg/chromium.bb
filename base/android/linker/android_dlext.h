@@ -13,7 +13,7 @@
 // not complain about a missing symbol when loading our library.
 //
 // Details below taken from:
-//   third_party/android_tools/ndk/platforms/android-21
+//   third_party/android_ndk/platforms/android-21
 //       /arch-arm/usr/include/android/dlext.h
 //
 // Although taken specifically from arch-arm, there are no architecture-
