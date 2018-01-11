@@ -20,6 +20,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/pref_names.h"
 #include "ppapi/features/features.h"
 
 namespace extensions {
@@ -52,7 +53,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
 
   // Simulate that one of them got partially deleted by clearing its pref.
   {
-    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    DictionaryPrefUpdate update(profile_->GetPrefs(), pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL);
     dict->Remove(kExtensionId, NULL);
@@ -87,7 +88,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, NoCleanupDuringInstall) {
 
   // Simulate that one of them got partially deleted by clearing its pref.
   {
-    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    DictionaryPrefUpdate update(profile_->GetPrefs(), pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL);
     dict->Remove(kExtensionId, NULL);
