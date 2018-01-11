@@ -1235,14 +1235,29 @@ void SimpleEntryImpl::CreationOperationComplete(
                    "EntryCreationResult", cache_type_,
                    in_results->result == net::OK);
   if (in_results->result != net::OK) {
-    if (in_results->result != net::ERR_FILE_EXISTS)
-      MarkAsDoomed();
+    if (in_results->result != net::ERR_FILE_EXISTS) {
+      // Here we keep index up-to-date, but don't remove ourselves from active
+      // entries since we may have queued operations, and it would be
+      // problematic to run further Creates, Opens, or Dooms if we are not
+      // the active entry.  We can only do this because OpenEntryInternal
+      // and CreateEntryInternal have to start from STATE_UNINITIALIZED, so
+      // nothing else is going on which may be confused.
+      if (backend_)
+        backend_->index()->Remove(entry_hash_);
+    }
 
     net_log_.AddEventWithNetErrorCode(end_event_type, net::ERR_FAILED);
     PostClientCallback(completion_callback, net::ERR_FAILED);
     MakeUninitialized();
     return;
   }
+
+  // Make sure to keep the index up-to-date. We likely already did this when
+  // CreateEntry was called, but it's possible we were sitting on a queue
+  // after an op that removed us.
+  if (backend_ && !doomed_)
+    backend_->index()->Insert(entry_hash_);
+
   // If out_entry is NULL, it means we already called ReturnEntryToCaller from
   // the optimistic Create case.
   if (out_entry)

@@ -3730,7 +3730,15 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
 
   EXPECT_THAT(cb1.GetResult(rv1), IsError(net::ERR_FAILED));
   ASSERT_THAT(cb2.GetResult(rv2), IsOk());
+
+  // Try to get an alias for entry2. Open should succeed, and return the same
+  // pointer.
+  disk_cache::Entry* entry3 = nullptr;
+  ASSERT_EQ(net::OK, OpenEntry("key", &entry3));
+  EXPECT_EQ(entry3, entry2);
+
   entry2->Close();
+  entry3->Close();
 }
 
 // Checking one more scenario of overlapped reading of a bad entry.
