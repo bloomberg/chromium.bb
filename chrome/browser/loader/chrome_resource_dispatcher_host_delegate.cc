@@ -798,15 +798,28 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // Update the PreviewsState for main frame response if needed.
   if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       request->url().SchemeIsHTTPOrHTTPS()) {
+    // Annotate request if no-transform directive found in response headers.
+    if (request->response_headers() &&
+        request->response_headers()->HasHeaderValue("cache-control",
+                                                    "no-transform")) {
+      previews::PreviewsUserData* previews_user_data =
+          previews::PreviewsUserData::GetData(*request);
+      previews_user_data->SetCacheControlNoTransformDirective();
+    }
+
+    // Determine effective PreviewsState for this committed main frame response.
     content::PreviewsState committed_state = DetermineCommittedPreviews(
         request,
         static_cast<content::PreviewsState>(response->head.previews_state));
+
     // Update previews state in response to renderer.
     response->head.previews_state = static_cast<int>(committed_state);
+
     // Update previews state in nav data to UI.
     ChromeNavigationData* data =
         ChromeNavigationData::GetDataAndCreateIfNecessary(request);
     data->set_previews_state(committed_state);
+
     // Capture committed previews type, if any, in PreviewsUserData.
     // Note: this is for the subset of previews types that are decided upon
     // navigation commit. Previews types that are determined prior to

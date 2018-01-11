@@ -248,6 +248,7 @@
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
 # Added in r519342.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
+-PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledButNoTransformDirective
 
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
