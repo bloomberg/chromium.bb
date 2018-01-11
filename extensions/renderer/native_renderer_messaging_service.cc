@@ -15,6 +15,7 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/renderer/bindings/get_per_context_data.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -30,6 +31,9 @@ namespace extensions {
 namespace {
 
 struct MessagingPerContextData : public base::SupportsUserData::Data {
+  static constexpr char kPerContextDataKey[] =
+      "extension_messaging_per_context_data";
+
   // All the port objects that exist in this context.
   std::map<PortId, v8::Global<v8::Object>> ports;
 
@@ -37,26 +41,7 @@ struct MessagingPerContextData : public base::SupportsUserData::Data {
   int next_port_id = 0;
 };
 
-constexpr char kExtensionMessagingPerContextData[] =
-    "extension_messaging_per_context_data";
-
-MessagingPerContextData* GetPerContextData(v8::Local<v8::Context> context,
-                                           bool should_create) {
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
-    return nullptr;
-  auto* data = static_cast<MessagingPerContextData*>(
-      per_context_data->GetUserData(kExtensionMessagingPerContextData));
-
-  if (!data && should_create) {
-    auto messaging_data = std::make_unique<MessagingPerContextData>();
-    data = messaging_data.get();
-    per_context_data->SetUserData(kExtensionMessagingPerContextData,
-                                  std::move(messaging_data));
-  }
-
-  return data;
-}
+constexpr char MessagingPerContextData::kPerContextDataKey[];
 
 bool ScriptContextIsValid(ScriptContext* script_context) {
   // TODO(devlin): This is in lieu of a similar check in the JS bindings that
@@ -85,8 +70,8 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
   if (!ScriptContextIsValid(script_context))
     return gin::Handle<GinPort>();
 
-  MessagingPerContextData* data =
-      GetPerContextData(script_context->v8_context(), true);
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      script_context->v8_context(), kCreateIfMissing);
   if (!data)
     return gin::Handle<GinPort>();
 
@@ -111,8 +96,8 @@ void NativeRendererMessagingService::SendOneTimeMessage(
   if (!ScriptContextIsValid(script_context))
     return;
 
-  MessagingPerContextData* data =
-      GetPerContextData(script_context->v8_context(), true);
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      script_context->v8_context(), kCreateIfMissing);
 
   bool is_opener = true;
   PortId port_id(script_context->context_id(), data->next_port_id++, is_opener);
@@ -144,8 +129,8 @@ void NativeRendererMessagingService::ClosePort(v8::Local<v8::Context> context,
       ScriptContextSet::GetContextByV8Context(context);
   CHECK(script_context);
 
-  MessagingPerContextData* data =
-      GetPerContextData(script_context->v8_context(), false);
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      script_context->v8_context(), kDontCreateIfMissing);
   if (!data)
     return;
 
@@ -184,8 +169,8 @@ bool NativeRendererMessagingService::ContextHasMessagePort(
     const PortId& port_id) {
   if (one_time_message_handler_.HasPort(script_context, port_id))
     return true;
-  MessagingPerContextData* data =
-      GetPerContextData(script_context->v8_context(), false);
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      script_context->v8_context(), kDontCreateIfMissing);
   return data && base::ContainsKey(data->ports, port_id);
 }
 
@@ -291,7 +276,8 @@ void NativeRendererMessagingService::DispatchOnDisconnectToListeners(
         context, true);
   }
 
-  MessagingPerContextData* data = GetPerContextData(context, false);
+  MessagingPerContextData* data =
+      GetPerContextData<MessagingPerContextData>(context, kDontCreateIfMissing);
   data->ports.erase(port_id);
 }
 
@@ -318,7 +304,8 @@ gin::Handle<GinPort> NativeRendererMessagingService::CreatePort(
   int routing_id =
       render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
 
-  MessagingPerContextData* data = GetPerContextData(context, true);
+  MessagingPerContextData* data =
+      GetPerContextData<MessagingPerContextData>(context, kCreateIfMissing);
   DCHECK(data);
   DCHECK(!base::ContainsKey(data->ports, port_id));
 
@@ -340,8 +327,8 @@ gin::Handle<GinPort> NativeRendererMessagingService::GetPort(
   v8::Isolate* isolate = script_context->isolate();
   v8::Local<v8::Context> context = script_context->v8_context();
 
-  MessagingPerContextData* data =
-      GetPerContextData(script_context->v8_context(), false);
+  MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
+      script_context->v8_context(), kDontCreateIfMissing);
   DCHECK(data);
   DCHECK(base::ContainsKey(data->ports, port_id));
 
