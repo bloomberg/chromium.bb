@@ -28,7 +28,8 @@ struct DataReductionProxyPageLoadTiming {
       int64_t network_bytes,
       int64_t original_network_bytes,
       bool app_background_occurred,
-      bool opt_out_occurred);
+      bool opt_out_occurred,
+      int64_t renderer_memory_usage_kb);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -63,6 +64,9 @@ struct DataReductionProxyPageLoadTiming {
   const bool app_background_occurred;
   // True when the user clicks "Show Original" on the Previews infobar.
   const bool opt_out_occurred;
+  // Kilobytes used by the renderer related to this page load. 0 if memory usage
+  // is unknown.
+  const int64_t renderer_memory_usage_kb;
 };
 
 }  // namespace data_reduction_proxy
