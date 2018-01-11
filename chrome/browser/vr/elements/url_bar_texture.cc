@@ -40,34 +40,23 @@ constexpr float kFontHeight = 0.027f;
 constexpr float kFieldSpacing = 0.014f;
 constexpr float kSecurityIconSize = 0.048f;
 constexpr float kChipTextLineMargin = kHeight * 0.3f;
-constexpr SkScalar kStrikeThicknessFactor = (SK_Scalar1 / 9);
 
 using security_state::SecurityLevel;
 
-// See LocationBarView::GetSecureTextColor().
-SkColor GetSchemeColor(SecurityLevel level, const UrlBarColors& colors) {
+SkColor GetIconColor(SecurityLevel level, const UrlBarColors& colors) {
   switch (level) {
     case SecurityLevel::NONE:
     case SecurityLevel::HTTP_SHOW_WARNING:
-      return colors.deemphasized;
     case SecurityLevel::EV_SECURE:
     case SecurityLevel::SECURE:
-      return colors.secure;
-    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
-      return colors.insecure;
+      return colors.default_icon;
     case SecurityLevel::DANGEROUS:
-      return colors.insecure;
+      return colors.dangerous_icon;
+    case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
     default:
       NOTREACHED();
-      return colors.insecure;
+      return colors.dangerous_icon;
   }
-}
-
-SkColor GetSecurityChipColor(SecurityLevel level,
-                             bool offline_page,
-                             const UrlBarColors& colors) {
-  return offline_page ? colors.offline_page_warning
-                      : GetSchemeColor(level, colors);
 }
 
 void SetEmphasis(RenderTextWrapper* render_text,
@@ -95,11 +84,9 @@ UrlBarTexture::UrlBarTexture(
 UrlBarTexture::~UrlBarTexture() = default;
 
 void UrlBarTexture::SetToolbarState(const ToolbarState& state) {
-  if (state_ == state)
-    return;
-  state_ = state;
-  url_dirty_ = true;
-  set_dirty();
+  SetAndDirty(&state_, state);
+  if (dirty())
+    url_dirty_ = true;
 }
 
 float UrlBarTexture::ToPixels(float meters) const {
@@ -144,8 +131,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     VectorIcon::DrawVectorIcon(
         &gfx_canvas, *state_.vector_icon, ToPixels(kSecurityIconSize),
         {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
-        GetSecurityChipColor(state_.security_level, state_.offline_page,
-                             colors_));
+        GetIconColor(state_.security_level, colors_));
     security_hit_region_ = icon_region;
     left_edge += kSecurityIconSize + kFieldSpacing;
   }
@@ -159,8 +145,6 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
                           ToPixels(kHeight));
 
     int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
-    SkColor chip_color = GetSecurityChipColor(state_.security_level,
-                                              state_.offline_page, colors_);
     const base::string16& chip_text = state_.secure_verbose_text;
     DCHECK(!chip_text.empty());
 
@@ -170,7 +154,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
     std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
     render_text->SetFontList(font_list);
-    render_text->SetColor(chip_color);
+    render_text->SetColor(colors_.offline_page_warning);
     render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     render_text->SetText(chip_text);
     render_text->SetDisplayRect(text_bounds);
@@ -215,11 +199,9 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
 void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& text_bounds) {
-
   url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitDefaults;
-  if (state_.offline_page)
-    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+      url_formatter::kFormatUrlOmitDefaults |
+      url_formatter::kFormatUrlOmitHTTPS;
 
   url::Parsed parsed;
   const base::string16 unelided_url = url_formatter::FormatUrl(
@@ -236,9 +218,8 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
 
   std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
   render_text->SetFontList(font_list);
-  render_text->SetColor(SK_ColorBLACK);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  render_text->SetElideBehavior(gfx::TRUNCATE);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
   render_text->SetText(text);
   render_text->SetDisplayRect(text_bounds);
@@ -251,8 +232,7 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
 }
 
 // static
-// This method replicates behavior in OmniboxView::UpdateTextStyle(), and
-// attempts to maintain similar code structure.
+// This method replicates behavior in OmniboxView::UpdateTextStyle().
 void UrlBarTexture::ApplyUrlStyling(
     const base::string16& formatted_url,
     const url::Parsed& parsed,
@@ -301,20 +281,6 @@ void UrlBarTexture::ApplyUrlStyling(
       SetEmphasis(render_text, true, gfx::Range(host.begin, host.end()),
                   colors);
       break;
-  }
-
-  // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
-  // SafeBrowsing) get a special scheme color treatment. If the security level
-  // is NONE or HTTP_SHOW_WARNING, we do not override the text style previously
-  // applied to the scheme text range by SetEmphasis().
-  if (scheme_range.IsValid() && security_level != security_state::NONE &&
-      security_level != security_state::HTTP_SHOW_WARNING) {
-    render_text->ApplyColor(GetSchemeColor(security_level, colors),
-                            scheme_range);
-    if (security_level == SecurityLevel::DANGEROUS) {
-      render_text->SetStrikeThicknessFactor(kStrikeThicknessFactor);
-      render_text->ApplyStyle(gfx::TextStyle::STRIKE, true, scheme_range);
-    }
   }
 }
 
