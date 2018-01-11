@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.selection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,7 +24,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.SmartSelectionMetricsLogger.ActionType;
+import org.chromium.content.browser.selection.SmartSelectionMetricsLogger.ActionType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.text.BreakIterator;

@@ -26,7 +26,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.PositionObserver;
 import org.chromium.content.browser.ViewPositionObserver;
-import org.chromium.content.browser.input.HandleViewResources;
+import org.chromium.content.browser.selection.HandleViewResources;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;

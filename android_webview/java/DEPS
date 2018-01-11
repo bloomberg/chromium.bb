@@ -20,7 +20,7 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/PositionObserver.java",
   "!content/public/android/java/src/org/chromium/content/browser/SmartClipProvider.java",
   "!content/public/android/java/src/org/chromium/content/browser/ViewPositionObserver.java",
-  "!content/public/android/java/src/org/chromium/content/browser/input/HandleViewResources.java",
+  "!content/public/android/java/src/org/chromium/content/browser/selection/HandleViewResources.java",
 
   "+device/gamepad/android/java",
   "+media/base/android/java",

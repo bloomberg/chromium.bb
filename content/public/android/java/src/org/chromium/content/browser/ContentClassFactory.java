@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.selection.SelectionInsertionHandleObserver;
 
 /**
  * A class factory for downstream injecting code to content layer.
