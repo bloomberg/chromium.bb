@@ -188,7 +188,7 @@ NetworkResourcesData::NetworkResourcesData(size_t total_buffer_size,
       maximum_resources_content_size_(total_buffer_size),
       maximum_single_resource_content_size_(resource_buffer_size) {}
 
-NetworkResourcesData::~NetworkResourcesData() {}
+NetworkResourcesData::~NetworkResourcesData() = default;
 
 void NetworkResourcesData::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_id_to_resource_data_map_);

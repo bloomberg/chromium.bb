@@ -219,7 +219,7 @@ void CheckCorruptedEchoArgsList(const js_to_cpp::blink::EchoArgsListPtr& list) {
 class CppSideConnection : public js_to_cpp::blink::CppSide {
  public:
   CppSideConnection() : mishandled_messages_(0), binding_(this) {}
-  ~CppSideConnection() override {}
+  ~CppSideConnection() override = default;
 
   void set_js_side(js_to_cpp::blink::JsSidePtr js_side) {
     js_side_ = std::move(js_side);
@@ -263,7 +263,7 @@ class CppSideConnection : public js_to_cpp::blink::CppSide {
 class PingCppSideConnection : public CppSideConnection {
  public:
   PingCppSideConnection() : got_message_(false) {}
-  ~PingCppSideConnection() override {}
+  ~PingCppSideConnection() override = default;
 
   // js_to_cpp::CppSide:
   void StartTest() override { js_side_->Ping(); }
@@ -283,7 +283,7 @@ class PingCppSideConnection : public CppSideConnection {
 class EchoCppSideConnection : public CppSideConnection {
  public:
   EchoCppSideConnection() : message_count_(0), termination_seen_(false) {}
-  ~EchoCppSideConnection() override {}
+  ~EchoCppSideConnection() override = default;
 
   // js_to_cpp::CppSide:
   void StartTest() override {
@@ -325,7 +325,7 @@ class EchoCppSideConnection : public CppSideConnection {
 class BitFlipCppSideConnection : public CppSideConnection {
  public:
   BitFlipCppSideConnection() : termination_seen_(false) {}
-  ~BitFlipCppSideConnection() override {}
+  ~BitFlipCppSideConnection() override = default;
 
   // js_to_cpp::CppSide:
   void StartTest() override { js_side_->BitFlip(BuildSampleEchoArgs()); }
@@ -351,7 +351,7 @@ class BitFlipCppSideConnection : public CppSideConnection {
 class BackPointerCppSideConnection : public CppSideConnection {
  public:
   BackPointerCppSideConnection() : termination_seen_(false) {}
-  ~BackPointerCppSideConnection() override {}
+  ~BackPointerCppSideConnection() override = default;
 
   // js_to_cpp::CppSide:
   void StartTest() override { js_side_->BackPointer(BuildSampleEchoArgs()); }

@@ -727,7 +727,7 @@ scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
   return std::move(image_);
 }
 
-ImageBitmap::~ImageBitmap() {}
+ImageBitmap::~ImageBitmap() = default;
 
 ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
                                  Optional<IntRect> crop_rect,

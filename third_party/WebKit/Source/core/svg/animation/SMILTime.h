@@ -78,7 +78,7 @@ class SMILTimeWithOrigin {
 
 struct SMILInterval {
   DISALLOW_NEW();
-  SMILInterval() {}
+  SMILInterval() = default;
   SMILInterval(const SMILTime& begin, const SMILTime& end)
       : begin(begin), end(end) {}
 

@@ -54,7 +54,7 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
     DCHECK_EQ(collection_type_, static_cast<unsigned>(collection_type));
   }
 
-  virtual ~LiveNodeListBase() {}
+  virtual ~LiveNodeListBase() = default;
 
   ContainerNode& RootNode() const;
 

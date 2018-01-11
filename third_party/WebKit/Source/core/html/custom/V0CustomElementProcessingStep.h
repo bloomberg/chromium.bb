@@ -40,9 +40,9 @@ class V0CustomElementProcessingStep
     : public GarbageCollectedFinalized<V0CustomElementProcessingStep> {
 
  public:
-  V0CustomElementProcessingStep() {}
+  V0CustomElementProcessingStep() = default;
 
-  virtual ~V0CustomElementProcessingStep() {}
+  virtual ~V0CustomElementProcessingStep() = default;
   virtual void Dispatch(Element*) = 0;
   virtual bool IsCreatedCallback() const { return false; }
 

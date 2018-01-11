@@ -129,7 +129,7 @@ HTMLElementStack::HTMLElementStack()
       body_element_(nullptr),
       stack_depth_(0) {}
 
-HTMLElementStack::~HTMLElementStack() {}
+HTMLElementStack::~HTMLElementStack() = default;
 
 bool HTMLElementStack::HasOnlyOneElement() const {
   return !TopRecord()->Next();

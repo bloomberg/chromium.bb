@@ -52,7 +52,7 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
   DCHECK_EQ(this->CssPropertyId(), css_property_id);
 }
 
-SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() {}
+SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() = default;
 
 void SVGAnimatedPropertyBase::AnimationEnded() {
   SynchronizeAttribute();

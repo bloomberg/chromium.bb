@@ -44,7 +44,7 @@ SVGStaticStringList::SVGStaticStringList(SVGElement* context_element,
   DCHECK(context_element);
 }
 
-SVGStaticStringList::~SVGStaticStringList() {}
+SVGStaticStringList::~SVGStaticStringList() = default;
 
 void SVGStaticStringList::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);

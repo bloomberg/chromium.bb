@@ -35,7 +35,7 @@ class IdTargetObserver;
 
 class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
  public:
-  virtual ~SVGURIReference() {}
+  virtual ~SVGURIReference() = default;
 
   bool IsKnownAttribute(const QualifiedName&);
 

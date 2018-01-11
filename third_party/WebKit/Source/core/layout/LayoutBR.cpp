@@ -35,7 +35,7 @@ static scoped_refptr<StringImpl> NewlineString() {
 
 LayoutBR::LayoutBR(Node* node) : LayoutText(node, NewlineString()) {}
 
-LayoutBR::~LayoutBR() {}
+LayoutBR::~LayoutBR() = default;
 
 int LayoutBR::LineHeight(bool first_line) const {
   const ComputedStyle& style = StyleRef(

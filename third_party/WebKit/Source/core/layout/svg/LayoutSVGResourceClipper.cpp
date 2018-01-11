@@ -105,7 +105,7 @@ Path PathFromElement(const SVGElement& element) {
 LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
     : LayoutSVGResourceContainer(node), in_clip_expansion_(false) {}
 
-LayoutSVGResourceClipper::~LayoutSVGResourceClipper() {}
+LayoutSVGResourceClipper::~LayoutSVGResourceClipper() = default;
 
 void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {

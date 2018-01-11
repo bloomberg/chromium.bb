@@ -69,10 +69,10 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range) {
 }
 
 template <typename Strategy>
-EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate() {}
+EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate() = default;
 
 template <typename Strategy>
-EphemeralRangeTemplate<Strategy>::~EphemeralRangeTemplate() {}
+EphemeralRangeTemplate<Strategy>::~EphemeralRangeTemplate() = default;
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(

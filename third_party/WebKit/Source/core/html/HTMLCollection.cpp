@@ -190,7 +190,7 @@ HTMLCollection* HTMLCollection::Create(ContainerNode& base,
   return new HTMLCollection(base, type, kDoesNotOverrideItemAfter);
 }
 
-HTMLCollection::~HTMLCollection() {}
+HTMLCollection::~HTMLCollection() = default;
 
 void HTMLCollection::InvalidateCache(Document* old_document) const {
   collection_items_cache_.Invalidate();
@@ -522,7 +522,7 @@ void HTMLCollection::NamedItems(const AtomicString& name,
     result.AppendVector(*name_results);
 }
 
-HTMLCollection::NamedItemCache::NamedItemCache() {}
+HTMLCollection::NamedItemCache::NamedItemCache() = default;
 
 void HTMLCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(named_item_cache_);

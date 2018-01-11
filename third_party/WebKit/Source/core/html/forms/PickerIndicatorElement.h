@@ -48,7 +48,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
   // it doesn't handle event, e.g. at destruction.
   class PickerIndicatorOwner : public GarbageCollectedMixin {
    public:
-    virtual ~PickerIndicatorOwner() {}
+    virtual ~PickerIndicatorOwner() = default;
     virtual bool IsPickerIndicatorOwnerDisabledOrReadOnly() const = 0;
     // FIXME: Remove. Deprecated in favor of double version.
     virtual void PickerIndicatorChooseValue(const String&) = 0;

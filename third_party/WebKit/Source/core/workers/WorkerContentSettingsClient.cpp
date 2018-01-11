@@ -43,7 +43,7 @@ WorkerContentSettingsClient* WorkerContentSettingsClient::Create(
   return new WorkerContentSettingsClient(std::move(client));
 }
 
-WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
+WorkerContentSettingsClient::~WorkerContentSettingsClient() = default;
 
 bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
   if (!client_)

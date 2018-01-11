@@ -31,7 +31,7 @@ CustomElementDefinition::CustomElementDefinition(
       has_style_attribute_changed_callback_(
           observed_attributes.Contains(HTMLNames::styleAttr.LocalName())) {}
 
-CustomElementDefinition::~CustomElementDefinition() {}
+CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
   visitor->Trace(construction_stack_);

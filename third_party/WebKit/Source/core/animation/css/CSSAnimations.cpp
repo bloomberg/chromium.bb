@@ -196,7 +196,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
 }  // namespace
 
-CSSAnimations::CSSAnimations() {}
+CSSAnimations::CSSAnimations() = default;
 
 bool CSSAnimations::IsAnimationForInspector(const Animation& animation) {
   for (const auto& running_animation : running_animations_) {

@@ -42,6 +42,6 @@ ClassCollection::ClassCollection(ContainerNode& root_node,
       class_names_(GetDocument().InQuirksMode() ? class_names.LowerASCII()
                                                 : class_names) {}
 
-ClassCollection::~ClassCollection() {}
+ClassCollection::~ClassCollection() = default;
 
 }  // namespace blink

@@ -25,7 +25,7 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   enum Status { kNewGesture, kPossiblyExistingGesture };
   enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
 
-  ~UserGestureToken() {}
+  ~UserGestureToken() = default;
 
   // TODO(mustaq): The only user of this method is PepperPluginInstanceImpl.  We
   // need to investigate the usecase closely.

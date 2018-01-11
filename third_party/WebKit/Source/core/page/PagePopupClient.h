@@ -77,7 +77,7 @@ class CORE_EXPORT PagePopupClient {
   // This is called whenever a PagePopup was closed.
   virtual void DidClosePopup() = 0;
 
-  virtual ~PagePopupClient() {}
+  virtual ~PagePopupClient() = default;
 
   // Helper functions to be used in PagePopupClient::writeDocument().
   static void AddString(const String&, SharedBuffer*);

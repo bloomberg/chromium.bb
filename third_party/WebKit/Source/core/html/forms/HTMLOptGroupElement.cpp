@@ -47,7 +47,7 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
 // HTMLOptGroupElement.h, when including HTMLOptGroupElement.h,
 // msvc tries to expand the destructor and causes
 // a compile error because of lack of ComputedStyle definition.
-HTMLOptGroupElement::~HTMLOptGroupElement() {}
+HTMLOptGroupElement::~HTMLOptGroupElement() = default;
 
 HTMLOptGroupElement* HTMLOptGroupElement::Create(Document& document) {
   HTMLOptGroupElement* opt_group_element = new HTMLOptGroupElement(document);

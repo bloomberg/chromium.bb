@@ -50,7 +50,7 @@ class RepeatEvent final : public Event {
     return new RepeatEvent(type, false, false, repeat);
   }
 
-  ~RepeatEvent() override {}
+  ~RepeatEvent() override = default;
 
   int Repeat() const { return repeat_; }
 
@@ -229,7 +229,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
   ResolveFirstInterval();
 }
 
-SVGSMILElement::~SVGSMILElement() {}
+SVGSMILElement::~SVGSMILElement() = default;
 
 void SVGSMILElement::ClearResourceAndEventBaseReferences() {
   SVGURIReference::UnobserveTarget(target_id_observer_);

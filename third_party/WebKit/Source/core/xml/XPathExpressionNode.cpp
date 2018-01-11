@@ -42,7 +42,7 @@ Expression::Expression()
       is_context_position_sensitive_(false),
       is_context_size_sensitive_(false) {}
 
-Expression::~Expression() {}
+Expression::~Expression() = default;
 
 void Expression::Trace(blink::Visitor* visitor) {
   visitor->Trace(sub_expressions_);

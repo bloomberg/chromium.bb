@@ -48,7 +48,7 @@ class CORE_EXPORT TimeRanges final : public ScriptWrappable {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
-    Range() {}
+    Range() = default;
     Range(double start, double end) {
       start_ = start;
       end_ = end;
@@ -106,7 +106,7 @@ class CORE_EXPORT TimeRanges final : public ScriptWrappable {
                  double current_playback_position) const;
 
  private:
-  TimeRanges() {}
+  TimeRanges() = default;
 
   TimeRanges(double start, double end);
 

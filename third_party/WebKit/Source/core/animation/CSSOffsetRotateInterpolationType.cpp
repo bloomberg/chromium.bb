@@ -14,7 +14,7 @@ namespace blink {
 
 class CSSOffsetRotationNonInterpolableValue : public NonInterpolableValue {
  public:
-  ~CSSOffsetRotationNonInterpolableValue() override {}
+  ~CSSOffsetRotationNonInterpolableValue() override = default;
 
   static scoped_refptr<CSSOffsetRotationNonInterpolableValue> Create(
       OffsetRotationType rotation_type) {

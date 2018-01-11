@@ -37,7 +37,8 @@ class CORE_EXPORT ResizeObserver final : public ScriptWrappable {
   static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
   static ResizeObserver* Create(Document&, Delegate*);
 
-  virtual ~ResizeObserver(){};
+  virtual ~ResizeObserver() = default;
+  ;
 
   // API methods
   void observe(Element*);

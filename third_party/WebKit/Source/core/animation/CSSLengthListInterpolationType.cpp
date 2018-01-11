@@ -65,7 +65,7 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertInitial(
 class InheritedLengthListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedLengthListChecker() final {}
+  ~InheritedLengthListChecker() final = default;
 
   static std::unique_ptr<InheritedLengthListChecker> Create(
       const CSSProperty& property,

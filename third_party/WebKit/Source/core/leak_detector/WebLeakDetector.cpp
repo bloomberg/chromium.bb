@@ -50,7 +50,7 @@ class WebLeakDetectorImpl final : public WebLeakDetector,
     DCHECK(client_);
   }
 
-  ~WebLeakDetectorImpl() override {}
+  ~WebLeakDetectorImpl() override = default;
 
   void PrepareForLeakDetection(WebFrame*) override;
   void CollectGarbageAndReport() override;

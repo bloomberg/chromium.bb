@@ -35,7 +35,7 @@ TextPainterBase::TextPainterBase(GraphicsContext& context,
       emphasis_mark_offset_(0),
       ellipsis_offset_(0) {}
 
-TextPainterBase::~TextPainterBase() {}
+TextPainterBase::~TextPainterBase() = default;
 
 void TextPainterBase::SetEmphasisMark(const AtomicString& emphasis_mark,
                                       TextEmphasisPosition position) {

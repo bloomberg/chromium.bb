@@ -48,7 +48,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   PerformanceMark(const String& name, double start_time)
       : PerformanceEntry(name, "mark", start_time, start_time) {}
 
-  ~PerformanceMark() override {}
+  ~PerformanceMark() override = default;
 };
 
 }  // namespace blink

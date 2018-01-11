@@ -69,7 +69,7 @@ inline SVGTextPathElement::SVGTextPathElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTextPathElement)
 
-SVGTextPathElement::~SVGTextPathElement() {}
+SVGTextPathElement::~SVGTextPathElement() = default;
 
 void SVGTextPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(start_offset_);

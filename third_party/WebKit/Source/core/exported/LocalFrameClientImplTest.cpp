@@ -51,7 +51,7 @@ namespace {
 class LocalFrameMockWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  ~LocalFrameMockWebFrameClient() override {}
+  ~LocalFrameMockWebFrameClient() override = default;
 
   MOCK_METHOD0(UserAgentOverride, WebString());
 };

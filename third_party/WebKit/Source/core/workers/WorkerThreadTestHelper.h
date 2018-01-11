@@ -65,7 +65,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
                           thread,
                           CurrentTimeTicksInSeconds()) {}
 
-  ~FakeWorkerGlobalScope() override {}
+  ~FakeWorkerGlobalScope() override = default;
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
@@ -83,7 +83,7 @@ class WorkerThreadForTest : public WorkerThread {
         worker_backing_thread_(
             WorkerBackingThread::CreateForTest("Test thread")) {}
 
-  ~WorkerThreadForTest() override {}
+  ~WorkerThreadForTest() override = default;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
     return *worker_backing_thread_;

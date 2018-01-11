@@ -192,7 +192,7 @@ class FileReaderLoaderMojo : public FileReaderLoader,
         handle_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
         binding_(this) {}
-  ~FileReaderLoaderMojo() override {}
+  ~FileReaderLoaderMojo() override = default;
 
   void Start(ExecutionContext*, scoped_refptr<BlobDataHandle>) override;
 

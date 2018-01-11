@@ -41,7 +41,7 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
   return new MojoInterfaceInterceptor(context, interface_name, process_scope);
 }
 
-MojoInterfaceInterceptor::~MojoInterfaceInterceptor() {}
+MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;
 
 void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   if (started_)

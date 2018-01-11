@@ -31,8 +31,8 @@
 
 namespace blink {
 
-ColorChooser::ColorChooser() {}
+ColorChooser::ColorChooser() = default;
 
-ColorChooser::~ColorChooser() {}
+ColorChooser::~ColorChooser() = default;
 
 }  // namespace blink

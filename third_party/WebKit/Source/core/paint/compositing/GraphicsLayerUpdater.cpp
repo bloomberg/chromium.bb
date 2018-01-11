@@ -87,7 +87,7 @@ class GraphicsLayerUpdater::UpdateContext {
 
 GraphicsLayerUpdater::GraphicsLayerUpdater() : needs_rebuild_tree_(false) {}
 
-GraphicsLayerUpdater::~GraphicsLayerUpdater() {}
+GraphicsLayerUpdater::~GraphicsLayerUpdater() = default;
 
 void GraphicsLayerUpdater::Update(
     PaintLayer& layer,

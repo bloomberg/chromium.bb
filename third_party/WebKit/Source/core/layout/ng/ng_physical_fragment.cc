@@ -178,7 +178,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.
-NGPhysicalFragment::~NGPhysicalFragment() {}
+NGPhysicalFragment::~NGPhysicalFragment() = default;
 
 void NGPhysicalFragment::Destroy() const {
   switch (Type()) {

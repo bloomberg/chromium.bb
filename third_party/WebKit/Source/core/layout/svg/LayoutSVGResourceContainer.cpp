@@ -40,7 +40,7 @@ LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
       registered_(false),
       is_invalidating_(false) {}
 
-LayoutSVGResourceContainer::~LayoutSVGResourceContainer() {}
+LayoutSVGResourceContainer::~LayoutSVGResourceContainer() = default;
 
 void LayoutSVGResourceContainer::UpdateLayout() {
   // FIXME: Investigate a way to detect and break resource layout dependency

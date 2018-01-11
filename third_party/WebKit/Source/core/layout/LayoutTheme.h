@@ -54,7 +54,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   explicit LayoutTheme(Theme*);
 
  public:
-  virtual ~LayoutTheme() {}
+  virtual ~LayoutTheme() = default;
 
   static LayoutTheme& GetTheme();
 

@@ -37,7 +37,7 @@ class SVGUnitTypes final : public ScriptWrappable {
   };
 
  private:
-  SVGUnitTypes();  // No instantiation.
+  SVGUnitTypes() = delete;  // No instantiation.
 };
 
 template <>

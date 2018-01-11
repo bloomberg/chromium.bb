@@ -65,7 +65,7 @@ class CORE_EXPORT ThreadableLoaderClient {
 
   virtual void DidDownloadData(int /*dataLength*/) {}
 
-  virtual ~ThreadableLoaderClient() {}
+  virtual ~ThreadableLoaderClient() = default;
 
  protected:
   ThreadableLoaderClient() = default;

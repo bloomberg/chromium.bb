@@ -292,7 +292,7 @@ void MouseEvent::InitCoordinatesFromRootFrame(double window_x,
   has_cached_relative_position_ = false;
 }
 
-MouseEvent::~MouseEvent() {}
+MouseEvent::~MouseEvent() = default;
 
 unsigned short MouseEvent::WebInputEventModifiersToButtons(unsigned modifiers) {
   unsigned short buttons = 0;

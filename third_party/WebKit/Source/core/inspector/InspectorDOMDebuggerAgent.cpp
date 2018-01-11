@@ -194,7 +194,7 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(
     v8_inspector::V8InspectorSession* v8_session)
     : isolate_(isolate), dom_agent_(dom_agent), v8_session_(v8_session) {}
 
-InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent() {}
+InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent() = default;
 
 void InspectorDOMDebuggerAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_agent_);

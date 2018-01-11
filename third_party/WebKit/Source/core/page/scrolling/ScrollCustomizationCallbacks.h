@@ -18,7 +18,7 @@ class ScrollStateCallback;
 class CORE_EXPORT ScrollCustomizationCallbacks
     : public GarbageCollected<ScrollCustomizationCallbacks> {
  public:
-  ScrollCustomizationCallbacks() {}
+  ScrollCustomizationCallbacks() = default;
   void SetDistributeScroll(Element*, ScrollStateCallback*);
   ScrollStateCallback* GetDistributeScroll(Element*);
   void SetApplyScroll(Element*, ScrollStateCallback*);

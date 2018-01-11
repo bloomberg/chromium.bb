@@ -40,7 +40,7 @@ LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
       has_non_isolated_blending_descendants_(false),
       has_non_isolated_blending_descendants_dirty_(false) {}
 
-LayoutSVGContainer::~LayoutSVGContainer() {}
+LayoutSVGContainer::~LayoutSVGContainer() = default;
 
 void LayoutSVGContainer::UpdateLayout() {
   DCHECK(NeedsLayout());

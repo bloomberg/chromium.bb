@@ -74,7 +74,7 @@ DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
   pending_event_timer_->PauseIfNeeded();
 }
 
-DOMWindowEventQueue::~DOMWindowEventQueue() {}
+DOMWindowEventQueue::~DOMWindowEventQueue() = default;
 
 void DOMWindowEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_event_timer_);

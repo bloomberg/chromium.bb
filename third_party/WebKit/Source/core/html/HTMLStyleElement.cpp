@@ -42,7 +42,7 @@ inline HTMLStyleElement::HTMLStyleElement(Document& document,
       fired_load_(false),
       loaded_sheet_(false) {}
 
-HTMLStyleElement::~HTMLStyleElement() {}
+HTMLStyleElement::~HTMLStyleElement() = default;
 
 HTMLStyleElement* HTMLStyleElement::Create(Document& document,
                                            bool created_by_parser) {

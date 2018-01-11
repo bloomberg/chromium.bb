@@ -86,7 +86,7 @@ SVGUseElement* SVGUseElement::Create(Document& document) {
   return use;
 }
 
-SVGUseElement::~SVGUseElement() {}
+SVGUseElement::~SVGUseElement() = default;
 
 void SVGUseElement::Dispose() {
   ClearResource();

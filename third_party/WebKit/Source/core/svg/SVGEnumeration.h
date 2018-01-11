@@ -115,7 +115,7 @@ class SVGEnumeration : public SVGEnumerationBase {
     return new SVGEnumeration<Enum>(new_value);
   }
 
-  ~SVGEnumeration() override {}
+  ~SVGEnumeration() override = default;
 
   SVGEnumerationBase* Clone() const override { return Create(EnumValue()); }
 

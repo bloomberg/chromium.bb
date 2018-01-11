@@ -43,7 +43,7 @@ using protocol::Response;
 InspectorMemoryAgent::InspectorMemoryAgent(InspectedFrames* inspected_frames)
     : detector_(nullptr), callback_(nullptr), frames_(inspected_frames) {}
 
-InspectorMemoryAgent::~InspectorMemoryAgent() {}
+InspectorMemoryAgent::~InspectorMemoryAgent() = default;
 
 Response InspectorMemoryAgent::getDOMCounters(int* documents,
                                               int* nodes,

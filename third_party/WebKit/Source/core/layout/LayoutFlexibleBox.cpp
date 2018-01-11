@@ -61,7 +61,7 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
     UseCounter::Count(GetDocument(), WebFeature::kCSSFlexibleBox);
 }
 
-LayoutFlexibleBox::~LayoutFlexibleBox() {}
+LayoutFlexibleBox::~LayoutFlexibleBox() = default;
 
 LayoutFlexibleBox* LayoutFlexibleBox::CreateAnonymous(Document* document) {
   LayoutFlexibleBox* layout_object = new LayoutFlexibleBox(nullptr);

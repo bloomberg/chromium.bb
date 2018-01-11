@@ -78,7 +78,7 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
       did_first_contentful_paint_(false),
       progress_value_(0) {}
 
-ProgressTracker::~ProgressTracker() {}
+ProgressTracker::~ProgressTracker() = default;
 
 void ProgressTracker::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);

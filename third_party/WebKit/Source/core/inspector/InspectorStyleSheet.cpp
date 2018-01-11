@@ -730,7 +730,7 @@ InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
   DCHECK(style_);
 }
 
-InspectorStyle::~InspectorStyle() {}
+InspectorStyle::~InspectorStyle() = default;
 
 std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::BuildObjectForStyle() {
   std::unique_ptr<protocol::CSS::CSSStyle> result = StyleWithProperties();
@@ -982,7 +982,7 @@ InspectorStyleSheet::InspectorStyleSheet(
     InnerSetText(text, false);
 }
 
-InspectorStyleSheet::~InspectorStyleSheet() {}
+InspectorStyleSheet::~InspectorStyleSheet() = default;
 
 void InspectorStyleSheet::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_container_);

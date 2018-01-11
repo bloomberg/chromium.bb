@@ -314,8 +314,8 @@ class MockDocumentValidationMessageClient
 
 class MockWebApplicationCacheHost : public blink::WebApplicationCacheHost {
  public:
-  MockWebApplicationCacheHost() {}
-  ~MockWebApplicationCacheHost() override {}
+  MockWebApplicationCacheHost() = default;
+  ~MockWebApplicationCacheHost() override = default;
 
   void SelectCacheWithoutManifest() override {
     without_manifest_was_called_ = true;

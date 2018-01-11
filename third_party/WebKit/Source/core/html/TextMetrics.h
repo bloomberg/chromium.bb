@@ -73,7 +73,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
               const TextBaseline&,
               const TextAlign&,
               const String&);
-  TextMetrics() {}
+  TextMetrics() = default;
 
   // x-direction
   double width_ = 0.0;

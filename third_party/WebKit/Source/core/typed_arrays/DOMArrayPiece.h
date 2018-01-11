@@ -35,7 +35,7 @@ class CORE_EXPORT DOMArrayPiece : public WTF::ArrayPiece {
     kAllowNullPointToNullWithZeroSize,
   };
 
-  DOMArrayPiece() {}
+  DOMArrayPiece() = default;
   DOMArrayPiece(DOMArrayBuffer* buffer) : ArrayPiece(buffer->Buffer()) {}
   DOMArrayPiece(DOMArrayBufferView* view) : ArrayPiece(view->View()) {}
   DOMArrayPiece(const ArrayBufferOrArrayBufferView&,

@@ -43,7 +43,7 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
       is_old_layout_root_(false),
       did_break_(false) {}
 
-NGFragmentBuilder::~NGFragmentBuilder() {}
+NGFragmentBuilder::~NGFragmentBuilder() = default;
 
 NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
     LayoutUnit intrinsic_block_size) {

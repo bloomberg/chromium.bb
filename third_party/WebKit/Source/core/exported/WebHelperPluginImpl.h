@@ -57,7 +57,7 @@ class WebHelperPluginImpl final : public WebHelperPlugin {
  private:
   friend class WebHelperPlugin;
 
-  WebHelperPluginImpl() {}
+  WebHelperPluginImpl() = default;
 
   bool Initialize(const String& plugin_type, WebLocalFrameImpl*);
   void ReallyDestroy();

@@ -53,7 +53,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
   }
 }
 
-PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
+PerformanceLongTaskTiming::~PerformanceLongTaskTiming() = default;
 
 TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
   return attribution_;

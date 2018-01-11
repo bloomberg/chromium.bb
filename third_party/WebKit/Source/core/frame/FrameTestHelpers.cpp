@@ -427,7 +427,7 @@ void TestWebFrameClient::DidStopLoading() {
   --loads_in_progress_;
 }
 
-TestWebRemoteFrameClient::TestWebRemoteFrameClient() {}
+TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;
 
 void TestWebRemoteFrameClient::Bind(
     WebRemoteFrame* frame,

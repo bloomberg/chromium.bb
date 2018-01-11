@@ -225,7 +225,7 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
 
 class PaintPropertyTreeGraphBuilder {
  public:
-  PaintPropertyTreeGraphBuilder() {}
+  PaintPropertyTreeGraphBuilder() = default;
 
   void GenerateTreeGraph(const LocalFrameView& frame_view,
                          StringBuilder& string_builder) {

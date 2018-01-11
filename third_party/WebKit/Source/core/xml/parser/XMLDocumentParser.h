@@ -109,7 +109,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
     USING_FAST_MALLOC(PendingCallback);
 
    public:
-    virtual ~PendingCallback() {}
+    virtual ~PendingCallback() = default;
     virtual void Call(XMLDocumentParser*) = 0;
   };
 

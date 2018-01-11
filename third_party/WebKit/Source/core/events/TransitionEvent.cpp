@@ -50,7 +50,7 @@ TransitionEvent::TransitionEvent(const AtomicString& type,
     pseudo_element_ = initializer.pseudoElement();
 }
 
-TransitionEvent::~TransitionEvent() {}
+TransitionEvent::~TransitionEvent() = default;
 
 const String& TransitionEvent::propertyName() const {
   return property_name_;

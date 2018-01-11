@@ -71,7 +71,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
                             &ExternalPopupMenu::DispatchEvent),
       web_external_popup_menu_(nullptr) {}
 
-ExternalPopupMenu::~ExternalPopupMenu() {}
+ExternalPopupMenu::~ExternalPopupMenu() = default;
 
 void ExternalPopupMenu::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_element_);

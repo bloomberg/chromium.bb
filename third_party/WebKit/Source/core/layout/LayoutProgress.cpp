@@ -40,7 +40,7 @@ LayoutProgress::LayoutProgress(HTMLProgressElement* element)
           this,
           &LayoutProgress::AnimationTimerFired) {}
 
-LayoutProgress::~LayoutProgress() {}
+LayoutProgress::~LayoutProgress() = default;
 
 void LayoutProgress::WillBeDestroyed() {
   if (animating_) {

@@ -28,7 +28,7 @@ class SecurityOrigin;
 // ImageResource and ImageResourceContent.
 class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
  public:
-  ~ImageResourceInfo() {}
+  ~ImageResourceInfo() = default;
   virtual const KURL& Url() const = 0;
   virtual bool IsSchedulingReload() const = 0;
   virtual bool HasDevicePixelRatioHeaderValue() const = 0;

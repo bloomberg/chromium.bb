@@ -110,7 +110,7 @@ class CORE_EXPORT NGLineInfo {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  NGLineInfo() {}
+  NGLineInfo() = default;
   explicit NGLineInfo(size_t capacity) : results_(capacity) {}
 
   // The style to use for the line.

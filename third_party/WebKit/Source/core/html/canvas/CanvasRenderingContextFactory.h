@@ -23,7 +23,7 @@ class CORE_EXPORT CanvasRenderingContextFactory {
 
  public:
   CanvasRenderingContextFactory() = default;
-  virtual ~CanvasRenderingContextFactory() {}
+  virtual ~CanvasRenderingContextFactory() = default;
 
   virtual CanvasRenderingContext* Create(
       CanvasRenderingContextHost*,

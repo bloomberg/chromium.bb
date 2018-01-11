@@ -46,7 +46,7 @@ LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
   View()->GetFrameView()->SetIsVisuallyNonEmpty();
 }
 
-LayoutEmbeddedObject::~LayoutEmbeddedObject() {}
+LayoutEmbeddedObject::~LayoutEmbeddedObject() = default;
 
 PaintLayerType LayoutEmbeddedObject::LayerTypeRequired() const {
   // This can't just use LayoutEmbeddedContent::layerTypeRequired, because

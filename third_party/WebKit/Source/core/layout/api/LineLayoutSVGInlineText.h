@@ -22,7 +22,7 @@ class LineLayoutSVGInlineText : public LineLayoutText {
 
   explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) {}
 
-  LineLayoutSVGInlineText() {}
+  LineLayoutSVGInlineText() = default;
 
   const Vector<SVGTextMetrics>& MetricsList() const {
     return ToSVGInlineText()->MetricsList();

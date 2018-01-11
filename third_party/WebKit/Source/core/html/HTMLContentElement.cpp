@@ -54,7 +54,7 @@ inline HTMLContentElement::HTMLContentElement(Document& document,
   UseCounter::Count(document, WebFeature::kHTMLContentElement);
 }
 
-HTMLContentElement::~HTMLContentElement() {}
+HTMLContentElement::~HTMLContentElement() = default;
 
 void HTMLContentElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(filter_);

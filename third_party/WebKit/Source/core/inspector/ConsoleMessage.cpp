@@ -67,7 +67,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
       timestamp_(WTF::CurrentTimeMS()),
       frame_(nullptr) {}
 
-ConsoleMessage::~ConsoleMessage() {}
+ConsoleMessage::~ConsoleMessage() = default;
 
 SourceLocation* ConsoleMessage::Location() const {
   return location_.get();

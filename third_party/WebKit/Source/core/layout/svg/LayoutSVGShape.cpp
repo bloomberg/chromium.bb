@@ -61,7 +61,7 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
       // updated the first time transforms are updated.
       transform_uses_reference_box_(false) {}
 
-LayoutSVGShape::~LayoutSVGShape() {}
+LayoutSVGShape::~LayoutSVGShape() = default;
 
 void LayoutSVGShape::CreatePath() {
   if (!path_)

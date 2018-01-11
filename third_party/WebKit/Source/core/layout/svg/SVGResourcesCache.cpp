@@ -28,9 +28,9 @@
 
 namespace blink {
 
-SVGResourcesCache::SVGResourcesCache() {}
+SVGResourcesCache::SVGResourcesCache() = default;
 
-SVGResourcesCache::~SVGResourcesCache() {}
+SVGResourcesCache::~SVGResourcesCache() = default;
 
 void SVGResourcesCache::AddResourcesFromLayoutObject(
     LayoutObject* object,

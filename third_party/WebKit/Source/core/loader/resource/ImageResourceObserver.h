@@ -45,7 +45,7 @@ class CORE_EXPORT ImageResourceObserver {
   // invalidation can not be deferred.
   enum class CanDeferInvalidation { kYes, kNo };
 
-  virtual ~ImageResourceObserver() {}
+  virtual ~ImageResourceObserver() = default;
 
   // Called whenever a frame of an image changes, either because we got more
   // data from the network or because we are animating. If not null, the IntRect

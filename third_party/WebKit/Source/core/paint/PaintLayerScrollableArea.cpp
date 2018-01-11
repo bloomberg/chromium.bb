@@ -105,7 +105,7 @@ static LayoutRect LocalToAbsolute(LayoutBox& offset, LayoutRect rect) {
           .BoundingBox());
 }
 
-PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() {}
+PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 const int kResizerControlExpandRatioForTouch = 2;
 

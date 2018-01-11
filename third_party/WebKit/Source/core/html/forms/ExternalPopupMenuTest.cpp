@@ -27,7 +27,7 @@ namespace blink {
 
 class ExternalPopupMenuDisplayNoneItemsTest : public PageTestBase {
  public:
-  ExternalPopupMenuDisplayNoneItemsTest() {}
+  ExternalPopupMenuDisplayNoneItemsTest() = default;
 
  protected:
   void SetUp() override {

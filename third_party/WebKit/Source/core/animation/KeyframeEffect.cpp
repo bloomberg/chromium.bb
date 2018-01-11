@@ -108,7 +108,7 @@ KeyframeEffect::KeyframeEffect(Element* target,
                                EventDelegate* event_delegate)
     : KeyframeEffectReadOnly(target, model, timing, priority, event_delegate) {}
 
-KeyframeEffect::~KeyframeEffect() {}
+KeyframeEffect::~KeyframeEffect() = default;
 
 void KeyframeEffect::setComposite(String composite_string) {
   EffectModel::CompositeOperation composite;

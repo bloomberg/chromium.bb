@@ -257,7 +257,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
   ResetInsertionModeAppropriately();
 }
 
-HTMLTreeBuilder::~HTMLTreeBuilder() {}
+HTMLTreeBuilder::~HTMLTreeBuilder() = default;
 
 void HTMLTreeBuilder::FragmentParsingContext::Init(DocumentFragment* fragment,
                                                    Element* context_element) {

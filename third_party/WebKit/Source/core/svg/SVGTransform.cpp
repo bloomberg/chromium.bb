@@ -48,7 +48,7 @@ SVGTransform::SVGTransform(SVGTransformType transform_type,
       center_(center),
       matrix_(matrix) {}
 
-SVGTransform::~SVGTransform() {}
+SVGTransform::~SVGTransform() = default;
 
 SVGTransform* SVGTransform::Clone() const {
   return new SVGTransform(transform_type_, angle_, center_, matrix_);

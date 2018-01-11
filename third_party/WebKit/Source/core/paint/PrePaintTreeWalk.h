@@ -21,7 +21,7 @@ struct PrePaintTreeWalkContext;
 // phase.
 class CORE_EXPORT PrePaintTreeWalk {
  public:
-  PrePaintTreeWalk() {}
+  PrePaintTreeWalk() = default;
   void Walk(LocalFrameView& root_frame);
 
  private:

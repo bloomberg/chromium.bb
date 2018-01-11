@@ -48,7 +48,7 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client,
       state_(kLoading),
       new_cues_available_(false) {}
 
-TextTrackLoader::~TextTrackLoader() {}
+TextTrackLoader::~TextTrackLoader() = default;
 
 void TextTrackLoader::CueLoadTimerFired(TimerBase* timer) {
   DCHECK_EQ(timer, &cue_load_timer_);

@@ -41,7 +41,7 @@ LayoutRubyRun::LayoutRubyRun() : LayoutBlockFlow(nullptr) {
   SetIsAtomicInlineLevel(true);
 }
 
-LayoutRubyRun::~LayoutRubyRun() {}
+LayoutRubyRun::~LayoutRubyRun() = default;
 
 bool LayoutRubyRun::HasRubyText() const {
   // The only place where a ruby text can be is in the first position

@@ -58,7 +58,7 @@ WebFrameWidgetBase::WebFrameWidgetBase()
     : fling_modifier_(0),
       fling_source_device_(kWebGestureDeviceUninitialized) {}
 
-WebFrameWidgetBase::~WebFrameWidgetBase() {}
+WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const WebDragData& web_drag_data,

@@ -19,7 +19,7 @@ class IntRect;
 // LocalFrameView, RemoteFrameView, and WebPluginContainerImpl.
 class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
  public:
-  virtual ~EmbeddedContentView() {}
+  virtual ~EmbeddedContentView() = default;
 
   virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPluginView() const { return false; }

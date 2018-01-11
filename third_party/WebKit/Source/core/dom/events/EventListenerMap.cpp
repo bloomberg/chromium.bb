@@ -55,7 +55,7 @@ void EventListenerMap::CheckNoActiveIterators() {
 }
 #endif
 
-EventListenerMap::EventListenerMap() {}
+EventListenerMap::EventListenerMap() = default;
 
 bool EventListenerMap::Contains(const AtomicString& event_type) const {
   for (const auto& entry : entries_) {

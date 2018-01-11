@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 HTMLImageLoader::HTMLImageLoader(Element* element) : ImageLoader(element) {}
 
-HTMLImageLoader::~HTMLImageLoader() {}
+HTMLImageLoader::~HTMLImageLoader() = default;
 
 void HTMLImageLoader::DispatchLoadEvent() {
   RESOURCE_LOADING_DVLOG(1) << "HTMLImageLoader::dispatchLoadEvent " << this;

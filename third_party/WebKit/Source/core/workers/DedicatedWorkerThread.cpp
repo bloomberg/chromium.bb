@@ -55,7 +55,7 @@ DedicatedWorkerThread::DedicatedWorkerThread(
           WorkerBackingThread::Create("DedicatedWorker Thread")),
       worker_object_proxy_(worker_object_proxy) {}
 
-DedicatedWorkerThread::~DedicatedWorkerThread() {}
+DedicatedWorkerThread::~DedicatedWorkerThread() = default;
 
 void DedicatedWorkerThread::ClearWorkerBackingThread() {
   worker_backing_thread_ = nullptr;

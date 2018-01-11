@@ -56,7 +56,7 @@
 
 namespace blink {
 
-WebNode::WebNode() {}
+WebNode::WebNode() = default;
 
 WebNode::WebNode(const WebNode& n) {
   Assign(n);

@@ -53,7 +53,7 @@ ExecutionContext::ExecutionContext()
       window_interaction_tokens_(0),
       referrer_policy_(kReferrerPolicyDefault) {}
 
-ExecutionContext::~ExecutionContext() {}
+ExecutionContext::~ExecutionContext() = default;
 
 // static
 ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {

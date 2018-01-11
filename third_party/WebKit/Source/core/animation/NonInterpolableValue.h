@@ -13,7 +13,7 @@ namespace blink {
 // not change or 50% flip when interpolating with an adjacent value.
 class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
  public:
-  virtual ~NonInterpolableValue() {}
+  virtual ~NonInterpolableValue() = default;
 
   typedef const void* Type;
   virtual Type GetType() const = 0;

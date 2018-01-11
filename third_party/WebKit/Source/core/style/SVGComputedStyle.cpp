@@ -73,7 +73,7 @@ SVGComputedStyle::SVGComputedStyle(const SVGComputedStyle& other)
   svg_noninherited_flags = other.svg_noninherited_flags;
 }
 
-SVGComputedStyle::~SVGComputedStyle() {}
+SVGComputedStyle::~SVGComputedStyle() = default;
 
 bool SVGComputedStyle::operator==(const SVGComputedStyle& other) const {
   return InheritedEqual(other) && NonInheritedEqual(other);

@@ -16,7 +16,7 @@ class CORE_EXPORT Report : public ScriptWrappable {
   Report(const String& type, const String& url, ReportBody* body)
       : type_(type), url_(url), body_(body) {}
 
-  virtual ~Report() {}
+  virtual ~Report() = default;
 
   String type() const { return type_; }
   String url() const { return url_; }

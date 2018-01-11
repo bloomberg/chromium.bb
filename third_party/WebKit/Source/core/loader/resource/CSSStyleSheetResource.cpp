@@ -71,7 +71,7 @@ CSSStyleSheetResource::CSSStyleSheetResource(
     : TextResource(resource_request, kCSSStyleSheet, options, decoder_options) {
 }
 
-CSSStyleSheetResource::~CSSStyleSheetResource() {}
+CSSStyleSheetResource::~CSSStyleSheetResource() = default;
 
 void CSSStyleSheetResource::SetParsedStyleSheetCache(
     StyleSheetContents* new_sheet) {

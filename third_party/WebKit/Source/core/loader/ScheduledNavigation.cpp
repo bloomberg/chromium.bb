@@ -26,7 +26,7 @@ ScheduledNavigation::ScheduledNavigation(Reason reason,
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
 }
 
-ScheduledNavigation::~ScheduledNavigation() {}
+ScheduledNavigation::~ScheduledNavigation() = default;
 
 std::unique_ptr<UserGestureIndicator>
 ScheduledNavigation::CreateUserGestureIndicator() {

@@ -56,7 +56,7 @@ class CORE_EXPORT DOMStringList final : public ScriptWrappable {
   operator const Vector<String>&() const { return strings_; }
 
  private:
-  explicit DOMStringList() {}
+  explicit DOMStringList() = default;
 
   Vector<String> strings_;
 };

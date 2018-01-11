@@ -21,7 +21,7 @@ class CORE_EXPORT InterpolableValue {
   USING_FAST_MALLOC(InterpolableValue);
 
  public:
-  virtual ~InterpolableValue() {}
+  virtual ~InterpolableValue() = default;
 
   virtual bool IsNumber() const { return false; }
   virtual bool IsBool() const { return false; }

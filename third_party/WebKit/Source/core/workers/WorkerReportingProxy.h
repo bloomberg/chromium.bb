@@ -50,7 +50,7 @@ class WorkerOrWorkletGlobalScope;
 // script only].
 class CORE_EXPORT WorkerReportingProxy {
  public:
-  virtual ~WorkerReportingProxy() {}
+  virtual ~WorkerReportingProxy() = default;
 
   virtual void CountFeature(WebFeature) {}
   virtual void CountDeprecation(WebFeature) {}

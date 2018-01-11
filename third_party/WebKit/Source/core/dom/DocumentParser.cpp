@@ -40,7 +40,7 @@ DocumentParser::DocumentParser(Document* document)
   DCHECK(document);
 }
 
-DocumentParser::~DocumentParser() {}
+DocumentParser::~DocumentParser() = default;
 
 void DocumentParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);

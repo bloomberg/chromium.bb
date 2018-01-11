@@ -72,7 +72,7 @@ class ParseHTML;
 class CORE_EXPORT InspectorTraceEvents
     : public GarbageCollected<InspectorTraceEvents> {
  public:
-  InspectorTraceEvents() {}
+  InspectorTraceEvents() = default;
 
   void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
@@ -406,7 +406,7 @@ struct V8CacheResult {
     int cache_size;
     bool rejected;
   };
-  V8CacheResult() {}
+  V8CacheResult() = default;
   V8CacheResult(Optional<ProduceResult>, Optional<ConsumeResult>);
 
   Optional<ProduceResult> produce_result;

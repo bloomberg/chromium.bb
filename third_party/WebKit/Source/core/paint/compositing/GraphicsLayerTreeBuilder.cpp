@@ -35,9 +35,9 @@
 
 namespace blink {
 
-GraphicsLayerTreeBuilder::GraphicsLayerTreeBuilder() {}
+GraphicsLayerTreeBuilder::GraphicsLayerTreeBuilder() = default;
 
-GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder() {}
+GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder() = default;
 
 static bool ShouldAppendLayer(const PaintLayer& layer) {
   Node* node = layer.GetLayoutObject().GetNode();

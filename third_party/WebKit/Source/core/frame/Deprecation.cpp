@@ -616,7 +616,7 @@ Deprecation::Deprecation() : mute_count_(0) {
   css_property_deprecation_bits_.EnsureSize(numCSSPropertyIDs);
 }
 
-Deprecation::~Deprecation() {}
+Deprecation::~Deprecation() = default;
 
 void Deprecation::ClearSuppression() {
   css_property_deprecation_bits_.ClearAll();

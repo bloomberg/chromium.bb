@@ -49,7 +49,7 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
       loaded_sheet_(false),
       fetch_following_cors_(false) {}
 
-LinkStyle::~LinkStyle() {}
+LinkStyle::~LinkStyle() = default;
 
 enum StyleSheetCacheStatus {
   kStyleSheetNewEntry,

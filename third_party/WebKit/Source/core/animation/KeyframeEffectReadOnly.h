@@ -48,7 +48,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
       const DictionarySequenceOrDictionary& effect_input,
       ExceptionState&);
 
-  ~KeyframeEffectReadOnly() override {}
+  ~KeyframeEffectReadOnly() override = default;
 
   bool IsKeyframeEffectReadOnly() const override { return true; }
 

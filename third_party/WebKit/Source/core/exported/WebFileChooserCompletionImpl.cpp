@@ -39,7 +39,7 @@ WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(
     scoped_refptr<FileChooser> chooser)
     : file_chooser_(std::move(chooser)) {}
 
-WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl() {}
+WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl() = default;
 
 void WebFileChooserCompletionImpl::DidChooseFile(
     const WebVector<WebString>& file_names) {

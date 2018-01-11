@@ -18,7 +18,7 @@ class CORE_EXPORT InterventionReport : public MessageReport {
                      std::unique_ptr<SourceLocation> location)
       : MessageReport(message, std::move(location)) {}
 
-  ~InterventionReport() override {}
+  ~InterventionReport() override = default;
 };
 
 }  // namespace blink

@@ -39,7 +39,7 @@ namespace blink {
 
 class AnimatableUnknown final : public AnimatableValue {
  public:
-  ~AnimatableUnknown() override {}
+  ~AnimatableUnknown() override = default;
 
   static scoped_refptr<AnimatableUnknown> Create(const CSSValue* value) {
     return base::AdoptRef(new AnimatableUnknown(value));

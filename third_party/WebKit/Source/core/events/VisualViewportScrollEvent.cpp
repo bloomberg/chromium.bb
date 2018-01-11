@@ -8,7 +8,7 @@
 
 namespace blink {
 
-VisualViewportScrollEvent::~VisualViewportScrollEvent() {}
+VisualViewportScrollEvent::~VisualViewportScrollEvent() = default;
 
 VisualViewportScrollEvent::VisualViewportScrollEvent()
     : Event(EventTypeNames::scroll,

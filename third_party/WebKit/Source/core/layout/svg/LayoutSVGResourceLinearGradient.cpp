@@ -29,7 +29,7 @@ LayoutSVGResourceLinearGradient::LayoutSVGResourceLinearGradient(
     : LayoutSVGResourceGradient(node),
       attributes_wrapper_(LinearGradientAttributesWrapper::Create()) {}
 
-LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient() {}
+LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient() = default;
 
 bool LayoutSVGResourceLinearGradient::CollectGradientAttributes() {
   DCHECK(GetElement());

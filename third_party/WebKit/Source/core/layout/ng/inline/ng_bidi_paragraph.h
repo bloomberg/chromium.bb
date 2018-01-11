@@ -27,7 +27,7 @@ class NGBidiParagraph {
   STACK_ALLOCATED();
 
  public:
-  NGBidiParagraph() {}
+  NGBidiParagraph() = default;
   ~NGBidiParagraph();
 
   // Splits the given paragraph to bidi runs and resolves the bidi embedding

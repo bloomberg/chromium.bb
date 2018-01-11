@@ -16,7 +16,7 @@ VideoTrack::VideoTrack(const String& id,
     : TrackBase(WebMediaPlayer::kVideoTrack, kind, label, language, id),
       selected_(selected) {}
 
-VideoTrack::~VideoTrack() {}
+VideoTrack::~VideoTrack() = default;
 
 void VideoTrack::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);

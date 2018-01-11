@@ -79,7 +79,7 @@ HTMLFormElement* HTMLFormElement::Create(Document& document) {
   return new HTMLFormElement(document);
 }
 
-HTMLFormElement::~HTMLFormElement() {}
+HTMLFormElement::~HTMLFormElement() = default;
 
 void HTMLFormElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(past_names_map_);

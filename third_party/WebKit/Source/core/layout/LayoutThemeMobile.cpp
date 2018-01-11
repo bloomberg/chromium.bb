@@ -38,7 +38,7 @@ scoped_refptr<LayoutTheme> LayoutThemeMobile::Create() {
   return base::AdoptRef(new LayoutThemeMobile());
 }
 
-LayoutThemeMobile::~LayoutThemeMobile() {}
+LayoutThemeMobile::~LayoutThemeMobile() = default;
 
 String LayoutThemeMobile::ExtraDefaultStyleSheet() {
   return LayoutThemeDefault::ExtraDefaultStyleSheet() +

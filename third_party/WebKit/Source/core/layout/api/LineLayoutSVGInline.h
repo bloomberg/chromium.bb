@@ -22,7 +22,7 @@ class LineLayoutSVGInline : public LineLayoutInline {
 
   explicit LineLayoutSVGInline(std::nullptr_t) : LineLayoutInline(nullptr) {}
 
-  LineLayoutSVGInline() {}
+  LineLayoutSVGInline() = default;
 
  private:
   LayoutSVGInline* ToSVGInline() {

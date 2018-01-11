@@ -790,8 +790,7 @@ XMLParserContext::~XMLParserContext() {
   xmlFreeParserCtxt(context_);
 }
 
-XMLDocumentParser::~XMLDocumentParser() {
-}
+XMLDocumentParser::~XMLDocumentParser() = default;
 
 void XMLDocumentParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_node_);

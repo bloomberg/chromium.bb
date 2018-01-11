@@ -40,7 +40,7 @@ SecurityContext::SecurityContext()
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false) {}
 
-SecurityContext::~SecurityContext() {}
+SecurityContext::~SecurityContext() = default;
 
 void SecurityContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_security_policy_);

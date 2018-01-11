@@ -61,7 +61,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   USING_PRE_FINALIZER(CanvasRenderingContext, Dispose);
 
  public:
-  virtual ~CanvasRenderingContext() {}
+  virtual ~CanvasRenderingContext() = default;
 
   // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D
   // canvas and the existing context is already 2D, just return that. If the

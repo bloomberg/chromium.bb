@@ -23,7 +23,7 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(
     timeline_time_ = initializer.timelineTime();
 }
 
-AnimationPlaybackEvent::~AnimationPlaybackEvent() {}
+AnimationPlaybackEvent::~AnimationPlaybackEvent() = default;
 
 double AnimationPlaybackEvent::currentTime(bool& is_null) const {
   double result = currentTime();

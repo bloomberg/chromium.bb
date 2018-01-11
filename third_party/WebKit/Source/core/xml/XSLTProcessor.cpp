@@ -56,7 +56,7 @@ static inline void TransformTextStringToXHTMLDocumentString(String& text) {
       "</html>\n";
 }
 
-XSLTProcessor::~XSLTProcessor() {}
+XSLTProcessor::~XSLTProcessor() = default;
 
 Document* XSLTProcessor::CreateDocumentFromSource(
     const String& source_string,

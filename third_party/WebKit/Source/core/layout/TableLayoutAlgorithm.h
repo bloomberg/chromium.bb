@@ -35,7 +35,7 @@ class TableLayoutAlgorithm {
  public:
   explicit TableLayoutAlgorithm(LayoutTable* table) : table_(table) {}
 
-  virtual ~TableLayoutAlgorithm() {}
+  virtual ~TableLayoutAlgorithm() = default;
 
   virtual void ComputeIntrinsicLogicalWidths(LayoutUnit& min_width,
                                              LayoutUnit& max_width) = 0;

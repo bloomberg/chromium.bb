@@ -128,7 +128,7 @@ PaintLayerRareData::PaintLayerRareData()
       squashing_disallowed_reasons(SquashingDisallowedReason::kNone),
       grouped_mapping(nullptr) {}
 
-PaintLayerRareData::~PaintLayerRareData() {}
+PaintLayerRareData::~PaintLayerRareData() = default;
 
 PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
     : has_self_painting_layer_descendant_(false),

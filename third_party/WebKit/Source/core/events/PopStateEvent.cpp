@@ -52,7 +52,7 @@ PopStateEvent::PopStateEvent(
       state_(this),
       history_(history) {}
 
-PopStateEvent::~PopStateEvent() {}
+PopStateEvent::~PopStateEvent() = default;
 
 ScriptValue PopStateEvent::state(ScriptState* script_state) const {
   if (state_.IsEmpty())

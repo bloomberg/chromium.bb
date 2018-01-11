@@ -71,7 +71,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
   AddToPropertyMap(primitive_units_);
 }
 
-SVGFilterElement::~SVGFilterElement() {}
+SVGFilterElement::~SVGFilterElement() = default;
 
 DEFINE_NODE_FACTORY(SVGFilterElement)
 

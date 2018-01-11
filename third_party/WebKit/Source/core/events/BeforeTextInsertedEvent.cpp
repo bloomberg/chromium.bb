@@ -31,7 +31,7 @@ BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
     : Event(EventTypeNames::webkitBeforeTextInserted, false, true),
       text_(text) {}
 
-BeforeTextInsertedEvent::~BeforeTextInsertedEvent() {}
+BeforeTextInsertedEvent::~BeforeTextInsertedEvent() = default;
 
 const AtomicString& BeforeTextInsertedEvent::InterfaceName() const {
   // Notice that there is no BeforeTextInsertedEvent.idl.

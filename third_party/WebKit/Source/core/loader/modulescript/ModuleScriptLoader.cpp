@@ -35,7 +35,7 @@ ModuleScriptLoader::ModuleScriptLoader(Modulator* modulator,
   DCHECK(client);
 }
 
-ModuleScriptLoader::~ModuleScriptLoader() {}
+ModuleScriptLoader::~ModuleScriptLoader() = default;
 
 #if DCHECK_IS_ON()
 const char* ModuleScriptLoader::StateToString(ModuleScriptLoader::State state) {

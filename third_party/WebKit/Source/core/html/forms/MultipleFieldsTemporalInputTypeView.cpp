@@ -318,7 +318,8 @@ MultipleFieldsTemporalInputTypeView::Create(HTMLInputElement& element,
   return new MultipleFieldsTemporalInputTypeView(element, input_type);
 }
 
-MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() {}
+MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =
+    default;
 
 void MultipleFieldsTemporalInputTypeView::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_type_);

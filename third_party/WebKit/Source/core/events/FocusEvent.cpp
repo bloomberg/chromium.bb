@@ -38,7 +38,7 @@ bool FocusEvent::IsFocusEvent() const {
   return true;
 }
 
-FocusEvent::FocusEvent() {}
+FocusEvent::FocusEvent() = default;
 
 FocusEvent::FocusEvent(const AtomicString& type,
                        bool can_bubble,

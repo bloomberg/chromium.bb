@@ -50,7 +50,7 @@ struct LayoutSVGShapeRareData {
   USING_FAST_MALLOC(LayoutSVGShapeRareData);
 
  public:
-  LayoutSVGShapeRareData() {}
+  LayoutSVGShapeRareData() = default;
   Path cached_non_scaling_stroke_path_;
   AffineTransform cached_non_scaling_stroke_transform_;
   DISALLOW_COPY_AND_ASSIGN(LayoutSVGShapeRareData);

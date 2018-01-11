@@ -25,7 +25,7 @@ class LineLayoutBoxModel : public LineLayoutItem {
 
   explicit LineLayoutBoxModel(std::nullptr_t) : LineLayoutItem(nullptr) {}
 
-  LineLayoutBoxModel() {}
+  LineLayoutBoxModel() = default;
 
   // TODO(dgrogan) Remove. Implement API methods that proxy to the PaintLayer.
   PaintLayer* Layer() const { return ToBoxModel()->Layer(); }

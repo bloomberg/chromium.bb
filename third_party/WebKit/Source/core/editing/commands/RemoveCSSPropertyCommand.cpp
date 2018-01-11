@@ -43,7 +43,7 @@ RemoveCSSPropertyCommand::RemoveCSSPropertyCommand(Document& document,
   DCHECK(element_);
 }
 
-RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand() {}
+RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand() = default;
 
 void RemoveCSSPropertyCommand::DoApply(EditingState*) {
   const CSSPropertyValueSet* style = element_->InlineStyle();

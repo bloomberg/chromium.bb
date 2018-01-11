@@ -49,7 +49,7 @@ LayoutTextControlSingleLine::LayoutTextControlSingleLine(
     HTMLInputElement* element)
     : LayoutTextControl(element), should_draw_caps_lock_indicator_(false) {}
 
-LayoutTextControlSingleLine::~LayoutTextControlSingleLine() {}
+LayoutTextControlSingleLine::~LayoutTextControlSingleLine() = default;
 
 inline Element* LayoutTextControlSingleLine::ContainerElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(

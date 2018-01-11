@@ -56,7 +56,7 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document,
                         kShouldNotPreferPlugInsForImages),
       use_fallback_content_(false) {}
 
-inline HTMLObjectElement::~HTMLObjectElement() {}
+inline HTMLObjectElement::~HTMLObjectElement() = default;
 
 HTMLObjectElement* HTMLObjectElement::Create(Document& document,
                                              bool created_by_parser) {

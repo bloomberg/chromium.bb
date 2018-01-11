@@ -9,7 +9,7 @@
 
 namespace blink {
 
-OpenedFrameTracker::OpenedFrameTracker() {}
+OpenedFrameTracker::OpenedFrameTracker() = default;
 
 OpenedFrameTracker::~OpenedFrameTracker() {
   DCHECK(IsEmpty());

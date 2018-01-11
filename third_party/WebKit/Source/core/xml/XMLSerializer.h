@@ -37,7 +37,7 @@ class XMLSerializer final : public ScriptWrappable {
   String serializeToString(Node*);
 
  private:
-  XMLSerializer() {}
+  XMLSerializer() = default;
 };
 
 }  // namespace blink

@@ -45,7 +45,7 @@ class V0CustomElementAsyncImportMicrotaskQueue
   void Enqueue(V0CustomElementMicrotaskStep*);
 
  private:
-  V0CustomElementAsyncImportMicrotaskQueue() {}
+  V0CustomElementAsyncImportMicrotaskQueue() = default;
   void DoDispatch() override;
 };
 

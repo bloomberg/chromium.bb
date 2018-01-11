@@ -64,7 +64,7 @@ inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
 
-SVGAnimateMotionElement::~SVGAnimateMotionElement() {}
+SVGAnimateMotionElement::~SVGAnimateMotionElement() = default;
 
 bool SVGAnimateMotionElement::HasValidTarget() {
   return SVGAnimationElement::HasValidTarget() &&

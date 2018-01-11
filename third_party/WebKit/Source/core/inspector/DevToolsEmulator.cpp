@@ -101,7 +101,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
           web_view->GetPage()->GetSettings().GetScriptEnabled()),
       script_execution_disabled_(false) {}
 
-DevToolsEmulator::~DevToolsEmulator() {}
+DevToolsEmulator::~DevToolsEmulator() = default;
 
 DevToolsEmulator* DevToolsEmulator::Create(WebViewImpl* web_view_base) {
   return new DevToolsEmulator(web_view_base);

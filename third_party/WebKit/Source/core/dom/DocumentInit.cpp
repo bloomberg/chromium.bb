@@ -68,7 +68,7 @@ DocumentInit::DocumentInit(HTMLImportsController* imports_controller)
 
 DocumentInit::DocumentInit(const DocumentInit&) = default;
 
-DocumentInit::~DocumentInit() {}
+DocumentInit::~DocumentInit() = default;
 
 bool DocumentInit::ShouldSetURL() const {
   LocalFrame* frame = FrameForSecurityContext();

@@ -13,9 +13,9 @@
 
 namespace blink {
 
-WorkerInternals::~WorkerInternals() {}
+WorkerInternals::~WorkerInternals() = default;
 
-WorkerInternals::WorkerInternals() {}
+WorkerInternals::WorkerInternals() = default;
 
 OriginTrialsTest* WorkerInternals::originTrialsTest() const {
   return OriginTrialsTest::Create();

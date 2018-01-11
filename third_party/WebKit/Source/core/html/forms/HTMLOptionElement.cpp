@@ -54,7 +54,7 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 // HTMLOptionElement.h, when including HTMLOptionElement.h,
 // msvc tries to expand the destructor and causes
 // a compile error because of lack of ComputedStyle definition.
-HTMLOptionElement::~HTMLOptionElement() {}
+HTMLOptionElement::~HTMLOptionElement() = default;
 
 HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
   HTMLOptionElement* option = new HTMLOptionElement(document);

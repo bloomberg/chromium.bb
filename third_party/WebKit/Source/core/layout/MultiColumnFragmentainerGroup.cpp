@@ -634,7 +634,8 @@ MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(
 // MultiColumnFragmentainerGroup::operator=.  Since
 // MultiColumnFragmentainerGroup is non-copyable, we cannot define the
 // operator=.
-MultiColumnFragmentainerGroupList::~MultiColumnFragmentainerGroupList() {}
+MultiColumnFragmentainerGroupList::~MultiColumnFragmentainerGroupList() =
+    default;
 
 MultiColumnFragmentainerGroup&
 MultiColumnFragmentainerGroupList::AddExtraGroup() {

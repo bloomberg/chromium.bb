@@ -20,7 +20,7 @@ class Frame;
 // be kept (e.g., Frame::m_owner.)
 class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
  public:
-  virtual ~FrameOwner() {}
+  virtual ~FrameOwner() = default;
   virtual void Trace(blink::Visitor* visitor) {}
 
   virtual bool IsLocal() const = 0;

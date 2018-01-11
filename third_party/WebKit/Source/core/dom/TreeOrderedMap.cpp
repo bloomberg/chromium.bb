@@ -46,7 +46,7 @@ TreeOrderedMap* TreeOrderedMap::Create() {
   return new TreeOrderedMap;
 }
 
-TreeOrderedMap::TreeOrderedMap() {}
+TreeOrderedMap::TreeOrderedMap() = default;
 
 #if DCHECK_IS_ON()
 static int g_remove_scope_level = 0;

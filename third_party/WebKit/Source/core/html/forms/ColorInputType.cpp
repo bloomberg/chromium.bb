@@ -79,7 +79,7 @@ InputType* ColorInputType::Create(HTMLInputElement& element) {
   return new ColorInputType(element);
 }
 
-ColorInputType::~ColorInputType() {}
+ColorInputType::~ColorInputType() = default;
 
 void ColorInputType::Trace(blink::Visitor* visitor) {
   visitor->Trace(chooser_);

@@ -104,7 +104,7 @@ class WebTextCheckClient;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
-  ~LocalFrameClient() override {}
+  ~LocalFrameClient() override = default;
 
   virtual WebFrame* GetWebFrame() const { return nullptr; }
 

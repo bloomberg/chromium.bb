@@ -296,7 +296,7 @@ LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
   }
 }
 
-LayoutDeprecatedFlexibleBox::~LayoutDeprecatedFlexibleBox() {}
+LayoutDeprecatedFlexibleBox::~LayoutDeprecatedFlexibleBox() = default;
 
 static LayoutUnit MarginWidthForChild(LayoutBox* child) {
   // A margin basically has three types: fixed, percentage, and auto (variable).

@@ -386,7 +386,7 @@ class CORE_EXPORT CSSSelector {
   const CSSSelector* SerializeCompound(StringBuilder&) const;
 
   // Hide.
-  CSSSelector& operator=(const CSSSelector&);
+  CSSSelector& operator=(const CSSSelector&) = delete;
 
   struct RareData : public RefCounted<RareData> {
     static scoped_refptr<RareData> Create(const AtomicString& value) {

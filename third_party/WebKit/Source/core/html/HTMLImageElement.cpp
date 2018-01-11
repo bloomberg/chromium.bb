@@ -111,7 +111,7 @@ HTMLImageElement* HTMLImageElement::Create(Document& document,
   return new HTMLImageElement(document, created_by_parser);
 }
 
-HTMLImageElement::~HTMLImageElement() {}
+HTMLImageElement::~HTMLImageElement() = default;
 
 void HTMLImageElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_loader_);

@@ -37,7 +37,7 @@ TextDocumentParser::TextDocumentParser(HTMLDocument& document,
     : HTMLDocumentParser(document, sync_policy),
       have_inserted_fake_pre_element_(false) {}
 
-TextDocumentParser::~TextDocumentParser() {}
+TextDocumentParser::~TextDocumentParser() = default;
 
 void TextDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!have_inserted_fake_pre_element_)

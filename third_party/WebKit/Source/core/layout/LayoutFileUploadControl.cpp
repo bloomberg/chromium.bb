@@ -43,7 +43,7 @@ LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
     : LayoutBlockFlow(input),
       can_receive_dropped_files_(input->CanReceiveDroppedFiles()) {}
 
-LayoutFileUploadControl::~LayoutFileUploadControl() {}
+LayoutFileUploadControl::~LayoutFileUploadControl() = default;
 
 void LayoutFileUploadControl::UpdateFromElement() {
   HTMLInputElement* input = ToHTMLInputElement(GetNode());

@@ -8,8 +8,8 @@
 
 namespace blink {
 
-TableGridCell::TableGridCell() {}
+TableGridCell::TableGridCell() = default;
 
-TableGridCell::~TableGridCell() {}
+TableGridCell::~TableGridCell() = default;
 
 }  // namespace blink

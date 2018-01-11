@@ -126,7 +126,7 @@ MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolve_urls_method,
     : resolve_urls_method_(resolve_urls_method),
       serialization_type_(serialization_type) {}
 
-MarkupFormatter::~MarkupFormatter() {}
+MarkupFormatter::~MarkupFormatter() = default;
 
 String MarkupFormatter::ResolveURLIfNeeded(const Element& element,
                                            const String& url_string) const {

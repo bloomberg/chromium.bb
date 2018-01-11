@@ -37,7 +37,7 @@ class MockPageContextCanvas : public SkCanvas {
   };
 
   MockPageContextCanvas() : SkCanvas(kPageWidth, kPageHeight) {}
-  ~MockPageContextCanvas() override {}
+  ~MockPageContextCanvas() override = default;
 
   void onDrawAnnotation(const SkRect& rect,
                         const char key[],
@@ -66,7 +66,7 @@ class PrintContextTest : public RenderingTest {
  protected:
   explicit PrintContextTest(LocalFrameClient* local_frame_client = nullptr)
       : RenderingTest(local_frame_client) {}
-  ~PrintContextTest() override {}
+  ~PrintContextTest() override = default;
 
   void SetUp() override {
     RenderingTest::SetUp();

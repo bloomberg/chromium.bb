@@ -28,7 +28,7 @@ enum ShadowComponentIndex : unsigned {
 
 class ShadowNonInterpolableValue : public NonInterpolableValue {
  public:
-  ~ShadowNonInterpolableValue() final {}
+  ~ShadowNonInterpolableValue() final = default;
 
   static scoped_refptr<ShadowNonInterpolableValue> Create(
       ShadowStyle shadow_style) {

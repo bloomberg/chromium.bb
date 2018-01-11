@@ -101,7 +101,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   // A TaskForwarder forwards a task to the worker thread.
   class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
    public:
-    virtual ~TaskForwarder() {}
+    virtual ~TaskForwarder() = default;
     virtual void ForwardTask(const base::Location&, CrossThreadClosure) = 0;
     virtual void ForwardTaskWithDoneSignal(const base::Location&,
                                            CrossThreadClosure) = 0;

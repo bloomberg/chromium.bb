@@ -29,7 +29,7 @@ namespace blink {
 // [1] http://www.w3.org/TR/css3-break/#fragmentation-model
 class CORE_EXPORT FragmentationContext {
  public:
-  virtual ~FragmentationContext() {}
+  virtual ~FragmentationContext() = default;
 
   // The height of the fragmentainers may depend on the total height of the
   // contents (column balancing), in which case false is returned if we haven't

@@ -27,7 +27,7 @@
 
 namespace blink {
 
-FileList::FileList() {}
+FileList::FileList() = default;
 
 File* FileList::item(unsigned index) const {
   if (index >= files_.size())

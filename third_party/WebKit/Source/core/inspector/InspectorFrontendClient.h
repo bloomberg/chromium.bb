@@ -41,7 +41,7 @@ class LocalFrame;
 
 class InspectorFrontendClient : public GarbageCollectedMixin {
  public:
-  virtual ~InspectorFrontendClient() {}
+  virtual ~InspectorFrontendClient() = default;
 
   virtual void SendMessageToEmbedder(const String&) = 0;
 

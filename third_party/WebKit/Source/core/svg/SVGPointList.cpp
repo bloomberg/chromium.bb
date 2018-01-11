@@ -28,9 +28,9 @@
 
 namespace blink {
 
-SVGPointList::SVGPointList() {}
+SVGPointList::SVGPointList() = default;
 
-SVGPointList::~SVGPointList() {}
+SVGPointList::~SVGPointList() = default;
 
 String SVGPointList::ValueAsString() const {
   StringBuilder builder;

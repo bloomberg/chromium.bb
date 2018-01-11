@@ -28,7 +28,7 @@ class NullImageResourceInfo final
   USING_GARBAGE_COLLECTED_MIXIN(NullImageResourceInfo);
 
  public:
-  NullImageResourceInfo() {}
+  NullImageResourceInfo() = default;
 
   void Trace(blink::Visitor* visitor) override {
     ImageResourceInfo::Trace(visitor);

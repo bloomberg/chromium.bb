@@ -69,7 +69,7 @@ namespace blink {
 
 ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
 
-ContextMenuController::~ContextMenuController() {}
+ContextMenuController::~ContextMenuController() = default;
 
 ContextMenuController* ContextMenuController::Create(Page* page) {
   return new ContextMenuController(page);

@@ -37,7 +37,7 @@ LayoutSlider::LayoutSlider(HTMLInputElement* element)
   DCHECK_EQ(element->type(), InputTypeNames::range);
 }
 
-LayoutSlider::~LayoutSlider() {}
+LayoutSlider::~LayoutSlider() = default;
 
 LayoutUnit LayoutSlider::BaselinePosition(
     FontBaseline,

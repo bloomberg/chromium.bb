@@ -24,7 +24,7 @@ class LineLayoutRubyRun : public LineLayoutBlockFlow {
 
   explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
 
-  LineLayoutRubyRun() {}
+  LineLayoutRubyRun() = default;
 
   void GetOverhang(bool first_line,
                    LineLayoutItem start_layout_item,

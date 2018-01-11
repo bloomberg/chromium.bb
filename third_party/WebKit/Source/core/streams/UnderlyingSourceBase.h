@@ -29,7 +29,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
  public:
   void Trace(blink::Visitor*) override;
-  virtual ~UnderlyingSourceBase() {}
+  virtual ~UnderlyingSourceBase() = default;
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);
   virtual ScriptPromise Start(ScriptState*);

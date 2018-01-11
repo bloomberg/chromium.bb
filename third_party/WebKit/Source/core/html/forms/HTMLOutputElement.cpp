@@ -41,7 +41,7 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document)
       default_value_(""),
       tokens_(DOMTokenList::Create(*this, HTMLNames::forAttr)) {}
 
-HTMLOutputElement::~HTMLOutputElement() {}
+HTMLOutputElement::~HTMLOutputElement() = default;
 
 HTMLOutputElement* HTMLOutputElement::Create(Document& document) {
   return new HTMLOutputElement(document);

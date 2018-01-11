@@ -42,7 +42,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
                           space.Direction(),
                           break_token) {}
 
-  virtual ~NGLayoutAlgorithm() {}
+  virtual ~NGLayoutAlgorithm() = default;
 
   // Actual layout function. Lays out the children and descendants within the
   // constraints given by the NGConstraintSpace. Returns a layout result with

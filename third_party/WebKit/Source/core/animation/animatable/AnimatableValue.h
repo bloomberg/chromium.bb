@@ -40,7 +40,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
  public:
-  virtual ~AnimatableValue() {}
+  virtual ~AnimatableValue() = default;
 
   static scoped_refptr<AnimatableValue> Interpolate(const AnimatableValue*,
                                                     const AnimatableValue*,

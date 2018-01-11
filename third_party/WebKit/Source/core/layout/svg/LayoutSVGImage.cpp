@@ -48,7 +48,7 @@ LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
   image_resource_->Initialize(this);
 }
 
-LayoutSVGImage::~LayoutSVGImage() {}
+LayoutSVGImage::~LayoutSVGImage() = default;
 
 void LayoutSVGImage::WillBeDestroyed() {
   image_resource_->Shutdown();

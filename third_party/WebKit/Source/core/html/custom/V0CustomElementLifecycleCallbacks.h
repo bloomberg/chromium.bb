@@ -41,7 +41,7 @@ class Element;
 class V0CustomElementLifecycleCallbacks
     : public GarbageCollectedFinalized<V0CustomElementLifecycleCallbacks> {
  public:
-  virtual ~V0CustomElementLifecycleCallbacks() {}
+  virtual ~V0CustomElementLifecycleCallbacks() = default;
 
   enum CallbackType {
     kNone = 0,

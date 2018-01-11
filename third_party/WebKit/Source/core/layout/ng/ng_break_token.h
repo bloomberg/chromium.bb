@@ -32,7 +32,7 @@ namespace blink {
 // The break token should encapsulate enough information to "resume" the layout.
 class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
  public:
-  virtual ~NGBreakToken() {}
+  virtual ~NGBreakToken() = default;
 
   enum NGBreakTokenType { kBlockBreakToken, kInlineBreakToken };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }

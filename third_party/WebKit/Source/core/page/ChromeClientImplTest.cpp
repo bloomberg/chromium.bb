@@ -54,7 +54,7 @@ namespace {
 class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
   explicit TestWebViewClient(WebNavigationPolicy* target) : target_(target) {}
-  ~TestWebViewClient() override {}
+  ~TestWebViewClient() override = default;
 
   void Show(WebNavigationPolicy policy) override { *target_ = policy; }
 
@@ -112,7 +112,7 @@ class FakeColorChooserClient
  public:
   FakeColorChooserClient(Element* owner_element)
       : owner_element_(owner_element) {}
-  ~FakeColorChooserClient() override {}
+  ~FakeColorChooserClient() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
@@ -142,7 +142,7 @@ class FakeDateTimeChooserClient
  public:
   FakeDateTimeChooserClient(Element* owner_element)
       : owner_element_(owner_element) {}
-  ~FakeDateTimeChooserClient() override {}
+  ~FakeDateTimeChooserClient() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
@@ -163,7 +163,7 @@ class FakeDateTimeChooserClient
 
 class PagePopupSuppressionTest : public ::testing::Test {
  public:
-  PagePopupSuppressionTest() {}
+  PagePopupSuppressionTest() = default;
 
   bool CanOpenColorChooser() {
     LocalFrame* frame = main_frame_->GetFrame();

@@ -37,7 +37,7 @@ HTMLFormControlElementWithState::HTMLFormControlElementWithState(
     Document& doc)
     : HTMLFormControlElement(tag_name, doc) {}
 
-HTMLFormControlElementWithState::~HTMLFormControlElementWithState() {}
+HTMLFormControlElementWithState::~HTMLFormControlElementWithState() = default;
 
 Node::InsertionNotificationRequest
 HTMLFormControlElementWithState::InsertedInto(ContainerNode* insertion_point) {

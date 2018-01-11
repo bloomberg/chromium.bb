@@ -151,7 +151,7 @@ ImageLoader::ImageLoader(Element* element)
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
 
-ImageLoader::~ImageLoader() {}
+ImageLoader::~ImageLoader() = default;
 
 void ImageLoader::Dispose() {
   RESOURCE_LOADING_DVLOG(1)

@@ -39,14 +39,14 @@ namespace blink {
 PumpSession::PumpSession(unsigned& nesting_level)
     : NestingLevelIncrementer(nesting_level) {}
 
-PumpSession::~PumpSession() {}
+PumpSession::~PumpSession() = default;
 
 SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nesting_level)
     : NestingLevelIncrementer(nesting_level),
       start_time_(CurrentTime()),
       processed_element_tokens_(0) {}
 
-SpeculationsPumpSession::~SpeculationsPumpSession() {}
+SpeculationsPumpSession::~SpeculationsPumpSession() = default;
 
 inline double SpeculationsPumpSession::ElapsedTime() const {
   return CurrentTime() - start_time_;
@@ -63,7 +63,7 @@ HTMLParserScheduler::HTMLParserScheduler(
       loading_task_runner_(std::move(loading_task_runner)),
       is_paused_with_active_timer_(false) {}
 
-HTMLParserScheduler::~HTMLParserScheduler() {}
+HTMLParserScheduler::~HTMLParserScheduler() = default;
 
 void HTMLParserScheduler::Trace(blink::Visitor* visitor) {
   visitor->Trace(parser_);

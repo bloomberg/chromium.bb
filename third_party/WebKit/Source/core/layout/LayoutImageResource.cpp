@@ -38,7 +38,7 @@ namespace blink {
 LayoutImageResource::LayoutImageResource()
     : layout_object_(nullptr), cached_image_(nullptr) {}
 
-LayoutImageResource::~LayoutImageResource() {}
+LayoutImageResource::~LayoutImageResource() = default;
 
 void LayoutImageResource::Initialize(LayoutObject* layout_object) {
   DCHECK(!layout_object_);

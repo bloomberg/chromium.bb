@@ -40,7 +40,7 @@ class HTMLLinkElement;
 
 class HTMLImportChildClient : public GarbageCollectedMixin {
  public:
-  virtual ~HTMLImportChildClient() {}
+  virtual ~HTMLImportChildClient() = default;
   virtual void DidFinish() = 0;
   virtual void ImportChildWasDisposed(HTMLImportChild*) = 0;
   virtual bool IsSync() const = 0;

@@ -40,7 +40,7 @@ TextTrackList::TextTrackList(HTMLMediaElement* owner)
       async_event_queue_(
           MediaElementEventQueue::Create(this, &owner_->GetDocument())) {}
 
-TextTrackList::~TextTrackList() {}
+TextTrackList::~TextTrackList() = default;
 
 unsigned TextTrackList::length() const {
   return add_track_tracks_.size() + element_tracks_.size() +

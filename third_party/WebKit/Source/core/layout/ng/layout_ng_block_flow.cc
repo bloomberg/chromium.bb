@@ -17,7 +17,7 @@ namespace blink {
 LayoutNGBlockFlow::LayoutNGBlockFlow(Element* element)
     : LayoutNGMixin<LayoutBlockFlow>(element) {}
 
-LayoutNGBlockFlow::~LayoutNGBlockFlow() {}
+LayoutNGBlockFlow::~LayoutNGBlockFlow() = default;
 
 bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGBlockFlow ||

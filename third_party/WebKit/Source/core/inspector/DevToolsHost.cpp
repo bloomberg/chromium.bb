@@ -116,7 +116,7 @@ DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
       frontend_frame_(frontend_frame),
       menu_provider_(nullptr) {}
 
-DevToolsHost::~DevToolsHost() {}
+DevToolsHost::~DevToolsHost() = default;
 
 void DevToolsHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);

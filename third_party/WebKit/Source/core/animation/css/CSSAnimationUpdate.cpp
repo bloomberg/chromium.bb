@@ -9,8 +9,8 @@
 namespace blink {
 
 // Defined here, to avoid dependencies on ComputedStyle.h in the header file.
-CSSAnimationUpdate::CSSAnimationUpdate() {}
-CSSAnimationUpdate::~CSSAnimationUpdate() {}
+CSSAnimationUpdate::CSSAnimationUpdate() = default;
+CSSAnimationUpdate::~CSSAnimationUpdate() = default;
 
 void CSSAnimationUpdate::Copy(const CSSAnimationUpdate& update) {
   DCHECK(IsEmpty());
@@ -70,7 +70,7 @@ void CSSAnimationUpdate::UnstartTransition(const PropertyHandle& property) {
   new_transitions_.erase(property);
 }
 
-CSSAnimationUpdate::NewTransition::NewTransition() {}
-CSSAnimationUpdate::NewTransition::~NewTransition() {}
+CSSAnimationUpdate::NewTransition::NewTransition() = default;
+CSSAnimationUpdate::NewTransition::~NewTransition() = default;
 
 }  // namespace blink

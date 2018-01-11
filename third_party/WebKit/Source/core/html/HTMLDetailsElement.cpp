@@ -44,7 +44,7 @@ using namespace HTMLNames;
 
 class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
  public:
-  virtual ~FirstSummarySelectFilter() {}
+  virtual ~FirstSummarySelectFilter() = default;
 
   static FirstSummarySelectFilter* Create() {
     return new FirstSummarySelectFilter();
@@ -66,7 +66,7 @@ class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
   }
 
  private:
-  FirstSummarySelectFilter() {}
+  FirstSummarySelectFilter() = default;
 };
 
 HTMLDetailsElement* HTMLDetailsElement::Create(Document& document) {
@@ -80,7 +80,7 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
   UseCounter::Count(document, WebFeature::kDetailsElement);
 }
 
-HTMLDetailsElement::~HTMLDetailsElement() {}
+HTMLDetailsElement::~HTMLDetailsElement() = default;
 
 void HTMLDetailsElement::DispatchPendingEvent() {
   DispatchEvent(Event::Create(EventTypeNames::toggle));

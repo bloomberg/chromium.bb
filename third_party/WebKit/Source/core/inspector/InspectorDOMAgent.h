@@ -70,7 +70,7 @@ class CORE_EXPORT InspectorDOMAgent final
     : public InspectorBaseAgent<protocol::DOM::Metainfo> {
  public:
   struct CORE_EXPORT DOMListener : public GarbageCollectedMixin {
-    virtual ~DOMListener() {}
+    virtual ~DOMListener() = default;
     virtual void DidAddDocument(Document*) = 0;
     virtual void DidRemoveDocument(Document*) = 0;
     virtual void DidRemoveDOMNode(Node*) = 0;

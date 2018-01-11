@@ -47,7 +47,7 @@ SubresourceFilter::SubresourceFilter(
     : execution_context_(execution_context),
       subresource_filter_(std::move(subresource_filter)) {}
 
-SubresourceFilter::~SubresourceFilter() {}
+SubresourceFilter::~SubresourceFilter() = default;
 
 bool SubresourceFilter::AllowLoad(
     const KURL& resource_url,

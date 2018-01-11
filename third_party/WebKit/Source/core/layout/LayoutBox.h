@@ -708,7 +708,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // SYSTEMS in LayoutBoxModel) for use during layout.
   struct ComputedMarginValues {
     DISALLOW_NEW();
-    ComputedMarginValues() {}
+    ComputedMarginValues() = default;
 
     LayoutUnit before_;
     LayoutUnit after_;
@@ -720,7 +720,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // block-flow and inline-direction axis.
   struct LogicalExtentComputedValues {
     STACK_ALLOCATED();
-    LogicalExtentComputedValues() {}
+    LogicalExtentComputedValues() = default;
 
     // This is the dimension in the measured direction
     // (logical height or logical width).

@@ -47,7 +47,7 @@ class Path;
 
 class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
  public:
-  virtual ~BasicShape() {}
+  virtual ~BasicShape() = default;
 
   enum ShapeType {
     kBasicShapeEllipseType,
@@ -69,7 +69,7 @@ class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
   virtual ShapeType GetType() const = 0;
 
  protected:
-  BasicShape() {}
+  BasicShape() = default;
 };
 
 #define DEFINE_BASICSHAPE_TYPE_CASTS(thisType)                         \
@@ -154,7 +154,7 @@ class CORE_EXPORT BasicShapeCircle final : public BasicShape {
   ShapeType GetType() const override { return kBasicShapeCircleType; }
 
  private:
-  BasicShapeCircle() {}
+  BasicShapeCircle() = default;
 
   BasicShapeCenterCoordinate center_x_;
   BasicShapeCenterCoordinate center_y_;
@@ -188,7 +188,7 @@ class BasicShapeEllipse final : public BasicShape {
   ShapeType GetType() const override { return kBasicShapeEllipseType; }
 
  private:
-  BasicShapeEllipse() {}
+  BasicShapeEllipse() = default;
 
   BasicShapeCenterCoordinate center_x_;
   BasicShapeCenterCoordinate center_y_;
@@ -266,7 +266,7 @@ class BasicShapeInset : public BasicShape {
   ShapeType GetType() const override { return kBasicShapeInsetType; }
 
  private:
-  BasicShapeInset() {}
+  BasicShapeInset() = default;
 
   Length right_;
   Length top_;

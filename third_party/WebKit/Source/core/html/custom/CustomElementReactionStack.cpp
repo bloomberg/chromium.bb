@@ -25,7 +25,7 @@ Persistent<CustomElementReactionStack>& GetCustomElementReactionStack() {
 // TODO(dominicc): Consider using linked heap structures, avoiding
 // finalizers, to make short-lived entries fast.
 
-CustomElementReactionStack::CustomElementReactionStack() {}
+CustomElementReactionStack::CustomElementReactionStack() = default;
 
 void CustomElementReactionStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(map_);

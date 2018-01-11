@@ -20,7 +20,7 @@ struct NGPhysicalSize;
 // NGLogicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the logical coordinate system.
 struct CORE_EXPORT NGLogicalOffset {
-  NGLogicalOffset() {}
+  NGLogicalOffset() = default;
   NGLogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
       : inline_offset(inline_offset), block_offset(block_offset) {}
 

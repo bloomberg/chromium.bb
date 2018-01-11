@@ -57,7 +57,7 @@ LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
   return image;
 }
 
-LayoutImage::~LayoutImage() {}
+LayoutImage::~LayoutImage() = default;
 
 void LayoutImage::WillBeDestroyed() {
   DCHECK(image_resource_);

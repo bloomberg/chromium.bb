@@ -20,7 +20,7 @@ struct NGPhysicalSize;
 // NGLogicalSize is the size of rect (typically a fragment) in the logical
 // coordinate system.
 struct CORE_EXPORT NGLogicalSize {
-  NGLogicalSize() {}
+  NGLogicalSize() = default;
   NGLogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
       : inline_size(inline_size), block_size(block_size) {}
 

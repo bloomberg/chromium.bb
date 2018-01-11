@@ -18,7 +18,7 @@ class IntersectionObserverDelegate
     : public GarbageCollectedFinalized<IntersectionObserverDelegate>,
       public TraceWrapperBase {
  public:
-  virtual ~IntersectionObserverDelegate() {}
+  virtual ~IntersectionObserverDelegate() = default;
   virtual void Deliver(const HeapVector<Member<IntersectionObserverEntry>>&,
                        IntersectionObserver&) = 0;
   virtual ExecutionContext* GetExecutionContext() const = 0;

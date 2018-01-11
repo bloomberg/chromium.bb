@@ -27,7 +27,7 @@ bool IsNoneValue(const InterpolationValue& value) {
 class InheritedTranslateChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedTranslateChecker() override {}
+  ~InheritedTranslateChecker() override = default;
 
   static std::unique_ptr<InheritedTranslateChecker> Create(
       scoped_refptr<TranslateTransformOperation> inherited_translate) {

@@ -46,7 +46,7 @@ MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
              &MediaElementEventQueue::TimerFired),
       is_closed_(false) {}
 
-MediaElementEventQueue::~MediaElementEventQueue() {}
+MediaElementEventQueue::~MediaElementEventQueue() = default;
 
 void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);

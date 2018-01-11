@@ -50,7 +50,7 @@ class QuotesData : public RefCounted<QuotesData> {
   int size() { return quote_pairs_.size(); }
 
  private:
-  QuotesData() {}
+  QuotesData() = default;
 
   Vector<std::pair<String, String>> quote_pairs_;
 };

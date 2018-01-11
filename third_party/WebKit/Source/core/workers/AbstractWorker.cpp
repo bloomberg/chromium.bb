@@ -41,7 +41,7 @@ namespace blink {
 AbstractWorker::AbstractWorker(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
-AbstractWorker::~AbstractWorker() {}
+AbstractWorker::~AbstractWorker() = default;
 
 // static
 KURL AbstractWorker::ResolveURL(ExecutionContext* execution_context,

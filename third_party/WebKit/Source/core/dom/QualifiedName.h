@@ -109,7 +109,7 @@ class CORE_EXPORT QualifiedName {
                 const AtomicString& namespace_uri);
   ~QualifiedName();
 
-  QualifiedName(const QualifiedName& other) : impl_(other.impl_) {}
+  QualifiedName(const QualifiedName& other) = default;
   const QualifiedName& operator=(const QualifiedName& other) {
     impl_ = other.impl_;
     return *this;

@@ -52,7 +52,7 @@ DocumentResource::DocumentResource(
   DCHECK_EQ(type, kSVGDocument);
 }
 
-DocumentResource::~DocumentResource() {}
+DocumentResource::~DocumentResource() = default;
 
 void DocumentResource::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);

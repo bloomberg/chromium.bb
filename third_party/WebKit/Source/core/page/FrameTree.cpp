@@ -46,7 +46,7 @@ const unsigned kInvalidChildCount = ~0U;
 FrameTree::FrameTree(Frame* this_frame)
     : this_frame_(this_frame), scoped_child_count_(kInvalidChildCount) {}
 
-FrameTree::~FrameTree() {}
+FrameTree::~FrameTree() = default;
 
 const AtomicString& FrameTree::GetName() const {
   // TODO(andypaicu): remove this once we have gathered the data

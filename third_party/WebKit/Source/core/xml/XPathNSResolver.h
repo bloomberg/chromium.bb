@@ -36,11 +36,11 @@ class XPathNSResolver : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~XPathNSResolver() {}
+  virtual ~XPathNSResolver() = default;
   virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
  protected:
-  XPathNSResolver() {}
+  XPathNSResolver() = default;
 };
 
 }  // namespace blink

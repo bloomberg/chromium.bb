@@ -50,7 +50,7 @@ MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolve_urls_method,
                                      SerializationType serialization_type)
     : formatter_(resolve_urls_method, serialization_type) {}
 
-MarkupAccumulator::~MarkupAccumulator() {}
+MarkupAccumulator::~MarkupAccumulator() = default;
 
 void MarkupAccumulator::AppendString(const String& string) {
   markup_.Append(string);

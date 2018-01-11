@@ -12,8 +12,7 @@ CSSTransitionData::CSSTransitionData() {
   property_list_.push_back(InitialProperty());
 }
 
-CSSTransitionData::CSSTransitionData(const CSSTransitionData& other)
-    : CSSTimingData(other), property_list_(other.property_list_) {}
+CSSTransitionData::CSSTransitionData(const CSSTransitionData& other) = default;
 
 bool CSSTransitionData::TransitionsMatchForStyleRecalc(
     const CSSTransitionData& other) const {

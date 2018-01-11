@@ -65,7 +65,7 @@ inline HTMLTableElement::HTMLTableElement(Document& document)
 // HTMLTableElement.h, when including HTMLTableElement, msvc tries to expand
 // the destructor and causes a compile error because of lack of
 // CSSPropertyValueSet definition.
-HTMLTableElement::~HTMLTableElement() {}
+HTMLTableElement::~HTMLTableElement() = default;
 
 DEFINE_NODE_FACTORY(HTMLTableElement)
 

@@ -70,7 +70,7 @@ SVGElementProxy::SVGElementProxy(const AtomicString& id)
 SVGElementProxy::SVGElementProxy(const String& url, const AtomicString& id)
     : id_(id), url_(url), is_local_(false) {}
 
-SVGElementProxy::~SVGElementProxy() {}
+SVGElementProxy::~SVGElementProxy() = default;
 
 void SVGElementProxy::AddClient(SVGResourceClient* client,
                                 WebTaskRunner* task_runner) {

@@ -42,7 +42,7 @@ class TestModuleScriptLoaderClient final
 
  public:
   TestModuleScriptLoaderClient() = default;
-  ~TestModuleScriptLoaderClient() override {}
+  ~TestModuleScriptLoaderClient() override = default;
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(module_script_);
@@ -73,7 +73,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     fetcher_ = ResourceFetcher::Create(fetch_context);
   }
 
-  ~ModuleScriptLoaderTestModulator() override {}
+  ~ModuleScriptLoaderTestModulator() override = default;
 
   const SecurityOrigin* GetSecurityOriginForFetch() override {
     return security_origin_.get();

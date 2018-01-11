@@ -65,7 +65,7 @@ DateTimeChooserImpl* DateTimeChooserImpl::Create(
   return new DateTimeChooserImpl(chrome_client, client, parameters);
 }
 
-DateTimeChooserImpl::~DateTimeChooserImpl() {}
+DateTimeChooserImpl::~DateTimeChooserImpl() = default;
 
 void DateTimeChooserImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(chrome_client_);

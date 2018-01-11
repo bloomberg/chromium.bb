@@ -38,7 +38,7 @@ SelectionEditor::SelectionEditor(LocalFrame& frame) : frame_(frame) {
   ClearVisibleSelection();
 }
 
-SelectionEditor::~SelectionEditor() {}
+SelectionEditor::~SelectionEditor() = default;
 
 void SelectionEditor::AssertSelectionValid() const {
 #if DCHECK_IS_ON()

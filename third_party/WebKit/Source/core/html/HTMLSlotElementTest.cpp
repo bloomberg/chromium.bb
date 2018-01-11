@@ -18,7 +18,7 @@ using Backtrack = std::pair<size_t, size_t>;
 
 class HTMLSlotElementTest : public ::testing::Test {
  protected:
-  HTMLSlotElementTest() {}
+  HTMLSlotElementTest() = default;
   Seq LongestCommonSubsequence(const Seq& seq1, const Seq& seq2);
   std::array<std::array<size_t, kTableSize>, kTableSize> lcs_table_;
   std::array<std::array<Backtrack, kTableSize>, kTableSize> backtrack_table_;

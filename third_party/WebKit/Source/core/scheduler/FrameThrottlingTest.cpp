@@ -43,7 +43,7 @@ namespace {
 
 class MockWebDisplayItemList : public WebDisplayItemList {
  public:
-  ~MockWebDisplayItemList() override {}
+  ~MockWebDisplayItemList() override = default;
 
   MOCK_METHOD2(AppendDrawingItem,
                void(const WebRect& visual_rect, sk_sp<const cc::PaintRecord>));

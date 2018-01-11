@@ -39,7 +39,7 @@ class Event;
 
 class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
  public:
-  virtual ~EventQueue() {}
+  virtual ~EventQueue() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool EnqueueEvent(const base::Location&, Event*) = 0;
   virtual bool CancelEvent(Event*) = 0;

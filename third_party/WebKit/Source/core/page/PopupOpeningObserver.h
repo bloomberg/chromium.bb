@@ -35,7 +35,7 @@ class CORE_EXPORT PopupOpeningObserver {
   virtual void WillOpenPopup() = 0;
 
  protected:
-  virtual ~PopupOpeningObserver() {}
+  virtual ~PopupOpeningObserver() = default;
 };
 
 }  // namespace blink

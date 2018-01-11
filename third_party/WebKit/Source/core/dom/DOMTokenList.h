@@ -46,7 +46,7 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   static DOMTokenList* Create(Element& element, const QualifiedName& attr) {
     return new DOMTokenList(element, attr);
   }
-  virtual ~DOMTokenList() {}
+  virtual ~DOMTokenList() = default;
   virtual void Trace(blink::Visitor*);
 
   unsigned length() const { return token_set_.size(); }

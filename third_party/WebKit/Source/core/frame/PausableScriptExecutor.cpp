@@ -181,7 +181,7 @@ PausableScriptExecutor::PausableScriptExecutor(
   CHECK(script_state_->ContextIsValid());
 }
 
-PausableScriptExecutor::~PausableScriptExecutor() {}
+PausableScriptExecutor::~PausableScriptExecutor() = default;
 
 void PausableScriptExecutor::Fired() {
   ExecuteAndDestroySelf();

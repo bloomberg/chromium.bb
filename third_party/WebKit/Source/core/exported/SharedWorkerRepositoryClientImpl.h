@@ -53,7 +53,7 @@ class CORE_EXPORT SharedWorkerRepositoryClientImpl final
     return WTF::WrapUnique(new SharedWorkerRepositoryClientImpl(client));
   }
 
-  ~SharedWorkerRepositoryClientImpl() override {}
+  ~SharedWorkerRepositoryClientImpl() override = default;
 
   void Connect(SharedWorker*,
                MessagePortChannel,

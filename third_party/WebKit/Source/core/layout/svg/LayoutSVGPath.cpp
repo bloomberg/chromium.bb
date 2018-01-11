@@ -36,7 +36,7 @@ namespace blink {
 
 LayoutSVGPath::LayoutSVGPath(SVGGeometryElement* node) : LayoutSVGShape(node) {}
 
-LayoutSVGPath::~LayoutSVGPath() {}
+LayoutSVGPath::~LayoutSVGPath() = default;
 
 void LayoutSVGPath::UpdateShapeFromElement() {
   LayoutSVGShape::UpdateShapeFromElement();
