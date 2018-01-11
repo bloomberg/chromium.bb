@@ -68,6 +68,9 @@ static const struct backend *drv_get_backend(int fd)
 #ifdef DRV_AMDGPU
 		&backend_amdgpu,
 #endif
+#ifdef DRV_AMLOGIC
+		&backend_amlogic,
+#endif
 		&backend_evdi,
 #ifdef DRV_EXYNOS
 		&backend_exynos,
