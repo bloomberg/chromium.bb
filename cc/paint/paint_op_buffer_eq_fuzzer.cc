@@ -7,6 +7,7 @@
 
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/transfer_cache_test_helper.h"
+#include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 // paint_op_buffer_eq_fuzzer deserializes and reserializes paint ops to
 // make sure that this does not modify or incorrectly serialize them.
@@ -35,9 +36,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const size_t kMaxSerializedSize = 1000000;
 
   // TODO(enne): add an image provider here once deserializing supports that.
+  SkNoDrawCanvas canvas(100, 100);
   cc::TransferCacheTestHelper transfer_cache_helper;
   cc::PaintOp::SerializeOptions serialize_options;
   serialize_options.transfer_cache = &transfer_cache_helper;
+  serialize_options.canvas = &canvas;
   cc::PaintOp::DeserializeOptions deserialize_options;
   deserialize_options.transfer_cache = &transfer_cache_helper;
 
