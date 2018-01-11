@@ -289,12 +289,22 @@ unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
 }
 
 media::GpuVideoAcceleratorFactories::OutputFormat
-GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat() {
+GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(size_t bit_depth) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
   auto capabilities = context_provider_->ContextCapabilities();
+  if (bit_depth > 8) {
+    // If high bit depth rendering is not enabled and we support RG textures,
+    // use those, albeit at a reduced bit depth of 8 bits per component.
+    // TODO(mcasas): continue working on this, avoiding dropping information as
+    // long as the hardware may support it https://crbug.com/798485.
+    if (!rendering_color_space_.IsHDR() && capabilities.texture_rg)
+      return media::GpuVideoAcceleratorFactories::OutputFormat::I420;
+    else
+      return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+  }
   if (capabilities.image_ycbcr_420v &&
       !capabilities.image_ycbcr_420v_disabled_for_video_frames) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;

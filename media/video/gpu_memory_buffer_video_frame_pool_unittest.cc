@@ -94,29 +94,32 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     media_task_runner_->RunUntilIdle();
   }
 
-  static scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame(
-      int dimension) {
+  static scoped_refptr<VideoFrame> CreateTestYUVVideoFrame(
+      int dimension,
+      size_t bit_depth = 8) {
     const int kDimension = 10;
-    static uint8_t y_data[kDimension * kDimension] = {0};
-    static uint8_t u_data[kDimension * kDimension / 2] = {0};
-    static uint8_t v_data[kDimension * kDimension / 2] = {0};
+    // Data buffers are overdimensioned to acommodate up to 16bpc samples.
+    static uint8_t y_data[2 * kDimension * kDimension] = {0};
+    static uint8_t u_data[2 * kDimension * kDimension / 2] = {0};
+    static uint8_t v_data[2 * kDimension * kDimension / 2] = {0};
 
+    const VideoPixelFormat format =
+        (bit_depth > 8) ? PIXEL_FORMAT_YUV420P10 : PIXEL_FORMAT_I420;
     DCHECK_LE(dimension, kDimension);
-    gfx::Size size(dimension, dimension);
+    const gfx::Size size(dimension, dimension);
 
     scoped_refptr<VideoFrame> video_frame =
-        media::VideoFrame::WrapExternalYuvData(
-            media::PIXEL_FORMAT_I420,  // format
-            size,                      // coded_size
-            gfx::Rect(size),           // visible_rect
-            size,                      // natural_size
-            size.width(),              // y_stride
-            size.width() / 2,          // u_stride
-            size.width() / 2,          // v_stride
-            y_data,                    // y_data
-            u_data,                    // u_data
-            v_data,                    // v_data
-            base::TimeDelta());        // timestamp
+        VideoFrame::WrapExternalYuvData(format,              // format
+                                        size,                // coded_size
+                                        gfx::Rect(size),     // visible_rect
+                                        size,                // natural_size
+                                        size.width(),        // y_stride
+                                        size.width() / 2,    // u_stride
+                                        size.width() / 2,    // v_stride
+                                        y_data,              // y_data
+                                        u_data,              // u_data
+                                        v_data,              // v_data
+                                        base::TimeDelta());  // timestamp
     EXPECT_TRUE(video_frame);
     return video_frame;
   }
@@ -153,6 +156,20 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
+  EXPECT_EQ(3u, frame->NumTextures());
+  EXPECT_EQ(3u, gles2_->gen_textures_count());
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOne10BppHardwareFrame) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10, 10);
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
