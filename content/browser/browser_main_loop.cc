@@ -90,6 +90,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/browser/utility_process_host_impl.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
@@ -1567,6 +1568,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_mac_.reset(
       new media::DeviceMonitorMac(audio_manager_->GetTaskRunner()));
 #endif
+
+  webrtc_internals_.reset(WebRTCInternals::CreateSingletonInstance());
 
   // RDH needs the IO thread to be created
   {
