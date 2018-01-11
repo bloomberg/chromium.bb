@@ -924,6 +924,9 @@ void ExtensionService::UnblockAllExtensions() {
     registry_->RemoveBlocked(extension->id());
     AddExtension(extension.get());
   }
+  // While extensions are blocked, we won't display any external install
+  // warnings. Now that they are unblocked, we should update the error.
+  external_install_manager_->UpdateExternalExtensionAlert();
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
