@@ -96,8 +96,8 @@
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
-#import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
@@ -109,7 +109,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
@@ -428,13 +427,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SideSwipeControllerDelegate,
                                     SigninPresenter,
                                     SKStoreProductViewControllerDelegate,
-                                    SnapshotOverlayProvider,
+                                    SnapshotGeneratorDelegate,
                                     StoreKitLauncher,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
                                     TabHistoryPresentation,
                                     TabModelObserver,
-                                    TabSnapshottingDelegate,
                                     TabStripPresentation,
                                     ToolsMenuConfigurationProvider,
                                     UIGestureRecognizerDelegate,
@@ -2849,7 +2847,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK(!prerenderService ||
          !prerenderService->IsWebStatePrerendered(tab.webState));
 
-  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(tab);
+  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(self);
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
@@ -2860,7 +2858,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   tab.dialogDelegate = self;
-  tab.snapshotOverlayProvider = self;
   tab.passKitDialogProvider = self;
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     tab.legacyFullscreenControllerDelegate = self;
@@ -2869,7 +2866,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     tab.overscrollActionsControllerDelegate = self;
   }
   tab.tabHeadersDelegate = self;
-  tab.tabSnapshottingDelegate = self;
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
@@ -2923,7 +2919,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   tab.dialogDelegate = nil;
-  tab.snapshotOverlayProvider = nil;
   tab.passKitDialogProvider = nil;
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     tab.legacyFullscreenControllerDelegate = nil;
@@ -2932,7 +2927,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     tab.overscrollActionsControllerDelegate = nil;
   }
   tab.tabHeadersDelegate = nil;
-  tab.tabSnapshottingDelegate = nil;
   tab.webController.nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
@@ -3041,13 +3035,38 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - ** Protocol Implementations and Helpers **
 
-#pragma mark - SnapshotOverlayProvider methods
+#pragma mark - SnapshotGeneratorDelegate methods
 
-- (NSArray*)snapshotOverlaysForTab:(Tab*)tab {
-  NSMutableArray* overlays = [NSMutableArray array];
-  if (![_model webUsageEnabled]) {
-    return overlays;
+- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  return !PagePlaceholderTabHelper::FromWebState(webState)
+              ->displaying_placeholder();
+}
+
+- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+
+  CGFloat headerHeight = [self headerHeightForTab:tab];
+  id nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController respondsToSelector:@selector(toolbarHeight)])
+    headerHeight += [nativeController toolbarHeight];
+  return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
+}
+
+- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
+    (web::WebState*)webState {
+  DCHECK(webState);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  if (!self.tabModel.webUsageEnabled) {
+    return @[];
   }
+
+  NSMutableArray* overlays = [NSMutableArray array];
   UIView* voiceSearchView = [self voiceSearchOverlayViewForTab:tab];
   if (voiceSearchView) {
     CGFloat voiceSearchYOffset = [self voiceSearchOverlayYOffsetForTab:tab];
@@ -3067,7 +3086,26 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return overlays;
 }
 
-#pragma mark - SnapshotOverlayProvider helpers
+- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  id<CRWNativeContent> nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
+    [nativeController willUpdateSnapshot];
+  }
+  [tab willUpdateSnapshot];
+}
+
+- (void)didUpdateSnapshotForWebState:(web::WebState*)webState
+                           withImage:(UIImage*)snapshot {
+  DCHECK(webState);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  [self.tabModel notifyTabSnapshotChanged:tab withImage:snapshot];
+}
+
+#pragma mark - SnapshotGeneratorDelegate helpers
 
 // Provides a view that encompasses currently displayed infobar(s) or nil
 // if no infobar is presented.
@@ -3719,16 +3757,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (CGFloat)overscrollHeaderHeight {
   return self.headerHeight + StatusBarHeight();
-}
-
-#pragma mark - TabSnapshottingDelegate methods.
-
-- (UIEdgeInsets)snapshotEdgeInsetsForTab:(Tab*)tab {
-  CGFloat headerHeight = [self headerHeightForTab:tab];
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController respondsToSelector:@selector(toolbarHeight)])
-    headerHeight += [nativeController toolbarHeight];
-  return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
 }
 
 #pragma mark - NewTabPageControllerObserver methods.
@@ -4957,7 +4985,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     CGRect imageFrame = CGRectZero;
     if (self.isToolbarOnScreen) {
       imageFrame = UIEdgeInsetsInsetRect(
-          _contentArea.bounds, [self snapshotEdgeInsetsForTab:topTab]);
+          _contentArea.bounds,
+          [self snapshotEdgeInsetsForWebState:topTab.webState]);
     } else {
       imageFrame = [topTab.webState->GetView() bounds];
     }

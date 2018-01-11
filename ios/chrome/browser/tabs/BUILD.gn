@@ -17,7 +17,6 @@ source_set("tabs") {
     "tab_model_synced_window_delegate.h",
     "tab_model_synced_window_delegate_getter.h",
     "tab_private.h",
-    "tab_snapshotting_delegate.h",
   ]
   public_deps = [
     "//ios/web",
@@ -26,7 +25,6 @@ source_set("tabs") {
     "//components/sessions",
     "//components/signin/ios/browser",
     "//components/sync_sessions",
-    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/net",
     "//ios/web/public",

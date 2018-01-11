@@ -32,6 +32,11 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // results in failures. The delegate is not owned by the tab helper.
   void SetDelegate(id<SnapshotGeneratorDelegate> delegate);
 
+  // Returns the size the snapshot for the current page would have if it
+  // was regenerated. If capturing the snapshot is not possible, returns
+  // CGSizeZero.
+  CGSize GetSnapshotSize() const;
+
   // Retrieves a color snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
   // a cached snapshot available in memory, otherwise it will be invoked

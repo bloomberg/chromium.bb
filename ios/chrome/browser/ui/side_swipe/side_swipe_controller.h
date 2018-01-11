@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
+#import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 
 @class CardSideSwipeView;
@@ -74,7 +74,7 @@ extern NSString* const kSideSwipeDidStopNotification;
 @property(nonatomic, weak) id<SideSwipeControllerDelegate> swipeDelegate;
 @property(nonatomic, weak) id<SideSwipeToolbarInteracting>
     toolbarInteractionHandler;
-@property(nonatomic, weak) id<TabSnapshottingDelegate> snapshotDelegate;
+@property(nonatomic, weak) id<SnapshotGeneratorDelegate> snapshotDelegate;
 @property(nonatomic, weak) id<TabStripHighlighting> tabStripDelegate;
 
 // Initializer.

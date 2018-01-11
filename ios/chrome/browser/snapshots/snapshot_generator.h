@@ -25,6 +25,11 @@ class WebState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Returns the size the snapshot for the current page would have if it
+// was regenerated. If capturing the snapshot is not possible, returns
+// CGSizeZero.
+- (CGSize)snapshotSize;
+
 // If |snapshotCoalescingEnabled| is YES snapshots of the web page are
 // coalesced until this method is called with |snapshotCoalescingEnabled| set to
 // NO. When snapshot coalescing is enabled, mutiple calls to generate a snapshot
