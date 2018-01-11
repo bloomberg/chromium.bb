@@ -205,9 +205,9 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
     return Get(it->second);
 
   AXAuraObjWrapper* wrapper = new AuraViewWrapper(aura_view);
-  aura_view_to_id_map[aura_view] = current_id_;
-  cache_[current_id_] = base::WrapUnique(wrapper);
-  current_id_++;
+  int32_t id = wrapper->GetUniqueId().Get();
+  aura_view_to_id_map[aura_view] = id;
+  cache_[id] = base::WrapUnique(wrapper);
   return wrapper;
 }
 

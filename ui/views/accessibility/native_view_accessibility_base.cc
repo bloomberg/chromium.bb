@@ -250,6 +250,10 @@ std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
   return std::set<int32_t>();
 }
 
+const ui::AXUniqueId& NativeViewAccessibilityBase::GetUniqueId() const {
+  return ViewAccessibility::GetUniqueId();
+}
+
 gfx::RectF NativeViewAccessibilityBase::GetBoundsInScreen() const {
   return gfx::RectF(view()->GetBoundsInScreen());
 }

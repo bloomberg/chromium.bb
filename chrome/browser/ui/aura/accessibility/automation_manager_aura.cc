@@ -202,7 +202,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
     current_tree_serializer_->SerializeChanges(focus, &params.update);
 
   params.tree_id = 0;
-  params.id = aura_obj->GetID();
+  params.id = aura_obj->GetUniqueId().Get();
   params.event_type = event_type;
   params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();

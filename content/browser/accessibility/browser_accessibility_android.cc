@@ -18,8 +18,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
-#include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
+#include "ui/accessibility/platform/ax_unique_id.h"
 
 namespace {
 
@@ -76,14 +76,13 @@ BrowserAccessibilityAndroid* BrowserAccessibilityAndroid::GetFromUniqueId(
   return nullptr;
 }
 
-BrowserAccessibilityAndroid::BrowserAccessibilityAndroid()
-    : unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
-  g_unique_id_map.Get()[unique_id_] = this;
+BrowserAccessibilityAndroid::BrowserAccessibilityAndroid() {
+  g_unique_id_map.Get()[unique_id()] = this;
 }
 
 BrowserAccessibilityAndroid::~BrowserAccessibilityAndroid() {
-  if (unique_id_)
-    g_unique_id_map.Get().erase(unique_id_);
+  if (unique_id())
+    g_unique_id_map.Get().erase(unique_id());
 }
 
 bool BrowserAccessibilityAndroid::IsNative() const {

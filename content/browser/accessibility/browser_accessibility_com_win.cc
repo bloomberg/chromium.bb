@@ -1109,7 +1109,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   *name_space_id = 0;
   *node_value = SysAllocString(value().c_str());
   *num_children = owner()->PlatformChildCount();
-  *unique_id = -AXPlatformNodeWin::unique_id();
+  *unique_id = -AXPlatformNodeWin::GetUniqueId();
 
   if (owner()->IsDocument()) {
     *node_type = NODETYPE_DOCUMENT;
@@ -1914,7 +1914,7 @@ void BrowserAccessibilityComWin::Destroy() {
 
 void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   owner_ = static_cast<BrowserAccessibilityWin*>(delegate);
-  AXPlatformNodeBase::Init(delegate);
+  AXPlatformNodeWin::Init(delegate);
 }
 
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()

@@ -49,6 +49,7 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegate {
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
+  const ui::AXUniqueId& GetUniqueId() const override;
   std::set<int32_t> GetReverseRelations(AXIntAttribute attr,
                                         int32_t dst_id) override;
   std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
@@ -60,6 +61,9 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegate {
 
   friend class AXPlatformNodeWin;
   DISALLOW_COPY_AND_ASSIGN(AXSystemCaretWin);
+
+ private:
+  ui::AXUniqueId unique_id_;
 };
 
 }  // namespace ui

@@ -43,6 +43,10 @@ ViewAccessibility::ViewAccessibility(View* view) : owner_view_(view) {}
 
 ViewAccessibility::~ViewAccessibility() {}
 
+const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
+  return unique_id_;
+}
+
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.

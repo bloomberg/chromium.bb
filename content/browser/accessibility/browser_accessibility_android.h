@@ -18,7 +18,7 @@ namespace content {
 class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
  public:
   static BrowserAccessibilityAndroid* GetFromUniqueId(int32_t unique_id);
-  int32_t unique_id() const { return unique_id_; }
+  int32_t unique_id() const { return GetUniqueId().Get(); }
 
   // Overrides from BrowserAccessibility.
   void OnDataChanged() override;

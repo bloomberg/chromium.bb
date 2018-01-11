@@ -711,7 +711,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
 
 int32_t GetUniqueId(BrowserAccessibility* accessibility) {
   BrowserAccessibilityWin* win_root = ToBrowserAccessibilityWin(accessibility);
-  return win_root->GetCOM()->unique_id();
+  return win_root->GetCOM()->GetUniqueId();
 }
 
 // This is a regression test for a bug where the initial empty document

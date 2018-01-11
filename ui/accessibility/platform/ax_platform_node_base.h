@@ -18,7 +18,7 @@ class AXPlatformNodeDelegate;
 
 class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
  public:
-   virtual void Init(AXPlatformNodeDelegate* delegate);
+  virtual void Init(AXPlatformNodeDelegate* delegate);
 
   // These are simple wrappers to our delegate.
   const AXNodeData& GetData() const;
