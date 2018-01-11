@@ -14,8 +14,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 RelList::RelList(Element* element)
     : DOMTokenList(*element, HTMLNames::relAttr) {}
 
@@ -43,14 +41,14 @@ static HashSet<AtomicString>& SupportedTokensAnchorAndArea() {
 bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
   //  https://html.spec.whatwg.org/multipage/links.html#linkTypes
-  if (GetElement().HasTagName(linkTag)) {
+  if (GetElement().HasTagName(HTMLNames::linkTag)) {
     if (SupportedTokensLink().Contains(token_value) ||
         (RuntimeEnabledFeatures::ModulePreloadEnabled() &&
          token_value == "modulepreload")) {
       return true;
     }
-  } else if ((GetElement().HasTagName(aTag) ||
-              GetElement().HasTagName(areaTag)) &&
+  } else if ((GetElement().HasTagName(HTMLNames::aTag) ||
+              GetElement().HasTagName(HTMLNames::areaTag)) &&
              SupportedTokensAnchorAndArea().Contains(token_value)) {
     return true;
   }
