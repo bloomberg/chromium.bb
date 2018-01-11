@@ -109,32 +109,41 @@ using content::RenderViewHost;
                       isValidItem:(BOOL*)valid {
   SEL action = [item action];
 
+  Profile* profile = Profile::FromBrowserContext(
+      renderWidgetHost_->GetProcess()->GetBrowserContext());
+  DCHECK(profile);
+  PrefService* pref = profile->GetPrefs();
+  const PrefService::Preference* spellCheckEnablePreference =
+      pref->FindPreference(spellcheck::prefs::kSpellCheckEnable);
+  DCHECK(spellCheckEnablePreference);
+  const bool spellCheckUserModifiable =
+      spellCheckEnablePreference->IsUserModifiable();
+
   // For now, this action is always enabled for render view;
   // this is sub-optimal.
   // TODO(suzhe): Plumb the "can*" methods up from WebCore.
   if (action == @selector(checkSpelling:)) {
-    *valid = RenderViewHost::From(renderWidgetHost_) != nullptr;
+    *valid = spellCheckUserModifiable &&
+             (RenderViewHost::From(renderWidgetHost_) != nullptr);
     return YES;
   }
 
   // TODO(groby): Clarify who sends this and if toggleContinuousSpellChecking:
   // is still necessary.
   if (action == @selector(toggleContinuousSpellChecking:)) {
-    content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
-    Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-    DCHECK(profile);
-    PrefService* pref = profile->GetPrefs();
     if ([(id)item respondsToSelector:@selector(setState:)]) {
       NSCellStateValue checkedState =
           pref->GetBoolean(spellcheck::prefs::kSpellCheckEnable) ? NSOnState
                                                                  : NSOffState;
       [(id)item setState:checkedState];
     }
-    const PrefService::Preference* spellCheckEnablePreference =
-        pref->FindPreference(spellcheck::prefs::kSpellCheckEnable);
-    DCHECK(spellCheckEnablePreference);
-    // Disable the spellcheck menu item if the preference is managed.
-    *valid = spellCheckEnablePreference->IsUserModifiable() ? YES : NO;
+    *valid = spellCheckUserModifiable;
+    return YES;
+  }
+
+  if (action == @selector(showGuessPanel:) ||
+      action == @selector(toggleGrammarChecking:)) {
+    *valid = spellCheckUserModifiable;
     return YES;
   }
 
