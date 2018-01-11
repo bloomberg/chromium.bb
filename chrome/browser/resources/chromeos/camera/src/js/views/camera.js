@@ -2116,7 +2116,7 @@ camera.views.Camera.prototype.start_ = function() {
       clearTimeout(this.retryStartTimer_);
       this.retryStartTimer_ = null;
     }
-    this.retryStartTimer_ = setTimeout(this.start_.bind(this), 1000);
+    this.retryStartTimer_ = setTimeout(this.start_.bind(this), 100);
   }.bind(this);
 
   if (this.locked_) {
