@@ -10,18 +10,19 @@
 
 namespace ui {
 
-IDropTargetHelper* DropTargetWin::cached_drop_target_helper_ = NULL;
+IDropTargetHelper* DropTargetWin::cached_drop_target_helper_ = nullptr;
 
-DropTargetWin::DropTargetWin(HWND hwnd)
-    : hwnd_(hwnd),
-      ref_count_(0) {
+DropTargetWin::DropTargetWin() : hwnd_(nullptr), ref_count_(0) {}
+
+DropTargetWin::~DropTargetWin() {}
+
+void DropTargetWin::Init(HWND hwnd) {
+  DCHECK(!hwnd_);
   DCHECK(hwnd);
   HRESULT result = RegisterDragDrop(hwnd, this);
   DCHECK(SUCCEEDED(result));
 }
 
-DropTargetWin::~DropTargetWin() {
-}
 
 // static
 IDropTargetHelper* DropTargetWin::DropHelper() {
@@ -76,7 +77,7 @@ HRESULT DropTargetWin::DragLeave() {
 
   OnDragLeave(current_data_object_.get());
 
-  current_data_object_ = NULL;
+  current_data_object_ = nullptr;
   return S_OK;
 }
 
@@ -100,7 +101,7 @@ HRESULT DropTargetWin::Drop(IDataObject* data_object,
 // DropTargetWin, IUnknown implementation:
 
 HRESULT DropTargetWin::QueryInterface(const IID& iid, void** object) {
-  *object = NULL;
+  *object = nullptr;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDropTarget)) {
     *object = this;
   } else {

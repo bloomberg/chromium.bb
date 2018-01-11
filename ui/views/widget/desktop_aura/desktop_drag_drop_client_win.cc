@@ -20,7 +20,8 @@ DesktopDragDropClientWin::DesktopDragDropClientWin(
     : drag_drop_in_progress_(false),
       drag_operation_(0),
       weak_factory_(this) {
-  drop_target_ = new DesktopDropTargetWin(root_window, window);
+  drop_target_ = new DesktopDropTargetWin(root_window);
+  drop_target_->Init(window);
 }
 
 DesktopDragDropClientWin::~DesktopDragDropClientWin() {
