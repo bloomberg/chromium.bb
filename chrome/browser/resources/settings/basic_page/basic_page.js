@@ -116,15 +116,14 @@ Polymer({
     });
     // </if>
 
-    this.addEventListener('change-password-dismissed', () => {
-      this.showChangePassword = false;
-    });
-
     this.addWebUIListener('change-password-visibility', visibility => {
       this.showChangePassword = visibility;
     });
-    settings.ChangePasswordBrowserProxyImpl.getInstance()
-        .initializeChangePasswordHandler();
+
+    if (loadTimeData.getBoolean('passwordProtectionAvailable')) {
+      settings.ChangePasswordBrowserProxyImpl.getInstance()
+          .initializeChangePasswordHandler();
+    }
 
     if (settings.AndroidAppsBrowserProxyImpl) {
       this.addWebUIListener(
