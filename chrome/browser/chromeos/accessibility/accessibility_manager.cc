@@ -51,10 +51,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/chromeos_switches.h"
@@ -89,6 +91,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using extensions::api::braille_display_private::BrailleController;
@@ -231,6 +234,11 @@ void AccessibilityManager::Shutdown() {
 // static
 AccessibilityManager* AccessibilityManager::Get() {
   return g_accessibility_manager;
+}
+
+// static
+void AccessibilityManager::ShowAccessibilityHelp(Browser* browser) {
+  ShowSingletonTab(browser, GURL(chrome::kChromeAccessibilityHelpURL));
 }
 
 AccessibilityManager::AccessibilityManager()
