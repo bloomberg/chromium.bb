@@ -353,13 +353,11 @@ public class ContentViewCoreImpl
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             WindowAndroid windowAndroid) {
         mViewAndroidDelegate = viewDelegate;
-        long windowNativePointer = windowAndroid.getNativePointer();
-        assert windowNativePointer != 0;
 
         final float dipScale = windowAndroid.getDisplay().getDipScale();
 
         mNativeContentViewCore =
-                nativeInit(webContents, mViewAndroidDelegate, windowNativePointer, dipScale);
+                nativeInit(webContents, mViewAndroidDelegate, windowAndroid, dipScale);
         mWebContents = (WebContentsImpl) nativeGetWebContentsAndroid(mNativeContentViewCore);
         ViewGroup containerView = viewDelegate.getContainerView();
         SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
@@ -390,8 +388,7 @@ public class ContentViewCoreImpl
     @Override
     public void updateWindowAndroid(WindowAndroid windowAndroid) {
         removeDisplayAndroidObserver();
-        long windowNativePointer = windowAndroid == null ? 0 : windowAndroid.getNativePointer();
-        nativeUpdateWindowAndroid(mNativeContentViewCore, windowNativePointer);
+        nativeUpdateWindowAndroid(mNativeContentViewCore, windowAndroid);
 
         // TODO(yusufo): Rename this call to be general for tab reparenting.
         // Clean up cached popups that may have been created with an old activity.
@@ -1400,13 +1397,12 @@ public class ContentViewCoreImpl
 
     @NativeClassQualifiedName("ContentViewCore")
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
-            long windowAndroidPtr, float dipScale);
+            WindowAndroid window, float dipScale);
     @NativeClassQualifiedName("ContentViewCore")
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
 
     @NativeClassQualifiedName("ContentViewCore")
-    private native void nativeUpdateWindowAndroid(
-            long nativeContentViewCore, long windowAndroidPtr);
+    private native void nativeUpdateWindowAndroid(long nativeContentViewCore, WindowAndroid window);
     @NativeClassQualifiedName("ContentViewCore")
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCore);
     @NativeClassQualifiedName("ContentViewCore")

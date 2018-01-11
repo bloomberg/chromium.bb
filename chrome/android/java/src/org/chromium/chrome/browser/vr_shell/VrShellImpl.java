@@ -325,7 +325,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO)
                 || mActivity.getWindowAndroid().canRequestPermission(
                            android.Manifest.permission.RECORD_AUDIO);
-        mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
+        mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid, forWebVr,
                 webVrAutopresentationExpected, inCct, browsingDisabled,
                 hasOrCanRequestAudioPermission, getGvrApi().getNativeGvrContext(),
                 mReprojectedRendering, displayWidthMeters, displayHeightMeters, dm.widthPixels,
@@ -828,11 +828,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         return mPresentationView;
     }
 
-    private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
-            boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct,
-            boolean browsingDisabled, boolean hasOrCanRequestAudioPermission, long gvrApi,
-            boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
-            int displayWidthPixels, int displayHeightPixels);
+    private native long nativeInit(VrShellDelegate delegate, WindowAndroid window, boolean forWebVR,
+            boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
+            boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
+            float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
+            int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);

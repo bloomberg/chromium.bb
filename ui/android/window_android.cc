@@ -115,6 +115,16 @@ void WindowAndroid::WindowBeginFrameSource::OnPauseChanged(bool paused) {
     obs.OnBeginFrameSourcePausedChanged(paused_);
 }
 
+// static
+WindowAndroid* WindowAndroid::FromJavaWindowAndroid(
+    const JavaParamRef<jobject>& jwindow_android) {
+  if (jwindow_android.is_null())
+    return nullptr;
+
+  return reinterpret_cast<WindowAndroid*>(Java_WindowAndroid_getNativePointer(
+      AttachCurrentThread(), jwindow_android));
+}
+
 WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, int display_id)
     : display_id_(display_id),
       compositor_(NULL),

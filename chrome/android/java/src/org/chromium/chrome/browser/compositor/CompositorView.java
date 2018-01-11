@@ -171,8 +171,8 @@ public class CompositorView
         mLayerTitleCache = layerTitleCache;
         mTabContentManager = tabContentManager;
 
-        mNativeCompositorView = nativeInit(lowMemDevice,
-                windowAndroid.getNativePointer(), layerTitleCache, tabContentManager);
+        mNativeCompositorView =
+                nativeInit(lowMemDevice, windowAndroid, layerTitleCache, tabContentManager);
 
         // compositor_impl_android.cc will use 565 EGL surfaces if and only if we're using a low
         // memory device, and no alpha channel is desired.  Otherwise, it will use 8888.  Since
@@ -411,7 +411,7 @@ public class CompositorView
     public void replaceSurfaceManagerForVr(
             CompositorSurfaceManager vrCompositorSurfaceManager, WindowAndroid window) {
         mCompositorSurfaceManager.shutDown();
-        nativeSetCompositorWindow(mNativeCompositorView, window.getNativePointer());
+        nativeSetCompositorWindow(mNativeCompositorView, window);
         mCompositorSurfaceManager = vrCompositorSurfaceManager;
         mCompositorSurfaceManager.requestSurface(PixelFormat.OPAQUE);
         nativeSetNeedsComposite(mNativeCompositorView);
@@ -427,14 +427,14 @@ public class CompositorView
     public void onExitVr(WindowAndroid windowToRestore) {
         setWindowAndroid(windowToRestore);
         mCompositorSurfaceManager.shutDown();
-        nativeSetCompositorWindow(mNativeCompositorView, mWindowAndroid.getNativePointer());
+        nativeSetCompositorWindow(mNativeCompositorView, mWindowAndroid);
         mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
         nativeSetNeedsComposite(mNativeCompositorView);
         mCompositorSurfaceManager.setVisibility(getVisibility());
     }
 
-    private native long nativeInit(boolean lowMemDevice, long nativeWindowAndroid,
+    private native long nativeInit(boolean lowMemDevice, WindowAndroid windowAndroid,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager);
     private native void nativeDestroy(long nativeCompositorView);
     private native ResourceManager nativeGetResourceManager(long nativeCompositorView);
@@ -449,5 +449,5 @@ public class CompositorView
     private native void nativeSetLayoutBounds(long nativeCompositorView);
     private native void nativeSetOverlayVideoMode(long nativeCompositorView, boolean enabled);
     private native void nativeSetSceneLayer(long nativeCompositorView, SceneLayer sceneLayer);
-    private native void nativeSetCompositorWindow(long nativeCompositorView, long nativeWindow);
+    private native void nativeSetCompositorWindow(long nativeCompositorView, WindowAndroid window);
 }
