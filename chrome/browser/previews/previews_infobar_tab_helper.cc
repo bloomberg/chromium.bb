@@ -146,7 +146,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   // Check for committed main frame preview.
   if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
-        previews_user_data_->GetCommittedPreviewsType();
+        previews_user_data_->committed_previews_type();
     if (main_frame_preview != previews::PreviewsType::NONE &&
         main_frame_preview != previews::PreviewsType::LOFI) {
       PreviewsInfoBarDelegate::Create(
