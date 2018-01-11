@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/logger.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -69,16 +70,16 @@ const char* GetDebugSeverityString(GLenum severity) {
       return "UNKNOWN";
   }
 }
-}
+}  // namespace
 
 std::vector<int> GetAllGLErrors() {
   int gl_errors[] = {
-    GL_NO_ERROR,
-    GL_INVALID_ENUM,
-    GL_INVALID_VALUE,
-    GL_INVALID_OPERATION,
-    GL_INVALID_FRAMEBUFFER_OPERATION,
-    GL_OUT_OF_MEMORY,
+      GL_NO_ERROR,
+      GL_INVALID_ENUM,
+      GL_INVALID_VALUE,
+      GL_INVALID_OPERATION,
+      GL_INVALID_FRAMEBUFFER_OPERATION,
+      GL_OUT_OF_MEMORY,
   };
   return base::CustomHistogram::ArrayToCustomRanges(gl_errors,
                                                     arraysize(gl_errors));
@@ -152,8 +153,8 @@ void PopulateNumericCapabilities(Capabilities* caps,
 
   const gl::GLVersionInfo& version_info = feature_info->gl_version_info();
   caps->VisitPrecisions([&version_info](
-      GLenum shader, GLenum type,
-      Capabilities::ShaderPrecision* shader_precision) {
+                            GLenum shader, GLenum type,
+                            Capabilities::ShaderPrecision* shader_precision) {
     GLint range[2] = {0, 0};
     GLint precision = 0;
     QueryShaderPrecisionFormat(version_info, shader, type, range, &precision);
@@ -264,33 +265,47 @@ const char* GetServiceShadingLanguageVersionString(
     return "OpenGL ES GLSL ES 1.0 Chromium";
 }
 
-void APIENTRY LogGLDebugMessage(GLenum source,
-                                GLenum type,
-                                GLuint id,
-                                GLenum severity,
-                                GLsizei length,
-                                const GLchar* message,
-                                GLvoid* user_param) {
-  LOG(ERROR) << "GL Driver Message (" << GetDebugSourceString(source) << ", "
-             << GetDebugTypeString(type) << ", " << id << ", "
-             << GetDebugSeverityString(severity) << "): " << message;
+static void APIENTRY LogGLDebugMessage(GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const GLchar* message,
+                                       GLvoid* user_param) {
+  std::string id_string = GLES2Util::GetStringEnum(id);
+  Logger* error_logger = static_cast<Logger*>(user_param);
+  if (type == GL_DEBUG_TYPE_ERROR && source == GL_DEBUG_SOURCE_API) {
+    error_logger->LogMessage(__FILE__, __LINE__,
+                             " " + id_string + ": " + message);
+  } else {
+    error_logger->LogMessage(
+        __FILE__, __LINE__,
+        std::string("GL Driver Message (") + GetDebugSourceString(source) +
+            ", " + GetDebugTypeString(type) + ", " + id_string + ", " +
+            GetDebugSeverityString(severity) + "): " + message);
+  }
 }
 
-void InitializeGLDebugLogging() {
+void InitializeGLDebugLogging(bool log_non_errors, Logger* error_logger) {
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-  // Enable logging of medium and high severity messages
-  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0,
-                        nullptr, GL_TRUE);
-  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0,
-                        nullptr, GL_TRUE);
-  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0,
-                        nullptr, GL_FALSE);
-  glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
-                        GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+  glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE,
+                        0, nullptr, GL_TRUE);
 
-  glDebugMessageCallback(&LogGLDebugMessage, nullptr);
+  if (log_non_errors) {
+    // Enable logging of medium and high severity messages
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0,
+                          nullptr, GL_TRUE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
+                          0, nullptr, GL_TRUE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0,
+                          nullptr, GL_FALSE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
+                          GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+  }
+
+  glDebugMessageCallback(&LogGLDebugMessage, error_logger);
 }
 
 bool ValidContextLostReason(GLenum reason) {

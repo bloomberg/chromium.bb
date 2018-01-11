@@ -723,9 +723,14 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     bound_buffers_[GL_DISPATCH_INDIRECT_BUFFER] = 0;
   }
 
-  if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
-      feature_info_->feature_flags().khr_debug) {
-    InitializeGLDebugLogging();
+  if (feature_info_->feature_flags().khr_debug) {
+    // For WebGL contexts, log GL errors so they appear in devtools. Otherwise
+    // only enable debug logging if requested.
+    bool log_non_errors =
+        group_->gpu_preferences().enable_gpu_driver_debug_logging;
+    if (IsWebGLContextType(attrib_helper.context_type) || log_non_errors) {
+      InitializeGLDebugLogging(log_non_errors, &logger_);
+    }
   }
 
   if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
