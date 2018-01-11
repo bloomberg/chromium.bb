@@ -113,16 +113,6 @@ void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   ime_instance->InsertText(base::UTF16ToUTF8(text));
 }
 
-void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
-    const gfx::Rect& new_bounds) {
-  auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(),
-                                                   OnKeyboardBoundsChanging);
-  if (!ime_instance)
-    return;
-
-  ime_instance->OnKeyboardBoundsChanging(new_bounds);
-}
-
 void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
     size_t before, size_t after) {
   auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(),
@@ -131,6 +121,17 @@ void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
     return;
 
   ime_instance->ExtendSelectionAndDelete(before, after);
+}
+
+void ArcImeBridgeImpl::SendOnKeyboardAppearanceChanging(
+    const gfx::Rect& new_bounds,
+    bool is_available) {
+  auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      bridge_service_->ime(), OnKeyboardAppearanceChanging);
+  if (!ime_instance)
+    return;
+
+  ime_instance->OnKeyboardAppearanceChanging(new_bounds, is_available);
 }
 
 void ArcImeBridgeImpl::OnTextInputTypeChanged(mojom::TextInputType type) {
