@@ -129,6 +129,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   source->AddLocalizedString("confirm", IDS_CONFIRM);
   source->AddLocalizedString("done", IDS_DONE);
   source->AddLocalizedString("ok", IDS_OK);
+  source->AddLocalizedString("controlledSettingPolicy",
+                             IDS_CONTROLLED_SETTING_POLICY);
 
   // Add extension-specific strings.
   source->AddLocalizedString("title",

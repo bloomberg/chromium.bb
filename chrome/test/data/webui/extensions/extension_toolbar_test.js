@@ -30,6 +30,7 @@ cr.define('extension_toolbar_tests', function() {
 
       var testVisible = extension_test_util.testVisible.bind(null, toolbar);
       testVisible('#dev-mode', true);
+      assertEquals(toolbar.$$('#dev-mode').disabled, false);
       testVisible('#load-unpacked', false);
       testVisible('#pack-extensions', false);
       testVisible('#update-now', false);
@@ -38,9 +39,15 @@ cr.define('extension_toolbar_tests', function() {
       Polymer.dom.flush();
 
       testVisible('#dev-mode', true);
+      assertEquals(toolbar.$$('#dev-mode').disabled, false);
       testVisible('#load-unpacked', true);
       testVisible('#pack-extensions', true);
       testVisible('#update-now', true);
+
+      // Test that the dev-mode toggle is disabled when a policy exists.
+      toolbar.set('devModeControlledByPolicy', true);
+      Polymer.dom.flush();
+      assertEquals(toolbar.$$('#dev-mode').disabled, true);
     });
 
     test(assert(TestNames.ClickHandlers), function() {
