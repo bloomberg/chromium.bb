@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
+import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -347,6 +348,15 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         mInitialized = true;
 
         TraceEvent.end(TAG + ".initialize()");
+    }
+
+    /**
+     * Sets the {@link FakeboxDelegate} associated with the new tab page.
+     * @param fakeboxDelegate The {@link FakeboxDelegate} used to determine whether the URL bar
+     *                        has focus.
+     */
+    public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
+        mRecyclerView.setFakeboxDelegate(fakeboxDelegate);
     }
 
     /**
