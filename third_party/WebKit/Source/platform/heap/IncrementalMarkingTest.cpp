@@ -112,7 +112,6 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
       headers_.push_back(header);
       was_marked_.push_back(header->IsMarked());
     }
-    EXPECT_FALSE(objects_.empty());
   }
 
   ~ExpectNoWriteBarrierFires() {
@@ -171,42 +170,6 @@ TEST(IncrementalMarkingTest, StackFrameDepthDisabled) {
   EXPECT_FALSE(scope.heap().GetStackFrameDepth().IsSafeToRecurse());
 }
 
-// =============================================================================
-// Member<T> support. ==========================================================
-// =============================================================================
-
-TEST(IncrementalMarkingTest, MemberReferenceAssignMember) {
-  Object* obj = Object::Create();
-  Member<Object> m1;
-  Member<Object>& m2 = m1;
-  Member<Object> m3(obj);
-  {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
-    m2 = m3;
-  }
-}
-
-TEST(IncrementalMarkingTest, WriteBarrierOnUnmarkedObject) {
-  Object* parent = Object::Create();
-  Object* child = Object::Create();
-  {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {child});
-    EXPECT_FALSE(child->IsMarked());
-    parent->set_next(child);
-    EXPECT_TRUE(child->IsMarked());
-  }
-}
-
-TEST(IncrementalMarkingTest, NoWriteBarrierOnMarkedObject) {
-  Object* parent = Object::Create();
-  Object* child = Object::Create();
-  HeapObjectHeader::FromPayload(child)->Mark();
-  {
-    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {child});
-    parent->set_next(child);
-  }
-}
-
 TEST(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
   Object* object = Object::Create();
   {
@@ -228,7 +191,32 @@ TEST(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
   EXPECT_TRUE(marking_stack->IsEmpty());
 }
 
-TEST(IncrementalMarkingTest, InitializingStoreTriggersNoWriteBarrier) {
+// =============================================================================
+// Member<T> support. ==========================================================
+// =============================================================================
+
+TEST(IncrementalMarkingTest, MemberSetUnmarkedObject) {
+  Object* parent = Object::Create();
+  Object* child = Object::Create();
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {child});
+    EXPECT_FALSE(child->IsMarked());
+    parent->set_next(child);
+    EXPECT_TRUE(child->IsMarked());
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberSetMarkedObjectNoBarrier) {
+  Object* parent = Object::Create();
+  Object* child = Object::Create();
+  HeapObjectHeader::FromPayload(child)->Mark();
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {child});
+    parent->set_next(child);
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberInitializingStoreNoBarrier) {
   Object* object1 = Object::Create();
   HeapObjectHeader* object1_header = HeapObjectHeader::FromPayload(object1);
   {
@@ -238,6 +226,49 @@ TEST(IncrementalMarkingTest, InitializingStoreTriggersNoWriteBarrier) {
     HeapObjectHeader* object2_header = HeapObjectHeader::FromPayload(object2);
     EXPECT_FALSE(object1_header->IsMarked());
     EXPECT_FALSE(object2_header->IsMarked());
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberReferenceAssignMember) {
+  Object* obj = Object::Create();
+  Member<Object> m1;
+  Member<Object>& m2 = m1;
+  Member<Object> m3(obj);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    m2 = m3;
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberSetDeletedValueNoBarrier) {
+  Member<Object> m;
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {});
+    m = WTF::kHashTableDeletedValue;
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberCopyDeletedValueNoBarrier) {
+  Member<Object> m1(WTF::kHashTableDeletedValue);
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {});
+    Member<Object> m2(m1);
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberHashTraitConstructDeletedValueNoBarrier) {
+  Member<Object> m1;
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {});
+    HashTraits<Member<Object>>::ConstructDeletedValue(m1, false);
+  }
+}
+
+TEST(IncrementalMarkingTest, MemberHashTraitIsDeletedValueNoBarrier) {
+  Member<Object> m1(Object::Create());
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(), {});
+    EXPECT_FALSE(HashTraits<Member<Object>>::IsDeletedValue(m1));
   }
 }
 
@@ -1330,6 +1361,8 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyKeysToVectorMember) {
   map.insert(obj1, obj2);
   HeapVector<Member<Object>> vec;
   {
+    // Only key should have its write barrier fired. A write barrier call for
+    // value hints to an inefficient implementation.
     ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
     CopyKeysToVector(map, vec);
   }
@@ -1342,7 +1375,9 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyValuesToVectorMember) {
   map.insert(obj1, obj2);
   HeapVector<Member<Object>> vec;
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    // Only value should have its write barrier fired. A write barrier call for
+    // key hints to an inefficient implementation.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2});
     CopyValuesToVector(map, vec);
   }
 }
