@@ -9262,6 +9262,151 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Touchview"/>
 </enum>
 
+<enum name="DownEventInputFormFactorDestinationCombination">
+  <int value="0"
+      label="Unknown input in clamshell mode, destination is
+             others(everything except browser and apps)"/>
+  <int value="1"
+      label="Unknown input in clamshell mode, destination is inside the
+             browser frame"/>
+  <int value="2"
+      label="Unknown input in clamshell mode, destination is regular chrome
+             app"/>
+  <int value="3"
+      label="Unknown input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="4"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="5"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is inside the browser frame"/>
+  <int value="6"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is regular chrome app"/>
+  <int value="7"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="8"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="9"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is inside the browser frame"/>
+  <int value="10"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is regular chrome app"/>
+  <int value="11"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="12"
+      label="Mouse input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="13"
+      label="Mouse input in clamshell mode, destination is inside the browser
+             frame"/>
+  <int value="14"
+      label="Mouse input in clamshell mode, destination is regular chrome app"/>
+  <int value="15"
+      label="Mouse input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="16"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="17"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is inside the browser frame"/>
+  <int value="18"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is regular chrome app"/>
+  <int value="19"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="20"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="21"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="22"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="23"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="24"
+      label="Stylus input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="25"
+      label="Stylus input in clamshell mode, destination is inside the
+             browser frame"/>
+  <int value="26"
+      label="Stylus input in clamshell mode, destination is regular chrome
+             app"/>
+  <int value="27"
+      label="Stylus input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="28"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="29"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is inside the browser frame"/>
+  <int value="30"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is regular chrome app"/>
+  <int value="31"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="32"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="33"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="34"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="35"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="36"
+      label="Touch input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="37"
+      label="Touch input in clamshell mode, destination is inside the browser
+             frame"/>
+  <int value="38"
+      label="Touch input in clamshell mode, destination is regular chrome app"/>
+  <int value="39"
+      label="Touch input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="40"
+      label="Touch input in touchview mode landscape orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="41"
+      label="Touch input in touchview mode landscape orientation, destination
+             is inside the browser frame"/>
+  <int value="42"
+      label="Touch input in touchview mode landscape orientation, destination
+             is regular chrome app"/>
+  <int value="43"
+      label="Touch input in touchview mode landscape orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="44"
+      label="Touch input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="45"
+      label="Touch input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="46"
+      label="Touch input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="47"
+      label="Touch input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+</enum>
+
 <enum name="DownEventSource">
   <int value="0" label="Unknown"/>
   <int value="1" label="Mouse"/>

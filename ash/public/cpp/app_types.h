@@ -7,15 +7,16 @@
 
 namespace ash {
 
-// App type of the window. This enum is used to back
-// an UMA histogram and should be treated as append-only.
+// App type of the window.
+// This enum is used to control a UMA histogram buckets. If you change this
+// enum, you should update DownEventMetric in
+// ash/metrics/pointer_metrics_recorder.h as well.
 enum class AppType {
   OTHERS = 0,
   BROWSER,
   CHROME_APP,
   ARC_APP,
-  DEPRECATED_DEFAULT_NOTE_TAKING_APP,  // Use CHROME_APP or ARC_APP instead.
-  APP_TYPE_LAST = DEPRECATED_DEFAULT_NOTE_TAKING_APP,
+  APP_TYPE_LAST = ARC_APP,
 };
 
 const int kAppCount = static_cast<int>(AppType::APP_TYPE_LAST) + 1;
