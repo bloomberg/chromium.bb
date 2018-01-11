@@ -136,7 +136,8 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       enable_token_binding(false),
-      http_09_on_non_default_ports_enabled(false) {
+      http_09_on_non_default_ports_enabled(false),
+      disable_idle_sockets_close_on_memory_pressure(false) {
   quic_supported_versions.push_back(QUIC_VERSION_39);
 }
 
@@ -254,8 +255,12 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   http_server_properties_->SetMaxServerConfigsStoredInProperties(
       params.quic_max_server_configs_stored_in_properties);
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
-      &HttpNetworkSession::OnMemoryPressure, base::Unretained(this))));
+  if (!params_.disable_idle_sockets_close_on_memory_pressure) {
+    memory_pressure_listener_.reset(
+        new base::MemoryPressureListener(base::BindRepeating(
+            &HttpNetworkSession::OnMemoryPressure, base::Unretained(this))));
+  }
+
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
@@ -493,10 +498,13 @@ ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
 
 void HttpNetworkSession::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DCHECK(!params_.disable_idle_sockets_close_on_memory_pressure);
+
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
+
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       CloseIdleConnections();
       break;

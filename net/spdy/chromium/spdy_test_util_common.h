@@ -220,6 +220,7 @@ struct SpdySessionDependencies {
   bool enable_http2_alternative_service;
   NetLog* net_log;
   bool http_09_on_non_default_ports_enabled;
+  bool disable_idle_sockets_close_on_memory_pressure;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {
