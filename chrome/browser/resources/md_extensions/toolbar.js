@@ -39,6 +39,11 @@ cr.define('extensions', function() {
         observer: 'onInDevModeChanged_',
       },
 
+      devModeControlledByPolicy: {
+        type: Boolean,
+        value: false,
+      },
+
       isGuest: Boolean,
 
       // <if expr="chromeos">

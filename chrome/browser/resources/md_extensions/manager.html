@@ -55,7 +55,9 @@
       }
     </style>
     <extensions-drop-overlay></extensions-drop-overlay>
-    <extensions-toolbar is-guest="[[isGuest_]]" in-dev-mode="[[inDevMode]]"
+    <extensions-toolbar is-guest="[[isGuest_]]"
+        in-dev-mode="[[inDevMode]]"
+        dev-mode-controlled-by-policy="[[devModeControlledByPolicy]]"
         on-pack-tap="onPackTap_" delegate="[[delegate]]"
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
         on-search-changed="onFilterChanged_"
