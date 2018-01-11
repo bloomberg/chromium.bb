@@ -33,6 +33,12 @@ good job.
 
 #### Links
 
+ * Power
+   [Rotation](https://rotation.googleplex.com/#rotation?id=5428142711767040)
+ * Rotation
+   [Documentation](https://docs.google.com/document/d/1YgsRvJOi7eJWCTh2p7dy2Wf4EJtjk_3XU30yp_7mhaM/preview)
+ * Power
+   [Backlog](https://docs.google.com/spreadsheets/d/1VhU1aM6APdUN74NVPW98X3aqpQyJkxg1UJcvBidXaK8/edit)
  * Performance-Power [Bug
    Queue](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Performance%3DPower)
 
