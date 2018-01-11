@@ -152,6 +152,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   // HTMLFrameOwnerElement overrides:
   void DisconnectContentFrame() override;
+  void IntrinsicDimensionsChanged() final;
 
   // Return any existing LayoutEmbeddedContent without triggering relayout, or 0
   // if it doesn't yet exist.

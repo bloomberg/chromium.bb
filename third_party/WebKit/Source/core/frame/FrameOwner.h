@@ -38,6 +38,10 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool CanRenderFallbackContent() const = 0;
   virtual void RenderFallbackContent() = 0;
 
+  // The intrinsic dimensions of the embedded object changed. This is relevant
+  // for SVG documents that are embedded via <object> or <embed>.
+  virtual void IntrinsicDimensionsChanged() = 0;
+
   // Returns the 'name' content attribute value of the browsing context
   // container.
   // https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container
@@ -73,6 +77,7 @@ class CORE_EXPORT DummyFrameOwner
   void DispatchLoad() override {}
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent() override {}
+  void IntrinsicDimensionsChanged() override {}
   AtomicString BrowsingContextContainerName() const override {
     return AtomicString();
   }
