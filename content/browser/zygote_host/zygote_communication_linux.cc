@@ -16,7 +16,6 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
-#include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -198,17 +197,6 @@ pid_t ZygoteCommunication::ForkRequest(
       return base::kNullProcessHandle;
   }
 
-#if !defined(OS_OPENBSD)
-  // This is just a starting score for a renderer or extension (the
-  // only types of processes that will be started this way).  It will
-  // get adjusted as time goes on.  (This is the same value as
-  // chrome::kLowestRendererOomScore in chrome/chrome_constants.h, but
-  // that's not something we can include here.)
-  const int kLowestRendererOomScore = 300;
-  ZygoteHostImpl::GetInstance()->AdjustRendererOOMScore(
-      pid, kLowestRendererOomScore);
-#endif
-
   ZygoteChildBorn(pid);
   return pid;
 }
@@ -238,13 +226,13 @@ void ZygoteCommunication::ZygoteChildDied(pid_t process) {
 }
 
 void ZygoteCommunication::Init(
-    base::OnceCallback<void(base::CommandLine*)> add_switches_callback) {
+    base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)> launcher) {
   CHECK(!init_);
 
   base::FilePath chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
-  base::CommandLine cmd_line(chrome_path);
 
+  base::CommandLine cmd_line(chrome_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);
 
   const base::CommandLine& browser_command_line =
@@ -275,9 +263,7 @@ void ZygoteCommunication::Init(
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
 
-  std::move(add_switches_callback).Run(&cmd_line);
-
-  pid_ = ZygoteHostImpl::GetInstance()->LaunchZygote(&cmd_line, &control_fd_);
+  pid_ = std::move(launcher).Run(&cmd_line, &control_fd_);
 
   base::Pickle pickle;
   pickle.WriteInt(kZygoteCommandGetSandboxStatus);

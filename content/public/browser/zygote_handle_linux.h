@@ -7,17 +7,19 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "content/common/content_export.h"
 #include "content/public/common/zygote_handle.h"
 
 namespace content {
 
 // Allocates and initializes the global generic zygote process, and returns the
-// ZygoteHandle used to communicate with it. |add_switches_callback| allows
-// adding additional command line switches once the zygote process command line
-// has been composed by this function.
+// ZygoteHandle used to communicate with it. |launcher| is a callback that
+// should actually launch the process, after adding additional command line
+// switches to the ones composed by this function. It returns the pid created,
+// and provides a control fd for it.
 CONTENT_EXPORT ZygoteHandle CreateGenericZygote(
-    base::OnceCallback<void(base::CommandLine*)> add_switches_callback);
+    base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)> launcher);
 
 // Returns a handle to a global generic zygote object. This function allows the
 // browser to launch and use a single zygote process until the performance
