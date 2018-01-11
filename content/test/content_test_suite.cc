@@ -90,7 +90,11 @@ void ContentTestSuite::Initialize() {
     gpu::GPUInfo gpu_info;
     gpu::CollectBasicGraphicsInfo(&gpu_info);
     gpu::GpuFeatureInfo gpu_feature_info =
-        gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
+        gpu::ComputeGpuFeatureInfo(gpu_info,
+                                   false,  // ignore_gpu_blacklist
+                                   false,  // disable_gpu_driver_bug_workarounds
+                                   false,  // log_gpu_control_list_decisions
+                                   command_line);
     gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
         gpu_feature_info);
     gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();

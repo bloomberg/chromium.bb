@@ -41,7 +41,11 @@ GPU_EXPORT GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader();
 // point, and is not dependent on sandbox initialization.
 // This function also appends a few commandline switches caused by driver bugs.
 GPU_EXPORT GpuFeatureInfo
-ComputeGpuFeatureInfo(const GPUInfo& gpu_info, base::CommandLine* command_line);
+ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
+                      bool ignore_gpu_blacklist,
+                      bool disable_gpu_driver_bug_workarounds,
+                      bool log_gpu_control_list_decisions,
+                      base::CommandLine* command_line);
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
 

@@ -343,6 +343,7 @@ source_set("common") {
     "//gpu/command_buffer/service",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
+    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/skia_bindings",
     "//ipc",
     "//media",

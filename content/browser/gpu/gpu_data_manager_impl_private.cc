@@ -987,14 +987,8 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 void GpuDataManagerImplPrivate::InitializeImpl(
     const gpu::GpuControlListData& gpu_blacklist_data,
     const gpu::GPUInfo& gpu_info) {
-  const bool log_gpu_control_list_decisions =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLogGpuControlListDecisions);
-
   if (gpu_blacklist_data.entry_count) {
     gpu_blacklist_ = gpu::GpuBlacklist::Create(gpu_blacklist_data);
-    if (log_gpu_control_list_decisions)
-      gpu_blacklist_->EnableControlListLogging("gpu_blacklist");
   }
 
   gpu_info_ = gpu_info;
