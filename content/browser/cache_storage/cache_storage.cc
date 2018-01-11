@@ -477,10 +477,13 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     base::FileEnumerator file_enum(cache_base_dir, false /* recursive */,
                                    base::FileEnumerator::DIRECTORIES);
     std::vector<base::FilePath> dirs_to_delete;
-    base::FilePath cache_path;
-    while (!(cache_path = file_enum.Next()).empty()) {
-      if (!base::ContainsKey(*cache_dirs, cache_path.BaseName().AsUTF8Unsafe()))
-        dirs_to_delete.push_back(cache_path);
+    {
+      base::FilePath cache_path;
+      while (!(cache_path = file_enum.Next()).empty()) {
+        if (!base::ContainsKey(*cache_dirs,
+                               cache_path.BaseName().AsUTF8Unsafe()))
+          dirs_to_delete.push_back(cache_path);
+      }
     }
 
     for (const base::FilePath& cache_path : dirs_to_delete)

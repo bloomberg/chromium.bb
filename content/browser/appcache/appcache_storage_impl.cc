@@ -1507,9 +1507,9 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
 
   if (usage_map_.find(manifest_url.GetOrigin()) == usage_map_.end()) {
     // No need to query the database, return a new group immediately.
-    scoped_refptr<AppCacheGroup> group(new AppCacheGroup(
-        this, manifest_url, NewGroupId()));
-    delegate->OnGroupLoaded(group.get(), manifest_url);
+    scoped_refptr<AppCacheGroup> new_group(
+        new AppCacheGroup(this, manifest_url, NewGroupId()));
+    delegate->OnGroupLoaded(new_group.get(), manifest_url);
     return;
   }
 
