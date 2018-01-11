@@ -13,6 +13,7 @@
 #include "ui/platform_window/platform_window.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -67,6 +68,13 @@ void SetCursorOnResourceThread(
   if (image_cursors_weak_ptr) {
     ui::Cursor native_cursor(cursor_type);
     image_cursors_weak_ptr->SetPlatformCursor(&native_cursor);
+
+    // Because of the check in ThreadedImageCursors::SetCursor(), |cursor_type|
+    // can not be kCustom. Default cursors don't increment their refcounts when
+    // passed around (see u/b/cursor/cursor.cc), so we don't do anything
+    // regarding the ownership when passing this across threads like we do with
+    // the ozone only custom cursor case.
+
     // |platform_window| is owned by the UI Service thread, so setting the
     // cursor on it also needs to happen on that thread.
     ui_service_task_runner_->PostTask(
@@ -91,16 +99,33 @@ void SetCustomCursorOnResourceThread(
     scoped_refptr<base::SingleThreadTaskRunner> ui_service_task_runner_,
     base::WeakPtr<ThreadedImageCursors> threaded_image_cursors_weak_ptr) {
   if (image_cursors_weak_ptr) {
+    // If we are in an ozone build, our CursosrFactoryOzone is a
+    // BitmapCursorFactoryOzone and we need to work around the normal memory
+    // management so that we can safely send this reference across threads.
     ui::PlatformCursor platform_cursor = cursor_factory->CreateAnimatedCursor(
         cursor_data->cursor_frames(), cursor_data->hotspot_in_pixels(),
         cursor_data->frame_delay().InMilliseconds(),
         cursor_data->scale_factor());
+
+    // Put it in a scoped_refptr for transport back to the other thread.
+    scoped_refptr<BitmapCursorOzone> bitmap_cursor =
+        ui::BitmapCursorFactoryOzone::GetBitmapCursor(platform_cursor);
+
+    // CreateAnimatedCursor() manually increments the internal refcount of the
+    // |platform_cursor|. Now that we have a second refcount because of
+    // |bitmap_cursor|, we can manually release the PlatformCursor one to
+    // ensure that the only reference to this object while posting across
+    // threads in the scoped_refptr one so that if we don't leak if something
+    // happens during the PostTask.
+    bitmap_cursor.get()->Release();
+
     // |platform_window| is owned by the UI Service thread, so setting the
     // cursor on it also needs to happen on that thread.
     ui_service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ThreadedImageCursors::SetCursorOnPlatformWindow,
-                              threaded_image_cursors_weak_ptr, platform_cursor,
-                              platform_window));
+        FROM_HERE, base::Bind(
+            &ThreadedImageCursors::SetCursorOnPlatformWindowFromBitmap,
+            threaded_image_cursors_weak_ptr, bitmap_cursor,
+            platform_window));
   }
 }
 #endif  // defined(USE_OZONE)
@@ -206,6 +231,22 @@ void ThreadedImageCursors::SetCursorOnPlatformWindow(
     ui::PlatformWindow* platform_window) {
   platform_window->SetCursor(platform_cursor);
 }
+
+#if defined(USE_OZONE)
+void ThreadedImageCursors::SetCursorOnPlatformWindowFromBitmap(
+    scoped_refptr<BitmapCursorOzone> bitmap_cursor,
+    ui::PlatformWindow* platform_window) {
+  // We just received |bitmap_cursor| from the other thread, so we now undo the
+  // manual changes to refcounts and set it back to having a manual refcount.
+  ui::PlatformCursor platform_cursor =
+      static_cast<PlatformCursor>(bitmap_cursor.get());
+  bitmap_cursor.get()->AddRef();
+  SetCursorOnPlatformWindow(platform_cursor, platform_window);
+  // When we go out of scope, the scoped_refptr<> which remove its reference
+  // and the only existing reference should be the manually added
+  // |platform_cursor| one.
+}
+#endif  // defined(USE_OZONE)
 
 }  // namespace ws
 }  // namespace ui
