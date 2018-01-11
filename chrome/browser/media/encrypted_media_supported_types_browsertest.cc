@@ -341,7 +341,7 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterExternalClearKey(command_line);
+    RegisterClearKeyCdm(command_line);
   }
 
  private:
@@ -353,18 +353,15 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
 
 // By default, the External Clear Key (ECK) key system is not supported even if
 // present. This test case tests this behavior by not enabling
-// kExternalClearKeyForTesting.
-// Even registering the Pepper CDM where applicable does not enable the CDM.
+// kExternalClearKeyForTesting. Even registering the Clear Key CDM does not
+// enable the ECK key system support.
 class EncryptedMediaSupportedTypesExternalClearKeyNotEnabledTest
     : public EncryptedMediaSupportedTypesTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
-                      media::kClearKeyCdmAdapterFileName,
-                      media::kClearKeyCdmDisplayName,
-                      media::kClearKeyCdmPepperMimeType);
+    RegisterClearKeyCdm(command_line);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
 };
@@ -385,45 +382,28 @@ class EncryptedMediaSupportedTypesWidevineTest
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Registers ClearKey CDM with the wrong path (filename).
-class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
+class EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest
     : public EncryptedMediaSupportedTypesTest {
  protected:
-  EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest() {
+  EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest() {
     scoped_feature_list_.InitAndEnableFeature(
         media::kExternalClearKeyForTesting);
   }
 
-  ~EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest()
+  ~EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest()
       override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
-                      "clearkeycdmadapterwrongname.dll",
-                      media::kClearKeyCdmDisplayName,
-                      media::kClearKeyCdmPepperMimeType, false);
+    RegisterClearKeyCdm(command_line, true /* use_wrong_cdm_path */);
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(
-      EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest);
+      EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest);
 };
-
-// Registers Widevine CDM with the wrong path (filename).
-class EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest
-    : public EncryptedMediaSupportedTypesTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line, "WidevineCdm",
-                      "widevinecdmadapterwrongname.dll",
-                      "Widevine Content Decryption Module",
-                      "application/x-ppapi-widevine-cdm", false);
-  }
-};
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Basic) {
@@ -989,50 +969,29 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Robustness) {
 //
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// Since this test fixture does not register the CDMs on the command line, the
-// check for the CDMs in chrome_key_systems.cc should fail, and they should not
-// be registered with KeySystems.
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesTest,
-                       PepperCDMsNotRegistered) {
+                       ClearKeyCdmNotRegistered) {
+  // External Clear Key will not be supported because Clear Key CDM is not
+  // registered on the command line.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
       kExternalClearKey, kVideoWebMMimeType, video_webm_codecs()));
 
-// This will fail in all builds unless widevine is available.
-#if !defined(WIDEVINE_CDM_AVAILABLE)
-  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
-                                            video_webm_codecs()));
-#endif
-
-  // Clear Key should still be registered.
+  // Clear Key should always be supported.
   EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType,
                                         video_webm_codecs()));
 }
 
-// Since this test fixture does not register the CDMs on the command line, the
-// check for the CDMs in chrome_key_systems.cc should fail, and they should not
-// be registered with KeySystems.
 IN_PROC_BROWSER_TEST_F(
-    EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest,
-    PepperCDMsRegisteredButAdapterNotPresent) {
+    EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest,
+    Basic) {
+  // External Clear Key will not be supported because Clear Key CDM is
+  // registered with the wrong path.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
       kExternalClearKey, kVideoWebMMimeType, video_webm_codecs()));
 
-  // Clear Key should still be registered.
+  // Clear Key should always be supported.
   EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType,
                                         video_webm_codecs()));
 }
 
-// This will fail in all builds unless Widevine is available.
-#if !defined(WIDEVINE_CDM_AVAILABLE)
-IN_PROC_BROWSER_TEST_F(
-    EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest,
-    PepperCDMsRegisteredButAdapterNotPresent) {
-  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
-                                            video_webm_codecs()));
-
-  // Clear Key should still be registered.
-  EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType,
-                                        video_webm_codecs()));
-}
-#endif  // !defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

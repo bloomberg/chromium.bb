@@ -581,7 +581,7 @@ void ChromeContentClient::AddContentDecryptionModules(
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     base::FilePath clear_key_cdm_path =
         command_line->GetSwitchValuePath(switches::kClearKeyCdmPathForTesting);
-    if (!clear_key_cdm_path.empty()) {
+    if (!clear_key_cdm_path.empty() && base::PathExists(clear_key_cdm_path)) {
       // TODO(crbug.com/764480): Remove these after we have a central place for
       // External Clear Key (ECK) related information.
       // Normal External Clear Key key system.
