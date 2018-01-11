@@ -129,8 +129,6 @@ static_library("test_support") {
     "../public/test/test_content_client_initializer.h",
     "../public/test/test_download_http_response.cc",
     "../public/test/test_download_http_response.h",
-    "../public/test/test_download_request_handler.cc",
-    "../public/test/test_download_request_handler.h",
     "../public/test/test_file_error_injector.cc",
     "../public/test/test_file_error_injector.h",
     "../public/test/test_fileapi_operation_waiter.cc",

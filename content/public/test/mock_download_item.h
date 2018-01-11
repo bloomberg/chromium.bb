@@ -114,6 +114,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
+  MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
 
  private:
   base::ObserverList<Observer> observers_;

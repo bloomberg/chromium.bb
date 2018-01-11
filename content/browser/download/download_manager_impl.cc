@@ -49,6 +49,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -71,19 +72,6 @@
 
 namespace content {
 namespace {
-
-WebContents* GetWebContents(int render_process_id,
-                            int render_frame_id,
-                            int frame_tree_node_id) {
-  DCHECK(IsBrowserSideNavigationEnabled());
-
-  WebContents* web_contents = WebContents::FromRenderFrameHost(
-      RenderFrameHost::FromID(render_process_id, render_frame_id));
-  if (web_contents)
-    return web_contents;
-
-  return WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-}
 
 StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
                                           int render_process_id,
@@ -193,7 +181,10 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     uint32_t download_id,
-    base::WeakPtr<DownloadManagerImpl> download_manager) {
+    base::WeakPtr<DownloadManagerImpl> download_manager,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check if the renderer is permitted to request the requested URL.
@@ -206,17 +197,18 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     return nullptr;
   }
 
-  ResourceRequestInfo::WebContentsGetter getter =
-      base::Bind(&GetWebContents, params->render_process_host_id(),
-                 params->render_frame_host_routing_id(), -1);
+  ResourceRequestInfo::WebContentsGetter getter = base::BindRepeating(
+      WebContentsImpl::FromRenderFrameHostID, params->render_process_host_id(),
+      params->render_frame_host_routing_id());
+
   // TODO(qinmin): Check the storage permission before creating the URLLoader.
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
-          url_loader_factory_getter, file_system_context, getter, download_id,
-          false)
+          url_loader_factory_getter, file_system_context, getter, site_url,
+          tab_url, tab_referrer_url, download_id, false)
           .release());
 }
 
@@ -808,8 +800,7 @@ void DownloadManagerImpl::InterceptNavigation(
   const GURL& url = resource_request->url;
   const std::string& method = resource_request->method;
   ResourceRequestInfo::WebContentsGetter web_contents_getter =
-      base::BindRepeating(&GetWebContents, ChildProcessHost::kInvalidUniqueID,
-                          MSG_ROUTING_NONE, frame_tree_node_id);
+      base::BindRepeating(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
   base::OnceCallback<void(bool /* download allowed */)>
       on_download_checks_done = base::BindOnce(
@@ -1084,13 +1075,27 @@ void DownloadManagerImpl::BeginDownloadInternal(
     StoragePartitionImpl* storage_partition =
         GetStoragePartition(browser_context_, params->render_process_host_id(),
                             params->render_frame_host_routing_id());
+
+    GURL site_url, tab_url, tab_referrer_url;
+    auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
+                                        params->render_frame_host_routing_id());
+    if (rfh) {
+      site_url = rfh->GetSiteInstance()->GetSiteURL();
+      auto* web_contents = WebContents::FromRenderFrameHost(rfh);
+      NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+      if (entry) {
+        tab_url = entry->GetURL();
+        tab_referrer_url = entry->GetReferrer().url;
+      }
+    }
+
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &BeginResourceDownload, std::move(params), std::move(request),
             storage_partition->url_loader_factory_getter(),
-             base::WrapRefCounted(storage_partition->GetFileSystemContext()),
-             id, weak_factory_.GetWeakPtr()),
+            base::WrapRefCounted(storage_partition->GetFileSystemContext()), id,
+            weak_factory_.GetWeakPtr(), site_url, tab_url, tab_referrer_url),
         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                        weak_factory_.GetWeakPtr()));
   } else {

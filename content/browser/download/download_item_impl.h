@@ -273,6 +273,7 @@ class CONTENT_EXPORT DownloadItemImpl
   void SetLastAccessTime(base::Time last_access_time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
+  void SimulateErrorForTesting(DownloadInterruptReason reason) override;
 
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.

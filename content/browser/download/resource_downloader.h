@@ -32,6 +32,9 @@ class ResourceDownloader : public UrlDownloadHandler,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       scoped_refptr<storage::FileSystemContext> file_system_context,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
       uint32_t download_id,
       bool is_parallel_request);
 
@@ -52,6 +55,9 @@ class ResourceDownloader : public UrlDownloadHandler,
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<ResourceRequest> resource_request,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
       uint32_t download_id);
   ~ResourceDownloader() override;
 
@@ -103,6 +109,15 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // Used to get WebContents in browser process.
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+
+  // Site URL for the site instance that initiated the download.
+  GURL site_url_;
+
+  // The URL of the tab that started us.
+  GURL tab_url_;
+
+  // The referrer URL of the tab that started us.
+  GURL tab_referrer_url_;
 
   // URLLoader status when intercepting the navigation request.
   base::Optional<network::URLLoaderCompletionStatus> url_loader_status_;

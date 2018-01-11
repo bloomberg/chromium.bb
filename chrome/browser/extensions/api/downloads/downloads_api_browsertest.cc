@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // Disable everything on windows only. http://crbug.com/306144
-#ifndef OS_WIN
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -20,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -48,12 +47,14 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/public/test/test_download_request_handler.h"
+#include "content/public/test/test_download_http_response.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/url_request/url_request.h"
@@ -77,6 +78,10 @@ namespace extensions {
 namespace downloads = api::downloads;
 
 namespace {
+
+const char kFirstDownloadUrl[] = "/download1";
+const char kSecondDownloadUrl[] = "/download2";
+const int kDownloadSize = 1024 * 10;
 
 // Comparator that orders download items by their ID. Can be used with
 // std::sort.
@@ -323,6 +328,13 @@ class DownloadExtensionTest : public ExtensionApiTest {
     // Disable file chooser for current profile.
     DownloadTestFileActivityObserver observer(current_browser()->profile());
     observer.EnableFileChooser(false);
+
+    first_download_ = std::make_unique<content::ControllableHttpResponse>(
+        embedded_test_server(), kFirstDownloadUrl);
+    second_download_ = std::make_unique<content::ControllableHttpResponse>(
+        embedded_test_server(), kSecondDownloadUrl);
+
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void GoOnTheRecord() { current_browser_ = browser(); }
@@ -442,60 +454,71 @@ class DownloadExtensionTest : public ExtensionApiTest {
     return true;
   }
 
-  void CreateSlowTestDownloads(
-      size_t count, DownloadManager::DownloadVector* items) {
-    for (size_t i = 0; i < count; ++i) {
-      std::unique_ptr<content::DownloadTestObserver> observer(
-          CreateInProgressDownloadObserver(1));
-      GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
-      ui_test_utils::NavigateToURL(current_browser(), slow_download_url);
-      observer->WaitForFinished();
-      EXPECT_EQ(
-          1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
-    }
+  void CreateTwoDownloads(DownloadManager::DownloadVector* items) {
+    CreateFirstSlowTestDownload();
+    CreateSecondSlowTestDownload();
+
     GetCurrentManager()->GetAllDownloads(items);
-    ASSERT_EQ(count, items->size());
+    ASSERT_EQ(2u, items->size());
   }
 
-  DownloadItem* CreateSlowTestDownload() {
-    std::unique_ptr<content::DownloadTestObserver> observer(
-        CreateInProgressDownloadObserver(1));
-    GURL slow_download_url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
+  DownloadItem* CreateFirstSlowTestDownload() {
     DownloadManager* manager = GetCurrentManager();
 
     EXPECT_EQ(0, manager->NonMaliciousInProgressCount());
     EXPECT_EQ(0, manager->InProgressCount());
     if (manager->InProgressCount() != 0)
       return NULL;
+    return CreateSlowTestDownload(first_download_.get(), kFirstDownloadUrl);
+  }
 
-    ui_test_utils::NavigateToURL(current_browser(), slow_download_url);
+  DownloadItem* CreateSecondSlowTestDownload() {
+    return CreateSlowTestDownload(second_download_.get(), kSecondDownloadUrl);
+  }
+
+  DownloadItem* CreateSlowTestDownload(
+      content::ControllableHttpResponse* response,
+      const std::string& path) {
+    if (!embedded_test_server()->Started())
+      StartEmbeddedTestServer();
+    std::unique_ptr<content::DownloadTestObserver> observer(
+        CreateInProgressDownloadObserver(1));
+    DownloadManager* manager = GetCurrentManager();
+
+    const GURL url = embedded_test_server()->GetURL(path);
+    ui_test_utils::NavigateToURLWithDisposition(
+        current_browser(), url, WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
+
+    response->WaitForRequest();
+    response->Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-type: application/octet-stream\r\n"
+        "Cache-Control: max-age=0\r\n"
+        "\r\n");
+    response->Send(std::string(kDownloadSize, '*'));
 
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
 
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(&items);
-
-    DownloadItem* new_item = NULL;
-    for (DownloadManager::DownloadVector::iterator iter = items.begin();
-         iter != items.end(); ++iter) {
-      if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
-        // There should be only one IN_PROGRESS item.
-        EXPECT_EQ(NULL, new_item);
-        new_item = *iter;
-      }
-    }
-    return new_item;
+    EXPECT_TRUE(!items.empty());
+    return items.back();
   }
 
-  void FinishPendingSlowDownloads() {
+  void FinishFirstSlowDownloads() {
+    FinishSlowDownloads(first_download_.get());
+  }
+
+  void FinishSecondSlowDownloads() {
+    FinishSlowDownloads(second_download_.get());
+  }
+
+  void FinishSlowDownloads(content::ControllableHttpResponse* response) {
     std::unique_ptr<content::DownloadTestObserver> observer(
         CreateDownloadObserver(1));
-    GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
-    ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(), finish_url,
-        WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    response->Done();
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   }
@@ -595,6 +618,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
   Browser* incognito_browser_;
   Browser* current_browser_;
   std::unique_ptr<DownloadsEventsListener> events_listener_;
+
+  std::unique_ptr<content::ControllableHttpResponse> first_download_;
+  std::unique_ptr<content::ControllableHttpResponse> second_download_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadExtensionTest);
 };
@@ -808,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                    open_function,
                    "[-42]").c_str());
 
-  DownloadItem* download_item = CreateSlowTestDownload();
+  DownloadItem* download_item = CreateFirstSlowTestDownload();
   ASSERT_TRUE(download_item);
   EXPECT_FALSE(download_item->GetOpened());
   EXPECT_FALSE(download_item->GetOpenWhenComplete());
@@ -827,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                    open_function,
                    DownloadItemIdAsArgList(download_item)).c_str());
 
-  FinishPendingSlowDownloads();
+  FinishFirstSlowDownloads();
   EXPECT_FALSE(download_item->GetOpened());
 
   open_function = new DownloadsOpenFunction();
@@ -846,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_PauseResumeCancelErase) {
-  DownloadItem* download_item = CreateSlowTestDownload();
+  DownloadItem* download_item = CreateFirstSlowTestDownload();
   ASSERT_TRUE(download_item);
   std::string error;
 
@@ -954,7 +980,7 @@ scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(
 // download items.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     MAYBE_DownloadExtensionTest_FileIcon_Active) {
-  DownloadItem* download_item = CreateSlowTestDownload();
+  DownloadItem* download_item = CreateFirstSlowTestDownload();
   ASSERT_TRUE(download_item);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
   std::string args32(base::StringPrintf("[%d, {\"size\": 32}]",
@@ -980,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       args32, &result_string));
 
   // Finish the download and try again.
-  FinishPendingSlowDownloads();
+  FinishFirstSlowDownloads();
   EXPECT_EQ(DownloadItem::COMPLETE, download_item->GetState());
   EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
           download_item->GetTargetFilePath(), IconLoader::NORMAL, "foo"),
@@ -990,9 +1016,10 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
           download_item->GetTargetFilePath(), IconLoader::NORMAL, "foo"),
       args32, &result_string));
+  download_item->Remove();
 
   // Now create another download.
-  download_item = CreateSlowTestDownload();
+  download_item = CreateSecondSlowTestDownload();
   ASSERT_TRUE(download_item);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
   args32 = base::StringPrintf("[%d, {\"size\": 32}]", download_item->GetId());
@@ -1074,7 +1101,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // Test passing the empty query to search().
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_SearchEmptyQuery) {
-  ScopedCancellingItem item(CreateSlowTestDownload());
+  ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
   std::unique_ptr<base::Value> result(
@@ -1088,7 +1115,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowFunction) {
-  ScopedCancellingItem item(CreateSlowTestDownload());
+  ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
   RunFunction(new DownloadsShowFunction(), DownloadItemIdAsArgList(item.get()));
@@ -1096,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowDefaultFolderFunction) {
-  ScopedCancellingItem item(CreateSlowTestDownload());
+  ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
   RunFunction(new DownloadsShowDefaultFolderFunction(),
@@ -1105,7 +1132,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsDragFunction) {
-  ScopedCancellingItem item(CreateSlowTestDownload());
+  ScopedCancellingItem item(CreateFirstSlowTestDownload());
   ASSERT_TRUE(item.get());
 
   RunFunction(new DownloadsDragFunction(), DownloadItemIdAsArgList(item.get()));
@@ -1152,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_SearchId) {
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
+  CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -1180,7 +1207,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_SearchIdAndFilename) {
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
+  CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
 
   std::unique_ptr<base::Value> result(
@@ -1296,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_SearchState) {
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
+  CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
 
   items[0]->Cancel(true);
@@ -1320,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
+  CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -1405,12 +1432,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // items total instead of 2.
   // TODO(benjhayden): Figure out where the third item comes from.
   GoOffTheRecord();
-  DownloadItem* off_item = CreateSlowTestDownload();
+  DownloadItem* off_item = CreateFirstSlowTestDownload();
   ASSERT_TRUE(off_item);
   off_item_arg = DownloadItemIdAsArgList(off_item);
 
   GoOnTheRecord();
-  DownloadItem* on_item = CreateSlowTestDownload();
+  DownloadItem* on_item = CreateSecondSlowTestDownload();
   ASSERT_TRUE(on_item);
   on_item_arg = DownloadItemIdAsArgList(on_item);
   ASSERT_TRUE(on_item->GetTargetFilePath() != off_item->GetTargetFilePath());
@@ -1660,14 +1687,71 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           result_id)));
 }
 
+namespace {
+
+class CustomResponse : public net::test_server::HttpResponse {
+ public:
+  CustomResponse(net::test_server::SendCompleteCallback* callback,
+                 base::TaskRunner** task_runner,
+                 bool first_request)
+      : callback_(callback),
+        task_runner_(task_runner),
+        first_request_(first_request) {}
+  ~CustomResponse() override {}
+
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    std::string response(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-type: application/octet-stream\r\n"
+        "Cache-Control: max-age=0\r\n"
+        "\r\n");
+    response += std::string(kDownloadSize, '*');
+
+    if (first_request_) {
+      *callback_ = std::move(done);
+      *task_runner_ = base::MessageLoop::current()->task_runner().get();
+      send.Run(response, base::BindRepeating([]() {}));
+    } else {
+      send.Run(response, std::move(done));
+    }
+  }
+
+ private:
+  net::test_server::SendCompleteCallback* callback_;
+  base::TaskRunner** task_runner_;
+  bool first_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomResponse);
+};
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_InterruptAndResume) {
   LoadExtension("downloads_split");
-  content::TestDownloadRequestHandler download_request_handler;
-  download_request_handler.StartServing(
-      content::TestDownloadRequestHandler::Parameters::
-          WithSingleInterruption());
-  GURL download_url = download_request_handler.url();
+
+  DownloadItem* item = nullptr;
+
+  net::test_server::SendCompleteCallback complete_callback;
+  base::TaskRunner* embedded_test_server_io_runner = nullptr;
+  const char kThirdDownloadUrl[] = "/download3";
+  bool first_request = true;
+  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        std::unique_ptr<net::test_server::HttpResponse> rv;
+        if (request.relative_url == kThirdDownloadUrl) {
+          rv = std::make_unique<CustomResponse>(&complete_callback,
+                                                &embedded_test_server_io_runner,
+                                                first_request);
+          first_request = false;
+        }
+        return rv;
+      }));
+
+  StartEmbeddedTestServer();
+  const GURL download_url = embedded_test_server()->GetURL(kThirdDownloadUrl);
 
   // Start downloading a file.
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -1676,11 +1760,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result.get());
   int result_id = -1;
   ASSERT_TRUE(result->GetAsInteger(&result_id));
-  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  item = GetCurrentManager()->GetDownload(result_id);
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl());
   EXPECT_EQ(GetExtensionURL(), item->GetSiteUrl().spec());
+
+  item->SimulateErrorForTesting(
+      content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
+  embedded_test_server_io_runner->PostTask(FROM_HERE, complete_callback);
 
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf("[{\"id\":%d,"
@@ -4127,7 +4215,7 @@ IN_PROC_BROWSER_TEST_F(
                           item->GetId())));
 
   ClearEvents();
-  FinishPendingSlowDownloads();
+  FinishFirstSlowDownloads();
 
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
@@ -4308,5 +4396,3 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
 }
 
 }  // namespace extensions
-
-#endif  // http://crbug.com/306144

@@ -87,10 +87,14 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
     uint32_t download_id,
     bool is_parallel_request) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(request), web_contents_getter, download_id);
+      delegate, std::move(request), web_contents_getter, site_url, tab_url,
+      tab_referrer_url, download_id);
 
   downloader->Start(url_loader_factory_getter, file_system_context,
                     std::move(params), is_parallel_request);
@@ -109,8 +113,8 @@ ResourceDownloader::InterceptNavigationResponse(
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(resource_request), web_contents_getter,
-      DownloadItem::kInvalidId);
+      delegate, std::move(resource_request), web_contents_getter, GURL(),
+      GURL(), GURL(), DownloadItem::kInvalidId);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));
@@ -121,11 +125,17 @@ ResourceDownloader::ResourceDownloader(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<ResourceRequest> resource_request,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
     uint32_t download_id)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       download_id_(download_id),
       web_contents_getter_(web_contents_getter),
+      site_url_(site_url),
+      tab_url_(tab_url),
+      tab_referrer_url_(tab_referrer_url),
       weak_ptr_factory_(this) {}
 
 ResourceDownloader::~ResourceDownloader() = default;
@@ -207,6 +217,9 @@ void ResourceDownloader::OnResponseStarted(
     mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
+  download_create_info->site_url = site_url_;
+  download_create_info->tab_url = tab_url_;
+  download_create_info->tab_referrer_url = tab_referrer_url_;
   download_create_info->request_handle.reset(
       new RequestHandle(web_contents_getter_));
 
