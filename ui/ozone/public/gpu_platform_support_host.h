@@ -22,10 +22,10 @@ namespace ui {
 // Under X11, we don't need any GPU messages for display configuration.
 // That's why there's no real functionality here: it's purely mechanism
 // to support additional messages needed by specific platforms.
-class OZONE_BASE_EXPORT GpuPlatformSupportHost : public IPC::Listener {
+class OZONE_BASE_EXPORT GpuPlatformSupportHost {
  public:
   GpuPlatformSupportHost();
-  ~GpuPlatformSupportHost() override;
+  virtual ~GpuPlatformSupportHost();
 
   // Called when the GPU process is spun up.
   // This is called from browser IO thread.
@@ -38,6 +38,10 @@ class OZONE_BASE_EXPORT GpuPlatformSupportHost : public IPC::Listener {
   // Called when the GPU process is destroyed.
   // This is called from browser UI thread.
   virtual void OnChannelDestroyed(int host_id) = 0;
+
+  // Called to handle an IPC message. Note that this can be called from any
+  // thread.
+  virtual void OnMessageReceived(const IPC::Message& message) = 0;
 };
 
 // create a stub implementation.
