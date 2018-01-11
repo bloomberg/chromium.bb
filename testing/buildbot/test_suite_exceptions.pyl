@@ -3427,6 +3427,7 @@
       'Linux Tests (dbg)(1)': {
         'args': [
           '--xvfb',
+          '--jobs=1',
         ],
       },
       # chromium.mac
@@ -3450,6 +3451,7 @@
       'Linux Tests SANDBOX': {
         'args': [
           '--xvfb',
+          '--jobs=1',
         ],
       },
     },
