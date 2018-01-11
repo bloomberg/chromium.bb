@@ -36,24 +36,11 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
-  // Sets that the page load received the Cache-Control:no-transform
-  // directive. Expected to be set upon receiving a committed response.
-  void SetCacheControlNoTransformDirective() {
-    cache_control_no_transform_directive_ = true;
-  }
-
-  // Returns whether the Cache-Control:no-transform directive has been
-  // detected for the request. Should not be called prior to receiving
-  // a committed response.
-  bool cache_control_no_transform_directive() {
-    return cache_control_no_transform_directive_;
-  }
-
   // Sets the committed previews type. Should only be called once.
   void SetCommittedPreviewsType(previews::PreviewsType previews_type);
 
   // The committed previews type, if any. Otherwise PreviewsType::NONE.
-  previews::PreviewsType committed_previews_type() const {
+  previews::PreviewsType GetCommittedPreviewsType() const {
     return committed_previews_type_;
   }
 
@@ -65,7 +52,6 @@ class PreviewsUserData : public base::SupportsUserData::Data {
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
-  bool cache_control_no_transform_directive_;
 
   // The committed previews type, if any.
   previews::PreviewsType committed_previews_type_;
