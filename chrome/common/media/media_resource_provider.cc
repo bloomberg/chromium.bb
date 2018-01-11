@@ -18,12 +18,6 @@ int MediaMessageIdToGrdId(media::MessageId message_id) {
     case media::COMMUNICATIONS_AUDIO_DEVICE_NAME:
       return IDS_COMMUNICATIONS_AUDIO_DEVICE_NAME;
 #endif
-#if defined(OS_CHROMEOS)
-    case media::BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME:
-      return IDS_BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME;
-    case media::BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME:
-      return IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME;
-#endif
     default:
       NOTREACHED();
       return 0;
