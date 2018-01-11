@@ -17381,6 +17381,9 @@ Called by update_net_error_codes.py.-->
   <int value="2323" label="V8RTCRtpSender_ReplaceTrack_Method"/>
   <int value="2324" label="InputTypeFileSecureOriginOpenChooser"/>
   <int value="2325" label="InputTypeFileInsecureOriginOpenChooser"/>
+  <int value="2326" label="BasicShapeEllipseNoRadius"/>
+  <int value="2327" label="BasicShapeEllipseOneRadius"/>
+  <int value="2328" label="BasicShapeEllipseTwoRadius"/>
 </enum>
 
 <enum name="FeedbackSource">
