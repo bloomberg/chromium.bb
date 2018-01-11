@@ -193,6 +193,7 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinator_adaptor.h"
 #include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
@@ -587,12 +588,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the toolbar.
   LegacyToolbarCoordinator* _toolbarCoordinator;
 
-  // Coordinator for the primary toolbar, displayed on top.
-  PrimaryToolbarCoordinator* _topToolbarCoordinator;
-
-  // Coordinator for the secondary toolbar, displayed on bottom.
-  SecondaryToolbarCoordinator* _bottomToolbarCoordinator;
-
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
 
@@ -692,11 +687,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
 
 // Primary toolbar.
-@property(nonatomic, readonly) id<PrimaryToolbarCoordinator>
+@property(nonatomic, strong) id<PrimaryToolbarCoordinator>
     primaryToolbarCoordinator;
 // Secondary toolbar.
-@property(nonatomic, readonly)
+@property(nonatomic, strong)
     SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
+// Interface object with the toolbars.
+@property(nonatomic, strong)
+    id<ToolbarCoordinating, ToolsMenuPresentationStateProvider>
+        toolbarInterface;
 // TODO(crbug.com/788705): Removes this property and associated calls.
 // Returns the LegacyToolbarCoordinator. This property is here to separate
 // methods which will be removed during cleanup to other methods. Uses this
@@ -942,7 +941,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize tabStripView = _tabStripView;
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
+@synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
+@synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
+@synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
@@ -1308,18 +1310,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return [self headerHeightForTab:[_model currentTab]];
 }
 
-- (id<PrimaryToolbarCoordinator>)primaryToolbarCoordinator {
-  if (base::FeatureList::IsEnabled(kAdaptiveToolbar)) {
-    return _topToolbarCoordinator;
-  } else {
-    return _toolbarCoordinator;
-  }
-}
-
-- (SecondaryToolbarCoordinator*)secondaryToolbarCoordinator {
-  return _bottomToolbarCoordinator;
-}
-
 - (LegacyToolbarCoordinator*)legacyToolbarCoordinator {
   return _toolbarCoordinator;
 }
@@ -1509,8 +1499,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.tabStripCoordinator = nil;
   [_toolbarCoordinator stop];
   _toolbarCoordinator = nil;
-  [_topToolbarCoordinator stop];
-  _topToolbarCoordinator = nil;
+  [self.primaryToolbarCoordinator stop];
+  self.primaryToolbarCoordinator = nil;
+  [self.secondaryToolbarCoordinator stop];
+  self.secondaryToolbarCoordinator = nil;
+  self.toolbarInterface = nil;
   self.tabStripView = nil;
   _infoBarContainer = nil;
   _readingListMenuNotifier = nil;
@@ -1717,7 +1710,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     _toolbarCoordinator = nil;
-    _topToolbarCoordinator = nil;
+    self.primaryToolbarCoordinator = nil;
+    self.secondaryToolbarCoordinator = nil;
+    self.toolbarInterface = nil;
     [_toolbarUIUpdater stopUpdating];
     _toolbarUIUpdater = nil;
     _toolbarModelDelegate = nil;
@@ -1935,24 +1930,37 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
 
   if (base::FeatureList::IsEnabled(kAdaptiveToolbar)) {
-    _topToolbarCoordinator =
+    PrimaryToolbarCoordinator* topToolbarCoordinator =
         [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
-    _topToolbarCoordinator.delegate = self;
-    _topToolbarCoordinator.URLLoader = self;
-    _topToolbarCoordinator.webStateList = [_model webStateList];
-    _topToolbarCoordinator.dispatcher = self.dispatcher;
-    [_topToolbarCoordinator start];
-    _bottomToolbarCoordinator = [[SecondaryToolbarCoordinator alloc]
-        initWithBaseViewController:nil
-                      browserState:_browserState];
-    _bottomToolbarCoordinator.dispatcher = self.dispatcher;
-    [_bottomToolbarCoordinator start];
+    self.primaryToolbarCoordinator = topToolbarCoordinator;
+    topToolbarCoordinator.delegate = self;
+    topToolbarCoordinator.URLLoader = self;
+    topToolbarCoordinator.webStateList = [_model webStateList];
+    topToolbarCoordinator.dispatcher = self.dispatcher;
+    [topToolbarCoordinator start];
+
+    SecondaryToolbarCoordinator* bottomToolbarCoordinator =
+        [[SecondaryToolbarCoordinator alloc]
+            initWithBaseViewController:nil
+                          browserState:_browserState];
+    self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
+    bottomToolbarCoordinator.dispatcher = self.dispatcher;
+    [bottomToolbarCoordinator start];
+
+    ToolbarCoordinatorAdaptor* adaptor = [[ToolbarCoordinatorAdaptor alloc]
+        initWithToolsMenuConfigurationProvider:self
+                                    dispatcher:self.dispatcher];
+    self.toolbarInterface = adaptor;
+    [adaptor addToolbarCoordinator:topToolbarCoordinator];
+    // TODO(crbug.com/800330): Add secondary toolbar.
   } else {
     _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
             initWithBaseViewController:self
         toolsMenuConfigurationProvider:self
                             dispatcher:self.dispatcher
                           browserState:_browserState];
+    self.primaryToolbarCoordinator = _toolbarCoordinator;
+    self.toolbarInterface = _toolbarCoordinator;
     [_toolbarCoordinator
         setToolbarController:
             [_dependencyFactory
@@ -2255,7 +2263,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = [_model currentTab];
   if (![tab navigationManager])
     return;
-  [_toolbarCoordinator updateToolbarState];
+  [self.toolbarInterface updateToolbarState];
   [self.legacyToolbarCoordinator setShareButtonEnabled:self.canShowShareMenu];
 
   if (_insertedTabWasPrerenderedTab && !_toolbarModelIOS->IsLoading())
@@ -3784,7 +3792,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       ntpObserver:self
                                      browserState:_browserState
                                        colorCache:_dominantColorCache
-                                  toolbarDelegate:_toolbarCoordinator
+                                  toolbarDelegate:self.toolbarInterface
                                          tabModel:_model
                              parentViewController:self
                                        dispatcher:self.dispatcher
@@ -5153,7 +5161,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (BOOL)preventSideSwipe {
-  if ([_toolbarCoordinator isShowingToolsMenu])
+  if ([self.toolbarInterface isShowingToolsMenu])
     return YES;
 
   if (_voiceSearchController && _voiceSearchController->IsVisible())
