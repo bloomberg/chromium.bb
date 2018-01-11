@@ -20,6 +20,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -117,11 +118,13 @@ bool ShelfWidget::IsUsingViewsShelf() {
   switch (Shell::Get()->session_controller()->GetSessionState()) {
     case session_manager::SessionState::ACTIVE:
       return true;
+    // See https://crbug.com/798869.
+    case session_manager::SessionState::OOBE:
+      return false;
     case session_manager::SessionState::LOCKED:
     case session_manager::SessionState::LOGIN_SECONDARY:
       return switches::IsUsingViewsLock();
     case session_manager::SessionState::UNKNOWN:
-    case session_manager::SessionState::OOBE:
     case session_manager::SessionState::LOGIN_PRIMARY:
     case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
       return switches::IsUsingViewsLogin();
@@ -384,6 +387,9 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
         login_shelf_view_->SetVisible(true);
         break;
       case session_manager::SessionState::OOBE:
+        login_shelf_view_->SetVisible(true);
+        shelf_view_->SetVisible(false);
+        break;
       case session_manager::SessionState::LOGIN_PRIMARY:
       case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
         login_shelf_view_->SetVisible(true);

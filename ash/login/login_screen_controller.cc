@@ -8,8 +8,10 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
@@ -28,6 +30,13 @@ std::string CalculateHash(const std::string& password,
   chromeos::Key key(password);
   key.Transform(key_type, salt);
   return key.GetSecret();
+}
+
+void SetSystemTrayVisibility(bool visible) {
+  auto* status_area =
+      Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
+  if (status_area)
+    status_area->SetSystemTrayVisibility(visible);
 }
 
 }  // namespace
@@ -60,6 +69,7 @@ void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
 void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
   std::move(on_shown).Run(true);
+  SetSystemTrayVisibility(true);
 }
 
 void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
@@ -73,6 +83,7 @@ void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
   // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
   std::move(on_shown).Run(true);
+  SetSystemTrayVisibility(true);
 }
 
 void LoginScreenController::ShowErrorMessage(int32_t login_attempts,

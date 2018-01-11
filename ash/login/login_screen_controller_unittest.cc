@@ -7,19 +7,34 @@
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/session_manager_types.h"
 
 using ::testing::_;
+using namespace session_manager;
 
 namespace ash {
 
 namespace {
 using LoginScreenControllerTest = AshTestBase;
+
+void HideSystemTray() {
+  Shell::GetPrimaryRootWindowController()
+      ->GetStatusAreaWidget()
+      ->SetSystemTrayVisibility(false);
+}
+
+bool IsPrimarySystemTrayVisible() {
+  return Shell::GetPrimaryRootWindowController()->GetSystemTray()->visible();
+}
 
 TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   LoginScreenController* controller = Shell::Get()->login_screen_controller();
@@ -38,13 +53,17 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   // (hashed) password, and the correct PIN state.
   EXPECT_CALL(*client, AuthenticateUser_(id, hashed_password, false, _));
   base::Optional<bool> callback_result;
+  base::RunLoop run_loop1;
   controller->AuthenticateUser(
       id, password, false,
-      base::BindOnce([](base::Optional<bool>* result,
-                        base::Optional<bool> did_auth) { *result = *did_auth; },
-                     &callback_result));
-
-  base::RunLoop().RunUntilIdle();
+      base::BindOnce(
+          [](base::Optional<bool>* result, base::RunLoop* run_loop1,
+             base::Optional<bool> did_auth) {
+            *result = *did_auth;
+            run_loop1->Quit();
+          },
+          &callback_result, &run_loop1));
+  run_loop1.Run();
 
   EXPECT_TRUE(callback_result.has_value());
   EXPECT_TRUE(*callback_result);
@@ -61,14 +80,18 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   std::string hashed_pin = "cqgMB9rwrcE35iFxm+4vP2toO6qkzW+giCnCcEou92Y=";
   EXPECT_NE(pin, hashed_pin);
 
+  base::RunLoop run_loop2;
   EXPECT_CALL(*client, AuthenticateUser_(id, hashed_pin, true, _));
   controller->AuthenticateUser(
       id, pin, true,
-      base::BindOnce([](base::Optional<bool>* result,
-                        base::Optional<bool> did_auth) { *result = *did_auth; },
-                     &callback_result));
-
-  base::RunLoop().RunUntilIdle();
+      base::BindOnce(
+          [](base::Optional<bool>* result, base::RunLoop* run_loop2,
+             base::Optional<bool> did_auth) {
+            *result = *did_auth;
+            run_loop2->Quit();
+          },
+          &callback_result, &run_loop2));
+  run_loop2.Run();
 
   EXPECT_TRUE(callback_result.has_value());
   EXPECT_TRUE(*callback_result);
@@ -122,10 +145,15 @@ TEST_F(LoginScreenControllerTest,
 
     GetSessionControllerClient()->SetSessionState(state);
     base::Optional<bool> result;
+    base::RunLoop run_loop;
     controller->ShowLoginScreen(base::BindOnce(
-        [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
-        &result));
-    base::RunLoop().RunUntilIdle();
+        [](base::Optional<bool>* result, base::RunLoop* run_loop,
+           bool did_show) {
+          *result = did_show;
+          run_loop->Quit();
+        },
+        &result, &run_loop));
+    run_loop.Run();
 
     EXPECT_TRUE(result.has_value());
 
@@ -146,6 +174,60 @@ TEST_F(LoginScreenControllerTest,
   EXPECT_FALSE(show_login(session_manager::SessionState::ACTIVE));
   EXPECT_FALSE(show_login(session_manager::SessionState::LOCKED));
   EXPECT_FALSE(show_login(session_manager::SessionState::LOGIN_SECONDARY));
+}
+
+TEST_F(LoginScreenControllerTest, ShowSystemTrayWhenLoginScreenShown) {
+  // Hide system tray to make sure it is shown later.
+  GetSessionControllerClient()->SetSessionState(SessionState::UNKNOWN);
+  HideSystemTray();
+  EXPECT_FALSE(ash::LockScreen::IsShown());
+  EXPECT_FALSE(IsPrimarySystemTrayVisible());
+
+  // Show login screen.
+  GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
+  base::Optional<bool> result;
+  base::RunLoop run_loop;
+  Shell::Get()->login_screen_controller()->ShowLoginScreen(base::BindOnce(
+      [](base::Optional<bool>* result, base::RunLoop* run_loop, bool did_show) {
+        *result = did_show;
+        run_loop->Quit();
+      },
+      &result, &run_loop));
+  run_loop.Run();
+  EXPECT_TRUE(result.has_value());
+
+  EXPECT_TRUE(ash::LockScreen::IsShown());
+  EXPECT_TRUE(IsPrimarySystemTrayVisible());
+
+  if (*result)
+    ash::LockScreen::Get()->Destroy();
+}
+
+TEST_F(LoginScreenControllerTest, ShowSystemTrayWhenLockScreenShown) {
+  // Hide system tray to make sure it is shown later.
+  GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);
+  HideSystemTray();
+  EXPECT_FALSE(ash::LockScreen::IsShown());
+  EXPECT_FALSE(IsPrimarySystemTrayVisible());
+
+  // Show lock screen.
+  GetSessionControllerClient()->SetSessionState(SessionState::LOCKED);
+  base::Optional<bool> result;
+  base::RunLoop run_loop;
+  Shell::Get()->login_screen_controller()->ShowLockScreen(base::BindOnce(
+      [](base::Optional<bool>* result, base::RunLoop* run_loop, bool did_show) {
+        *result = did_show;
+        run_loop->Quit();
+      },
+      &result, &run_loop));
+  run_loop.Run();
+  EXPECT_TRUE(result.has_value());
+
+  EXPECT_TRUE(ash::LockScreen::IsShown());
+  EXPECT_TRUE(IsPrimarySystemTrayVisible());
+
+  if (*result)
+    ash::LockScreen::Get()->Destroy();
 }
 
 }  // namespace

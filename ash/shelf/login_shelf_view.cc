@@ -284,8 +284,8 @@ void LoginShelfView::UpdateUi() {
                    is_lock_screen_note_in_foreground);
   GetViewByID(kCancel)->SetVisible(session_state ==
                                    SessionState::LOGIN_SECONDARY);
-  // TODO(agawronska): Implement full list of conditions for buttons visibility.
-  // https://crbug.com/798869
+  // TODO(agawronska): Implement full list of conditions for buttons visibility,
+  // when views based shelf if enabled during OOBE. https://crbug.com/798869
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
   GetViewByID(kBrowseAsGuest)->SetVisible(is_login_primary);
   GetViewByID(kAddUser)->SetVisible(is_login_primary);
