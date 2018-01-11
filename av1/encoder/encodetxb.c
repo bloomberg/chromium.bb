@@ -575,15 +575,11 @@ typedef struct encode_txb_args {
   aom_writer *w;
 } ENCODE_TXB_ARGS;
 
-static void av1_write_coeffs_txb_wrap(int plane, int block, int blk_row,
-                                      int blk_col, BLOCK_SIZE plane_bsize,
-                                      TX_SIZE tx_size, void *arg) {
-  (void)plane_bsize;
-  ENCODE_TXB_ARGS *enc_args = (ENCODE_TXB_ARGS *)arg;
-  const AV1_COMMON *cm = enc_args->cm;
-  MACROBLOCK *x = enc_args->x;
+static void av1_write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
+                                      aom_writer *w, int plane, int block,
+                                      int blk_row, int blk_col,
+                                      TX_SIZE tx_size) {
   MACROBLOCKD *xd = &x->e_mbd;
-  aom_writer *w = enc_args->w;
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   uint16_t eob = x->mbmi_ext->eobs[plane][block];
   TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
@@ -592,12 +588,46 @@ static void av1_write_coeffs_txb_wrap(int plane, int block, int blk_row,
                        &txb_ctx);
 }
 
-void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
-                         aom_writer *w, int plane, BLOCK_SIZE bsize) {
-  ENCODE_TXB_ARGS enc_args = { cm, x, w };
+void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
+                         int mi_col, aom_writer *w, int plane,
+                         BLOCK_SIZE bsize) {
   MACROBLOCKD *xd = &x->e_mbd;
-  av1_foreach_transformed_block_in_plane(xd, bsize, plane,
-                                         av1_write_coeffs_txb_wrap, &enc_args);
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
+  const int stepr = tx_size_high_unit[tx_size];
+  const int stepc = tx_size_wide_unit[tx_size];
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+  int row, col;
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
+
+  if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                           pd->subsampling_y))
+    return;
+
+  int blk_row, blk_col;
+  int block = 0;
+  const int step = stepr * stepc;
+  const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+  int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+  int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+  mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
+  mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
+
+  for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+    const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
+    for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+      const int unit_width = AOMMIN(mu_blocks_wide + col, max_blocks_wide);
+
+      for (blk_row = row; blk_row < unit_height; blk_row += stepr) {
+        for (blk_col = col; blk_col < unit_width; blk_col += stepc) {
+          av1_write_coeffs_txb_wrap(cm, x, w, plane, block, blk_row, blk_col,
+                                    tx_size);
+          block += step;
+        }
+      }
+    }
+  }
 }
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
