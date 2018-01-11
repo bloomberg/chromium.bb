@@ -119,7 +119,7 @@ class TestOptionsProvider {
   PaintOp::SerializeOptions serialize_options_;
   PaintOp::DeserializeOptions deserialize_options_;
   NoOpImageProvider image_provider_;
-  MockCanvas canvas_;
+  testing::StrictMock<MockCanvas> canvas_;
   TransferCacheTestHelper transfer_cache_helper_;
 };
 
@@ -689,7 +689,7 @@ class PaintOpBufferOffsetsTest : public ::testing::Test {
 };
 
 TEST_F(PaintOpBufferOffsetsTest, ContiguousIndices) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -708,7 +708,7 @@ TEST_F(PaintOpBufferOffsetsTest, ContiguousIndices) {
 }
 
 TEST_F(PaintOpBufferOffsetsTest, NonContiguousIndices) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -726,7 +726,7 @@ TEST_F(PaintOpBufferOffsetsTest, NonContiguousIndices) {
 }
 
 TEST_F(PaintOpBufferOffsetsTest, FirstTwoIndices) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -742,7 +742,7 @@ TEST_F(PaintOpBufferOffsetsTest, FirstTwoIndices) {
 }
 
 TEST_F(PaintOpBufferOffsetsTest, MiddleIndex) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -757,7 +757,7 @@ TEST_F(PaintOpBufferOffsetsTest, MiddleIndex) {
 }
 
 TEST_F(PaintOpBufferOffsetsTest, LastTwoElements) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -773,7 +773,7 @@ TEST_F(PaintOpBufferOffsetsTest, LastTwoElements) {
 }
 
 TEST_F(PaintOpBufferOffsetsTest, ContiguousIndicesWithSaveLayerAlphaRestore) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -799,7 +799,7 @@ TEST_F(PaintOpBufferOffsetsTest, ContiguousIndicesWithSaveLayerAlphaRestore) {
 
 TEST_F(PaintOpBufferOffsetsTest,
        NonContiguousIndicesWithSaveLayerAlphaRestore) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   push_op<DrawColorOp>(0u, SkBlendMode::kClear);
   push_op<DrawColorOp>(1u, SkBlendMode::kClear);
@@ -843,7 +843,7 @@ TEST_F(PaintOpBufferOffsetsTest,
 
 TEST_F(PaintOpBufferOffsetsTest,
        ContiguousIndicesWithSaveLayerAlphaDrawRestore) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   auto add_draw_rect = [this](SkColor c) {
     PaintFlags flags;
@@ -876,7 +876,7 @@ TEST_F(PaintOpBufferOffsetsTest,
 
 TEST_F(PaintOpBufferOffsetsTest,
        NonContiguousIndicesWithSaveLayerAlphaDrawRestore) {
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   auto add_draw_rect = [this](SkColor c) {
     PaintFlags flags;
@@ -934,7 +934,7 @@ TEST_F(PaintOpBufferOffsetsTest,
 
 TEST(PaintOpBufferTest, SaveLayerAlphaDrawRestoreWithBadBlendMode) {
   PaintOpBuffer buffer;
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   auto add_draw_rect = [](PaintOpBuffer* buffer, SkColor c) {
     PaintFlags flags;
@@ -964,7 +964,7 @@ TEST(PaintOpBufferTest, SaveLayerAlphaDrawRestoreWithBadBlendMode) {
 
 TEST(PaintOpBufferTest, UnmatchedSaveRestoreNoSideEffects) {
   PaintOpBuffer buffer;
-  MockCanvas canvas;
+  testing::StrictMock<MockCanvas> canvas;
 
   auto add_draw_rect = [](PaintOpBuffer* buffer, SkColor c) {
     PaintFlags flags;
