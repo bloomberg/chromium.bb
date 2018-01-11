@@ -18,7 +18,7 @@ ServiceWorkerDataPipeReader::ServiceWorkerDataPipeReader(
     : owner_(owner),
       streaming_version_(streaming_version),
       stream_pending_buffer_size_(0),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       stream_(std::move(stream_handle->stream)),
       binding_(this, std::move(stream_handle->callback_request)),
       producer_state_(State::kStreaming) {
@@ -51,10 +51,7 @@ void ServiceWorkerDataPipeReader::Start() {
 void ServiceWorkerDataPipeReader::OnHandleGotSignal(MojoResult) {
   TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker", "ServiceWorkerDataPipeReader",
                                this, "OnHandleGotSignal");
-  // Do nothing if stream_pending_buffer_ is empty, i.e. there's no ReadRawData
-  // operation waiting for IO completion.
-  if (!stream_pending_buffer_)
-    return;
+  DCHECK(stream_pending_buffer_);
 
   // If state() is not STREAMING, it means the data pipe was disconnected and
   // OnCompleted/OnAborted has already been called.
@@ -84,7 +81,8 @@ void ServiceWorkerDataPipeReader::OnHandleGotSignal(MojoResult) {
         AsyncComplete();
       return;
     case MOJO_RESULT_SHOULD_WAIT:
-      return;
+    // MOJO_RESULT_SHOULD_WAIT should not be returned since
+    // OnHandleGotSignal should be called by readable or closed signals.
     case MOJO_RESULT_INVALID_ARGUMENT:
     case MOJO_RESULT_OUT_OF_RANGE:
     case MOJO_RESULT_BUSY:
@@ -122,6 +120,7 @@ int ServiceWorkerDataPipeReader::ReadRawData(net::IOBuffer* buf, int buf_size) {
     case MOJO_RESULT_SHOULD_WAIT:
       stream_pending_buffer_ = buf;
       stream_pending_buffer_size_ = buf_size;
+      handle_watcher_.ArmOrNotify();
       return net::ERR_IO_PENDING;
     case MOJO_RESULT_INVALID_ARGUMENT:
     case MOJO_RESULT_OUT_OF_RANGE:
