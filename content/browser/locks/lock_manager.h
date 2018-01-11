@@ -53,6 +53,12 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // State for a particular origin.
   class OriginState;
 
+  // State for each client held in |bindings_|.
+  struct BindingState {
+    url::Origin origin;
+    std::string client_id;
+  };
+
   bool IsGrantable(const url::Origin& origin,
                    const std::string& name,
                    blink::mojom::LockMode mode) const;
@@ -61,7 +67,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // to process outstanding requests within the origin.
   void ProcessRequests(const url::Origin& origin);
 
-  mojo::BindingSet<blink::mojom::LockManager, url::Origin> bindings_;
+  mojo::BindingSet<blink::mojom::LockManager, BindingState> bindings_;
 
   int64_t next_lock_id = 1;
   std::map<url::Origin, OriginState> origins_;

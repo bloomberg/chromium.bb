@@ -12,6 +12,52 @@
 function modes(list, name) {
   return list.filter(item => item.name === name).map(item => item.mode);
 }
+// Returns an array of the clientIds for the locks with matching name.
+function clients(list, name) {
+  return list.filter(item => item.name === name).map(item => item.clientId);
+}
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  await navigator.locks.acquire(res, async lock1 => {
+    // Attempt to acquire this again - should be blocked.
+    let lock2_acquired = false;
+    navigator.locks.acquire(res, lock2 => { lock2_acquired = true; });
+
+    // Verify that it was blocked.
+    await navigator.locks.acquire(res, {ifAvailable: true}, async lock3 => {
+      assert_false(lock2_acquired, 'second request should be blocked');
+      assert_equals(lock3, null, 'third request should have failed');
+
+      const state = await navigator.locks.query();
+
+      assert_own_property(state, 'pending', 'State has `pending` property');
+      assert_true(Array.isArray(state.pending),
+                  'State `pending` property is an array');
+      const pending_info = state.pending[0];
+      assert_own_property(pending_info, 'name',
+                          'Pending info dictionary has `name` property');
+      assert_own_property(pending_info, 'mode',
+                          'Pending info dictionary has `mode` property');
+      assert_own_property(pending_info, 'clientId',
+                          'Pending info dictionary has `clientId` property');
+
+      assert_own_property(state, 'held', 'State has `held` property');
+      assert_true(Array.isArray(state.held),
+                  'State `held` property is an array');
+      const held_info = state.held[0];
+      assert_own_property(held_info, 'name',
+                          'Held info dictionary has `name` property');
+      assert_own_property(held_info, 'mode',
+                          'Held info dictionary has `mode` property');
+      assert_own_property(held_info, 'clientId',
+                          'Held info dictionary has `clientId` property');
+    });
+  });
+}, 'query() returns dictionaries with expected properties');
+
+
 
 promise_test(async t => {
   const res = uniqueName(t);
@@ -102,5 +148,87 @@ promise_test(async t => {
     });
   });
 }, 'query() reports pending shared locks with appropriate count');
+
+promise_test(async t => {
+  const res1 = uniqueName(t);
+  const res2 = uniqueName(t);
+
+  await navigator.locks.acquire(res1, async lock1 => {
+    await navigator.locks.acquire(res2, async lock2 => {
+      const state = await navigator.locks.query();
+
+      const res1_clients = clients(state.held, res1);
+      const res2_clients = clients(state.held, res2);
+
+      assert_equals(res1_clients.length, 1, 'Each lock should have one holder');
+      assert_equals(res2_clients.length, 1, 'Each lock should have one holder');
+
+      assert_array_equals(res1_clients, res2_clients,
+                          'Both locks should have same clientId');
+    });
+  });
+}, 'query() reports the same clientId for held locks from the same context');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  const worker = new Worker('resources/worker.js');
+  t.add_cleanup(() => { worker.terminate(); });
+
+  await postToWorkerAndWait(
+    worker, {op: 'request', name: res, mode: 'shared'});
+
+  await navigator.locks.acquire(res, {mode: 'shared'}, async lock => {
+    const state = await navigator.locks.query();
+    const res_clients = clients(state.held, res);
+    assert_equals(res_clients.length, 2, 'Clients should have same resource');
+    assert_not_equals(res_clients[0], res_clients[1],
+                      'Clients should have different ids');
+  });
+}, 'query() reports different ids for held locks from different contexts');
+
+promise_test(async t => {
+  const res1 = uniqueName(t);
+  const res2 = uniqueName(t);
+
+  const worker = new Worker('resources/worker.js');
+  t.add_cleanup(() => { worker.terminate(); });
+
+  // Acquire 1 in the worker.
+  await postToWorkerAndWait(worker, {op: 'request', name: res1})
+
+  // Acquire 2 here.
+  await new Promise(resolve => {
+    navigator.locks.acquire(res2, lock => {
+      resolve();
+      return new Promise(() => {}); // Never released.
+    });
+  });
+
+  // Request 2 in the worker.
+  postToWorkerAndWait(worker, {op: 'request', name: res2});
+  assert_true((await postToWorkerAndWait(worker, {
+    op: 'request', name: res2, ifAvailable: true
+  })).failed, 'Lock request should have failed');
+
+  // Request 1 here.
+  navigator.locks.acquire(
+    res1, t.unreached_func('Lock should not be acquired'));
+
+  // Verify that we're seeing a deadlock.
+  const state = await navigator.locks.query();
+  const res1_held_clients = clients(state.held, res1);
+  const res2_held_clients = clients(state.held, res2);
+  const res1_pending_clients = clients(state.pending, res1);
+  const res2_pending_clients = clients(state.pending, res2);
+
+  assert_equals(res1_held_clients.length, 1);
+  assert_equals(res2_held_clients.length, 1);
+  assert_equals(res1_pending_clients.length, 1);
+  assert_equals(res2_pending_clients.length, 1);
+
+  assert_equals(res1_held_clients[0], res2_pending_clients[0]);
+  assert_equals(res2_held_clients[0], res1_pending_clients[0]);
+}, 'query() can observe a deadlock');
 
 </script>

@@ -31,6 +31,10 @@ enum LockMode {
 struct LockInfo {
   string name;
   LockMode mode;
+
+  // TODO(jsbell): Unify with Service Worker client ID e.g. ensure same
+  // struct type is used.
+  string client_id;
 };
 
 // Implementation of the proposed "Web Locks API". This provides a "lock"
