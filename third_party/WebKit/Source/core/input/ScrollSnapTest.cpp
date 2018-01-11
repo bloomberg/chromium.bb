@@ -16,22 +16,23 @@ namespace blink {
 
 class ScrollSnapTest : public SimTest {
  protected:
-  void SetUp() override;
+  void SetUpForDiv();
   // The following x, y, hint_x, hint_y, delta_x, delta_y are represents
   // the pointer/finger's location on touch screen.
+  void GestureScroll(double x, double y, double delta_x, double delta_y);
   void ScrollBegin(double x, double y, double hint_x, double hint_y);
   void ScrollUpdate(double x, double y, double delta_x, double delta_y);
   void ScrollEnd(double x, double y);
   void SetInitialScrollOffset(double x, double y);
 };
 
-void ScrollSnapTest::SetUp() {
-  SimTest::SetUp();
+void ScrollSnapTest::SetUpForDiv() {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
   WebView().Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
+    <!DOCTYPE html>
     <style>
     #scroller {
       width: 140px;
@@ -63,6 +64,20 @@ void ScrollSnapTest::SetUp() {
   )HTML");
 
   Compositor().BeginFrame();
+}
+
+void ScrollSnapTest::GestureScroll(double x,
+                                   double y,
+                                   double delta_x,
+                                   double delta_y) {
+  ScrollBegin(x, y, delta_x, delta_y);
+  ScrollUpdate(x, y, delta_x, delta_y);
+  ScrollEnd(x + delta_x, y + delta_y);
+
+  // Wait for animation to finish.
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.3);
 }
 
 void ScrollSnapTest::ScrollBegin(double x,
@@ -117,16 +132,9 @@ void ScrollSnapTest::SetInitialScrollOffset(double x, double y) {
 }
 
 TEST_F(ScrollSnapTest, ScrollSnapOnX) {
+  SetUpForDiv();
   SetInitialScrollOffset(50, 150);
-  ScrollBegin(100, 100, -50, 0);
-  // The finger moves left.
-  ScrollUpdate(100, 100, -50, 0);
-  ScrollEnd(50, 100);
-
-  // Wait for animation to finish.
-  Compositor().BeginFrame();  // update run_state_.
-  Compositor().BeginFrame();  // Set start_time = now.
-  Compositor().BeginFrame(0.2);
+  GestureScroll(100, 100, -50, 0);
 
   Element* scroller = GetDocument().getElementById("scroller");
   // Snaps to align the area at start.
@@ -136,16 +144,9 @@ TEST_F(ScrollSnapTest, ScrollSnapOnX) {
 }
 
 TEST_F(ScrollSnapTest, ScrollSnapOnY) {
+  SetUpForDiv();
   SetInitialScrollOffset(150, 50);
-  ScrollBegin(100, 100, 0, -50);
-  // The finger moves up.
-  ScrollUpdate(100, 100, 0, -50);
-  ScrollEnd(100, 50);
-
-  // Wait for animation to finish.
-  Compositor().BeginFrame();  // update run_state_.
-  Compositor().BeginFrame();  // Set start_time = now.
-  Compositor().BeginFrame(0.2);
+  GestureScroll(100, 100, 0, -50);
 
   Element* scroller = GetDocument().getElementById("scroller");
   // A y-locked scroll ignores snap points on x.
@@ -155,23 +156,164 @@ TEST_F(ScrollSnapTest, ScrollSnapOnY) {
 }
 
 TEST_F(ScrollSnapTest, ScrollSnapOnBoth) {
+  SetUpForDiv();
   SetInitialScrollOffset(50, 50);
-  ScrollBegin(100, 100, 0, -50);
-  // The finger moves left.
-  ScrollUpdate(100, 100, 0, -50);
-  // The finger moves up.
-  ScrollUpdate(100, 50, -50, 0);
-  ScrollEnd(50, 50);
-
-  // Wait for animation to finish.
-  Compositor().BeginFrame();  // update run_state_.
-  Compositor().BeginFrame();  // Set start_time = now.
-  Compositor().BeginFrame(0.2);
+  GestureScroll(100, 100, -50, -50);
 
   Element* scroller = GetDocument().getElementById("scroller");
   // A scroll gesture that has move in both x and y would snap on both axes.
   ASSERT_EQ(scroller->scrollLeft(), 200);
   ASSERT_EQ(scroller->scrollTop(), 200);
+}
+
+TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(300, 300));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      overflow: scroll;
+      scroll-snap-type: both mandatory;
+      height: 300px;
+      width: 300px;
+      margin: 0px;
+    }
+    #container {
+      margin: 0px;
+      padding: 0px;
+      width: 500px;
+      height: 500px;
+    }
+    #area {
+      position: relative;
+      left: 200px;
+      top: 200px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
+    }
+    </style>
+    <div id='container'>
+      <div id='area'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  GestureScroll(100, 100, -50, -50);
+
+  // Sanity check that body is the viewport defining element
+  ASSERT_EQ(GetDocument().body(), GetDocument().ViewportDefiningElement());
+
+  // When body is viewport defining and overflows then any snap points on the
+  // body element will be captured by layout view as the snap container.
+  ASSERT_EQ(Window().scrollX(), 200);
+  ASSERT_EQ(Window().scrollY(), 200);
+}
+
+TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(300, 300));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    :root {
+      overflow: scroll;
+      scroll-snap-type: both mandatory;
+      height: 300px;
+      width: 300px;
+    }
+    body {
+      margin: 0px;
+    }
+    #container {
+      margin: 0px;
+      padding: 0px;
+      width: 500px;
+      height: 500px;
+    }
+    #area {
+      position: relative;
+      left: 200px;
+      top: 200px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
+    }
+    </style>
+    <div id='container'>
+      <div id='area'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  GestureScroll(100, 100, -50, -50);
+
+  // Sanity check that document element is the viewport defining element
+  ASSERT_EQ(GetDocument().documentElement(),
+            GetDocument().ViewportDefiningElement());
+
+  // When document is viewport defining and overflows then any snap ponts on the
+  // document element will be captured by layout view as snap container.
+  ASSERT_EQ(Window().scrollX(), 200);
+  ASSERT_EQ(Window().scrollY(), 200);
+}
+
+TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(300, 300));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    :root {
+      overflow: scroll;
+      height: 300px;
+      width: 300px;
+    }
+    body {
+      overflow: scroll;
+      scroll-snap-type: both mandatory;
+      height: 400px;
+      width: 400px;
+    }
+    #container {
+      margin: 0px;
+      padding: 0px;
+      width: 500px;
+      height: 500px;
+    }
+    #area {
+      position: relative;
+      left: 200px;
+      top: 200px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
+    }
+    </style>
+    <div id='container'>
+      <div id='area'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  GestureScroll(100, 100, -50, -50);
+
+  // Sanity check that document element is the viewport defining element
+  ASSERT_EQ(GetDocument().documentElement(),
+            GetDocument().ViewportDefiningElement());
+
+  // When body and document elements are both scrollable then body element
+  // should capture snap points defined on it as opposed to layout view.
+  Element* body = GetDocument().body();
+  ASSERT_EQ(body->scrollLeft(), 100);
+  ASSERT_EQ(body->scrollTop(), 100);
 }
 
 }  // namespace blink

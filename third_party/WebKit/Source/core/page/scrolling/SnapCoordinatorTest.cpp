@@ -251,7 +251,7 @@ TEST_P(SnapCoordinatorTest,
   EXPECT_EQ(GetDocument().documentElement(),
             GetDocument().ViewportDefiningElement());
 
-  // When body is viewport defining and overflows then any snap points on the
+  // When document is viewport defining and overflows then any snap points on
   // the document element will be captured by layout view as the snap
   // container.
   EXPECT_EQ(2U, SizeOfSnapAreas(GetDocument()));
