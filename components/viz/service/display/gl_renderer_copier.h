@@ -64,8 +64,9 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // draw space, and is used to translate and clip the result selection Rect.
   // |framebuffer_texture| and |framebuffer_texture_size| are optional: When
   // non-zero, the texture might be used as the source, to avoid making an extra
-  // copy of the framebuffer. |color_space| specifies the color space of the
-  // pixels in the framebuffer.
+  // copy of the framebuffer. |flipped_source| is true (common case) if the
+  // framebuffer content is vertically flipped. |color_space| specifies the
+  // color space of the pixels in the framebuffer.
   //
   // This implementation may change a wide variety of GL state, such as texture
   // and framebuffer bindings, shader programs, and related attributes; and so
@@ -76,6 +77,7 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
                                     GLenum internal_format,
                                     GLuint framebuffer_texture,
                                     const gfx::Size& framebuffer_texture_size,
+                                    bool flipped_source,
                                     const gfx::ColorSpace& color_space);
 
   // Checks whether cached resources should be freed because recent copy
@@ -117,17 +119,20 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // Creates a texture and renders a transformed copy of the currently-bound
   // framebuffer, according to the |request| parameters. This includes scaling.
-  // The caller owns the returned texture.
+  // The result texture's content is always Y-flipped. The caller owns the
+  // returned texture.
   GLuint RenderResultTexture(const CopyOutputRequest& request,
                              const gfx::Rect& framebuffer_copy_rect,
                              GLenum internal_format,
                              GLuint framebuffer_texture,
                              const gfx::Size& framebuffer_texture_size,
+                             bool flipped_source,
                              const gfx::Rect& result_rect);
 
   // Processes the next phase of the copy request by starting readback of the
   // |copy_rect| from the given |source_texture| into a pixel transfer buffer.
-  // This method does NOT take ownership of the |source_texture|.
+  // The source texture is assumed to be Y-flipped. This method does NOT take
+  // ownership of the |source_texture|.
   void StartReadbackFromTexture(std::unique_ptr<CopyOutputRequest> request,
                                 GLuint source_texture,
                                 const gfx::Rect& copy_rect,
@@ -136,7 +141,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // Processes the next phase of the copy request by starting readback of the
   // |copy_rect| from the currently-bound framebuffer into a pixel transfer
-  // buffer. This method kicks-off an asynchronous glReadPixels() workflow.
+  // buffer. The framebuffer content is assumed to be Y-flipped. This method
+  // kicks-off an asynchronous glReadPixels() workflow.
   void StartReadbackFromFramebuffer(std::unique_ptr<CopyOutputRequest> request,
                                     const gfx::Rect& copy_rect,
                                     const gfx::Rect& result_rect,
@@ -152,8 +158,9 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // Processes the next phase of an I420_PLANES copy request by using the
   // I420Converter to planarize the given |source_texture| and then starting
-  // readback of the planes via a pixel transfer buffer. This method does NOT
-  // take ownership of the |source_texture|.
+  // readback of the planes via a pixel transfer buffer. The source texture is
+  // assumed to be Y-flipped. This method does NOT take ownership of the
+  // |source_texture|.
   void StartI420ReadbackFromTexture(std::unique_ptr<CopyOutputRequest> request,
                                     GLuint source_texture,
                                     const gfx::Size& source_texture_size,
@@ -177,7 +184,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // Returns a cached scaler for the given request, or creates one on-demand.
   std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
-      const CopyOutputRequest& for_request);
+      const CopyOutputRequest& for_request,
+      bool flipped_source);
 
   // Stashes a scaler into the cache, or deletes it if it should not be cached.
   void CacheScalerOrDelete(const base::UnguessableToken& for_source,

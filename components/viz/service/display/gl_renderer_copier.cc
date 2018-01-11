@@ -69,6 +69,7 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
     GLenum internal_format,
     GLuint framebuffer_texture,
     const gfx::Size& framebuffer_texture_size,
+    bool flipped_source,
     const gfx::ColorSpace& color_space) {
   // Finalize the source subrect, as the entirety of the RenderPass's output
   // optionally clamped to the requested copy area. Then, compute the result
@@ -78,12 +79,11 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
   gfx::Rect copy_rect = output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
-  const gfx::Rect result_bounds =
-      request->is_scaled() ? copy_output::ComputeResultRect(
-                                 gfx::Rect(copy_rect.size()),
-                                 request->scale_from(), request->scale_to())
-                           : gfx::Rect(copy_rect.size());
-  gfx::Rect result_rect = result_bounds;
+  gfx::Rect result_rect = request->is_scaled()
+                              ? copy_output::ComputeResultRect(
+                                    gfx::Rect(copy_rect.size()),
+                                    request->scale_from(), request->scale_to())
+                              : gfx::Rect(copy_rect.size());
   if (request->has_result_selection())
     result_rect.Intersect(request->result_selection());
   if (result_rect.IsEmpty())
@@ -92,10 +92,12 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
   // Execute the cheapest workflow that satisfies the copy request.
   switch (request->result_format()) {
     case ResultFormat::RGBA_BITMAP: {
-      if (request->is_scaled()) {
+      // Scale and/or flip the source framebuffer content, but only if
+      // necessary, before starting readback.
+      if (request->is_scaled() || !flipped_source) {
         const GLuint result_texture = RenderResultTexture(
             *request, copy_rect, internal_format, framebuffer_texture,
-            framebuffer_texture_size, result_rect);
+            framebuffer_texture_size, flipped_source, result_rect);
         const base::UnguessableToken& request_source = SourceOf(*request);
         StartReadbackFromTexture(std::move(request), result_texture,
                                  gfx::Rect(result_rect.size()), result_rect,
@@ -115,7 +117,7 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
     case ResultFormat::RGBA_TEXTURE: {
       const GLuint result_texture = RenderResultTexture(
           *request, copy_rect, internal_format, framebuffer_texture,
-          framebuffer_texture_size, result_rect);
+          framebuffer_texture_size, flipped_source, result_rect);
       SendTextureResult(std::move(request), result_texture, result_rect,
                         color_space);
       break;
@@ -128,13 +130,14 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
       // to be VIZ-internal, this is an acceptable limitation to enforce.
       DCHECK(request->SendsResultsInCurrentSequence());
 
-      // I420 readback always requires a source texture. If a
-      // |framebuffer_texture| was not provided (or scaling was requested), a
-      // texture must first be rendered from the currently-bound framebuffer.
-      if (request->is_scaled() || framebuffer_texture == 0) {
+      // I420 readback always requires a source texture whose content is
+      // Y-flipped. If a |framebuffer_texture| was not provided, or its content
+      // is not flipped, or scaling was requested; an intermediate texture must
+      // first be rendered from the currently-bound framebuffer.
+      if (request->is_scaled() || !flipped_source || framebuffer_texture == 0) {
         const GLuint result_texture = RenderResultTexture(
             *request, copy_rect, internal_format, framebuffer_texture,
-            framebuffer_texture_size, result_rect);
+            framebuffer_texture_size, flipped_source, result_rect);
         const base::UnguessableToken& request_source = SourceOf(*request);
         StartI420ReadbackFromTexture(
             std::move(request), result_texture, result_rect.size(),
@@ -176,6 +179,7 @@ GLuint GLRendererCopier::RenderResultTexture(
     GLenum internal_format,
     GLuint framebuffer_texture,
     const gfx::Size& framebuffer_texture_size,
+    bool flipped_source,
     const gfx::Rect& result_rect) {
   // Compute the sampling rect. This is the region of the framebuffer, in window
   // coordinates, which contains the pixels that can affect the result.
@@ -210,8 +214,8 @@ GLuint GLRendererCopier::RenderResultTexture(
     // return it as the result texture. The request must not include scaling nor
     // a texture mailbox to use for delivering results. The texture format must
     // also be GL_RGBA, as described by CopyOutputResult::Format::RGBA_TEXTURE.
-    const int purpose = (!request.is_scaled() && !request.has_mailbox() &&
-                         internal_format == GL_RGBA)
+    const int purpose = (!request.is_scaled() && flipped_source &&
+                         !request.has_mailbox() && internal_format == GL_RGBA)
                             ? CacheEntry::kResultTexture
                             : CacheEntry::kFramebufferCopyTexture;
     TakeCachedObjectsOrCreate(SourceOf(request), purpose, 1, &source_texture);
@@ -247,18 +251,25 @@ GLuint GLRendererCopier::RenderResultTexture(
   // Populate the result texture with a scaled/exact copy.
   if (request.is_scaled()) {
     std::unique_ptr<GLHelper::ScalerInterface> scaler =
-        TakeCachedScalerOrCreate(request);
-    scaler->Scale(source_texture, source_texture_size,
-                  sampling_rect.OffsetFromOrigin(), result_texture,
-                  result_rect);
+        TakeCachedScalerOrCreate(request, flipped_source);
+    // The scaler will assume the Y offset does not account for a flipped source
+    // texture. However, |sampling_rect| does account for that. Thus, translate
+    // back for the call to Scale() below.
+    const gfx::Vector2d source_offset =
+        flipped_source
+            ? gfx::Vector2d(sampling_rect.x(), source_texture_size.height() -
+                                                   sampling_rect.bottom())
+            : sampling_rect.OffsetFromOrigin();
+    scaler->Scale(source_texture, source_texture_size, source_offset,
+                  result_texture, result_rect);
     CacheScalerOrDelete(SourceOf(request), std::move(scaler));
   } else {
     DCHECK_SIZE_EQ(sampling_rect.size(), result_rect.size());
     gl->CopySubTextureCHROMIUM(
         source_texture, 0 /* source_level */, GL_TEXTURE_2D, result_texture,
         0 /* dest_level */, 0 /* xoffset */, 0 /* yoffset */, sampling_rect.x(),
-        sampling_rect.y(), sampling_rect.width(), sampling_rect.height(), false,
-        false, false);
+        sampling_rect.y(), sampling_rect.width(), sampling_rect.height(),
+        !flipped_source, false, false);
   }
 
   // If |source_texture| was a copy, maybe cache it for future requests.
@@ -691,11 +702,16 @@ void GLRendererCopier::StartI420ReadbackFromTexture(
   // Convert the |source_texture| into separate Y+U+V planes.
   std::unique_ptr<I420Converter> converter =
       TakeCachedI420ConverterOrCreate(source);
+  // The converter will assume the Y offset does not account for a flipped
+  // source texture. However, |copy_rect| does account for that. Thus, translate
+  // back for the call to Convert() below.
+  const gfx::Vector2d source_offset(
+      copy_rect.x(), source_texture_size.height() - copy_rect.bottom());
   // TODO(crbug/758057): Plumb-in proper color space conversion into
   // I420Converter. If the request did not specify one, use Rec. 709.
-  converter->Convert(source_texture, source_texture_size,
-                     copy_rect.OffsetFromOrigin(), nullptr, result_rect,
-                     plane_textures[0], plane_textures[1], plane_textures[2]);
+  converter->Convert(source_texture, source_texture_size, source_offset,
+                     nullptr, result_rect, plane_textures[0], plane_textures[1],
+                     plane_textures[2]);
 
   // Execute three asynchronous read-pixels operations, one for each plane. The
   // CopyOutputRequest is passed to the ReadI420PlanesWorkflow, which will send
@@ -782,8 +798,8 @@ void GLRendererCopier::CacheObjectsOrDelete(
 }
 
 std::unique_ptr<GLHelper::ScalerInterface>
-GLRendererCopier::TakeCachedScalerOrCreate(
-    const CopyOutputRequest& for_request) {
+GLRendererCopier::TakeCachedScalerOrCreate(const CopyOutputRequest& for_request,
+                                           bool flipped_source) {
   // If an identically-configured scaler can be found in the cache, take it and
   // return it. If a differently-configured scaler was found, delete it.
   if (for_request.has_source()) {
@@ -791,7 +807,8 @@ GLRendererCopier::TakeCachedScalerOrCreate(
         cache_[for_request.source()].scaler;
     if (cached_scaler) {
       if (cached_scaler->IsSameScaleRatio(for_request.scale_from(),
-                                          for_request.scale_to())) {
+                                          for_request.scale_to()) &&
+          cached_scaler->IsSamplingFlippedSource() == flipped_source) {
         return std::move(cached_scaler);
       } else {
         cached_scaler.reset();
@@ -809,7 +826,8 @@ GLRendererCopier::TakeCachedScalerOrCreate(
                                               ? GLHelper::SCALER_QUALITY_GOOD
                                               : GLHelper::SCALER_QUALITY_BEST;
   return helper_.CreateScaler(quality, for_request.scale_from(),
-                              for_request.scale_to(), true, false, false);
+                              for_request.scale_to(), flipped_source, false,
+                              false);
 }
 
 void GLRendererCopier::CacheScalerOrDelete(

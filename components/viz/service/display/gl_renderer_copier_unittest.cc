@@ -90,7 +90,7 @@ class GLRendererCopierTest : public testing::Test {
   }
   std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
       const CopyOutputRequest& request) {
-    return copier_->TakeCachedScalerOrCreate(request);
+    return copier_->TakeCachedScalerOrCreate(request, true);
   }
   void CacheScalerOrDelete(const base::UnguessableToken& source,
                            std::unique_ptr<GLHelper::ScalerInterface> scaler) {

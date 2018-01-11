@@ -2702,7 +2702,7 @@ void GLRenderer::CopyDrawnRenderPass(
   copier_.CopyFromTextureOrFramebuffer(
       std::move(request), current_frame()->current_render_pass->output_rect,
       GetFramebufferCopyTextureFormat(), framebuffer_texture,
-      framebuffer_texture_size,
+      framebuffer_texture_size, FlippedFramebuffer(),
       current_frame()->current_render_pass->color_space);
 
   // The copier modified texture/framebuffer bindings, shader programs, and

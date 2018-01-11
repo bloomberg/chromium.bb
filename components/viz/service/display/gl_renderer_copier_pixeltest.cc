@@ -57,7 +57,7 @@ base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
 class GLRendererCopierPixelTest
     : public cc::PixelTest,
       public testing::WithParamInterface<
-          std::tuple<GLenum, bool, CopyOutputResult::Format, bool>> {
+          std::tuple<GLenum, bool, CopyOutputResult::Format, bool, bool>> {
  public:
   void SetUp() override {
     SetUpGLWithoutRenderer(false /* flipped_output_surface */);
@@ -65,19 +65,23 @@ class GLRendererCopierPixelTest
     texture_deleter_ =
         std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
 
-    gl_ = context_provider()->ContextGL();
-    copier_ = std::make_unique<GLRendererCopier>(
-        context_provider(), texture_deleter_.get(),
-        base::BindRepeating([](const gfx::Rect& draw_rect) {
-          gfx::Rect window_rect = draw_rect;
-          window_rect.set_y(kSourceSize.height() - window_rect.bottom());
-          return window_rect;
-        }));
-
     source_gl_format_ = std::get<0>(GetParam());
     have_source_texture_ = std::get<1>(GetParam());
     result_format_ = std::get<2>(GetParam());
     scale_by_half_ = std::get<3>(GetParam());
+    flipped_source_ = std::get<4>(GetParam());
+
+    gl_ = context_provider()->ContextGL();
+    copier_ = std::make_unique<GLRendererCopier>(
+        context_provider(), texture_deleter_.get(),
+        base::BindRepeating(
+            [](bool flipped_source, const gfx::Rect& draw_rect) {
+              gfx::Rect window_rect = draw_rect;
+              if (flipped_source)
+                window_rect.set_y(kSourceSize.height() - window_rect.bottom());
+              return window_rect;
+            },
+            flipped_source_));
 
     ASSERT_TRUE(cc::ReadPNGFile(
         GetTestFilePath(FILE_PATH_LITERAL("16_color_rects.png")),
@@ -96,8 +100,7 @@ class GLRendererCopierPixelTest
 
   // Creates a packed RGBA (bytes_per_pixel=4) or RGB (bytes_per_pixel=3) bitmap
   // in OpenGL byte/row order from the given SkBitmap.
-  std::unique_ptr<uint8_t[]> CreateGLPixelsFromSkBitmap(SkBitmap bitmap,
-                                                        int bytes_per_pixel) {
+  std::unique_ptr<uint8_t[]> CreateGLPixelsFromSkBitmap(SkBitmap bitmap) {
     // |bitmap| could be of any color type (and is usually BGRA). Convert it to
     // a RGBA bitmap in the GL byte order.
     SkBitmap rgba_bitmap;
@@ -111,12 +114,13 @@ class GLRendererCopierPixelTest
 
     // Copy the RGBA bitmap into a raw byte array, reversing the row order and
     // maybe stripping-out the alpha channel.
+    const int bytes_per_pixel = source_gl_format_ == GL_RGBA ? 4 : 3;
     std::unique_ptr<uint8_t[]> pixels(
         new uint8_t[rgba_bitmap.width() * rgba_bitmap.height() *
                     bytes_per_pixel]);
     for (int y = 0; y < rgba_bitmap.height(); ++y) {
       const uint8_t* src = static_cast<uint8_t*>(rgba_bitmap.getAddr(0, y));
-      const int flipped_y = rgba_bitmap.height() - y - 1;
+      const int flipped_y = flipped_source_ ? rgba_bitmap.height() - y - 1 : y;
       uint8_t* dest =
           pixels.get() + flipped_y * rgba_bitmap.width() * bytes_per_pixel;
       for (int x = 0; x < rgba_bitmap.width(); ++x) {
@@ -161,9 +165,7 @@ class GLRendererCopierPixelTest
     gl_->TexImage2D(GL_TEXTURE_2D, 0, source_gl_format_, kSourceSize.width(),
                     kSourceSize.height(), 0, source_gl_format_,
                     GL_UNSIGNED_BYTE,
-                    CreateGLPixelsFromSkBitmap(
-                        source_bitmap_, source_gl_format_ == GL_RGBA ? 4 : 3)
-                        .get());
+                    CreateGLPixelsFromSkBitmap(source_bitmap_).get());
     gl_->BindTexture(GL_TEXTURE_2D, 0);
     return source_texture_;
   }
@@ -219,6 +221,7 @@ class GLRendererCopierPixelTest
   bool have_source_texture_;
   CopyOutputResult::Format result_format_;
   bool scale_by_half_;
+  bool flipped_source_;
   SkBitmap source_bitmap_;
 
  private:
@@ -255,7 +258,7 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
     CreateAndBindSourceFramebuffer(source_texture);
     copier()->CopyFromTextureOrFramebuffer(
         std::move(request), gfx::Rect(kSourceSize), source_gl_format_,
-        have_source_texture_ ? source_texture : 0, kSourceSize,
+        have_source_texture_ ? source_texture : 0, kSourceSize, flipped_source_,
         gfx::ColorSpace::CreateSRGB());
     loop.Run();
   }
@@ -304,6 +307,8 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
                         CopyOutputResult::Format::RGBA_TEXTURE),
         // Result scaling: Scale by half?
+        testing::Values(false, true),
+        // Source content is vertically flipped?
         testing::Values(false, true)));
 
 }  // namespace viz
