@@ -112,6 +112,7 @@
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/mock_external_provider.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -693,8 +694,8 @@ class ExtensionServiceTest
 
   bool IsPrefExist(const std::string& extension_id,
                    const std::string& pref_path) {
-    const base::DictionaryValue* dict =
-        profile()->GetPrefs()->GetDictionary("extensions.settings");
+    const base::DictionaryValue* dict = profile()->GetPrefs()->GetDictionary(
+        extensions::pref_names::kExtensions);
     if (dict == NULL) return false;
     const base::DictionaryValue* pref = NULL;
     if (!dict->GetDictionary(extension_id, &pref)) {
@@ -714,7 +715,8 @@ class ExtensionServiceTest
                const std::string& pref_path,
                std::unique_ptr<base::Value> value,
                const std::string& msg) {
-    DictionaryPrefUpdate update(profile()->GetPrefs(), "extensions.settings");
+    DictionaryPrefUpdate update(profile()->GetPrefs(),
+                                extensions::pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
     base::DictionaryValue* pref = NULL;
@@ -752,7 +754,8 @@ class ExtensionServiceTest
     std::string msg = " while clearing: ";
     msg += extension_id + " " + pref_path;
 
-    DictionaryPrefUpdate update(profile()->GetPrefs(), "extensions.settings");
+    DictionaryPrefUpdate update(profile()->GetPrefs(),
+                                extensions::pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
     base::DictionaryValue* pref = NULL;
