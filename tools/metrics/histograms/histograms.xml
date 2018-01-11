@@ -30800,6 +30800,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.SessionCompletionReason"
+    enum="InstantTethering_SessionCompletionReason">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    Provides a breakdown of how each Tether session ended. A session begins when
+    a device is first connected to a host's hotspot, and ends when the device is
+    no longer connected to the hotspot. This metric is recorded at the end of
+    each session.
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.UserPreference.OnStartup"
     enum="BooleanEnabled">
   <owner>hansberry@chromium.org</owner>

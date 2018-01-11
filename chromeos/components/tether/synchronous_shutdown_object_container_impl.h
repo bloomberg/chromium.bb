@@ -45,6 +45,7 @@ class TetherConnector;
 class TetherDisconnector;
 class TetherHostResponseRecorder;
 class TetherNetworkDisconnectionHandler;
+class TetherSessionCompletionLogger;
 class WifiHotspotConnector;
 
 // Concrete SynchronousShutdownObjectContainer implementation.
@@ -104,6 +105,8 @@ class SynchronousShutdownObjectContainerImpl
   std::unique_ptr<TetherHostResponseRecorder> tether_host_response_recorder_;
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
+  std::unique_ptr<TetherSessionCompletionLogger>
+      tether_session_completion_logger_;
   std::unique_ptr<HostScanDevicePrioritizerImpl> host_scan_device_prioritizer_;
   std::unique_ptr<WifiHotspotConnector> wifi_hotspot_connector_;
   std::unique_ptr<ActiveHost> active_host_;

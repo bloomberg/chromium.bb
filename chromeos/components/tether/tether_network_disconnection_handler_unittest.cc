@@ -7,10 +7,13 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
+#include "chromeos/components/tether/fake_tether_session_completion_logger.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_test.h"
@@ -69,11 +72,14 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
         std::make_unique<FakeDisconnectTetheringRequestSender>();
     mock_network_configuration_remover_ =
         base::WrapUnique(new NiceMock<MockNetworkConfigurationRemover>);
+    fake_tether_session_completion_logger_ =
+        std::make_unique<FakeTetherSessionCompletionLogger>();
 
     handler_ = base::WrapUnique(new TetherNetworkDisconnectionHandler(
         fake_active_host_.get(), network_state_handler(),
         mock_network_configuration_remover_.get(),
-        fake_disconnect_tethering_request_sender_.get()));
+        fake_disconnect_tethering_request_sender_.get(),
+        fake_tether_session_completion_logger_.get()));
   }
 
   void TearDown() override {
@@ -89,12 +95,21 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
                        base::Value(shill::kStateIdle));
   }
 
+  void SetWiFiTechnologyStateEnabled(bool enabled) {
+    network_state_handler()->SetTechnologyEnabled(
+        chromeos::NetworkTypePattern::WiFi(), enabled,
+        chromeos::network_handler::ErrorCallback());
+    base::RunLoop().RunUntilIdle();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string wifi_service_path_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeDisconnectTetheringRequestSender>
       fake_disconnect_tethering_request_sender_;
+  std::unique_ptr<FakeTetherSessionCompletionLogger>
+      fake_tether_session_completion_logger_;
   std::unique_ptr<MockNetworkConfigurationRemover>
       mock_network_configuration_remover_;
 
@@ -104,9 +119,12 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   DISALLOW_COPY_AND_ASSIGN(TetherNetworkDisconnectionHandlerTest);
 };
 
-TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
+TEST_F(TetherNetworkDisconnectionHandlerTest,
+       TestConnectAndDisconnect_WiFiEnabled) {
   EXPECT_CALL(*mock_network_configuration_remover_,
               RemoveNetworkConfiguration(kWifiNetworkGuid));
+
+  SetWiFiTechnologyStateEnabled(true);
 
   // Connect to the network. |handler_| should start tracking the connection.
   fake_active_host_->SetActiveHostConnecting(kDeviceId, kTetherNetworkGuid);
@@ -123,6 +141,44 @@ TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
 
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
             fake_active_host_->GetActiveHostStatus());
+
+  EXPECT_EQ(TetherSessionCompletionLogger::SessionCompletionReason::
+                CONNECTION_DROPPED,
+            *fake_tether_session_completion_logger_
+                 ->last_session_completion_reason());
+}
+
+TEST_F(TetherNetworkDisconnectionHandlerTest,
+       TestConnectAndDisconnect_WiFiDisabled) {
+  EXPECT_CALL(*mock_network_configuration_remover_,
+              RemoveNetworkConfiguration(kWifiNetworkGuid));
+
+  SetWiFiTechnologyStateEnabled(true);
+
+  // Connect to the network. |handler_| should start tracking the connection.
+  fake_active_host_->SetActiveHostConnecting(kDeviceId, kTetherNetworkGuid);
+  fake_active_host_->SetActiveHostConnected(kDeviceId, kTetherNetworkGuid,
+                                            kWifiNetworkGuid);
+
+  // Now, simulate Wi-Fi being disabled.
+  SetWiFiTechnologyStateEnabled(false);
+
+  std::unique_ptr<NetworkState> network =
+      std::make_unique<NetworkState>(kWifiNetworkGuid);
+  network->SetGuid(kWifiNetworkGuid);
+  handler_->NetworkConnectionStateChanged(network.get());
+
+  EXPECT_EQ(
+      std::vector<std::string>{kDeviceId},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
+
+  EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
+            fake_active_host_->GetActiveHostStatus());
+
+  EXPECT_EQ(
+      TetherSessionCompletionLogger::SessionCompletionReason::WIFI_DISABLED,
+      *fake_tether_session_completion_logger_
+           ->last_session_completion_reason());
 }
 
 }  // namespace tether

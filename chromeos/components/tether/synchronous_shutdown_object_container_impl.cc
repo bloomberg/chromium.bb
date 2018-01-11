@@ -27,6 +27,7 @@
 #include "chromeos/components/tether/tether_disconnector_impl.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
+#include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
 
@@ -95,6 +96,8 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           std::make_unique<TetherHostResponseRecorder>(pref_service)),
       device_id_tether_network_guid_map_(
           std::make_unique<DeviceIdTetherNetworkGuidMap>()),
+      tether_session_completion_logger_(
+          std::make_unique<TetherSessionCompletionLogger>()),
       host_scan_device_prioritizer_(
           std::make_unique<HostScanDevicePrioritizerImpl>(
               tether_host_response_recorder_.get())),
@@ -168,13 +171,15 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           asychronous_container->wifi_hotspot_disconnector(),
           asychronous_container->disconnect_tethering_request_sender(),
           tether_connector_.get(),
-          device_id_tether_network_guid_map_.get())),
+          device_id_tether_network_guid_map_.get(),
+          tether_session_completion_logger_.get())),
       tether_network_disconnection_handler_(
           std::make_unique<TetherNetworkDisconnectionHandler>(
               active_host_.get(),
               network_state_handler_,
               asychronous_container->network_configuration_remover(),
-              asychronous_container->disconnect_tethering_request_sender())),
+              asychronous_container->disconnect_tethering_request_sender(),
+              tether_session_completion_logger_.get())),
       network_connection_handler_tether_delegate_(
           std::make_unique<NetworkConnectionHandlerTetherDelegate>(
               network_connection_handler,
