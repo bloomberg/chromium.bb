@@ -303,6 +303,7 @@ source_set("unittests") {
     "//mojo/common",
     "//mojo/edk/system",
     "//net:test_support",
+    "//services/network/public/cpp",
     "//sql:test_support",
     "//testing/gtest",
     "//third_party/leveldatabase",

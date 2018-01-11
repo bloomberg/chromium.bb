@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ReadStatus = content::BlobConsolidation::ReadStatus;
-using storage::DataElement;
+using network::DataElement;
 
 namespace content {
 namespace {

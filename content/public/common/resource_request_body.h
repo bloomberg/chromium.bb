@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "storage/common/data_element.h"
+#include "services/network/public/cpp/data_element.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -25,7 +25,7 @@ namespace content {
 class CONTENT_EXPORT ResourceRequestBody
     : public base::RefCountedThreadSafe<ResourceRequestBody> {
  public:
-  typedef storage::DataElement Element;
+  typedef network::DataElement Element;
 
   ResourceRequestBody();
 

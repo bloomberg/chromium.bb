@@ -31,7 +31,7 @@ using blink::WebString;
 using blink::WebThreadSafeData;
 using blink::WebURL;
 using blink::WebBlobRegistry;
-using storage::DataElement;
+using network::DataElement;
 
 namespace content {
 

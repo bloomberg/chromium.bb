@@ -1441,14 +1441,14 @@ struct FuzzTraits<SkBitmap> {
 };
 
 template <>
-struct FuzzTraits<storage::DataElement> {
-  static bool Fuzz(storage::DataElement* p, Fuzzer* fuzzer) {
+struct FuzzTraits<network::DataElement> {
+  static bool Fuzz(network::DataElement* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): Support mutation.
     if (!fuzzer->ShouldGenerate())
       return true;
 
     switch (RandInRange(4)) {
-      case storage::DataElement::Type::TYPE_BYTES: {
+      case network::DataElement::Type::TYPE_BYTES: {
         if (RandEvent(2)) {
           p->SetToEmptyBytes();
         } else {
@@ -1459,7 +1459,7 @@ struct FuzzTraits<storage::DataElement> {
         }
         return true;
       }
-      case storage::DataElement::Type::TYPE_FILE: {
+      case network::DataElement::Type::TYPE_FILE: {
         base::FilePath path;
         uint64_t offset;
         uint64_t length;
@@ -1475,7 +1475,7 @@ struct FuzzTraits<storage::DataElement> {
         p->SetToFilePathRange(path, offset, length, modification_time);
         return true;
       }
-      case storage::DataElement::Type::TYPE_BLOB: {
+      case network::DataElement::Type::TYPE_BLOB: {
         std::string uuid;
         uint64_t offset;
         uint64_t length;
@@ -1488,7 +1488,7 @@ struct FuzzTraits<storage::DataElement> {
         p->SetToBlobRange(uuid, offset, length);
         return true;
       }
-      case storage::DataElement::Type::TYPE_FILE_FILESYSTEM: {
+      case network::DataElement::Type::TYPE_FILE_FILESYSTEM: {
         GURL url;
         uint64_t offset;
         uint64_t length;

@@ -89,7 +89,7 @@ class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
   void OnRegisterBlob(const std::string& uuid,
                       const std::string& content_type,
                       const std::string& content_disposition,
-                      const std::vector<storage::DataElement>& descriptions);
+                      const std::vector<network::DataElement>& descriptions);
   void OnMemoryItemResponse(
       const std::string& uuid,
       const std::vector<storage::BlobItemBytesResponse>& response);

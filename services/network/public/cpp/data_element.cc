@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "storage/common/data_element.h"
+#include "services/network/public/cpp/data_element.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@
 
 #include "base/strings/string_number_conversions.h"
 
-namespace storage {
+namespace network {
 
 DataElement::DataElement()
     : type_(TYPE_UNKNOWN),
@@ -76,8 +76,7 @@ void DataElement::SetToDiskCacheEntryRange(uint64_t offset, uint64_t length) {
   length_ = length;
 }
 
-void DataElement::SetToDataPipe(
-    network::mojom::DataPipeGetterPtr data_pipe_getter) {
+void DataElement::SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter) {
   type_ = TYPE_DATA_PIPE;
   data_pipe_getter_ = std::move(data_pipe_getter);
 }
@@ -86,7 +85,7 @@ base::File DataElement::ReleaseFile() {
   return std::move(file_);
 }
 
-network::mojom::DataPipeGetterPtr DataElement::ReleaseDataPipeGetter() {
+mojom::DataPipeGetterPtr DataElement::ReleaseDataPipeGetter() {
   return std::move(data_pipe_getter_);
 }
 
@@ -170,4 +169,4 @@ bool operator!=(const DataElement& a, const DataElement& b) {
   return !(a == b);
 }
 
-}  // namespace storage
+}  // namespace network

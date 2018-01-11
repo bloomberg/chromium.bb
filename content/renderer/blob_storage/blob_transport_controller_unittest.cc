@@ -35,10 +35,10 @@
 using base::File;
 using base::FilePath;
 using base::TestSimpleTaskRunner;
+using network::DataElement;
 using storage::BlobItemBytesRequest;
 using storage::BlobItemBytesResponse;
 using storage::BlobStatus;
-using storage::DataElement;
 
 namespace content {
 namespace {

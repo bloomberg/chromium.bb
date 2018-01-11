@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/common/data_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -28,7 +28,7 @@ class BlobSliceTest : public testing::Test {
   ~BlobSliceTest() override = default;
 
   scoped_refptr<ShareableBlobDataItem> CreateDataItem(size_t size) {
-    std::unique_ptr<DataElement> element(new DataElement());
+    std::unique_ptr<network::DataElement> element(new network::DataElement());
     element->SetToAllocatedBytes(size);
     for (size_t i = 0; i < size; i++) {
       *(element->mutable_bytes() + i) = i;
@@ -40,7 +40,7 @@ class BlobSliceTest : public testing::Test {
 
   scoped_refptr<ShareableBlobDataItem> CreateFileItem(size_t offset,
                                                       size_t size) {
-    std::unique_ptr<DataElement> element(new DataElement());
+    std::unique_ptr<network::DataElement> element(new network::DataElement());
     element->SetToFilePathRange(base::FilePath(FILE_PATH_LITERAL("kFakePath")),
                                 offset, size, base::Time::Max());
     return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
@@ -50,7 +50,7 @@ class BlobSliceTest : public testing::Test {
 
   scoped_refptr<ShareableBlobDataItem> CreateTempFileItem(size_t offset,
                                                           size_t size) {
-    std::unique_ptr<DataElement> element(new DataElement());
+    std::unique_ptr<network::DataElement> element(new network::DataElement());
     element->SetToFilePathRange(BlobDataBuilder::GetFutureFileItemPath(0),
                                 offset, size, base::Time());
     return scoped_refptr<ShareableBlobDataItem>(
@@ -69,9 +69,10 @@ class BlobSliceTest : public testing::Test {
 
     scoped_refptr<ShareableBlobDataItem> item = slice.dest_items[0];
     EXPECT_EQ(ShareableBlobDataItem::QUOTA_NEEDED, item->state());
-    const DataElement& dest_element = item->item()->data_element();
+    const network::DataElement& dest_element = item->item()->data_element();
 
-    EXPECT_EQ(DataElement::TYPE_BYTES_DESCRIPTION, dest_element.type());
+    EXPECT_EQ(network::DataElement::TYPE_BYTES_DESCRIPTION,
+              dest_element.type());
     EXPECT_EQ(static_cast<uint64_t>(size), dest_element.length());
 
     EXPECT_EQ(*source_item, *slice.first_source_item);
@@ -85,9 +86,10 @@ class BlobSliceTest : public testing::Test {
     ASSERT_LE(2u, slice.dest_items.size());
     scoped_refptr<ShareableBlobDataItem> item = slice.dest_items.back();
     EXPECT_EQ(ShareableBlobDataItem::QUOTA_NEEDED, item->state());
-    const DataElement& dest_element = item->item()->data_element();
+    const network::DataElement& dest_element = item->item()->data_element();
 
-    EXPECT_EQ(DataElement::TYPE_BYTES_DESCRIPTION, dest_element.type());
+    EXPECT_EQ(network::DataElement::TYPE_BYTES_DESCRIPTION,
+              dest_element.type());
     EXPECT_EQ(static_cast<uint64_t>(size), dest_element.length());
 
     EXPECT_EQ(*source_item, *slice.last_source_item);
@@ -211,8 +213,8 @@ TEST_F(BlobSliceTest, SliceTempFileItem) {
   scoped_refptr<ShareableBlobDataItem> item = slice.dest_items[0];
   EXPECT_EQ(ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA, item->state());
 
-  const DataElement& dest_element = item->item()->data_element();
-  EXPECT_EQ(DataElement::TYPE_FILE, dest_element.type());
+  const network::DataElement& dest_element = item->item()->data_element();
+  EXPECT_EQ(network::DataElement::TYPE_FILE, dest_element.type());
   EXPECT_EQ(static_cast<uint64_t>(5), dest_element.length());
   EXPECT_EQ(*item1, *slice.first_source_item);
   ASSERT_EQ(1u, slice.dest_items.size());

@@ -31,8 +31,11 @@ class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
-namespace storage {
+namespace network {
 class DataElement;
+}
+
+namespace storage {
 struct BlobItemBytesRequest;
 struct BlobItemBytesResponse;
 }
@@ -117,7 +120,7 @@ class CONTENT_EXPORT BlobTransportController {
 
   static void GetDescriptions(BlobConsolidation* consolidation,
                               size_t max_data_population,
-                              std::vector<storage::DataElement>* out);
+                              std::vector<network::DataElement>* out);
 
   BlobTransportController();
   ~BlobTransportController();

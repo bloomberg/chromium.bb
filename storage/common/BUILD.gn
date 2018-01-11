@@ -15,8 +15,6 @@ component("common") {
     "blob_storage/blob_item_bytes_response.h",
     "blob_storage/blob_storage_constants.cc",
     "blob_storage/blob_storage_constants.h",
-    "data_element.cc",
-    "data_element.h",
     "database/database_connections.cc",
     "database/database_connections.h",
     "database/database_identifier.cc",

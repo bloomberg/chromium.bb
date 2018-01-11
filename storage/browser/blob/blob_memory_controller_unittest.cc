@@ -13,10 +13,10 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/common/data_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -331,7 +331,7 @@ TEST_F(BlobMemoryControllerTest, PageToDisk) {
   // items2 are successfuly allocated.
   EXPECT_EQ(nullptr, task);
   EXPECT_EQ(ItemState::QUOTA_GRANTED, items2[0]->state());
-  EXPECT_EQ(DataElement::TYPE_FILE, items[0]->item()->type());
+  EXPECT_EQ(network::DataElement::TYPE_FILE, items[0]->item()->type());
   EXPECT_EQ(kTestBlobStorageMinFileSizeBytes + 1, controller.memory_usage());
   EXPECT_EQ(kTestBlobStorageMaxBlobMemorySize, controller.disk_usage());
 
@@ -408,7 +408,7 @@ TEST_F(BlobMemoryControllerTest, CancelMemoryRequest) {
   RunFileThreadTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ItemState::QUOTA_REQUESTED, items2[0]->state());
-  EXPECT_EQ(DataElement::TYPE_FILE, items[0]->item()->type());
+  EXPECT_EQ(network::DataElement::TYPE_FILE, items[0]->item()->type());
   EXPECT_EQ(0u, controller.memory_usage());
   EXPECT_EQ(kTestBlobStorageMaxBlobMemorySize, controller.disk_usage());
 
@@ -464,7 +464,7 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
   base::ThreadRestrictions::SetIOAllowed(true);
   files_created_.clear();
   base::ThreadRestrictions::SetIOAllowed(false);
-  EXPECT_EQ(DataElement::TYPE_FILE, items[0]->item()->type());
+  EXPECT_EQ(network::DataElement::TYPE_FILE, items[0]->item()->type());
   EXPECT_FALSE(
       BlobDataBuilder::IsFutureFileItem(items[0]->item()->data_element()));
 
@@ -586,8 +586,8 @@ TEST_F(BlobMemoryControllerTest, MultipleFilesPaged) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(memory_quota_result_);
   EXPECT_EQ(ItemState::QUOTA_GRANTED, items3[0]->state());
-  EXPECT_EQ(DataElement::TYPE_FILE, items1[0]->item()->type());
-  EXPECT_EQ(DataElement::TYPE_FILE, items2[0]->item()->type());
+  EXPECT_EQ(network::DataElement::TYPE_FILE, items1[0]->item()->type());
+  EXPECT_EQ(network::DataElement::TYPE_FILE, items2[0]->item()->type());
   EXPECT_NE(items1[0]->item()->path(), items2[0]->item()->path());
   EXPECT_EQ(kSize3, controller.memory_usage());
   EXPECT_EQ(kSize1 + kSize2, controller.disk_usage());

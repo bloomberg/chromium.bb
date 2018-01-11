@@ -24,7 +24,7 @@ using MemoryStrategy = BlobMemoryController::Strategy;
 using MemoryItemRequest =
     BlobTransportRequestBuilder::RendererMemoryItemRequest;
 
-bool CalculateBlobMemorySize(const std::vector<DataElement>& elements,
+bool CalculateBlobMemorySize(const std::vector<network::DataElement>& elements,
                              size_t* shortcut_bytes,
                              uint64_t* total_bytes) {
   DCHECK(shortcut_bytes);
@@ -33,10 +33,10 @@ bool CalculateBlobMemorySize(const std::vector<DataElement>& elements,
   base::CheckedNumeric<uint64_t> total_size_checked = 0;
   base::CheckedNumeric<size_t> shortcut_size_checked = 0;
   for (const auto& e : elements) {
-    if (e.type() == DataElement::TYPE_BYTES) {
+    if (e.type() == network::DataElement::TYPE_BYTES) {
       total_size_checked += e.length();
       shortcut_size_checked += e.length();
-    } else if (e.type() == DataElement::TYPE_BYTES_DESCRIPTION) {
+    } else if (e.type() == network::DataElement::TYPE_BYTES_DESCRIPTION) {
       total_size_checked += e.length();
     } else {
       continue;
@@ -78,7 +78,7 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition,
-    const std::vector<DataElement>& elements,
+    const std::vector<network::DataElement>& elements,
     BlobStorageContext* context,
     const scoped_refptr<FileSystemContext>& file_system_context,
     const RequestMemoryCallback& request_memory,
@@ -87,8 +87,8 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
   DCHECK(async_blob_map_.find(uuid) == async_blob_map_.end());
   std::unique_ptr<BlobDataHandle> handle;
   // Validate that our referenced blobs aren't us.
-  for (const DataElement& e : elements) {
-    if (e.type() == DataElement::TYPE_BLOB && e.blob_uuid() == uuid) {
+  for (const network::DataElement& e : elements) {
+    if (e.type() == network::DataElement::TYPE_BLOB && e.blob_uuid() == uuid) {
       handle = context->AddBrokenBlob(
           uuid, content_type, content_disposition,
           BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
@@ -122,8 +122,8 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
     case MemoryStrategy::NONE_NEEDED: {
       // This means we don't need to transport anything, so just send the
       // elements along and tell our callback we're done transporting.
-      for (const DataElement& e : elements) {
-        DCHECK_NE(e.type(), DataElement::TYPE_BYTES_DESCRIPTION);
+      for (const network::DataElement& e : elements) {
+        DCHECK_NE(e.type(), network::DataElement::TYPE_BYTES_DESCRIPTION);
         state.data_builder.AppendIPCDataElement(e, file_system_context);
       }
       handle = context->BuildBlob(

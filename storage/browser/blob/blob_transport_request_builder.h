@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
-#include "storage/common/data_element.h"
 
 namespace storage {
 
@@ -64,7 +64,7 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   void InitializeForFileRequests(
       size_t max_file_size,
       uint64_t blob_total_size,
-      const std::vector<DataElement>& elements,
+      const std::vector<network::DataElement>& elements,
       const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder);
 
@@ -86,7 +86,7 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   void InitializeForSharedMemoryRequests(
       size_t max_shared_memory_size,
       uint64_t blob_total_size,
-      const std::vector<DataElement>& elements,
+      const std::vector<network::DataElement>& elements,
       const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder);
 
@@ -106,7 +106,7 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   void InitializeForIPCRequests(
       size_t max_ipc_memory_size,
       uint64_t blob_total_size,
-      const std::vector<DataElement>& elements,
+      const std::vector<network::DataElement>& elements,
       const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder);
 

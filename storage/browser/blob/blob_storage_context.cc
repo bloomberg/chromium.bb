@@ -23,11 +23,11 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/common/data_element.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -35,24 +35,24 @@ namespace {
 using ItemCopyEntry = BlobEntry::ItemCopyEntry;
 using QuotaAllocationTask = BlobMemoryController::QuotaAllocationTask;
 
-bool IsBytes(DataElement::Type type) {
-  return type == DataElement::TYPE_BYTES ||
-         type == DataElement::TYPE_BYTES_DESCRIPTION;
+bool IsBytes(network::DataElement::Type type) {
+  return type == network::DataElement::TYPE_BYTES ||
+         type == network::DataElement::TYPE_BYTES_DESCRIPTION;
 }
 
-void RecordBlobItemSizeStats(const DataElement& input_element) {
+void RecordBlobItemSizeStats(const network::DataElement& input_element) {
   uint64_t length = input_element.length();
 
   switch (input_element.type()) {
-    case DataElement::TYPE_BYTES:
-    case DataElement::TYPE_BYTES_DESCRIPTION:
+    case network::DataElement::TYPE_BYTES:
+    case network::DataElement::TYPE_BYTES_DESCRIPTION:
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Bytes", length / 1024);
       break;
-    case DataElement::TYPE_BLOB:
+    case network::DataElement::TYPE_BLOB:
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob",
                               (length - input_element.offset()) / 1024);
       break;
-    case DataElement::TYPE_FILE: {
+    case network::DataElement::TYPE_FILE: {
       bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", full_file);
       if (!full_file) {
@@ -61,7 +61,7 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
       }
       break;
     }
-    case DataElement::TYPE_FILE_FILESYSTEM: {
+    case network::DataElement::TYPE_FILE_FILESYSTEM: {
       bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
                             full_file);
@@ -71,13 +71,13 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
       }
       break;
     }
-    case DataElement::TYPE_DISK_CACHE_ENTRY:
+    case network::DataElement::TYPE_DISK_CACHE_ENTRY:
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",
                               (length - input_element.offset()) / 1024);
       break;
-    case DataElement::TYPE_RAW_FILE:
-    case DataElement::TYPE_DATA_PIPE:
-    case DataElement::TYPE_UNKNOWN:
+    case network::DataElement::TYPE_RAW_FILE:
+    case network::DataElement::TYPE_DATA_PIPE:
+    case network::DataElement::TYPE_UNKNOWN:
       NOTREACHED();
       break;
   }
@@ -103,14 +103,14 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
   base::CheckedNumeric<uint64_t> checked_copy_quota_needed = 0;
 
   for (scoped_refptr<BlobDataItem> input_item : input_builder.items_) {
-    const DataElement& input_element = input_item->data_element();
-    DataElement::Type type = input_element.type();
+    const network::DataElement& input_element = input_item->data_element();
+    network::DataElement::Type type = input_element.type();
     uint64_t length = input_element.length();
 
     RecordBlobItemSizeStats(input_element);
 
     if (IsBytes(type)) {
-      DCHECK_NE(0 + DataElement::kUnknownSize, input_element.length());
+      DCHECK_NE(0 + network::DataElement::kUnknownSize, input_element.length());
       found_memory_transport = true;
       if (found_file_transport) {
         // We cannot have both memory and file transport items.
@@ -118,7 +118,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
         return;
       }
       contains_unpopulated_transport_items |=
-          (type == DataElement::TYPE_BYTES_DESCRIPTION);
+          (type == network::DataElement::TYPE_BYTES_DESCRIPTION);
       checked_transport_quota_needed += length;
       checked_total_size += length;
       scoped_refptr<ShareableBlobDataItem> item = new ShareableBlobDataItem(
@@ -128,7 +128,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
       output_blob->AppendSharedBlobItem(std::move(item));
       continue;
     }
-    if (type == DataElement::TYPE_BLOB) {
+    if (type == network::DataElement::TYPE_BLOB) {
       BlobEntry* ref_entry = registry->GetEntry(input_element.blob_uuid());
 
       if (!ref_entry || input_element.blob_uuid() == uuid) {
@@ -141,7 +141,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
         return;
       }
 
-      if (ref_entry->total_size() == DataElement::kUnknownSize) {
+      if (ref_entry->total_size() == network::DataElement::kUnknownSize) {
         // We can't reference a blob with unknown size.
         status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
         return;
@@ -157,8 +157,9 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
         }
       }
 
-      length = length == DataElement::kUnknownSize ? ref_entry->total_size()
-                                                   : input_element.length();
+      length = length == network::DataElement::kUnknownSize
+                   ? ref_entry->total_size()
+                   : input_element.length();
       checked_total_size += length;
 
       // If we're referencing the whole blob, then we don't need to slice.
@@ -227,7 +228,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
           std::move(input_item),
           ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA);
     }
-    if (length == DataElement::kUnknownSize)
+    if (length == network::DataElement::kUnknownSize)
       num_files_with_unknown_size++;
 
     checked_total_size += length;
@@ -280,7 +281,7 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
     const scoped_refptr<BlobDataItem>& source_item =
         source_items[item_index]->item();
     uint64_t source_length = source_item->length();
-    DataElement::Type type = source_item->type();
+    network::DataElement::Type type = source_item->type();
     DCHECK_NE(source_length, std::numeric_limits<uint64_t>::max());
     DCHECK_NE(source_length, 0ull);
 
@@ -303,8 +304,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
     ShareableBlobDataItem::State state =
         ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA;
     switch (type) {
-      case DataElement::TYPE_BYTES_DESCRIPTION:
-      case DataElement::TYPE_BYTES: {
+      case network::DataElement::TYPE_BYTES_DESCRIPTION:
+      case network::DataElement::TYPE_BYTES: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.Bytes",
                                 read_size / 1024);
         if (item_index == first_item_index) {
@@ -319,16 +320,18 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         // for this data. When our blob is finished constructing, all dependent
         // blobs are done, and we have enough memory quota, we'll copy the data
         // over.
-        std::unique_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<network::DataElement> element(
+            new network::DataElement());
         element->SetToBytesDescription(base::checked_cast<size_t>(read_size));
         data_item = new BlobDataItem(std::move(element));
         state = ShareableBlobDataItem::QUOTA_NEEDED;
         break;
       }
-      case DataElement::TYPE_FILE: {
+      case network::DataElement::TYPE_FILE: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.File",
                                 read_size / 1024);
-        std::unique_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<network::DataElement> element(
+            new network::DataElement());
         element->SetToFilePathRange(
             source_item->path(), source_item->offset() + item_offset, read_size,
             source_item->expected_modification_time());
@@ -347,10 +350,11 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         }
         break;
       }
-      case DataElement::TYPE_FILE_FILESYSTEM: {
+      case network::DataElement::TYPE_FILE_FILESYSTEM: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.FileSystem",
                                 read_size / 1024);
-        std::unique_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<network::DataElement> element(
+            new network::DataElement());
         element->SetToFileSystemUrlRange(
             source_item->filesystem_url(), source_item->offset() + item_offset,
             read_size, source_item->expected_modification_time());
@@ -358,10 +362,11 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
                                      source_item->file_system_context());
         break;
       }
-      case DataElement::TYPE_DISK_CACHE_ENTRY: {
+      case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.CacheEntry",
                                 read_size / 1024);
-        std::unique_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<network::DataElement> element(
+            new network::DataElement());
         element->SetToDiskCacheEntryRange(source_item->offset() + item_offset,
                                           read_size);
         data_item =
@@ -371,10 +376,10 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
                              source_item->disk_cache_side_stream_index());
         break;
       }
-      case DataElement::TYPE_RAW_FILE:
-      case DataElement::TYPE_BLOB:
-      case DataElement::TYPE_DATA_PIPE:
-      case DataElement::TYPE_UNKNOWN:
+      case network::DataElement::TYPE_RAW_FILE:
+      case network::DataElement::TYPE_BLOB:
+      case network::DataElement::TYPE_DATA_PIPE:
+      case network::DataElement::TYPE_UNKNOWN:
         CHECK(false) << "Illegal blob item type: " << type;
     }
     dest_items.push_back(
@@ -463,7 +468,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
 
   BlobEntry* entry =
       registry_.CreateEntry(uuid, content_type, content_disposition);
-  entry->set_size(DataElement::kUnknownSize);
+  entry->set_size(network::DataElement::kUnknownSize);
   entry->set_status(BlobStatus::PENDING_CONSTRUCTION);
   entry->set_building_state(base::MakeUnique<BlobEntry::BuildingState>(
       false, TransportAllowedCallback(), 0));
@@ -769,24 +774,25 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
       // Our source item can be a file if it was a slice of an unpopulated file,
       // or a slice of data that was then paged to disk.
       size_t dest_size = static_cast<size_t>(copy.dest_item->item()->length());
-      DataElement::Type dest_type = copy.dest_item->item()->type();
+      network::DataElement::Type dest_type = copy.dest_item->item()->type();
       switch (copy.source_item->item()->type()) {
-        case DataElement::TYPE_BYTES: {
-          DCHECK_EQ(dest_type, DataElement::TYPE_BYTES_DESCRIPTION);
+        case network::DataElement::TYPE_BYTES: {
+          DCHECK_EQ(dest_type, network::DataElement::TYPE_BYTES_DESCRIPTION);
           const char* src_data =
               copy.source_item->item()->bytes() + copy.source_item_offset;
           copy.dest_item->item()->item_->SetToBytes(src_data, dest_size);
           break;
         }
-        case DataElement::TYPE_FILE: {
+        case network::DataElement::TYPE_FILE: {
           // If we expected a memory item (and our source was paged to disk) we
           // free that memory.
-          if (dest_type == DataElement::TYPE_BYTES_DESCRIPTION)
+          if (dest_type == network::DataElement::TYPE_BYTES_DESCRIPTION)
             copy.dest_item->set_memory_allocation(nullptr);
 
-          const DataElement& source_element =
+          const network::DataElement& source_element =
               copy.source_item->item()->data_element();
-          std::unique_ptr<DataElement> new_element(new DataElement());
+          std::unique_ptr<network::DataElement> new_element(
+              new network::DataElement());
           new_element->SetToFilePathRange(
               source_element.path(),
               source_element.offset() + copy.source_item_offset, dest_size,
@@ -796,13 +802,13 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
           copy.dest_item->set_item(std::move(new_item));
           break;
         }
-        case DataElement::TYPE_RAW_FILE:
-        case DataElement::TYPE_UNKNOWN:
-        case DataElement::TYPE_BLOB:
-        case DataElement::TYPE_BYTES_DESCRIPTION:
-        case DataElement::TYPE_FILE_FILESYSTEM:
-        case DataElement::TYPE_DISK_CACHE_ENTRY:
-        case DataElement::TYPE_DATA_PIPE:
+        case network::DataElement::TYPE_RAW_FILE:
+        case network::DataElement::TYPE_UNKNOWN:
+        case network::DataElement::TYPE_BLOB:
+        case network::DataElement::TYPE_BYTES_DESCRIPTION:
+        case network::DataElement::TYPE_FILE_FILESYSTEM:
+        case network::DataElement::TYPE_DISK_CACHE_ENTRY:
+        case network::DataElement::TYPE_DATA_PIPE:
           NOTREACHED();
           break;
       }
@@ -825,7 +831,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
     runner->PostTask(FROM_HERE, base::Bind(callback, entry->status()));
 
   for (const auto& shareable_item : entry->items()) {
-    DCHECK_NE(DataElement::TYPE_BYTES_DESCRIPTION,
+    DCHECK_NE(network::DataElement::TYPE_BYTES_DESCRIPTION,
               shareable_item->item()->type());
     DCHECK(shareable_item->IsPopulated()) << shareable_item->state();
   }

@@ -17,10 +17,10 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
-#include "storage/common/data_element.h"
 #include "url/ipc/url_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -67,7 +67,7 @@ IPC_SYNC_MESSAGE_CONTROL4_0(
     std::string /* uuid */,
     std::string /* content_type */,
     std::string /* content_disposition */,
-    std::vector<storage::DataElement> /* item_descriptions */)
+    std::vector<network::DataElement> /* item_descriptions */)
 
 IPC_MESSAGE_CONTROL4(
     BlobStorageMsg_RequestMemoryItem,
