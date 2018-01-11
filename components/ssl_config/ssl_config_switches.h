@@ -16,6 +16,7 @@ extern const char kSSLVersionTLSv12[];
 extern const char kSSLVersionTLSv13[];
 extern const char kTLS13VariantDisabled[];
 extern const char kTLS13VariantDraft22[];
+extern const char kTLS13VariantDraft23[];
 extern const char kTLS13VariantExperiment2[];
 
 }  // namespace switches
