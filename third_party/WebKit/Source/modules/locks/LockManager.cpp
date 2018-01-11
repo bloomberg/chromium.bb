@@ -27,10 +27,11 @@ namespace blink {
 namespace {
 
 LockInfo ToLockInfo(const mojom::blink::LockInfoPtr& record) {
-  LockInfo request;
-  request.setMode(Lock::ModeToString(record->mode));
-  request.setName(record->name);
-  return request;
+  LockInfo info;
+  info.setMode(Lock::ModeToString(record->mode));
+  info.setName(record->name);
+  info.setClientId(record->client_id);
+  return info;
 }
 
 HeapVector<LockInfo> ToLockInfos(

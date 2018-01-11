@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -61,15 +62,21 @@ class LockHandleImpl final : public blink::mojom::LockHandle {
 struct LockManager::Lock {
   Lock(const std::string& name,
        LockMode mode,
-       int64_t id,
+       int64_t lock_id,
+       const std::string& client_id,
        blink::mojom::LockRequestPtr request)
-      : name(name), mode(mode), id(id), request(std::move(request)) {}
+      : name(name),
+        mode(mode),
+        lock_id(lock_id),
+        client_id(client_id),
+        request(std::move(request)) {}
 
   ~Lock() = default;
 
   const std::string name;
   const LockMode mode;
-  const int64_t id;
+  const int64_t lock_id;
+  const std::string client_id;
   blink::mojom::LockRequestPtr request;
 };
 
@@ -85,10 +92,11 @@ class LockManager::OriginState {
   void AddRequest(int64_t lock_id,
                   const std::string& name,
                   LockMode mode,
+                  const std::string& client_id,
                   blink::mojom::LockRequestPtr request) {
     requested_.emplace(std::make_pair(
-        lock_id,
-        std::make_unique<Lock>(name, mode, lock_id, std::move(request))));
+        lock_id, std::make_unique<Lock>(name, mode, lock_id, client_id,
+                                        std::move(request))));
   }
 
   bool EraseLock(int64_t lock_id) {
@@ -126,10 +134,11 @@ class LockManager::OriginState {
       if (granted) {
         std::unique_ptr<Lock> grantee = std::move(lock);
         it = requested_.erase(it);
-        grantee->request->Granted(LockHandleImpl::Create(
-            lock_manager->weak_ptr_factory_.GetWeakPtr(), origin, grantee->id));
+        grantee->request->Granted(
+            LockHandleImpl::Create(lock_manager->weak_ptr_factory_.GetWeakPtr(),
+                                   origin, grantee->lock_id));
         grantee->request = nullptr;
-        held_.insert(std::make_pair(grantee->id, std::move(grantee)));
+        held_.insert(std::make_pair(grantee->lock_id, std::move(grantee)));
       } else {
         ++it;
       }
@@ -140,8 +149,8 @@ class LockManager::OriginState {
     std::vector<blink::mojom::LockInfoPtr> out;
     out.reserve(requested_.size());
     for (const auto& id_lock_pair : requested_) {
-      out.emplace_back(base::in_place, id_lock_pair.second->name,
-                       id_lock_pair.second->mode);
+      const auto& lock = id_lock_pair.second;
+      out.emplace_back(base::in_place, lock->name, lock->mode, lock->client_id);
     }
     return out;
   }
@@ -150,8 +159,8 @@ class LockManager::OriginState {
     std::vector<blink::mojom::LockInfoPtr> out;
     out.reserve(held_.size());
     for (const auto& id_lock_pair : held_) {
-      out.emplace_back(base::in_place, id_lock_pair.second->name,
-                       id_lock_pair.second->mode);
+      const auto& lock = id_lock_pair.second;
+      out.emplace_back(base::in_place, lock->name, lock->mode, lock->client_id);
     }
     return out;
   }
@@ -175,7 +184,12 @@ class LockManager::OriginState {
 void LockManager::CreateService(blink::mojom::LockManagerRequest request,
                                 const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request), origin);
+
+  // TODO(jsbell): This should reflect the 'environment id' from HTML,
+  // and be the same opaque string seen in Service Worker client ids.
+  const std::string client_id = base::GenerateGUID();
+
+  bindings_.AddBinding(this, std::move(request), {origin, client_id});
 }
 
 void LockManager::RequestLock(const std::string& name,
@@ -184,17 +198,19 @@ void LockManager::RequestLock(const std::string& name,
                               blink::mojom::LockRequestPtr request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const url::Origin& origin = bindings_.dispatch_context();
-  if (wait == WaitMode::NO_WAIT && !IsGrantable(origin, name, mode)) {
+  const auto& context = bindings_.dispatch_context();
+  if (wait == WaitMode::NO_WAIT && !IsGrantable(context.origin, name, mode)) {
     request->Failed();
     return;
   }
 
   int64_t lock_id = next_lock_id++;
-  request.set_connection_error_handler(base::BindOnce(
-      &LockManager::ReleaseLock, base::Unretained(this), origin, lock_id));
-  origins_[origin].AddRequest(lock_id, name, mode, std::move(request));
-  ProcessRequests(origin);
+  request.set_connection_error_handler(base::BindOnce(&LockManager::ReleaseLock,
+                                                      base::Unretained(this),
+                                                      context.origin, lock_id));
+  origins_[context.origin].AddRequest(lock_id, name, mode, context.client_id,
+                                      std::move(request));
+  ProcessRequests(context.origin);
 }
 
 void LockManager::ReleaseLock(const url::Origin& origin, int64_t lock_id) {
@@ -215,7 +231,7 @@ void LockManager::ReleaseLock(const url::Origin& origin, int64_t lock_id) {
 void LockManager::QueryState(QueryStateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const url::Origin& origin = bindings_.dispatch_context();
+  const url::Origin& origin = bindings_.dispatch_context().origin;
   if (!base::ContainsKey(origins_, origin))
     return;
   OriginState& state = origins_[origin];
