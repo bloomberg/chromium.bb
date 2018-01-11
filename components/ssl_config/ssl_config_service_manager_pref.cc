@@ -202,6 +202,9 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   } else if (tls13_variant == "draft22") {
     tls13_value = switches::kTLS13VariantDraft22;
     experiment_value = switches::kSSLVersionTLSv13;
+  } else if (tls13_variant == "draft23") {
+    tls13_value = switches::kTLS13VariantDraft23;
+    experiment_value = switches::kSSLVersionTLSv13;
   } else if (tls13_variant == "experiment2") {
     tls13_value = switches::kTLS13VariantExperiment2;
     experiment_value = switches::kSSLVersionTLSv13;
@@ -323,6 +326,8 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
       config->version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   } else if (tls13_variant_str == switches::kTLS13VariantDraft22) {
     config->tls13_variant = net::kTLS13VariantDraft22;
+  } else if (tls13_variant_str == switches::kTLS13VariantDraft23) {
+    config->tls13_variant = net::kTLS13VariantDraft23;
   } else if (tls13_variant_str == switches::kTLS13VariantExperiment2) {
     config->tls13_variant = net::kTLS13VariantExperiment2;
   }

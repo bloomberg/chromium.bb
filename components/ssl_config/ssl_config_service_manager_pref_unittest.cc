@@ -292,6 +292,27 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDraft22) {
   EXPECT_EQ(net::kTLS13VariantDraft22, ssl_config.tls13_variant);
 }
 
+// Tests that Draft23 TLS 1.3 can be enabled via field trials.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDraft23) {
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "draft23"}});
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
+  EXPECT_EQ(net::kTLS13VariantDraft23, ssl_config.tls13_variant);
+}
+
 // Tests that the SSLVersionMax preference overwites the TLS 1.3 variant
 // field trial.
 TEST_F(SSLConfigServiceManagerPrefTest, TLS13SSLVersionMax) {
