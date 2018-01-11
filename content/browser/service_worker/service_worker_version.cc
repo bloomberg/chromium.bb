@@ -1126,22 +1126,23 @@ void ServiceWorkerVersion::OnGetClient(int request_id,
   if (!provider_host ||
       provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
-    OnGetClientFinished(request_id, blink::mojom::ServiceWorkerClientInfo());
+    OnGetClientFinished(request_id,
+                        blink::mojom::ServiceWorkerClientInfo::New());
     return;
   }
   service_worker_client_utils::GetClient(
-      provider_host, base::Bind(&ServiceWorkerVersion::OnGetClientFinished,
-                                weak_factory_.GetWeakPtr(), request_id));
+      provider_host, base::BindOnce(&ServiceWorkerVersion::OnGetClientFinished,
+                                    weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnGetClientFinished(
     int request_id,
-    const blink::mojom::ServiceWorkerClientInfo& client_info) {
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker", "ServiceWorkerVersion::OnGetClient", request_id,
       "client_type",
-      ServiceWorkerUtils::ClientTypeToString(client_info.client_type));
+      ServiceWorkerUtils::ClientTypeToString(client_info->client_type));
 
   // When Clients.get() is called on the script evaluation phase, the running
   // status can be STARTING here.
@@ -1151,7 +1152,7 @@ void ServiceWorkerVersion::OnGetClientFinished(
   }
 
   embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_DidGetClient(request_id, client_info));
+      ServiceWorkerMsg_DidGetClient(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnSimpleEventFinished(

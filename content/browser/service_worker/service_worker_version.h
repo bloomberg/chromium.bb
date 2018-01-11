@@ -686,7 +686,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnGetClientFinished(
       int request_id,
-      const blink::mojom::ServiceWorkerClientInfo& client_info);
+      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void OnGetClientsFinished(GetClientsCallback callback,
                             std::unique_ptr<ServiceWorkerClientPtrs> clients);

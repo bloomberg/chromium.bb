@@ -29,6 +29,8 @@ using NavigationCallback = base::Callback<void(
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
 using ClientCallback = base::Callback<void(
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
+using GetClientCallback = base::OnceCallback<void(
+    blink::mojom::ServiceWorkerClientInfoPtr client_info)>;
 using ServiceWorkerClientPtrs =
     std::vector<blink::mojom::ServiceWorkerClientInfoPtr>;
 using ClientsCallback =
@@ -59,8 +61,8 @@ void NavigateClient(const GURL& url,
 
 // Gets the client specified by |provider_host|. |callback| is called with the
 // client information on completion.
-void GetClient(ServiceWorkerProviderHost* provider_host,
-               const ClientCallback& callback);
+void GetClient(const ServiceWorkerProviderHost* provider_host,
+               GetClientCallback callback);
 
 // Collects clients matched with |options|. |callback| is called with the client
 // information sorted in MRU order (most recently focused order) on completion.
