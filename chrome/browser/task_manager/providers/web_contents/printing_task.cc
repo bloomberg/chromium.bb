@@ -11,7 +11,7 @@ namespace task_manager {
 
 namespace {
 
-base::string16 PrefixTitle(const base::string16& title) {
+base::string16 PrefixPrintTitle(const base::string16& title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRINT_PREFIX, title);
 }
 
@@ -19,7 +19,7 @@ base::string16 PrefixTitle(const base::string16& title) {
 
 PrintingTask::PrintingTask(content::WebContents* web_contents)
     : RendererTask(
-          PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents)),
+          PrefixPrintTitle(RendererTask::GetTitleFromWebContents(web_contents)),
           RendererTask::GetFaviconFromWebContents(web_contents),
           web_contents) {}
 
@@ -27,7 +27,7 @@ PrintingTask::~PrintingTask() {
 }
 
 void PrintingTask::UpdateTitle() {
-  set_title(PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents())));
+  set_title(PrefixPrintTitle(GetTitleFromWebContents(web_contents())));
 }
 
 void PrintingTask::UpdateFavicon() {

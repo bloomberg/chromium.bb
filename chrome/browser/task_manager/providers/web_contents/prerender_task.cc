@@ -30,24 +30,25 @@ gfx::ImageSkia* GetPrerenderIcon() {
   return g_prerender_icon;
 }
 
-base::string16 PrefixTitle(const base::string16& title) {
+base::string16 PrefixPrerenderTitle(const base::string16& title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX, title);
 }
 
 }  // namespace
 
 PrerenderTask::PrerenderTask(content::WebContents* web_contents)
-    : RendererTask(
-          PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents)),
-          GetPrerenderIcon(),
-          web_contents) {}
+    : RendererTask(PrefixPrerenderTitle(
+                       RendererTask::GetTitleFromWebContents(web_contents)),
+                   GetPrerenderIcon(),
+                   web_contents) {}
 
 PrerenderTask::~PrerenderTask() {
 }
 
 void PrerenderTask::UpdateTitle() {
   // As long as this task lives we keep prefixing its title with "Prerender:".
-  set_title(PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents())));
+  set_title(PrefixPrerenderTitle(
+      RendererTask::GetTitleFromWebContents(web_contents())));
 }
 
 void PrerenderTask::UpdateFavicon() {
