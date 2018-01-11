@@ -191,7 +191,7 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #else
 #include "chrome/browser/feedback/feedback_profile_observer.h"
-#include "chrome/browser/ui/tabs/tab_activity_watcher.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/usb/web_usb_detector.h"
 #endif  // defined(OS_ANDROID)
 
@@ -1371,7 +1371,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   }
   if (base::FeatureList::IsEnabled(features::kTabMetricsLogging)) {
     // Initialize the TabActivityWatcher to begin logging tab activity events.
-    TabActivityWatcher::GetInstance();
+    resource_coordinator::TabActivityWatcher::GetInstance();
   }
 #endif
 

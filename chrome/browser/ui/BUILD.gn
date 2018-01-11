@@ -904,8 +904,6 @@ split_static_library("ui") {
       "tabs/pinned_tab_service.h",
       "tabs/pinned_tab_service_factory.cc",
       "tabs/pinned_tab_service_factory.h",
-      "tabs/tab_activity_watcher.cc",
-      "tabs/tab_activity_watcher.h",
       "tabs/tab_change_type.h",
       "tabs/tab_menu_model.cc",
       "tabs/tab_menu_model.h",

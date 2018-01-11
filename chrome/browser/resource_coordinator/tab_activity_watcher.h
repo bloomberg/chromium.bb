@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TABS_TAB_ACTIVITY_WATCHER_H_
-#define CHROME_BROWSER_UI_TABS_TAB_ACTIVITY_WATCHER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_ACTIVITY_WATCHER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_ACTIVITY_WATCHER_H_
 
 #include <memory>
 
@@ -15,6 +15,8 @@
 
 class TabMetricsLogger;
 
+namespace resource_coordinator {
+
 // Observes background tab activity in order to log UKMs for tabs. Metrics will
 // be compared against tab reactivation/close events to determine the end state
 // of each background tab.
@@ -22,6 +24,7 @@ class TabActivityWatcher : public TabStripModelObserver,
                            public BrowserTabStripTrackerDelegate {
  public:
   // Helper class to observe WebContents.
+  // TODO(michaelpg): Merge this into TabLifecycleUnit.
   class WebContentsData;
 
   TabActivityWatcher();
@@ -74,4 +77,6 @@ class TabActivityWatcher : public TabStripModelObserver,
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcher);
 };
 
-#endif  // CHROME_BROWSER_UI_TABS_TAB_ACTIVITY_WATCHER_H_
+}  // namespace resource_coordinator
+
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_ACTIVITY_WATCHER_H_
