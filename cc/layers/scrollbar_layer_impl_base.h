@@ -97,6 +97,9 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   // height (which may differ in the presence of top-controls hiding).
   float vertical_adjust_;
 
+  FRIEND_TEST_ALL_PREFIXES(ScrollbarLayerTest,
+                           ScrollElementIdPushedAcrossCommit);
+
   DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerImplBase);
 };
 

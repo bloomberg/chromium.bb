@@ -96,7 +96,7 @@ void SolidColorScrollbarLayer::SetScrollElementId(ElementId element_id) {
     return;
 
   solid_color_scrollbar_layer_inputs_.scroll_element_id = element_id;
-  SetNeedsFullTreeSync();
+  SetNeedsCommit();
 }
 
 }  // namespace cc
