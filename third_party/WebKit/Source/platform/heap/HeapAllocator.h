@@ -695,7 +695,7 @@ struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   static void ConstructDeletedValue(blink::Member<T>& slot, bool) {
     slot = WTF::kHashTableDeletedValue;
   }
-  static bool IsDeletedValue(blink::Member<T> value) {
+  static bool IsDeletedValue(const blink::Member<T>& value) {
     return value.IsHashTableDeletedValue();
   }
 };
