@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_activity_watcher.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
@@ -22,7 +22,10 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabActivityWatcher::WebContentsData);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    resource_coordinator::TabActivityWatcher::WebContentsData);
+
+namespace resource_coordinator {
 
 namespace {
 
@@ -187,6 +190,7 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
       TabActivityWatcher::WebContentsData::FromWebContents(web_contents);
   DCHECK(web_contents_data);
 
+  // TODO(michaelpg): Convert to resource_coordinator::NowTicks().
   base::TimeTicks now = base::TimeTicks::Now();
   if (now - web_contents_data->last_log_time_for_source() <
       per_source_log_timeout_) {
@@ -219,3 +223,5 @@ void TabActivityWatcher::WatchWebContents(content::WebContents* web_contents) {
   if (!web_contents->GetBrowserContext()->IsOffTheRecord())
     TabActivityWatcher::WebContentsData::CreateForWebContents(web_contents);
 }
+
+}  // namespace resource_coordinator

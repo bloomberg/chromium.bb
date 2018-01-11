@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_activity_watcher.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include <memory>
 
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_activity_watcher.h"
 #include "chrome/browser/ui/tabs/tab_metrics_event.pb.h"
 #include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -37,6 +37,7 @@ using ukm::builders::TabManager_TabMetrics;
 // specify expected metrics to test against an actual entry for tests.
 using UkmMetricMap = std::map<const char*, int64_t>;
 
+namespace resource_coordinator {
 namespace {
 
 const char* kEntryName = TabManager_TabMetrics::kEntryName;
@@ -61,7 +62,6 @@ const UkmMetricMap kBasicMetricValues({
     {TabManager_TabMetrics::kTouchEventCountName, 0},
     {TabManager_TabMetrics::kWasRecentlyAudibleName, 0},
 });
-
 
 blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
   return blink::WebMouseEvent(event_type, WebInputEvent::kNoModifiers,
@@ -367,3 +367,5 @@ TEST_F(TabActivityWatcherTest, HideWindow) {
 
   tab_strip_model->CloseAllTabs();
 }
+
+}  // namespace resource_coordinator
