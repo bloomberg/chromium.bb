@@ -805,4 +805,29 @@ TEST_P(ParameterizedNGOffsetMappingTest, GetMappingForInlineBlock) {
   EXPECT_NE(span_mapping, span_after_mapping);
 }
 
+TEST_P(ParameterizedNGOffsetMappingTest, NoWrapSpaceAndCollapsibleSpace) {
+  SetupHtml("t",
+            "<div id=t>"
+            "<span style='white-space: nowrap' id=span>foo </span>"
+            " bar"
+            "</div>");
+
+  const Element* span = GetElementById("span");
+  const Node* foo = span->firstChild();
+  const Node* bar = span->nextSibling();
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+
+  // NGInlineItemsBuilder inserts a ZWS to indicate break opportunity.
+  EXPECT_EQ(String(u"foo \u200Bbar"), mapping.GetText());
+
+  // Should't map any character in DOM to the generated ZWS.
+  ASSERT_EQ(3u, mapping.GetUnits().size());
+  TEST_UNIT(mapping.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo, 0u,
+            4u, 0u, 4u);
+  TEST_UNIT(mapping.GetUnits()[1], NGOffsetMappingUnitType::kCollapsed, bar, 0u,
+            1u, 5u, 5u);
+  TEST_UNIT(mapping.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, bar, 1u,
+            4u, 5u, 8u);
+}
+
 }  // namespace blink

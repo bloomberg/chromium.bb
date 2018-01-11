@@ -138,6 +138,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     const NGInlineItem& item = *item_result.item;
     if (item.Type() == NGInlineItem::kText ||
         item.Type() == NGInlineItem::kControl) {
+      if (!item.GetLayoutObject()) {
+        // TODO(kojii): Add a flag to NGInlineItem for this case.
+        continue;
+      }
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutNGListItem());
       DCHECK(!box->text_metrics.IsEmpty());
