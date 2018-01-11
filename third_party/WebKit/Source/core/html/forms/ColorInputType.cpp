@@ -37,6 +37,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/WebFeature.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/forms/ColorChooser.h"
@@ -148,13 +149,20 @@ void ColorInputType::HandleDOMActivateEvent(Event* event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
+  Document& document = GetElement().GetDocument();
+  if (!Frame::HasTransientUserActivation(document.GetFrame()))
     return;
 
   ChromeClient* chrome_client = GetChromeClient();
-  if (chrome_client && !chooser_)
-    chooser_ = chrome_client->OpenColorChooser(
-        GetElement().GetDocument().GetFrame(), this, ValueAsColor());
+  if (chrome_client && !chooser_) {
+    UseCounter::Count(
+        document,
+        (event->UnderlyingEvent() && event->UnderlyingEvent()->isTrusted())
+            ? WebFeature::kColorInputTypeChooserByTrustedClick
+            : WebFeature::kColorInputTypeChooserByUntrustedClick);
+    chooser_ = chrome_client->OpenColorChooser(document.GetFrame(), this,
+                                               ValueAsColor());
+  }
 
   event->SetDefaultHandled();
 }
