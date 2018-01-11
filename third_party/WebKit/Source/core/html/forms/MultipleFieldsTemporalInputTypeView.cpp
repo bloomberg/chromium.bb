@@ -35,6 +35,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/forms/BaseTemporalInputType.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/FormController.h"
@@ -397,6 +398,13 @@ void MultipleFieldsTemporalInputTypeView::DestroyShadowSubtree() {
 
   InputTypeView::DestroyShadowSubtree();
   is_destroying_shadow_subtree_ = false;
+}
+
+void MultipleFieldsTemporalInputTypeView::HandleClickEvent(MouseEvent* event) {
+  if (!event->isTrusted()) {
+    UseCounter::Count(GetElement().GetDocument(),
+                      WebFeature::kTemporalInputTypeIgnoreUntrustedClick);
+  }
 }
 
 void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
