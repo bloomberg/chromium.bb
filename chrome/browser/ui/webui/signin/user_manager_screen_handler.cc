@@ -471,8 +471,9 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // password token, the user must perform a full online reauth.
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::GAIA_REAUTH_DIALOG);
-    UserManagerProfileDialog::ShowReauthDialog(
-        browser_context, email_address_, signin_metrics::Reason::REASON_UNLOCK);
+    UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
+        browser_context, email_address_, profile_path,
+        signin_metrics::Reason::REASON_UNLOCK);
   } else if (entry->IsSigninRequired() && entry->IsSupervised()) {
     // Supervised profile will only be locked when force-sign-in is enabled
     // and it shouldn't be unlocked. Display the error message directly via
