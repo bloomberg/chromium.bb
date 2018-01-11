@@ -54,7 +54,7 @@ void PaintedOverlayScrollbarLayer::SetScrollElementId(ElementId element_id) {
     return;
 
   scroll_element_id_ = element_id;
-  SetNeedsFullTreeSync();
+  SetNeedsCommit();
 }
 
 bool PaintedOverlayScrollbarLayer::OpacityCanAnimateOnImplThread() const {
