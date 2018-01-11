@@ -2310,6 +2310,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
     ConvertToLayerCoords(root_layer, reference_box);
 
   FloatPoint point(hit_test_location.Point());
+  FloatRect float_reference_box(reference_box);
 
   ClipPathOperation* clip_path_operation =
       GetLayoutObject().Style()->ClipPath();
@@ -2317,7 +2318,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation* clip_path =
         ToShapeClipPathOperation(clip_path_operation);
-    return !clip_path->GetPath(FloatRect(reference_box)).Contains(point);
+    return !clip_path->GetPath(float_reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   Node* target_node = GetLayoutObject().GetNode();
@@ -2336,7 +2337,12 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   // the point accordingly.
   if (clipper->ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse)
     point.MoveBy(-reference_box.Location());
-  return !clipper->HitTestClipContent(FloatRect(reference_box), point);
+  // Unzoom the point and the reference box, since the <clipPath> geometry is
+  // not zoomed.
+  float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
+  point.Scale(inverse_zoom, inverse_zoom);
+  float_reference_box.Scale(inverse_zoom);
+  return !clipper->HitTestClipContent(float_reference_box, point);
 }
 
 bool PaintLayer::IntersectsDamageRect(
