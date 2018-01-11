@@ -3857,7 +3857,7 @@
       },
       'WebKit Linux slimming_paint_v2 Dummy Builder': {
         'args': [
-          '--additional-driver-flag=--enable-slimming-paint-v2',
+          '--additional-driver-flag=--enable-slimming-paint-v175',
         ],
         'swarming': {
           'shards': 15,

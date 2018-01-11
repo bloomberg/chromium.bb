@@ -7338,7 +7338,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-slimming-paint-v2"
+          "--additional-driver-flag=--enable-slimming-paint-v175"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
