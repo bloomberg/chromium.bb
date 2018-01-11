@@ -221,6 +221,10 @@ inline ShadowRoot* Element::ShadowRootIfV1() const {
   return nullptr;
 }
 
+inline bool Node::IsInUserAgentShadowRoot() const {
+  return ContainingShadowRoot() && ContainingShadowRoot()->IsUserAgent();
+}
+
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, IsShadowRoot());
 DEFINE_TYPE_CASTS(ShadowRoot,
                   TreeScope,

@@ -14,6 +14,15 @@ function configureShadowRoot(shadow) {
     shadow.positionedElement = shadow.querySelector('#x');
 }
 
+function configureUAShadowRoot(shadow) {
+  const slot = shadow.querySelector('slot');
+  const div = document.createElement('div');
+  div.style = 'position: relative;';
+  div.appendChild(slot);
+  shadow.appendChild(div);
+  shadow.positionedElement = div;
+}
+
 var container = document.querySelector('#container');
 
 // Test that offsetParent works in author Shadow DOM
@@ -33,12 +42,12 @@ shouldBe('child.offsetParent', 'container');
 // Test that when the offsetParent is in user agent Shadow DOM, it is
 // not exposed to script, but its shadow host or the host's ancestor
 // which is appropriate as an offsetParent is returned.
-host = document.createElement('details');
+host = document.createElement('summary');
 container.appendChild(host);
 host.setAttribute('open', 'open');
 host.appendChild(child);
 var shadow = window.internals.youngestShadowRoot(host);  // this is a UA shadow root
-configureShadowRoot(shadow);
+configureUAShadowRoot(shadow);
 shouldBe('child.offsetParent', 'container');
 
 // Test that offsetParent works 'through' user agent Shadow DOM when there is no

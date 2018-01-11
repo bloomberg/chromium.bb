@@ -39,25 +39,18 @@ namespace blink {
 
 using namespace HTMLNames;
 
-HTMLContentElement* HTMLContentElement::Create(
-    Document& document,
-    HTMLContentSelectFilter* filter) {
-  return new HTMLContentElement(document, filter);
-}
+DEFINE_NODE_FACTORY(HTMLContentElement);
 
-inline HTMLContentElement::HTMLContentElement(Document& document,
-                                              HTMLContentSelectFilter* filter)
+inline HTMLContentElement::HTMLContentElement(Document& document)
     : V0InsertionPoint(contentTag, document),
       should_parse_select_(false),
-      is_valid_selector_(true),
-      filter_(filter) {
+      is_valid_selector_(true) {
   UseCounter::Count(document, WebFeature::kHTMLContentElement);
 }
 
 HTMLContentElement::~HTMLContentElement() = default;
 
 void HTMLContentElement::Trace(blink::Visitor* visitor) {
-  visitor->Trace(filter_);
   V0InsertionPoint::Trace(visitor);
 }
 

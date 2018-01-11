@@ -53,17 +53,47 @@ namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
 }
 
+HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
+  return new HTMLSlotElement(document);
+}
+
+HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
+    Document& document) {
+  HTMLSlotElement* slot = new HTMLSlotElement(document);
+  slot->setAttribute(nameAttr, UserAgentDefaultSlotName());
+  return slot;
+}
+
+HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
+    Document& document) {
+  HTMLSlotElement* slot = new HTMLSlotElement(document);
+  slot->setAttribute(nameAttr, UserAgentCustomAssignSlotName());
+  return slot;
+}
+
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();
 }
 
-DEFINE_NODE_FACTORY(HTMLSlotElement);
-
 // static
 AtomicString HTMLSlotElement::NormalizeSlotName(const AtomicString& name) {
   return (name.IsNull() || name.IsEmpty()) ? g_empty_atom : name;
+}
+
+// static
+const AtomicString& HTMLSlotElement::UserAgentDefaultSlotName() {
+  DEFINE_STATIC_LOCAL(const AtomicString, user_agent_default_slot_name,
+                      ("user-agent-default-slot"));
+  return user_agent_default_slot_name;
+}
+
+// static
+const AtomicString& HTMLSlotElement::UserAgentCustomAssignSlotName() {
+  DEFINE_STATIC_LOCAL(const AtomicString, user_agent_custom_assign_slot_name,
+                      ("user-agent-custom-assign-slot"));
+  return user_agent_custom_assign_slot_name;
 }
 
 const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() const {
@@ -144,6 +174,7 @@ void HTMLSlotElement::SaveAndClearDistribution() {
 }
 
 void HTMLSlotElement::DispatchSlotChangeEvent() {
+  DCHECK(!IsInUserAgentShadowRoot());
   Event* event = Event::CreateBubble(EventTypeNames::slotchange);
   event->SetTarget(this);
   DispatchScopedEvent(event);
@@ -198,7 +229,7 @@ Node* HTMLSlotElement::DistributedNodePreviousTo(const Node& node) const {
 }
 
 AtomicString HTMLSlotElement::GetName() const {
-  return NormalizeSlotName(FastGetAttribute(HTMLNames::nameAttr));
+  return NormalizeSlotName(FastGetAttribute(nameAttr));
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
@@ -455,6 +486,12 @@ bool HTMLSlotElement::HasSlotableChild() const {
 }
 
 void HTMLSlotElement::EnqueueSlotChangeEvent() {
+  // TODO(kochi): This suppresses slotchange event on user-agent shadows,
+  // but could be improved further by not running change detection logic
+  // in SlotAssignment::Did{Add,Remove}SlotInternal etc., although naive
+  // skipping turned out breaking fallback content handling.
+  if (IsInUserAgentShadowRoot())
+    return;
   if (slotchange_event_enqueued_)
     return;
   MutationObserver::EnqueueSlotChange(*this);

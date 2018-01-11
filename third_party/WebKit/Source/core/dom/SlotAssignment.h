@@ -25,8 +25,8 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   }
 
   // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
-  HTMLSlotElement* FindSlot(const Node&);
-  HTMLSlotElement* FindSlotByName(const AtomicString& slot_name);
+  HTMLSlotElement* FindSlot(const Node&) const;
+  HTMLSlotElement* FindSlotByName(const AtomicString& slot_name) const;
 
   // DOM Standaard defines these two procedures:
   // 1. https://dom.spec.whatwg.org/#assign-a-slot
@@ -65,6 +65,8 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
     kRemoved,
     kRenamed,
   };
+
+  HTMLSlotElement* FindSlotInUserAgentShadow(const Node&) const;
 
   void CollectSlots();
   HTMLSlotElement* GetCachedFirstSlotWithoutAccessingNodeTree(

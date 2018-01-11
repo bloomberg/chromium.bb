@@ -10,10 +10,19 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/V0InsertionPoint.h"
+#include "core/html/HTMLDetailsElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/html_names.h"
 
 namespace blink {
+
+namespace {
+bool ShouldAssignToCustomSlot(const Node& node) {
+  if (IsHTMLDetailsElement(node.parentElement()))
+    return HTMLDetailsElement::IsFirstSummary(node);
+  return false;
+}
+}  // anonymous namespace
 
 void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
   // Relevant DOM Standard:
@@ -199,10 +208,33 @@ void SlotAssignment::ResolveAssignmentNg() {
   for (Member<HTMLSlotElement> slot : Slots())
     slot->ClearAssignedNodes();
 
+  const bool is_user_agent = owner_->IsUserAgent();
+
+  HTMLSlotElement* user_agent_default_slot = nullptr;
+  HTMLSlotElement* user_agent_custom_assign_slot = nullptr;
+  if (is_user_agent) {
+    user_agent_default_slot =
+        FindSlotByName(HTMLSlotElement::UserAgentDefaultSlotName());
+    user_agent_custom_assign_slot =
+        FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
+  }
+
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable())
       continue;
-    if (HTMLSlotElement* slot = FindSlotByName(child.SlotName()))
+
+    HTMLSlotElement* slot = nullptr;
+    if (!is_user_agent) {
+      slot = FindSlotByName(child.SlotName());
+    } else {
+      if (user_agent_custom_assign_slot && ShouldAssignToCustomSlot(child)) {
+        slot = user_agent_custom_assign_slot;
+      } else {
+        slot = user_agent_default_slot;
+      }
+    }
+
+    if (slot)
       slot->AppendAssignedNode(child);
   }
 }
@@ -213,12 +245,34 @@ void SlotAssignment::ResolveAssignment() {
   for (Member<HTMLSlotElement> slot : Slots())
     slot->SaveAndClearDistribution();
 
+  const bool is_user_agent = owner_->IsUserAgent();
+
+  HTMLSlotElement* user_agent_default_slot = nullptr;
+  HTMLSlotElement* user_agent_custom_assign_slot = nullptr;
+  if (is_user_agent) {
+    user_agent_default_slot =
+        FindSlotByName(HTMLSlotElement::UserAgentDefaultSlotName());
+    user_agent_custom_assign_slot =
+        FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
+  }
+
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable()) {
       child.LazyReattachIfAttached();
       continue;
     }
-    HTMLSlotElement* slot = FindSlotByName(child.SlotName());
+
+    HTMLSlotElement* slot = nullptr;
+    if (!is_user_agent) {
+      slot = FindSlotByName(child.SlotName());
+    } else {
+      if (user_agent_custom_assign_slot && ShouldAssignToCustomSlot(child)) {
+        slot = user_agent_custom_assign_slot;
+      } else {
+        slot = user_agent_default_slot;
+      }
+    }
+
     if (slot)
       slot->AppendAssignedNode(child);
     else
@@ -249,12 +303,28 @@ const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {
   return slots_;
 }
 
-HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) {
-  return node.IsSlotable() ? FindSlotByName(node.SlotName()) : nullptr;
+HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) const {
+  if (!node.IsSlotable())
+    return nullptr;
+  if (owner_->IsUserAgent())
+    return FindSlotInUserAgentShadow(node);
+  return FindSlotByName(node.SlotName());
 }
 
-HTMLSlotElement* SlotAssignment::FindSlotByName(const AtomicString& slot_name) {
+HTMLSlotElement* SlotAssignment::FindSlotByName(
+    const AtomicString& slot_name) const {
   return slot_map_->GetSlotByName(slot_name, *owner_);
+}
+
+HTMLSlotElement* SlotAssignment::FindSlotInUserAgentShadow(
+    const Node& node) const {
+  HTMLSlotElement* user_agent_custom_assign_slot =
+      FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
+  if (user_agent_custom_assign_slot && ShouldAssignToCustomSlot(node))
+    return user_agent_custom_assign_slot;
+  HTMLSlotElement* user_agent_default_slot =
+      FindSlotByName(HTMLSlotElement::UserAgentDefaultSlotName());
+  return user_agent_default_slot;
 }
 
 void SlotAssignment::CollectSlots() {

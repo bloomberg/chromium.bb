@@ -38,22 +38,11 @@
 
 namespace blink {
 
-class HTMLContentSelectFilter
-    : public GarbageCollectedFinalized<HTMLContentSelectFilter> {
- public:
-  virtual ~HTMLContentSelectFilter() = default;
-  virtual bool CanSelectNode(const HeapVector<Member<Node>, 32>& siblings,
-                             int nth) const = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
-};
-
 class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLContentElement* Create(Document&,
-                                    HTMLContentSelectFilter* = nullptr);
+  DECLARE_NODE_FACTORY(HTMLContentElement);
   ~HTMLContentElement() override;
 
   bool CanAffectSelector() const override { return true; }
@@ -67,7 +56,7 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   virtual void Trace(blink::Visitor*);
 
  private:
-  HTMLContentElement(Document&, HTMLContentSelectFilter*);
+  HTMLContentElement(Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
@@ -80,7 +69,6 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   bool is_valid_selector_;
   AtomicString select_;
   CSSSelectorList selector_list_;
-  Member<HTMLContentSelectFilter> filter_;
 };
 
 inline const CSSSelectorList& HTMLContentElement::SelectorList() const {
@@ -98,8 +86,6 @@ inline bool HTMLContentElement::IsSelectValid() const {
 inline bool HTMLContentElement::CanSelectNode(
     const HeapVector<Member<Node>, 32>& siblings,
     int nth) const {
-  if (filter_)
-    return filter_->CanSelectNode(siblings, nth);
   if (select_.IsNull() || select_.IsEmpty())
     return true;
   if (!IsSelectValid())
