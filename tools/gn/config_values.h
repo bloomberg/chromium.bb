@@ -53,6 +53,9 @@ class ConfigValues {
 #undef STRING_VALUES_ACCESSOR
 #undef DIR_VALUES_ACCESSOR
 
+  const std::vector<SourceFile>& inputs() const { return inputs_; }
+  std::vector<SourceFile>& inputs() { return inputs_; }
+
   const std::vector<LibFile>& libs() const { return libs_; }
   std::vector<LibFile>& libs() { return libs_; }
 
@@ -82,6 +85,7 @@ class ConfigValues {
   std::vector<std::string> cflags_objcc_;
   std::vector<std::string> defines_;
   std::vector<SourceDir>   include_dirs_;
+  std::vector<SourceFile>  inputs_;
   std::vector<std::string> ldflags_;
   std::vector<SourceDir>   lib_dirs_;
   std::vector<LibFile>     libs_;

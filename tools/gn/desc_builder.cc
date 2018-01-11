@@ -136,6 +136,8 @@ class BaseDescBuilder {
                        : ValuePtr(new base::Value(f.value()));
   }
 
+  ValuePtr RenderValue(const SourceFile* f) { return RenderValue(*f); }
+
   ValuePtr RenderValue(const LibFile& lib) {
     if (lib.is_source_file())
       return RenderValue(lib.source_file());
@@ -214,6 +216,7 @@ class ConfigDescBuilder : public BaseDescBuilder {
     CONFIG_VALUE_ARRAY_HANDLER(cflags_objcc, std::string)
     CONFIG_VALUE_ARRAY_HANDLER(defines, std::string)
     CONFIG_VALUE_ARRAY_HANDLER(include_dirs, SourceDir)
+    CONFIG_VALUE_ARRAY_HANDLER(inputs, SourceFile)
     CONFIG_VALUE_ARRAY_HANDLER(ldflags, std::string)
     CONFIG_VALUE_ARRAY_HANDLER(lib_dirs, SourceDir)
     CONFIG_VALUE_ARRAY_HANDLER(libs, LibFile)
@@ -315,9 +318,15 @@ class TargetDescBuilder : public BaseDescBuilder {
                                      RenderValue(target_->public_headers()));
     }
 
-    if (what(variables::kInputs) && !target_->inputs().empty())
-      res->SetWithoutPathExpansion(variables::kInputs,
-                                   RenderValue(target_->inputs()));
+    if (what(variables::kInputs)) {
+      std::vector<const SourceFile*> inputs;
+      for (ConfigValuesIterator iter(target_); !iter.done(); iter.Next()) {
+        for (const auto& input : iter.cur().inputs())
+          inputs.push_back(&input);
+      }
+      if (!inputs.empty())
+        res->SetWithoutPathExpansion(variables::kInputs, RenderValue(inputs));
+    }
 
     if (is_binary_output && what(variables::kConfigs) &&
         !target_->configs().empty()) {
@@ -393,6 +402,7 @@ class TargetDescBuilder : public BaseDescBuilder {
       CONFIG_VALUE_ARRAY_HANDLER(cflags_objcc, std::string)
       CONFIG_VALUE_ARRAY_HANDLER(defines, std::string)
       CONFIG_VALUE_ARRAY_HANDLER(include_dirs, SourceDir)
+      CONFIG_VALUE_ARRAY_HANDLER(inputs, SourceFile)
       CONFIG_VALUE_ARRAY_HANDLER(ldflags, std::string)
 #undef CONFIG_VALUE_ARRAY_HANDLER
 

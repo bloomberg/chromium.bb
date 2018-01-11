@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/config.h"
+#include "tools/gn/config_values_extractors.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
@@ -416,9 +417,11 @@ bool Analyzer::ItemRefersToFile(const Item* item,
     if (cur_file == *file)
       return true;
   }
-  for (const auto& cur_file : target->inputs()) {
-    if (cur_file == *file)
-      return true;
+  for (ConfigValuesIterator iter(target); !iter.done(); iter.Next()) {
+    for (const auto& cur_file : iter.cur().inputs()) {
+      if (cur_file == *file)
+        return true;
+    }
   }
   for (const auto& cur_file : target->data()) {
     if (cur_file == file->value())

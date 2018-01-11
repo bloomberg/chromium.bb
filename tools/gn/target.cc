@@ -827,8 +827,10 @@ void Target::CheckSourcesGenerated() const {
   // See Scheduler::AddUnknownGeneratedInput's declaration for more.
   for (const SourceFile& file : sources_)
     CheckSourceGenerated(file);
-  for (const SourceFile& file : inputs_)
-    CheckSourceGenerated(file);
+  for (ConfigValuesIterator iter(this); !iter.done(); iter.Next()) {
+    for (const SourceFile& file : iter.cur().inputs())
+      CheckSourceGenerated(file);
+  }
   // TODO(agrieve): Check all_libs_ here as well (those that are source files).
   // http://crbug.com/571731
 }

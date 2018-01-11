@@ -77,7 +77,7 @@ TEST(NinjaCopyTargetWriter, OrderOnlyDeps) {
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/{{source_name_part}}.out");
-  target.inputs().push_back(SourceFile("//foo/script.py"));
+  target.config_values().inputs().push_back(SourceFile("//foo/script.py"));
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
 

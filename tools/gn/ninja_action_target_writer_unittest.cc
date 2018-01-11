@@ -45,7 +45,7 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
   target.set_output_type(Target::ACTION);
 
   target.action_values().set_script(SourceFile("//foo/script.py"));
-  target.inputs().push_back(SourceFile("//foo/included.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
@@ -84,7 +84,7 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesPool) {
   target.set_output_type(Target::ACTION);
 
   target.action_values().set_script(SourceFile("//foo/script.py"));
-  target.inputs().push_back(SourceFile("//foo/included.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
@@ -132,7 +132,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.action_values().set_script(SourceFile("//foo/script.py"));
 
   target.sources().push_back(SourceFile("//foo/source.txt"));
-  target.inputs().push_back(SourceFile("//foo/included.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
@@ -198,7 +198,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
   target.action_values().outputs() = SubstitutionList::MakeForTest(
       "//out/Debug/{{source_name_part}}.out");
 
-  target.inputs().push_back(SourceFile("//foo/included.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
@@ -268,7 +268,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   target.action_values().outputs() = SubstitutionList::MakeForTest(
       "//out/Debug/{{source_name_part}}.out");
 
-  target.inputs().push_back(SourceFile("//foo/included.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/included.txt"));
 
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
