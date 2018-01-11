@@ -414,10 +414,15 @@ class EVENTS_EXPORT LocatedEvent : public Event {
                base::TimeTicks time_stamp,
                int flags);
 
+  // Location of the event relative to the target window and in the target
+  // window's coordinate space. If there is no target this is the same as
+  // |root_location_|.
   gfx::PointF location_;
 
-  // |location_| multiplied by an optional transformation matrix for
-  // rotations, animations and skews.
+  // Location of the event. What coordinate system this is in depends upon the
+  // phase of event dispatch. For client code (meaning EventHanalders) it is
+  // generally in screen coordinates, but early on it may be in pixels and
+  // relative to a display.
   gfx::PointF root_location_;
 };
 

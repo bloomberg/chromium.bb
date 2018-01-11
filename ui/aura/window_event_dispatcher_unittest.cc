@@ -2858,6 +2858,103 @@ TEST_P(WindowEventDispatcherTest, FractionOfTimeWithoutUserInputRecorded) {
   tester.ExpectTotalCount(kHistogram, 1);
 }
 
+TEST_P(WindowEventDispatcherTest, TouchEventWithScaledWindow) {
+  WindowEventDispatcher* dispatcher = host()->dispatcher();
+
+  EventFilterRecorder root_recorder;
+  root_window()->AddPreTargetHandler(&root_recorder);
+
+  test::TestWindowDelegate delegate;
+  std::unique_ptr<Window> child(
+      CreateNormalWindow(1, root_window(), &delegate));
+
+  const gfx::Point child_position(-10, -10);
+  const gfx::Rect& root_bounds = root_window()->bounds();
+  gfx::Rect child_bounds(child_position,
+                         gfx::ScaleToCeiledSize(root_bounds.size(), 2));
+  child->SetBounds(child_bounds);
+  gfx::Transform transform;
+  transform.Scale(0.5, 0.5);
+  child->SetTransform(transform);
+
+  EventFilterRecorder child_recorder;
+  child->AddPreTargetHandler(&child_recorder);
+
+  std::string expected_events =
+      "TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_RELEASED "
+      "GESTURE_SHOW_PRESS GESTURE_TAP GESTURE_END";
+  {
+    // Touch events are outside of the root window, but inside of the child
+    // window.
+    const gfx::Point touch_position(-5, -5);
+    ui::TouchEvent pressed_event(
+        ui::ET_TOUCH_PRESSED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    ui::TouchEvent released_event(
+        ui::ET_TOUCH_RELEASED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    dispatcher->OnEventFromSource(&pressed_event);
+    dispatcher->OnEventFromSource(&released_event);
+    EXPECT_EQ(expected_events, EventTypesToString(root_recorder.events()));
+    EXPECT_EQ("", EventTypesToString(child_recorder.events()));
+    root_recorder.Reset();
+    child_recorder.Reset();
+  }
+
+  {
+    // |touch_position| value is in the bounds of both the root window and the
+    // child window.
+    const gfx::Point touch_position(5, 5);
+    ui::TouchEvent pressed_event(
+        ui::ET_TOUCH_PRESSED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    ui::TouchEvent released_event(
+        ui::ET_TOUCH_RELEASED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    dispatcher->OnEventFromSource(&pressed_event);
+    dispatcher->OnEventFromSource(&released_event);
+    EXPECT_EQ(expected_events, EventTypesToString(root_recorder.events()));
+    EXPECT_EQ(expected_events, EventTypesToString(child_recorder.events()));
+    root_recorder.Reset();
+    child_recorder.Reset();
+  }
+
+  // Classic backend cannot dispatch events with non-null target.
+  if (GetParam() != test::BackendType::CLASSIC) {
+    // |touch_position| value isn't in the bounds of root window, but it is in
+    // the bounds of the child window.
+    const gfx::Point touch_position =
+        root_bounds.bottom_right() + gfx::Vector2d(20, 20);
+    ui::TouchEvent pressed_event(
+        ui::ET_TOUCH_PRESSED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+    ui::TouchEvent released_event(
+        ui::ET_TOUCH_RELEASED, touch_position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+
+    gfx::Point touch_root_position = touch_position;
+    aura::Window::ConvertPointToTarget(child.get(), root_window(),
+                                       &touch_root_position);
+    ui::Event::DispatcherApi(&pressed_event).set_target(child.get());
+    pressed_event.set_root_location(touch_root_position);
+    ui::Event::DispatcherApi(&released_event).set_target(child.get());
+    released_event.set_root_location(touch_position);
+    dispatcher->OnEventFromSource(&pressed_event);
+    dispatcher->OnEventFromSource(&released_event);
+
+    EXPECT_TRUE(child->bounds().Contains(touch_position));
+    EXPECT_FALSE(root_window()->bounds().Contains(touch_position));
+    EXPECT_TRUE(root_window()->bounds().Contains(touch_root_position));
+    EXPECT_EQ(expected_events, EventTypesToString(root_recorder.events()));
+    EXPECT_EQ(expected_events, EventTypesToString(child_recorder.events()));
+    root_recorder.Reset();
+    child_recorder.Reset();
+  }
+
+  child->RemovePreTargetHandler(&child_recorder);
+  root_window()->RemovePreTargetHandler(&root_recorder);
+}
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTest,
                         ::testing::Values(test::BackendType::CLASSIC,
