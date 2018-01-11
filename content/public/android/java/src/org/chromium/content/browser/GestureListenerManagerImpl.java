@@ -38,7 +38,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager {
      * @return {@link GestureListenerManager} object used for the give WebContents.
      *         Creates one if not present.
      */
-    public static GestureListenerManager fromWebContents(WebContents webContents) {
+    public static GestureListenerManagerImpl fromWebContents(WebContents webContents) {
         return WebContentsUserData.fromWebContents(
                 webContents, GestureListenerManagerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
