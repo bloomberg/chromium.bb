@@ -1,8 +1,10 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.android_webview;
+
+import android.webkit.WebViewClient;
 
 import org.chromium.components.safe_browsing.SBThreatType;
 
@@ -11,16 +13,18 @@ import org.chromium.components.safe_browsing.SBThreatType;
  * constants in WebViewClient.
  */
 public final class AwSafeBrowsingConversionHelper {
-    // TODO(ntfschr): set these values from WebViewClient after next SDK rolls
     /** The resource was blocked for an unknown reason */
-    public static final int SAFE_BROWSING_THREAT_UNKNOWN = 0;
+    public static final int SAFE_BROWSING_THREAT_UNKNOWN =
+            WebViewClient.SAFE_BROWSING_THREAT_UNKNOWN;
     /** The resource was blocked because it contains malware */
-    public static final int SAFE_BROWSING_THREAT_MALWARE = 1;
+    public static final int SAFE_BROWSING_THREAT_MALWARE =
+            WebViewClient.SAFE_BROWSING_THREAT_MALWARE;
     /** The resource was blocked because it contains deceptive content */
-    public static final int SAFE_BROWSING_THREAT_PHISHING = 2;
+    public static final int SAFE_BROWSING_THREAT_PHISHING =
+            WebViewClient.SAFE_BROWSING_THREAT_PHISHING;
     /** The resource was blocked because it contains unwanted software */
-    public static final int SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE = 3;
-
+    public static final int SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE =
+            WebViewClient.SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE;
     /**
      * Converts the threat type value from SafeBrowsing code to the WebViewClient constant.
      */
