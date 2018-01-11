@@ -295,60 +295,12 @@ def _Release(build, version, platform):
   slave_utils.GSUtilCopy(
       zip_path, '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, release_name))
 
-  _MaybeUploadReleaseNotes(version)
   _MaybeUpdateLatestRelease(version)
 
 
 def _GetWebPageContent(url):
   """Return the content of the web page specified by the given url."""
   return urllib2.urlopen(url).read()
-
-
-def _MaybeUploadReleaseNotes(version):
-  """Upload release notes if conditions are right."""
-  # Check if the current version has already been released.
-  notes_name = 'notes.txt'
-  notes_url = '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, notes_name)
-  prev_version = '.'.join([version.split('.')[0],
-                           str(int(version.split('.')[1]) - 1)])
-  prev_notes_url = '%s/%s/%s' % (
-      GS_CHROMEDRIVER_BUCKET, prev_version, notes_name)
-
-  result, _ = slave_utils.GSUtilListBucket(notes_url, [])
-  if result == 0:
-    return
-
-  fixed_issues = []
-  query = ('https://code.google.com/p/chromedriver/issues/csv?'
-           'can=1&q=label%%3AChromeDriver-%s&colspec=ID%%20Summary' % version)
-  issues = StringIO.StringIO(_GetWebPageContent(query).split('\n', 1)[1])
-  for issue in csv.reader(issues):
-    if not issue:
-      continue
-    issue_id = issue[0]
-    desc = issue[1]
-    labels = issue[2].split(', ')
-    labels.remove('ChromeDriver-%s' % version)
-    if 'Hotlist-GoodFirstBug' in labels:
-      labels.remove('Hotlist-GoodFirstBug')
-    fixed_issues += ['Resolved issue %s: %s [%s]' % (issue_id, desc, labels)]
-
-  old_notes = ''
-  temp_notes_fname = tempfile.mkstemp()[1]
-  if not slave_utils.GSUtilDownloadFile(prev_notes_url, temp_notes_fname):
-    with open(temp_notes_fname, 'rb') as f:
-      old_notes = f.read()
-
-  new_notes = '----------ChromeDriver v%s (%s)----------\n%s\n%s\n\n%s' % (
-      version, datetime.date.today().isoformat(),
-      'Supports Chrome v%s-%s' % _GetSupportedChromeVersions(),
-      '\n'.join(fixed_issues),
-      old_notes)
-  with open(temp_notes_fname, 'w') as f:
-    f.write(new_notes)
-
-  if slave_utils.GSUtilCopy(temp_notes_fname, notes_url, mimetype='text/plain'):
-    util.MarkBuildStepError()
 
 
 def _MaybeUpdateLatestRelease(version):
@@ -363,7 +315,7 @@ def _MaybeUpdateLatestRelease(version):
     return
 
   # Check if chromedriver was released on all supported platforms.
-  supported_platforms = ['linux32', 'linux64', 'mac32', 'win32']
+  supported_platforms = ['linux64', 'mac32', 'win32']
   for platform in supported_platforms:
     if not _WasReleased(version, platform):
       return
