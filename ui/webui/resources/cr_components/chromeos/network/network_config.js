@@ -766,6 +766,8 @@ Polymer({
     }
     if (opt_create)
       return eap || {};
+    if (eap)
+      eap.SaveCredentials = eap.SaveCredentials || false;
     return eap || null;
   },
 
@@ -1116,7 +1118,7 @@ Polymer({
    * @private
    */
   setEapProperties_: function(eap) {
-    eap.UseSystemCAs = this.selectedServerCaHash_ == DO_NOT_CHECK_HASH;
+    eap.UseSystemCAs = this.selectedServerCaHash_ == DEFAULT_HASH;
 
     eap.ServerCAPEMs = this.getServerCaPems_();
 
