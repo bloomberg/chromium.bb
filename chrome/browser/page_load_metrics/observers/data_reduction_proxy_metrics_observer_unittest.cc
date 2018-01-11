@@ -14,6 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/optional.h"
+#include "base/process/kill.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -60,7 +62,9 @@ class TestPingbackClient
     : public data_reduction_proxy::DataReductionProxyPingbackClientImpl {
  public:
   TestPingbackClient()
-      : data_reduction_proxy::DataReductionProxyPingbackClientImpl(nullptr),
+      : data_reduction_proxy::DataReductionProxyPingbackClientImpl(
+            nullptr,
+            base::ThreadTaskRunnerHandle::Get()),
         send_pingback_called_(false) {}
   ~TestPingbackClient() override {}
 
@@ -207,6 +211,11 @@ class DataReductionProxyMetricsObserverTest
     NavigateToUntrackedUrl();
   }
 
+  void SimulateRendererCrash() {
+    observer()->RenderProcessGone(
+        base::TerminationStatus::TERMINATION_STATUS_ABNORMAL_TERMINATION);
+  }
+
   // Verify that, if expected and actual are set, their values are equal.
   // Otherwise, verify that both are unset.
   void ExpectEqualOrUnset(const base::Optional<base::TimeDelta>& expected,
@@ -244,6 +253,13 @@ class DataReductionProxyMetricsObserverTest
   void ValidateLoFiInPingback(bool lofi_expected) {
     EXPECT_TRUE(pingback_client_->send_pingback_called());
     EXPECT_EQ(lofi_expected, pingback_client_->data().lofi_received());
+  }
+
+  void ValidateRendererCrash(bool renderer_crashed) {
+    EXPECT_TRUE(pingback_client_->send_pingback_called());
+    EXPECT_EQ(renderer_crashed,
+              pingback_client_->timing()->host_id !=
+                  content::ChildProcessHost::kInvalidUniqueID);
   }
 
   void ValidateHistograms() {
@@ -669,6 +685,29 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
 
   ValidateDataHistograms(network_resources, drp_resources, network_bytes,
                          drp_bytes, ocl_bytes);
+}
+
+TEST_F(DataReductionProxyMetricsObserverTest, ProcessIdSentOnRendererCrash) {
+  ResetTest();
+  RunTest(true, false, false);
+  std::unique_ptr<DataReductionProxyData> data =
+      base::MakeUnique<DataReductionProxyData>();
+  data->set_used_data_reduction_proxy(true);
+  data->set_request_url(GURL(kDefaultTestUrl));
+  SimulateRendererCrash();
+
+  // When the renderer crashes, the pingback should report that.
+  ValidateRendererCrash(true);
+
+  ResetTest();
+  RunTest(true, false, false);
+  data = base::MakeUnique<DataReductionProxyData>();
+  data->set_used_data_reduction_proxy(true);
+  data->set_request_url(GURL(kDefaultTestUrl));
+  NavigateToUntrackedUrl();
+
+  // When the renderer does not crash, the pingback should report that.
+  ValidateRendererCrash(false);
 }
 
 }  //  namespace data_reduction_proxy

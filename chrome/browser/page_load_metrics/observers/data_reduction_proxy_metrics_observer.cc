@@ -29,6 +29,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/child_process_host.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -107,6 +108,7 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       network_bytes_(0),
       process_id_(base::kNullProcessId),
       renderer_memory_usage_kb_(0),
+      render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
       weak_ptr_factory_(this) {}
 
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
@@ -144,6 +146,10 @@ DataReductionProxyMetricsObserver::OnCommit(
                                     ->GetMainFrame()
                                     ->GetProcess()
                                     ->GetHandle());
+  render_process_host_id_ = navigation_handle->GetWebContents()
+                                ->GetMainFrame()
+                                ->GetProcess()
+                                ->GetID();
 
   // DataReductionProxy page loads should only occur on HTTP navigations.
   DCHECK(!navigation_handle->GetURL().SchemeIsCryptographic());
@@ -317,13 +323,21 @@ void DataReductionProxyMetricsObserver::SendPingback(
     parse_stop = timing.parse_timing->parse_stop;
   }
 
+  // If a crash happens, report the host |render_process_host_id_| to the
+  // pingback client. Otherwise report kInvalidUniqueID.
+  int host_id = content::ChildProcessHost::kInvalidUniqueID;
+  if (info.page_end_reason ==
+      page_load_metrics::PageEndReason::END_RENDER_PROCESS_GONE) {
+    host_id = render_process_host_id_;
+  }
+
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
       parse_blocked_on_script_load_duration, parse_stop, network_bytes_,
       original_network_bytes_, app_background_occurred, opted_out_,
-      renderer_memory_usage_kb_);
+      renderer_memory_usage_kb_, host_id);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 

@@ -59,6 +59,16 @@ CrashDumpManager* CrashDumpManager::GetInstance() {
   return g_instance.Pointer();
 }
 
+// static
+bool CrashDumpManager::IsForegroundOom(const CrashDumpDetails& details) {
+  // If the crash is size 0, it is an OOM.
+  return details.process_type == content::PROCESS_TYPE_RENDERER &&
+         details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
+         details.file_size == 0 &&
+         details.app_state ==
+             base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+}
+
 void CrashDumpManager::AddObserver(Observer* observer) {
   async_observers_->AddObserver(observer);
 }

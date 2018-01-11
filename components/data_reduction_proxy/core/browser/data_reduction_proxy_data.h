@@ -29,6 +29,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   DataReductionProxyData();
   ~DataReductionProxyData() override;
 
+  // Allow copying.
+  DataReductionProxyData(const DataReductionProxyData& other);
+
   // Whether the DataReductionProxy was used for this request or navigation.
   // Also true if the user is the holdback experiment, and the request would
   // otherwise be eligible to use the proxy.
@@ -154,7 +157,7 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // data saver session. Only present on main frame requests.
   base::Optional<uint64_t> page_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyData);
+  DISALLOW_ASSIGN(DataReductionProxyData);
 };
 
 }  // namespace data_reduction_proxy

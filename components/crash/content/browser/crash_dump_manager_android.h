@@ -84,6 +84,9 @@ class CrashDumpManager {
 
   static CrashDumpManager* GetInstance();
 
+  // True when |details| is a foreground out of memory crash.
+  static bool IsForegroundOom(const CrashDumpDetails& details);
+
   // Can be called on any thread.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

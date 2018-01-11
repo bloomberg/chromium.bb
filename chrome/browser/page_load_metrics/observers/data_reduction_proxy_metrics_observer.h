@@ -155,8 +155,10 @@ class DataReductionProxyMetricsObserver
   // Available after ProcessMemoryDump is called. 0 before that point.
   int64_t renderer_memory_usage_kb_;
 
-  // Retrieved during OnLoadEventStart and held until destruction of |this|.
-  memory_instrumentation::mojom::CoordinatorPtr coordinator_;
+  // A unique identifier to the child process of the render frame, stored in
+  // case of a renderer crash.
+  // Set at navigation commit time.
+  int render_process_host_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
