@@ -58,7 +58,7 @@ HTMLOptionElement::~HTMLOptionElement() = default;
 
 HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
   HTMLOptionElement* option = new HTMLOptionElement(document);
-  option->EnsureUserAgentShadowRoot();
+  option->EnsureLegacyUserAgentShadowRootV0();
   return option;
 }
 
@@ -70,7 +70,7 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
     bool selected,
     ExceptionState& exception_state) {
   HTMLOptionElement* element = new HTMLOptionElement(document);
-  element->EnsureUserAgentShadowRoot();
+  element->EnsureLegacyUserAgentShadowRootV0();
   if (!data.IsEmpty()) {
     element->AppendChild(Text::Create(document, data), exception_state);
     if (exception_state.HadException())

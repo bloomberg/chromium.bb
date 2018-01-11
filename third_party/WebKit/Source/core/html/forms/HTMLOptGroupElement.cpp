@@ -51,7 +51,7 @@ HTMLOptGroupElement::~HTMLOptGroupElement() = default;
 
 HTMLOptGroupElement* HTMLOptGroupElement::Create(Document& document) {
   HTMLOptGroupElement* opt_group_element = new HTMLOptGroupElement(document);
-  opt_group_element->EnsureUserAgentShadowRoot();
+  opt_group_element->EnsureLegacyUserAgentShadowRootV0();
   return opt_group_element;
 }
 

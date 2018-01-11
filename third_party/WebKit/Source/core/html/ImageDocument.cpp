@@ -250,7 +250,7 @@ void ImageDocument::CreateDocumentStructure() {
     HTMLContentElement* content = HTMLContentElement::Create(*this);
     div_element_->AppendChild(content);
 
-    ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
+    ShadowRoot& shadow_root = body->EnsureLegacyUserAgentShadowRootV0();
     shadow_root.AppendChild(div_element_);
   } else {
     body->setAttribute(styleAttr, "margin: 0px;");

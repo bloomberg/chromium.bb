@@ -494,7 +494,8 @@ class CORE_EXPORT Element : public ContainerNode {
                            const ShadowRootInit&,
                            ExceptionState&);
   ShadowRoot& CreateShadowRootInternal();
-  ShadowRoot& CreateUserAgentShadowRoot();
+  ShadowRoot& CreateLegacyUserAgentShadowRootV0();
+  ShadowRoot& CreateUserAgentShadowRootV1();
   ShadowRoot& AttachShadowRootInternal(ShadowRootType,
                                        bool delegates_focus = false);
 
@@ -507,7 +508,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ShadowRoot* ShadowRootIfV1() const;
 
-  ShadowRoot& EnsureUserAgentShadowRoot();
+  ShadowRoot& EnsureLegacyUserAgentShadowRootV0();
+  ShadowRoot& EnsureUserAgentShadowRootV1();
 
   bool IsInDescendantTreeOf(const Element* shadow_host) const;
 

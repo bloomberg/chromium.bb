@@ -56,10 +56,10 @@ class NodeTest : public EditingTestBase {
   Node* InitializeShadowDOMTree(Element* test_node) {
     SetBodyContent("<div id=\"root\"></div>");
     Element* root = GetDocument().getElementById("root");
-    ShadowRoot& first_shadow = root->CreateUserAgentShadowRoot();
+    ShadowRoot& first_shadow = root->CreateLegacyUserAgentShadowRootV0();
 
     first_shadow.AppendChild(test_node);
-    ShadowRoot& second_shadow = test_node->CreateUserAgentShadowRoot();
+    ShadowRoot& second_shadow = test_node->CreateLegacyUserAgentShadowRootV0();
 
     HTMLDivElement* class_div = HTMLDivElement::Create(GetDocument());
     class_div->setAttribute("class", "test");

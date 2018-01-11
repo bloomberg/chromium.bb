@@ -182,7 +182,7 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
   // Consider a closed shadow tree of SVG's <use> element as a special
   // case so that a toolip title in the shadow tree works.
   while (containing_shadow_root &&
-         (containing_shadow_root->GetType() == ShadowRootType::kUserAgent ||
+         (containing_shadow_root->IsUserAgent() ||
           IsSVGUseElement(containing_shadow_root->host()))) {
     shadow_host = &containing_shadow_root->host();
     containing_shadow_root = shadow_host->ContainingShadowRoot();
@@ -197,8 +197,7 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
   DCHECK(inner_node_);
   HTMLImageElement* image_element = ToHTMLImageElementOrNull(inner_node_);
   if (!image_element && inner_node_->IsInShadowTree()) {
-    if (inner_node_->ContainingShadowRoot()->GetType() ==
-        ShadowRootType::kUserAgent) {
+    if (inner_node_->ContainingShadowRoot()->IsUserAgent()) {
       image_element = ToHTMLImageElementOrNull(inner_node_->OwnerShadowHost());
     }
   }

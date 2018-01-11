@@ -443,7 +443,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       UseCounter::Count(context.element->GetDocument(),
                         WebFeature::kDeepCombinatorInStaticProfile);
       if (ShadowRoot* root = context.element->ContainingShadowRoot()) {
-        if (root->GetType() == ShadowRootType::kUserAgent)
+        if (root->IsUserAgent())
           return kSelectorFailsCompletely;
       }
 
@@ -1095,7 +1095,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoHostHasAppearance:
       DCHECK(is_ua_rule_);
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
-        if (root->GetType() != ShadowRootType::kUserAgent)
+        if (!root->IsUserAgent())
           return false;
         const ComputedStyle* style = root->host().GetComputedStyle();
         return style && style->HasAppearance();
@@ -1146,20 +1146,20 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
     }
     case CSSSelector::kPseudoPlaceholder:
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
-        return root->GetType() == ShadowRootType::kUserAgent &&
+        return root->IsUserAgent() &&
                element.ShadowPseudoId() == "-webkit-input-placeholder";
       }
       return false;
     case CSSSelector::kPseudoWebKitCustomElement: {
       if (ShadowRoot* root = element.ContainingShadowRoot())
-        return root->GetType() == ShadowRootType::kUserAgent &&
+        return root->IsUserAgent() &&
                element.ShadowPseudoId() == selector.Value();
       return false;
     }
     case CSSSelector::kPseudoBlinkInternalElement:
       DCHECK(is_ua_rule_);
       if (ShadowRoot* root = element.ContainingShadowRoot())
-        return root->GetType() == ShadowRootType::kUserAgent &&
+        return root->IsUserAgent() &&
                element.ShadowPseudoId() == selector.Value();
       return false;
     case CSSSelector::kPseudoSlotted: {

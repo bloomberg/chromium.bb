@@ -36,7 +36,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
   // we calculate ::selection style on the shadow host for elements inside the
   // UA shadow.
   if (ShadowRoot* root = node->ContainingShadowRoot()) {
-    if (root->GetType() == ShadowRootType::kUserAgent) {
+    if (root->IsUserAgent()) {
       if (Element* shadow_host = node->OwnerShadowHost()) {
         return shadow_host->GetUncachedPseudoStyle(
             PseudoStyleRequest(kPseudoIdSelection));

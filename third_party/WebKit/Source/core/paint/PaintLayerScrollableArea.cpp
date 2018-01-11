@@ -1274,7 +1274,7 @@ static inline const LayoutObject& ScrollbarStyleSource(
       return layout_object;
 
     if (ShadowRoot* shadow_root = node->ContainingShadowRoot()) {
-      if (shadow_root->GetType() == ShadowRootType::kUserAgent) {
+      if (shadow_root->IsUserAgent()) {
         if (LayoutObject* host_layout_object =
                 shadow_root->host().GetLayoutObject())
           return *host_layout_object;
