@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
@@ -38,36 +39,7 @@ void DeviceMotionEventPump::SendStartMessage() {
     return;
   }
 
-  if (!accelerometer_.sensor && !linear_acceleration_sensor_.sensor &&
-      !gyroscope_.sensor) {
-    if (!sensor_provider_) {
-      RenderFrame* const render_frame = GetRenderFrame();
-      if (!render_frame)
-        return;
-
-      CHECK(render_frame->GetRemoteInterfaces());
-
-      render_frame->GetRemoteInterfaces()->GetInterface(
-          mojo::MakeRequest(&sensor_provider_));
-      sensor_provider_.set_connection_error_handler(
-          base::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
-                         base::Unretained(this)));
-    }
-    GetSensor(&accelerometer_);
-    GetSensor(&linear_acceleration_sensor_);
-    GetSensor(&gyroscope_);
-  } else {
-    if (accelerometer_.sensor)
-      accelerometer_.sensor->Resume();
-
-    if (linear_acceleration_sensor_.sensor)
-      linear_acceleration_sensor_.sensor->Resume();
-
-    if (gyroscope_.sensor)
-      gyroscope_.sensor->Resume();
-
-    DidStartIfPossible();
-  }
+  SendStartMessageImpl();
 }
 
 void DeviceMotionEventPump::SendStopMessage() {
@@ -75,14 +47,10 @@ void DeviceMotionEventPump::SendStopMessage() {
   // all device motion event listeners are unregistered. Since removing the
   // event listener is more rare than the page visibility changing,
   // Sensor::Suspend() is used to optimize this case for not doing extra work.
-  if (accelerometer_.sensor)
-    accelerometer_.sensor->Suspend();
 
-  if (linear_acceleration_sensor_.sensor)
-    linear_acceleration_sensor_.sensor->Suspend();
-
-  if (gyroscope_.sensor)
-    gyroscope_.sensor->Suspend();
+  accelerometer_.Stop();
+  linear_acceleration_sensor_.Stop();
+  gyroscope_.Stop();
 }
 
 void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {
@@ -105,19 +73,28 @@ void DeviceMotionEventPump::FireEvent() {
   listener()->DidChangeDeviceMotion(data);
 }
 
-bool DeviceMotionEventPump::SensorSharedBuffersReady() const {
-  if (accelerometer_.sensor && !accelerometer_.shared_buffer)
-    return false;
+void DeviceMotionEventPump::SendStartMessageImpl() {
+  if (!sensor_provider_) {
+    RenderFrame* const render_frame = GetRenderFrame();
+    if (!render_frame)
+      return;
 
-  if (linear_acceleration_sensor_.sensor &&
-      !linear_acceleration_sensor_.shared_buffer) {
-    return false;
+    render_frame->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&sensor_provider_));
+    sensor_provider_.set_connection_error_handler(
+        base::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
+                   base::Unretained(this)));
   }
 
-  if (gyroscope_.sensor && !gyroscope_.shared_buffer)
-    return false;
+  accelerometer_.Start(sensor_provider_.get());
+  linear_acceleration_sensor_.Start(sensor_provider_.get());
+  gyroscope_.Start(sensor_provider_.get());
+}
 
-  return true;
+bool DeviceMotionEventPump::SensorsReadyOrErrored() const {
+  return accelerometer_.ReadyOrErrored() &&
+         linear_acceleration_sensor_.ReadyOrErrored() &&
+         gyroscope_.ReadyOrErrored();
 }
 
 void DeviceMotionEventPump::GetDataFromSharedMemory(device::MotionData* data) {

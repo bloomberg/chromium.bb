@@ -34,15 +34,17 @@ class CONTENT_EXPORT DeviceOrientationEventPump
   void FireEvent() override;
   void DidStartIfPossible() override;
 
+  void SendStartMessageImpl();
+
   SensorEntry relative_orientation_sensor_;
   SensorEntry absolute_orientation_sensor_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DeviceOrientationEventPumpTest,
-                           SensorInitializedButItsSharedBufferIsNot);
+  friend class DeviceOrientationEventPumpTest;
+  friend class DeviceAbsoluteOrientationEventPumpTest;
 
   // DeviceSensorEventPump:
-  bool SensorSharedBuffersReady() const override;
+  bool SensorsReadyOrErrored() const override;
 
   void GetDataFromSharedMemory(device::OrientationData* data);
 
@@ -50,6 +52,7 @@ class CONTENT_EXPORT DeviceOrientationEventPump
 
   bool absolute_;
   bool fall_back_to_absolute_orientation_sensor_;
+  bool should_suspend_absolute_orientation_sensor_ = false;
   device::OrientationData data_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);

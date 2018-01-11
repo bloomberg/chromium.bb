@@ -6,39 +6,23 @@
 
 #include <string.h>
 
-#include <cmath>
 #include <memory>
 
-#include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/test_utils.h"
+#include "content/renderer/device_sensors/fake_sensor_and_provider.h"
 #include "device/sensors/public/cpp/motion_data.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/system/buffer.h"
-#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
-#include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/interfaces/sensor.mojom.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-
-namespace {
-
-constexpr uint64_t kReadingBufferSize =
-    sizeof(device::SensorReadingSharedBuffer);
-
-constexpr uint64_t kSharedBufferSizeInBytes =
-    kReadingBufferSize * static_cast<uint64_t>(device::mojom::SensorType::LAST);
-
-}  // namespace
 
 namespace content {
 
@@ -74,131 +58,17 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 
 class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
-  DeviceMotionEventPumpForTesting()
-      : DeviceMotionEventPump(nullptr), stop_on_fire_event_(true) {}
+  DeviceMotionEventPumpForTesting() : DeviceMotionEventPump(nullptr) {}
   ~DeviceMotionEventPumpForTesting() override {}
 
   // DeviceMotionEventPump:
   void SendStartMessage() override {
-    accelerometer_.mode = device::mojom::ReportingMode::CONTINUOUS;
-    linear_acceleration_sensor_.mode = device::mojom::ReportingMode::ON_CHANGE;
-    gyroscope_.mode = device::mojom::ReportingMode::CONTINUOUS;
-
-    shared_memory_ = mojo::SharedBufferHandle::Create(kSharedBufferSizeInBytes);
-
-    accelerometer_.shared_buffer_handle =
-        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    accelerometer_.shared_buffer = shared_memory_->MapAtOffset(
-        kReadingBufferSize,
-        device::SensorReadingSharedBuffer::GetOffset(accelerometer_.type));
-    accelerometer_buffer_ = static_cast<device::SensorReadingSharedBuffer*>(
-        accelerometer_.shared_buffer.get());
-    accelerometer_.shared_buffer_reader.reset(
-        new device::SensorReadingSharedBufferReader(accelerometer_buffer_));
-
-    linear_acceleration_sensor_.shared_buffer_handle =
-        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    linear_acceleration_sensor_.shared_buffer = shared_memory_->MapAtOffset(
-        kReadingBufferSize, device::SensorReadingSharedBuffer::GetOffset(
-                                linear_acceleration_sensor_.type));
-    linear_acceleration_sensor_buffer_ =
-        static_cast<device::SensorReadingSharedBuffer*>(
-            linear_acceleration_sensor_.shared_buffer.get());
-    linear_acceleration_sensor_.shared_buffer_reader.reset(
-        new device::SensorReadingSharedBufferReader(
-            linear_acceleration_sensor_buffer_));
-
-    gyroscope_.shared_buffer_handle =
-        shared_memory_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    gyroscope_.shared_buffer = shared_memory_->MapAtOffset(
-        kReadingBufferSize,
-        device::SensorReadingSharedBuffer::GetOffset(gyroscope_.type));
-    gyroscope_buffer_ = static_cast<device::SensorReadingSharedBuffer*>(
-        gyroscope_.shared_buffer.get());
-    gyroscope_.shared_buffer_reader.reset(
-        new device::SensorReadingSharedBufferReader(gyroscope_buffer_));
+    DeviceMotionEventPump::SendStartMessageImpl();
   }
-
-  void StartFireEvent() { DeviceSensorEventPump::DidStartIfPossible(); }
-
-  void SetAccelerometerSensorData(bool active, double x, double y, double z) {
-    if (active) {
-      mojo::MakeRequest(&accelerometer_.sensor);
-      accelerometer_buffer_->reading.accel.timestamp =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-      accelerometer_buffer_->reading.accel.x = x;
-      accelerometer_buffer_->reading.accel.y = y;
-      accelerometer_buffer_->reading.accel.z = z;
-    } else {
-      accelerometer_.sensor.reset();
-    }
-  }
-
-  void InitializeAccelerometerSensorPtr() {
-    mojo::MakeRequest(&accelerometer_.sensor);
-  }
-
-  void InitializeAccelerometerSharedBuffer() {
-    shared_memory_ = mojo::SharedBufferHandle::Create(kSharedBufferSizeInBytes);
-    accelerometer_.shared_buffer = shared_memory_->MapAtOffset(
-        kReadingBufferSize,
-        device::SensorReadingSharedBuffer::GetOffset(accelerometer_.type));
-  }
-
-  void SetLinearAccelerationSensorData(bool active,
-                                       double x,
-                                       double y,
-                                       double z) {
-    if (active) {
-      mojo::MakeRequest(&linear_acceleration_sensor_.sensor);
-      linear_acceleration_sensor_buffer_->reading.accel.timestamp =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-      linear_acceleration_sensor_buffer_->reading.accel.x = x;
-      linear_acceleration_sensor_buffer_->reading.accel.y = y;
-      linear_acceleration_sensor_buffer_->reading.accel.z = z;
-    } else {
-      linear_acceleration_sensor_.sensor.reset();
-    }
-  }
-
-  void SetGyroscopeSensorData(bool active, double x, double y, double z) {
-    if (active) {
-      mojo::MakeRequest(&gyroscope_.sensor);
-      gyroscope_buffer_->reading.gyro.timestamp =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-      gyroscope_buffer_->reading.gyro.x = x;
-      gyroscope_buffer_->reading.gyro.y = y;
-      gyroscope_buffer_->reading.gyro.z = z;
-    } else {
-      gyroscope_.sensor.reset();
-    }
-  }
-
-  void set_stop_on_fire_event(bool stop_on_fire_event) {
-    stop_on_fire_event_ = stop_on_fire_event;
-  }
-
-  bool stop_on_fire_event() { return stop_on_fire_event_; }
 
   int pump_delay_microseconds() const { return kDefaultPumpDelayMicroseconds; }
 
- protected:
-  // DeviceMotionEventPump:
-  void FireEvent() override {
-    DeviceMotionEventPump::FireEvent();
-    if (stop_on_fire_event_) {
-      Stop();
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    }
-  }
-
  private:
-  bool stop_on_fire_event_;
-  mojo::ScopedSharedBufferHandle shared_memory_;
-  device::SensorReadingSharedBuffer* accelerometer_buffer_;
-  device::SensorReadingSharedBuffer* linear_acceleration_sensor_buffer_;
-  device::SensorReadingSharedBuffer* gyroscope_buffer_;
-
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpForTesting);
 };
 
@@ -208,29 +78,148 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting());
+    device::mojom::SensorProviderPtr sensor_provider_ptr;
+    sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr));
+    motion_pump_->SetSensorProviderForTesting(std::move(sensor_provider_ptr));
+
+    listener_.reset(new MockDeviceMotionListener);
+
+    ExpectAllThreeSensorsStateToBe(
+        DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
+    EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
+              motion_pump()->GetPumpStateForTesting());
   }
 
-  MockDeviceMotionListener* listener() { return listener_.get(); }
+  void FireEvent() { motion_pump_->FireEvent(); }
+
+  void ExpectAccelerometerStateToBe(
+      DeviceMotionEventPump::SensorState expected_sensor_state) {
+    EXPECT_EQ(expected_sensor_state, motion_pump_->accelerometer_.sensor_state);
+  }
+
+  void ExpectLinearAccelerationSensorStateToBe(
+      DeviceMotionEventPump::SensorState expected_sensor_state) {
+    EXPECT_EQ(expected_sensor_state,
+              motion_pump_->linear_acceleration_sensor_.sensor_state);
+  }
+
+  void ExpectGyroscopeStateToBe(
+      DeviceMotionEventPump::SensorState expected_sensor_state) {
+    EXPECT_EQ(expected_sensor_state, motion_pump_->gyroscope_.sensor_state);
+  }
+
+  void ExpectAllThreeSensorsStateToBe(
+      DeviceMotionEventPump::SensorState expected_sensor_state) {
+    ExpectAccelerometerStateToBe(expected_sensor_state);
+    ExpectLinearAccelerationSensorStateToBe(expected_sensor_state);
+    ExpectGyroscopeStateToBe(expected_sensor_state);
+  }
+
   DeviceMotionEventPumpForTesting* motion_pump() { return motion_pump_.get(); }
+
+  MockDeviceMotionListener* listener() { return listener_.get(); }
+
+  FakeSensorProvider* sensor_provider() { return &sensor_provider_; }
 
  private:
   base::MessageLoop loop_;
-  std::unique_ptr<MockDeviceMotionListener> listener_;
   std::unique_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
+  std::unique_ptr<MockDeviceMotionListener> listener_;
+  FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpTest);
 };
 
+TEST_F(DeviceMotionEventPumpTest, MultipleStartAndStopWithWait) {
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+  EXPECT_EQ(DeviceMotionEventPump::PumpState::RUNNING,
+            motion_pump()->GetPumpStateForTesting());
+
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+  EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
+            motion_pump()->GetPumpStateForTesting());
+
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+  EXPECT_EQ(DeviceMotionEventPump::PumpState::RUNNING,
+            motion_pump()->GetPumpStateForTesting());
+
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+  EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
+            motion_pump()->GetPumpStateForTesting());
+}
+
+TEST_F(DeviceMotionEventPumpTest, CallStop) {
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(
+      DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
+}
+
+TEST_F(DeviceMotionEventPumpTest, CallStartAndStop) {
+  motion_pump()->Start(listener());
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+}
+
+TEST_F(DeviceMotionEventPumpTest, CallStartMultipleTimes) {
+  motion_pump()->Start(listener());
+  motion_pump()->Start(listener());
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+}
+
+TEST_F(DeviceMotionEventPumpTest, CallStopMultipleTimes) {
+  motion_pump()->Start(listener());
+  motion_pump()->Stop();
+  motion_pump()->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+}
+
+// Test multiple DeviceSensorEventPump::Start() calls only bind sensor once.
+TEST_F(DeviceMotionEventPumpTest, SensorOnlyBindOnce) {
+  motion_pump()->Start(listener());
+  motion_pump()->Stop();
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  motion_pump()->Stop();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+}
+
 TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   motion_pump()->Start(listener());
-  motion_pump()->SetAccelerometerSensorData(true /* active */, 1, 2, 3);
-  motion_pump()->SetLinearAccelerationSensorData(true /* active */, 4, 5, 6);
-  motion_pump()->SetGyroscopeSensorData(true /* active */, 7, 8, 9);
-  motion_pump()->StartFireEvent();
+  base::RunLoop().RunUntilIdle();
 
-  base::RunLoop().Run();
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  sensor_provider()->SetAccelerometerData(1, 2, 3);
+  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
+  sensor_provider()->SetGyroscopeData(7, 8, 9);
+
+  FireEvent();
 
   device::MotionData received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -255,16 +244,27 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   EXPECT_EQ(8, received_data.rotation_rate_beta);
   EXPECT_TRUE(received_data.has_rotation_rate_gamma);
   EXPECT_EQ(9, received_data.rotation_rate_gamma);
+
+  motion_pump()->Stop();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
-  motion_pump()->Start(listener());
-  motion_pump()->SetAccelerometerSensorData(true /* active */, 1, 2, 3);
-  motion_pump()->SetLinearAccelerationSensorData(false /* active */, 4, 5, 6);
-  motion_pump()->SetGyroscopeSensorData(true /* active */, 7, 8, 9);
-  motion_pump()->StartFireEvent();
+  sensor_provider()->set_linear_acceleration_sensor_is_available(false);
 
-  base::RunLoop().Run();
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAccelerometerStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+  ExpectLinearAccelerationSensorStateToBe(
+      DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
+  ExpectGyroscopeStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  sensor_provider()->SetAccelerometerData(1, 2, 3);
+  sensor_provider()->SetGyroscopeData(7, 8, 9);
+
+  FireEvent();
 
   device::MotionData received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -286,16 +286,26 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   EXPECT_EQ(8, received_data.rotation_rate_beta);
   EXPECT_TRUE(received_data.has_rotation_rate_gamma);
   EXPECT_EQ(9, received_data.rotation_rate_gamma);
+
+  motion_pump()->Stop();
+
+  ExpectAccelerometerStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+  ExpectLinearAccelerationSensorStateToBe(
+      DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
+  ExpectGyroscopeStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   motion_pump()->Start(listener());
-  motion_pump()->SetAccelerometerSensorData(true /* active */, NAN, 2, 3);
-  motion_pump()->SetLinearAccelerationSensorData(true /* active */, 4, NAN, 6);
-  motion_pump()->SetGyroscopeSensorData(true /* active */, 7, 8, NAN);
-  motion_pump()->StartFireEvent();
+  base::RunLoop().RunUntilIdle();
 
-  base::RunLoop().Run();
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  sensor_provider()->SetAccelerometerData(NAN, 2, 3);
+  sensor_provider()->SetLinearAccelerationSensorData(4, NAN, 6);
+  sensor_provider()->SetGyroscopeData(7, 8, NAN);
+
+  FireEvent();
 
   device::MotionData received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -317,13 +327,25 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   EXPECT_TRUE(received_data.has_rotation_rate_beta);
   EXPECT_EQ(8, received_data.rotation_rate_beta);
   EXPECT_FALSE(received_data.has_rotation_rate_gamma);
+
+  motion_pump()->Stop();
+
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
-TEST_F(DeviceMotionEventPumpTest, NoActiveSensors) {
-  motion_pump()->Start(listener());
-  motion_pump()->StartFireEvent();
+TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
+  // No active sensors.
+  sensor_provider()->set_accelerometer_is_available(false);
+  sensor_provider()->set_linear_acceleration_sensor_is_available(false);
+  sensor_provider()->set_gyroscope_is_available(false);
 
-  base::RunLoop().Run();
+  motion_pump()->Start(listener());
+  base::RunLoop().RunUntilIdle();
+
+  ExpectAllThreeSensorsStateToBe(
+      DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
+
+  FireEvent();
 
   device::MotionData received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
@@ -339,20 +361,27 @@ TEST_F(DeviceMotionEventPumpTest, NoActiveSensors) {
   EXPECT_FALSE(received_data.has_rotation_rate_alpha);
   EXPECT_FALSE(received_data.has_rotation_rate_beta);
   EXPECT_FALSE(received_data.has_rotation_rate_gamma);
+
+  motion_pump()->Stop();
+
+  ExpectAllThreeSensorsStateToBe(
+      DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
 }
 
-// Confirm that the frequency of pumping events is not greater than 60Hz. A rate
-// above 60Hz would allow for the detection of keystrokes (crbug.com/421691)
+// Confirm that the frequency of pumping events is not greater than 60Hz.
+// A rate above 60Hz would allow for the detection of keystrokes.
+// (crbug.com/421691)
 TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   // Confirm that the delay for pumping events is 60 Hz.
   EXPECT_GE(60, base::Time::kMicrosecondsPerSecond /
       motion_pump()->pump_delay_microseconds());
 
   motion_pump()->Start(listener());
-  motion_pump()->SetLinearAccelerationSensorData(true /* active */, 4, 5, 6);
+  base::RunLoop().RunUntilIdle();
 
-  motion_pump()->set_stop_on_fire_event(false);
-  motion_pump()->StartFireEvent();
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
+
+  sensor_provider()->SetLinearAccelerationSensorData(4, 5, 6);
 
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -360,29 +389,12 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   base::RunLoop().Run();
   motion_pump()->Stop();
 
+  ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
+
   // Check that the blink::WebDeviceMotionListener does not receive excess
   // events.
   EXPECT_TRUE(listener()->did_change_device_motion());
   EXPECT_GE(6, listener()->number_of_events());
-}
-
-TEST_F(DeviceMotionEventPumpTest, SensorInitializedButItsSharedBufferIsNot) {
-  // Initialize the |sensor|, but do not initialize its |shared_buffer|, this
-  // is to test the state when |sensor| is already initialized but its
-  // |shared_buffer| is not initialized yet, and make sure that the
-  // DeviceMotionEventPump can not be started until |shared_buffer| is
-  // initialized.
-  EXPECT_FALSE(motion_pump()->accelerometer_.sensor);
-  motion_pump()->InitializeAccelerometerSensorPtr();
-  EXPECT_TRUE(motion_pump()->accelerometer_.sensor);
-  EXPECT_FALSE(motion_pump()->accelerometer_.shared_buffer);
-  EXPECT_FALSE(motion_pump()->SensorSharedBuffersReady());
-
-  // Initialize |shared_buffer| and make sure that now DeviceMotionEventPump
-  // can be started.
-  motion_pump()->InitializeAccelerometerSharedBuffer();
-  EXPECT_TRUE(motion_pump()->accelerometer_.shared_buffer);
-  EXPECT_TRUE(motion_pump()->SensorSharedBuffersReady());
 }
 
 }  // namespace content
