@@ -2650,10 +2650,11 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
     if (page_index < pages_.size() &&
         base::IsValueInRangeForNumericType<int32_t>(page_index)) {
       dict.Set(pp::Var("page"), pp::Var(static_cast<int32_t>(page_index)));
-      PDFiumPage::LinkTarget target;
-      pages_[page_index]->GetPageYTarget(dest, &target);
-      if (target.y_in_pixels)
-        dict.Set(pp::Var("y"), pp::Var(target.y_in_pixels.value()));
+
+      base::Optional<std::pair<float, float>> xy =
+          pages_[page_index]->GetPageXYTarget(dest);
+      if (xy)
+        dict.Set(pp::Var("y"), pp::Var(static_cast<int>(xy.value().second)));
     }
   } else {
     // Extract URI for bookmarks linking to an external page.
@@ -2705,6 +2706,12 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
       dest = FPDFBookmark_GetDest(doc_, bookmark);
   }
   return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
+}
+
+std::pair<int, int> PDFiumEngine::TransformPagePoint(
+    int page_index,
+    std::pair<int, int> page_xy) {
+  return pages_[page_index]->TransformPageToScreenXY(page_xy);
 }
 
 int PDFiumEngine::GetMostVisiblePage() {

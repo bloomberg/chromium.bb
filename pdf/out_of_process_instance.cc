@@ -52,6 +52,7 @@ const char kChromeExtension[] =
 
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";
+const char kJSId[] = "id";
 // Viewport message arguments. (Page -> Plugin).
 const char kJSViewportType[] = "viewport";
 const char kJSUserInitiated[] = "userInitiated";
@@ -135,11 +136,14 @@ const char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
 const char kJSSelectedText[] = "selectedText";
 
 // Get the named destination with the given name (Page -> Plugin)
-const char KJSGetNamedDestinationType[] = "getNamedDestination";
-const char KJSGetNamedDestination[] = "namedDestination";
+const char kJSGetNamedDestinationType[] = "getNamedDestination";
+const char kJSGetNamedDestination[] = "namedDestination";
 // Reply with the page number of the named destination (Plugin -> Page)
 const char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
 const char kJSNamedDestinationPageNumber[] = "pageNumber";
+
+const char kJSTransformPagePointType[] = "transformPagePoint";
+const char kJSTransformPagePointReplyType[] = "transformPagePointReply";
 
 // Selecting text in document (Plugin -> Page)
 const char kJSSetIsSelectingType[] = "setIsSelecting";
@@ -664,14 +668,30 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
     reply.Set(pp::Var(kJSSelectedText), selected_text);
     PostMessage(reply);
-  } else if (type == KJSGetNamedDestinationType &&
-             dict.Get(pp::Var(KJSGetNamedDestination)).is_string()) {
+  } else if (type == kJSGetNamedDestinationType &&
+             dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
     int page_number = engine_->GetNamedDestinationPage(
-        dict.Get(pp::Var(KJSGetNamedDestination)).AsString());
+        dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
     pp::VarDictionary reply;
     reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
     if (page_number >= 0)
       reply.Set(pp::Var(kJSNamedDestinationPageNumber), page_number);
+    PostMessage(reply);
+  } else if (type == kJSTransformPagePointType &&
+             dict.Get(pp::Var(kJSPageNumber)).is_int() &&
+             dict.Get(pp::Var(kJSPageX)).is_int() &&
+             dict.Get(pp::Var(kJSPageY)).is_int() &&
+             dict.Get(pp::Var(kJSId)).is_int()) {
+    std::pair<int, int> xy =
+        engine_->TransformPagePoint(dict.Get(pp::Var(kJSPageNumber)).AsInt(),
+                                    {dict.Get(pp::Var(kJSPageX)).AsInt(),
+                                     dict.Get(pp::Var(kJSPageY)).AsInt()});
+
+    pp::VarDictionary reply;
+    reply.Set(pp::Var(kType), pp::Var(kJSTransformPagePointReplyType));
+    reply.Set(pp::Var(kJSPositionX), xy.first);
+    reply.Set(pp::Var(kJSPositionY), xy.second);
+    reply.Set(pp::Var(kJSId), dict.Get(pp::Var(kJSId)).AsInt());
     PostMessage(reply);
   } else {
     NOTREACHED();

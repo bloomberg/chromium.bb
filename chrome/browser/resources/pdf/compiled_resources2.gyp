@@ -18,6 +18,10 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'coords_transformer',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'gesture_detector',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
