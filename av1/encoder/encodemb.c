@@ -597,11 +597,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
-  if (p->eobs[block]) *(args->skip) = 0;
+  if (p->eobs[block]) {
+    *(args->skip) = 0;
 
-  if (p->eobs[block] != 0)
-
-  {
     TX_TYPE tx_type =
         av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, tx_size);
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
