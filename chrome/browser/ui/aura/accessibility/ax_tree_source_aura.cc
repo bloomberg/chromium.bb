@@ -24,7 +24,7 @@ using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;
 
 AXTreeSourceAura::AXTreeSourceAura() {
-  root_.reset(new AXRootObjWrapper(AXAuraObjCache::GetInstance()->GetNextID()));
+  root_.reset(new AXRootObjWrapper());
 }
 
 AXTreeSourceAura::~AXTreeSourceAura() {
@@ -57,7 +57,7 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
   tree_data->loading_progress = 1.0;
   AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
-    tree_data->focus_id = focus->GetID();
+    tree_data->focus_id = focus->GetUniqueId().Get();
   return true;
 }
 
@@ -66,13 +66,13 @@ AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
 }
 
 AXAuraObjWrapper* AXTreeSourceAura::GetFromId(int32_t id) const {
-  if (id == root_->GetID())
+  if (id == root_->GetUniqueId().Get())
     return root_.get();
   return AXAuraObjCache::GetInstance()->Get(id);
 }
 
 int32_t AXTreeSourceAura::GetId(AXAuraObjWrapper* node) const {
-  return node->GetID();
+  return node->GetUniqueId().Get();
 }
 
 void AXTreeSourceAura::GetChildren(
@@ -83,13 +83,13 @@ void AXTreeSourceAura::GetChildren(
 
 AXAuraObjWrapper* AXTreeSourceAura::GetParent(AXAuraObjWrapper* node) const {
   AXAuraObjWrapper* parent = node->GetParent();
-  if (!parent && node->GetID() != root_->GetID())
+  if (!parent && node->GetUniqueId() != root_->GetUniqueId())
     parent = root_.get();
   return parent;
 }
 
 bool AXTreeSourceAura::IsValid(AXAuraObjWrapper* node) const {
-  return node && node->GetID() != -1;
+  return node != nullptr;
 }
 
 bool AXTreeSourceAura::IsEqual(AXAuraObjWrapper* node1,
@@ -97,7 +97,7 @@ bool AXTreeSourceAura::IsEqual(AXAuraObjWrapper* node1,
   if (!node1 || !node2)
     return false;
 
-  return node1->GetID() == node2->GetID() && node1->GetID() != -1;
+  return node1->GetUniqueId() == node2->GetUniqueId();
 }
 
 AXAuraObjWrapper* AXTreeSourceAura::GetNull() const {
@@ -118,7 +118,7 @@ void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
     ui::AXNodeData parent_data;
     parent->Serialize(&parent_data);
     out_data->location.Offset(-parent_data.location.OffsetFromOrigin());
-    out_data->offset_container_id = parent->GetID();
+    out_data->offset_container_id = parent->GetUniqueId().Get();
   }
 
   if (out_data->role == ui::AX_ROLE_WEB_VIEW) {

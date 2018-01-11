@@ -241,6 +241,10 @@ std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(
   return tree_->GetReverseRelations(attr, dst_id);
 }
 
+const ui::AXUniqueId& TestAXNodeWrapper::GetUniqueId() const {
+  return unique_id_;
+}
+
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

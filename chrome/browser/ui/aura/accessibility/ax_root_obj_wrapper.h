@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
 namespace aura {
@@ -18,7 +19,7 @@ class Window;
 
 class AXRootObjWrapper : public views::AXAuraObjWrapper {
  public:
-  explicit AXRootObjWrapper(int32_t id);
+  AXRootObjWrapper();
   ~AXRootObjWrapper() override;
 
   // Returns an AXAuraObjWrapper for an alert window with title set to |text|.
@@ -32,10 +33,10 @@ class AXRootObjWrapper : public views::AXAuraObjWrapper {
   void GetChildren(
       std::vector<views::AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
-  int32_t GetID() override;
+  const ui::AXUniqueId& GetUniqueId() const override;
 
  private:
-  int32_t id_;
+  ui::AXUniqueId unique_id_;
 
   aura::Window* alert_window_;
 

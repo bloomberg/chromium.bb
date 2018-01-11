@@ -257,6 +257,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Return the number of instances of AXPlatformNodeWin, for leak testing.
   static size_t GetInstanceCountForTesting();
 
+  void Init(AXPlatformNodeDelegate* delegate) override;
+
   // Represents a non-static text node in IAccessibleHypertext. This character
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
@@ -265,7 +267,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Clear any AXPlatformRelationWin nodes owned by this node.
   void ClearOwnRelations();
   static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
-  int32_t unique_id() const { return unique_id_; }
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -707,8 +708,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
 
  private:
-  int32_t unique_id_;
-
   int MSAAEvent(AXEvent event);
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;

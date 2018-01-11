@@ -9,6 +9,7 @@
 
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -95,6 +96,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // attribute between them and the destination.
   virtual std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
                                                 int32_t dst_id) = 0;
+
+  virtual const AXUniqueId& GetUniqueId() const = 0;
 
   //
   // Events.

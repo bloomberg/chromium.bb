@@ -51,6 +51,11 @@ AXPlatformNode::~AXPlatformNode() {
 void AXPlatformNode::Destroy() {
 }
 
+int32_t AXPlatformNode::GetUniqueId() const {
+  DCHECK(GetDelegate());  // Must be called after Init()
+  return GetDelegate() ? GetDelegate()->GetUniqueId().Get() : -1;
+}
+
 // static
 void AXPlatformNode::AddAXModeObserver(AXModeObserver* observer) {
   ax_mode_observers_.Get().AddObserver(observer);

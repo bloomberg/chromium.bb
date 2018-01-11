@@ -12,8 +12,7 @@
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
-AXRootObjWrapper::AXRootObjWrapper(int32_t id)
-    : id_(id), alert_window_(new aura::Window(NULL)) {
+AXRootObjWrapper::AXRootObjWrapper() : alert_window_(new aura::Window(NULL)) {
   alert_window_->Init(ui::LAYER_NOT_DRAWN);
 }
 
@@ -52,12 +51,12 @@ void AXRootObjWrapper::GetChildren(
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
-  out_node_data->id = id_;
+  out_node_data->id = unique_id_.Get();
   out_node_data->role = ui::AX_ROLE_DESKTOP;
   out_node_data->AddStringAttribute(ui::AX_ATTR_CHROME_CHANNEL,
                                     chrome::GetChannelString());
 }
 
-int32_t AXRootObjWrapper::GetID() {
-  return id_;
+const ui::AXUniqueId& AXRootObjWrapper::GetUniqueId() const {
+  return unique_id_;
 }

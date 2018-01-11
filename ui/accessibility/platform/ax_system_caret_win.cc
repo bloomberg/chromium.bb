@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
-#include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -31,14 +30,14 @@ AXSystemCaretWin::AXSystemCaretWin(gfx::AcceleratedWidget event_target)
 
   if (event_target_) {
     ::NotifyWinEvent(EVENT_OBJECT_CREATE, event_target_, OBJID_CARET,
-                     -caret_->unique_id());
+                     -caret_->GetUniqueId());
   }
 }
 
 AXSystemCaretWin::~AXSystemCaretWin() {
   if (event_target_) {
     ::NotifyWinEvent(EVENT_OBJECT_DESTROY, event_target_, OBJID_CARET,
-                     -caret_->unique_id());
+                     -caret_->GetUniqueId());
   }
   caret_->Destroy();
 }
@@ -58,7 +57,7 @@ void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
   data_.location = gfx::RectF(bounds);
   if (event_target_) {
     ::NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, event_target_, OBJID_CARET,
-                     -caret_->unique_id());
+                     -caret_->GetUniqueId());
   }
 }
 
@@ -142,6 +141,10 @@ std::set<int32_t> AXSystemCaretWin::GetReverseRelations(AXIntAttribute attr,
 std::set<int32_t> AXSystemCaretWin::GetReverseRelations(AXIntListAttribute attr,
                                                         int32_t dst_id) {
   return std::set<int32_t>();
+}
+
+const ui::AXUniqueId& AXSystemCaretWin::GetUniqueId() const {
+  return unique_id_;
 }
 
 }  // namespace ui

@@ -53,10 +53,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   int32_t GetID(Widget* widget) const;
   int32_t GetID(aura::Window* window) const;
 
-  // Gets the next unique id for this cache. Useful for non-Aura view backed
-  // views.
-  int32_t GetNextID() { return current_id_++; }
-
   // Removes an entry from this cache based on an Aura view.
   void Remove(View* view);
   void Remove(Widget* widget);
@@ -128,7 +124,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   std::map<aura::Window*, int32_t> window_to_id_map_;
 
   std::map<int32_t, std::unique_ptr<AXAuraObjWrapper>> cache_;
-  int32_t current_id_ = 1;
 
   // True immediately when entering this object's destructor.
   bool is_destroying_ = false;
