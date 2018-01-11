@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_host.h"
 
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -154,16 +153,6 @@ void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
   if (IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
-    if (extension_) {
-      std::string group_name = base::FieldTrialList::FindFullName(
-          "ThrottleExtensionBackgroundPages");
-      if ((group_name == "ThrottlePersistent" &&
-           extensions::BackgroundInfo::HasPersistentBackgroundPage(
-               extension_)) ||
-          group_name == "ThrottleAll") {
-        host_contents_->WasHidden();
-      }
-    }
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
