@@ -10,19 +10,11 @@ from __future__ import print_function
 import datetime
 import sys
 
-from chromite.lib import constants
 from chromite.lib import build_time_stats
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
 from chromite.lib import cros_logging as logging
-
-# Used by --build-type option.
-BUILD_TYPE_MAP = {
-    'cq': constants.CQ_MASTER,
-    'canary': constants.CANARY_MASTER,
-    'chrome-pfq': constants.PFQ_MASTER,
-}
 
 
 @command.CommandDecorator('stats')
@@ -76,7 +68,7 @@ class StatsCommand(command.CliCommand):
 
     # Look at all builds for a master/slave group.
     ex_group.add_argument('--build-type', default=None,
-                          choices=BUILD_TYPE_MAP.keys(),
+                          choices=build_time_stats.BUILD_TYPE_MAP.keys(),
                           help='Build master/salves to gather stats for: cq.')
 
     # How many builds are included, for builder/build-types.
@@ -171,7 +163,8 @@ class StatsCommand(command.CliCommand):
 
     elif self.options.build_type:
       builds_statuses = build_time_stats.MasterConfigToStatuses(
-          db, BUILD_TYPE_MAP[self.options.build_type], start_date, end_date)
+          db, build_time_stats.BUILD_TYPE_MAP[self.options.build_type],
+          start_date, end_date)
       description = 'Type %s' % self.options.build_type
 
     if not builds_statuses:
@@ -187,8 +180,9 @@ class StatsCommand(command.CliCommand):
           self.options.stages else {})
 
       # Include the number of distinct Chrome uprevs if build_type is set.
+      waterfall = build_time_stats.BUILD_TYPE_MAP[self.options.build_type]
       chrome_uprevs = (build_time_stats.GetNumDistinctChromeVersions(
-          db, BUILD_TYPE_MAP[self.options.build_type], start_date, end_date)
+          db, waterfall, start_date, end_date)
                        if self.options.build_type else None)
 
       if self.options.csv:
