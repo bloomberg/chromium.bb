@@ -104,3 +104,5 @@ class PixelExpectations(GpuTestExpectations):
     # passthrough command decoder
     self.Fail('Pixel_Video_MP4', ['win', 'intel'], bug=602688)
     self.Fail('Pixel_Video_VP9', ['win', 'intel'], bug=602688)
+    self.Fail('Pixel_DirectComposition_Video_VP9', ['win', 'intel'],
+        bug=602688)
