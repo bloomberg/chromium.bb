@@ -90,12 +90,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
                 }
             }
             mSelectionDelegate.clearSelection();
-
-            // This is necessary as long as we rely on RecyclerView.ItemDecorations to apply padding
-            // at the bottom of the bookmarks list to avoid the bottom navigation menu. This ensures
-            // the item decorations are reapplied correctly when item indices change as the result
-            // of an item being deleted.
-            mAdapter.notifyDataSetChanged();
         }
 
         @Override
