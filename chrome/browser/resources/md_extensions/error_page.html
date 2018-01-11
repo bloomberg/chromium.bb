@@ -196,7 +196,7 @@
                       on-keydown="onErrorItemAction_" tabindex="0"
                       role="button">
                     <iron-icon icon$="[[computeErrorIcon_(item)]]"
-                        aria-label$="[[computeErrorTypeLabel_(item)]]">
+                        title$="[[computeErrorTypeLabel_(item)]]">
                     </iron-icon>
                     <div id$="[[item.id]]" class="error-message">
                       [[item.message]]
