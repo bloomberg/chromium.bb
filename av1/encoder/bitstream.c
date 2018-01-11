@@ -596,26 +596,22 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
                              struct segmentation_probs *segp, int mi_row,
                              int mi_col, int skip) {
   AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int prev_ul = 0; /* Top left segment_id */
   int prev_l = 0;  /* Current left segment_id */
   int prev_u = 0;  /* Current top segment_id */
 
   if (!seg->enabled || !seg->update_map) return;
 
-  MODE_INFO *const mi = cm->mi + mi_row * cm->mi_stride + mi_col;
-  int tinfo = mi->mbmi.boundary_info;
-  int above = (!(tinfo & TILE_ABOVE_BOUNDARY)) && ((mi_row - 1) >= 0);
-  int left = (!(tinfo & TILE_LEFT_BOUNDARY)) && ((mi_col - 1) >= 0);
-
-  if (above && left)
+  if ((xd->up_available) && (xd->left_available))
     prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
                              mi_row - 1, mi_col - 1);
 
-  if (above)
+  if (xd->up_available)
     prev_u = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
                             mi_row - 1, mi_col - 0);
 
-  if (left)
+  if (xd->left_available)
     prev_l = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
                             mi_row - 0, mi_col - 1);
 
