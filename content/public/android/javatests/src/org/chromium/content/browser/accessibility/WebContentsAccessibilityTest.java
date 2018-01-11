@@ -8,11 +8,13 @@ import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_C
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX;
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
+import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -20,6 +22,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +32,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.lang.reflect.Method;
@@ -41,6 +46,11 @@ public class WebContentsAccessibilityTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
+    @Before
+    public void setUp() throws Exception {
+        WebContentsAccessibility.setAccessibilityEnabledForTesting();
+    }
+
     /**
      * Helper class that can be used to wait until an AccessibilityEvent is fired on a view.
      */
@@ -51,13 +61,40 @@ public class WebContentsAccessibilityTest {
                 public boolean onRequestSendAccessibilityEvent(
                         ViewGroup host, View child, AccessibilityEvent event) {
                     AccessibilityEventCallbackHelper.this.notifyCalled();
+                    if (event.getEventType()
+                            == AccessibilityEvent
+                                       .TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY) {
+                        sIndex = event.getFromIndex();
+                    }
                     return true;
                 }
             });
         }
     };
 
+    /*
+     * Enable accessibility and wait until ContentViewCore.getAccessibilityNodeProvider()
+     * returns something not null.
+     */
+    private AccessibilityNodeProvider enableAccessibilityAndWaitForNodeProvider() {
+        final ContentViewCore contentViewCore = mActivityTestRule.getContentViewCore();
+        contentViewCore.setAccessibilityState(true);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return contentViewCore.getAccessibilityNodeProvider() != null;
+            }
+        });
+
+        return contentViewCore.getAccessibilityNodeProvider();
+    }
+
     AccessibilityEventCallbackHelper mAccessibilityEventCallbackHelper;
+    /* Used to store the cursor indexes from TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY
+     * events. Used in { @link testNavigationWithingEditTextField }
+     */
+    static int sIndex;
 
     /**
      * Test Android O API to retrieve character bounds from an accessible node.
@@ -192,5 +229,106 @@ public class WebContentsAccessibilityTest {
         }
 
         return View.NO_ID;
+    }
+
+    /**
+     * Helper method to recursively search a tree of virtual views under an
+     * AccessibilityNodeProvider and return one whose input type is
+     * {@link android.text.InputType#TYPE_CLASS_TEXT}.
+     * Returns the virtual view ID of the matching node, if found, and View.NO_ID if not.
+     */
+    @SuppressLint("NewApi")
+    private int findNodeWithTextInputType(
+            AccessibilityNodeProvider provider, int virtualViewId, int type) {
+        AccessibilityNodeInfo node = provider.createAccessibilityNodeInfo(virtualViewId);
+        Assert.assertNotEquals(node, null);
+
+        if (node.getInputType() == type) {
+            return virtualViewId;
+        }
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            int childId = getChildId(node, i);
+            AccessibilityNodeInfo child = provider.createAccessibilityNodeInfo(childId);
+            if (child != null) {
+                int result =
+                        findNodeWithTextInputType(provider, childId, InputType.TYPE_CLASS_TEXT);
+                if (result != View.NO_ID) return result;
+            }
+        }
+        return View.NO_ID;
+    }
+
+    /**
+     * Test Android O API to check if an edit field can be traversed with granularity while typing.
+     */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    public void testNavigationWithingEditTextField() throws Throwable {
+        // Load a really simple webpage.
+        final String data = "<form>\n"
+                + "  First name:<br>\n"
+                + "  <input id=\"fn\" type=\"text\" value=\"Text\"><br>\n"
+                + "</form>";
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+
+        // Find a node in the accessibility tree with input type TYPE_CLASS_TEXT.
+        ContentViewCore contentViewCore = mActivityTestRule.getContentViewCore();
+        int editFieldVirtualViewId =
+                findNodeWithTextInputType(provider, View.NO_ID, InputType.TYPE_CLASS_TEXT);
+
+        mAccessibilityEventCallbackHelper =
+                new AccessibilityEventCallbackHelper(contentViewCore.getContainerView());
+
+        AccessibilityNodeInfo editTextNode =
+                provider.createAccessibilityNodeInfo(editFieldVirtualViewId);
+
+        // Assert we have got the correct node.
+        Assert.assertNotEquals(editTextNode, null);
+        Assert.assertEquals(editTextNode.getInputType(), InputType.TYPE_CLASS_TEXT);
+        Assert.assertEquals(editTextNode.getText().toString(), "Text");
+
+        boolean result1 = provider.performAction(
+                editFieldVirtualViewId, AccessibilityNodeInfo.ACTION_FOCUS, null);
+        boolean result2 = provider.performAction(
+                editFieldVirtualViewId, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+        boolean result3 = provider.performAction(editFieldVirtualViewId,
+                AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, null);
+
+        // Assert all actions are performed successfully.
+        Assert.assertEquals(result1, true);
+        Assert.assertEquals(result2, true);
+        Assert.assertEquals(result3, true);
+
+        while (!editTextNode.isFocused()) {
+            Thread.sleep(1);
+            editTextNode.recycle();
+            editTextNode = provider.createAccessibilityNodeInfo(editFieldVirtualViewId);
+        }
+
+        Bundle args = new Bundle();
+        // Set granularity to Character.
+        args.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
+                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER);
+        args.putBoolean(AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, false);
+
+        // Simulate swipe left.
+        for (int i = 3; i >= 0; i--) {
+            boolean result = provider.performAction(editFieldVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, args);
+            // Assert if the index of the character traversed is correct.
+            Assert.assertEquals(sIndex, i);
+        }
+        // Simulate swipe right.
+        for (int i = 0; i <= 3; i++) {
+            boolean result = provider.performAction(editFieldVirtualViewId,
+                    AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY, args);
+            // Assert if the index of the character traversed is correct.
+            Assert.assertEquals(sIndex, i);
+        }
     }
 }
