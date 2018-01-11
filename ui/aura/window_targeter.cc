@@ -105,7 +105,7 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
       return static_cast<Window*>(consumer);
 
     // If the initial touch is outside the root window, target the root.
-    if (!root_window->bounds().Contains(event.location()))
+    if (!root_window->bounds().Contains(event.root_location()))
       return root_window;
   }
 
