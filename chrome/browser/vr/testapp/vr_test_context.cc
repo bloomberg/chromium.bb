@@ -63,6 +63,7 @@ void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
   transform->PreconcatTransform(gfx::Transform(quat));
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
   base::StringPiece data =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
@@ -71,6 +72,7 @@ bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
       reinterpret_cast<const unsigned char*>(data.data()), data.size(),
       out_image->get());
 }
+#endif
 
 }  // namespace
 
