@@ -22,7 +22,7 @@ SCRIPTS_DIR = os.path.abspath(os.path.dirname(__file__))
 FFMPEG_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..', '..'))
 CHROMIUM_ROOT_DIR = os.path.abspath(os.path.join(FFMPEG_DIR, '..', '..'))
 NDK_ROOT_DIR = os.path.abspath(
-    os.path.join(CHROMIUM_ROOT_DIR, 'third_party', 'android_tools', 'ndk'))
+    os.path.join(CHROMIUM_ROOT_DIR, 'third_party', 'android_ndk'))
 
 BRANDINGS = [
     'Chrome',
