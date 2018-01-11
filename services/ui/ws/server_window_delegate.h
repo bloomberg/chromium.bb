@@ -45,13 +45,7 @@ class VizHostProxy {
                                             const viz::FrameSinkId& child) = 0;
 
   virtual void CreateRootCompositorFrameSink(
-      const viz::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle,
-      const viz::RendererSettings& renderer_settings,
-      viz::mojom::CompositorFrameSinkAssociatedRequest request,
-      viz::mojom::CompositorFrameSinkClientPtr client,
-      viz::mojom::DisplayPrivateAssociatedRequest display_private_request,
-      viz::mojom::DisplayClientPtr display_client) = 0;
+      viz::mojom::RootCompositorFrameSinkParamsPtr params) = 0;
 
   virtual void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,

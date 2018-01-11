@@ -27,6 +27,7 @@ class ImageFactory;
 namespace viz {
 class CompositingModeReporterImpl;
 class Display;
+class ExternalBeginFrameControllerImpl;
 class OutputDeviceBacking;
 class SoftwareOutputDevice;
 
@@ -45,6 +46,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       bool force_software_compositing,
+      ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source)
       override;

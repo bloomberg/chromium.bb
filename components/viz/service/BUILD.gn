@@ -84,6 +84,8 @@ viz_component("service") {
     "display_embedder/compositing_mode_reporter_impl.h",
     "display_embedder/compositor_overlay_candidate_validator.h",
     "display_embedder/display_provider.h",
+    "display_embedder/external_begin_frame_controller_impl.cc",
+    "display_embedder/external_begin_frame_controller_impl.h",
     "display_embedder/gl_output_surface.cc",
     "display_embedder/gl_output_surface.h",
     "display_embedder/gl_output_surface_buffer_queue.cc",

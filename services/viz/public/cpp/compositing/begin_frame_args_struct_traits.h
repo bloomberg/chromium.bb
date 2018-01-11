@@ -54,6 +54,10 @@ struct StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
     return ack.source_id;
   }
 
+  static bool has_damage(const viz::BeginFrameAck& ack) {
+    return ack.has_damage;
+  }
+
   static bool Read(viz::mojom::BeginFrameAckDataView data,
                    viz::BeginFrameAck* out);
 };

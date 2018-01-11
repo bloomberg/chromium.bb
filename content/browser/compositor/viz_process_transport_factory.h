@@ -45,6 +45,8 @@ class RasterContextProvider;
 
 namespace content {
 
+class ExternalBeginFrameControllerClientImpl;
+
 // A replacement for GpuProcessTransportFactory to be used when running viz. In
 // this configuration the display compositor is located in the viz process
 // instead of in the browser process. Any interaction with the display
@@ -128,6 +130,11 @@ class VizProcessTransportFactory : public ui::ContextFactory,
     // CompositorFrameSink.
     viz::mojom::DisplayPrivateAssociatedPtr display_private;
     std::unique_ptr<InProcessDisplayClient> display_client;
+
+    // Controls external BeginFrames for the display. Only set if external
+    // BeginFrames are enabled for the compositor.
+    std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+        external_begin_frame_controller_client;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CompositorData);

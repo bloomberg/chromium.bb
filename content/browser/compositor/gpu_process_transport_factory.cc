@@ -32,11 +32,13 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/in_process_display_client.h"
@@ -150,35 +152,6 @@ bool CheckWorkerContextLost(viz::RasterContextProvider* context_provider) {
 
 namespace content {
 
-class ExternalBeginFrameController : public viz::ExternalBeginFrameSourceClient,
-                                     public viz::DisplayObserver {
- public:
-  explicit ExternalBeginFrameController(ui::Compositor* compositor)
-      : begin_frame_source_(this), compositor_(compositor) {}
-  ~ExternalBeginFrameController() override {}
-
-  // Issue a BeginFrame with the given |args|.
-  void IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
-    begin_frame_source_.OnBeginFrame(args);
-  }
-
-  viz::BeginFrameSource* begin_frame_source() { return &begin_frame_source_; }
-
- private:
-  // viz::ExternalBeginFrameSourceClient implementation.
-  void OnNeedsBeginFrames(bool needs_begin_frames) override {
-    compositor_->OnNeedsExternalBeginFrames(needs_begin_frames);
-  }
-
-  // viz::DisplayObserver implementation.
-  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override {
-    compositor_->OnDisplayDidFinishFrame(ack);
-  }
-
-  viz::ExternalBeginFrameSource begin_frame_source_;
-  ui::Compositor* compositor_ = nullptr;
-};
-
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
@@ -187,7 +160,10 @@ struct GpuProcessTransportFactory::PerCompositorData {
   // at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
-  std::unique_ptr<ExternalBeginFrameController> external_begin_frame_controller;
+  std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
+      external_begin_frame_controller;
+  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+      external_begin_frame_controller_client;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<viz::Display> display;
   std::unique_ptr<viz::mojom::DisplayClient> display_client;
@@ -573,12 +549,24 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
-  std::unique_ptr<ExternalBeginFrameController> external_begin_frame_controller;
+  std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
+      external_begin_frame_controller;
+  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+      external_begin_frame_controller_client;
 
   viz::BeginFrameSource* begin_frame_source = nullptr;
   if (compositor->external_begin_frames_enabled()) {
+    external_begin_frame_controller_client =
+        std::make_unique<ExternalBeginFrameControllerClientImpl>(
+            compositor.get());
+    // We don't bind the controller mojo interface, since we only use the
+    // ExternalBeginFrameControllerImpl directly and not via mojo (plus, as it
+    // is an associated interface, binding it would require a separate pipe).
+    viz::mojom::ExternalBeginFrameControllerAssociatedRequest request = nullptr;
     external_begin_frame_controller =
-        std::make_unique<ExternalBeginFrameController>(compositor.get());
+        std::make_unique<viz::ExternalBeginFrameControllerImpl>(
+            std::move(request),
+            external_begin_frame_controller_client->GetBoundPtr());
     begin_frame_source = external_begin_frame_controller->begin_frame_source();
   } else if (!disable_display_vsync_) {
     if (gpu_vsync_control && IsGpuVSyncSignalSupported()) {
@@ -614,7 +602,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   } else if (data->external_begin_frame_controller) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->external_begin_frame_controller->begin_frame_source());
-    data->display->RemoveObserver(data->external_begin_frame_controller.get());
+    data->external_begin_frame_controller->SetDisplay(nullptr);
   }
 
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
@@ -637,9 +625,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   data->gpu_vsync_begin_frame_source = std::move(gpu_vsync_begin_frame_source);
   data->external_begin_frame_controller =
       std::move(external_begin_frame_controller);
-
+  data->external_begin_frame_controller_client =
+      std::move(external_begin_frame_controller_client);
   if (data->external_begin_frame_controller)
-    data->display->AddObserver(data->external_begin_frame_controller.get());
+    data->external_begin_frame_controller->SetDisplay(data->display.get());
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
@@ -753,7 +742,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   } else if (data->external_begin_frame_controller) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->external_begin_frame_controller->begin_frame_source());
-    data->display->RemoveObserver(data->external_begin_frame_controller.get());
+    data->external_begin_frame_controller->SetDisplay(nullptr);
   }
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -903,19 +892,8 @@ void GpuProcessTransportFactory::IssueExternalBeginFrame(
     return;
   PerCompositorData* data = it->second.get();
   DCHECK(data);
-  if (data->external_begin_frame_controller) {
-    data->external_begin_frame_controller->IssueExternalBeginFrame(args);
-    // Ensure that Display will receive the BeginFrame (as a missed one), even
-    // if it doesn't currently need it. This way, we ensure that
-    // OnDisplayDidFinishFrame will be called for this BeginFrame.
-    data->display->SetNeedsOneBeginFrame();
-  } else {
-    DLOG(WARNING) << "IssueExternalBeginFrame called for compositor without "
-                     "ExternalBeginFrameController";
-    // Still send an ack back to unblock the client.
-    compositor->OnDisplayDidFinishFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
-  }
+  DCHECK(data->external_begin_frame_controller);
+  data->external_begin_frame_controller->IssueExternalBeginFrame(args);
 }
 
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
