@@ -14,6 +14,8 @@
         console.log("%cBlue!.", "color: blue;");
         console.log("%cBlue! %cRed!", "color: blue;", "color: red;");
         console.log("%cwww.google.com", "color: blue");
+        console.warn("%cwww.google.com", "color: blue; background: blue");
+        console.error("%cwww.google.com", "color: blue; background: blue");
     })();
   `);
 
