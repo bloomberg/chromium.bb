@@ -617,26 +617,6 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WebAccessibleResourcesIframeSrc/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WorkerRefCount/0
 
-# WebNavigation API seems to work, but the browser tests' harness uses a
-# ResourceThrottle which doesn't work with network service. Rewrite to use
-# NavigationThrottle instead.
--WebNavigationApiTest.ClientRedirect
--WebNavigationApiTest.Crash
--WebNavigationApiTest.CrossProcess
--WebNavigationApiTest.CrossProcessIframe
--WebNavigationApiTest.Download
--WebNavigationApiTest.History
--WebNavigationApiTest.IFrame
--WebNavigationApiTest.OpenTab
--WebNavigationApiTest.ReferenceFragment
--WebNavigationApiTest.RequestOpenTab
--WebNavigationApiTest.ServerRedirectSingleProcess
--WebNavigationApiTest.SimpleLoad
--WebNavigationApiTest.SrcDoc
--WebNavigationApiTest.TargetBlank
--WebNavigationApiTest.TargetBlankIncognito
--WebNavigationApiTest.UserAction
-
 # http://crbug.com/787614
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect

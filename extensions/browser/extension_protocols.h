@@ -23,8 +23,6 @@ class RenderFrameHost;
 }
 
 namespace net {
-class URLRequest;
-class URLRequestJob;
 class HttpResponseHeaders;
 }
 
@@ -34,9 +32,8 @@ namespace extensions {
 class InfoMap;
 
 using ExtensionProtocolTestHandler =
-    base::Callback<net::URLRequestJob*(net::URLRequest*,
-                                       net::NetworkDelegate*,
-                                       const base::FilePath&)>;
+    base::Callback<void(base::FilePath* directory_path,
+                        base::FilePath* relative_path)>;
 
 // Builds HTTP headers for an extension request. Hashes the time to avoid
 // exposing the exact user installation time of the extension.
