@@ -21,7 +21,6 @@ WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler()
 WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler(
     WebRTCInternals* webrtc_internals)
     : webrtc_internals_(webrtc_internals) {
-  DCHECK(webrtc_internals);
   webrtc_internals_->AddObserver(this);
 }
 

@@ -107,7 +107,6 @@ class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
 class SwapMetricsDriver;
 class TracingControllerImpl;
-class WebRTCInternals;
 struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
@@ -370,8 +369,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 #if defined(USE_OZONE)
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
-
-  std::unique_ptr<WebRTCInternals> webrtc_internals_;
 
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
