@@ -906,14 +906,12 @@ class RenderWidgetHostAsyncWheelEventsEnabledMojoInputDisabledTest
                              kAsyncWheelEvents) {}
 };
 
-#if GTEST_HAS_PARAM_TEST
 // RenderWidgetHostWithSourceTest ----------------------------------------------
 
 // This is for tests that are to be run for all source devices.
 class RenderWidgetHostWithSourceTest
     : public RenderWidgetHostTest,
       public testing::WithParamInterface<WebGestureDevice> {};
-#endif  // GTEST_HAS_PARAM_TEST
 
 }  // namespace
 
