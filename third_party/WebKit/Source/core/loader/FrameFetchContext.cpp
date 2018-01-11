@@ -353,6 +353,14 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
+      WebURLRequest::kNoScriptOn) {
+    request.AddHTTPHeaderField(
+        "Intervention",
+        "<https://www.chromestatus.com/features/4775088607985664>; "
+        "level=\"warning\"");
+  }
+
+  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kClientLoFiOn) {
     request.AddHTTPHeaderField(
         "Intervention",
