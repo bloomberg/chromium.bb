@@ -126,6 +126,7 @@ component("boringssl") {
   sources = all_sources
   deps = [
     ":boringssl_asm",
+    "//third_party/boringssl/src/third_party/fiat:fiat_license",
   ]
 
   public_configs = [ ":external_config" ]

@@ -108,6 +108,7 @@ ADDITIONAL_PATHS = (
     os.path.join('native_client'),
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
+    os.path.join('third_party', 'boringssl', 'src', 'third_party', 'fiat'),
     os.path.join('tools', 'gyp'),
     os.path.join('tools', 'page_cycler', 'acid3'),
     os.path.join('url', 'third_party', 'mozilla'),
