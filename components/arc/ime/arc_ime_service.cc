@@ -289,9 +289,8 @@ void ArcImeService::OnKeyboardAppearanceChanging(
   gfx::Rect bounds_in_px = gfx::ScaleToEnclosingRect(
       new_bounds, window->layer()->device_scale_factor());
 
-  // TODO(b/70251261): In addition to the bounds, the state.is_available value
-  // needs to be conveyed to the ime bridge as well.
-  ime_bridge_->SendOnKeyboardBoundsChanging(bounds_in_px);
+  ime_bridge_->SendOnKeyboardAppearanceChanging(bounds_in_px,
+                                                state.is_available);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

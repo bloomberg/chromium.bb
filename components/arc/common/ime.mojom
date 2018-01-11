@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -81,11 +81,13 @@ interface ImeInstance {
   // Commits the specified text and clears the composition.
   InsertText@3(string text);
 
-  // Informs the virtual keyboard bounds on screen is changing.
-  // |new_bounds| Represents a ChromeOS virtual keyboard bounds in ChromeOS
-  // screen coordinate, physical pixel as a unit.
-  // When all members are zero value, virtual keyboard is being hidden.
-  [MinVersion=3] OnKeyboardBoundsChanging@4(Rect new_bounds);
+  // Informs the virtual keyboard availability and bounds on screen is changing.
+  // |is_available| whether a virtual keyboard is visible or not.
+  // |new_bounds| Represents a virtual keyboard bounds covering below windows in
+  // screen coordinate. physical pixel as a unit.
+  [MinVersion=3] OnKeyboardAppearanceChanging@4(
+      Rect new_bounds,
+      [MinVersion=7] bool is_available);
 
   // Deletes current selection plus the specified number of char16 values
   // before and after selection or caret.
