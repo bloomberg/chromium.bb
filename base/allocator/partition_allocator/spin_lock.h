@@ -22,8 +22,8 @@ namespace subtle {
 
 class BASE_EXPORT SpinLock {
  public:
-  SpinLock();
-  ~SpinLock();
+  constexpr SpinLock() = default;
+  ~SpinLock() = default;
   using Guard = std::lock_guard<SpinLock>;
 
   ALWAYS_INLINE void lock() {

@@ -417,7 +417,7 @@ class circular_deque {
   // ---------------------------------------------------------------------------
   // Constructor
 
-  circular_deque() = default;
+  constexpr circular_deque() = default;
 
   // Constructs with |count| copies of |value| or default constructed version.
   circular_deque(size_type count) { resize(count); }
