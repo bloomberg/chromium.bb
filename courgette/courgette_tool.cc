@@ -97,12 +97,11 @@ class BufferedFileReader : public courgette::BasicBuffer {
 
 /******** Various helpers ********/
 
-void WriteSinkToFile(const courgette::SinkStream *sink,
+void WriteSinkToFile(const courgette::SinkStream* sink,
                      const base::FilePath& output_file) {
-  int count =
-      base::WriteFile(output_file,
-                           reinterpret_cast<const char*>(sink->Buffer()),
-                           static_cast<int>(sink->Length()));
+  int count = base::WriteFile(output_file,
+                              reinterpret_cast<const char*>(sink->Buffer()),
+                              static_cast<int>(sink->Length()));
   if (count == -1)
     Problem("Can't write output.");
   if (static_cast<size_t>(count) != sink->Length())
@@ -244,7 +243,7 @@ void DisassembleAdjustDiff(const base::FilePath& old_file,
     Problem(flow.message().c_str());
 
   courgette::SinkStream empty_sink;
-  for (int i = 0;  ; ++i) {
+  for (int i = 0;; ++i) {
     courgette::SinkStream* old_stream = flow.data(flow.OLD)->sinks.stream(i);
     courgette::SinkStream* new_stream = flow.data(flow.NEW)->sinks.stream(i);
     if (old_stream == NULL && new_stream == NULL)
@@ -309,10 +308,9 @@ void ApplyEnsemblePatch(const base::FilePath& old_file,
   // entry point as the installer.  That entry point point takes file names and
   // returns an status code but does not output any diagnostics.
 
-  courgette::Status status =
-      courgette::ApplyEnsemblePatch(old_file.value().c_str(),
-                                    patch_file.value().c_str(),
-                                    new_file.value().c_str());
+  courgette::Status status = courgette::ApplyEnsemblePatch(
+      old_file.value().c_str(), patch_file.value().c_str(),
+      new_file.value().c_str());
 
   if (status == courgette::C_OK)
     return;
@@ -407,8 +405,12 @@ int main(int argc, const char* argv[]) {
       *base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = FILE_PATH_LITERAL("courgette.log");
+  if (command_line.HasSwitch("nologfile")) {
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  } else {
+    settings.logging_dest = logging::LOG_TO_ALL;
+    settings.log_file = FILE_PATH_LITERAL("courgette.log");
+  }
   (void)logging::InitLogging(settings);
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
