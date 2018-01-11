@@ -457,7 +457,13 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
 }
 
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
+  // Add an unrelated form to complicate the task.
+  origin_path_form_.preferred = true;
+  store_->AddLogin(origin_path_form_);
   // Populate the PasswordStore with a form.
+  form_.preferred = false;
+  form_.display_name = base::ASCIIToUTF16("Old Name");
+  form_.icon_url = GURL();
   store_->AddLogin(form_);
   RunAllPendingTasks();
 
@@ -465,6 +471,8 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   // the password without prompting the user.
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   info.password = base::ASCIIToUTF16("Totally new password.");
+  info.name = base::ASCIIToUTF16("New Name");
+  info.icon = GURL("https://example.com/icon.png");
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_)).Times(0);
   EXPECT_CALL(*client_, NotifyStorePasswordCalled());
   bool called = false;
@@ -478,9 +486,15 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
 
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
   EXPECT_EQ(1U, passwords.size());
-  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(2U, passwords[form_.signon_realm].size());
+  origin_path_form_.preferred = false;
+  EXPECT_EQ(origin_path_form_, passwords[form_.signon_realm][0]);
   EXPECT_EQ(base::ASCIIToUTF16("Totally new password."),
-            passwords[form_.signon_realm][0].password_value);
+            passwords[form_.signon_realm][1].password_value);
+  EXPECT_EQ(base::ASCIIToUTF16("New Name"),
+            passwords[form_.signon_realm][1].display_name);
+  EXPECT_EQ(GURL("https://example.com/icon.png"),
+            passwords[form_.signon_realm][1].icon_url);
 }
 
 TEST_F(CredentialManagerImplTest,
