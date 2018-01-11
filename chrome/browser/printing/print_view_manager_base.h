@@ -115,11 +115,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
 // Helpers for PrintForPrintPreview();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void CreateQueryWithSettings(
-      std::unique_ptr<base::DictionaryValue> job_settings,
-      content::RenderFrameHost* rfh,
-      base::OnceCallback<void(scoped_refptr<printing::PrinterQuery>)> callback);
-
   void OnPrintSettingsDone(
       const scoped_refptr<base::RefCountedBytes>& print_data,
       int page_count,
