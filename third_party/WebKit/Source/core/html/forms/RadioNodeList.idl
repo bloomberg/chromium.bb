@@ -25,7 +25,9 @@
 
 // https://html.spec.whatwg.org/#radionodelist
 
-interface RadioNodeList : NodeList {
+[
+    Exposed=Window
+] interface RadioNodeList : NodeList {
     attribute DOMString value;
 
     // TODO(tkent): We need to declare this indexed property getter because our
