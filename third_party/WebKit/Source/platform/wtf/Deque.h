@@ -146,8 +146,8 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
   void clear();
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher);
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
 
   static_assert(!std::is_polymorphic<T>::value ||
                     !VectorTraits<T>::kCanInitializeWithMemset,
@@ -668,13 +668,14 @@ inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::Before() const {
   return &deque_->buffer_.buffer()[index_ - 1];
 }
 
-// This is only called if the allocator is a HeapAllocator. It is used when
+// This is only defined if the allocator is a HeapAllocator. It is used when
 // visiting during a tracing GC.
 template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename VisitorDispatcher>
-void Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
-  DCHECK(Allocator::kIsGarbageCollected)
-      << "Garbage collector must be enabled.";
+template <typename VisitorDispatcher, typename A>
+std::enable_if_t<A::kIsGarbageCollected>
+Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
+  static_assert(Allocator::kIsGarbageCollected,
+                "Garbage collector must be enabled.");
   const T* buffer_begin = buffer_.Buffer();
   const T* end = buffer_begin + end_;
   if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
