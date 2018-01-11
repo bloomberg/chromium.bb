@@ -344,6 +344,10 @@ void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(
 // TODO(crbug.com/46623): Maintain a map of URL->WebContents for fast look-up.
 bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
 #if !defined(OS_ANDROID)
+  Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
+  content::WebContents* active_tab = nullptr;
+  if (active_browser)
+    active_tab = active_browser->tab_strip_model()->GetActiveWebContents();
   for (auto* browser : *BrowserList::GetInstance()) {
     // Only look at same profile (and anonymity level).
     if (browser->profile()->IsSameProfile(profile_) &&
@@ -351,7 +355,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);
-        if (web_contents->GetLastCommittedURL() == url)
+        if (web_contents != active_tab && web_contents->GetVisibleURL() == url)
           return true;
       }
     }
