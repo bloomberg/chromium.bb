@@ -11,9 +11,11 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -96,14 +98,16 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
 WorkerFetchContextImpl::WorkerFetchContextImpl(
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info,
-    ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info)
+    ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info,
+    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
           std::move(service_worker_container_host_info)),
       url_loader_factory_getter_info_(
           std::move(url_loader_factory_getter_info)),
-      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()),
+      throttle_provider_(std::move(throttle_provider)) {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
@@ -156,6 +160,10 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_render_frame_id(parent_frame_id_);
   extra_data->set_initiated_in_secure_context(is_secure_context_);
+  if (throttle_provider_) {
+    extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
+        parent_frame_id_, request.Url(), WebURLRequestToResourceType(request)));
+  }
   request.SetExtraData(extra_data);
   request.SetAppCacheHostID(appcache_host_id_);
 

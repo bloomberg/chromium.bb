@@ -42,6 +42,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/media/audio_ipc_factory.h"
@@ -358,6 +359,10 @@ class CONTENT_EXPORT RenderThreadImpl
     return resource_dispatcher_.get();
   }
 
+  URLLoaderThrottleProvider* url_loader_throttle_provider() const {
+    return url_loader_throttle_provider_.get();
+  }
+
 #if defined(OS_ANDROID)
   SynchronousCompositorFilter* sync_compositor_message_filter() {
     return sync_compositor_message_filter_.get();
@@ -650,6 +655,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
   std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
+  std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<BlobMessageFilter> blob_message_filter_;

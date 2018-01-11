@@ -18,7 +18,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_type.h"
+#include "content/public/renderer/url_loader_throttle_provider.h"
 #include "media/base/decode_capabilities.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
@@ -64,7 +64,6 @@ class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
-class URLLoaderThrottle;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -223,15 +222,11 @@ class CONTENT_EXPORT ContentRendererClient {
                           bool* send_referrer);
 
   // Notifies the embedder that the given frame is requesting the resource at
-  // |url|. |throttles| is appended with URLLoaderThrottle instances that should
-  // be applied to the resource loading. It is only used when network service is
-  // enabled. If the function returns true, the url is changed to |new_url|.
+  // |url|. If the function returns true, the url is changed to |new_url|.
   virtual bool WillSendRequest(
       blink::WebLocalFrame* frame,
       ui::PageTransition transition_type,
       const blink::WebURL& url,
-      ResourceType resource_type,
-      std::vector<std::unique_ptr<URLLoaderThrottle>>* throttles,
       GURL* new_url);
 
   // Returns true if the request is associated with a document that is in
@@ -384,6 +379,9 @@ class CONTENT_EXPORT ContentRendererClient {
       const GURL& url,
       base::Time cert_validity_start,
       std::string* console_messsage);
+
+  virtual std::unique_ptr<URLLoaderThrottleProvider>
+  CreateURLLoaderThrottleProvider(URLLoaderThrottleProviderType provider_type);
 };
 
 }  // namespace content
