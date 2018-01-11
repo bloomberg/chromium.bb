@@ -7,11 +7,13 @@
 #include <string>
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -247,6 +249,8 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
                           : ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
     prompt->AddPermissions(permissions_,
                            ExtensionInstallPrompt::REGULAR_PERMISSIONS);
+    prompt->set_retained_files(retained_files_);
+    prompt->set_retained_device_messages(retained_devices_);
 
     if (from_webstore_)
       prompt->SetWebstoreData("69,420", true, 2.5, 37);
@@ -267,6 +271,14 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
         PermissionMessage(base::ASCIIToUTF16(permission), PermissionIDSet()));
   }
 
+  void AddRetainedFile(const base::FilePath& path) {
+    retained_files_.push_back(path);
+  }
+
+  void AddRetainedDevice(const std::string& device) {
+    retained_devices_.push_back(base::ASCIIToUTF16(device));
+  }
+
   void AddPermissionWithDetails(
       std::string main_permission,
       std::vector<base::string16> detailed_permissions) {
@@ -279,6 +291,8 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   bool external_install_ = false;
   bool from_webstore_ = false;
   PermissionMessages permissions_;
+  std::vector<base::FilePath> retained_files_;
+  std::vector<base::string16> retained_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewInteractiveBrowserTest);
 };
@@ -336,6 +350,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                            {base::ASCIIToUTF16("Detailed permission 1"),
                             base::ASCIIToUTF16("Detailed permission 2"),
                             base::ASCIIToUTF16("Detailed permission 3")});
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_WithRetainedFiles) {
+  AddRetainedFile(base::FilePath(FILE_PATH_LITERAL("/dev/null")));
+  AddRetainedFile(base::FilePath(FILE_PATH_LITERAL("/dev/zero")));
+  AddRetainedFile(base::FilePath(FILE_PATH_LITERAL("/dev/random")));
+  AddRetainedFile(base::FilePath(FILE_PATH_LITERAL(
+      "/some/very/very/very/very/very/long/path/longer/than/the/"
+      "line/length/file_with_long_name_too.txt")));
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_WithRetainedDevices) {
+  AddRetainedDevice("USB Device");
+  AddRetainedDevice("USB Device With Longer Name");
+  AddRetainedDevice(
+      "Another USB Device With A Very Very Very Very Very Very "
+      "Long Name So That It Hopefully Wraps to A New Line");
   ShowAndVerifyUi();
 }
 
