@@ -135,7 +135,7 @@ void InMemoryDownload::SaveAsBlob() {
   // TODO(xingliu): Use response writer to avoid one extra copies. And destroy
   // |url_fetcher_| at the correct time.
   std::unique_ptr<std::string> data = std::make_unique<std::string>();
-  DCHECK(url_fetcher_->GetResponseAsString(data.get()));
+  url_fetcher_->GetResponseAsString(data.get());
 
   auto callback = base::BindOnce(&InMemoryDownload::OnSaveBlobDone,
                                  weak_ptr_factory_.GetWeakPtr());
