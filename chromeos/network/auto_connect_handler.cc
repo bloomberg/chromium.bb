@@ -44,6 +44,31 @@ void DisconnectErrorCallback(
                  << "Error data: " << error_data_ss.str();
 }
 
+std::string AutoConnectReasonsToString(int auto_connect_reasons) {
+  std::string result;
+
+  if (auto_connect_reasons &
+      AutoConnectHandler::AutoConnectReason::AUTO_CONNECT_REASON_LOGGED_IN) {
+    result += "Logged In";
+  }
+
+  if (auto_connect_reasons & AutoConnectHandler::AutoConnectReason::
+                                 AUTO_CONNECT_REASON_POLICY_APPLIED) {
+    if (!result.empty())
+      result += ", ";
+    result += "Policy Applied";
+  }
+
+  if (auto_connect_reasons & AutoConnectHandler::AutoConnectReason::
+                                 AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED) {
+    if (!result.empty())
+      result += ", ";
+    result += "Certificate resolved";
+  }
+
+  return result;
+}
+
 }  // namespace
 
 AutoConnectHandler::AutoConnectHandler()
@@ -105,7 +130,6 @@ void AutoConnectHandler::LoggedInStateChanged() {
   // Disconnect before connecting, to ensure that we do not disconnect a network
   // that we just connected.
   DisconnectIfPolicyRequires();
-  NET_LOG_DEBUG("RequestBestConnection", "User logged in");
   RequestBestConnection(AutoConnectReason::AUTO_CONNECT_REASON_LOGGED_IN);
 }
 
@@ -136,7 +160,6 @@ void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
       managed_configuration_handler_->GetNetworkConfigsFromPolicy(userhash);
   DCHECK(managed_networks);
   if (!managed_networks->empty()) {
-    NET_LOG_DEBUG("RequestBestConnection", "Policy applied");
     RequestBestConnection(
         AutoConnectReason::AUTO_CONNECT_REASON_POLICY_APPLIED);
   } else {
@@ -163,8 +186,6 @@ void AutoConnectHandler::ResolveRequestCompleted(
   // Only request to connect to the best network if network properties were
   // actually changed. Otherwise only process existing requests.
   if (network_properties_changed) {
-    NET_LOG_DEBUG("RequestBestConnection",
-                  "Client certificate patterns resolved");
     RequestBestConnection(
         AutoConnectReason::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED);
   } else {
@@ -291,7 +312,8 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
 }
 
 void AutoConnectHandler::CallShillConnectToBestServices() {
-  NET_LOG_EVENT("ConnectToBestServices", "");
+  NET_LOG(EVENT) << "ConnectToBestServices ["
+                 << AutoConnectReasonsToString(auto_connect_reasons_) << "]";
 
   DBusThreadManager::Get()->GetShillManagerClient()->ConnectToBestServices(
       base::Bind(&AutoConnectHandler::NotifyAutoConnectInitiated,
