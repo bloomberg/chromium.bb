@@ -475,6 +475,9 @@ const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 // devices in other categories this flag must be missing.
 const char kNeedArcMigrationPolicyCheck[] = "need-arc-migration-policy-check";
 
+// Uses the redesigned wallpaper picker.
+const char kNewWallpaperPicker[] = "new-wallpaper-picker";
+
 // An optional comma-separated list of IDs of apps that can be used to take
 // notes. If unset, a hardcoded list is used instead.
 const char kNoteTakingAppIds[] = "note-taking-app-ids";

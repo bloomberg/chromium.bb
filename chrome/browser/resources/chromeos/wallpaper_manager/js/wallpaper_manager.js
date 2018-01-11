@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/800945): Rename it to WallpaperPicker for consistency.
+
 /**
  * WallpaperManager constructor.
  *
@@ -25,6 +27,9 @@ function WallpaperManager(dialogDom) {
   this.wallpaperDirs_ = WallpaperDirectories.getInstance();
   this.preManifestDomInit_();
   this.fetchManifest_();
+  // Uses the redesigned wallpaper picker if |useNewWallpaperPicker| is true.
+  this.document_.body.classList.toggle(
+      'v2', loadTimeData.getBoolean('useNewWallpaperPicker'));
 }
 
 // Anonymous 'namespace'.

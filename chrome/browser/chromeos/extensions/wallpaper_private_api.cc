@@ -202,6 +202,9 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
+  dict->SetBoolean("useNewWallpaperPicker",
+                   base::CommandLine::ForCurrentProcess()->HasSwitch(
+                       chromeos::switches::kNewWallpaperPicker));
 
   return RespondNow(OneArgument(std::move(dict)));
 }
