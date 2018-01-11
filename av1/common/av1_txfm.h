@@ -115,7 +115,6 @@ typedef struct TXFM_1D_CFG {
   const int txfm_size;
   const int stage_num;
 
-  const int8_t *shift;
   const int8_t *stage_range;
   const int8_t *cos_bit;
   const TXFM_TYPE txfm_type;
@@ -124,6 +123,7 @@ typedef struct TXFM_1D_CFG {
 typedef struct TXFM_2D_FLIP_CFG {
   int ud_flip;  // flip upside down
   int lr_flip;  // flip left to right
+  const int8_t *shift;
   const TXFM_1D_CFG *col_cfg;
   const TXFM_1D_CFG *row_cfg;
 } TXFM_2D_FLIP_CFG;

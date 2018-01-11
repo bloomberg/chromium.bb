@@ -214,7 +214,7 @@ double get_amplification_factor(TX_TYPE tx_type, TX_SIZE tx_size) {
   av1_get_fwd_txfm_cfg(tx_type, tx_size, &fwd_txfm_flip_cfg);
   const int tx_width = fwd_txfm_flip_cfg.row_cfg->txfm_size;
   const int tx_height = fwd_txfm_flip_cfg.col_cfg->txfm_size;
-  const int8_t *shift = fwd_txfm_flip_cfg.row_cfg->shift;
+  const int8_t *shift = fwd_txfm_flip_cfg.shift;
   const int amplify_bit = shift[0] + shift[1] + shift[2];
   double amplify_factor =
       amplify_bit >= 0 ? (1 << amplify_bit) : (1.0 / (1 << -amplify_bit));

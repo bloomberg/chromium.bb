@@ -47,7 +47,7 @@ static INLINE void fwd_txfm2d_sse4_1(const int16_t *input, int32_t *output,
   // transforms.
   assert(cfg->row_cfg->txfm_size == cfg->col_cfg->txfm_size);
   const int txfm_size = cfg->row_cfg->txfm_size;
-  const int8_t *shift = cfg->row_cfg->shift;
+  const int8_t *shift = cfg->shift;
   const int8_t *stage_range_col = cfg->col_cfg->stage_range;
   const int8_t *stage_range_row = cfg->row_cfg->stage_range;
   const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;

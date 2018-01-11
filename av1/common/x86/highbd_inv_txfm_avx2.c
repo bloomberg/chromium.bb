@@ -603,6 +603,7 @@ void av1_inv_txfm2d_add_32x32_avx2(const int32_t *coeff, uint16_t *output,
   __m256i in[128], out[128];
   const TXFM_1D_CFG *row_cfg = NULL;
   const TXFM_1D_CFG *col_cfg = NULL;
+  const int8_t *shift = inv_txfm_shift_ls[TX_32X32];
 
   switch (tx_type) {
     case DCT_DCT:
@@ -611,10 +612,10 @@ void av1_inv_txfm2d_add_32x32_avx2(const int32_t *coeff, uint16_t *output,
       load_buffer_32x32(coeff, in);
       transpose_32x32(in, out);
       idct32_avx2(out, in, row_cfg->cos_bit[2]);
-      round_shift_32x32(in, -row_cfg->shift[0]);
+      round_shift_32x32(in, -shift[0]);
       transpose_32x32(in, out);
       idct32_avx2(out, in, col_cfg->cos_bit[2]);
-      write_buffer_32x32(in, output, stride, 0, 0, -row_cfg->shift[1], bd);
+      write_buffer_32x32(in, output, stride, 0, 0, -shift[1], bd);
       break;
     default: assert(0);
   }

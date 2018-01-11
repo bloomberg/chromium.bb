@@ -245,6 +245,48 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   },
 };
 
+static const int8_t inv_shift_4x4[2] = { 0, -4 };
+static const int8_t inv_shift_8x8[2] = { 0, -5 };
+static const int8_t inv_shift_16x16[2] = { -1, -5 };
+static const int8_t inv_shift_32x32[2] = { -1, -5 };
+#if CONFIG_TX64X64
+static const int8_t inv_shift_64x64[2] = { -1, -5 };
+#endif
+static const int8_t inv_shift_4x8[2] = { 0, -5 };
+static const int8_t inv_shift_8x4[2] = { 0, -5 };
+static const int8_t inv_shift_8x16[2] = { -1, -5 };
+static const int8_t inv_shift_16x8[2] = { -1, -5 };
+static const int8_t inv_shift_16x32[2] = { -1, -5 };
+static const int8_t inv_shift_32x16[2] = { -1, -5 };
+#if CONFIG_TX64X64
+static const int8_t inv_shift_32x64[2] = { -1, -5 };
+static const int8_t inv_shift_64x32[2] = { -1, -5 };
+#endif
+static const int8_t inv_shift_4x16[2] = { -1, -5 };
+static const int8_t inv_shift_16x4[2] = { -1, -5 };
+static const int8_t inv_shift_8x32[2] = { -1, -5 };
+static const int8_t inv_shift_32x8[2] = { -1, -5 };
+#if CONFIG_TX64X64
+static const int8_t inv_shift_16x64[2] = { -1, -5 };
+static const int8_t inv_shift_64x16[2] = { -1, -5 };
+#endif  // CONFIG_TX64X64
+
+const int8_t *inv_txfm_shift_ls[TX_SIZES_ALL] = {
+  inv_shift_4x4,   inv_shift_8x8,   inv_shift_16x16, inv_shift_32x32,
+#if CONFIG_TX64X64
+  inv_shift_64x64,
+#endif  // CONFIG_TX64X64
+  inv_shift_4x8,   inv_shift_8x4,   inv_shift_8x16,  inv_shift_16x8,
+  inv_shift_16x32, inv_shift_32x16,
+#if CONFIG_TX64X64
+  inv_shift_32x64, inv_shift_64x32,
+#endif  // CONFIG_TX64X64
+  inv_shift_4x16,  inv_shift_16x4,  inv_shift_8x32,  inv_shift_32x8,
+#if CONFIG_TX64X64
+  inv_shift_16x64, inv_shift_64x16,
+#endif  // CONFIG_TX64X64
+};
+
 void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg) {
   assert(cfg != NULL);
@@ -253,6 +295,7 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
   const TX_TYPE_1D tx_type_row = htx_tab[tx_type];
   cfg->col_cfg = inv_txfm_col_cfg_ls[tx_type_col][tx_size];
   cfg->row_cfg = inv_txfm_row_cfg_ls[tx_type_row][tx_size];
+  cfg->shift = inv_txfm_shift_ls[tx_size];
 }
 
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
@@ -271,8 +314,7 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   if (txfm_size_col == txfm_size_row) assert(rect_type == 0);
   int rect_type_shift = 0;
   // Take the shift from the larger dimension in the rectangular case.
-  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
-                                                        : cfg->col_cfg->shift;
+  const int8_t *shift = cfg->shift;
 
   int shift1 = shift[1];
   if (rect_type == 1 || rect_type == -1) {
@@ -312,8 +354,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   const int txfm_size_col = cfg->row_cfg->txfm_size;
   const int txfm_size_row = cfg->col_cfg->txfm_size;
   // Take the shift from the larger dimension in the rectangular case.
-  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
-                                                        : cfg->col_cfg->shift;
+  const int8_t *shift = cfg->shift;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   int rect_type2_shift = 0;
   int rect_type1_shift = 0;
