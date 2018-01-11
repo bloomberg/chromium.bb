@@ -16,8 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -53,7 +55,10 @@ public class BottomSheetContentControllerTest {
 
     @Test
     @SmallTest
-    public void testSelectContent() throws InterruptedException, TimeoutException {
+    @CommandLineFlags.Add({
+            "disable-features=" + ChromeFeatureList.CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL,
+            "enable-features=" + ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS})
+    public void testSelectContent_DestroyContents() throws InterruptedException, TimeoutException {
         int contentChangedCount = mObserver.mContentChangedCallbackHelper.getCallCount();
         int openedCount = mObserver.mOpenedCallbackHelper.getCallCount();
         int closedCount = mObserver.mClosedCallbackHelper.getCallCount();
@@ -78,6 +83,37 @@ public class BottomSheetContentControllerTest {
         assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
         assertEquals(null, mBottomSheet.getCurrentSheetContent());
         assertEquals(0, mBottomSheetContentController.getSelectedItemIdForTests());
+        assertEquals(View.VISIBLE, mBottomSheet.getDefaultToolbarView().getVisibility());
+    }
+
+    @Test
+    @SmallTest
+    @CommandLineFlags.Add({
+            "enable-features=" + ChromeFeatureList.CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL,
+            "disable-features=" + ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS})
+    public void testSelectContent_DropAllButFirstThumbnail()
+            throws InterruptedException, TimeoutException {
+        int contentChangedCount = mObserver.mContentChangedCallbackHelper.getCallCount();
+        int openedCount = mObserver.mOpenedCallbackHelper.getCallCount();
+        int closedCount = mObserver.mClosedCallbackHelper.getCallCount();
+
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
+        mObserver.mOpenedCallbackHelper.waitForCallback(openedCount++, 1);
+        assertEquals(closedCount, mObserver.mClosedCallbackHelper.getCallCount());
+
+        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_history);
+        mObserver.mContentChangedCallbackHelper.waitForCallback(contentChangedCount++, 1);
+        assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
+        assertEquals(closedCount, mObserver.mClosedCallbackHelper.getCallCount());
+        assertTrue(mBottomSheet.getCurrentSheetContent() instanceof HistorySheetContent);
+        assertEquals(
+                R.id.action_history, mBottomSheetContentController.getSelectedItemIdForTests());
+        assertEquals(View.INVISIBLE, mBottomSheet.getDefaultToolbarView().getVisibility());
+
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        mObserver.mClosedCallbackHelper.waitForCallback(closedCount, 1);
+        mObserver.mContentChangedCallbackHelper.waitForCallback(contentChangedCount++, 1);
+        assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
         assertEquals(View.VISIBLE, mBottomSheet.getDefaultToolbarView().getVisibility());
     }
 
