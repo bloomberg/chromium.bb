@@ -490,6 +490,13 @@
     }
   }
 
+  // TODO(crbug.com/799601): Delete this once its not needed.
+  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
+    tabStripButtonTitle = @"M";
+    [[self.view.tabSwitchStripButton titleLabel]
+        setFont:[fontLoader boldFontOfSize:kFontSizeFewerThanTenTabs]];
+  }
+
   [self.view.tabSwitchStripButton setTitle:tabStripButtonTitle
                                   forState:UIControlStateNormal];
   [self.view.tabSwitchStripButton setAccessibilityValue:tabStripButtonValue];
