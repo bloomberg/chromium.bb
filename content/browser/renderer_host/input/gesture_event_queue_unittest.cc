@@ -232,12 +232,10 @@ class GestureEventQueueTest : public testing::Test,
   base::test::ScopedFeatureList feature_list_;
 };
 
-#if GTEST_HAS_PARAM_TEST
 // This is for tests that are to be run for all source devices.
 class GestureEventQueueWithSourceTest
     : public GestureEventQueueTest,
       public testing::WithParamInterface<WebGestureDevice> {};
-#endif  // GTEST_HAS_PARAM_TEST
 
 class GestureEventQueueWithCompositorEventQueueTest
     : public GestureEventQueueTest {
@@ -997,7 +995,6 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventWithSyncAck) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
-#if GTEST_HAS_PARAM_TEST
 TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureDevice source_device = GetParam();
 
@@ -1095,7 +1092,6 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                         GestureEventQueueWithSourceTest,
                         testing::Values(blink::kWebGestureDeviceTouchscreen,
                                         blink::kWebGestureDeviceTouchpad));
-#endif  // GTEST_HAS_PARAM_TEST
 
 // Test that a GestureScrollEnd is deferred during the debounce interval,
 // that Scrolls are not and that the deferred events are sent after that
