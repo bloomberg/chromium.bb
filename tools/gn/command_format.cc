@@ -959,6 +959,11 @@ bool Printer::ListWillBeMultiline(
       return true;
   }
 
+  // When a scope is used as a list entry, it's too complicated to go one a
+  // single line (the block will always be formatted multiline itself).
+  if (list.size() >= 1 && list[0]->AsBlock())
+    return true;
+
   return false;
 }
 
