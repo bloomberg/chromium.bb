@@ -38,7 +38,6 @@ class ContextProviderCommandBuffer;
 }
 
 namespace viz {
-class ClientSharedBitmapManager;
 class ForwardingCompositingModeReporterImpl;
 class RasterContextProvider;
 }
@@ -170,8 +169,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   bool is_gpu_compositing_disabled_ = false;
 
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
-
-  std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
 
   // ContextProvider used on worker threads for rasterization.
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;

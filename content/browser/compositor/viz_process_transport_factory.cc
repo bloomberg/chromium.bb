@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
-#include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -18,6 +17,7 @@
 #include "components/viz/host/forwarding_compositing_mode_reporter_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
@@ -498,8 +498,11 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
-  // TODO(crbug.com/730660): Make a ClientSharedBitmapManager to pass here.
-  params.shared_bitmap_manager = shared_bitmap_manager_.get();
+  // TODO(crbug.com/730660): Adding ServerSharedBitmapManager here is just to
+  // stop software compositing from crashing the browser process. Software
+  // composited areas will be blank since the ShareBitmaps aren't shared with
+  // the viz process. This mechanism is being rewritten currently.
+  params.shared_bitmap_manager = viz::ServerSharedBitmapManager::current();
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.local_surface_id_provider =
