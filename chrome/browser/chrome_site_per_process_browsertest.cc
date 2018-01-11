@@ -17,6 +17,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
@@ -994,3 +996,49 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckPanelTest) {
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+#if defined(USE_AURA)
+// Test that with a desktop/laptop touchscreen, a two finger tap opens a
+// context menu in an OOPIF.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
+  // Start on a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the iframe cross-site.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", frame_url));
+
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* child_frame = ChildFrameAt(main_frame, 0);
+  content::RenderWidgetHostView* child_rwhv = child_frame->GetView();
+  content::RenderWidgetHost* child_rwh = child_rwhv->GetRenderWidgetHost();
+
+  ASSERT_TRUE(child_frame->IsCrossProcessSubframe());
+
+  // Send a two finger tap event to the child and wait for the context menu to
+  // open.
+  ContextMenuWaiter menu_waiter(content::NotificationService::AllSources());
+
+  gfx::Point child_location(1, 1);
+  gfx::Point child_location_in_root =
+      child_rwhv->TransformPointToRootCoordSpace(child_location);
+
+  blink::WebGestureEvent event(blink::WebInputEvent::kGestureTwoFingerTap,
+                               blink::WebInputEvent::kNoModifiers,
+                               blink::WebInputEvent::kTimeStampForTesting);
+  event.source_device = blink::kWebGestureDeviceTouchscreen;
+  event.x = child_location.x();
+  event.y = child_location.y();
+  event.global_x = child_location_in_root.x();
+  event.global_y = child_location_in_root.y();
+  event.data.two_finger_tap.first_finger_width = 10;
+  event.data.two_finger_tap.first_finger_height = 10;
+
+  child_rwh->ForwardGestureEvent(event);
+
+  menu_waiter.WaitForMenuOpenAndClose();
+}
+#endif  // defined(USE_AURA)
