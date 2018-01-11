@@ -18,22 +18,34 @@ std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerVersion* version) {
+  const int handle_id = context.get()
+                            ? context->GetNewServiceWorkerHandleId()
+                            : blink::mojom::kInvalidServiceWorkerHandleId;
+  return CreateWithID(context, provider_host, version, handle_id);
+}
+
+std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::CreateWithID(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    ServiceWorkerVersion* version,
+    int handle_id) {
   if (!context || !provider_host || !version)
     return std::unique_ptr<ServiceWorkerHandle>();
   DCHECK(context->GetLiveRegistration(version->registration_id()));
   return base::WrapUnique(
-      new ServiceWorkerHandle(context, provider_host, version));
+      new ServiceWorkerHandle(context, provider_host, version, handle_id));
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerVersion* version)
+    ServiceWorkerVersion* version,
+    int handle_id)
     : context_(context),
       provider_host_(provider_host),
       provider_id_(provider_host ? provider_host->provider_id()
                                  : kInvalidServiceWorkerProviderId),
-      handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
+      handle_id_(handle_id),
       ref_count_(1),
       version_(version) {
   version_->AddListener(this);

@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/navigation_params.mojom";
+import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/resource_type.mojom";
 import "content/public/common/url_loader.mojom";
@@ -61,6 +62,10 @@ interface FrameNavigationControl {
   // also be provided by the browser as a a means for the renderer to load
   // subresources where applicable.
   //
+  // When S13nServiceWorker is enabled, |controller_service_worker_info| may
+  // also be provided by the browser if the frame that is being navigated
+  // is supposed to be controlled by a Service Worker.
+  //
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
   // token is then sent into the renderer and lands on the DocumentLoader. That
@@ -78,6 +83,7 @@ interface FrameNavigationControl {
       RequestNavigationParams request_params,
       URLLoaderClientEndpoints? url_loader_client_endpoints,
       URLLoaderFactoryBundle? subresource_loader_factories,
+      ControllerServiceWorkerInfo? controller_service_worker_info,
       mojo.common.mojom.UnguessableToken devtools_navigation_token);
 
   // Tells the renderer that a failed navigation is ready to commit.

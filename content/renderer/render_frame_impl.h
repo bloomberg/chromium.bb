@@ -522,6 +522,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::Optional<URLLoaderFactoryBundle> subresource_loaders,
+      mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
       const base::UnguessableToken& devtools_navigation_token) override;
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
@@ -1584,6 +1585,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // for AppCache).
   PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
       custom_url_loader_factory_;
+
+  // Non-null if this frame is to be controlled by a service worker.
+  // Sent from the browser process on navigation commit. Valid until the
+  // document loader for this frame is actually created (where this is
+  // consumed to initialize a subresource loader).
+  mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info_;
 
   scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
 

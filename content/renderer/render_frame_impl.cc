@@ -3055,6 +3055,7 @@ void RenderFrameImpl::CommitNavigation(
     const RequestNavigationParams& request_params,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     base::Optional<URLLoaderFactoryBundle> subresource_loader_factories,
+    mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     const base::UnguessableToken& devtools_navigation_token) {
   // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
   // frame, but it was aborted, then ignore it.
@@ -3077,6 +3078,8 @@ void RenderFrameImpl::CommitNavigation(
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     return;
   }
+
+  controller_service_worker_info_ = std::move(controller_service_worker_info);
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -4055,7 +4058,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
   document_loader->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
           routing_id_, navigation_state->request_params(), frame_,
-          content_initiated,
+          content_initiated, std::move(controller_service_worker_info_),
           render_thread ? GetDefaultURLLoaderFactoryGetter() : nullptr));
 }
 

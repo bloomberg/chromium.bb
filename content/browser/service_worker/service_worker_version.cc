@@ -1541,7 +1541,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   binding_.Close();
   binding_.Bind(mojo::MakeRequest(&params->service_worker_host));
 
-  params->controller_request = mojo::MakeRequest(&controller_ptr_);
+  // S13nServiceWorker:
+  if (!controller_request_.is_pending()) {
+    DCHECK(!controller_ptr_.is_bound());
+    controller_request_ = mojo::MakeRequest(&controller_ptr_);
+  }
+  params->controller_request = std::move(controller_request_);
 
   embedded_worker_->Start(
       std::move(params),
@@ -1964,6 +1969,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   external_request_uuid_to_request_id_.clear();
   event_dispatcher_.reset();
   controller_ptr_.reset();
+  DCHECK(!controller_request_.is_pending());
   installed_scripts_sender_.reset();
   binding_.Close();
 
