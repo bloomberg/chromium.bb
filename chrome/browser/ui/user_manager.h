@@ -73,6 +73,14 @@ class UserManagerProfileDialog {
                                const std::string& email,
                                signin_metrics::Reason reason);
 
+  // Shows a reauth dialog with profile path so that the sign in error message
+  // can be displayed without browser window.
+  static void ShowReauthDialogWithProfilePath(
+      content::BrowserContext* browser_context,
+      const std::string& email,
+      const base::FilePath& profile_path,
+      signin_metrics::Reason reason);
+
   // Shows a dialog where the user logs into their profile for the first time
   // via the user manager.
   // |reason| can be REASON_SIGNIN_PRIMARY_ACCOUNT or

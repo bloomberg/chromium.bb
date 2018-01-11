@@ -216,6 +216,16 @@ void UserManagerProfileDialog::ShowReauthDialog(
     content::BrowserContext* browser_context,
     const std::string& email,
     signin_metrics::Reason reason) {
+  ShowReauthDialogWithProfilePath(browser_context, email, base::FilePath(),
+                                  reason);
+}
+
+// static
+void UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
+    content::BrowserContext* browser_context,
+    const std::string& email,
+    const base::FilePath& profile_path,
+    signin_metrics::Reason reason) {
   // This method should only be called if the user manager is already showing.
   if (!UserManager::IsShowing())
     return;
@@ -224,6 +234,7 @@ void UserManagerProfileDialog::ShowReauthDialog(
   // knows which profile to load and update the credentials.
   GURL url = signin::GetReauthURLWithEmailForDialog(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, email);
+  instance_->SetSigninProfilePath(profile_path);
   instance_->ShowDialog(browser_context, email, url);
 }
 
@@ -247,6 +258,10 @@ void UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
     content::BrowserContext* browser_context) {
   if (!UserManager::IsShowing())
     return;
+  // The error occurred before sign in happened, reset |signin_profile_path_|
+  // so that the error page will show the error message that is assoicated with
+  // the system profile.
+  instance_->SetSigninProfilePath(base::FilePath());
   instance_->ShowDialog(browser_context, std::string(),
                         GURL(chrome::kChromeUISigninErrorURL));
 }
