@@ -37,7 +37,7 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
 
 HTMLAudioElement* HTMLAudioElement::Create(Document& document) {
   HTMLAudioElement* audio = new HTMLAudioElement(document);
-  audio->EnsureUserAgentShadowRoot();
+  audio->EnsureLegacyUserAgentShadowRootV0();
   audio->PauseIfNeeded();
   return audio;
 }
@@ -46,7 +46,7 @@ HTMLAudioElement* HTMLAudioElement::CreateForJSConstructor(
     Document& document,
     const AtomicString& src) {
   HTMLAudioElement* audio = new HTMLAudioElement(document);
-  audio->EnsureUserAgentShadowRoot();
+  audio->EnsureLegacyUserAgentShadowRootV0();
   audio->setPreload(AtomicString("auto"));
   if (!src.IsNull())
     audio->SetSrc(src);

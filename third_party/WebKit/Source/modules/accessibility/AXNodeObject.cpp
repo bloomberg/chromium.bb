@@ -784,7 +784,7 @@ bool AXNodeObject::ComputeIsEditableRoot() const {
     // Editable roots created by the user agent are handled by
     // |IsNativeTextControl| above.
     ShadowRoot* root = node->ContainingShadowRoot();
-    return !root || root->GetType() != ShadowRootType::kUserAgent;
+    return !root || !root->IsUserAgent();
   }
   return false;
 }

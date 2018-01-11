@@ -3248,10 +3248,9 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
     // TODO(kochi): If |base| or |node| is nested deep in shadow roots, this
     // loop may get expensive, as isUnclosedNodeOf() can take up to O(N+M) time
     // (N and M are depths).
-    if (base &&
-        (node->IsClosedShadowHiddenFrom(*base) ||
-         (node->IsInShadowTree() && node->ContainingShadowRoot()->GetType() ==
-                                        ShadowRootType::kUserAgent))) {
+    if (base && (node->IsClosedShadowHiddenFrom(*base) ||
+                 (node->IsInShadowTree() &&
+                  node->ContainingShadowRoot()->IsUserAgent()))) {
       // If 'position: fixed' node is found while traversing up, terminate the
       // loop and return null.
       if (ancestor->IsFixedPositioned())

@@ -129,7 +129,7 @@ static bool ShouldBypassMainWorldCSP(const Element& element) {
 
   // Main world CSP is bypassed for style elements in user agent shadow DOM.
   ShadowRoot* root = element.ContainingShadowRoot();
-  if (root && root->GetType() == ShadowRootType::kUserAgent)
+  if (root && root->IsUserAgent())
     return true;
 
   return false;

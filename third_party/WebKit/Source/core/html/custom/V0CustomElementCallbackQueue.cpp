@@ -50,7 +50,7 @@ bool V0CustomElementCallbackQueue::ProcessInElementQueue(
   // Never run custom element callbacks in UA shadow roots since that would
   // leak the UA root and it's elements into the page.
   ShadowRoot* shadow_root = element_->ContainingShadowRoot();
-  if (!shadow_root || shadow_root->GetType() != ShadowRootType::kUserAgent) {
+  if (!shadow_root || !shadow_root->IsUserAgent()) {
     while (index_ < queue_.size() && Owner() == caller) {
       in_created_callback_ = queue_[index_]->IsCreatedCallback();
 

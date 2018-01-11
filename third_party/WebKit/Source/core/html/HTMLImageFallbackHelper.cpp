@@ -53,7 +53,7 @@ static bool ImageSmallerThanAltImage(int pixels_for_alt_image,
 }
 
 void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
-  ShadowRoot& root = element.EnsureUserAgentShadowRoot();
+  ShadowRoot& root = element.EnsureLegacyUserAgentShadowRootV0();
 
   HTMLSpanElement* container = HTMLSpanElement::Create(element.GetDocument());
   root.AppendChild(container);
