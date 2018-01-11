@@ -955,13 +955,6 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsLocalRoot() const;
   const RenderFrameImpl* GetLocalRoot() const;
 
-  // Builds and sends DidCommitProvisionalLoad to the host.
-  void SendDidCommitProvisionalLoad(
-      blink::WebLocalFrame* frame,
-      blink::WebHistoryCommitType commit_type,
-      service_manager::mojom::InterfaceProviderRequest
-          remote_interface_provider_request);
-
   // Swaps the current frame into the frame tree, replacing the
   // RenderFrameProxy it is associated with.  Return value indicates whether
   // the swap operation succeeded.  This should only be used for provisional
@@ -1287,6 +1280,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notify render_view_ observers that a commit happened.
   void NotifyObserversOfNavigationCommit(bool is_new_navigation,
                                          bool is_same_document);
+
+  // Updates the internal state following a navigation commit. This should be
+  // called before notifying the FrameHost of the commit.
+  void UpdateStateForCommit(const blink::WebHistoryItem& item,
+                            blink::WebHistoryCommitType commit_type);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
