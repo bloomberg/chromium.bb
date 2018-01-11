@@ -1964,8 +1964,8 @@ inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a,
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher>
 void Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
-  DCHECK(Allocator::kIsGarbageCollected)
-      << "Garbage collector must be enabled.";
+  static_assert(Allocator::kIsGarbageCollected,
+                "Garbage collector must be enabled.");
   if (!Buffer())
     return;
   if (this->HasOutOfLineBuffer()) {
