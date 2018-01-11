@@ -43,7 +43,7 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
 };
 
 #define CONTEXT_MAG_POSITION_NUM 3
-#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+#if USE_CAUSAL_BR_CTX
 static const int mag_ref_offset_with_txclass[3][CONTEXT_MAG_POSITION_NUM][2] = {
   { { 0, 1 }, { 1, 0 }, { 1, 1 } },
   { { 0, 1 }, { 1, 0 }, { 0, 2 } },
@@ -195,7 +195,7 @@ static INLINE int get_level_count(const uint8_t *const levels, const int stride,
   return count;
 }
 
-#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+#if USE_CAUSAL_BR_CTX
 static INLINE void get_level_mag_with_txclass(const uint8_t *const levels,
                                               const int stride, const int row,
                                               const int col, int *const mag,
@@ -315,20 +315,6 @@ static const int br_level_map[9] = {
   0, 0, 1, 1, 2, 2, 3, 3, 3,
 };
 
-#if !CONFIG_LV_MAP_MULTI
-static const int coeff_to_br_index[COEFF_BASE_RANGE] = {
-  0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
-};
-
-static const int br_index_to_coeff[BASE_RANGE_SETS] = {
-  0, 2, 6,
-};
-
-static const int br_extra_bits[BASE_RANGE_SETS] = {
-  1, 2, 3,
-};
-#endif
-
 // Note: If BR_MAG_OFFSET changes, the calculation of offset in
 // get_br_ctx_from_count_mag() must be updated.
 #define BR_MAG_OFFSET 1
@@ -378,7 +364,7 @@ static INLINE int get_br_ctx_from_count_mag(const int row, const int col,
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
                              const int bwl, const int count
-#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+#if USE_CAUSAL_BR_CTX
                              ,
                              const TX_TYPE tx_type
 #endif
@@ -388,7 +374,7 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
   const int stride = (1 << bwl) + TX_PAD_HOR;
   int mag = 0;
   int nb_mag[3] = { 0 };
-#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+#if USE_CAUSAL_BR_CTX
   (void)count;
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   get_level_mag_with_txclass(levels, stride, row, col, nb_mag, tx_class);
@@ -541,19 +527,15 @@ static INLINE int get_nz_map_ctx_from_stats(
 
 static INLINE int get_nz_map_ctx(const uint8_t *const levels,
                                  const int coeff_idx, const int bwl,
-#if CONFIG_LV_MAP_MULTI
                                  const int height, const int scan_idx,
-                                 const int is_eob,
-#endif
-                                 const TX_SIZE tx_size, const TX_TYPE tx_type) {
-#if CONFIG_LV_MAP_MULTI
+                                 const int is_eob, const TX_SIZE tx_size,
+                                 const TX_TYPE tx_type) {
   if (is_eob) {
     if (scan_idx == 0) return 0;
     if (scan_idx <= (height << bwl) / 8) return 1;
     if (scan_idx <= (height << bwl) / 4) return 2;
     return 3;
   }
-#endif
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int stats =
       get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);

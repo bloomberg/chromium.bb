@@ -137,7 +137,6 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   int diff;
 
 #if 1
-#if CONFIG_LV_MAP_MULTI
   // static const int nsymbs2speed[17] = { 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
   // 3, 3, 3, 3, 4 };
   // static const int nsymbs2speed[17] = { 0, 0, 1, 1, 2, 2, 2, 2, 2,
@@ -164,32 +163,6 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
     cdf[i] += ((tmp - cdf[i]) >> rate);
 #endif
   }
-
-#else
-  rate = 4 + (cdf[nsymbs] > 31) + get_msb(nsymbs);
-#if CONFIG_LV_MAP
-  if (nsymbs == 2)
-    rate = 4 + (cdf[nsymbs] > 7) + (cdf[nsymbs] > 15) + get_msb(nsymbs);
-#endif
-  const int tmp0 = 1 << rate2;
-  tmp = AOM_ICDF(tmp0);
-  diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
-
-  // Single loop (faster)
-  for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
-    tmp -= (i == val ? diff : 0);
-#if CONFIG_LV_MAP_MULTI
-    if (tmp < cdf[i]) {
-      cdf[i] -= ((cdf[i] - tmp) >> rate);
-    } else {
-      cdf[i] += ((tmp - cdf[i]) >> rate);
-    }
-#else
-    cdf[i] += ((tmp - cdf[i]) >> rate);
-#endif
-  }
-
-#endif
 
 #else
   for (i = 0; i < nsymbs; ++i) {

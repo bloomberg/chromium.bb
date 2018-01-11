@@ -83,10 +83,8 @@ static INLINE void av1_record_superblock(FRAME_COUNTS *counts) {
 #if CONFIG_LV_MAP
 #define av1_read_record_bin(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_bin(r, cdf, nsymbs, ACCT_STR_NAME)
-#if CONFIG_LV_MAP_MULTI
 #define av1_read_record_symbol4(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_symbol4(r, cdf, nsymbs, ACCT_STR_NAME)
-#endif
 #endif
 
 #define av1_read_record(counts, r, prob, ACCT_STR_NAME) \

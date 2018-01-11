@@ -292,7 +292,6 @@ EXPERIMENT_LIST="
     palette_throughput
     ref_adapt
     lv_map
-    lv_map_multi 
     txk_sel
     mv_compress
     segment_globalmv
@@ -489,7 +488,6 @@ post_process_cmdline() {
     soft_enable ext_partition
     soft_enable ext_partition_types
     soft_enable lv_map
-    soft_enable lv_map_multi
 
     # Provisional adopted
     soft_enable reference_buffer
@@ -528,7 +526,6 @@ post_process_cmdline() {
     soft_enable tmv
 
     # Fix up experiment dependencies
-    enabled lv_map_multi && soft_enable lv_map
     enabled eob_first && enable_feature lv_map
     enabled txk_sel && soft_enable lv_map
     enabled ext_intra_mod && enable_feature intra_edge

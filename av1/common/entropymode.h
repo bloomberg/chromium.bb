@@ -83,29 +83,12 @@ typedef struct frame_contexts {
   aom_prob eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
   aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
 
-#if !CONFIG_LV_MAP_MULTI
-  aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
-
-  aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
-  aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
-                     [COEFF_BASE_CONTEXTS];
-  aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
-  aom_prob coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS];
-#else
   aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS];
-#endif
 
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
-#if !CONFIG_LV_MAP_MULTI
-  aom_cdf_prob nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
-                         [CDF_SIZE(2)];
-  aom_cdf_prob eob_flag_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
-                           [CDF_SIZE(2)];
-#endif
   aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                             [CDF_SIZE(2)];
   aom_cdf_prob dc_sign_cdf[PLANE_TYPES][DC_SIGN_CONTEXTS][CDF_SIZE(2)];
-#if CONFIG_LV_MAP_MULTI
   aom_cdf_prob eob_flag_cdf16[PLANE_TYPES][2][CDF_SIZE(5)];
   aom_cdf_prob eob_flag_cdf32[PLANE_TYPES][2][CDF_SIZE(6)];
   aom_cdf_prob eob_flag_cdf64[PLANE_TYPES][2][CDF_SIZE(7)];
@@ -119,14 +102,6 @@ typedef struct frame_contexts {
                              [CDF_SIZE(4)];
   aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                            [CDF_SIZE(BR_CDF_SIZE)];
-#else
-  aom_cdf_prob coeff_base_cdf[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
-                             [COEFF_BASE_CONTEXTS][CDF_SIZE(2)];
-  aom_cdf_prob coeff_lps_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
-                            [CDF_SIZE(2)];
-  aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS]
-                           [LEVEL_CONTEXTS][CDF_SIZE(2)];
-#endif
 #endif
 
   aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
@@ -265,14 +240,6 @@ typedef struct FRAME_COUNTS {
   unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
 
-#if !CONFIG_LV_MAP_MULTI
-  unsigned int nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS][2];
-  unsigned int coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
-                         [COEFF_BASE_CONTEXTS][2];
-  unsigned int coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS]
-                       [2];
-  unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
-#else
   unsigned int eob_multi16[PLANE_TYPES][2][5];
   unsigned int eob_multi32[PLANE_TYPES][2][6];
   unsigned int eob_multi64[PLANE_TYPES][2][7];
@@ -289,7 +256,6 @@ typedef struct FRAME_COUNTS {
                                [NUM_BASE_LEVELS + 2];
   unsigned int coeff_base_eob_multi[TX_SIZES][PLANE_TYPES]
                                    [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
-#endif
 #endif  // CONFIG_LV_MAP
 
 #if CONFIG_SYMBOLRATE

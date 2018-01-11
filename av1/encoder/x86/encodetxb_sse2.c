@@ -435,16 +435,11 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
                                   const int16_t *const scan, const uint16_t eob,
                                   const TX_SIZE tx_size, const TX_TYPE tx_type,
                                   int8_t *const coeff_contexts) {
-#if CONFIG_LV_MAP_MULTI
   const int last_idx = eob - 1;
   if (!last_idx) {
     coeff_contexts[0] = 0;
     return;
   }
-#else
-  (void)scan;
-  (void)eob;
-#endif
 
   const int real_width = tx_size_wide[tx_size];
   const int real_height = tx_size_high[tx_size];
@@ -499,7 +494,6 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
     }
   }
 
-#if CONFIG_LV_MAP_MULTI
   const int bwl = get_txb_bwl(tx_size);
   const int pos = scan[last_idx];
   if (last_idx <= (height << bwl) / 8)
@@ -508,5 +502,4 @@ void av1_get_nz_map_contexts_sse2(const uint8_t *const levels,
     coeff_contexts[pos] = 2;
   else
     coeff_contexts[pos] = 3;
-#endif
 }

@@ -644,14 +644,9 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
 #if CONFIG_LV_MAP
   AVERAGE_TILE_CDFS(txb_skip_cdf)
-#if !CONFIG_LV_MAP_MULTI
-  AVERAGE_TILE_CDFS(nz_map_cdf)
-  AVERAGE_TILE_CDFS(eob_flag_cdf)
-#endif
   AVERAGE_TILE_CDFS(eob_extra_cdf)
   AVERAGE_TILE_CDFS(dc_sign_cdf)
   AVERAGE_TILE_CDFS(coeff_base_cdf)
-#if CONFIG_LV_MAP_MULTI
   AVERAGE_TILE_CDFS(eob_flag_cdf16)
   AVERAGE_TILE_CDFS(eob_flag_cdf32)
   AVERAGE_TILE_CDFS(eob_flag_cdf64)
@@ -660,9 +655,6 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(eob_flag_cdf512)
   AVERAGE_TILE_CDFS(eob_flag_cdf1024)
   AVERAGE_TILE_CDFS(coeff_base_eob_cdf)
-#else  // CONFIG_LV_MAP_MULTI
-  AVERAGE_TILE_CDFS(coeff_lps_cdf)
-#endif
   AVERAGE_TILE_CDFS(coeff_br_cdf)
 #else  // CONFI_LV_MAP
   AVERAGE_TILE_CDFS(coef_head_cdfs)

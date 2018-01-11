@@ -944,7 +944,6 @@ static const TX_SIZE txsize_sqr_up_map[TX_SIZES_ALL] = {
 #endif       // CONFIG_TX64X64
 };
 
-#if CONFIG_LV_MAP_MULTI
 static const int8_t txsize_log2_minus4[TX_SIZES_ALL] = {
   0,  // TX_4X4
   2,  // TX_8X8
@@ -972,7 +971,6 @@ static const int8_t txsize_log2_minus4[TX_SIZES_ALL] = {
   5,    // TX_64X16
 #endif  // CONFIG_TX64X64
 };
-#endif
 
 /* clang-format off */
 #if CONFIG_SIMPLIFY_TX_MODE

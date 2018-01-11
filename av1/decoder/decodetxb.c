@@ -126,7 +126,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int eob_extra = 0;
   int eob_pt = 1;
 
-#if CONFIG_LV_MAP_MULTI
   (void)max_eob_pt;
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
@@ -205,23 +204,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         break;
     }
   }
-#else
-  for (eob_pt = 1; eob_pt < max_eob_pt; eob_pt++) {
-    const int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, eob_pt);
-    const int is_equal = av1_read_record_bin(
-        counts, r, ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_pos_ctx], 2,
-        ACCT_STR);
-    // printf("eob_flag_cdf: %d %d %2d\n", txs_ctx, plane_type, eob_pos_ctx);
-    // aom_read_symbol(r,
-    // ec_ctx->eob_flag_cdf[AOMMIN(txs_ctx,3)][plane_type][eob_pos_ctx], 2,
-    // ACCT_STR);
-    if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_pos_ctx][is_equal];
-
-    if (is_equal) {
-      break;
-    }
-  }
-#endif
 
   // printf("Dec: ");
   if (k_eob_offset_bits[eob_pt] > 0) {
@@ -249,7 +231,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   for (int i = 0; i < *eob; ++i) {
     c = *eob - 1 - i;
     const int pos = scan[c];
-#if CONFIG_LV_MAP_MULTI
     const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, c,
                                          c == *eob - 1, tx_size, tx_type);
     aom_cdf_prob *cdf;
@@ -301,54 +282,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         update_pos[num_updates++] = pos;
       }
     }
-#else
-    int is_nz;
-    const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, tx_size, tx_type);
-
-    if (c < *eob - 1) {
-      is_nz = av1_read_record_bin(
-          counts, r, ec_ctx->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
-          ACCT_STR);
-    } else {
-      is_nz = 1;
-    }
-
-    if (is_nz) {
-      int k;
-      for (k = 0; k < NUM_BASE_LEVELS; ++k) {
-        const int ctx = coeff_ctx;
-        const int is_k = av1_read_record_bin(
-            counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][k][ctx], 2,
-            ACCT_STR);
-        if (counts) ++counts->coeff_base[txs_ctx][plane_type][k][ctx][is_k];
-
-        // semantic: is_k = 1 if level > (k+1)
-        if (is_k == 0) {
-          cul_level += k + 1;
-#if CONFIG_NEW_QUANT
-          dqv_val = &dq_val[pos != 0][0];
-#if !CONFIG_DAALA_TX
-          v = av1_dequant_abscoeff_nuq(k + 1, dequant[!!c], dqv_val, shift);
-#else
-          v = av1_dequant_abscoeff_nuq(k + 1, dequant[!!c], dqv_val, 0);
-#endif  // !CONFIG_DAALA_TX
-#else
-          v = (k + 1) * dequant[!!c];
-#if !CONFIG_DAALA_TX
-          v = v >> shift;
-#endif  // !CONFIG_DAALA_TX
-#endif  // CONFIG_NEW_QUANT
-          tcoeffs[pos] = v;
-          break;
-        }
-      }
-      levels[get_padded_idx(pos, bwl)] = k + 1;
-      *max_scan_line = AOMMAX(*max_scan_line, pos);
-      if (k == NUM_BASE_LEVELS) {
-        update_pos[num_updates++] = pos;
-      }
-    }
-#endif
   }
 
   // Loop to decode all signs in the transform block,
@@ -369,9 +302,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 
   if (num_updates) {
-#if !CONFIG_LV_MAP_MULTI
-    av1_get_br_level_counts(levels, width, height, level_counts);
-#endif
     for (c = 0; c < num_updates; ++c) {
       const int pos = update_pos[c];
       uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
@@ -380,11 +310,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
       assert(*level > NUM_BASE_LEVELS);
 
-#if !CONFIG_LV_MAP_MULTI
-      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
-#endif
-
-#if CONFIG_LV_MAP_MULTI
 #if USE_CAUSAL_BR_CTX
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
 #else
@@ -427,56 +352,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         tcoeffs[pos] = t;
         continue;
       }
-#else
-      for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
-        // printf("br: %d %d %d %d\n", txs_ctx, plane_type, idx, ctx);
-        if (av1_read_record_bin(
-                counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx],
-                2, ACCT_STR)) {
-          const int extra_bits = (1 << br_extra_bits[idx]) - 1;
-          //        int br_offset = aom_read_literal(r, extra_bits, ACCT_STR);
-          int br_offset = 0;
-          int tok;
-          if (counts) ++counts->coeff_br[txs_ctx][plane_type][idx][ctx][1];
-          for (tok = 0; tok < extra_bits; ++tok) {
-            if (av1_read_record_bin(
-                    counts, r, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
-                    2, ACCT_STR)) {
-              br_offset = tok;
-              if (counts) ++counts->coeff_lps[txs_ctx][plane_type][ctx][1];
-              break;
-            }
-            if (counts) ++counts->coeff_lps[txs_ctx][plane_type][ctx][0];
-          }
-          if (tok == extra_bits) br_offset = extra_bits;
-
-          const int br_base = br_index_to_coeff[idx];
-
-          *level = NUM_BASE_LEVELS + 1 + br_base + br_offset;
-          cul_level += *level;
-          tran_high_t t;
-#if CONFIG_NEW_QUANT
-          dqv_val = &dq_val[pos != 0][0];
-#if !CONFIG_DAALA_TX
-          t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, shift);
-#else
-          t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, 0);
-#endif  // !CONFIG_DAALA_TX
-#else
-          t = *level * dequant[!!pos];
-#if !CONFIG_DAALA_TX
-          t = t >> shift;
-#endif  // !CONFIG_DAALA_TX
-#endif  // CONFIG_NEW_QUANT
-          if (signs[pos]) t = -t;
-          tcoeffs[pos] = (tran_low_t)t;
-          break;
-        }
-        if (counts) ++counts->coeff_br[txs_ctx][plane_type][idx][ctx][0];
-      }
-
-      if (idx < BASE_RANGE_SETS) continue;
-#endif
       // decode 0-th order Golomb code
       *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
       // Save golomb in tcoeffs because adding it to level may incur overflow
