@@ -6451,6 +6451,31 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
   ASSERT_FALSE(AddPendingSyncInstall());
 }
 
+// Test that the blocked pending external extension should be ignored until
+// it's unblocked. (crbug.com/797369)
+TEST_F(ExtensionServiceTest, BlockedExternalExtension) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+
+  InitializeEmptyExtensionService();
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_PREF);
+
+  service()->external_install_manager()->UpdateExternalExtensionAlert();
+  EXPECT_FALSE(HasExternalInstallErrors(service()));
+
+  service()->BlockAllExtensions();
+
+  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                 data_dir().AppendASCII("page_action.crx"));
+
+  WaitForExternalExtensionInstalled();
+  EXPECT_FALSE(HasExternalInstallErrors(service()));
+
+  service()->UnblockAllExtensions();
+  EXPECT_TRUE(HasExternalInstallErrors(service()));
+}
+
 // Test that installing an external extension displays a GlobalError.
 TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   FeatureSwitch::ScopedOverride prompt(
