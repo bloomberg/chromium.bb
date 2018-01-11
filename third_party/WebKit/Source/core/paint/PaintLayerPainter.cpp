@@ -488,7 +488,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       // PaintLayerWithTransform() path.
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
           layer_fragments, local_painting_info.root_layer,
-          local_painting_info.paint_dirty_rect, kUncachedClipRects,
+          local_painting_info.paint_dirty_rect,
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
       layer_fragments[0].fragment_data = fragment->fragment_data;
@@ -497,7 +497,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       PaintLayerFragments single_fragment;
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
           single_fragment, local_painting_info.root_layer,
-          local_painting_info.paint_dirty_rect, kUncachedClipRects,
+          local_painting_info.paint_dirty_rect,
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
       RepeatFixedPositionObjectInPages(single_fragment[0], painting_info,
@@ -530,11 +530,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     } else {
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
-          local_painting_info.paint_dirty_rect, kUncachedClipRects,
+          local_painting_info.paint_dirty_rect,
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
 
-      // PaintLayer::CollectFragmentsForPaint depends on the paint dirty rect in
+      // PaintLayer::CollectFragments depends on the paint dirty rect in
       // complicated ways. For now, always assume a partially painted output
       // for fragmented content.
       if (layer_fragments.size() > 1)
@@ -570,7 +570,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       PaintLayerFragments filter_fragments;
       paint_layer_.AppendSingleFragmentIgnoringPagination(
           filter_fragments, local_painting_info.root_layer,
-          local_painting_info.paint_dirty_rect, kUncachedClipRects,
+          local_painting_info.paint_dirty_rect,
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
 
@@ -803,10 +803,9 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
         ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
     paint_layer_.CollectFragments(
         layer_fragments, painting_info.root_layer,
-        painting_info.paint_dirty_rect, kUncachedClipRects,
-        kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip, nullptr,
-        painting_info.sub_pixel_accumulation);
-    // PaintLayer::CollectFragmentsForPaint depends on the paint dirty rect in
+        painting_info.paint_dirty_rect, kIgnorePlatformOverlayScrollbarSize,
+        respect_overflow_clip, nullptr, painting_info.sub_pixel_accumulation);
+    // PaintLayer::CollectFragments depends on the paint dirty rect in
     // complicated ways. For now, always assume a partially painted output
     // for fragmented content.
     if (layer_fragments.size() > 1)
