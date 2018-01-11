@@ -25,7 +25,7 @@ class PartitionAllocatorDummyVisitor {
 class WTF_EXPORT PartitionAllocator {
  public:
   typedef PartitionAllocatorDummyVisitor Visitor;
-  static const bool kIsGarbageCollected = false;
+  static constexpr bool kIsGarbageCollected = false;
 
   template <typename T>
   static size_t MaxElementCountInBackingStore() {

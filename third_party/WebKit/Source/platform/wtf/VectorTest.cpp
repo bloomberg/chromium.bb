@@ -670,6 +670,9 @@ class UnknownType;
 static_assert(VectorTraits<UnknownType*>::kCanCopyWithMemcpy,
               "Pointers should be copied with memcpy.");
 
+static_assert(!IsTraceable<Vector<int>>::value,
+              "Vector<int> must not be traceable.");
+
 }  // anonymous namespace
 
 }  // namespace WTF
