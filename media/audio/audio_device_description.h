@@ -68,6 +68,7 @@ struct MEDIA_EXPORT AudioDeviceDescription {
   static std::string GetCommunicationsDeviceName(
       const std::string& real_device_name);
 
+  AudioDeviceDescription() = default;
   AudioDeviceDescription(const AudioDeviceDescription& other) = default;
   AudioDeviceDescription(std::string device_name,
                          std::string unique_id,
