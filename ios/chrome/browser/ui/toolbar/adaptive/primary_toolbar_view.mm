@@ -92,6 +92,16 @@
   DCHECK(self.buttonFactory);
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
+
+  [self setUpLocationBar];
+  [self setUpLeadingStackView];
+  [self setUpTrailingStackView];
+
+  [self setUpConstraints];
+}
+
+// Sets the location bar container and its view if present.
+- (void)setUpLocationBar {
   self.locationBarContainer = [[UIView alloc] init];
   self.locationBarContainer.backgroundColor = [UIColor whiteColor];
   [self.locationBarContainer
@@ -100,10 +110,9 @@
   self.locationBarContainer.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:self.locationBarContainer];
 
-  [self setUpLeadingStackView];
-  [self setUpTrailingStackView];
-
-  [self setUpConstraints];
+  if (self.locationBarView) {
+    [self.locationBarContainer addSubview:self.locationBarView];
+  }
 }
 
 // Sets the leading stack view.
@@ -179,6 +188,11 @@
     [self.trailingStackView.topAnchor
         constraintEqualToAnchor:self.topSafeAnchor],
   ]];
+
+  // locationBarView constraints, if present.
+  if (self.locationBarView) {
+    AddSameConstraints(self.locationBarContainer, self.locationBarView);
+  }
 }
 
 #pragma mark - Property accessors
@@ -189,12 +203,16 @@
   }
   [_locationBarView removeFromSuperview];
 
+  _locationBarView = locationBarView;
   locationBarView.translatesAutoresizingMaskIntoConstraints = NO;
   [locationBarView setContentHuggingPriority:UILayoutPriorityDefaultLow
                                      forAxis:UILayoutConstraintAxisHorizontal];
+
+  if (!self.locationBarContainer || !locationBarView)
+    return;
+
   [self.locationBarContainer addSubview:locationBarView];
   AddSameConstraints(self.locationBarContainer, locationBarView);
-  _locationBarView = locationBarView;
 }
 
 - (NSArray<ToolbarButton*>*)allButtons {
