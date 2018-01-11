@@ -1832,6 +1832,9 @@ enum WebFeature {
   kV8RTCRtpSender_ReplaceTrack_Method = 2323,
   kInputTypeFileSecureOriginOpenChooser = 2324,
   kInputTypeFileInsecureOriginOpenChooser = 2325,
+  kBasicShapeEllipseNoRadius = 2326,
+  kBasicShapeEllipseOneRadius = 2327,
+  kBasicShapeEllipseTwoRadius = 2328,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

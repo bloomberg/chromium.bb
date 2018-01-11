@@ -258,10 +258,14 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // ellipse( [<shape-radius>{2}]? [at <position>]? )
   CSSBasicShapeEllipseValue* shape = CSSBasicShapeEllipseValue::Create();
+  WebFeature feature = WebFeature::kBasicShapeEllipseNoRadius;
   if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
     shape->SetRadiusX(radius_x);
-    if (CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode()))
+    feature = WebFeature::kBasicShapeEllipseOneRadius;
+    if (CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode())) {
       shape->SetRadiusY(radius_y);
+      feature = WebFeature::kBasicShapeEllipseTwoRadius;
+    }
   }
   if (CSSPropertyParserHelpers::ConsumeIdent<CSSValueAt>(args)) {
     CSSValue* center_x = nullptr;
@@ -273,6 +277,7 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
   }
+  context.Count(feature);
   return shape;
 }
 
