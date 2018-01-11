@@ -1444,7 +1444,6 @@ if (enable_java_templates) {
       inputs = [
         android_default_aapt_path,
         invoker.build_config,
-        invoker.android_manifest,
         _android_aapt_path,
         _android_sdk_jar,
       ]
@@ -1460,12 +1459,18 @@ if (enable_java_templates) {
         rebase_path(_android_sdk_jar, root_build_dir),
         "--aapt-path",
         rebase_path(_android_aapt_path, root_build_dir),
-        "--android-manifest",
-        rebase_path(invoker.android_manifest, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
       ]
+
+      if (defined(invoker.android_manifest)) {
+        inputs += [ invoker.android_manifest ]
+        args += [
+          "--android-manifest",
+          rebase_path(invoker.android_manifest, root_build_dir),
+        ]
+      }
 
       if (_rebased_all_resource_dirs != []) {
         args += [ "--resource-dirs=$_rebased_all_resource_dirs" ]
