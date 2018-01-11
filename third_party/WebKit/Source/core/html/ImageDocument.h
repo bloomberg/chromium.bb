@@ -90,9 +90,6 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   // Whether the image has finished loading or not
   bool image_is_loaded_;
 
-  // Size of the checkerboard background tiles
-  int style_checker_size_;
-
   // Desktop: State of the mouse cursor in the image style
   enum MouseCursorMode { kDefault, kZoomIn, kZoomOut };
   MouseCursorMode style_mouse_cursor_mode_;
