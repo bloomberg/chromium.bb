@@ -1054,6 +1054,9 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 #else
   cm->color_space = oxcf->color_space;
 #endif  // CONFIG_CICP
+#if CONFIG_MONO_VIDEO
+  cm->seq_params.monochrome = oxcf->monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->transfer_function = oxcf->transfer_function;
@@ -3082,6 +3085,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #else
   cm->color_space = oxcf->color_space;
 #endif
+#if CONFIG_MONO_VIDEO
+  cm->seq_params.monochrome = oxcf->monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->transfer_function = oxcf->transfer_function;
@@ -6076,6 +6082,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif  // CONFIG_REFERENCE_BUFFER
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_MONO_VIDEO
+  cm->seq_params.monochrome = oxcf->monochrome;
+#endif  // CONFIG_MONO_VIDEO
+
 #if CONFIG_XIPHRC
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
@@ -6178,6 +6188,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #else
   cm->frame_to_show->color_space = cm->color_space;
 #endif
+#if CONFIG_MONO_VIDEO
+  cm->frame_to_show->monochrome = cm->seq_params.monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->frame_to_show->transfer_function = cm->transfer_function;

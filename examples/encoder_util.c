@@ -40,6 +40,7 @@ static void find_mismatch_plane(const aom_image_t *const img1,
   assert(img1->x_chroma_shift == img2->x_chroma_shift &&
          img1->y_chroma_shift == img2->y_chroma_shift);
   loc[0] = loc[1] = loc[2] = loc[3] = -1;
+  if (img1->monochrome && img2->monochrome && plane) return;
   int match = 1;
   uint32_t i, j;
   for (i = 0; match && i < c_h; i += bsizey) {
@@ -105,13 +106,9 @@ int aom_compare_img(const aom_image_t *const img1,
 #else
   assert(img1->cs == img2->cs);
 #endif
+  assert(img1->monochrome == img2->monochrome);
 
-#if CONFIG_CICP
-  int num_planes = 3;  // We need to decide on monochrome video based
-                       // on something else than the color space
-#else
-  int num_planes = img1->cs == AOM_CS_MONOCHROME ? 1 : 3;
-#endif
+  int num_planes = img1->monochrome ? 1 : 3;
 
   uint32_t l_w = img1->d_w;
   uint32_t c_w = (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;

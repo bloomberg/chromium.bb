@@ -620,6 +620,13 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int large_scale_tile;
 
+  /*!\brief Monochrome mode
+   *
+   * If this is nonzero, the encoder will generate a monochrome stream
+   * with no chroma planes.
+   */
+  unsigned int monochrome;
+
   /*!\brief Number of explicit tile widths specified
    *
    * This value indicates the number of tile widths specified

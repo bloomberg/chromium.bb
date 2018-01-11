@@ -265,6 +265,10 @@ static const arg_def_t large_scale_tile =
     ARG_DEF(NULL, "large-scale-tile", 1,
             "Large scale tile coding (0: off (default), 1: on)");
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MONO_VIDEO
+static const arg_def_t monochrome =
+    ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
+#endif  // CONFIG_MONO_VIDEO
 
 static const arg_def_t *global_args[] = { &use_yv12,
                                           &use_i420,
@@ -287,6 +291,9 @@ static const arg_def_t *global_args[] = { &use_yv12,
 #if CONFIG_EXT_TILE
                                           &large_scale_tile,
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MONO_VIDEO
+                                          &monochrome,
+#endif  // CONFIG_MONO_VIDEO
                                           NULL };
 
 static const arg_def_t dropframe_thresh =
@@ -575,17 +582,11 @@ static const arg_def_t input_matrix_coefficients = ARG_DEF_ENUM(
 
 #else
 static const struct arg_enum_list color_space_enum[] = {
-  { "unspecified", AOM_CS_UNKNOWN },
-  { "bt601", AOM_CS_BT_601 },
-  { "bt709", AOM_CS_BT_709 },
-  { "smpte170", AOM_CS_SMPTE_170 },
-  { "smpte240", AOM_CS_SMPTE_240 },
-  { "bt2020ncl", AOM_CS_BT_2020_NCL },
-  { "bt2020cl", AOM_CS_BT_2020_CL },
-  { "sRGB", AOM_CS_SRGB },
-  { "ictcp", AOM_CS_ICTCP },
-  { "monochrome", AOM_CS_MONOCHROME },
-  { NULL, 0 }
+  { "unspecified", AOM_CS_UNKNOWN }, { "bt601", AOM_CS_BT_601 },
+  { "bt709", AOM_CS_BT_709 },        { "smpte170", AOM_CS_SMPTE_170 },
+  { "smpte240", AOM_CS_SMPTE_240 },  { "bt2020ncl", AOM_CS_BT_2020_NCL },
+  { "bt2020cl", AOM_CS_BT_2020_CL }, { "sRGB", AOM_CS_SRGB },
+  { "ictcp", AOM_CS_ICTCP },         { NULL, 0 }
 };
 
 static const arg_def_t input_color_space =
@@ -1219,6 +1220,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MONO_VIDEO
+    } else if (arg_match(&arg, &monochrome, argi)) {
+      config->cfg.monochrome = 1;
+#endif  // CONFIG_MONO_VIDEO
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_mode, argi)) {

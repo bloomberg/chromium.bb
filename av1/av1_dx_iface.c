@@ -172,17 +172,18 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   aom_color_primaries_t color_primaries;
   aom_transfer_characteristics_t transfer_characteristics;
   aom_matrix_coefficients_t matrix_coefficients;
+#else
+  aom_color_space_t color_space = AOM_CS_UNKNOWN;
 #endif  // CONFIG_CICP
   int subsampling_x = 0;
   int subsampling_y = 0;
-  aom_color_space_t color_space;
+  (void)subsampling_x;
+  (void)subsampling_y;
 
   aom_bit_depth_t bit_depth = parse_bitdepth(profile, rb);
-  color_space = AOM_CS_UNKNOWN;
 #if CONFIG_MONO_VIDEO
   // Monochrome bit
   const int is_monochrome = profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
-  color_space = is_monochrome ? AOM_CS_MONOCHROME : AOM_CS_UNKNOWN;
 #else
   const int is_monochrome = 0;
 #endif  // CONFIG_MONO_VIDEO

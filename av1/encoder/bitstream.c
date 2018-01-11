@@ -1011,10 +1011,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   const int uv_dc_pred =
-#if CONFIG_MONO_VIDEO
-      av1_num_planes(cm) > 1 &&
-#endif
-      mbmi->uv_mode == UV_DC_PRED &&
+      av1_num_planes(cm) > 1 && mbmi->uv_mode == UV_DC_PRED &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y);
   if (uv_dc_pred) {
@@ -3284,7 +3281,7 @@ static void write_bitdepth_colorspace_sampling(
     AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
   write_bitdepth(cm, wb);
 #if CONFIG_MONO_VIDEO
-  const int is_monochrome = cm->color_space == AOM_CS_MONOCHROME;
+  const int is_monochrome = cm->seq_params.monochrome;
   // monochrome bit
   if (cm->profile != PROFILE_1)
     aom_wb_write_bit(wb, is_monochrome);

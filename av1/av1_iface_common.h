@@ -44,6 +44,7 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
 #else
   img->cs = yv12->color_space;
 #endif
+  img->monochrome = yv12->monochrome;
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   img->tf = yv12->transfer_function;
@@ -118,6 +119,7 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
 #else
   yv12->color_space = img->cs;
 #endif
+  yv12->monochrome = img->monochrome;
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   yv12->transfer_function = img->tf;

@@ -106,6 +106,7 @@ typedef struct yv12_buffer_config {
   aom_color_space_t color_space;
   aom_transfer_function_t transfer_function;
 #endif
+  int monochrome;
   aom_chroma_sample_position_t chroma_sample_position;
   aom_color_range_t color_range;
   int render_width;

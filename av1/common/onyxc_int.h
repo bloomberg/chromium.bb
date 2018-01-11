@@ -219,6 +219,9 @@ typedef struct SequenceHeader {
   int frame_id_numbers_present_flag;
   int frame_id_length;
   int delta_frame_id_length;
+#if CONFIG_MONO_VIDEO
+  int monochrome;
+#endif  // CONFIG_MONO_VIDEO
 } SequenceHeader;
 #endif  // CONFIG_REFERENCE_BUFFER
 
@@ -1138,12 +1141,12 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
 #endif  // CONFIG_CFL
 
 static INLINE int av1_num_planes(const AV1_COMMON *cm) {
-#if CONFIG_MONO_VIDEO && !CONFIG_CICP
-  return cm->color_space == AOM_CS_MONOCHROME ? 1 : MAX_MB_PLANE;
+#if CONFIG_MONO_VIDEO
+  return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
 #else
   (void)cm;
   return MAX_MB_PLANE;
-#endif
+#endif  // CONFIG_MONO_VIDEO
 }
 
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,

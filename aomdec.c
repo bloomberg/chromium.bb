@@ -505,6 +505,7 @@ static int main_loop(int argc, const char **argv_) {
   int use_y4m = 1;
   int opt_yv12 = 0;
   int opt_i420 = 0;
+  int opt_raw = 0;
   aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
   unsigned int output_bit_depth = 0;
 #if CONFIG_EXT_TILE
@@ -561,12 +562,19 @@ static int main_loop(int argc, const char **argv_) {
       use_y4m = 0;
       flipuv = 1;
       opt_yv12 = 1;
+      opt_i420 = 0;
+      opt_raw = 0;
     } else if (arg_match(&arg, &use_i420, argi)) {
       use_y4m = 0;
       flipuv = 0;
+      opt_yv12 = 0;
       opt_i420 = 1;
+      opt_raw = 0;
     } else if (arg_match(&arg, &rawvideo, argi)) {
       use_y4m = 0;
+      opt_yv12 = 0;
+      opt_i420 = 0;
+      opt_raw = 1;
     } else if (arg_match(&arg, &flipuvarg, argi)) {
       flipuv = 1;
     } else if (arg_match(&arg, &noblitarg, argi)) {
@@ -909,10 +917,11 @@ static int main_loop(int argc, const char **argv_) {
       aom_input_ctx.height = img->d_h;
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_MONO_VIDEO && !CONFIG_CICP
-      int num_planes = (!use_y4m && img->cs == AOM_CS_MONOCHROME) ? 1 : 3;
+#if CONFIG_MONO_VIDEO
+      int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;
 #else
       int num_planes = 3;
+      (void)opt_raw;
 #endif
 
       if (single_file) {

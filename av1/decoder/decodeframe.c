@@ -1250,6 +1250,9 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #else
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
+#if CONFIG_MONO_VIDEO
+  pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
@@ -1367,6 +1370,9 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #else
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
+#if CONFIG_MONO_VIDEO
+  pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
@@ -2158,7 +2164,7 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 #if CONFIG_MONO_VIDEO
   // monochrome bit (not needed for PROFILE_1)
   const int is_monochrome = cm->profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
-  cm->color_space = is_monochrome ? AOM_CS_MONOCHROME : AOM_CS_UNKNOWN;
+  cm->seq_params.monochrome = is_monochrome;
 #elif !CONFIG_CICP
   const int is_monochrome = 0;
 #endif  // CONFIG_MONO_VIDEO
@@ -2174,6 +2180,7 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     cm->matrix_coefficients = AOM_CICP_MC_UNSPECIFIED;
   }
 #else
+  cm->color_space = AOM_CS_UNKNOWN;
 #if CONFIG_COLORSPACE_HEADERS
   if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 5);
   cm->transfer_function = aom_rb_read_literal(rb, 5);
@@ -2908,6 +2915,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #else
   get_frame_new_buffer(cm)->color_space = cm->color_space;
 #endif
+#if CONFIG_MONO_VIDEO
+  get_frame_new_buffer(cm)->monochrome = cm->seq_params.monochrome;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   get_frame_new_buffer(cm)->transfer_function = cm->transfer_function;

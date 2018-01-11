@@ -149,8 +149,7 @@ typedef enum aom_color_space {
   AOM_CS_BT_2020_CL = 6,  /**< BT.2020 constant luminance */
   AOM_CS_SRGB = 7,        /**< sRGB */
   AOM_CS_ICTCP = 8,       /**< ICtCp, ITU-R BT.2100 */
-  AOM_CS_MONOCHROME = 9,  /**< Monochrome */
-  AOM_CS_RESERVED = 10    /**< Values 10..31 are reserved */
+  AOM_CS_RESERVED = 9,    /**< Values 10..31 are reserved */
 } aom_color_space_t;      /**< alias for enum aom_color_space */
 
 /*!\brief List of supported transfer functions */
@@ -189,6 +188,7 @@ typedef struct aom_image {
   aom_color_space_t cs;       /**< Color Space */
   aom_transfer_function_t tf; /**< transfer function */
 #endif
+  int monochrome;                   /**< Whether image is monochrome */
   aom_chroma_sample_position_t csp; /**< chroma sample position */
   aom_color_range_t range;          /**< Color Range */
 
