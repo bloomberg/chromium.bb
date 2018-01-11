@@ -23,7 +23,7 @@ struct StructTraits<viz::mojom::FrameSinkIdDataView, viz::FrameSinkId> {
   static bool Read(viz::mojom::FrameSinkIdDataView data,
                    viz::FrameSinkId* out) {
     *out = viz::FrameSinkId(data.client_id(), data.sink_id());
-    return true;
+    return out->is_valid();
   }
 };
 

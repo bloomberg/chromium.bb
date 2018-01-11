@@ -32,7 +32,7 @@ struct StructTraits<viz::mojom::LocalSurfaceIdDataView, viz::LocalSurfaceId> {
                    viz::LocalSurfaceId* out) {
     out->parent_sequence_number_ = data.parent_sequence_number();
     out->child_sequence_number_ = data.child_sequence_number();
-    return data.ReadNonce(&out->nonce_);
+    return data.ReadNonce(&out->nonce_) && out->is_valid();
   }
 };
 
