@@ -60,7 +60,6 @@ static_library("test_support") {
     "mock_log.cc",
     "mock_log.h",
     "move_only_int.h",
-    "multiprocess_test.cc",
     "multiprocess_test.h",
     "multiprocess_test_android.cc",
     "null_task_runner.cc",
@@ -154,6 +153,7 @@ static_library("test_support") {
       "launcher/test_launcher_tracer.h",
       "launcher/test_results_tracker.cc",
       "launcher/unit_test_launcher.cc",
+      "multiprocess_test.cc",
     ]
   }
 
