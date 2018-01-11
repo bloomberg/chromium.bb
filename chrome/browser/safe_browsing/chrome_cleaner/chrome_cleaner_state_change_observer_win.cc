@@ -16,8 +16,7 @@ ChromeCleanerStateChangeObserver::ChromeCleanerStateChangeObserver(
     : on_show_cleanup_ui_change_(on_show_cleanup_ui_change),
       controller_(ChromeCleanerController::GetInstance()),
       cached_should_show_cleanup_in_settings_ui_(
-          controller_->ShouldShowCleanupInSettingsUI()),
-      cached_cleanup_powered_by_partner_(controller_->IsPoweredByPartner()) {
+          controller_->ShouldShowCleanupInSettingsUI()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   controller_->AddObserver(this);
 }
@@ -31,17 +30,14 @@ void ChromeCleanerStateChangeObserver::OnCleanupStateChange() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bool show_cleanup = controller_->ShouldShowCleanupInSettingsUI();
-  bool powered_by_partner = controller_->IsPoweredByPartner();
 
   // Avoid calling the observer if nothing changed.
-  if (show_cleanup == cached_should_show_cleanup_in_settings_ui_ &&
-      powered_by_partner == cached_cleanup_powered_by_partner_) {
+  if (show_cleanup == cached_should_show_cleanup_in_settings_ui_) {
     return;
   }
 
   cached_should_show_cleanup_in_settings_ui_ = show_cleanup;
-  cached_cleanup_powered_by_partner_ = powered_by_partner;
-  on_show_cleanup_ui_change_.Run(show_cleanup, powered_by_partner);
+  on_show_cleanup_ui_change_.Run(show_cleanup);
 }
 
 void ChromeCleanerStateChangeObserver::OnIdle(
@@ -58,11 +54,13 @@ void ChromeCleanerStateChangeObserver::OnReporterRunning() {
 }
 
 void ChromeCleanerStateChangeObserver::OnInfected(
+    bool is_powered_by_partner,
     const ChromeCleanerScannerResults& reported_results) {
   OnCleanupStateChange();
 }
 
 void ChromeCleanerStateChangeObserver::OnCleaning(
+    bool is_powered_by_partner,
     const ChromeCleanerScannerResults& reported_results) {
   OnCleanupStateChange();
 }

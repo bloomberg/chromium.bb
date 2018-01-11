@@ -228,23 +228,6 @@ bool ChromeCleanerControllerImpl::ShouldShowCleanupInSettingsUI() {
            idle_reason_ == IdleReason::kConnectionLost));
 }
 
-bool ChromeCleanerControllerImpl::IsPoweredByPartner() {
-  // |reporter_invocation_| is not expected to hold a value for the entire
-  // lifecycle of the ChromeCleanerController instance. To be consistent, use
-  // a cached return value if the |reporter_invocation_| has been cleaned up.
-  if (!reporter_invocation_) {
-    return powered_by_partner_;
-  }
-
-  const std::string& reporter_engine =
-      reporter_invocation_->command_line().GetSwitchValueASCII(
-          chrome_cleaner::kEngineSwitch);
-  // Currently, only engine=2 corresponds to a partner-powered engine. This
-  // condition should be updated if other partner-powered engines are added.
-  powered_by_partner_ = !reporter_engine.empty() && reporter_engine == "2";
-  return powered_by_partner_;
-}
-
 ChromeCleanerController::State ChromeCleanerControllerImpl::state() const {
   return state_;
 }
@@ -448,6 +431,14 @@ void ChromeCleanerControllerImpl::Scan(
   DCHECK(!reporter_invocation_);
   reporter_invocation_ =
       base::MakeUnique<SwReporterInvocation>(reporter_invocation);
+
+  const std::string& reporter_engine =
+      reporter_invocation_->command_line().GetSwitchValueASCII(
+          chrome_cleaner::kEngineSwitch);
+  // Currently, only engine=2 corresponds to a partner-powered engine. This
+  // condition should be updated if other partner-powered engines are added.
+  powered_by_partner_ = !reporter_engine.empty() && reporter_engine == "2";
+
   SetStateAndNotifyObservers(State::kScanning);
   // base::Unretained is safe because the ChromeCleanerController instance is
   // guaranteed to outlive the UI thread.
@@ -537,10 +528,10 @@ void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {
       observer->OnScanning();
       break;
     case State::kInfected:
-      observer->OnInfected(scanner_results_);
+      observer->OnInfected(powered_by_partner_, scanner_results_);
       break;
     case State::kCleaning:
-      observer->OnCleaning(scanner_results_);
+      observer->OnCleaning(powered_by_partner_, scanner_results_);
       break;
     case State::kRebootRequired:
       observer->OnRebootRequired();

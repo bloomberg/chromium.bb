@@ -56,7 +56,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
 
   // ChromeCleanerController overrides.
   bool ShouldShowCleanupInSettingsUI() override;
-  bool IsPoweredByPartner() override;
   State state() const override;
   IdleReason idle_reason() const override;
   void SetLogsEnabled(bool logs_enabled) override;

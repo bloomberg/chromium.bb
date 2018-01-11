@@ -251,12 +251,9 @@ Polymer({
     },
 
     /** @private */
-    isPartnerPowered_: {
+    isPoweredByPartner_: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.valueExists('cleanupPoweredByPartner') &&
-            loadTimeData.getBoolean('cleanupPoweredByPartner');
-      },
+      value: false,
     },
   },
 
@@ -369,14 +366,6 @@ Polymer({
    */
   learnMore_: function() {
     this.browserProxy_.notifyLearnMoreClicked();
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  showPoweredBy_: function() {
-    return this.itemsToRemoveSectionExpanded_ && this.isPartnerPowered_;
   },
 
   /**
@@ -517,11 +506,14 @@ Polymer({
   /**
    * Listener of event 'chrome-cleanup-on-infected'.
    * Offers a cleanup to the user and enables presenting files to be removed.
+   * @param {boolean} isPoweredByPartner If scanning results are provided by a
+   *     partner's engine.
    * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
    *     items to be presented to the user.
    * @private
    */
-  onInfected_: function(scannerResults) {
+  onInfected_: function(isPoweredByPartner, scannerResults) {
+    this.isPoweredByPartner_ = isPoweredByPartner;
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
     this.renderScanOfferedByDefault_ = false;
     this.scannerResults_ = scannerResults;
@@ -533,11 +525,14 @@ Polymer({
    * Listener of event 'chrome-cleanup-on-cleaning'.
    * Shows a spinner indicating that an on-going action and enables presenting
    * files to be removed.
+   * @param {boolean} isPoweredByPartner If scanning results are provided by a
+   *     partner's engine.
    * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
    *     items to be presented to the user.
    * @private
    */
-  onCleaning_: function(scannerResults) {
+  onCleaning_: function(isPoweredByPartner, scannerResults) {
+    this.isPoweredByPartner_ = isPoweredByPartner;
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.CLEANING;
     this.renderScanOfferedByDefault_ = false;
     this.scannerResults_ = scannerResults;

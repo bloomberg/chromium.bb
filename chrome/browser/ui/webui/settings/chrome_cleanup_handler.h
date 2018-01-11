@@ -35,9 +35,11 @@ class ChromeCleanupHandler
       safe_browsing::ChromeCleanerController::IdleReason idle_reason) override;
   void OnReporterRunning() override;
   void OnScanning() override;
-  void OnInfected(const safe_browsing::ChromeCleanerScannerResults&
+  void OnInfected(bool is_powered_by_partner,
+                  const safe_browsing::ChromeCleanerScannerResults&
                       reported_results) override;
-  void OnCleaning(const safe_browsing::ChromeCleanerScannerResults&
+  void OnCleaning(bool is_powered_by_partner,
+                  const safe_browsing::ChromeCleanerScannerResults&
                       reported_results) override;
   void OnRebootRequired() override;
   void OnLogsEnabledChanged(bool logs_enabled) override;
