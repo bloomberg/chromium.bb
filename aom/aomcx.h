@@ -342,7 +342,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TUNE_CONTENT,
 
-#if CONFIG_CICP
   /*!\brief Codec control function to set color space info.
    * \note Valid ranges: 0..23, default is "Unspecified".
    *                     0 = For future use
@@ -361,6 +360,8 @@ enum aome_enc_control_id {
    *                     13 = For future use (values 13 - 21)
    *                     22 = EBU Tech. 3213-E
    *                     23 = For future use
+   *
+   * Experiment: CICP
    */
   AV1E_SET_COLOR_PRIMARIES,
 
@@ -386,6 +387,8 @@ enum aome_enc_control_id {
    *                     17 = SMPTE ST 428
    *                     18 = BT.2100 HLG, ARIB STD-B67
    *                     19 = For future use
+   *
+   * Experiment: CICP
    */
   AV1E_SET_TRANSFER_CHARACTERISTICS,
 
@@ -407,9 +410,11 @@ enum aome_enc_control_id {
    *                     13 = Chromaticity-derived constant luminance
    *                     14 = BT.2100 ICtCp
    *                     15 = For future use
+   *
+   * Experiment: CICP
    */
   AV1E_SET_MATRIX_COEFFICIENTS,
-#else
+
   /*!\brief Codec control function to set color space info.
    * \note Valid ranges: 0..9, default is "UNKNOWN".
    *                     0 = UNKNOWN,
@@ -435,7 +440,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TRANSFER_FUNCTION,
 
-#endif
   /*!\brief Codec control function to set chroma 4:2:0 sample position info.
    * \note Valid ranges: 0..3, default is "UNKNOWN".
    *                     0 = UNKNOWN,
@@ -874,7 +878,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_NOISE_SENSITIVITY, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_TUNE_CONTENT, int) /* aom_tune_content */
 #define AOM_CTRL_AV1E_SET_TUNE_CONTENT
 
-#if CONFIG_CICP
 AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_PRIMARIES, int)
 #define AOM_CTRL_AV1E_SET_COLOR_PRIMARIES
 
@@ -884,14 +887,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TRANSFER_CHARACTERISTICS, int)
 AOM_CTRL_USE_TYPE(AV1E_SET_MATRIX_COEFFICIENTS, int)
 #define AOM_CTRL_AV1E_SET_MATRIX_COEFFICIENTS
 
-#else
 AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_SPACE, int)
 #define AOM_CTRL_AV1E_SET_COLOR_SPACE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TRANSFER_FUNCTION, int)
 #define AOM_CTRL_AV1E_SET_TRANSFER_FUNCTION
 
-#endif
 AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SAMPLE_POSITION, int)
 #define AOM_CTRL_AV1E_SET_CHROMA_SAMPLE_POSITION
 

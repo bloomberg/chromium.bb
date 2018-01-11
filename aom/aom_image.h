@@ -35,8 +35,6 @@ extern "C" {
 #define AOM_IMG_FMT_HAS_ALPHA 0x400    /**< Image has an alpha channel. */
 #define AOM_IMG_FMT_HIGHBITDEPTH 0x800 /**< Image uses 16bit framebuffer. */
 
-#include "./aom_config.h"
-
 /*!\brief List of supported image formats */
 typedef enum aom_img_fmt {
   AOM_IMG_FMT_NONE,
@@ -69,7 +67,6 @@ typedef enum aom_img_fmt {
   AOM_IMG_FMT_I44016 = AOM_IMG_FMT_I440 | AOM_IMG_FMT_HIGHBITDEPTH
 } aom_img_fmt_t; /**< alias for enum aom_img_fmt */
 
-#if CONFIG_CICP
 /*!\brief List of supported color primaries */
 typedef enum aom_color_primaries {
   AOM_CICP_CP_RESERVED_0 = 0,  /**< For future use */
@@ -137,7 +134,7 @@ typedef enum aom_matrix_coefficients {
   AOM_CICP_MC_ICTCP = 14,      /**< BT.2100 ICtCp */
   AOM_CICP_MC_RESERVED_15 = 15 /**< For future use (values 15-255)  */
 } aom_matrix_coefficients_t;
-#else
+
 /*!\brief List of supported color spaces */
 typedef enum aom_color_space {
   AOM_CS_UNKNOWN = 0,     /**< Unknown */
@@ -154,13 +151,12 @@ typedef enum aom_color_space {
 
 /*!\brief List of supported transfer functions */
 typedef enum aom_transfer_function {
-  AOM_TF_UNKNOWN = 0,         /**< Unknown */
-  AOM_TF_BT_709 = 1,          /**< BT.709 */
-  AOM_TF_PQ = 2,              /**< PQ TF BT.2100 / ST.2084 */
-  AOM_TF_HLG = 3,             /**< Hybrid Log-Gamma */
-  AOM_TF_RESERVED = 4         /**< Values 4..31 are reserved */
-} aom_transfer_function_t;    /**< alias for enum aom_transfer_function */
-#endif
+  AOM_TF_UNKNOWN = 0,      /**< Unknown */
+  AOM_TF_BT_709 = 1,       /**< BT.709 */
+  AOM_TF_PQ = 2,           /**< PQ TF BT.2100 / ST.2084 */
+  AOM_TF_HLG = 3,          /**< Hybrid Log-Gamma */
+  AOM_TF_RESERVED = 4      /**< Values 4..31 are reserved */
+} aom_transfer_function_t; /**< alias for enum aom_transfer_function */
 
 /*!\brief List of supported color range */
 typedef enum aom_color_range {
@@ -179,18 +175,15 @@ typedef enum aom_chroma_sample_position {
 
 /**\brief Image Descriptor */
 typedef struct aom_image {
-  aom_img_fmt_t fmt; /**< Image Format */
-#if CONFIG_CICP
+  aom_img_fmt_t fmt;                 /**< Image Format */
   aom_color_primaries_t cp;          /**< CICP Color Primaries */
   aom_transfer_characteristics_t tc; /**< CICP Transfer Characteristics */
   aom_matrix_coefficients_t mc;      /**< CICP Matrix Coefficients */
-#else
-  aom_color_space_t cs;       /**< Color Space */
-  aom_transfer_function_t tf; /**< transfer function */
-#endif
-  int monochrome;                   /**< Whether image is monochrome */
-  aom_chroma_sample_position_t csp; /**< chroma sample position */
-  aom_color_range_t range;          /**< Color Range */
+  aom_color_space_t cs;              /**< Color Space */
+  aom_transfer_function_t tf;        /**< transfer function */
+  int monochrome;                    /**< Whether image is monochrome */
+  aom_chroma_sample_position_t csp;  /**< chroma sample position */
+  aom_color_range_t range;           /**< Color Range */
 
   /* Image storage dimensions */
   unsigned int w;         /**< Stored image width */
