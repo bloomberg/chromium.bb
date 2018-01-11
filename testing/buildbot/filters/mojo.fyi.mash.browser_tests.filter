@@ -251,3 +251,9 @@
 
 # crbug.com/792641 - Disable tests on mash during Wallpaper re-factoring
 -WallPaperPrivateApiTest.*
+
+# Sending invalid FrameSinkIds crbug.com/796999
+-WebviewLoginTest.AllowNewUser
+-EnterpriseEnrollmentTest.TestAuthCodeGetsProperlyReceivedFromGaia
+-PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
+-EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
