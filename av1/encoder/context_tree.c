@@ -83,9 +83,13 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   }
 }
 
-static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix) {
+static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
+                                int is_leaf) {
 #if CONFIG_EXT_PARTITION_TYPES
   alloc_mode_context(cm, num_pix, PARTITION_NONE, &tree->none);
+
+  if (is_leaf) return;
+
   alloc_mode_context(cm, num_pix / 2, PARTITION_HORZ, &tree->horizontal[0]);
   alloc_mode_context(cm, num_pix / 2, PARTITION_VERT, &tree->vertical[0]);
   alloc_mode_context(cm, num_pix / 2, PARTITION_VERT, &tree->horizontal[1]);
@@ -110,6 +114,9 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix) {
   }
 #else
   alloc_mode_context(cm, num_pix, &tree->none);
+
+  if (is_leaf) return;
+
   alloc_mode_context(cm, num_pix / 2, &tree->horizontal[0]);
   alloc_mode_context(cm, num_pix / 2, &tree->vertical[0]);
 
@@ -177,7 +184,7 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   for (pc_tree_index = 0; pc_tree_index < leaf_nodes; ++pc_tree_index) {
     PC_TREE *const tree = &td->pc_tree[pc_tree_index];
     tree->block_size = square[0];
-    alloc_tree_contexts(cm, tree, 16);
+    alloc_tree_contexts(cm, tree, 16, 1);
   }
 
   // Each node has 4 leaf nodes, fill each block_size level of the tree
@@ -185,7 +192,7 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   for (nodes = leaf_nodes >> 2; nodes > 0; nodes >>= 2) {
     for (i = 0; i < nodes; ++i) {
       PC_TREE *const tree = &td->pc_tree[pc_tree_index];
-      alloc_tree_contexts(cm, tree, 16 << (2 * square_index));
+      alloc_tree_contexts(cm, tree, 16 << (2 * square_index), 0);
       tree->block_size = square[square_index];
       for (j = 0; j < 4; j++) tree->split[j] = this_pc++;
       ++pc_tree_index;
