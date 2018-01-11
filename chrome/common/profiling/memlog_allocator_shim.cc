@@ -12,6 +12,7 @@
 #include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
@@ -280,7 +281,8 @@ class FrameSerializer {
     size_t required_capacity = backtrace.frame_count * sizeof(uint64_t);
     CHECK_LE(required_capacity, remaining_buffer_size_);
     remaining_buffer_size_ -= required_capacity;
-    for (size_t i = 0; i < backtrace.frame_count; ++i) {
+    for (int i = base::checked_cast<int>(backtrace.frame_count) - 1; i >= 0;
+         --i) {
       AddFrame(backtrace.frames[i]);
     }
   }
