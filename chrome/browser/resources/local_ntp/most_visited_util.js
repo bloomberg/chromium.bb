@@ -12,19 +12,6 @@
 
 
 /**
- * The different types of events that are logged from the NTP. The multi-iframe
- * version of the NTP does *not* actually log any statistics anymore; this is
- * only required as a workaround for crbug.com/698675.
- * Note: Keep in sync with common/ntp_logging_events.h
- * @enum {number}
- * @const
- */
-var NTP_LOGGING_EVENT_TYPE = {
-  NTP_ALL_TILES_RECEIVED: 12,
-};
-
-
-/**
  * The origin of this request.
  * @const {string}
  */
@@ -104,18 +91,6 @@ function createMostVisitedLink(params, href, title, text, direction) {
     window.parent.postMessage('linkBlurred', DOMAIN_ORIGIN);
   });
 
-  var navigateFunction = function handleNavigation(e) {
-    var isServerSuggestion = 'url' in params;
-
-    // Ping are only populated for server-side suggestions, never for MV.
-    if (isServerSuggestion && params.ping) {
-      generatePing(DOMAIN_ORIGIN + params.ping);
-    }
-
-    // Follow <a> normally, so transition type will be LINK.
-  };
-
-  link.addEventListener('click', navigateFunction);
   link.addEventListener('keydown', function(event) {
     if (event.keyCode == 46 /* DELETE */ ||
         event.keyCode == 8 /* BACKSPACE */) {
@@ -205,6 +180,16 @@ function getMostVisitedStyles(params, isTitle) {
 
 
 /**
+ * Returns whether the given URL has a known, safe scheme.
+ * @param {string} url URL to check.
+ */
+var isSchemeAllowed = function(url) {
+  return url.startsWith('http://') || url.startsWith('https://') ||
+      url.startsWith('ftp://') || url.startsWith('chrome-extension://');
+};
+
+
+/**
  * @param {string} location A location containing URL parameters.
  * @param {function(Object, Object)} fill A function called with styles and
  *     data to fill.
@@ -212,47 +197,19 @@ function getMostVisitedStyles(params, isTitle) {
 function fillMostVisited(location, fill) {
   var params = parseQueryParams(location);
   params.rid = parseInt(params.rid, 10);
-  if (!isFinite(params.rid) && !params.url)
+  if (!isFinite(params.rid))
     return;
-  var data;
-  if (params.url) {
-    // Means that the suggestion data comes from the server. Create data object.
-    data = {
-      url: params.url,
-      thumbnailUrl: params.tu || '',
-      title: params.ti || '',
-      direction: params.di || '',
-      domain: params.dom || ''
-    };
-  } else {
-    data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(params.rid);
-    if (!data)
-      return;
-  }
+  var data =
+      chrome.embeddedSearch.newTabPage.getMostVisitedItemData(params.rid);
+  if (!data)
+    return;
+  if (data.url && !isSchemeAllowed(data.url))
+    return;
 
-  if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
+  if (isFinite(params.dummy) && parseInt(params.dummy, 10))
     data.dummy = true;
-  }
-  if (/^javascript:/i.test(data.url) || /^javascript:/i.test(data.thumbnailUrl))
-    return;
+
   if (data.direction)
     document.body.dir = data.direction;
   fill(params, data);
-}
-
-
-/**
- * Sends a POST request to ping url.
- * @param {string} url URL to be pinged.
- */
-function generatePing(url) {
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url);
-  } else {
-    // if sendBeacon is not enabled, we fallback for "a ping".
-    var a = document.createElement('a');
-    a.href = '#';
-    a.ping = url;
-    a.click();
-  }
 }
