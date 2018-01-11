@@ -19691,7 +19691,6 @@
             "test"
         ],
         "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
         "signer_tests": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -19849,7 +19848,6 @@
         ],
         "paygen": false,
         "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
         "push_image": false,
         "signer_tests": false,
         "vm_tests": [],
@@ -24994,7 +24992,6 @@
             "test"
         ],
         "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
         "signer_tests": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -25152,7 +25149,6 @@
         ],
         "paygen": false,
         "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
         "push_image": false,
         "signer_tests": false,
         "vm_tests": [],

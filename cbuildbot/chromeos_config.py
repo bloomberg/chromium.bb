@@ -1583,8 +1583,6 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Moblab release builders',
       images=['base', 'recovery', 'test'],
       paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
       important=False,
       afdo_use=False,
       signer_tests=False,
