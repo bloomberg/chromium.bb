@@ -21,8 +21,15 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace browser_sync {
+class ProfileSyncService;
+}
+
+class AccountTrackerService;
 @class ChromeIdentity;
+class PrefService;
 class ProfileOAuth2TokenService;
+class SigninManager;
 class SyncSetupService;
 
 // AuthenticationService is the Chrome interface to the iOS shared
@@ -32,8 +39,12 @@ class AuthenticationService : public KeyedService,
                               public ios::ChromeIdentityService::Observer {
  public:
   AuthenticationService(ios::ChromeBrowserState* browser_state,
+                        PrefService* pref_service,
                         ProfileOAuth2TokenService* token_service,
-                        SyncSetupService* sync_setup_service);
+                        SyncSetupService* sync_setup_service,
+                        AccountTrackerService* account_tracker,
+                        SigninManager* signin_manager,
+                        browser_sync::ProfileSyncService* sync_service);
   ~AuthenticationService() override;
 
   // Registers the preferences used by AuthenticationService;
@@ -176,9 +187,15 @@ class AuthenticationService : public KeyedService,
                                   NSDictionary* user_info) override;
   void OnChromeIdentityServiceWillBeDestroyed() override;
 
-  ios::ChromeBrowserState* browser_state_;    // Weak.
-  ProfileOAuth2TokenService* token_service_;  // Weak.
-  SyncSetupService* sync_setup_service_;      // Weak.
+  // Pointer to the ChromeBrowserState owning this instance and to the
+  // KeyedService used by AuthenticationService.
+  ios::ChromeBrowserState* browser_state_;
+  PrefService* pref_service_;
+  ProfileOAuth2TokenService* token_service_;
+  SyncSetupService* sync_setup_service_;
+  AccountTrackerService* account_tracker_;
+  SigninManager* signin_manager_;
+  browser_sync::ProfileSyncService* sync_service_;
 
   // Whether the accounts have changed while the AuthenticationService was in
   // background. When the AuthenticationService is in background, this value
