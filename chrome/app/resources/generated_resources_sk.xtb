@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Zapnutá – vlastné nastavenia</translation>
 <translation id="1493892686965953381">Čakanie na <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Ďalšie dostupné zariadenia: <ph name="NUM_PRINTERS" /></translation>
-<translation id="1497284176235884849">Poskytnuté PPD je neplatné.</translation>
 <translation id="1497522201463361063">Súbor <ph name="FILE_NAME" /> sa nepodarilo premenovať. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Neznáme zariadenie [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Tento účet vlastníka musí byť prvým prihláseným účtom v relácii viacerých prihlásení.</translation>
@@ -1774,7 +1773,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3697100740575341996">Váš správca IT zakázal na vašom zariadení propagačné ponuky Chrome Goodies. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mailová adresa</translation>
 <translation id="3702500414347826004">Vaše stránky pri spustení boli zmenené tak, aby zahŕňali webovú adresu <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Opýtať sa, keď chce web zobraziť text a obrázky, ktoré skopírujete do schránky</translation>
 <translation id="370415077757856453">Bol zablokovaný JavaScript</translation>
 <translation id="3704331259350077894">Zastavenie operácie</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4270393598798225102">Verzia <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Žiadne zhody</translation>
 <translation id="4275830172053184480">Reštart zariadenia</translation>
-<translation id="4276216215490044084">Veľké PPD sa nedajú načítať. Maximálna veľkosť je 250 kB.</translation>
 <translation id="4278390842282768270">Povolené</translation>
 <translation id="4281844954008187215">Zmluvné podmienky</translation>
 <translation id="4282196459431406533">Smart Lock je zapnutý</translation>
@@ -2202,7 +2199,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4430369329743628066">Záložka bola pridaná</translation>
 <translation id="443464694732789311">Pokračovať</translation>
 <translation id="4439318412377770121">Chcete zariadenie <ph name="DEVICE_NAME" /> zaregistrovať v službe Google Cloud Devices?</translation>
-<translation id="4439612350502082674">Tlačiareň sa nedá pridať. Reštartujte a skúste to znova.</translation>
 <translation id="4441124369922430666">Chcete automaticky spustiť túto aplikáciu po zapnutí zariadenia?</translation>
 <translation id="444134486829715816">Rozbaliť...</translation>
 <translation id="4441548209689510310">Zobraziť možnosti kontroly pravopisu</translation>
@@ -2433,7 +2429,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4839303808932127586">Uložiť &amp;video ako...</translation>
 <translation id="4839847978919684242">Počet vybratých položiek: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ďalšia položka}few{# ďalšie položky}many{# ďalšej položky}other{# ďalších položiek}}</translation>
-<translation id="4840626203080576849">Opýtať sa, keď chce web zobraziť text a obrázky, ktoré skopírujete do schránky (odporúča sa)</translation>
 <translation id="4842976633412754305">Táto stránka sa snaží načítať skripty z neoverených zdrojov.</translation>
 <translation id="4844333629810439236">Ďalšie klávesnice</translation>
 <translation id="4846680374085650406">V prípade tohto nastavenia dodržiavate odporúčania správcu.</translation>
@@ -2700,7 +2695,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="5254368820972107711">Zobraziť súbory na odstránenie</translation>
 <translation id="52550593576409946">Aplikáciu Kiosk sa nepodarilo spustiť</translation>
 <translation id="5255315797444241226">Zadaná prístupová fráza je nesprávna.</translation>
-<translation id="5259571578888203461">Nepovoliť webom vidieť text ani obrázky, ktoré skopírujete do schránky</translation>
 <translation id="5260508466980570042">Vašu e-mailovú adresu alebo vaše heslo sa nepodarilo overiť. Skúste to znova.</translation>
 <translation id="5261683757250193089">Otvoriť v Internetovom obchode</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Pristupujte k súborom odkiaľkoľvek, dokonca aj v režime offline.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5972708806901999743">Presunúť na začiatok</translation>
 <translation id="5972826969634861500">Spustiť <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Oddialiť</translation>
-<translation id="5975730206036440725">PPD sa nedá nájsť. Skontrolujte, či je Chromebook online, a skúste to znova.</translation>
 <translation id="5975792506968920132">Percento nabitia batérie</translation>
 <translation id="5976160379964388480">Ostatné</translation>
 <translation id="5978264784700053212">Centrum správ</translation>
@@ -3216,7 +3209,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6042850536017090003">Klepnite na položku Upozornenia aplikácií.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> zdieľa kartu Chromu s kartou <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Hotovo!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> zdieľa kartu Chromu a zvuk s kartou <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Pridržaním klávesa |<ph name="ACCELERATOR" />| ukončite režim celej obrazovky</translation>
 <translation id="6049065490165456785">Fotografia z vnútorného fotoaparátu</translation>
@@ -3383,7 +3375,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6311220991371174222">Chrome nie je možné spustiť, pretože pri otváraní profilu nastala chyba. Skúste Chrome reštartovať.</translation>
 <translation id="6312403991423642364">Neznáma chyba siete</translation>
 <translation id="6313641880021325787">UKONČIŤ VR</translation>
-<translation id="6314335155547195432">Generovanie hesla</translation>
 <translation id="6314819609899340042">Na tomto zariadení <ph name="IDS_SHORT_PRODUCT_NAME" /> ste úspešne aktivovali funkcie ladenia.</translation>
 <translation id="6315343732431721770">Vaše stránky pri spustení boli zmenené tak, aby zahŕňali webovú adresu <ph name="URL" />. Ak chcete zakázať rozšírenia, ktoré menia stránku pri spustení, kliknite na možnosť Obnoviť.</translation>
 <translation id="6315493146179903667">Zobraziť všetko navrchu</translation>
@@ -3421,7 +3412,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Nastavenie funkcie Smart Lock pre Android</translation>
 <translation id="6374469231428023295">Skúsiť znova</translation>
-<translation id="6377158645544167202">K tlačiarni sa nedá pripojiť. Skontrolujte, či je tlačiareň zapnutá a pripojená k Chromebooku prostredníctvom Wi-Fi alebo USB.</translation>
 <translation id="6380143666419481200">Súhlasím, pokračovať</translation>
 <translation id="6383051423892982287">Šifrovať synchronizované údaje pomocou vlastnej <ph name="BEGIN_LINK" />prístupovej frázy synchronizácie<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Zmeniť nastavenia vyhľadávania na: <ph name="SEARCH_HOST" /></translation>
@@ -3578,7 +3568,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6606070663386660533">Karta 8</translation>
 <translation id="6607272825297743757">Informácie o súbore</translation>
 <translation id="6607831829715835317">Ďalšie nástro&amp;je</translation>
-<translation id="6610183966322615106">Pri pridávaní tlačiarne sa vyskytla chyba</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="6613452264606394692">Vráťte sa sem rýchlejšie tak, že stránku uložíte ako záložku</translation>
 <translation id="6615455863669487791">Zobraziť</translation>

@@ -67,7 +67,7 @@
 <translation id="1413809658975081374">गोपनीयता एरर</translation>
 <translation id="14171126816530869"><ph name="ISSUER" /> द्वारे <ph name="LOCALITY" /> स्थित <ph name="ORGANIZATION" /> ची ओळख सत्यापित केली गेली आहे.</translation>
 <translation id="1426410128494586442">होय</translation>
-<translation id="1430915738399379752">मुद्रण</translation>
+<translation id="1430915738399379752">प्रिंट</translation>
 <translation id="1484290072879560759">पाठवण्याचा पत्ता निवडा</translation>
 <translation id="1506687042165942984">या पृष्ठाची जतन केलेली (उदा. कालबाह्य होणारे ज्ञात) प्रत दर्शवा.</translation>
 <translation id="1517433312004943670">फोन नंबर आवश्यक आहे</translation>
@@ -149,7 +149,6 @@
 <translation id="2065985942032347596">प्रमाणीकरण आवश्यक</translation>
 <translation id="2079545284768500474">पूर्ववत करा</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
-<translation id="2086652334978798447">Google ने सुचविलेली वैयक्तीकृत सामग्री मिळविण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="2091887806945687916">ध्वनी</translation>
 <translation id="2094505752054353250">डोमेन जुळत नाही</translation>
 <translation id="2096368010154057602">विभाग</translation>
@@ -641,7 +640,6 @@
 <translation id="5633066919399395251">सध्या <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वर असलेले हल्लेखोर कदाचित तुमच्या काँप्युटरमधील तुमची माहिती चोरू किंवा हटवू शकणारे धोकादायक प्रोग्राम (उदाहरणार्थ, फोटो, पासवर्ड, संदेश आणि क्रेडिट कार्डे) इंस्टॉल करण्याचा प्रयत्न करू शकतील. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">फसवणारा आशय ब्लॉक केला.</translation>
 <translation id="5659593005791499971">ईमेल</translation>
-<translation id="5669703222995421982">वैयक्तीकृत सामग्री मिळवा</translation>
 <translation id="5675650730144413517">हे पृष्ठ कार्य करीत नाही</translation>
 <translation id="5685654322157854305">पाठवण्याचा पत्ता जोडा</translation>
 <translation id="5689199277474810259">JSON वर निर्यात करा</translation>
@@ -813,7 +811,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> नी सुरक्षितता मानकांचे पालन केले नाही.</translation>
 <translation id="721197778055552897">या समस्येबद्दल <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">कनेक्शन <ph name="SSL_VERSION" /> वापरते.</translation>
-<translation id="7220019174139618249">पासवर्ड "<ph name="FOLDER" />" वर निर्यात करू शकत नाही</translation>
 <translation id="7220786058474068424">प्रक्रिया करत आहे</translation>
 <translation id="724691107663265825">साइटमध्ये पुढे मालवेअर आहे</translation>
 <translation id="724975217298816891">आपले कार्ड तपशील अपडेट करण्‍यासाठी <ph name="CREDIT_CARD" /> करिता कालबाह्यता तारीख आणि CVC प्रविष्‍ट करा. आपण पुष्टी केल्यावर, आपले कार्ड तपशील या साइटसह सामायिक केले जातील.</translation>

@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">இயக்கத்தில் - தனிப்பயன் அமைப்புகள்</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> க்காக காத்திருக்கிறது...</translation>
 <translation id="1495486559005647033">கிடைக்கும் <ph name="NUM_PRINTERS" /> பிற சாதனங்கள்.</translation>
-<translation id="1497284176235884849">வழங்கிய PPD தவறானது.</translation>
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" க்கு மறுபெயரிட முடியவில்லை. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">தெரியாத சாதனம் [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">பல உள்நுழைவு அமர்வில் இந்த உரிமையாளர் கணக்கு தான் முதலில் உள்நுழைந்த கணக்காக இருக்க வேண்டும்.</translation>
@@ -1774,7 +1773,6 @@
 <translation id="3697100740575341996">உங்கள் சாதனத்திற்கான Chrome குடீஸை உங்கள் IT நிர்வாகி முடக்கியுள்ளார். <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">மின்னஞ்சல் முகவரி</translation>
 <translation id="3702500414347826004">துவக்கப் பக்கங்களில் <ph name="URL" />ஐச் சேர்க்கும்படி மாற்றப்பட்டது.</translation>
-<translation id="3703669627274482482">தளமானது நான் கிளிப்போர்டுக்கு நகலெடுக்கும் உரையையும் படங்களையும் பார்ப்பதற்கு விரும்பும்போது, கேள்</translation>
 <translation id="370415077757856453">JavaScript தடுக்கப்பட்டுள்ளது</translation>
 <translation id="3704331259350077894">செயல்பாட்டின் இடைநிறுத்தம்</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@
 <translation id="4270393598798225102">பதிப்பு <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">பொருத்தங்கள் இல்லை</translation>
 <translation id="4275830172053184480">உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்</translation>
-<translation id="4276216215490044084">அதிகபட்ச அளவு 250கி.பை. என்பதால், பெரிய PPDஐ ஏற்ற முடியாது.</translation>
 <translation id="4278390842282768270">அனுமதிக்கப்பட்டது</translation>
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
 <translation id="4282196459431406533">Smart Lock இயக்கப்பட்டது</translation>
@@ -2202,7 +2199,6 @@
 <translation id="4430369329743628066">புத்தகக்குறி சேர்க்கப்பட்டது</translation>
 <translation id="443464694732789311">தொடரவும்</translation>
 <translation id="4439318412377770121">Google கிளவுடு சாதனங்களில் <ph name="DEVICE_NAME" />ஐப் பதிவு செய்ய விருப்பமா?</translation>
-<translation id="4439612350502082674">பிரிண்டரைச் சேர்க்க முடியவில்லை. மீண்டும் தொடங்கி, முயலவும்.</translation>
 <translation id="4441124369922430666">கணினி தொடங்கப்பட்டவுடன் தானாகவே இந்தப் பயன்பாட்டைத் தொடங்க விரும்புகிறீர்களா?</translation>
 <translation id="444134486829715816">விரிவாக்கு...</translation>
 <translation id="4441548209689510310">எழுத்துப் பிழை சரிபார்ப்பு விருப்பங்களைக் காட்டு</translation>
@@ -2433,7 +2429,6 @@
 <translation id="4839303808932127586">வீடியோவை இவ்வாறு சே&amp;மி...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> உருப்படிகள் தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{மேலும் 1}other{மேலும் #}}</translation>
-<translation id="4840626203080576849">கிளிப்போர்டிற்கு நீங்கள் நகலெடுக்கும் உரை மற்றும் படங்களைப் பார்ப்பதற்குத் தளம் விரும்பும் போது கேள் (பரிந்துரைக்கப்படுவது)</translation>
 <translation id="4842976633412754305">அங்கீகரிக்கப்படாத மூலங்களிலிருந்து ஸ்கிரிப்ட்களை ஏற்ற இந்தப் பக்கம் முயற்சிக்கிறது.</translation>
 <translation id="4844333629810439236">பிற விசைப்பலகைகள்</translation>
 <translation id="4846680374085650406">இந்த அமைப்பிற்கு நிர்வாகியின் பரிந்துரையைப் பின்பற்றுகிறீர்கள்.</translation>
@@ -2700,7 +2695,6 @@
 <translation id="5254368820972107711">அகற்ற வேண்டிய கோப்புகளைக் காட்டு</translation>
 <translation id="52550593576409946">கியோஸ்க் பயன்பாட்டைத் தொடங்க முடியவில்லை.</translation>
 <translation id="5255315797444241226">நீங்கள் உள்ளிட்ட கடவுச்சொற்றொடர் தவறானது.</translation>
-<translation id="5259571578888203461">நான் கிளிப்போர்டுக்கு நகலெடுக்கும் உரையையும் படங்களையும் பார்க்க, தளங்களை அனுமதிக்காதே</translation>
 <translation id="5260508466980570042">மன்னிக்கவும், உங்கள் மின்னஞ்சலையும் கடவுச்சொல்லையும் சரிபார்க்க முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சி செய்க.</translation>
 <translation id="5261683757250193089">இணைய அங்காடியில் திற</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />எங்கிருந்தும் கோப்புகளை அணுகலாம் (ஆஃப்லைனில் இருந்தாலும்).<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@
 <translation id="5972708806901999743">மேலே நகர்த்து</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> ஐத் தொடங்கு</translation>
 <translation id="5975083100439434680">சிறிதாக்கு</translation>
-<translation id="5975730206036440725">PPDஐக் கண்டறிய முடியவில்லை. உங்கள் Chromebook ஆன்லைனில் உள்ளதா என்பதைச் சரிபார்த்து, மீண்டும் முயலவும்.</translation>
 <translation id="5975792506968920132">பேட்டரி சார்ஜ் சதவீதம்</translation>
 <translation id="5976160379964388480">மற்றவை</translation>
 <translation id="5978264784700053212">செய்தி மையம்</translation>
@@ -3217,7 +3210,6 @@
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="6042850536017090003">பயன்பாட்டு அறிவிப்புகளில் தட்டவும்.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலைப் பகிர்கிறது.</translation>
-<translation id="6043357981274314628">முடிந்தது!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலையும் ஆடியோவையும் பகிர்கிறது.</translation>
 <translation id="6049004884579590341">முழுத் திரையிலிருந்து வெளியேற, |<ph name="ACCELERATOR" />| என்பதை அழுத்திப் பிடித்திருக்கவும்</translation>
 <translation id="6049065490165456785">உட்புற கேமராவிலிருந்து படம்</translation>
@@ -3384,7 +3376,6 @@
 <translation id="6311220991371174222">Chromeஐத் தொடங்க முடியவில்லை. ஏனெனில், சுயவிவரத்தைத் திறக்கும் போது ஏதோ தவறாகிவிட்டது. Chromeஐ மீண்டும் தொடங்கவும்.</translation>
 <translation id="6312403991423642364">அறியப்படாத பிணையப் பிழை</translation>
 <translation id="6313641880021325787">VR இலிருந்து வெளியேறு</translation>
-<translation id="6314335155547195432">கடவுச்சொல்லை உருவாக்கு</translation>
 <translation id="6314819609899340042">இந்த <ph name="IDS_SHORT_PRODUCT_NAME" /> சாதனத்தின் பிழைதிருத்த அம்சங்களை வெற்றிகரமாக இயக்கிவிட்டீர்கள்.</translation>
 <translation id="6315343732431721770">துவக்கப் பக்கங்களில் <ph name="URL" />ஐச் சேர்க்கும்படி மாற்றப்பட்டது. துவக்கப் பக்கத்தை மாற்றும் நீட்டிப்புகளை முடக்க, மீட்டமை என்பதைக் கிளிக் செய்யவும்.</translation>
 <translation id="6315493146179903667">அனைத்தையும் முதலில் வை</translation>
@@ -3422,7 +3413,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Androidக்கான Smart Lockஐ அமை</translation>
 <translation id="6374469231428023295">மீண்டும் முயலவும்</translation>
-<translation id="6377158645544167202">பிரிண்டரை இணைக்க முடியவில்லை. பிரிண்டர் இயக்கப்பட்டு, வைஃபை அல்லது USB மூலம் அது உங்கள் Chromebook உடன் இணைக்கப்பட்டுள்ளதை உறுதிப்படுத்திக்கொள்ளவும்.</translation>
 <translation id="6380143666419481200">ஏற்றுக்கொண்டு தொடர்க</translation>
 <translation id="6383051423892982287">எனது சொந்த <ph name="BEGIN_LINK" />ஒத்திசைவுக் கடவுச்சொற்றொடர்<ph name="END_LINK" /> மூலம் ஒத்திசைக்கப்பட்ட தரவை என்கிரிப்ட் செய்</translation>
 <translation id="6384275966486438344">உங்கள் தேடல் அமைப்புகளை இதற்கு மாற்றவும்: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@
 <translation id="6606070663386660533">தாவல் 8</translation>
 <translation id="6607272825297743757">கோப்புத் தகவல்</translation>
 <translation id="6607831829715835317">மேலும் கருவி&amp;கள்</translation>
-<translation id="6610183966322615106">பிரிண்டரைச் சேர்க்கும் போது பிழை</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6613452264606394692">இந்தப் பக்கத்தைப் புத்தகக்குறியிடுவதன் மூலம், விரைவாக இதை அணுகலாம்</translation>
 <translation id="6615455863669487791">எனக்கு காண்பி</translation>

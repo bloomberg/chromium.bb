@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Sincronização ativada - configurações personalizadas</translation>
 <translation id="1493892686965953381">Aguardando <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> outros dispositivos disponíveis.</translation>
-<translation id="1497284176235884849">O PPD fornecido é inválido.</translation>
 <translation id="1497522201463361063">Não foi possível renomear "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Dispositivo desconhecido [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Esta conta de proprietário precisa ser a primeira conta a fazer login em uma sessão de login múltiplo.</translation>
@@ -1774,7 +1773,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3697100740575341996">Seu administrador de TI desativou os recursos adicionais do Google Chrome para seu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Endereço de e-mail</translation>
 <translation id="3702500414347826004">Suas páginas de inicialização foram alteradas para incluir <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Perguntar quando um site quiser ver os textos e imagens que você copia para a área de transferência</translation>
 <translation id="370415077757856453">JavaScript bloqueado</translation>
 <translation id="3704331259350077894">Interrupção da operação</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nenhuma correspondência</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
-<translation id="4276216215490044084">Não é possível carregar PPD grande. O tamanho máximo é 250 KB.</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="4282196459431406533">O Smart Lock está ativado</translation>
@@ -2202,7 +2199,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4430369329743628066">Página adicionada como favorito</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="4439318412377770121">Quer registrar o dispositivo <ph name="DEVICE_NAME" /> no Google Cloud Devices?</translation>
-<translation id="4439612350502082674">Não é possível adicionar a impressora. Reinicie e tente novamente.</translation>
 <translation id="4441124369922430666">Quer iniciar automaticamente este aplicativo quando o computador for ligado?</translation>
 <translation id="444134486829715816">Expandir...</translation>
 <translation id="4441548209689510310">Mostrar opções de verificação ortográfica</translation>
@@ -2433,7 +2429,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4839303808932127586">Sal&amp;var vídeo como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> itens selecionados</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}one{Mais #}other{Mais #}}</translation>
-<translation id="4840626203080576849">Perguntar quando um site quiser ver os textos e imagens que você copiou para a área de transferência (recomendado)</translation>
 <translation id="4842976633412754305">Esta página está tentando carregar scripts de fontes não autenticadas.</translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Você está seguindo a recomendação do administrador para esta configuração.</translation>
@@ -2700,7 +2695,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5254368820972107711">Mostrar arquivos a serem removidos</translation>
 <translation id="52550593576409946">Não foi possível iniciar o aplicativo Kiosk.</translation>
 <translation id="5255315797444241226">A senha inserida está incorreta.</translation>
-<translation id="5259571578888203461">Não permitir que sites vejam textos e imagens que você copia na área de transferência</translation>
 <translation id="5260508466980570042">Não foi possível confirmar seu e-mail ou senha. Tente novamente.</translation>
 <translation id="5261683757250193089">Abrir na Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Acesse arquivos de qualquer lugar, até mesmo off-line.<ph name="MARKUP_2" />
@@ -3175,7 +3169,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5972708806901999743">Mover para a parte superior</translation>
 <translation id="5972826969634861500">Iniciar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
-<translation id="5975730206036440725">Não é possível encontrar o PPD. Verifique se seu Chromebook está on-line e tente novamente.</translation>
 <translation id="5975792506968920132">Percentual de carga da bateria</translation>
 <translation id="5976160379964388480">Outros</translation>
 <translation id="5978264784700053212">Central de mensagens</translation>
@@ -3217,7 +3210,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6042850536017090003">Toque em Notificações de apps.</translation>
 <translation id="6043317578411397101">O app <ph name="APP_NAME" /> está compartilhando uma guia do Chrome com <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Concluído.</translation>
 <translation id="6044805581023976844">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome com <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Toque em |<ph name="ACCELERATOR" />| e mantenha essa tecla pressionada para sair do modo tela cheia</translation>
 <translation id="6049065490165456785">Foto da câmera interna</translation>
@@ -3385,7 +3377,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6311220991371174222">Não foi possível iniciar o Chrome porque algo deu errado ao abrir seu perfil. Tente reiniciar o Chrome.</translation>
 <translation id="6312403991423642364">Erro de rede desconhecido</translation>
 <translation id="6313641880021325787">SAIR DE RV</translation>
-<translation id="6314335155547195432">Gerar senha</translation>
 <translation id="6314819609899340042">Você ativou os recursos de depuração neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Sua página de inicialização foi alterada para incluir <ph name="URL" />. Para desativar extensões que alteram sua página de inicialização, clique em Restaurar.</translation>
 <translation id="6315493146179903667">Trazer todas para frente</translation>
@@ -3423,7 +3414,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Configurar Smart Lock para Android</translation>
 <translation id="6374469231428023295">Repetir</translation>
-<translation id="6377158645544167202">Não é possível conectar a impressora. Verifique se a impressora está ligada e conectada ao seu Chromebook por Wi-Fi ou USB.</translation>
 <translation id="6380143666419481200">Aceitar e continuar</translation>
 <translation id="6383051423892982287">Criptografar dados sincronizados com sua <ph name="BEGIN_LINK" />senha longa de sincronização<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Alterar suas configurações de pesquisa para: <ph name="SEARCH_HOST" /></translation>
@@ -3580,7 +3570,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6606070663386660533">Aba 8</translation>
 <translation id="6607272825297743757">Informações do arquivo</translation>
 <translation id="6607831829715835317">Mais ferramen&amp;tas</translation>
-<translation id="6610183966322615106">Erro ao adicionar impressora</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6613452264606394692">Você pode voltar rapidamente a esta página, adicionando-a esta aos favoritos</translation>
 <translation id="6615455863669487791">Exibir</translation>

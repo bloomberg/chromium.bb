@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Til – tilpassede indstillinger</translation>
 <translation id="1493892686965953381">Venter på <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> andre tilgængelige enheder.</translation>
-<translation id="1497284176235884849">Den angivne PPD-fil er ugyldig.</translation>
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" kunne ikke omdøbes. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Ukendt enhed [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Denne ejerkonto skal være den første konto, der logges ind på i en loginsession med flere brugere.</translation>
@@ -1774,7 +1773,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3697100740575341996">Din it-administrator har deaktiveret Chrome Goodies for din enhed. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Mailadresse</translation>
 <translation id="3702500414347826004"><ph name="URL" /> blev inkluderet i dine opstartssider.</translation>
-<translation id="3703669627274482482">Spørg om tilladelse, når et website vil se tekst og billeder, du kopierer til udklipsholderen</translation>
 <translation id="370415077757856453">JavaScript er blokeret</translation>
 <translation id="3704331259350077894">Standsning af handling</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2122,7 +2120,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ingen resultater</translation>
 <translation id="4275830172053184480">Genstart din enhed</translation>
-<translation id="4276216215490044084">Den store PDD-fil kan ikke indlæses. Filen må ikke være større end 250 kB.</translation>
 <translation id="4278390842282768270">Tilladt</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="4282196459431406533">Smart Lock er slået til</translation>
@@ -2202,7 +2199,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4430369329743628066">Bogmærket er tilføjet</translation>
 <translation id="443464694732789311">Fortsæt</translation>
 <translation id="4439318412377770121">Vil du tilmelde <ph name="DEVICE_NAME" /> til Google Cloud-enheder?</translation>
-<translation id="4439612350502082674">Printeren kan ikke tilføjes. Genstart, og prøv igen.</translation>
 <translation id="4441124369922430666">Skal denne app startes automatisk, når du tænder computeren?</translation>
 <translation id="444134486829715816">Udvid...</translation>
 <translation id="4441548209689510310">Vis indstillinger for stavekontrol</translation>
@@ -2433,7 +2429,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4839303808932127586">&amp;Gem video som ...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementer valgt</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 anden}one{# anden}other{# andre}}</translation>
-<translation id="4840626203080576849">Spørg om tilladelse, når et website vil se tekst og billeder, du kopierer til udklipsholderen (anbefales)</translation>
 <translation id="4842976633412754305">Denne side forsøger at indlæse scripts fra kilder, som ikke er godkendte.</translation>
 <translation id="4844333629810439236">Andre tastaturer</translation>
 <translation id="4846680374085650406">Du følger administratorens anbefaling for denne indstilling.</translation>
@@ -2700,7 +2695,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5254368820972107711">Vis de filer, der skal slettes</translation>
 <translation id="52550593576409946">Terminalapplikationen kunne ikke startes.</translation>
 <translation id="5255315797444241226">Den angivne adgangssætning er forkert.</translation>
-<translation id="5259571578888203461">Tillad ikke, at websites kan se tekst og billeder, du kopierer til udklipsholderen</translation>
 <translation id="5260508466980570042">Din e-mail eller adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="5261683757250193089">Åbn i Webshop</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Få adgang til filer overalt, også offline.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5972708806901999743">Flyt til toppen</translation>
 <translation id="5972826969634861500">Start <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Zoom ud</translation>
-<translation id="5975730206036440725">PDD-filen kan ikke findes. Tjek, at din Chromebook er online, og prøv igen.</translation>
 <translation id="5975792506968920132">Procentdel for batteriopladning</translation>
 <translation id="5976160379964388480">Andre</translation>
 <translation id="5978264784700053212">Meddelelsescenter</translation>
@@ -3216,7 +3209,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6042850536017090003">Tryk på Appunderretninger.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> deler en Chrome-fane med <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Udført</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> deler en Chrome-fane og lyd med <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Hold |<ph name="ACCELERATOR" />| nede for at afslutte fuld skærm</translation>
 <translation id="6049065490165456785">Billede fra internt kamera</translation>
@@ -3384,7 +3376,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6311220991371174222">Chrome kan ikke startes, da der gik noget galt ved åbningen af din profil. Prøv at genstarte Chrome.</translation>
 <translation id="6312403991423642364">Ukendt netværksfejl</translation>
 <translation id="6313641880021325787">LUK VR</translation>
-<translation id="6314335155547195432">Generér adgangskode</translation>
 <translation id="6314819609899340042">Du har aktiveret fejlfindingsfunktioner på denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed.</translation>
 <translation id="6315343732431721770"><ph name="URL" /> blev inkluderet i dine opstartssider. Hvis du vil deaktivere udvidelser, der ændrer din opstartsside, skal du klikke på Gendan.</translation>
 <translation id="6315493146179903667">Læg alle forrest</translation>
@@ -3422,7 +3413,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Konfigurer Smart Lock til Android</translation>
 <translation id="6374469231428023295">Prøv igen</translation>
-<translation id="6377158645544167202">Der kan ikke oprettes forbindelse til printeren. Tjek, at printeren er tændt og tilsluttet din Chromebook via Wi-Fi eller USB.</translation>
 <translation id="6380143666419481200">Godkend og fortsæt</translation>
 <translation id="6383051423892982287">Kryptér synkroniserede data med din egen <ph name="BEGIN_LINK" />adgangssætning til synkronisering<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Skifte dine søgeindstillinger til: <ph name="SEARCH_HOST" /></translation>
@@ -3579,7 +3569,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6606070663386660533">Fane 8</translation>
 <translation id="6607272825297743757">Filoplysninger</translation>
 <translation id="6607831829715835317">F&amp;lere værktøjer</translation>
-<translation id="6610183966322615106">Der opstod en fejl ved tilføjelse af printeren</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6613452264606394692">Tilføj denne side som bogmærke, så du hurtigt kan vende tilbage hertil</translation>
 <translation id="6615455863669487791">Vis mig</translation>

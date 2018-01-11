@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">Włączone – ustawienia niestandardowe</translation>
 <translation id="1493892686965953381">Czekam na <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Inne dostępne urządzenia (<ph name="NUM_PRINTERS" />).</translation>
-<translation id="1497284176235884849">Nieprawidłowy plik PPD.</translation>
 <translation id="1497522201463361063">Nie można zmienić nazwy pliku „<ph name="FILE_NAME" />”. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">Nieznane urządzenie [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">W sesji wielokrotnego logowania trzeba w pierwszej kolejności zalogować się na konto tego właściciela.</translation>
@@ -1774,7 +1773,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3697100740575341996">Administrator IT wyłączył gadżety Chrome dla tego urządzenia. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Adres e-mail</translation>
 <translation id="3702500414347826004">Strony początkowe zostały zmienione i zawierają <ph name="URL" />.</translation>
-<translation id="3703669627274482482">Pytaj, gdy strona chce mieć dostęp do tekstu i obrazów skopiowanych do schowka</translation>
 <translation id="370415077757856453">JavaScript zablokowany</translation>
 <translation id="3704331259350077894">Zaprzestanie działania</translation>
 <translation id="3705722231355495246">-</translation>
@@ -1934,7 +1932,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3936390757709632190">&amp;Otwórz plik audio w nowej karcie</translation>
 <translation id="3936925983113350642">Wybrane hasło będzie wymagane później do odtworzenia tego certyfikatu. Zapisz je w bezpiecznym miejscu.</translation>
 <translation id="3937640725563832867">Alternatywna nazwa wystawcy certyfikatu</translation>
-<translation id="3937734102568271121">Zawsze tłumacz z tego języka: <ph name="LANGUAGE" /></translation>
+<translation id="3937734102568271121">Zawsze tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="3940233957883229251">Włącz automatyczne powtarzanie</translation>
 <translation id="3941357410013254652">Identyfikator kanału</translation>
 <translation id="3941565636838060942">Aby ukryć dostęp do tej aplikacji, musisz odinstalować ją,
@@ -2122,7 +2120,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4270393598798225102">Wersja <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Brak zgodnych wyników</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
-<translation id="4276216215490044084">Nie można załadować pliku PPD, bo jest zbyt duży. Maksymalny rozmiar to 250 kB.</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="4282196459431406533">Funkcja Smart Lock jest włączona</translation>
@@ -2202,7 +2199,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4430369329743628066">Dodano zakładkę</translation>
 <translation id="443464694732789311">Dalej</translation>
 <translation id="4439318412377770121">Czy chcesz zarejestrować urządzenie <ph name="DEVICE_NAME" /> w chmurze Google?</translation>
-<translation id="4439612350502082674">Nie można dodać drukarki. Uruchom ponownie i spróbuj jeszcze raz.</translation>
 <translation id="4441124369922430666">Chcesz, by ta aplikacja była uruchamiana automatycznie po włączeniu urządzenia?</translation>
 <translation id="444134486829715816">Rozwiń...</translation>
 <translation id="4441548209689510310">Pokaż opcje sprawdzania pisowni</translation>
@@ -2433,7 +2429,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4839303808932127586">Za&amp;pisz film wideo jako...</translation>
 <translation id="4839847978919684242">Wybrano <ph name="SELCTED_FILES_COUNT" /> elementy(ów)</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{jeszcze 1}few{jeszcze #}many{jeszcze #}other{jeszcze #}}</translation>
-<translation id="4840626203080576849">Pytaj, gdy strona chce uzyskać dostęp do tekstu i obrazów skopiowanych do schowka (zalecane)</translation>
 <translation id="4842976633412754305">Ta strona próbuje wczytać skrypty z nieuwierzytelnionych źródeł.</translation>
 <translation id="4844333629810439236">Inne klawiatury</translation>
 <translation id="4846680374085650406">Przestrzegasz zaleceń administratora dotyczących tego ustawienia.</translation>
@@ -2700,7 +2695,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5254368820972107711">Pokaż pliki do usunięcia</translation>
 <translation id="52550593576409946">Nie można uruchomić aplikacji kiosku.</translation>
 <translation id="5255315797444241226">Wprowadzone hasło jest nieprawidłowe.</translation>
-<translation id="5259571578888203461">Nie zezwalaj stronom na dostęp do tekstu i obrazów skopiowanych do schowka</translation>
 <translation id="5260508466980570042">Niestety, nie udało się zweryfikować Twojego adresu e-mail lub hasła. Spróbuj ponownie.</translation>
 <translation id="5261683757250193089">Otwórz w Chrome Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Korzystaj z plików, gdziekolwiek jesteś – nawet offline.<ph name="MARKUP_2" />
@@ -3174,7 +3168,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5972708806901999743">Przenieś na początek</translation>
 <translation id="5972826969634861500">Uruchom przeglądarkę <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
-<translation id="5975730206036440725">Nie można znaleźć pliku PPD. Upewnij się, że Chromebook jest online, i spróbuj ponownie.</translation>
 <translation id="5975792506968920132">Procent naładowania akumulatora</translation>
 <translation id="5976160379964388480">Pozostałe</translation>
 <translation id="5978264784700053212">Centrum wiadomości</translation>
@@ -3216,7 +3209,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="6042850536017090003">Kliknij „Powiadomienia aplikacji”.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> udostępnia kartę Chrome karcie <ph name="TAB_NAME" />.</translation>
-<translation id="6043357981274314628">Gotowe.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> udostępnia kartę i dźwięk z Chrome karcie <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Naciśnij i przytrzymaj |<ph name="ACCELERATOR" />|, by zamknąć pełny ekran</translation>
 <translation id="6049065490165456785">Zdjęcie z wbudowanego aparatu</translation>
@@ -3383,7 +3375,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6311220991371174222">Nie można uruchomić Chrome – coś poszło nie tak podczas otwierania Twojego profilu. Spróbuj jeszcze raz uruchomić Chrome.</translation>
 <translation id="6312403991423642364">Nieznany błąd sieci</translation>
 <translation id="6313641880021325787">WYŁĄCZ TRYB VR</translation>
-<translation id="6314335155547195432">Wygeneruj hasło</translation>
 <translation id="6314819609899340042">Funkcje debugowania zostały włączone na urządzeniu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315343732431721770">Strony początkowe zostały zmienione i zawierają <ph name="URL" />. Aby wyłączyć rozszerzenia, które zmieniają stronę początkową, kliknij Przywróć.</translation>
 <translation id="6315493146179903667">Przenieś wszystko na wierzch</translation>
@@ -3421,7 +3412,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Skonfiguruj Smart Lock na Androida</translation>
 <translation id="6374469231428023295">Spróbuj jeszcze raz</translation>
-<translation id="6377158645544167202">Nie można połączyć z drukarką. Upewnij się, że drukarka jest włączona i podłączona do Chromebooka za pomocą Wi-Fi lub USB.</translation>
 <translation id="6380143666419481200">Zaakceptuj i kontynuuj</translation>
 <translation id="6383051423892982287">Szyfruj synchronizowane dane za pomocą własnego <ph name="BEGIN_LINK" />hasła synchronizacji<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Zmiana ustawień wyszukiwania na: <ph name="SEARCH_HOST" /></translation>
@@ -3578,7 +3568,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6606070663386660533">Karta 8</translation>
 <translation id="6607272825297743757">Informacje o pliku</translation>
 <translation id="6607831829715835317">Więcej narzę&amp;dzi</translation>
-<translation id="6610183966322615106">Błąd podczas dodawania drukarki</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6613452264606394692">Dodaj tę stronę do zakładek, by szybko na nią wrócić</translation>
 <translation id="6615455863669487791">Pokaż mi</translation>

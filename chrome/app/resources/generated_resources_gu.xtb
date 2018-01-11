@@ -327,7 +327,6 @@
 <translation id="1487335504823219454">ચાલુ - કસ્ટમ સેટિંગ્સ</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> માટે પ્રતીક્ષારત...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> અન્ય ઉપલબ્ધ ઉપકરણો.</translation>
-<translation id="1497284176235884849">પૂરા પાડવામાં આવેલ PPD અમાન્ય છે.</translation>
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" નું નામ બદલવામાં અક્ષમ. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1500297251995790841">અજાણ્યું ઉપકરણ [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">આ માલિક એકાઉન્ટે બહુવિધ સાઇન-ઇન સત્રમાં પ્રથમ સાઇન-ઇન કરનાર એકાઉન્ટ થવું જોઈએ.</translation>
@@ -1770,7 +1769,6 @@
 <translation id="3697100740575341996">તમારા IT વ્યવસ્થાપકે તમારા ઉપકરણ માટે Chrome ગુડીઝ અક્ષમ કરેલ છે. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ઇમેઇલ સરનામું</translation>
 <translation id="3702500414347826004"><ph name="URL" /> ને શામેલ કરવા માટે તમારું સ્ટાર્ટઅપ પૃષ્ઠ બદલ્યું હતું.</translation>
-<translation id="3703669627274482482">તમે ક્લિપબોર્ડ પર કૉપિ કરેલ ટેક્સ્ટ અને છબીઓને સાઇટ જ્યારે જોવા માગે ત્યારે પૂછો</translation>
 <translation id="370415077757856453">JavaScript અવરોધિત</translation>
 <translation id="3704331259350077894">ક્રિયાની સમાપ્તિ</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2118,7 +2116,6 @@
 <translation id="4270393598798225102">સંસ્કરણ <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">કોઇ મેળ મળ્યાં નથી</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
-<translation id="4276216215490044084">વિશાળ PPD લોડ કરી શકતાં નથી. વધુમાં વધુ કદ 250 kB છે.</translation>
 <translation id="4278390842282768270">મંજૂર</translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="4282196459431406533">Smart Lock ચાલુ કરેલું છે</translation>
@@ -2198,7 +2195,6 @@
 <translation id="4430369329743628066">બુકમાર્ક ઉમેરાયો</translation>
 <translation id="443464694732789311">ચાલુ રાખો</translation>
 <translation id="4439318412377770121">શું તમે Google મેઘ ઉપકરણો પર <ph name="DEVICE_NAME" /> ને નોંધાવવા માગો છો?</translation>
-<translation id="4439612350502082674">પ્રિન્ટર ઉમેરી શકતાં નથી. ફરી શરૂ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="4441124369922430666">શું જ્યારે મશીન ચાલુ થાય ત્યારે તમે આ એપ્લિકેશનને આપમેળે પ્રારંભ કરવા માંગો છો?</translation>
 <translation id="444134486829715816">વિસ્તૃત કરો...</translation>
 <translation id="4441548209689510310">જોડણી તપાસણી વિકલ્પો બતાવો</translation>
@@ -2429,7 +2425,6 @@
 <translation id="4839303808932127586">વિડિઓને આ રૂપે સા&amp;ચવો...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> આઇટમ્સ પસંદ કરી</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 વધુ}one{# વધુ}other{# વધુ}}</translation>
-<translation id="4840626203080576849">તમે ક્લિપબોર્ડ પર કૉપિ કરેલ ટેક્સ્ટ અને છબીઓને સાઇટ જ્યારે જોવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="4842976633412754305">આ પૃષ્ઠ અનધિકૃત સ્રોતોમાંથી સ્ક્રિપ્ટ્સ લોડ કરવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="4844333629810439236">અન્ય કીબોર્ડ્સ</translation>
 <translation id="4846680374085650406">તમે આ સેટિંગ માટે વ્ય્વસ્થાપકની ભલામણને અનુસરી રહ્યાં છો.</translation>
@@ -2696,7 +2691,6 @@
 <translation id="5254368820972107711">દૂર કરવા માટેની ફાઇલો બતાવો</translation>
 <translation id="52550593576409946">કિઓસ્ક ઍપ્લિકેશન લોંચ કરી શકાઈ નથી.</translation>
 <translation id="5255315797444241226">તમે દાખલ કરેલો પાસફ્રેઝ ખોટો છે.</translation>
-<translation id="5259571578888203461">સાઇટને તમે ક્લિપબોર્ડ પર કૉપિ કરો છો તે ટેક્સ્ટ અને છબીઓ જોવાની મંજૂરી ન આપો</translation>
 <translation id="5260508466980570042">માફ કરશો, તમારો ઈમેઇલ અથવા પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરી ફરી પ્રયાસ કરો.</translation>
 <translation id="5261683757250193089">વેબ દુકાનમાં ખોલો</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ફાઇલોને ગમે ત્યાંથી ઍક્સેસ કરો, ઑફલાઇનથી પણ.<ph name="MARKUP_2" />
@@ -3171,7 +3165,6 @@
 <translation id="5972708806901999743">ટોચ પર જાઓ</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" />  શરૂ કરો</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
-<translation id="5975730206036440725">PPD શોધી શકતાં નથી. તમારી Chromebook ઑનલાઇન છે કે નહીં તે તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="5975792506968920132">બેટરી ચાર્જની ટકાવારી</translation>
 <translation id="5976160379964388480">અન્ય લોકો</translation>
 <translation id="5978264784700053212">સંદેશ કેન્દ્ર</translation>
@@ -3213,7 +3206,6 @@
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="6042850536017090003">ઍપ નોટિફિકેશનો પર ટૅપ કરો.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> સાથે Chrome ટૅબ શેર કરી રહી છે.</translation>
-<translation id="6043357981274314628">થઈ ગયું!</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> સાથે Chrome ટૅબ અને ઑડિઓને શેર કરી રહી છે.</translation>
 <translation id="6049004884579590341">પૂર્ણ સ્ક્રીનથી બહાર નીકળવા માટે |<ph name="ACCELERATOR" />|ને દબાવી રાખો</translation>
 <translation id="6049065490165456785">આંતરિક કૅમેરાથી ફોટો</translation>
@@ -3380,7 +3372,6 @@
 <translation id="6311220991371174222">તમારી પ્રોફાઇલ ખોલતી વખતે કોઈ ભૂલ આવાને કારણે Chrome પ્રારંભ કરી શકતાં નથી. Chrome પુનઃપ્રારંભ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="6312403991423642364">અજ્ઞાત નેટવર્ક ભૂલ</translation>
 <translation id="6313641880021325787">VRથી બહાર નીકળો</translation>
-<translation id="6314335155547195432">પાસવર્ડ જનરેટ કરો</translation>
 <translation id="6314819609899340042">આ <ph name="IDS_SHORT_PRODUCT_NAME" /> ઉપકરણ પર તમે સફળતાપૂર્વક ડિબગિંગ સુવિધાઓ સક્ષમ કરેલી છે.</translation>
 <translation id="6315343732431721770"><ph name="URL" /> ને શામેલ કરવા માટે તમારા સ્ટાર્ટઅપ પૃષ્ઠો બદલવામાં આવ્યાં હતાં. તમારા સ્ટાર્ટઅપ પૃષ્ઠને બદલનારા એક્સ્ટેન્શનને અક્ષમ કરવા માટે, પુનઃસ્થાપિત કરો ક્લિક કરો.</translation>
 <translation id="6315493146179903667">બધાને આગળ લાવો</translation>
@@ -3418,7 +3409,6 @@
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374108032506706911">Android માટે Smart Lock સેટ કરો</translation>
 <translation id="6374469231428023295">ફરી પ્રયાસ કરો</translation>
-<translation id="6377158645544167202">પ્રિન્ટર કનેક્ટ કરી શકતાં નથી. તપાસો કે પ્રિન્ટર ચાલુ છે અને વાઇ-ફાઇ અથવા USB દ્વારા તમારા Chromebook સાથે કનેક્ટ કરેલું છે.</translation>
 <translation id="6380143666419481200">સ્વીકારો અને ચાલુ રાખો</translation>
 <translation id="6383051423892982287">તમારા પોતાના <ph name="BEGIN_LINK" />સમન્વયન પાસફ્રેઝ<ph name="END_LINK" /> સાથે સમન્વયિત ડેટા એન્ક્રિપ્ટ કરો</translation>
 <translation id="6384275966486438344">આ પર તમારી શોધ સેટિંગ્સ બદલો: <ph name="SEARCH_HOST" /></translation>
@@ -3575,7 +3565,6 @@
 <translation id="6606070663386660533">ટૅબ 8</translation>
 <translation id="6607272825297743757">ફાઇલ માહિતી</translation>
 <translation id="6607831829715835317">વધુ સા&amp;ધનો</translation>
-<translation id="6610183966322615106">પ્રિન્ટર ઉમેરવામાં ભૂલ</translation>
 <translation id="6612358246767739896">સુરક્ષિત સામગ્રી</translation>
 <translation id="6613452264606394692">આ પેજને બુકમાર્ક કરીને અહીં ઝડપથી પાછા ફરી શકશો</translation>
 <translation id="6615455863669487791">મને બતાવો</translation>
