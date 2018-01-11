@@ -27,6 +27,18 @@
 
 namespace blink {
 
+struct IntrinsicSizingInfo {
+  STACK_ALLOCATED();
+  IntrinsicSizingInfo() : has_width(true), has_height(true) {}
+
+  FloatSize size;
+  FloatSize aspect_ratio;
+  bool has_width;
+  bool has_height;
+
+  void Transpose();
+};
+
 // LayoutReplaced is the base class for a replaced element as defined by CSS:
 //
 // "An element whose content is outside the scope of the CSS formatting model,
@@ -83,18 +95,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
     return false;
   }
 
-  struct IntrinsicSizingInfo {
-    STACK_ALLOCATED();
-    IntrinsicSizingInfo() : has_width(true), has_height(true) {}
-
-    FloatSize size;
-    FloatSize aspect_ratio;
-    bool has_width;
-    bool has_height;
-
-    void Transpose();
-  };
-
   // This function is public only so we can call it when computing
   // intrinsic size in LayoutNG.
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
@@ -113,6 +113,13 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
                                      LayoutUnit& max_logical_width) const final;
+
+  // Extract intrinsic sizing info from a potential nested layout
+  // context. Returns true if successful, and populates the IntrinsicSizingInfo
+  // structure if so.
+  virtual bool GetNestedIntrinsicSizingInfo(IntrinsicSizingInfo&) const {
+    return false;
+  }
 
   // This function calculates the placement of the replaced contents. It takes
   // intrinsic size of the replaced contents, stretch to fit CSS content box
@@ -139,8 +146,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   // CSS properties like 'zoom' or 'image-orientation'.
   virtual void IntrinsicSizeChanged();
 
-  virtual LayoutReplaced* EmbeddedReplacedContent() const { return nullptr; }
-
   PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
 
   bool IsOfType(LayoutObjectType type) const override {
@@ -150,8 +155,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
  private:
   void ComputePreferredLogicalWidths() final;
 
-  void ComputeIntrinsicSizingInfoForReplacedContent(LayoutReplaced*,
-                                                    IntrinsicSizingInfo&) const;
+  void ComputeIntrinsicSizingInfoForReplacedContent(IntrinsicSizingInfo&) const;
   FloatSize ConstrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;
 
   LayoutUnit ComputeConstrainedLogicalWidth(ShouldComputePreferred) const;

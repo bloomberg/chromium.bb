@@ -96,6 +96,7 @@ class TransformState;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct CompositedSelection;
+struct IntrinsicSizingInfo;
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -203,6 +204,9 @@ class CORE_EXPORT LocalFrameView final
   void SetInitialViewportSize(const IntSize&);
   int InitialViewportWidth() const;
   int InitialViewportHeight() const;
+
+  bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
+  bool HasIntrinsicSizingInfo() const;
 
   void UpdateAcceleratedCompositingSettings();
 
@@ -398,8 +402,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool ShouldSuspendScrollAnimations() const override;
   void ScrollbarStyleChanged() override;
-
-  LayoutReplaced* EmbeddedReplacedContent() const;
 
   static void SetInitialTracksPaintInvalidationsForTesting(bool);
 
@@ -1027,6 +1029,7 @@ class CORE_EXPORT LocalFrameView final
                      const CullRect&) const;
 
   LocalFrameView* ParentFrameView() const;
+  LayoutReplaced* EmbeddedReplacedContent() const;
 
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
 
