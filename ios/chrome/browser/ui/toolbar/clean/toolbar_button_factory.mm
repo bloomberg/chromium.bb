@@ -88,34 +88,17 @@ const int styleCount = 2;
   return backButton;
 }
 
-- (ToolbarButton*)forwardButton {
-  int forwardButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(FORWARD);
-  ToolbarButton* forwardButton = [ToolbarButton
-      toolbarButtonWithImageForNormalState:NativeReversableImage(
-                                               forwardButtonImages[self.style]
-                                                                  [DEFAULT],
-                                               YES)
-                  imageForHighlightedState:NativeReversableImage(
-                                               forwardButtonImages[self.style]
-                                                                  [PRESSED],
-                                               YES)
-                     imageForDisabledState:NativeReversableImage(
-                                               forwardButtonImages[self.style]
-                                                                  [DISABLED],
-                                               YES)];
-  forwardButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
-  if (!IsIPadIdiom()) {
-    forwardButton.imageEdgeInsets =
-        UIEdgeInsetsMakeDirected(0, kForwardButtonImageInset, 0, 0);
-  }
-  [self configureButton:forwardButton width:kToolbarButtonWidth];
-  [forwardButton addTarget:self.dispatcher
-                    action:@selector(goForward)
-          forControlEvents:UIControlEventTouchUpInside];
+- (ToolbarButton*)leadingForwardButton {
+  ToolbarButton* forwardButton = self.forwardButton;
   forwardButton.visibilityMask =
-      self.visibilityConfiguration.forwardButtonVisibility;
+      self.visibilityConfiguration.leadingForwardButtonVisibility;
+  return forwardButton;
+}
+
+- (ToolbarButton*)trailingForwardButton {
+  ToolbarButton* forwardButton = self.forwardButton;
+  forwardButton.visibilityMask =
+      self.visibilityConfiguration.trailingForwardButtonVisibility;
   return forwardButton;
 }
 
@@ -389,6 +372,36 @@ const int styleCount = 2;
   return [NSArray arrayWithObjects:NativeImage(TTSImages[self.style][DEFAULT]),
                                    NativeImage(TTSImages[self.style][PRESSED]),
                                    nil];
+}
+
+// Returns a forward button without visibility mask configured.
+- (ToolbarButton*)forwardButton {
+  int forwardButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
+      TOOLBAR_IDR_THREE_STATE(FORWARD);
+  ToolbarButton* forwardButton = [ToolbarButton
+      toolbarButtonWithImageForNormalState:NativeReversableImage(
+                                               forwardButtonImages[self.style]
+                                                                  [DEFAULT],
+                                               YES)
+                  imageForHighlightedState:NativeReversableImage(
+                                               forwardButtonImages[self.style]
+                                                                  [PRESSED],
+                                               YES)
+                     imageForDisabledState:NativeReversableImage(
+                                               forwardButtonImages[self.style]
+                                                                  [DISABLED],
+                                               YES)];
+  forwardButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
+  if (!IsIPadIdiom()) {
+    forwardButton.imageEdgeInsets =
+        UIEdgeInsetsMakeDirected(0, kForwardButtonImageInset, 0, 0);
+  }
+  [self configureButton:forwardButton width:kToolbarButtonWidth];
+  [forwardButton addTarget:self.dispatcher
+                    action:@selector(goForward)
+          forControlEvents:UIControlEventTouchUpInside];
+  return forwardButton;
 }
 
 @end
