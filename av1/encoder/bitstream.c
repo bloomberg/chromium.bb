@@ -1188,7 +1188,7 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
     } else {
       if (cm->preskip_segid) return;
       if (skip) {
-        write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
+        write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 1);
         if (seg->temporal_update) ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
         return;
       }

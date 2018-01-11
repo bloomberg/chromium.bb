@@ -609,7 +609,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (seg->temporal_update) {
         mbmi->seg_id_predicted = 0;
       }
-      segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 0);
+      segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 1);
       set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
       return segment_id;
     }
