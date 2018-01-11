@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -412,6 +413,8 @@ TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
     EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
                properties->natural_size.height());
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
@@ -470,6 +473,8 @@ TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
                properties->natural_size.width());
     EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
                properties->natural_size.height());
+    EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
@@ -515,6 +520,8 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
     EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
                properties->natural_size.height());
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
+    EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
     EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
@@ -555,6 +562,11 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   wtr_->UpdateUnderflowCount(3);
   wtr_->OnError(PIPELINE_ERROR_DECODE);
 
+  const std::string kAudioDecoderName = "MojoAudioDecoder";
+  const std::string kVideoDecoderName = "MojoVideoDecoder";
+  wtr_->SetAudioDecoderName(kAudioDecoderName);
+  wtr_->SetVideoDecoderName(kVideoDecoderName);
+
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -578,6 +590,10 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
     EXPECT_UKM(UkmEntry::kMeanTimeBetweenRebuffersName,
                kWatchTime2.InMilliseconds() / 3);
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
+
+    // Values taken from .cc private enumeration (and should never change).
+    EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 2);
+    EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 5);
 
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
@@ -626,6 +642,8 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
     EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
                properties->natural_size.height());
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
+    EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
     EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
@@ -637,8 +655,19 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
     EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
   }
 }
+
 #undef EXPECT_UKM
 #undef EXPECT_NO_UKM
 #undef EXPECT_HAS_UKM
+
+TEST_F(WatchTimeRecorderTest, DISABLED_PrintExpectedDecoderNameHashes) {
+  const std::string kDecoderNames[] = {
+      "FFmpegAudioDecoder", "FFmpegVideoDecoder", "GpuVideoDecoder",
+      "MojoVideoDecoder",   "MojoAudioDecoder",   "VpxVideoDecoder",
+      "AomVideoDecoder"};
+  printf("%18s = 0\n", "None");
+  for (const auto& name : kDecoderNames)
+    printf("%18s = 0x%x\n", name.c_str(), base::PersistentHash(name));
+}
 
 }  // namespace media

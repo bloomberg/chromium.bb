@@ -243,6 +243,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
+  MOCK_METHOD1(OnAudioDecoderChange, void(const std::string&));
+  MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
 
  private:
   // Helpers that run |*run_loop|, where OnEnded() or OnError() are each

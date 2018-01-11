@@ -140,6 +140,7 @@ class VideoRendererImplTest : public testing::Test {
       demuxer_stream->set_liveness(DemuxerStream::LIVENESS_LIVE);
     EXPECT_CALL(mock_cb_, OnWaitingForDecryptionKey()).Times(0);
     EXPECT_CALL(mock_cb_, OnAudioConfigChange(_)).Times(0);
+    EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
     renderer_->Initialize(demuxer_stream, nullptr, &mock_cb_,
                           base::Bind(&WallClockTimeSource::GetWallClockTimes,
                                      base::Unretained(&time_source_)),

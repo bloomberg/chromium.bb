@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/limits.h"
@@ -20,6 +21,63 @@ namespace media {
 // watch time metrics for a playback.
 constexpr base::TimeDelta kMinimumElapsedWatchTime =
     base::TimeDelta::FromSeconds(limits::kMinimumElapsedWatchTimeSecs);
+
+// List of known AudioDecoder implementations; recorded to UKM, always add new
+// values to the end and do not reorder or delete values from this list.
+enum class AudioDecoderName : int {
+  kUnknown = 0,  // Decoder name string is not recognized or n/a.
+  kFFmpeg = 1,   // FFmpegAudioDecoder
+  kMojo = 2,     // MojoAudioDecoder
+};
+
+// List of known VideoDecoder implementations; recorded to UKM, always add new
+// values to the end and do not reorder or delete values from this list.
+enum class VideoDecoderName : int {
+  kUnknown = 0,  // Decoder name string is not recognized or n/a.
+  kGpu = 1,      // GpuVideoDecoder
+  kFFmpeg = 2,   // FFmpegVideoDecoder
+  kVpx = 3,      // VpxVideoDecoder
+  kAom = 4,      // AomVideoDecoder
+  kMojo = 5,     // MojoVideoDecoder
+};
+
+static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
+  // See the unittest DISABLED_PrintExpectedDecoderNameHashes() for how these
+  // values are computed.
+  switch (base::PersistentHash(name)) {
+    case 0xd39e0c2d:
+      return AudioDecoderName::kFFmpeg;
+    case 0xdaceafdb:
+      return AudioDecoderName::kMojo;
+    default:
+      DLOG_IF(WARNING, !name.empty())
+          << "Unknown decoder name encountered; metrics need updating: "
+          << name;
+  }
+  return AudioDecoderName::kUnknown;
+}
+
+static VideoDecoderName ConvertVideoDecoderNameToEnum(const std::string& name) {
+  // See the unittest DISABLED_PrintExpectedDecoderNameHashes() for how these
+  // values are computed.
+  switch (base::PersistentHash(name)) {
+    case 0xacdee563:
+      return VideoDecoderName::kFFmpeg;
+    case 0x943f016f:
+      return VideoDecoderName::kMojo;
+    case 0xf66241b8:
+      return VideoDecoderName::kGpu;
+    case 0xb3802adb:
+      return VideoDecoderName::kVpx;
+    case 0xcff23b85:
+      return VideoDecoderName::kAom;
+    default:
+      DLOG_IF(WARNING, !name.empty())
+          << "Unknown decoder name encountered; metrics need updating: "
+          << name;
+  }
+  return VideoDecoderName::kUnknown;
+}
 
 static bool ShouldReportToUma(WatchTimeKey key) {
   switch (key) {
@@ -225,6 +283,16 @@ void WatchTimeRecorder::OnError(PipelineStatus status) {
   pipeline_status_ = status;
 }
 
+void WatchTimeRecorder::SetAudioDecoderName(const std::string& name) {
+  DCHECK(audio_decoder_name_.empty());
+  audio_decoder_name_ = name;
+}
+
+void WatchTimeRecorder::SetVideoDecoderName(const std::string& name) {
+  DCHECK(video_decoder_name_.empty());
+  video_decoder_name_ = name;
+}
+
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
   underflow_count_ = count;
 }
@@ -308,6 +376,21 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   builder.SetVideoCodec(properties_->video_codec);
   builder.SetHasAudio(properties_->has_audio);
   builder.SetHasVideo(properties_->has_video);
+
+  // We convert decoder names to a hash and then translate that hash to a zero
+  // valued enum to avoid burdening the rest of the decoder code base. This was
+  // the simplest and most effective solution for the following reasons:
+  //
+  // - We can't report hashes to UKM since the privacy team worries they may
+  //   end up as hashes of user data.
+  // - Given that decoders are defined and implemented all over the code base
+  //   it's unwieldly to have a single location which defines all decoder names.
+  // - Due to the above, no single media/ location has access to all names.
+  //
+  builder.SetAudioDecoderName(
+      static_cast<int64_t>(ConvertAudioDecoderNameToEnum(audio_decoder_name_)));
+  builder.SetVideoDecoderName(
+      static_cast<int64_t>(ConvertVideoDecoderNameToEnum(video_decoder_name_)));
 
   builder.SetIsEME(properties_->is_eme);
   builder.SetIsMSE(properties_->is_mse);

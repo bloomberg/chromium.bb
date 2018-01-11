@@ -318,6 +318,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
   void OnVideoAverageKeyframeDistanceUpdate() override;
+  void OnAudioDecoderChange(const std::string& name) override;
+  void OnVideoDecoderChange(const std::string& name) override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
@@ -754,6 +756,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Monitors the watch time of the played content.
   std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
   bool is_encrypted_;
+  std::string audio_decoder_name_;
+  std::string video_decoder_name_;
 
   // Records pipeline statistics for describing media capabilities.
   std::unique_ptr<VideoDecodeStatsReporter> video_decode_stats_reporter_;

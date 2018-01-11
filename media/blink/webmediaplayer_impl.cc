@@ -1116,30 +1116,22 @@ double WebMediaPlayerImpl::MediaTimeForTimeValue(double timeValue) const {
 
 unsigned WebMediaPlayerImpl::DecodedFrameCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_frames_decoded;
+  return GetPipelineStatistics().video_frames_decoded;
 }
 
 unsigned WebMediaPlayerImpl::DroppedFrameCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_frames_dropped;
+  return GetPipelineStatistics().video_frames_dropped;
 }
 
 size_t WebMediaPlayerImpl::AudioDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  PipelineStatistics stats = GetPipelineStatistics();
-  return stats.audio_bytes_decoded;
+  return GetPipelineStatistics().audio_bytes_decoded;
 }
 
 size_t WebMediaPlayerImpl::VideoDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_bytes_decoded;
+  return GetPipelineStatistics().video_bytes_decoded;
 }
 
 bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
@@ -1555,8 +1547,12 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
+  // TODO(dalecurtis): Don't create these until kReadyStateHaveFutureData; when
+  // we create them early we just increase the chances of needing to throw them
+  // away unnecessarily.
   CreateWatchTimeReporter();
   CreateVideoDecodeStatsReporter();
+
   UpdatePlayState();
 }
 
@@ -1824,6 +1820,40 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
   UpdateBackgroundVideoOptimizationState();
+}
+
+void WebMediaPlayerImpl::OnAudioDecoderChange(const std::string& name) {
+  if (name == audio_decoder_name_)
+    return;
+
+  const bool is_decoder_change = !audio_decoder_name_.empty();
+  audio_decoder_name_ = name;
+
+  // If there's no current reporter, there's nothing to be done.
+  if (!watch_time_reporter_)
+    return;
+
+  if (is_decoder_change)
+    CreateWatchTimeReporter();
+  else
+    watch_time_reporter_->SetAudioDecoderName(name);
+}
+
+void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
+  if (name == video_decoder_name_)
+    return;
+
+  const bool is_decoder_change = !video_decoder_name_.empty();
+  video_decoder_name_ = name;
+
+  // If there's no current reporter, there's nothing to be done.
+  if (!watch_time_reporter_)
+    return;
+
+  if (is_decoder_change)
+    CreateWatchTimeReporter();
+  else
+    watch_time_reporter_->SetVideoDecoderName(name);
 }
 
 void WebMediaPlayerImpl::OnFrameHidden() {
@@ -2641,6 +2671,11 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
     watch_time_reporter_->OnNativeControlsEnabled();
   else
     watch_time_reporter_->OnNativeControlsDisabled();
+
+  if (!audio_decoder_name_.empty())
+    watch_time_reporter_->SetAudioDecoderName(audio_decoder_name_);
+  if (!video_decoder_name_.empty())
+    watch_time_reporter_->SetVideoDecoderName(video_decoder_name_);
 
   switch (client_->DisplayType()) {
     case WebMediaPlayer::DisplayType::kInline:
