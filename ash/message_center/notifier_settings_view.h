@@ -62,12 +62,9 @@ class ASH_EXPORT NotifierSettingsView
     void UpdateIconImage(const gfx::ImageSkia& icon);
     void SetChecked(bool checked);
     bool checked() const;
-    bool has_learn_more() const;
     const message_center::NotifierId& notifier_id() const {
       return notifier_id_;
     }
-
-    void SendLearnMorePressedForTest();
 
    private:
     // Overridden from views::ButtonListener:
@@ -82,7 +79,6 @@ class ASH_EXPORT NotifierSettingsView
     views::ImageView* icon_view_;
     views::Label* name_view_;
     views::Checkbox* checkbox_;
-    views::ImageButton* learn_more_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NotifierButton);
   };

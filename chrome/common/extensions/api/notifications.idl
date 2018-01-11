@@ -198,6 +198,8 @@ namespace notifications {
 
     // The user clicked on a link for the app's notification settings.  As of
     // Chrome 47, only ChromeOS has UI that dispatches this event.
+    // As of Chrome 65, that UI has been removed from ChromeOS, too.
+    [deprecated="Custom notification settings button is no longer supported."]
     static void onShowSettings();
   };
 };

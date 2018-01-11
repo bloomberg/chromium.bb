@@ -139,12 +139,6 @@ void ChromeAshMessageCenterClient::SetNotifierEnabled(
                                                  notifier_id, enabled);
 }
 
-void ChromeAshMessageCenterClient::HandleNotifierAdvancedSettingsRequested(
-    const NotifierId& notifier_id) {
-  sources_[notifier_id.type]->OnNotifierAdvancedSettingsRequested(
-      GetProfileForNotifiers(), notifier_id);
-}
-
 void ChromeAshMessageCenterClient::GetNotifierList(
     GetNotifierListCallback callback) {
   std::vector<ash::mojom::NotifierUiDataPtr> notifiers;

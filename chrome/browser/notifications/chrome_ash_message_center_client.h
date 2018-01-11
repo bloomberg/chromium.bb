@@ -47,8 +47,6 @@ class ChromeAshMessageCenterClient : public NotificationPlatformBridge,
                                        int button_index) override;
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-  void HandleNotifierAdvancedSettingsRequested(
-      const message_center::NotifierId& notifier_id) override;
   void GetNotifierList(GetNotifierListCallback callback) override;
 
   // NotifierController::Observer:

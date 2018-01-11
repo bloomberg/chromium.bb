@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -35,7 +34,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -70,15 +68,6 @@ const int kCheckboxSizeWithPadding = 28;
 
 // The width of the settings pane in pixels.
 const int kWidth = 360;
-
-// The width of the learn more icon in pixels.
-const int kLearnMoreSize = 12;
-
-// The width of the click target that contains the learn more button in pixels.
-const int kLearnMoreTargetWidth = 28;
-
-// The height of the click target that contains the learn more button in pixels.
-const int kLearnMoreTargetHeight = 40;
 
 // The minimum height of the settings pane in pixels.
 const int kMinimumHeight = 480;
@@ -320,34 +309,6 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   checkbox_->SetFocusBehavior(FocusBehavior::NEVER);
   checkbox_->SetAccessibleName(notifier_ui_data.name);
 
-  if (notifier_ui_data.has_advanced_settings) {
-    // Create a more-info button that will be right-aligned.
-    learn_more_ = new views::ImageButton(this);
-    learn_more_->SetFocusPainter(CreateFocusPainter());
-    learn_more_->SetFocusForPlatform();
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    learn_more_->SetImage(
-        views::Button::STATE_NORMAL,
-        rb.GetImageSkiaNamed(IDR_NOTIFICATION_ADVANCED_SETTINGS));
-    learn_more_->SetImage(
-        views::Button::STATE_HOVERED,
-        rb.GetImageSkiaNamed(IDR_NOTIFICATION_ADVANCED_SETTINGS_HOVER));
-    learn_more_->SetImage(
-        views::Button::STATE_PRESSED,
-        rb.GetImageSkiaNamed(IDR_NOTIFICATION_ADVANCED_SETTINGS_PRESSED));
-    learn_more_->SetState(views::Button::STATE_NORMAL);
-    int learn_more_border_width = (kLearnMoreTargetWidth - kLearnMoreSize) / 2;
-    int learn_more_border_height =
-        (kLearnMoreTargetHeight - kLearnMoreSize) / 2;
-    // The image itself is quite small, this large invisible border creates a
-    // much bigger click target.
-    learn_more_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(learn_more_border_height, learn_more_border_width)));
-    learn_more_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
-  }
-
   if (notifier_ui_data.enforced) {
     Button::SetEnabled(false);
     checkbox_->SetEnabled(false);
@@ -378,34 +339,15 @@ bool NotifierSettingsView::NotifierButton::checked() const {
   return checkbox_->checked();
 }
 
-bool NotifierSettingsView::NotifierButton::has_learn_more() const {
-  return learn_more_ != nullptr;
-}
-
-void NotifierSettingsView::NotifierButton::SendLearnMorePressedForTest() {
-  if (learn_more_ == nullptr)
-    return;
-  gfx::Point point(110, 120);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  ButtonPressed(learn_more_, pressed);
-}
-
 void NotifierSettingsView::NotifierButton::ButtonPressed(
     views::Button* button,
     const ui::Event& event) {
-  if (button == checkbox_) {
-    // The checkbox state has already changed at this point, but we'll update
-    // the state on NotifierSettingsView::ButtonPressed() too, so here change
-    // back to the previous state.
-    checkbox_->SetChecked(!checkbox_->checked());
-    Button::NotifyClick(event);
-  } else if (button == learn_more_) {
-    Shell::Get()
-        ->message_center_controller()
-        ->OnNotifierAdvancedSettingsRequested(notifier_id_);
-  }
+  DCHECK_EQ(button, checkbox_);
+  // The checkbox state has already changed at this point, but we'll update
+  // the state on NotifierSettingsView::ButtonPressed() too, so here change
+  // back to the previous state.
+  checkbox_->SetChecked(!checkbox_->checked());
+  Button::NotifyClick(event);
 }
 
 void NotifierSettingsView::NotifierButton::GetAccessibleNodeData(
@@ -441,14 +383,6 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   layout->AddView(checkbox_);
   layout->AddView(icon_view_);
   layout->AddView(name_view_);
-
-  // Add a column for the learn more button if necessary.
-  if (learn_more_) {
-    cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                  GridLayout::USE_PREF, 0, 0);
-    layout->AddView(learn_more_);
-  }
 
   if (!enabled()) {
     views::ImageView* policy_enforced_icon = new views::ImageView();
