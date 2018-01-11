@@ -70,11 +70,6 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
         qindex_delta = -cm->base_qindex + 1;
       }
 
-      // No need to enable SEG_LVL_ALT_Q for this segment.
-      if (rate_ratio[i] == 1.0) {
-        continue;
-      }
-
       av1_set_segdata(seg, i, SEG_LVL_ALT_Q, qindex_delta);
       av1_enable_segfeature(seg, i, SEG_LVL_ALT_Q);
     }
