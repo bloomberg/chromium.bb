@@ -37,6 +37,9 @@ class AvSettings {
     DTS_HD = 1 << 2,
     EAC3 = 1 << 3,
     LPCM = 1 << 4,
+
+    // All known audio codecs.
+    ALL = AC3 | DTS | DTS_HD | EAC3 | LPCM
   };
 
   // Defines the type of audio volume control of the device.
