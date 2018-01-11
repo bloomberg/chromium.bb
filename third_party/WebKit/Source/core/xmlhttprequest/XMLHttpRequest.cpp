@@ -1081,7 +1081,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       execution_context.GetSecurityContext().AddressSpace());
 
   probe::willLoadXHR(&execution_context, this, this, method_, url_, async_,
-                     http_body ? http_body->DeepCopy() : nullptr,
                      request_headers_, with_credentials_);
 
   if (http_body) {
