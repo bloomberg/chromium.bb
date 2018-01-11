@@ -16,6 +16,7 @@
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_platform_file.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -23,21 +24,20 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
-#include "storage/common/data_element.h"
 #include "url/gurl.h"
 
+using network::DataElement;
 using storage::BlobStorageContext;
 using storage::BlobStorageRegistry;
 using storage::BlobStatus;
-using storage::DataElement;
 using storage::FileSystemURL;
 
 namespace content {
 namespace {
+using network::DataElement;
 using storage::BlobStorageContext;
 using storage::BlobStorageRegistry;
 using storage::BlobStatus;
-using storage::DataElement;
 using storage::FileSystemURL;
 
 // These are used for UMA stats, don't change.
@@ -111,7 +111,7 @@ void BlobDispatcherHost::OnRegisterBlob(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition,
-    const std::vector<storage::DataElement>& descriptions) {
+    const std::vector<network::DataElement>& descriptions) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
   if (uuid.empty() || context->registry().HasEntry(uuid) ||
@@ -128,7 +128,7 @@ void BlobDispatcherHost::OnRegisterBlob(
     // For each source object that provides the data for the blob, ensure that
     // this process has permission to read it.
     switch (item.type()) {
-      case storage::DataElement::TYPE_FILE_FILESYSTEM: {
+      case DataElement::TYPE_FILE_FILESYSTEM: {
         FileSystemURL filesystem_url(
             file_system_context_->CrackURL(item.filesystem_url()));
         if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
@@ -148,7 +148,7 @@ void BlobDispatcherHost::OnRegisterBlob(
         }
         break;
       }
-      case storage::DataElement::TYPE_FILE: {
+      case DataElement::TYPE_FILE: {
         if (!security_policy->CanReadFile(process_id_, item.path())) {
           DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
                    << "): Invalid or prohibited FilePath: "
@@ -164,18 +164,18 @@ void BlobDispatcherHost::OnRegisterBlob(
         }
         break;
       }
-      case storage::DataElement::TYPE_BLOB:
-      case storage::DataElement::TYPE_BYTES_DESCRIPTION:
-      case storage::DataElement::TYPE_BYTES: {
+      case DataElement::TYPE_BLOB:
+      case DataElement::TYPE_BYTES_DESCRIPTION:
+      case DataElement::TYPE_BYTES: {
         // Bytes are already in hand; no need to check read permission.
         // TODO(nick): For TYPE_BLOB, can we actually get here for blobs
         // originally created by other processes? If so, is that cool?
         break;
       }
-      case storage::DataElement::TYPE_RAW_FILE:
-      case storage::DataElement::TYPE_UNKNOWN:
-      case storage::DataElement::TYPE_DATA_PIPE:
-      case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+      case DataElement::TYPE_RAW_FILE:
+      case DataElement::TYPE_UNKNOWN:
+      case DataElement::TYPE_DATA_PIPE:
+      case DataElement::TYPE_DISK_CACHE_ENTRY: {
         NOTREACHED();  // Should have been caught by IPC deserialization.
         break;
       }

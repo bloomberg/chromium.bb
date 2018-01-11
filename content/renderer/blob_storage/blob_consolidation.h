@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "storage/common/data_element.h"
+#include "services/network/public/cpp/data_element.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
 
 namespace content {
@@ -48,13 +48,13 @@ class CONTENT_EXPORT BlobConsolidation
 
   struct ConsolidatedItem {
     ConsolidatedItem();
-    ConsolidatedItem(storage::DataElement::Type type,
+    ConsolidatedItem(network::DataElement::Type type,
                      uint64_t offset,
                      uint64_t length);
     ConsolidatedItem(const ConsolidatedItem& other);
     ~ConsolidatedItem();
 
-    storage::DataElement::Type type;
+    network::DataElement::Type type;
     uint64_t offset;
     uint64_t length;
 

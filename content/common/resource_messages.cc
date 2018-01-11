@@ -13,26 +13,26 @@
 
 namespace IPC {
 
-void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
+void ParamTraits<network::DataElement>::Write(base::Pickle* m,
                                               const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
-    case storage::DataElement::TYPE_BYTES: {
+    case network::DataElement::TYPE_BYTES: {
       m->WriteData(p.bytes(), static_cast<int>(p.length()));
       break;
     }
-    case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
+    case network::DataElement::TYPE_BYTES_DESCRIPTION: {
       WriteParam(m, p.length());
       break;
     }
-    case storage::DataElement::TYPE_FILE: {
+    case network::DataElement::TYPE_FILE: {
       WriteParam(m, p.path());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case storage::DataElement::TYPE_RAW_FILE: {
+    case network::DataElement::TYPE_RAW_FILE: {
       WriteParam(
           m, IPC::GetPlatformFileForTransit(p.file().GetPlatformFile(),
                                             false /* close_source_handle */));
@@ -42,24 +42,24 @@ void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case storage::DataElement::TYPE_FILE_FILESYSTEM: {
+    case network::DataElement::TYPE_FILE_FILESYSTEM: {
       WriteParam(m, p.filesystem_url());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case storage::DataElement::TYPE_BLOB: {
+    case network::DataElement::TYPE_BLOB: {
       WriteParam(m, p.blob_uuid());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       break;
     }
-    case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+    case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
       NOTREACHED() << "Can't be sent by IPC.";
       break;
     }
-    case storage::DataElement::TYPE_DATA_PIPE: {
+    case network::DataElement::TYPE_DATA_PIPE: {
       WriteParam(m,
                  const_cast<network::mojom::DataPipeGetterPtr&>(p.data_pipe())
                      .PassInterface()
@@ -67,21 +67,21 @@ void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
                      .release());
       break;
     }
-    case storage::DataElement::TYPE_UNKNOWN: {
+    case network::DataElement::TYPE_UNKNOWN: {
       NOTREACHED();
       break;
     }
   }
 }
 
-bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
+bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
                                              base::PickleIterator* iter,
                                              param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
     return false;
   switch (type) {
-    case storage::DataElement::TYPE_BYTES: {
+    case network::DataElement::TYPE_BYTES: {
       const char* data;
       int len;
       if (!iter->ReadData(&data, &len))
@@ -89,14 +89,14 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       r->SetToBytes(data, len);
       return true;
     }
-    case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
+    case network::DataElement::TYPE_BYTES_DESCRIPTION: {
       uint64_t length;
       if (!ReadParam(m, iter, &length))
         return false;
       r->SetToBytesDescription(length);
       return true;
     }
-    case storage::DataElement::TYPE_FILE: {
+    case network::DataElement::TYPE_FILE: {
       base::FilePath file_path;
       uint64_t offset, length;
       base::Time expected_modification_time;
@@ -112,7 +112,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
                             expected_modification_time);
       return true;
     }
-    case storage::DataElement::TYPE_RAW_FILE: {
+    case network::DataElement::TYPE_RAW_FILE: {
       IPC::PlatformFileForTransit platform_file_for_transit;
       if (!ReadParam(m, iter, &platform_file_for_transit))
         return false;
@@ -133,7 +133,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
                         expected_modification_time);
       return true;
     }
-    case storage::DataElement::TYPE_FILE_FILESYSTEM: {
+    case network::DataElement::TYPE_FILE_FILESYSTEM: {
       GURL file_system_url;
       uint64_t offset, length;
       base::Time expected_modification_time;
@@ -149,7 +149,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
                                  expected_modification_time);
       return true;
     }
-    case storage::DataElement::TYPE_BLOB: {
+    case network::DataElement::TYPE_BLOB: {
       std::string blob_uuid;
       uint64_t offset, length;
       if (!ReadParam(m, iter, &blob_uuid))
@@ -161,11 +161,11 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       r->SetToBlobRange(blob_uuid, offset, length);
       return true;
     }
-    case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+    case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
       NOTREACHED() << "Can't be sent by IPC.";
       return false;
     }
-    case storage::DataElement::TYPE_DATA_PIPE: {
+    case network::DataElement::TYPE_DATA_PIPE: {
       network::mojom::DataPipeGetterPtr data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
@@ -175,7 +175,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       r->SetToDataPipe(std::move(data_pipe_getter));
       return true;
     }
-    case storage::DataElement::TYPE_UNKNOWN: {
+    case network::DataElement::TYPE_UNKNOWN: {
       NOTREACHED();
       return false;
     }
@@ -183,9 +183,9 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
   return false;
 }
 
-void ParamTraits<storage::DataElement>::Log(const param_type& p,
+void ParamTraits<network::DataElement>::Log(const param_type& p,
                                             std::string* l) {
-  l->append("<storage::DataElement>");
+  l->append("<network::DataElement>");
 }
 
 void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
@@ -301,7 +301,7 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
     return false;
   if (!has_object)
     return true;
-  std::vector<storage::DataElement> elements;
+  std::vector<network::DataElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
   int64_t identifier;

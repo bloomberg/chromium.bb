@@ -7,11 +7,11 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/metrics/histogram.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/common/data_element.h"
 
 namespace storage {
 

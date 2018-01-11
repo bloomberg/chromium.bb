@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
-#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 
 namespace blink {

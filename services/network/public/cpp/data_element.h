@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_DATA_ELEMENT_H_
-#define STORAGE_COMMON_DATA_ELEMENT_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_DATA_ELEMENT_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_DATA_ELEMENT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,14 +21,13 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
-#include "storage/common/storage_common_export.h"
 #include "url/gurl.h"
 
-namespace storage {
+namespace network {
 
 // Represents a base Web data element. This could be either one of
 // bytes, file or blob data.
-class STORAGE_COMMON_EXPORT DataElement {
+class DataElement {
  public:
   static const uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
 
@@ -67,7 +66,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   const base::File& file() const { return file_; }
   const GURL& filesystem_url() const { return filesystem_url_; }
   const std::string& blob_uuid() const { return blob_uuid_; }
-  const network::mojom::DataPipeGetterPtr& data_pipe() const {
+  const mojom::DataPipeGetterPtr& data_pipe() const {
     return data_pipe_getter_;
   }
   uint64_t offset() const { return offset_; }
@@ -174,37 +173,34 @@ class STORAGE_COMMON_EXPORT DataElement {
   void SetToDiskCacheEntryRange(uint64_t offset, uint64_t length);
 
   // Sets TYPE_DATA_PIPE data.
-  void SetToDataPipe(network::mojom::DataPipeGetterPtr data_pipe_getter);
+  void SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
 
   // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
   // for reading (asynchronous reading on Windows).
   base::File ReleaseFile();
 
   // Takes ownership of the DataPipeGetter, if this is of TYPE_DATA_PIPE.
-  network::mojom::DataPipeGetterPtr ReleaseDataPipeGetter();
+  mojom::DataPipeGetterPtr ReleaseDataPipeGetter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
-  friend STORAGE_COMMON_EXPORT void PrintTo(const DataElement& x,
-                                            ::std::ostream* os);
+  friend void PrintTo(const DataElement& x, ::std::ostream* os);
   Type type_;
   std::vector<char> buf_;  // For TYPE_BYTES.
-  const char* bytes_;  // For TYPE_BYTES.
-  base::FilePath path_;  // For TYPE_FILE and TYPE_RAW_FILE.
-  base::File file_;      // For TYPE_RAW_FILE.
-  GURL filesystem_url_;  // For TYPE_FILE_FILESYSTEM.
-  std::string blob_uuid_;                               // For TYPE_BLOB.
-  network::mojom::DataPipeGetterPtr data_pipe_getter_;  // For TYPE_DATA_PIPE.
+  const char* bytes_;      // For TYPE_BYTES.
+  base::FilePath path_;    // For TYPE_FILE and TYPE_RAW_FILE.
+  base::File file_;        // For TYPE_RAW_FILE.
+  GURL filesystem_url_;    // For TYPE_FILE_FILESYSTEM.
+  std::string blob_uuid_;  // For TYPE_BLOB.
+  mojom::DataPipeGetterPtr data_pipe_getter_;  // For TYPE_DATA_PIPE.
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;
 };
 
-STORAGE_COMMON_EXPORT bool operator==(const DataElement& a,
-                                      const DataElement& b);
-STORAGE_COMMON_EXPORT bool operator!=(const DataElement& a,
-                                      const DataElement& b);
+bool operator==(const DataElement& a, const DataElement& b);
+bool operator!=(const DataElement& a, const DataElement& b);
 
-}  // namespace storage
+}  // namespace network
 
-#endif  // STORAGE_COMMON_DATA_ELEMENT_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_DATA_ELEMENT_H_

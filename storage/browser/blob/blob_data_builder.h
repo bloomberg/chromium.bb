@@ -40,9 +40,9 @@ class STORAGE_EXPORT BlobDataBuilder {
   static base::FilePath GetFutureFileItemPath(uint64_t file_id);
 
   // Returns if the given item was created by AppendFutureFile.
-  static bool IsFutureFileItem(const DataElement& element);
+  static bool IsFutureFileItem(const network::DataElement& element);
   // Returns |file_id| given to AppendFutureFile.
-  static uint64_t GetFutureFileID(const DataElement& element);
+  static uint64_t GetFutureFileID(const network::DataElement& element);
 
   explicit BlobDataBuilder(const std::string& uuid);
   BlobDataBuilder(BlobDataBuilder&&);
@@ -58,7 +58,7 @@ class STORAGE_EXPORT BlobDataBuilder {
   // |file_system_context| needs to be set if data element is of type
   // FILE_FILESYSTEM.
   void AppendIPCDataElement(
-      const DataElement& ipc_data,
+      const network::DataElement& ipc_data,
       const scoped_refptr<FileSystemContext>& file_system_context);
 
   // Copies the given data into the blob.

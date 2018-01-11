@@ -173,7 +173,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
       }
       case ResourceRequestBody::Element::TYPE_DATA_PIPE: {
         element_readers.push_back(std::make_unique<DataPipeElementReader>(
-            body, const_cast<storage::DataElement*>(&element)
+            body, const_cast<network::DataElement*>(&element)
                       ->ReleaseDataPipeGetter()));
         break;
       }

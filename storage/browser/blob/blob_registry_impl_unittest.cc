@@ -837,7 +837,7 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsFile) {
   EXPECT_EQ(expected_file_count, snapshot->items().size());
   size_t remaining_size = kData.size();
   for (const auto& item : snapshot->items()) {
-    EXPECT_EQ(DataElement::TYPE_FILE, item->type());
+    EXPECT_EQ(network::DataElement::TYPE_FILE, item->type());
     EXPECT_EQ(0u, item->offset());
     if (remaining_size > kTestBlobStorageMaxFileSizeBytes)
       EXPECT_EQ(kTestBlobStorageMaxFileSizeBytes, item->length());

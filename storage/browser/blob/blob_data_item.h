@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/data_element.h"
 
 namespace disk_cache {
 class Entry;
@@ -23,7 +23,6 @@ namespace storage {
 class BlobDataBuilder;
 class BlobMemoryController;
 class BlobStorageContext;
-class DataElement;
 class FileSystemContext;
 
 // Ref counted blob item. This class owns the backing data of the blob item. The
@@ -46,7 +45,7 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
     friend class base::RefCounted<DataHandle>;
   };
 
-  DataElement::Type type() const { return item_->type(); }
+  network::DataElement::Type type() const { return item_->type(); }
   const char* bytes() const { return item_->bytes(); }
   const base::FilePath& path() const { return item_->path(); }
   const GURL& filesystem_url() const { return item_->filesystem_url(); }
@@ -56,9 +55,9 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   const base::Time& expected_modification_time() const {
     return item_->expected_modification_time();
   }
-  const DataElement& data_element() const { return *item_; }
-  const DataElement* data_element_ptr() const { return item_.get(); }
-  DataElement* data_element_ptr() { return item_.get(); }
+  const network::DataElement& data_element() const { return *item_; }
+  const network::DataElement* data_element_ptr() const { return item_.get(); }
+  network::DataElement* data_element_ptr() { return item_.get(); }
 
   disk_cache::Entry* disk_cache_entry() const { return disk_cache_entry_; }
   int disk_cache_stream_index() const { return disk_cache_stream_index_; }
@@ -80,20 +79,20 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   friend class base::RefCounted<BlobDataItem>;
   friend STORAGE_EXPORT void PrintTo(const BlobDataItem& x, ::std::ostream* os);
 
-  explicit BlobDataItem(std::unique_ptr<DataElement> item);
-  BlobDataItem(std::unique_ptr<DataElement> item,
+  explicit BlobDataItem(std::unique_ptr<network::DataElement> item);
+  BlobDataItem(std::unique_ptr<network::DataElement> item,
                const scoped_refptr<DataHandle>& data_handle);
-  BlobDataItem(std::unique_ptr<DataElement> item,
+  BlobDataItem(std::unique_ptr<network::DataElement> item,
                const scoped_refptr<DataHandle>& data_handle,
                disk_cache::Entry* entry,
                int disk_cache_stream_index,
                int disk_cache_side_stream_index);
-  BlobDataItem(std::unique_ptr<DataElement> item,
+  BlobDataItem(std::unique_ptr<network::DataElement> item,
                scoped_refptr<FileSystemContext> file_system_context);
 
   virtual ~BlobDataItem();
 
-  std::unique_ptr<DataElement> item_;
+  std::unique_ptr<network::DataElement> item_;
   scoped_refptr<DataHandle> data_handle_;
 
   // This naked pointer is safe because the scope is protected by the DataHandle

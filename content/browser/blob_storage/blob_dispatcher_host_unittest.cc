@@ -22,23 +22,23 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
-#include "storage/common/data_element.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using network::DataElement;
 using storage::BlobDataBuilder;
 using storage::BlobDataHandle;
 using storage::BlobItemBytesRequest;
 using storage::BlobItemBytesResponse;
 using storage::BlobStatus;
 using storage::BlobStorageContext;
-using storage::DataElement;
 using RequestMemoryCallback = storage::BlobTransportHost::RequestMemoryCallback;
 
 namespace content {

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "storage/common/data_element.h"
+#include "services/network/public/cpp/data_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -15,7 +15,7 @@ namespace storage {
 TEST(BlobDataBuilderTest, TestFutureFiles) {
   const std::string kId = "id";
 
-  DataElement element;
+  network::DataElement element;
   element.SetToFilePath(BlobDataBuilder::GetFutureFileItemPath(0));
   EXPECT_TRUE(BlobDataBuilder::IsFutureFileItem(element));
   EXPECT_EQ(0ull, BlobDataBuilder::GetFutureFileID(element));

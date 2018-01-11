@@ -36,7 +36,6 @@
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
-#include "storage/common/data_element.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"

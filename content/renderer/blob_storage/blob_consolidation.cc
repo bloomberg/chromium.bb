@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 
-using storage::DataElement;
 using blink::WebThreadSafeData;
+using network::DataElement;
 
 namespace content {
 namespace {

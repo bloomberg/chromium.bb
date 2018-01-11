@@ -1162,10 +1162,10 @@ class MockURLLoader : public mojom::URLLoader {
         weak_factory_for_data_pipe_callbacks_(this) {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
-            storage::DataElement::TYPE_DATA_PIPE) {
+            network::DataElement::TYPE_DATA_PIPE) {
       // The const_cast is weird, but it's how the current API works.
       data_pipe_getter_ =
-          const_cast<storage::DataElement*>(&(*request_body->elements())[0])
+          const_cast<network::DataElement*>(&(*request_body->elements())[0])
               ->ReleaseDataPipeGetter();
       DCHECK(data_pipe_getter_);
     }

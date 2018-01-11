@@ -20,7 +20,7 @@ ShareableBlobDataItem::ShareableBlobDataItem(
     scoped_refptr<BlobDataItem> item,
     ShareableBlobDataItem::State state)
     : item_id_(GetAndIncrementItemId()), state_(state), item_(std::move(item)) {
-  DCHECK_NE(item_->type(), DataElement::TYPE_BLOB);
+  DCHECK_NE(item_->type(), network::DataElement::TYPE_BLOB);
 }
 
 ShareableBlobDataItem::~ShareableBlobDataItem() = default;

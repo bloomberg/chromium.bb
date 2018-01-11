@@ -17,14 +17,15 @@ namespace {
 const char kNewUUID[] = "newUUID";
 const char kFakeBlobUUID[] = "fakeBlob";
 
-void AddMemoryItem(size_t length, std::vector<DataElement>* out) {
-  DataElement bytes;
+void AddMemoryItem(size_t length, std::vector<network::DataElement>* out) {
+  network::DataElement bytes;
   bytes.SetToBytesDescription(length);
   out->push_back(std::move(bytes));
 }
 
-void AddShortcutMemoryItem(size_t length, std::vector<DataElement>* out) {
-  DataElement bytes;
+void AddShortcutMemoryItem(size_t length,
+                           std::vector<network::DataElement>* out) {
+  network::DataElement bytes;
   bytes.SetToAllocatedBytes(length);
   for (size_t i = 0; i < length; i++) {
     bytes.mutable_bytes()[i] = static_cast<char>(i);
@@ -32,8 +33,8 @@ void AddShortcutMemoryItem(size_t length, std::vector<DataElement>* out) {
   out->push_back(std::move(bytes));
 }
 
-void AddBlobItem(std::vector<DataElement>* out) {
-  DataElement blob;
+void AddBlobItem(std::vector<network::DataElement>* out) {
+  network::DataElement blob;
   blob.SetToBlob(kFakeBlobUUID);
   out->push_back(std::move(blob));
 }
@@ -41,7 +42,7 @@ void AddBlobItem(std::vector<DataElement>* out) {
 TEST(BlobAsyncTransportRequestBuilderTest, TestNoMemoryItems) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   // Here we test that we don't do any requests when there are no memory items.
   AddBlobItem(&infos);
@@ -65,7 +66,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestNoMemoryItems) {
 TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFile) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   AddMemoryItem(305, &infos);
   strategy.InitializeForFileRequests(400,  // max_file_size
@@ -92,7 +93,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFile) {
 TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFiles) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   AddMemoryItem(1000, &infos);
   strategy.InitializeForFileRequests(400,   // max_file_size
@@ -138,7 +139,7 @@ TEST(BlobAsyncTransportRequestBuilderTest,
      TestLargeBlocksConsolidatingInFiles) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   // We should have 3 storage items for the memory, two files, 400 each.
   // We end up with storage items:
@@ -185,7 +186,7 @@ TEST(BlobAsyncTransportRequestBuilderTest,
 TEST(BlobAsyncTransportRequestBuilderTest, TestSharedMemorySegmentation) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   // For transport we should have 3 shared memories, and then storage in 3
   // browser items.
@@ -233,7 +234,7 @@ TEST(BlobAsyncTransportRequestBuilderTest,
      TestSharedMemorySegmentationAndStorage) {
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
 
   // For transport, we should have 2 shared memories, where the first one
   // have half 0 and half 3, and then the last one has half 3.
@@ -288,7 +289,7 @@ TEST(BlobAsyncTransportRequestBuilderTest,
 TEST(BlobAsyncTransportRequestBuilderTest, TestSimpleIPC) {
   // Test simple IPC strategy, where size < max_ipc_memory_size and we have
   // just one item.
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   AddMemoryItem(10, &infos);
@@ -311,7 +312,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestSimpleIPC) {
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestMultipleIPC) {
   // Same as above, but with 2 items and a blob in-between.
-  std::vector<DataElement> infos;
+  std::vector<network::DataElement> infos;
   BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   AddShortcutMemoryItem(10, &infos);  // should have no behavior change

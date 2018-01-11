@@ -40,7 +40,7 @@ BlobDataSnapshot::~BlobDataSnapshot() = default;
 size_t BlobDataSnapshot::GetMemoryUsage() const {
   int64_t memory = 0;
   for (const auto& data_item : items_) {
-    if (data_item->type() == DataElement::TYPE_BYTES)
+    if (data_item->type() == network::DataElement::TYPE_BYTES)
       memory += data_item->length();
   }
   return memory;

@@ -29,11 +29,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/common/data_element.h"
 
 using base::File;
 using base::FilePath;
@@ -178,7 +178,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
     DiskSpaceFuncPtr disk_space_function,
     const FilePath& file_path,
     scoped_refptr<base::TaskRunner> file_task_runner,
-    std::vector<DataElement*> items,
+    std::vector<network::DataElement*> items,
     size_t total_size_bytes) {
   DCHECK_NE(0u, total_size_bytes);
   UMA_HISTOGRAM_MEMORY_KB("Storage.Blob.PageFileSize", total_size_bytes / 1024);
@@ -213,8 +213,8 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
   // Write data.
   file.SetLength(total_size_bytes);
   int bytes_written = 0;
-  for (DataElement* element : items) {
-    DCHECK_EQ(DataElement::TYPE_BYTES, element->type());
+  for (network::DataElement* element : items) {
+    DCHECK_EQ(network::DataElement::TYPE_BYTES, element->type());
     size_t length = base::checked_cast<size_t>(element->length());
     size_t bytes_left = length;
     while (bytes_left > 0) {
@@ -251,7 +251,7 @@ uint64_t GetTotalSizeAndFileSizes(
   uint64_t total_size_output = 0;
   base::small_map<std::map<uint64_t, uint64_t>> file_id_to_sizes;
   for (const auto& item : unreserved_file_items) {
-    const DataElement& element = item->item()->data_element();
+    const network::DataElement& element = item->item()->data_element();
     uint64_t file_id = BlobDataBuilder::GetFutureFileID(element);
     auto it = file_id_to_sizes.find(file_id);
     if (it != file_id_to_sizes.end())
@@ -373,7 +373,8 @@ class BlobMemoryController::FileQuotaAllocationTask
     // Check & set our item states.
     for (auto& shareable_item : unreserved_file_items) {
       DCHECK_EQ(ShareableBlobDataItem::QUOTA_NEEDED, shareable_item->state());
-      DCHECK_EQ(DataElement::TYPE_FILE, shareable_item->item()->type());
+      DCHECK_EQ(network::DataElement::TYPE_FILE,
+                shareable_item->item()->type());
       shareable_item->set_state(ShareableBlobDataItem::QUOTA_REQUESTED);
     }
     pending_items_ = std::move(unreserved_file_items);
@@ -587,8 +588,9 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
   base::CheckedNumeric<uint64_t> unsafe_total_bytes_needed = 0;
   for (auto& item : unreserved_memory_items) {
     DCHECK_EQ(ShareableBlobDataItem::QUOTA_NEEDED, item->state());
-    DCHECK(item->item()->type() == DataElement::TYPE_BYTES_DESCRIPTION ||
-           item->item()->type() == DataElement::TYPE_BYTES);
+    DCHECK(item->item()->type() ==
+               network::DataElement::TYPE_BYTES_DESCRIPTION ||
+           item->item()->type() == network::DataElement::TYPE_BYTES);
     DCHECK(item->item()->length() > 0);
     unsafe_total_bytes_needed += item->item()->length();
     item->set_state(ShareableBlobDataItem::QUOTA_REQUESTED);
@@ -640,7 +642,7 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveFileQuota(
 void BlobMemoryController::NotifyMemoryItemsUsed(
     const std::vector<scoped_refptr<ShareableBlobDataItem>>& items) {
   for (const auto& item : items) {
-    if (item->item()->type() != DataElement::TYPE_BYTES ||
+    if (item->item()->type() != network::DataElement::TYPE_BYTES ||
         item->state() != ShareableBlobDataItem::POPULATED_WITH_QUOTA) {
       continue;
     }
@@ -788,7 +790,7 @@ size_t BlobMemoryController::CollectItemsForEviction(
          !populated_memory_items_.empty()) {
     auto iterator = --populated_memory_items_.end();
     ShareableBlobDataItem* item = iterator->second;
-    DCHECK_EQ(item->item()->type(), DataElement::TYPE_BYTES);
+    DCHECK_EQ(item->item()->type(), network::DataElement::TYPE_BYTES);
     populated_memory_items_.Erase(iterator);
     size_t size = base::checked_cast<size_t>(item->item()->length());
     populated_memory_items_bytes_ -= size;
@@ -849,7 +851,7 @@ void BlobMemoryController::MaybeScheduleEvictionUntilSystemHealthy(
     if (total_items_size == 0)
       break;
 
-    std::vector<DataElement*> items_for_paging;
+    std::vector<network::DataElement*> items_for_paging;
     for (auto& shared_blob_item : items_to_swap) {
       items_paging_to_file_.insert(shared_blob_item->item_id());
       items_for_paging.push_back(shared_blob_item->item()->data_element_ptr());
@@ -917,8 +919,8 @@ void BlobMemoryController::OnEvictionComplete(
   // Switch item from memory to the new file.
   uint64_t offset = 0;
   for (const scoped_refptr<ShareableBlobDataItem>& shareable_item : items) {
-    scoped_refptr<BlobDataItem> new_item(
-        new BlobDataItem(base::WrapUnique(new DataElement()), file_reference));
+    scoped_refptr<BlobDataItem> new_item(new BlobDataItem(
+        base::WrapUnique(new network::DataElement()), file_reference));
     new_item->data_element_ptr()->SetToFilePathRange(
         file_reference->path(), offset, shareable_item->item()->length(),
         file_info.last_modified);

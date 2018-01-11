@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_transport_request_builder.h"
@@ -27,7 +28,6 @@
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
-#include "storage/common/data_element.h"
 
 namespace base {
 class SharedMemory;
@@ -61,7 +61,7 @@ class STORAGE_EXPORT BlobTransportHost {
       const std::string& uuid,
       const std::string& content_type,
       const std::string& content_disposition,
-      const std::vector<DataElement>& elements,
+      const std::vector<network::DataElement>& elements,
       BlobStorageContext* context,
       const scoped_refptr<FileSystemContext>& file_system_context,
       const RequestMemoryCallback& request_memory,

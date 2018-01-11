@@ -13,9 +13,9 @@
 
 namespace storage {
 namespace {
-bool IsBytes(DataElement::Type type) {
-  return type == DataElement::TYPE_BYTES ||
-         type == DataElement::TYPE_BYTES_DESCRIPTION;
+bool IsBytes(network::DataElement::Type type) {
+  return type == network::DataElement::TYPE_BYTES ||
+         type == network::DataElement::TYPE_BYTES_DESCRIPTION;
 }
 
 // This is the general template that each strategy below implements. See the
@@ -26,7 +26,8 @@ bool IsBytes(DataElement::Type type) {
 //   void VisitBytesSegment(size_t element_index, uint64_t element_offset,
 //                          size_t segment_index, uint64_t segment_offset,
 //                          uint64_t size);
-//   void VisitNonBytesSegment(const DataElement& element, size_t element_idx);
+//   void VisitNonBytesSegment(const network::DataElement& element,
+//                             size_t element_idx);
 //   void Done();
 // };
 
@@ -69,7 +70,8 @@ class FileStorageStrategy {
     current_item_index++;
   }
 
-  void VisitNonBytesSegment(const DataElement& element, size_t element_index) {
+  void VisitNonBytesSegment(const network::DataElement& element,
+                            size_t element_index) {
     builder->AppendIPCDataElement(element, file_system_context);
     current_item_index++;
   }
@@ -127,7 +129,8 @@ class SharedMemoryStorageStrategy {
     current_item_size += size;
   }
 
-  void VisitNonBytesSegment(const DataElement& element, size_t element_index) {
+  void VisitNonBytesSegment(const network::DataElement& element,
+                            size_t element_index) {
     if (current_item_size != 0) {
       builder->AppendFutureData(current_item_size);
       current_item_index++;
@@ -164,7 +167,7 @@ class SharedMemoryStorageStrategy {
 // Assumptions: All memory items are consolidated.  As in, there are no two
 //              'bytes' items next to eachother.
 template <typename Visitor>
-void ForEachWithSegment(const std::vector<DataElement>& elements,
+void ForEachWithSegment(const std::vector<network::DataElement>& elements,
                         uint64_t max_segment_size,
                         Visitor* visitor) {
   DCHECK_GT(max_segment_size, 0ull);
@@ -174,7 +177,7 @@ void ForEachWithSegment(const std::vector<DataElement>& elements,
   for (size_t element_index = 0; element_index < elements_length;
        ++element_index) {
     const auto& element = elements.at(element_index);
-    DataElement::Type type = element.type();
+    network::DataElement::Type type = element.type();
     if (!IsBytes(type)) {
       visitor->VisitNonBytesSegment(element, element_index);
       continue;
@@ -216,7 +219,7 @@ BlobTransportRequestBuilder::~BlobTransportRequestBuilder() = default;
 void BlobTransportRequestBuilder::InitializeForFileRequests(
     size_t max_file_size,
     uint64_t blob_total_size,
-    const std::vector<DataElement>& elements,
+    const std::vector<network::DataElement>& elements,
     const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
@@ -229,7 +232,7 @@ void BlobTransportRequestBuilder::InitializeForFileRequests(
 void BlobTransportRequestBuilder::InitializeForSharedMemoryRequests(
     size_t max_shared_memory_size,
     uint64_t blob_total_size,
-    const std::vector<DataElement>& elements,
+    const std::vector<network::DataElement>& elements,
     const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
@@ -246,7 +249,7 @@ void BlobTransportRequestBuilder::InitializeForSharedMemoryRequests(
 void BlobTransportRequestBuilder::InitializeForIPCRequests(
     size_t max_ipc_memory_size,
     uint64_t blob_total_size,
-    const std::vector<DataElement>& elements,
+    const std::vector<network::DataElement>& elements,
     const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
