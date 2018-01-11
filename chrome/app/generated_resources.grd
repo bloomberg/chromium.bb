@@ -5321,13 +5321,37 @@ the Bookmarks menu.">
 
       <!-- Clipboard permission -->
       <message name="IDS_CLIPBOARD_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to read data from the system clipboard. Follows a prompt: 'This site would like to:'">
-        See text and images you copy to the clipboard
+        See text and images copied to the clipboard
       </message>
       <if expr="is_android">
         <message name="IDS_CLIPBOARD_INFOBAR_TEXT" desc="Text requesting permission for a site to read data from the system clipboard">
-          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images you copy to the clipboard.
+          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images copied to the clipboard.
         </message>
       </if>
+      <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Bubble info title for when a page has been granted clipboard read access.">
+        Clipboard read access allowed
+      </message>
+      <message name="IDS_ALLOWED_CLIPBOARD_MESSAGE" desc="Bubble info message and location bar icon tooltip text when a page has been granted clipboard read access.">
+        This page can see text and images copied to the clipboard.
+      </message>
+      <message name="IDS_ALLOWED_CLIPBOARD_BLOCK" desc="Radio button to block read access to the clipboard">
+        Always block <ph name="HOST">$1<ex>example.com</ex></ph> from seeing the clipboard
+      </message>
+      <message name="IDS_ALLOWED_CLIPBOARD_NO_ACTION" desc="Radio button to keep allowing access to the clipboard">
+        Continue allowing this site to see the clipboard
+      </message>
+      <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Bubble info title for when a page has been denied clipboard read access.">
+        Clipboard read access denied
+      </message>
+      <message name="IDS_BLOCKED_CLIPBOARD_MESSAGE" desc="Bubble info message and location bar icon tooltip text when a page had been denied clipboard read access.">
+        This page has been blocked from seeing text and images copied to the clipboard
+      </message>
+      <message name="IDS_BLOCKED_CLIPBOARD_UNBLOCK" desc="Radio button choice to unblock a site from accessing the clipboard.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to see the clipboard
+      </message>
+      <message name="IDS_BLOCKED_CLIPBOARD_NO_ACTION" desc="Radio button choice to continue blocking a site from accessing the clipboard API.">
+        Continue blocking this site from seeing the clipboard
+      </message>
 
       <!-- Feature Engagement Tracker strings -->
       <message name="IDS_BOOKMARK_PROMO_0" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">

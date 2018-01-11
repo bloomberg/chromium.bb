@@ -15,6 +15,9 @@ class ClipboardReadPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
+  void UpdateTabContext(const PermissionRequestID& id,
+                        const GURL& requesting_frame,
+                        bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardReadPermissionContext);
