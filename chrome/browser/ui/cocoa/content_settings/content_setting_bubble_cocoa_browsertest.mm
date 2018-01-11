@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #import "chrome/browser/ui/cocoa/subresource_filter/subresource_filter_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -202,6 +203,30 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
   label =
       base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD));
   EXPECT_NSEQ([doneButton title], label);
+
+  [parent_ close];
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
+                       LearnMoreLinkClicked) {
+  ContentSettingBubbleController* controller =
+      CreateBubbleController(new ContentSettingSubresourceFilterBubbleModel(
+          browser()->content_setting_bubble_model_delegate(), web_contents(),
+          profile()));
+  EXPECT_TRUE(controller);
+
+  SubresourceFilterBubbleController* filter_controller =
+      base::mac::ObjCCast<SubresourceFilterBubbleController>(controller);
+
+  NSString* link =
+      base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  EXPECT_NSEQ([[filter_controller learnMoreLink] title], link);
+
+  NSButton* learn_more_link = [filter_controller learnMoreLink];
+  [filter_controller learnMoreLinkClicked:learn_more_link];
+
+  EXPECT_EQ(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE)),
+            web_contents()->GetLastCommittedURL());
 
   [parent_ close];
 }

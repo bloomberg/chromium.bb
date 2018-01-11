@@ -123,7 +123,7 @@
 
 // Callback for clicking on the "Learn more" link.
 - (void)learnMoreLinkClicked:(id)sender {
-  [super model]->OnCustomLinkClicked();
+  [super model]->OnLearnMoreClicked();
   [self close];
 }
 
