@@ -199,6 +199,13 @@ def SetupAndroidToolchain(target_arch):
   return [
       '--enable-cross-compile',
       '--sysroot=' + sysroot,
+
+      # Android sysroot includes are now split out; try to cobble together the
+      # correct tree.
+      '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include',
+      '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include/' +
+          toolchain_bin_prefix,
+
       '--extra-cflags=--target=' + toolchain_bin_prefix,
       '--extra-ldflags=--target=' + toolchain_bin_prefix,
       '--extra-ldflags=--gcc-toolchain=' + gcc_toolchain,
@@ -526,7 +533,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
               '--extra-cflags=--target=arm-linux-gnueabihf',
               '--extra-ldflags=--target=arm-linux-gnueabihf',
               '--sysroot=' + os.path.join(
-                  CHROMIUM_ROOT_DIR, 'build/linux/debian_jessie_arm-sysroot'),
+                  CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_arm-sysroot'),
               '--extra-cflags=-mtune=cortex-a8',
               # NOTE: we don't need softfp for this hardware.
               '--extra-cflags=-mfloat-abi=hard',
@@ -553,7 +560,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--extra-cflags=--target=aarch64-linux-gnu',
             '--extra-ldflags=--target=aarch64-linux-gnu',
             '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_jessie_arm64-sysroot'),
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_arm64-sysroot'),
         ])
       configure_flags['Common'].extend([
           '--arch=aarch64',
@@ -641,7 +648,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
     # typically be the system one, so explicitly configure use of Clang's
     # ld.lld, to ensure that things like cross-compilation and LTO work.
     # This does not work for arm64, ia32 and is always used on mac.
-    if target_arch not in ['arm64', 'ia32'] and target_os != 'mac':
+    if target_arch not in ['arm64', 'ia32', 'mipsel'] and target_os != 'mac':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
   # Should be run on Mac.
