@@ -51,7 +51,6 @@ import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
-import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
@@ -167,7 +166,6 @@ public class ContentViewCoreImpl
     private long mNativeContentViewCore;
 
     private boolean mAttachedToWindow;
-    private GestureListenerManagerImpl mGestureListenerManager;
 
     private PopupZoomer mPopupZoomer;
     private SelectPopup mSelectPopup;
@@ -380,9 +378,7 @@ public class ContentViewCoreImpl
         mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH)
                 && !nativeUsingSynchronousCompositing(mNativeContentViewCore);
-        mGestureListenerManager =
-                (GestureListenerManagerImpl) GestureListenerManager.fromWebContents(mWebContents);
-        mGestureListenerManager.addListener(new ContentGestureStateListener());
+        getGestureListenerManager().addListener(new ContentGestureStateListener());
     }
 
     @Override
@@ -444,6 +440,10 @@ public class ContentViewCoreImpl
 
     private SelectionPopupControllerImpl getSelectionPopupController() {
         return SelectionPopupControllerImpl.fromWebContents(mWebContents);
+    }
+
+    private GestureListenerManagerImpl getGestureListenerManager() {
+        return GestureListenerManagerImpl.fromWebContents(mWebContents);
     }
 
     @CalledByNative
@@ -702,7 +702,7 @@ public class ContentViewCoreImpl
     private void onTouchDown(MotionEvent event) {
         if (mShouldRequestUnbufferedDispatch) requestUnbufferedDispatch(event);
         cancelRequestToScrollFocusedEditableNodeIntoView();
-        mGestureListenerManager.updateOnTouchDown();
+        getGestureListenerManager().updateOnTouchDown();
     }
 
     private void updateAfterSizeChanged() {
@@ -745,8 +745,10 @@ public class ContentViewCoreImpl
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         mImeAdapter.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) resetGestureDetection();
-        if (isAlive()) getSelectionPopupController().onWindowFocusChanged(hasWindowFocus);
-        mGestureListenerManager.updateOnWindowFocusChanged(hasWindowFocus);
+        if (isAlive()) {
+            getSelectionPopupController().onWindowFocusChanged(hasWindowFocus);
+            getGestureListenerManager().updateOnWindowFocusChanged(hasWindowFocus);
+        }
     }
 
     @Override
@@ -1025,11 +1027,11 @@ public class ContentViewCoreImpl
                 maxPageScaleFactor, topBarShownPix);
 
         if (scrollChanged || topBarChanged) {
-            mGestureListenerManager.updateOnScrollChanged(
+            getGestureListenerManager().updateOnScrollChanged(
                     computeVerticalScrollOffset(), computeVerticalScrollExtent());
         }
         if (scaleLimitsChanged) {
-            mGestureListenerManager.updateOnScaleLimitsChanged(
+            getGestureListenerManager().updateOnScaleLimitsChanged(
                     minPageScaleFactor, maxPageScaleFactor);
         }
 
@@ -1325,15 +1327,15 @@ public class ContentViewCoreImpl
 
         mPotentiallyActiveFlingCount = 0;
         setTouchScrollInProgress(false);
-        if (touchScrollInProgress) mGestureListenerManager.updateOnScrollEnd();
-        if (potentiallyActiveFlingCount > 0) mGestureListenerManager.updateOnFlingEnd();
+        if (touchScrollInProgress) getGestureListenerManager().updateOnScrollEnd();
+        if (potentiallyActiveFlingCount > 0) getGestureListenerManager().updateOnFlingEnd();
     }
 
     @CalledByNative
     private void onNativeFlingStopped() {
         if (mPotentiallyActiveFlingCount > 0) {
             mPotentiallyActiveFlingCount--;
-            mGestureListenerManager.updateOnFlingEnd();
+            getGestureListenerManager().updateOnFlingEnd();
         }
         // Note that mTouchScrollInProgress should normally be false at this
         // point, but we reset it anyway as another failsafe.
