@@ -157,7 +157,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const StatusCallback& callback);
-  template <typename SourceInfo>
+  template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventInternal(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
@@ -165,30 +165,24 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback,
-      const SourceInfo& source_info);
-  template <typename SourceInfo>
+      SourceInfoPtr source_info);
+  template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventAfterStartWorker(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
-      const SourceInfo& source_info,
+      SourceInfoPtr source_info,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback);
-  template <typename SourceInfo>
+  template <typename SourceInfoPtr>
   void DidFailToDispatchExtendableMessageEvent(
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
-      const SourceInfo& source_info,
+      SourceInfoPtr source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);
-  bool IsValidSourceInfo(
-      const blink::mojom::ServiceWorkerClientInfo& source_info) const;
-  bool IsValidSourceInfo(
-      const blink::mojom::ServiceWorkerObjectInfo& source_info) const;
-  void ReleaseSourceInfo(
-      const blink::mojom::ServiceWorkerClientInfo& source_info);
-  void ReleaseSourceInfo(
-      const blink::mojom::ServiceWorkerObjectInfo& source_info);
+  void ReleaseSourceInfo(blink::mojom::ServiceWorkerClientInfoPtr source_info);
+  void ReleaseSourceInfo(blink::mojom::ServiceWorkerObjectInfoPtr source_info);
 
   ServiceWorkerContextCore* GetContext();
 

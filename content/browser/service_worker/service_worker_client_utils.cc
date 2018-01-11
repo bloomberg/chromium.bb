@@ -510,8 +510,8 @@ void NavigateClient(const GURL& url,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
 }
 
-void GetClient(ServiceWorkerProviderHost* provider_host,
-               const ClientCallback& callback) {
+void GetClient(const ServiceWorkerProviderHost* provider_host,
+               GetClientCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   blink::mojom::ServiceWorkerClientType client_type =
@@ -523,21 +523,27 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   if (client_type == blink::mojom::ServiceWorkerClientType::kWindow) {
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
-                   provider_host->route_id(), provider_host->create_time(),
-                   provider_host->client_uuid()),
-        callback);
+        base::BindOnce(&GetWindowClientInfoOnUI, provider_host->process_id(),
+                       provider_host->route_id(), provider_host->create_time(),
+                       provider_host->client_uuid()),
+        base::BindOnce(
+            [](GetClientCallback callback,
+               const blink::mojom::ServiceWorkerClientInfo& client_info) {
+              std::move(callback).Run(client_info.Clone());
+            },
+            std::move(callback)));
     return;
   }
 
-  blink::mojom::ServiceWorkerClientInfo client_info(
+  auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       provider_host->document_url(), provider_host->client_uuid(),
       provider_host->client_type(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
       provider_host->create_time());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, client_info));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(client_info)));
 }
 
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
