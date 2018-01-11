@@ -25,13 +25,9 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/browser_state_data_remover.h"
 #include "ios/chrome/browser/signin/constants.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_util.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -61,10 +57,8 @@ enum LoginMethodAndSyncState {
 const char* kFakeAccountIdForRemovedAccount = "0000000000000";
 
 // Returns the account id associated with |identity|.
-std::string ChromeIdentityToAccountID(ios::ChromeBrowserState* browser_state,
+std::string ChromeIdentityToAccountID(AccountTrackerService* account_tracker,
                                       ChromeIdentity* identity) {
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state);
   std::string gaia_id = base::SysNSStringToUTF8([identity gaiaID]);
   return account_tracker->FindAccountInfoByGaiaId(gaia_id).account_id;
 }
@@ -73,24 +67,34 @@ std::string ChromeIdentityToAccountID(ios::ChromeBrowserState* browser_state,
 
 AuthenticationService::AuthenticationService(
     ios::ChromeBrowserState* browser_state,
+    PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
-    SyncSetupService* sync_setup_service)
+    SyncSetupService* sync_setup_service,
+    AccountTrackerService* account_tracker,
+    SigninManager* signin_manager,
+    browser_sync::ProfileSyncService* sync_service)
     : browser_state_(browser_state),
+      pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),
+      account_tracker_(account_tracker),
+      signin_manager_(signin_manager),
+      sync_service_(sync_service),
       have_accounts_changed_(false),
       is_in_foreground_(false),
       is_reloading_credentials_(false),
       identity_service_observer_(this),
       weak_pointer_factory_(this) {
   DCHECK(browser_state_);
+  DCHECK(pref_service_);
   DCHECK(sync_setup_service_);
+  DCHECK(account_tracker_);
+  DCHECK(signin_manager_);
+  DCHECK(sync_service_);
   token_service_->AddObserver(this);
 }
 
-AuthenticationService::~AuthenticationService() {
-  token_service_->RemoveObserver(this);
-}
+AuthenticationService::~AuthenticationService() {}
 
 // static
 void AuthenticationService::RegisterPrefs(
@@ -108,17 +112,17 @@ void AuthenticationService::Initialize() {
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
 
-  bool isSignedIn = IsAuthenticated();
-  if (isSignedIn) {
+  bool is_signed_in = IsAuthenticated();
+  if (is_signed_in) {
     if (!sync_setup_service_->HasFinishedInitialSetup()) {
       // Sign out the user if sync was not configured after signing
       // in (see PM comments in http://crbug.com/339831 ).
       SignOut(signin_metrics::ABORT_SIGNIN, nil);
       SetPromptForSignIn(true);
-      isSignedIn = false;
+      is_signed_in = false;
     }
   }
-  breakpad_helper::SetCurrentlySignedIn(isSignedIn);
+  breakpad_helper::SetCurrentlySignedIn(is_signed_in);
 
   OnApplicationEnterForeground();
 
@@ -143,6 +147,8 @@ void AuthenticationService::Initialize() {
 }
 
 void AuthenticationService::Shutdown() {
+  token_service_->RemoveObserver(this);
+
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center removeObserver:foreground_observer_];
   [center removeObserver:background_observer_];
@@ -200,14 +206,13 @@ void AuthenticationService::OnApplicationEnterBackground() {
 
 void AuthenticationService::SetPromptForSignIn(bool should_prompt) {
   if (ShouldPromptForSignIn() != should_prompt) {
-    browser_state_->GetPrefs()->SetBoolean(
-        prefs::kSigninShouldPromptForSigninAgain, should_prompt);
+    pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain,
+                              should_prompt);
   }
 }
 
 bool AuthenticationService::ShouldPromptForSignIn() {
-  return browser_state_->GetPrefs()->GetBoolean(
-      prefs::kSigninShouldPromptForSigninAgain);
+  return pref_service_->GetBoolean(prefs::kSigninShouldPromptForSigninAgain);
 }
 
 void AuthenticationService::ComputeHaveAccountsChanged() {
@@ -216,11 +221,11 @@ void AuthenticationService::ComputeHaveAccountsChanged() {
   // While the AuthenticationService is in background, changes should be shown
   // to the user and |should_prompt| is true.
   ReloadCredentialsFromIdentities(!is_in_foreground_ /* should_prompt */);
-  std::vector<std::string> newAccounts = token_service_->GetAccounts();
-  std::vector<std::string> oldAccounts = GetAccountsInPrefs();
-  std::sort(newAccounts.begin(), newAccounts.end());
-  std::sort(oldAccounts.begin(), oldAccounts.end());
-  have_accounts_changed_ = oldAccounts != newAccounts;
+  std::vector<std::string> new_accounts = token_service_->GetAccounts();
+  std::vector<std::string> old_accounts = GetAccountsInPrefs();
+  std::sort(new_accounts.begin(), new_accounts.end());
+  std::sort(old_accounts.begin(), old_accounts.end());
+  have_accounts_changed_ = old_accounts != new_accounts;
 }
 
 bool AuthenticationService::HaveAccountsChanged() {
@@ -233,16 +238,13 @@ bool AuthenticationService::HaveAccountsChanged() {
 }
 
 void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state_);
-  if (account_tracker->GetMigrationState() ==
+  if (account_tracker_->GetMigrationState() ==
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     return;
   }
   DCHECK_EQ(AccountTrackerService::MIGRATION_DONE,
-            account_tracker->GetMigrationState());
-  if (browser_state_->GetPrefs()->GetBoolean(
-          prefs::kSigninLastAccountsMigrated)) {
+            account_tracker_->GetMigrationState());
+  if (pref_service_->GetBoolean(prefs::kSigninLastAccountsMigrated)) {
     // Already migrated.
     return;
   }
@@ -250,7 +252,7 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   std::vector<std::string> emails = GetAccountsInPrefs();
   base::ListValue accounts_pref_value;
   for (const std::string& email : emails) {
-    AccountInfo account_info = account_tracker->FindAccountInfoByEmail(email);
+    AccountInfo account_info = account_tracker_->FindAccountInfoByEmail(email);
     if (!account_info.email.empty()) {
       DCHECK(!account_info.gaia.empty());
       accounts_pref_value.AppendString(account_info.account_id);
@@ -262,28 +264,25 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
       accounts_pref_value.AppendString(kFakeAccountIdForRemovedAccount);
     }
   }
-  browser_state_->GetPrefs()->Set(prefs::kSigninLastAccounts,
-                                  accounts_pref_value);
-  browser_state_->GetPrefs()->SetBoolean(prefs::kSigninLastAccountsMigrated,
-                                         true);
+  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
+  pref_service_->SetBoolean(prefs::kSigninLastAccountsMigrated, true);
 }
 
 void AuthenticationService::StoreAccountsInPrefs() {
   std::vector<std::string> accounts(token_service_->GetAccounts());
-  base::ListValue accountsPrefValue;
+  base::ListValue accounts_pref_value;
   for (const std::string& account : accounts)
-    accountsPrefValue.AppendString(account);
-  browser_state_->GetPrefs()->Set(prefs::kSigninLastAccounts,
-                                  accountsPrefValue);
+    accounts_pref_value.AppendString(account);
+  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
 }
 
 std::vector<std::string> AuthenticationService::GetAccountsInPrefs() {
   std::vector<std::string> accounts;
-  const base::ListValue* accountsPref =
-      browser_state_->GetPrefs()->GetList(prefs::kSigninLastAccounts);
-  for (size_t i = 0; i < accountsPref->GetSize(); ++i) {
+  const base::ListValue* accounts_pref =
+      pref_service_->GetList(prefs::kSigninLastAccounts);
+  for (size_t i = 0; i < accounts_pref->GetSize(); ++i) {
     std::string account;
-    if (accountsPref->GetString(i, &account) && !account.empty()) {
+    if (accounts_pref->GetString(i, &account) && !account.empty()) {
       accounts.push_back(account);
     } else {
       NOTREACHED();
@@ -297,20 +296,18 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() {
   // user signed in via the client login flow.
   if (!IsAuthenticated())
     return nil;
-  std::string authenticatedAccountId =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-          ->GetAuthenticatedAccountId();
 
-  AccountTrackerService* accountTracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state_);
-  std::string authenticatedGaiaId =
-      accountTracker->GetAccountInfo(authenticatedAccountId).gaia;
-  if (authenticatedGaiaId.empty())
+  std::string authenticated_account_id =
+      signin_manager_->GetAuthenticatedAccountId();
+
+  std::string authenticated_gaia_id =
+      account_tracker_->GetAccountInfo(authenticated_account_id).gaia;
+  if (authenticated_gaia_id.empty())
     return nil;
 
   return ios::GetChromeBrowserProvider()
       ->GetChromeIdentityService()
-      ->GetIdentityWithGaiaID(authenticatedGaiaId);
+      ->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
 void AuthenticationService::SignIn(ChromeIdentity* identity,
@@ -323,38 +320,35 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // signing in.
   // TODO(msarda): http://crbug.com/478770 Seed account information for
   // all secondary accounts.
-  AccountTrackerService* accountTracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state_);
   AccountInfo info;
   info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
   info.email = GetCanonicalizedEmailForIdentity(identity);
   info.hosted_domain = hosted_domain;
-  std::string newAuthenticatedAccountId = accountTracker->SeedAccountInfo(info);
-  std::string oldAuthenticatedAccountId =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-          ->GetAuthenticatedAccountId();
+  std::string new_authenticated_account_id =
+      account_tracker_->SeedAccountInfo(info);
+  std::string old_authenticated_account_id =
+      signin_manager_->GetAuthenticatedAccountId();
   // |SigninManager::SetAuthenticatedAccountId| simply ignores the call if
   // there is already a signed in user. Check that there is no signed in account
   // or that the new signed in account matches the old one to avoid a mismatch
   // between the old and the new authenticated accounts.
-  if (!oldAuthenticatedAccountId.empty())
-    CHECK_EQ(newAuthenticatedAccountId, oldAuthenticatedAccountId);
+  if (!old_authenticated_account_id.empty())
+    CHECK_EQ(new_authenticated_account_id, old_authenticated_account_id);
 
   SetPromptForSignIn(false);
   sync_setup_service_->PrepareForFirstSyncSetup();
 
   // Update the SigninManager with the new logged in identity.
-  std::string newAuthenticatedUsername =
-      accountTracker->GetAccountInfo(newAuthenticatedAccountId).email;
-  ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-      ->OnExternalSigninCompleted(newAuthenticatedUsername);
+  std::string new_authenticated_username =
+      account_tracker_->GetAccountInfo(new_authenticated_account_id).email;
+  signin_manager_->OnExternalSigninCompleted(new_authenticated_username);
 
   // Reload all credentials to match the desktop model. Exclude all the
   // accounts ids that are the primary account ids on other profiles.
   ProfileOAuth2TokenServiceIOSDelegate* tokenServiceDelegate =
       static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
           token_service_->GetDelegate());
-  tokenServiceDelegate->ReloadCredentials(newAuthenticatedAccountId);
+  tokenServiceDelegate->ReloadCredentials(new_authenticated_account_id);
   StoreAccountsInPrefs();
 
   // Kick-off sync: The authentication error UI (sign in infobar and warning
@@ -364,9 +358,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // TODO(msarda): Remove this code once the authentication error UI checks
   // SigninGlobalError instead of the sync auth error state.
   // crbug.com/289493
-  syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-  sync_service->RequestStart();
+  sync_service_->RequestStart();
   breakpad_helper::SetCurrentlySignedIn(true);
 }
 
@@ -381,10 +373,9 @@ void AuthenticationService::SignOut(
 
   bool is_managed = IsAuthenticatedIdentityManaged();
 
-  IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
-      ->RequestStop(syncer::SyncService::CLEAR_DATA);
-  ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-      ->SignOut(signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
+  sync_service_->RequestStop(syncer::SyncService::CLEAR_DATA);
+  signin_manager_->SignOut(signout_source,
+                           signin_metrics::SignoutDelete::IGNORE_METRIC);
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
   if (is_managed) {
@@ -397,7 +388,7 @@ void AuthenticationService::SignOut(
 NSDictionary* AuthenticationService::GetCachedMDMInfo(
     ChromeIdentity* identity) {
   auto it = cached_mdm_infos_.find(
-      ChromeIdentityToAccountID(browser_state_, identity));
+      ChromeIdentityToAccountID(account_tracker_, identity));
 
   if (it == cached_mdm_infos_.end()) {
     return nil;
@@ -462,7 +453,7 @@ void AuthenticationService::OnIdentityListChanged() {
   // background, the user should be warned about it.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&AuthenticationService::HandleIdentityListChanged,
-                            base::Unretained(this), !is_in_foreground_));
+                            GetWeakPtr(), !is_in_foreground_));
 }
 
 bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
@@ -478,17 +469,18 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
     return false;
   }
 
+  base::WeakPtr<AuthenticationService> weak_ptr = GetWeakPtr();
   ios::MDMStatusCallback callback = ^(bool is_blocked) {
-    if (is_blocked) {
+    if (is_blocked && weak_ptr.get()) {
       // If the identiy is blocked, sign out of the account. As only managed
       // account can be blocked, this will clear the associated browsing data.
-      if (identity == GetAuthenticatedIdentity()) {
-        SignOut(signin_metrics::ABORT_SIGNIN, nil);
+      if (identity == weak_ptr->GetAuthenticatedIdentity()) {
+        weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN, nil);
       }
     }
   };
   if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
-    cached_mdm_infos_[ChromeIdentityToAccountID(browser_state_, identity)] =
+    cached_mdm_infos_[ChromeIdentityToAccountID(account_tracker_, identity)] =
         user_info;
     return true;
   }
@@ -567,8 +559,9 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
   if (is_reloading_credentials_) {
     return;
   }
-  base::AutoReset<bool> is_reloading_credentials(&is_reloading_credentials_,
-                                                 true);
+
+  base::AutoReset<bool> auto_reset(&is_reloading_credentials_, true);
+
   HandleForgottenIdentity(nil, should_prompt);
   if (GetAuthenticatedUserEmail()) {
     ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
@@ -585,26 +578,21 @@ bool AuthenticationService::IsAuthenticated() {
     // Reload credentials to ensure that the user is still authenticated.
     ReloadCredentialsFromIdentities(true /* should_prompt */);
   }
-  return ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-      ->IsAuthenticated();
+  return signin_manager_->IsAuthenticated();
 }
 
 NSString* AuthenticationService::GetAuthenticatedUserEmail() {
   if (!IsAuthenticated())
     return nil;
-  std::string authenticatedUsername =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-          ->GetAuthenticatedAccountInfo()
-          .email;
-  DCHECK_LT(0U, authenticatedUsername.length());
-  return base::SysUTF8ToNSString(authenticatedUsername);
+  std::string authenticated_username =
+      signin_manager_->GetAuthenticatedAccountInfo().email;
+  DCHECK_LT(0U, authenticated_username.length());
+  return base::SysUTF8ToNSString(authenticated_username);
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
   std::string hosted_domain =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state_)
-          ->GetAuthenticatedAccountInfo()
-          .hosted_domain;
+      signin_manager_->GetAuthenticatedAccountInfo().hosted_domain;
   return !hosted_domain.empty() &&
          hosted_domain != AccountTrackerService::kNoHostedDomainFound;
 }

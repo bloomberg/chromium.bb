@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -48,6 +49,7 @@ AuthenticationServiceFactory::AuthenticationServiceFactory()
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(SyncSetupServiceFactory::GetInstance());
+  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
 }
 
 AuthenticationServiceFactory::~AuthenticationServiceFactory() {}
@@ -58,9 +60,12 @@ AuthenticationServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<AuthenticationService> service(new AuthenticationService(
-      browser_state,
+      browser_state, browser_state->GetPrefs(),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-      SyncSetupServiceFactory::GetForBrowserState(browser_state)));
+      SyncSetupServiceFactory::GetForBrowserState(browser_state),
+      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
+      ios::SigninManagerFactory::GetForBrowserState(browser_state),
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state)));
   service->Initialize();
   return service;
 }
