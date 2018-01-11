@@ -139,6 +139,30 @@ void CloseBrowserWindow(Browser* browser,
   close_observer.Wait();
 }
 
+// Activates a window. Waits until ash and ui services are aware of the change.
+void ActivateWindow(ui::BaseWindow* window) {
+  window->Activate();
+  aura::test::WaitForAllChangesToComplete();
+}
+
+// Maximizes a window. Waits until ash and ui services are aware of the change.
+void MaximizeWindow(ui::BaseWindow* window) {
+  window->Maximize();
+  aura::test::WaitForAllChangesToComplete();
+}
+
+// Minimizes a window. Waits until ash and ui services are aware of the change.
+void MinimizeWindow(ui::BaseWindow* window) {
+  window->Minimize();
+  aura::test::WaitForAllChangesToComplete();
+}
+
+// Restores a window. Waits until ash and ui services are aware of the change.
+void RestoreWindow(ui::BaseWindow* window) {
+  window->Restore();
+  aura::test::WaitForAllChangesToComplete();
+}
+
 // Returns the shelf view for the primary display.
 // TODO(jamescook): Convert users of this function to the mojo shelf test API.
 ash::ShelfView* GetPrimaryShelfView() {
@@ -378,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
 
   // Open a window. Confirm the item is now running.
   AppWindow* window = CreateAppWindow(browser()->profile(), extension);
-  window->GetBaseWindow()->Activate();
+  ActivateWindow(window->GetBaseWindow());
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
@@ -459,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
 
   // Open a window. Confirm the item is now running.
   AppWindow* window = CreateAppWindow(browser()->profile(), extension);
-  window->GetBaseWindow()->Activate();
+  ActivateWindow(window->GetBaseWindow());
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
@@ -595,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
 
   // Add window for app1. This will activate it.
   AppWindow* window1b = CreateAppWindow(browser()->profile(), extension1);
-  window1b->GetBaseWindow()->Activate();
+  ActivateWindow(window1b->GetBaseWindow());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window2->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1b->GetBaseWindow()->IsActive());
@@ -657,13 +681,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   // Maximizing a window should preserve state after minimize + click.
-  window1->GetBaseWindow()->Maximize();
-  window1->GetBaseWindow()->Minimize();
+  MaximizeWindow(window1->GetBaseWindow());
+  MinimizeWindow(window1->GetBaseWindow());
   SelectItem(item.id);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
-  window1->GetBaseWindow()->Restore();
+  RestoreWindow(window1->GetBaseWindow());
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window1->GetBaseWindow()->IsMaximized());
@@ -747,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   EXPECT_EQ(ash::TYPE_APP, item.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
-  browser()->window()->Activate();
+  ActivateWindow(browser()->window());
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 }
 
@@ -974,10 +998,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
                          display::kInvalidDisplayId);
 }
 
-// Confirm that clicking a icon for an app running in one of 2 maxmized windows
+// Confirm that clicking a icon for an app running in one of 2 maximized windows
 // activates the right window.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
-  browser()->window()->Maximize();
+  MaximizeWindow(browser()->window());
   content::WindowedNotificationObserver open_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
@@ -986,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   Browser* browser2 = content::Source<Browser>(open_observer.source()).ptr();
   TabStripModel* tab_strip = browser2->tab_strip_model();
   int tab_count = tab_strip->count();
-  browser2->window()->Maximize();
+  MaximizeWindow(browser2->window());
 
   ash::ShelfID shortcut_id = CreateShortcut("app1");
   SelectItem(shortcut_id);
@@ -994,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
   // Activate the first browser window.
-  browser()->window()->Activate();
+  ActivateWindow(browser()->window());
   EXPECT_FALSE(browser2->window()->IsActive());
 
   // Selecting the shortcut activates the second window.
@@ -1157,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   ASSERT_TRUE(app_browser);
   BrowserWindow* window = app_browser->window();
   EXPECT_FALSE(window->IsMaximized());
-  window->Maximize();
+  MaximizeWindow(window);
   EXPECT_TRUE(window->IsMaximized());
   CloseAppBrowserWindow(app_browser);
 
@@ -1170,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   window = app_browser->window();
   EXPECT_TRUE(window->IsMaximized());
 
-  window->Restore();
+  RestoreWindow(window);
   EXPECT_FALSE(window->IsMaximized());
   app_browser->window()->Close();
   CloseAppBrowserWindow(app_browser);
@@ -2034,7 +2058,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   // Minimize Window.
   Browser* browser = chrome::FindLastActive();
   ASSERT_TRUE(browser);
-  browser->window()->Minimize();
+  MinimizeWindow(browser->window());
   EXPECT_TRUE(browser->window()->IsMinimized());
 
   // Activate again. This doesn't create new browser, it activates the window.

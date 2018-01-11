@@ -151,8 +151,9 @@
 -KioskTest.*
 -KioskUpdateTest.*
 
-# Window state lookup failures for minimized, active, etc.
--LauncherPlatformAppBrowserTest.*
+# Panel state lookup failures for window active, item running, etc.
+-LauncherPlatformAppBrowserTest.PanelAttentionStatus
+-LauncherPlatformAppBrowserTest.PanelItemClickBehavior
 
 # JS failure: hasAccessToCurrentWindow: FAIL (no message)
 -LockScreenNoteTakingTest.*
@@ -188,9 +189,11 @@
 # Crash in autofill::SaveCardBubbleViews::ShouldShowCloseButton().
 -SaveCardBubbleControllerImplTest.*
 
-# ash::Shell access in test.
--ShelfAppBrowserTest.*
--ShelfAppBrowserTestNoDefaultBrowser.*
+# WindowSizerAsh does not compute correct show state.
+-ShelfAppBrowserTest.AppWindowRestoreBehaviorTest
+
+# ash::Shell access in test for display configuration.
+-ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
 
 # ash::Shell access in test.
 -ShutdownPolicyInSessionTest.*
@@ -203,6 +206,7 @@
 
 # ash::Shell access in test for StatusAreaWidget.
 -SupervisedUserCreationTest.*
+
 # Crash. Database is locked.
 -SyncAwareCounterTest.*
 
