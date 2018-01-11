@@ -81,6 +81,8 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
 };
 static_assert(WTF::IsTraceable<IntWrapper>::value,
               "IsTraceable<> template failed to recognize trace method.");
+static_assert(WTF::IsTraceable<HeapVector<IntWrapper>>::value,
+              "HeapVector<IntWrapper> must be traceable.");
 
 class KeyWithCopyingMoveConstructor final {
  public:
