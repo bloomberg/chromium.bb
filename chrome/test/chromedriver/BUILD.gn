@@ -198,6 +198,11 @@ action("embed_version_in_cpp") {
   inputs = [
     "cpp_source.py",
     "VERSION",
+
+    # We don't actually use LASTCHANGE as an input file. It is updated
+    # whenever a different Git revision is checked out, at which point
+    # version.cc needs to be updated with the new revision info.
+    "//build/util/LASTCHANGE",
   ]
   outputs = [
     "$target_gen_dir/version.cc",
