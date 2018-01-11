@@ -62,7 +62,8 @@ std::string GetJSEnumEntryName(const std::string& original) {
   return result;
 }
 
-void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void RunAPIBindingHandlerCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
   if (!binding::IsContextValid(args.isolate()->GetCurrentContext()))
     return;
@@ -386,7 +387,7 @@ void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
 
     object_template->Set(
         gin::StringToSymbol(isolate, key_value.first),
-        v8::FunctionTemplate::New(isolate, &CallbackHelper,
+        v8::FunctionTemplate::New(isolate, &RunAPIBindingHandlerCallback,
                                   v8::External::New(isolate, &method.callback),
                                   v8::Local<v8::Signature>(), 0,
                                   v8::ConstructorBehavior::kThrow));
