@@ -136,18 +136,6 @@ Element* FrameSelection::RootEditableElementOrDocumentElement() const {
   return selection_root ? selection_root : GetDocument().documentElement();
 }
 
-// TODO(yosin): We should move |rootEditableElementOrTreeScopeRootNodeOf()| to
-// "EditingUtilities.cpp"
-ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(
-    const Position& position) {
-  Element* selection_root = RootEditableElementOf(position);
-  if (selection_root)
-    return selection_root;
-
-  Node* const node = position.ComputeContainerNode();
-  return node ? &node->GetTreeScope().RootNode() : nullptr;
-}
-
 VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
     const {
   // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
