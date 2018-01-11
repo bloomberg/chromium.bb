@@ -1355,3 +1355,40 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'TextSelectionAndLiveRegion', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <div><input value="test" type="text"></input></div>
+    <div id="live" aria-live="polite"></div>
+    <script>
+      const input = document.querySelector('input');
+      const [div, live] = document.querySelectorAll('div');
+      let clicks = 0;
+      div.addEventListener('click', function() {
+        clicks++;
+        if (clicks == 1) {
+          input.selectionStart = 1;
+          live.textContent = 'queued';
+        } else {
+          live.textContent = 'interrupted';
+          input.selectionStart = 2;
+        }
+      });
+    </script>
+  */}, function(root) {
+    var textField = root.find({role: RoleType.TEXT_FIELD});
+    var div = textField.parent;
+    mockFeedback.call(textField.focus.bind(textField))
+        .expectSpeech('Edit text')
+        .call(div.doDefault.bind(div))
+        .expectSpeechWithQueueMode('e', cvox.QueueMode.FLUSH)
+        .expectSpeechWithQueueMode('queued', cvox.QueueMode.CATEGORY_FLUSH)
+
+        .call(div.doDefault.bind(div))
+        .expectSpeechWithQueueMode('interrupted', cvox.QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('s', cvox.QueueMode.FLUSH)
+
+        .replay();
+  });
+});

@@ -154,18 +154,7 @@ LiveRegions.prototype = {
   outputLiveRegionChangeForNode_: function(node, opt_prependFormatStr) {
     var range = cursors.Range.fromNode(node);
     var output = new Output();
-    if (opt_prependFormatStr)
-      output.format(opt_prependFormatStr);
-    output.withSpeech(range, range, Output.EventType.NAVIGATE);
-
-    if (!output.hasSpeech && node.liveAtomic)
-      output.format('$joinedDescendants', node);
-
     output.withSpeechCategory(cvox.TtsCategory.LIVE);
-
-    var currentTime = new Date();
-    if (!output.hasSpeech)
-      return;
 
     // Queue live regions coming from background tabs.
     var webView = AutomationUtil.getTopLevelRoot(node);
@@ -176,11 +165,22 @@ LiveRegions.prototype = {
     // Enqueue live region updates that were received at approximately
     // the same time, otherwise flush previous live region updates.
     var queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
+    var currentTime = new Date();
     var delta = currentTime - this.lastLiveRegionTime_;
     if (delta > queueTime && !forceQueueForBackgroundedLiveRegion)
       output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
     else
       output.withQueueMode(cvox.QueueMode.QUEUE);
+
+    if (opt_prependFormatStr)
+      output.format(opt_prependFormatStr);
+    output.withSpeech(range, range, Output.EventType.NAVIGATE);
+
+    if (!output.hasSpeech && node.liveAtomic)
+      output.format('$joinedDescendants', node);
+
+    if (!output.hasSpeech)
+      return;
 
     // We also have to add recursively the children of this live region node
     // since all children could potentially get described and we don't want to
