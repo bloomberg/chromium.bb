@@ -372,9 +372,11 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
     return false;
 
   // Prepare the HTTP request.
-  InternetHandle http_handle = HttpOpenRequestA(connection_handle,
-      "GET", request, NULL, NULL, kFinancialPingResponseObjects,
-      INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_NO_COOKIES, NULL);
+  const DWORD kFlags = INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_NO_COOKIES |
+                       INTERNET_FLAG_SECURE;
+  InternetHandle http_handle =
+      HttpOpenRequestA(connection_handle, "GET", request, NULL, NULL,
+                       kFinancialPingResponseObjects, kFlags, NULL);
   if (!http_handle)
     return false;
 
@@ -407,9 +409,8 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   return true;
 #else
-  std::string url = base::StringPrintf("http://%s:%d%s",
-                                       kFinancialServer, kFinancialPort,
-                                       request);
+  std::string url =
+      base::StringPrintf("https://%s%s", kFinancialServer, request);
 
   // Use a waitable event to cause this function to block, to match the
   // wininet implementation.

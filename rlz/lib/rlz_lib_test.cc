@@ -21,6 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "rlz/lib/financial_ping.h"
 #include "rlz/lib/net_response_check.h"
@@ -62,6 +63,8 @@ class MachineDealCodeHelper
 };
 
 class RlzLibTest : public RlzLibTestBase {
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(RlzLibTest, RecordProductEvent) {
@@ -513,8 +516,7 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   rlz_lib::test::ResetSendFinancialPingInterrupted();
   EXPECT_FALSE(rlz_lib::test::WasSendFinancialPingInterrupted());
 
-  base::MessageLoop loop;
-  loop.task_runner()->PostTask(FROM_HERE, base::Bind(&ResetContext));
+  io_thread.task_runner()->PostTask(FROM_HERE, base::BindOnce(&ResetContext));
   std::string request;
   EXPECT_FALSE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
       "swg", "GGLA", "SwgProductId1234", "en-UK", false,
