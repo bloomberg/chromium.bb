@@ -637,7 +637,8 @@ TEST(TextEliderTest, ElideString) {
 TEST(TextEliderTest, MAYBE_ElideRectangleText) {
   const FontList font_list;
   const int line_height = font_list.GetHeight();
-  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
+  const float test_width =
+      GetStringWidthF(ASCIIToUTF16("Test"), font_list, Typesetter::HARFBUZZ);
 
   struct TestData {
     const char* input;
@@ -702,8 +703,10 @@ TEST(TextEliderTest, MAYBE_ElideRectangleText) {
 TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
   const FontList font_list;
   const int line_height = font_list.GetHeight();
-  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
-  const float test_t_width = GetStringWidthF(ASCIIToUTF16("Test T"), font_list);
+  const float test_width =
+      GetStringWidthF(ASCIIToUTF16("Test"), font_list, Typesetter::HARFBUZZ);
+  const float test_t_width =
+      GetStringWidthF(ASCIIToUTF16("Test T"), font_list, Typesetter::HARFBUZZ);
 
   struct TestData {
     const char* input;
@@ -751,8 +754,10 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
   const int kAvailableHeight = 1000;
   const base::string16 kElidedTesting =
       UTF8ToUTF16(std::string("Tes") + kEllipsis);
-  const float elided_width = GetStringWidthF(kElidedTesting, font_list);
-  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
+  const float elided_width =
+      GetStringWidthF(kElidedTesting, font_list, Typesetter::HARFBUZZ);
+  const float test_width =
+      GetStringWidthF(ASCIIToUTF16("Test"), font_list, Typesetter::HARFBUZZ);
 
   struct TestData {
     const char* input;
@@ -836,8 +841,10 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
                                   WRAP_LONG_WORDS,
                                   &lines));
   ASSERT_EQ(2u, lines.size());
-  EXPECT_LE(GetStringWidthF(lines[0], font_list), kAvailableWidth);
-  EXPECT_LE(GetStringWidthF(lines[1], font_list), kAvailableWidth);
+  EXPECT_LE(GetStringWidthF(lines[0], font_list, Typesetter::HARFBUZZ),
+            kAvailableWidth);
+  EXPECT_LE(GetStringWidthF(lines[1], font_list, Typesetter::HARFBUZZ),
+            kAvailableWidth);
 }
 
 #if defined(OS_CHROMEOS)
