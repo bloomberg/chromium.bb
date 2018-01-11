@@ -4343,7 +4343,8 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
+    defined(ARCH_CPU_MIPS_FAMILY)
       // TODO(dschuyler): On Windows, Chrome OS, and Mac smoothing draws to the
       // left of text.  This appears to be a preexisting issue that wasn't
       // revealed by the prior unit tests.  RenderText currently only uses
@@ -4358,7 +4359,8 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Right Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
+    defined(ARCH_CPU_MIPS_FAMILY)
       // TODO(dschuyler): On Windows, Chrome OS, and Mac smoothing draws to the
       // right of text.  This appears to be a preexisting issue that wasn't
       // revealed by the prior unit tests.  RenderText currently only uses
