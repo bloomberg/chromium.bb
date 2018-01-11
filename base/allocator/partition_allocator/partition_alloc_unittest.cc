@@ -33,11 +33,7 @@ std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
   return std::unique_ptr<T[]>(ptr);
 }
 
-#if defined(_MIPS_ARCH_LOONGSON)
-const size_t kTestMaxAllocation = 16384;
-#else
-const size_t kTestMaxAllocation = 4096;
-#endif
+constexpr size_t kTestMaxAllocation = base::kSystemPageSize;
 
 bool IsLargeMemoryDevice() {
   // Treat any device with 2GiB or more of physical memory as a "large memory
@@ -807,61 +803,61 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
 // Test that we can fetch the real allocated size after an allocation.
 TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   void* ptr;
-  size_t requestedSize, actualSize, predictedSize;
+  size_t requested_size, actual_size, predicted_size;
 
   EXPECT_TRUE(PartitionAllocSupportsGetSize());
 
   // Allocate something small.
-  requestedSize = 511 - kExtraAllocSize;
-  predictedSize = generic_allocator.root()->ActualSize(requestedSize);
-  ptr = generic_allocator.root()->Alloc(requestedSize, type_name);
+  requested_size = 511 - kExtraAllocSize;
+  predicted_size = generic_allocator.root()->ActualSize(requested_size);
+  ptr = generic_allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actualSize = PartitionAllocGetSize(ptr);
-  EXPECT_EQ(predictedSize, actualSize);
-  EXPECT_LT(requestedSize, actualSize);
+  actual_size = PartitionAllocGetSize(ptr);
+  EXPECT_EQ(predicted_size, actual_size);
+  EXPECT_LT(requested_size, actual_size);
   generic_allocator.root()->Free(ptr);
 
   // Allocate a size that should be a perfect match for a bucket, because it
   // is an exact power of 2.
-  requestedSize = (256 * 1024) - kExtraAllocSize;
-  predictedSize = generic_allocator.root()->ActualSize(requestedSize);
-  ptr = generic_allocator.root()->Alloc(requestedSize, type_name);
+  requested_size = (256 * 1024) - kExtraAllocSize;
+  predicted_size = generic_allocator.root()->ActualSize(requested_size);
+  ptr = generic_allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actualSize = PartitionAllocGetSize(ptr);
-  EXPECT_EQ(predictedSize, actualSize);
-  EXPECT_EQ(requestedSize, actualSize);
+  actual_size = PartitionAllocGetSize(ptr);
+  EXPECT_EQ(predicted_size, actual_size);
+  EXPECT_EQ(requested_size, actual_size);
   generic_allocator.root()->Free(ptr);
 
   // Allocate a size that is a system page smaller than a bucket. GetSize()
   // should return a larger size than we asked for now.
-  requestedSize = (256 * 1024) - kSystemPageSize - kExtraAllocSize;
-  predictedSize = generic_allocator.root()->ActualSize(requestedSize);
-  ptr = generic_allocator.root()->Alloc(requestedSize, type_name);
+  requested_size = (256 * 1024) - kSystemPageSize - kExtraAllocSize;
+  predicted_size = generic_allocator.root()->ActualSize(requested_size);
+  ptr = generic_allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actualSize = PartitionAllocGetSize(ptr);
-  EXPECT_EQ(predictedSize, actualSize);
-  EXPECT_EQ(requestedSize + kSystemPageSize, actualSize);
+  actual_size = PartitionAllocGetSize(ptr);
+  EXPECT_EQ(predicted_size, actual_size);
+  EXPECT_EQ(requested_size + kSystemPageSize, actual_size);
   // Check that we can write at the end of the reported size too.
   char* charPtr = reinterpret_cast<char*>(ptr);
-  *(charPtr + (actualSize - 1)) = 'A';
+  *(charPtr + (actual_size - 1)) = 'A';
   generic_allocator.root()->Free(ptr);
 
   // Allocate something very large, and uneven.
   if (IsLargeMemoryDevice()) {
-    requestedSize = 512 * 1024 * 1024 - 1;
-    predictedSize = generic_allocator.root()->ActualSize(requestedSize);
-    ptr = generic_allocator.root()->Alloc(requestedSize, type_name);
+    requested_size = 512 * 1024 * 1024 - 1;
+    predicted_size = generic_allocator.root()->ActualSize(requested_size);
+    ptr = generic_allocator.root()->Alloc(requested_size, type_name);
     EXPECT_TRUE(ptr);
-    actualSize = PartitionAllocGetSize(ptr);
-    EXPECT_EQ(predictedSize, actualSize);
-    EXPECT_LT(requestedSize, actualSize);
+    actual_size = PartitionAllocGetSize(ptr);
+    EXPECT_EQ(predicted_size, actual_size);
+    EXPECT_LT(requested_size, actual_size);
     generic_allocator.root()->Free(ptr);
   }
 
   // Too large allocation.
-  requestedSize = INT_MAX;
-  predictedSize = generic_allocator.root()->ActualSize(requestedSize);
-  EXPECT_EQ(requestedSize, predictedSize);
+  requested_size = INT_MAX;
+  predicted_size = generic_allocator.root()->ActualSize(requested_size);
+  EXPECT_EQ(requested_size, predicted_size);
 }
 
 // Test the realloc() contract.
@@ -908,18 +904,18 @@ TEST_F(PartitionAllocTest, Realloc) {
   // Test that shrinking a direct mapped allocation happens in-place.
   size = kGenericMaxBucketed + 16 * kSystemPageSize;
   ptr = generic_allocator.root()->Alloc(size, type_name);
-  size_t actualSize = PartitionAllocGetSize(ptr);
+  size_t actual_size = PartitionAllocGetSize(ptr);
   ptr2 = generic_allocator.root()->Realloc(
       ptr, kGenericMaxBucketed + 8 * kSystemPageSize, type_name);
   EXPECT_EQ(ptr, ptr2);
-  EXPECT_EQ(actualSize - 8 * kSystemPageSize, PartitionAllocGetSize(ptr2));
+  EXPECT_EQ(actual_size - 8 * kSystemPageSize, PartitionAllocGetSize(ptr2));
 
   // Test that a previously in-place shrunk direct mapped allocation can be
   // expanded up again within its original size.
   ptr = generic_allocator.root()->Realloc(ptr2, size - kSystemPageSize,
                                           type_name);
   EXPECT_EQ(ptr2, ptr);
-  EXPECT_EQ(actualSize - kSystemPageSize, PartitionAllocGetSize(ptr));
+  EXPECT_EQ(actual_size - kSystemPageSize, PartitionAllocGetSize(ptr));
 
   // Test that a direct mapped allocation is performed not in-place when the
   // new size is small enough.
@@ -1640,14 +1636,9 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
   }
 
   // This test checks large-but-not-quite-direct allocations.
-  // kSystemPageSize is 16384 on Loongson Platform, not 4096.
   {
-#if defined(_MIPS_ARCH_LOONGSON)
-    size_t requestedSize = 262144;
-#else
-    size_t requestedSize = 65536;
-#endif
-    void* ptr = generic_allocator.root()->Alloc(requestedSize + 1, type_name);
+    constexpr size_t requested_size = 16 * kSystemPageSize;
+    void* ptr = generic_allocator.root()->Alloc(requested_size + 1, type_name);
 
     {
       MockPartitionStatsDumper dumper;
@@ -1656,14 +1647,14 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_FALSE(stats->is_direct_map);
       EXPECT_EQ(slot_size, stats->bucket_slot_size);
-      EXPECT_EQ(requestedSize + 1 + kExtraAllocSize, stats->active_bytes);
+      EXPECT_EQ(requested_size + 1 + kExtraAllocSize, stats->active_bytes);
       EXPECT_EQ(slot_size, stats->resident_bytes);
       EXPECT_EQ(0u, stats->decommittable_bytes);
       EXPECT_EQ(kSystemPageSize, stats->discardable_bytes);
@@ -1682,7 +1673,7 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_FALSE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
@@ -1698,9 +1689,8 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_EQ(0u, stats->num_decommitted_pages);
     }
 
-    void* ptr2 =
-        generic_allocator.root()->Alloc(requestedSize + kSystemPageSize + 1,
-                                        type_name);
+    void* ptr2 = generic_allocator.root()->Alloc(
+        requested_size + kSystemPageSize + 1, type_name);
     EXPECT_EQ(ptr, ptr2);
 
     {
@@ -1710,14 +1700,14 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_FALSE(stats->is_direct_map);
       EXPECT_EQ(slot_size, stats->bucket_slot_size);
-      EXPECT_EQ(requestedSize + kSystemPageSize + 1 + kExtraAllocSize,
+      EXPECT_EQ(requested_size + kSystemPageSize + 1 + kExtraAllocSize,
                 stats->active_bytes);
       EXPECT_EQ(slot_size, stats->resident_bytes);
       EXPECT_EQ(0u, stats->decommittable_bytes);
@@ -1894,29 +1884,18 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
 
     generic_allocator.root()->Free(ptr2);
   }
-  // kSystemPageSize is 16384 byte on Loongson platform.
-  // Test purge discardable memory requirements need to
-  // be modified as follows:
   {
-#if defined(_MIPS_ARCH_LOONGSON)
-    size_t requestedSize = 36864;
-#else
-    size_t requestedSize = 9216;
-#endif
-    char* ptr1 = reinterpret_cast<char*>(
-        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
-                                        type_name));
-    void* ptr2 =
-        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
-                                        type_name);
-    void* ptr3 =
-        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
-                                        type_name);
-    void* ptr4 =
-        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
-                                        type_name);
-    memset(ptr1, 'A', requestedSize - kExtraAllocSize);
-    memset(ptr2, 'A', requestedSize - kExtraAllocSize);
+    constexpr size_t requested_size = 2.25 * kSystemPageSize;
+    char* ptr1 = reinterpret_cast<char*>(generic_allocator.root()->Alloc(
+        requested_size - kExtraAllocSize, type_name));
+    void* ptr2 = generic_allocator.root()->Alloc(
+        requested_size - kExtraAllocSize, type_name);
+    void* ptr3 = generic_allocator.root()->Alloc(
+        requested_size - kExtraAllocSize, type_name);
+    void* ptr4 = generic_allocator.root()->Alloc(
+        requested_size - kExtraAllocSize, type_name);
+    memset(ptr1, 'A', requested_size - kExtraAllocSize);
+    memset(ptr2, 'A', requested_size - kExtraAllocSize);
     generic_allocator.root()->Free(ptr2);
     generic_allocator.root()->Free(ptr1);
     {
@@ -1926,12 +1905,12 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       const PartitionBucketMemoryStats* stats =
-          dumper.GetBucketStats(requestedSize);
+          dumper.GetBucketStats(requested_size);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_EQ(0u, stats->decommittable_bytes);
       EXPECT_EQ(2 * kSystemPageSize, stats->discardable_bytes);
-      EXPECT_EQ(requestedSize * 2, stats->active_bytes);
+      EXPECT_EQ(requested_size * 2, stats->active_bytes);
       EXPECT_EQ(9 * kSystemPageSize, stats->resident_bytes);
     }
     CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
@@ -1950,11 +1929,13 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     generic_allocator.root()->Free(ptr3);
     generic_allocator.root()->Free(ptr4);
   }
-  // kSystemPageSize is 16384 byte on Loongson platform.
-  // 64*kSystemPageSize is 2G and exceeded maximum application
-  // value that partitionalloc, so must be reduce the application
-  // value.
-  // On Loongson, 64*kSystemPageSize was changed to 32*kSystemPageSize.
+
+// When kSystemPageSize = 16384 (as on _MIPS_ARCH_LOONGSON), 64 *
+// kSystemPageSize (see the #else branch below) caused this test to OOM.
+// Therefore, for systems with 16 KiB pages, use 32 * kSystemPageSize.
+//
+// TODO(palmer): Refactor this to branch on page size instead of architecture,
+// for clarity of purpose and for applicability to more architectures.
 #if defined(_MIPS_ARCH_LOONGSON)
   {
     char* ptr1 = reinterpret_cast<char*>(PartitionAllocGeneric(

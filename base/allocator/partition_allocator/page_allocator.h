@@ -29,9 +29,6 @@ static const size_t kPageAllocationGranularityOffsetMask =
 static const size_t kPageAllocationGranularityBaseMask =
     ~kPageAllocationGranularityOffsetMask;
 
-// All Blink-supported systems have 4096 sized system pages and can handle
-// permissions and commit / decommit at this granularity.
-// Loongson have 16384 sized system pages.
 #if defined(_MIPS_ARCH_LOONGSON)
 static const size_t kSystemPageSize = 16384;
 #else
