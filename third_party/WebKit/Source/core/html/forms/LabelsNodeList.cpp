@@ -39,7 +39,7 @@ LabelsNodeList::LabelsNodeList(ContainerNode& owner_node)
                    kInvalidateForFormControls,
                    NodeListRootType::kTreeScope) {}
 
-LabelsNodeList::~LabelsNodeList() {}
+LabelsNodeList::~LabelsNodeList() = default;
 
 bool LabelsNodeList::ElementMatches(const Element& element) const {
   return IsHTMLLabelElement(element) &&

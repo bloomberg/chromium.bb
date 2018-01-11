@@ -3173,7 +3173,7 @@ class MockAutofillClient : public WebAutofillClient {
         text_changes_from_user_gesture_(0),
         user_gesture_notifications_count_(0) {}
 
-  ~MockAutofillClient() override {}
+  ~MockAutofillClient() override = default;
 
   void TextFieldDidChange(const WebFormControlElement&) override {
     ++text_changes_;

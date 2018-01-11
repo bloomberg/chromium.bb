@@ -19,7 +19,7 @@ StylePath::StylePath(std::unique_ptr<SVGPathByteStream> path_byte_stream)
   DCHECK(byte_stream_);
 }
 
-StylePath::~StylePath() {}
+StylePath::~StylePath() = default;
 
 scoped_refptr<StylePath> StylePath::Create(
     std::unique_ptr<SVGPathByteStream> path_byte_stream) {

@@ -42,7 +42,7 @@ SVGAnimatedPath::SVGAnimatedPath(SVGElement* context_element,
                                    SVGPath::Create(),
                                    css_property_id) {}
 
-SVGAnimatedPath::~SVGAnimatedPath() {}
+SVGAnimatedPath::~SVGAnimatedPath() = default;
 
 const CSSValue* SVGAnimatedPath::CssValue() const {
   const cssvalue::CSSPathValue* path_value = CurrentValue()->PathValue();

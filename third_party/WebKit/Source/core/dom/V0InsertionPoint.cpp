@@ -50,7 +50,7 @@ V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
   SetHasCustomStyleCallbacks();
 }
 
-V0InsertionPoint::~V0InsertionPoint() {}
+V0InsertionPoint::~V0InsertionPoint() = default;
 
 void V0InsertionPoint::SetDistributedNodes(
     DistributedNodes& distributed_nodes) {

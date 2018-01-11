@@ -81,9 +81,9 @@ URLRegistry& BlobURLRegistry::Registry() {
 }  // namespace
 
 Blob::Blob(scoped_refptr<BlobDataHandle> data_handle)
-    : blob_data_handle_(std::move(data_handle)), is_closed_(false) {}
+    : blob_data_handle_(std::move(data_handle)) {}
 
-Blob::~Blob() {}
+Blob::~Blob() = default;
 
 // static
 Blob* Blob::Create(

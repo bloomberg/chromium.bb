@@ -137,7 +137,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
     SetBackgroundColorOverride(Color::kTransparent);
 }
 
-WebFrameWidgetImpl::~WebFrameWidgetImpl() {}
+WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
 
 void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_root_);

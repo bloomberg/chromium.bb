@@ -19,7 +19,7 @@ namespace blink {
 
 class SVGPathNonInterpolableValue : public NonInterpolableValue {
  public:
-  ~SVGPathNonInterpolableValue() override {}
+  ~SVGPathNonInterpolableValue() override = default;
 
   static scoped_refptr<SVGPathNonInterpolableValue> Create(
       Vector<SVGPathSegType>& path_seg_types) {
@@ -95,7 +95,7 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
 class UnderlyingPathSegTypesChecker
     : public InterpolationType::ConversionChecker {
  public:
-  ~UnderlyingPathSegTypesChecker() final {}
+  ~UnderlyingPathSegTypesChecker() final = default;
 
   static std::unique_ptr<UnderlyingPathSegTypesChecker> Create(
       const InterpolationValue& underlying) {

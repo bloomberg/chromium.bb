@@ -40,7 +40,7 @@ class MockTokenValidator : public WebTrialTokenValidator {
  public:
   MockTokenValidator()
       : response_(OriginTrialTokenStatus::kNotSupported), call_count_(0) {}
-  ~MockTokenValidator() override {}
+  ~MockTokenValidator() override = default;
 
   // blink::WebTrialTokenValidator implementation
   OriginTrialTokenStatus ValidateToken(const WebString& token,

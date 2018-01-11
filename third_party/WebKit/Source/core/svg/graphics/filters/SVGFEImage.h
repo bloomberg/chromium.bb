@@ -52,7 +52,7 @@ class FEImage final : public FilterEffect {
   virtual void Trace(blink::Visitor*);
 
  private:
-  ~FEImage() override {}
+  ~FEImage() override = default;
   FEImage(Filter*, scoped_refptr<Image>, SVGPreserveAspectRatio*);
   FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
   LayoutObject* ReferencedLayoutObject() const;

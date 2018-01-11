@@ -46,7 +46,7 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
   // Properties do not have a primitive type by default
   typedef void PrimitiveType;
 
-  virtual ~SVGPropertyBase() {}
+  virtual ~SVGPropertyBase() = default;
 
   // FIXME: remove this in WebAnimations transition.
   // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string

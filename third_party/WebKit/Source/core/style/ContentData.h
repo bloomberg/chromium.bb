@@ -44,7 +44,7 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   static ContentData* Create(std::unique_ptr<CounterContent>);
   static ContentData* Create(QuoteType);
 
-  virtual ~ContentData() {}
+  virtual ~ContentData() = default;
 
   virtual bool IsCounter() const { return false; }
   virtual bool IsImage() const { return false; }

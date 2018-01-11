@@ -33,7 +33,7 @@ class CORE_EXPORT WorkerInspectorProxy final
 
   class CORE_EXPORT PageInspector {
    public:
-    virtual ~PageInspector() {}
+    virtual ~PageInspector() = default;
     virtual void DispatchMessageFromWorker(WorkerInspectorProxy*,
                                            int session_id,
                                            const String& message) = 0;

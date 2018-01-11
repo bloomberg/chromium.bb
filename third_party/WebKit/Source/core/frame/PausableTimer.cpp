@@ -43,7 +43,7 @@ PausableTimer::PausableTimer(ExecutionContext* context, TaskType task_type)
   DCHECK(context);
 }
 
-PausableTimer::~PausableTimer() {}
+PausableTimer::~PausableTimer() = default;
 
 void PausableTimer::Stop() {
   next_fire_interval_ = kNextFireIntervalInvalid;

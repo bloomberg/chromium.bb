@@ -51,7 +51,7 @@ V0CustomElementMicrotaskResolutionStep::V0CustomElementMicrotaskResolutionStep(
     : context_(context), element_(element), descriptor_(descriptor) {}
 
 V0CustomElementMicrotaskResolutionStep::
-    ~V0CustomElementMicrotaskResolutionStep() {}
+    ~V0CustomElementMicrotaskResolutionStep() = default;
 
 V0CustomElementMicrotaskStep::Result
 V0CustomElementMicrotaskResolutionStep::Process() {

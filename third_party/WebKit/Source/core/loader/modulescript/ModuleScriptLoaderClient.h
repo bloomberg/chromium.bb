@@ -17,7 +17,8 @@ class ModuleScript;
 // time of callback.
 class ModuleScriptLoaderClient : public GarbageCollectedMixin {
  public:
-  virtual ~ModuleScriptLoaderClient(){};
+  virtual ~ModuleScriptLoaderClient() = default;
+  ;
 
  private:
   friend class ModuleScriptLoader;

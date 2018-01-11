@@ -9,7 +9,7 @@
 
 namespace blink {
 
-AXObjectCacheBase::~AXObjectCacheBase() {}
+AXObjectCacheBase::~AXObjectCacheBase() = default;
 
 AXObjectCacheBase::AXObjectCacheBase(Document& document)
     : AXObjectCache(document) {}

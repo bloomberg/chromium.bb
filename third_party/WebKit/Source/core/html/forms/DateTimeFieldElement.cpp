@@ -39,7 +39,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-DateTimeFieldElement::FieldOwner::~FieldOwner() {}
+DateTimeFieldElement::FieldOwner::~FieldOwner() = default;
 
 DateTimeFieldElement::DateTimeFieldElement(Document& document,
                                            FieldOwner& field_owner)

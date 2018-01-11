@@ -44,7 +44,7 @@ class SVGZoomAndPan {
     kSvgZoomandpanMagnify = kSVGZoomAndPanMagnify
   };
 
-  virtual ~SVGZoomAndPan() {}
+  virtual ~SVGZoomAndPan() = default;
 
   static bool IsKnownAttribute(const QualifiedName&);
 

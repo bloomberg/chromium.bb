@@ -36,8 +36,8 @@ class CORE_EXPORT SVGPathConsumer {
   STACK_ALLOCATED();
 
  public:
-  SVGPathConsumer() {}
-  virtual ~SVGPathConsumer() {}
+  SVGPathConsumer() = default;
+  virtual ~SVGPathConsumer() = default;
 
   virtual void EmitSegment(const PathSegmentData&) = 0;
 

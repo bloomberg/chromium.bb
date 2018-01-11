@@ -29,16 +29,14 @@
 
 namespace blink {
 
-FilterOperations::FilterOperations() {}
+FilterOperations::FilterOperations() = default;
 
 void FilterOperations::Trace(blink::Visitor* visitor) {
   visitor->Trace(operations_);
 }
 
-FilterOperations& FilterOperations::operator=(const FilterOperations& other) {
-  operations_ = other.operations_;
-  return *this;
-}
+FilterOperations& FilterOperations::operator=(const FilterOperations& other) =
+    default;
 
 bool FilterOperations::operator==(const FilterOperations& o) const {
   if (operations_.size() != o.operations_.size())

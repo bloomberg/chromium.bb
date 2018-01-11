@@ -20,7 +20,7 @@ NGBaseFragmentBuilder::NGBaseFragmentBuilder(WritingMode writing_mode,
                                              TextDirection direction)
     : writing_mode_(writing_mode), direction_(direction) {}
 
-NGBaseFragmentBuilder::~NGBaseFragmentBuilder() {}
+NGBaseFragmentBuilder::~NGBaseFragmentBuilder() = default;
 
 NGBaseFragmentBuilder& NGBaseFragmentBuilder::SetStyle(
     scoped_refptr<const ComputedStyle> style) {

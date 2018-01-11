@@ -102,7 +102,7 @@ LayoutTableSection::LayoutTableSection(Element* element)
   SetInline(false);  // our object is not Inline
 }
 
-LayoutTableSection::~LayoutTableSection() {}
+LayoutTableSection::~LayoutTableSection() = default;
 
 void LayoutTableSection::StyleDidChange(StyleDifference diff,
                                         const ComputedStyle* old_style) {

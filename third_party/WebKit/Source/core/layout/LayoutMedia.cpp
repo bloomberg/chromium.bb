@@ -38,7 +38,7 @@ LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
   SetImageResource(LayoutImageResource::Create());
 }
 
-LayoutMedia::~LayoutMedia() {}
+LayoutMedia::~LayoutMedia() = default;
 
 HTMLMediaElement* LayoutMedia::MediaElement() const {
   return ToHTMLMediaElement(GetNode());

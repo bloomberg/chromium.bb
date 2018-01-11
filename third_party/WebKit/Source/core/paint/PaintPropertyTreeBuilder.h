@@ -112,7 +112,7 @@ struct PaintPropertyTreeBuilderContext {
   USING_FAST_MALLOC(PaintPropertyTreeBuilderContext);
 
  public:
-  PaintPropertyTreeBuilderContext() {}
+  PaintPropertyTreeBuilderContext() = default;
 
   Vector<PaintPropertyTreeBuilderFragmentContext, 1> fragments;
   const LayoutObject* container_for_absolute_position = nullptr;

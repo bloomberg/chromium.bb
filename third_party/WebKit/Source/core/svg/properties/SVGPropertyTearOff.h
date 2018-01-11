@@ -45,7 +45,7 @@ enum PropertyIsAnimValType { kPropertyIsNotAnimVal, kPropertyIsAnimVal };
 
 class SVGPropertyTearOffBase : public ScriptWrappable {
  public:
-  virtual ~SVGPropertyTearOffBase() {}
+  virtual ~SVGPropertyTearOffBase() = default;
 
   PropertyIsAnimValType PropertyIsAnimVal() const {
     return property_is_anim_val_;

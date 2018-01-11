@@ -22,7 +22,7 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     : WorkletGlobalScope(std::move(creation_params), isolate, reporting_proxy),
       ContextClient(frame) {}
 
-MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
+MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() = default;
 
 WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   NOTREACHED();

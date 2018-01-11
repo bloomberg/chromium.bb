@@ -512,7 +512,7 @@ TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
 
 class FrameFetchContextHintsTest : public FrameFetchContextTest {
  public:
-  FrameFetchContextHintsTest() {}
+  FrameFetchContextHintsTest() = default;
 
  protected:
   void ExpectHeader(const char* input,

@@ -50,7 +50,7 @@ class PerformanceMeasure final : public PerformanceEntry {
  private:
   PerformanceMeasure(const String& name, double start_time, double end_time)
       : PerformanceEntry(name, "measure", start_time, end_time) {}
-  ~PerformanceMeasure() override {}
+  ~PerformanceMeasure() override = default;
 };
 
 }  // namespace blink

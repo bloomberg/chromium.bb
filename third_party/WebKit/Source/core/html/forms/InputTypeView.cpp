@@ -37,7 +37,7 @@
 
 namespace blink {
 
-InputTypeView::~InputTypeView() {}
+InputTypeView::~InputTypeView() = default;
 
 void InputTypeView::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);

@@ -137,7 +137,7 @@ void GridTrackSizingAlgorithmStrategy::SetNeedsLayoutForChild(
   }
 }
 
-GridTrackSizingAlgorithmStrategy::~GridTrackSizingAlgorithmStrategy() {}
+GridTrackSizingAlgorithmStrategy::~GridTrackSizingAlgorithmStrategy() = default;
 
 bool GridTrackSizingAlgorithmStrategy::
     ShouldClearOverrideContainingBlockContentSizeForChild(

@@ -40,7 +40,7 @@ class CORE_EXPORT InspectorOverlayHost final : public ScriptWrappable {
  public:
   class Listener : public GarbageCollectedMixin {
    public:
-    virtual ~Listener() {}
+    virtual ~Listener() = default;
     virtual void OverlayResumed() = 0;
     virtual void OverlaySteppedOver() = 0;
   };

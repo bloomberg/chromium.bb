@@ -18,7 +18,7 @@ class CSSTimingData {
   USING_FAST_MALLOC(CSSTimingData);
 
  public:
-  ~CSSTimingData() {}
+  ~CSSTimingData() = default;
 
   const Vector<double>& DelayList() const { return delay_list_; }
   const Vector<double>& DurationList() const { return duration_list_; }

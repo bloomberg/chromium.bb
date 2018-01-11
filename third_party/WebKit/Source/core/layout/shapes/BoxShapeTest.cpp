@@ -37,7 +37,7 @@ namespace blink {
 
 class BoxShapeTest : public ::testing::Test {
  protected:
-  BoxShapeTest() {}
+  BoxShapeTest() = default;
 
   std::unique_ptr<Shape> CreateBoxShape(const FloatRoundedRect& bounds,
                                         float shape_margin) {

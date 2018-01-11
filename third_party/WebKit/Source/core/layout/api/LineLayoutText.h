@@ -25,7 +25,7 @@ class LineLayoutText : public LineLayoutItem {
 
   explicit LineLayoutText(std::nullptr_t) : LineLayoutItem(nullptr) {}
 
-  LineLayoutText() {}
+  LineLayoutText() = default;
 
   InlineTextBox* FirstTextBox() const { return ToText()->FirstTextBox(); }
 

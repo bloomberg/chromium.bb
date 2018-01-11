@@ -30,7 +30,7 @@
 
 namespace blink {
 
-CompositionEvent::CompositionEvent() {}
+CompositionEvent::CompositionEvent() = default;
 
 CompositionEvent::CompositionEvent(const AtomicString& type,
                                    AbstractView* view,
@@ -53,7 +53,7 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
     data_ = initializer.data();
 }
 
-CompositionEvent::~CompositionEvent() {}
+CompositionEvent::~CompositionEvent() = default;
 
 void CompositionEvent::initCompositionEvent(const AtomicString& type,
                                             bool can_bubble,

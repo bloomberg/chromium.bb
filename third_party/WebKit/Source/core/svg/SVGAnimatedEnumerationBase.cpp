@@ -35,7 +35,7 @@
 
 namespace blink {
 
-SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase() {}
+SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase() = default;
 
 void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value,
                                             ExceptionState& exception_state) {

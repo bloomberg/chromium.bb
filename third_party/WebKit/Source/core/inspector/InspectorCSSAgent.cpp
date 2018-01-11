@@ -662,7 +662,7 @@ InspectorCSSAgent::InspectorCSSAgent(
       resource_content_loader_client_id_(
           resource_content_loader->CreateClientId()) {}
 
-InspectorCSSAgent::~InspectorCSSAgent() {}
+InspectorCSSAgent::~InspectorCSSAgent() = default;
 
 void InspectorCSSAgent::Restore() {
   if (state_->booleanProperty(CSSAgentState::kCssAgentEnabled, false))

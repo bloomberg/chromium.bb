@@ -77,7 +77,7 @@ TextControlElement::TextControlElement(const QualifiedName& tag_name,
           : kSelectionHasNoDirection;
 }
 
-TextControlElement::~TextControlElement() {}
+TextControlElement::~TextControlElement() = default;
 
 void TextControlElement::DispatchFocusEvent(
     Element* old_focused_element,

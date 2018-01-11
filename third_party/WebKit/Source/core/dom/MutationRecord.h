@@ -59,7 +59,7 @@ class MutationRecord : public ScriptWrappable {
                                              const String& old_value);
   static MutationRecord* CreateWithNullOldValue(MutationRecord*);
 
-  MutationRecord() {}
+  MutationRecord() = default;
 
   virtual ~MutationRecord();
 

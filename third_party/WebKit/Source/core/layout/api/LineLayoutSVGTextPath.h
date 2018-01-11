@@ -24,7 +24,7 @@ class LineLayoutSVGTextPath : public LineLayoutSVGInline {
   explicit LineLayoutSVGTextPath(std::nullptr_t)
       : LineLayoutSVGInline(nullptr) {}
 
-  LineLayoutSVGTextPath() {}
+  LineLayoutSVGTextPath() = default;
 
   std::unique_ptr<PathPositionMapper> LayoutPath() const {
     return ToSVGTextPath()->LayoutPath();

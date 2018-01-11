@@ -40,7 +40,7 @@ HTMLMeterElement::HTMLMeterElement(Document& document)
   UseCounter::Count(document, WebFeature::kMeterElement);
 }
 
-HTMLMeterElement::~HTMLMeterElement() {}
+HTMLMeterElement::~HTMLMeterElement() = default;
 
 HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
   HTMLMeterElement* meter = new HTMLMeterElement(document);

@@ -57,7 +57,7 @@ AXObjectCache* AXObjectCache::Create(Document& document) {
 AXObjectCache::AXObjectCache(Document& document)
     : ContextLifecycleObserver(document.GetExecutionContext()) {}
 
-AXObjectCache::~AXObjectCache() {}
+AXObjectCache::~AXObjectCache() = default;
 
 std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::Create(
     Document& document) {

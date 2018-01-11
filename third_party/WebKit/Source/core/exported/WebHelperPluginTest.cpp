@@ -19,7 +19,7 @@ class FakePlaceholderWebPlugin : public FakeWebPlugin {
  public:
   explicit FakePlaceholderWebPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params) {}
-  ~FakePlaceholderWebPlugin() override {}
+  ~FakePlaceholderWebPlugin() override = default;
 
   bool IsPlaceholder() override { return true; }
 };
@@ -27,7 +27,7 @@ class FakePlaceholderWebPlugin : public FakeWebPlugin {
 class WebHelperPluginFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   WebHelperPluginFrameClient() : create_placeholder_(false) {}
-  ~WebHelperPluginFrameClient() override {}
+  ~WebHelperPluginFrameClient() override = default;
 
   WebPlugin* CreatePlugin(const WebPluginParams& params) override {
     return create_placeholder_ ? new FakePlaceholderWebPlugin(params)

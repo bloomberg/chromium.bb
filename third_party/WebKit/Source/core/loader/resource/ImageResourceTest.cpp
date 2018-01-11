@@ -516,7 +516,7 @@ class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
   }
 
  protected:
-  MockFinishObserver() {}
+  MockFinishObserver() = default;
 };
 
 TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
@@ -624,7 +624,7 @@ class ImageResourceReloadTest
  public:
   ImageResourceReloadTest()
       : ScopedClientPlaceholdersForServerLoFiForTest(GetParam()) {}
-  ~ImageResourceReloadTest() override {}
+  ~ImageResourceReloadTest() override = default;
 
   bool IsClientPlaceholderForServerLoFiEnabled() const { return GetParam(); }
 
@@ -1914,8 +1914,8 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 
 class ImageResourceCounterTest : public ::testing::Test {
  public:
-  ImageResourceCounterTest() {}
-  ~ImageResourceCounterTest() {}
+  ImageResourceCounterTest() = default;
+  ~ImageResourceCounterTest() = default;
 
   void CreateImageResource(const char* url_part, bool ua_resource) {
     // Create a unique fake data url.

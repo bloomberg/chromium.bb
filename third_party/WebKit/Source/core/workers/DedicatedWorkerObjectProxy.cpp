@@ -59,7 +59,7 @@ std::unique_ptr<DedicatedWorkerObjectProxy> DedicatedWorkerObjectProxy::Create(
       messaging_proxy_weak_ptr, parent_frame_task_runners));
 }
 
-DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() {}
+DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() = default;
 
 void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
     scoped_refptr<SerializedScriptValue> message,

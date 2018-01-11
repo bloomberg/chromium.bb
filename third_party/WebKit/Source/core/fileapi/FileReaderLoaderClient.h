@@ -39,7 +39,7 @@ namespace blink {
 
 class CORE_EXPORT FileReaderLoaderClient {
  public:
-  virtual ~FileReaderLoaderClient() {}
+  virtual ~FileReaderLoaderClient() = default;
 
   virtual void DidStartLoading() = 0;
   // Clients must implement this method if they are using any ReadType except

@@ -35,7 +35,7 @@ class ClearButtonElement final : public HTMLDivElement {
  public:
   class ClearButtonOwner : public GarbageCollectedMixin {
    public:
-    virtual ~ClearButtonOwner() {}
+    virtual ~ClearButtonOwner() = default;
     virtual void FocusAndSelectClearButtonOwner() = 0;
     virtual bool ShouldClearButtonRespondToMouseEvents() = 0;
     virtual void ClearValue() = 0;

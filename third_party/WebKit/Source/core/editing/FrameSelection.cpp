@@ -105,7 +105,7 @@ FrameSelection::FrameSelection(LocalFrame& frame)
                frame.GetPage()->GetFocusController().FocusedFrame() == frame),
       frame_caret_(new FrameCaret(frame, *selection_editor_)) {}
 
-FrameSelection::~FrameSelection() {}
+FrameSelection::~FrameSelection() = default;
 
 const DisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
     const {

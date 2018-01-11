@@ -134,10 +134,9 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   static String NormalizeType(const String& type);
 
  private:
-  Blob();
+  Blob() = delete;
 
   scoped_refptr<BlobDataHandle> blob_data_handle_;
-  bool is_closed_;
 };
 
 }  // namespace blink

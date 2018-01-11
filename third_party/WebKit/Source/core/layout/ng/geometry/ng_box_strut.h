@@ -18,7 +18,7 @@ struct NGPhysicalBoxStrut;
 // This struct is used for storing margins, borders or padding of a box on all
 // four edges.
 struct CORE_EXPORT NGBoxStrut {
-  NGBoxStrut() {}
+  NGBoxStrut() = default;
   NGBoxStrut(LayoutUnit inline_start,
              LayoutUnit inline_end,
              LayoutUnit block_start,
@@ -78,7 +78,7 @@ struct NGPixelSnappedPhysicalBoxStrut;
 // direction.
 // See https://drafts.csswg.org/css-writing-modes-3/#abstract-box
 struct CORE_EXPORT NGPhysicalBoxStrut {
-  NGPhysicalBoxStrut() {}
+  NGPhysicalBoxStrut() = default;
   NGPhysicalBoxStrut(LayoutUnit top,
                      LayoutUnit right,
                      LayoutUnit bottom,
@@ -99,7 +99,7 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
 
 // Struct to store pixel snapped physical dimensions.
 struct CORE_EXPORT NGPixelSnappedPhysicalBoxStrut {
-  NGPixelSnappedPhysicalBoxStrut() {}
+  NGPixelSnappedPhysicalBoxStrut() = default;
   NGPixelSnappedPhysicalBoxStrut(int top, int right, int bottom, int left)
       : top(top), right(right), bottom(bottom), left(left) {}
   int top;

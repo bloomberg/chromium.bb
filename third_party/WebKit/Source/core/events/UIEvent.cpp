@@ -53,7 +53,7 @@ UIEvent::UIEvent(const AtomicString& event_type,
       detail_(initializer.detail()),
       source_capabilities_(initializer.sourceCapabilities()) {}
 
-UIEvent::~UIEvent() {}
+UIEvent::~UIEvent() = default;
 
 void UIEvent::initUIEvent(const AtomicString& type_arg,
                           bool can_bubble_arg,

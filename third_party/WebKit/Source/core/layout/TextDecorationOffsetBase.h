@@ -21,7 +21,7 @@ class CORE_EXPORT TextDecorationOffsetBase {
 
  public:
   TextDecorationOffsetBase(const ComputedStyle& style) : style_(style) {}
-  ~TextDecorationOffsetBase() {}
+  ~TextDecorationOffsetBase() = default;
 
   virtual int ComputeUnderlineOffsetForUnder(
       float text_decoration_thickness,

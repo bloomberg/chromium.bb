@@ -31,9 +31,9 @@ Element* GetOrCreateElement(ContainerNode* parent,
 
 }  // namespace
 
-EditingTestBase::EditingTestBase() {}
+EditingTestBase::EditingTestBase() = default;
 
-EditingTestBase::~EditingTestBase() {}
+EditingTestBase::~EditingTestBase() = default;
 
 void EditingTestBase::InsertStyleElement(const std::string& style_rules) {
   Element* const head = GetOrCreateElement(&GetDocument(), HTMLNames::headTag);

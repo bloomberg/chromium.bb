@@ -72,7 +72,7 @@ class ContextFeaturesClient {
  public:
   static std::unique_ptr<ContextFeaturesClient> Empty();
 
-  virtual ~ContextFeaturesClient() {}
+  virtual ~ContextFeaturesClient() = default;
   virtual bool IsEnabled(Document*,
                          ContextFeatures::FeatureType,
                          bool default_value) {

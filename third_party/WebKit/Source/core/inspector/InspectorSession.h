@@ -31,7 +31,7 @@ class CORE_EXPORT InspectorSession
                                      int call_id,
                                      const String& response,
                                      const String& state) = 0;
-    virtual ~Client() {}
+    virtual ~Client() = default;
   };
 
   InspectorSession(Client*,

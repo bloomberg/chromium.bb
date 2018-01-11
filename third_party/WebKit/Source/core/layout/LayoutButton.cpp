@@ -27,7 +27,7 @@ using namespace HTMLNames;
 LayoutButton::LayoutButton(Element* element)
     : LayoutFlexibleBox(element), inner_(nullptr) {}
 
-LayoutButton::~LayoutButton() {}
+LayoutButton::~LayoutButton() = default;
 
 void LayoutButton::AddChild(LayoutObject* new_child,
                             LayoutObject* before_child) {

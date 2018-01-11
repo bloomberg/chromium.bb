@@ -102,7 +102,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
                                 : nullptr;
 }
 
-HitTestResult::~HitTestResult() {}
+HitTestResult::~HitTestResult() = default;
 
 HitTestResult& HitTestResult::operator=(const HitTestResult& other) {
   hit_test_location_ = other.hit_test_location_;

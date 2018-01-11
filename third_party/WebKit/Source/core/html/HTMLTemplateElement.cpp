@@ -43,7 +43,7 @@ inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLTemplateElement)
 
-HTMLTemplateElement::~HTMLTemplateElement() {}
+HTMLTemplateElement::~HTMLTemplateElement() = default;
 
 DocumentFragment* HTMLTemplateElement::content() const {
   if (!content_)

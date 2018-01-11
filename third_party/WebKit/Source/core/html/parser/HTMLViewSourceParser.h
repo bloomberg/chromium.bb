@@ -44,7 +44,7 @@ class CORE_EXPORT HTMLViewSourceParser final
                                       const String& mime_type) {
     return new HTMLViewSourceParser(document, mime_type);
   }
-  ~HTMLViewSourceParser() override {}
+  ~HTMLViewSourceParser() override = default;
 
  private:
   HTMLViewSourceParser(HTMLViewSourceDocument&, const String& mime_type);

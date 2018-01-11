@@ -170,7 +170,7 @@ enum ThreadableLoaderToTest {
 
 class ThreadableLoaderTestHelper {
  public:
-  virtual ~ThreadableLoaderTestHelper() {}
+  virtual ~ThreadableLoaderTestHelper() = default;
 
   virtual void CreateLoader(ThreadableLoaderClient*) = 0;
   virtual void StartLoader(const ResourceRequest&) = 0;

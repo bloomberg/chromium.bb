@@ -49,7 +49,7 @@ class TextTrackCue : public EventTargetWithInlineData {
     return cue;
   }
 
-  ~TextTrackCue() override {}
+  ~TextTrackCue() override = default;
 
   TextTrack* track() const;
   void SetTrack(TextTrack*);

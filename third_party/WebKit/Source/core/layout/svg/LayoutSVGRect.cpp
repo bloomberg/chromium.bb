@@ -35,7 +35,7 @@ namespace blink {
 LayoutSVGRect::LayoutSVGRect(SVGRectElement* node)
     : LayoutSVGShape(node), use_path_fallback_(false) {}
 
-LayoutSVGRect::~LayoutSVGRect() {}
+LayoutSVGRect::~LayoutSVGRect() = default;
 
 void LayoutSVGRect::UpdateShapeFromElement() {
   // Before creating a new object we need to clear the cached bounding box

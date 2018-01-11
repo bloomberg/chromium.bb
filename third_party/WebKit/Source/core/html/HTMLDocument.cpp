@@ -72,7 +72,7 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
   }
 }
 
-HTMLDocument::~HTMLDocument() {}
+HTMLDocument::~HTMLDocument() = default;
 
 Document* HTMLDocument::CloneDocumentWithoutChildren() {
   return Create(DocumentInit::Create()

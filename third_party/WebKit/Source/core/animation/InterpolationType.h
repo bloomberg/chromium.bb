@@ -32,7 +32,7 @@ class InterpolationType {
   USING_FAST_MALLOC(InterpolationType);
 
  public:
-  virtual ~InterpolationType() {}
+  virtual ~InterpolationType() = default;
 
   PropertyHandle GetProperty() const { return property_; }
 
@@ -44,7 +44,7 @@ class InterpolationType {
     USING_FAST_MALLOC(ConversionChecker);
 
    public:
-    virtual ~ConversionChecker() {}
+    virtual ~ConversionChecker() = default;
     void SetType(const InterpolationType& type) { type_ = &type; }
     const InterpolationType& GetType() const { return *type_; }
     virtual bool IsValid(const InterpolationEnvironment&,

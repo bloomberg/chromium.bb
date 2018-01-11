@@ -97,7 +97,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
 
 DEFINE_NODE_FACTORY(SVGSVGElement)
 
-SVGSVGElement::~SVGSVGElement() {}
+SVGSVGElement::~SVGSVGElement() = default;
 
 float SVGSVGElement::currentScale() const {
   if (!isConnected() || !IsOutermostSVGSVGElement())

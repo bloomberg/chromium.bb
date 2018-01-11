@@ -13,7 +13,7 @@ namespace blink {
 class CSSFontVariationSettingsNonInterpolableValue
     : public NonInterpolableValue {
  public:
-  ~CSSFontVariationSettingsNonInterpolableValue() final {}
+  ~CSSFontVariationSettingsNonInterpolableValue() final = default;
 
   static scoped_refptr<CSSFontVariationSettingsNonInterpolableValue> Create(
       Vector<AtomicString> tags) {
@@ -52,7 +52,7 @@ static bool TagsMatch(const NonInterpolableValue& a,
 
 class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
  public:
-  ~UnderlyingTagsChecker() final {}
+  ~UnderlyingTagsChecker() final = default;
 
   static std::unique_ptr<UnderlyingTagsChecker> Create(
       const Vector<AtomicString>& tags) {
@@ -73,7 +73,7 @@ class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
 class InheritedFontVariationSettingsChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedFontVariationSettingsChecker() final {}
+  ~InheritedFontVariationSettingsChecker() final = default;
 
   static std::unique_ptr<InheritedFontVariationSettingsChecker> Create(
       const FontVariationSettings* settings) {

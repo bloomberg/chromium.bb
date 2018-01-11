@@ -47,7 +47,7 @@ inline HTMLBodyElement::HTMLBodyElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLBodyElement)
 
-HTMLBodyElement::~HTMLBodyElement() {}
+HTMLBodyElement::~HTMLBodyElement() = default;
 
 bool HTMLBodyElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == backgroundAttr || name == marginwidthAttr ||

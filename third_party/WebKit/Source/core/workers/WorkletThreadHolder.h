@@ -73,8 +73,8 @@ class WorkletThreadHolder {
   WorkerBackingThread* GetThread() { return thread_.get(); }
 
  private:
-  WorkletThreadHolder() {}
-  ~WorkletThreadHolder() {}
+  WorkletThreadHolder() = default;
+  ~WorkletThreadHolder() = default;
 
   static Mutex& HolderInstanceMutex() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holder_mutex, ());

@@ -58,12 +58,7 @@ CSSPropertySourceData::CSSPropertySourceData(const String& name,
       parsed_ok(parsed_ok),
       range(range) {}
 
-CSSPropertySourceData::CSSPropertySourceData(const CSSPropertySourceData& other)
-    : name(other.name),
-      value(other.value),
-      important(other.important),
-      disabled(other.disabled),
-      parsed_ok(other.parsed_ok),
-      range(other.range) {}
+CSSPropertySourceData::CSSPropertySourceData(
+    const CSSPropertySourceData& other) = default;
 
 }  // namespace blink

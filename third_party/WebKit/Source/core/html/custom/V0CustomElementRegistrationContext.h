@@ -49,7 +49,7 @@ class V0CustomElementRegistrationContext final
     return new V0CustomElementRegistrationContext();
   }
 
-  ~V0CustomElementRegistrationContext() {}
+  ~V0CustomElementRegistrationContext() = default;
   void DocumentWasDetached() { registry_.DocumentWasDetached(); }
 
   // Definitions

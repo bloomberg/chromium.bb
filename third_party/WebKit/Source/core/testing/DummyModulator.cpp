@@ -13,7 +13,7 @@ namespace {
 
 class EmptyScriptModuleResolver final : public ScriptModuleResolver {
  public:
-  EmptyScriptModuleResolver() {}
+  EmptyScriptModuleResolver() = default;
 
   // We ignore {Unr,R}egisterModuleScript() calls caused by
   // ModuleScript::CreateForTest().
@@ -37,7 +37,7 @@ class EmptyScriptModuleResolver final : public ScriptModuleResolver {
 
 DummyModulator::DummyModulator() : resolver_(new EmptyScriptModuleResolver()) {}
 
-DummyModulator::~DummyModulator() {}
+DummyModulator::~DummyModulator() = default;
 
 void DummyModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);

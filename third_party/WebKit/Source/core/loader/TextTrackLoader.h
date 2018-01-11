@@ -38,7 +38,7 @@ class TextTrackLoader;
 
 class TextTrackLoaderClient : public GarbageCollectedMixin {
  public:
-  virtual ~TextTrackLoaderClient() {}
+  virtual ~TextTrackLoaderClient() = default;
 
   virtual void NewCuesAvailable(TextTrackLoader*) = 0;
   virtual void CueLoadingCompleted(TextTrackLoader*, bool loading_failed) = 0;

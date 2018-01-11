@@ -34,7 +34,7 @@ ClipboardEvent::ClipboardEvent(const AtomicString& type,
                                const ClipboardEventInit& initializer)
     : Event(type, initializer), clipboard_data_(initializer.clipboardData()) {}
 
-ClipboardEvent::~ClipboardEvent() {}
+ClipboardEvent::~ClipboardEvent() = default;
 
 const AtomicString& ClipboardEvent::InterfaceName() const {
   return EventNames::ClipboardEvent;

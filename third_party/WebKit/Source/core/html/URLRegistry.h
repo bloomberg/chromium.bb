@@ -43,7 +43,7 @@ class URLRegistry;
 
 class CORE_EXPORT URLRegistrable {
  public:
-  virtual ~URLRegistrable() {}
+  virtual ~URLRegistrable() = default;
   virtual URLRegistry& Registry() const = 0;
   virtual mojom::blink::BlobPtr AsMojoBlob() { return nullptr; }
 };
@@ -52,7 +52,7 @@ class CORE_EXPORT URLRegistry {
   USING_FAST_MALLOC(URLRegistry);
 
  public:
-  virtual ~URLRegistry() {}
+  virtual ~URLRegistry() = default;
   virtual void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
   virtual void UnregisterURL(const KURL&) = 0;
 

@@ -14,7 +14,7 @@ namespace blink {
 
 class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
  public:
-  virtual ~DOMArrayBufferBase() {}
+  virtual ~DOMArrayBufferBase() = default;
 
   const WTF::ArrayBuffer* Buffer() const { return buffer_.get(); }
   WTF::ArrayBuffer* Buffer() { return buffer_.get(); }

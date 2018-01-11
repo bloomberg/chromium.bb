@@ -15,7 +15,7 @@ namespace blink {
 
 DictionaryTest::DictionaryTest() : required_boolean_member_(false) {}
 
-DictionaryTest::~DictionaryTest() {}
+DictionaryTest::~DictionaryTest() = default;
 
 void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
   Reset();

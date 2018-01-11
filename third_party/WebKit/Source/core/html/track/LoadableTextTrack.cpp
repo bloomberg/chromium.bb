@@ -40,7 +40,7 @@ LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
   DCHECK(track_element_);
 }
 
-LoadableTextTrack::~LoadableTextTrack() {}
+LoadableTextTrack::~LoadableTextTrack() = default;
 
 bool LoadableTextTrack::IsDefault() const {
   return track_element_->FastHasAttribute(HTMLNames::defaultAttr);

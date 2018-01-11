@@ -41,7 +41,7 @@ LayoutGeometryMap::LayoutGeometryMap(MapCoordinatesFlags flags)
       fixed_steps_count_(0),
       map_coordinates_flags_(flags) {}
 
-LayoutGeometryMap::~LayoutGeometryMap() {}
+LayoutGeometryMap::~LayoutGeometryMap() = default;
 
 void LayoutGeometryMap::MapToAncestor(
     TransformState& transform_state,

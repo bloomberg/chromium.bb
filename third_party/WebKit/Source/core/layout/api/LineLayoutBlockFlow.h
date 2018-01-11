@@ -28,7 +28,7 @@ class LineLayoutBlockFlow : public LineLayoutBox {
 
   explicit LineLayoutBlockFlow(std::nullptr_t) : LineLayoutBox(nullptr) {}
 
-  LineLayoutBlockFlow() {}
+  LineLayoutBlockFlow() = default;
 
   LineLayoutItem FirstChild() const {
     return LineLayoutItem(ToBlockFlow()->FirstChild());

@@ -49,7 +49,7 @@ HistoryItem::HistoryItem()
       document_sequence_number_(GenerateSequenceNumber()),
       scroll_restoration_type_(kScrollRestorationAuto) {}
 
-HistoryItem::~HistoryItem() {}
+HistoryItem::~HistoryItem() = default;
 
 const String& HistoryItem::UrlString() const {
   return url_string_;

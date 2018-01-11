@@ -162,7 +162,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     loader_ = FileReaderLoader::Create(FileReaderLoader::kReadByClient, this);
   }
 
-  ~InspectorFileReaderLoaderClient() override {}
+  ~InspectorFileReaderLoaderClient() override = default;
 
   void Start(ExecutionContext* execution_context) {
     raw_data_ = SharedBuffer::Create();
@@ -551,7 +551,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   return response_object;
 }
 
-InspectorNetworkAgent::~InspectorNetworkAgent() {}
+InspectorNetworkAgent::~InspectorNetworkAgent() = default;
 
 void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);

@@ -50,7 +50,7 @@ LayoutMenuList::LayoutMenuList(Element* element)
   DCHECK(IsHTMLSelectElement(element));
 }
 
-LayoutMenuList::~LayoutMenuList() {}
+LayoutMenuList::~LayoutMenuList() = default;
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no
 // insertion point to prevent children from rendering.

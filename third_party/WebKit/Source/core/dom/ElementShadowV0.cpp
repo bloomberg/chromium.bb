@@ -130,7 +130,7 @@ ElementShadowV0* ElementShadowV0::Create(ElementShadow& element_shadow) {
 ElementShadowV0::ElementShadowV0(ElementShadow& element_shadow)
     : element_shadow_(&element_shadow), needs_select_feature_set_(false) {}
 
-ElementShadowV0::~ElementShadowV0() {}
+ElementShadowV0::~ElementShadowV0() = default;
 
 ShadowRoot& ElementShadowV0::YoungestShadowRoot() const {
   return element_shadow_->YoungestShadowRoot();

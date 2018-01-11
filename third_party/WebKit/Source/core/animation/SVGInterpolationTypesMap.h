@@ -11,7 +11,7 @@ namespace blink {
 
 class SVGInterpolationTypesMap : public InterpolationTypesMap {
  public:
-  SVGInterpolationTypesMap() {}
+  SVGInterpolationTypesMap() = default;
 
   const InterpolationTypes& Get(const PropertyHandle&) const final;
 };

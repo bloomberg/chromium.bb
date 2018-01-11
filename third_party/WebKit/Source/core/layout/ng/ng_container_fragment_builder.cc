@@ -18,7 +18,7 @@ NGContainerFragmentBuilder::NGContainerFragmentBuilder(
     TextDirection direction)
     : NGBaseFragmentBuilder(std::move(style), writing_mode, direction) {}
 
-NGContainerFragmentBuilder::~NGContainerFragmentBuilder() {}
+NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetInlineSize(
     LayoutUnit inline_size) {

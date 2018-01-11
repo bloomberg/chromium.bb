@@ -15,7 +15,7 @@ namespace blink {
 class V0CustomElementMicrotaskQueueBase
     : public GarbageCollectedFinalized<V0CustomElementMicrotaskQueueBase> {
  public:
-  virtual ~V0CustomElementMicrotaskQueueBase() {}
+  virtual ~V0CustomElementMicrotaskQueueBase() = default;
 
   bool IsEmpty() const { return queue_.IsEmpty(); }
   void Dispatch();

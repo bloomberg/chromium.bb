@@ -91,23 +91,7 @@ class StickyPositionScrollingConstraints final {
         nearest_sticky_layer_shifting_containing_block_(nullptr) {}
 
   StickyPositionScrollingConstraints(
-      const StickyPositionScrollingConstraints& other)
-      : anchor_edges_(other.anchor_edges_),
-        left_offset_(other.left_offset_),
-        right_offset_(other.right_offset_),
-        top_offset_(other.top_offset_),
-        bottom_offset_(other.bottom_offset_),
-        scroll_container_relative_containing_block_rect_(
-            other.scroll_container_relative_containing_block_rect_),
-        scroll_container_relative_sticky_box_rect_(
-            other.scroll_container_relative_sticky_box_rect_),
-        nearest_sticky_layer_shifting_sticky_box_(
-            other.nearest_sticky_layer_shifting_sticky_box_),
-        nearest_sticky_layer_shifting_containing_block_(
-            other.nearest_sticky_layer_shifting_containing_block_),
-        total_sticky_box_sticky_offset_(other.total_sticky_box_sticky_offset_),
-        total_containing_block_sticky_offset_(
-            other.total_containing_block_sticky_offset_) {}
+      const StickyPositionScrollingConstraints& other) = default;
 
   // Computes the sticky offset for a given overflow clip rect.
   //

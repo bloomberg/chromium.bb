@@ -47,7 +47,7 @@ inline HTMLShadowElement::HTMLShadowElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLShadowElement)
 
-HTMLShadowElement::~HTMLShadowElement() {}
+HTMLShadowElement::~HTMLShadowElement() = default;
 
 ShadowRoot* HTMLShadowElement::OlderShadowRoot() {
   ShadowRoot* containing_root = ContainingShadowRoot();

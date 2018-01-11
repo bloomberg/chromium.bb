@@ -20,7 +20,7 @@ class LineLayoutBR : public LineLayoutText {
 
   explicit LineLayoutBR(std::nullptr_t) : LineLayoutText(nullptr) {}
 
-  LineLayoutBR() {}
+  LineLayoutBR() = default;
 
   int LineHeight(bool first_line) const {
     return ToBR()->LineHeight(first_line);

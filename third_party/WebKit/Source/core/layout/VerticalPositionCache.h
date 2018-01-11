@@ -41,7 +41,7 @@ class VerticalPositionCache {
   STACK_ALLOCATED();
 
  public:
-  VerticalPositionCache() {}
+  VerticalPositionCache() = default;
 
   int Get(LineLayoutItem layout_object, FontBaseline baseline_type) const {
     const HashMap<LineLayoutItem, int>& map_to_check =

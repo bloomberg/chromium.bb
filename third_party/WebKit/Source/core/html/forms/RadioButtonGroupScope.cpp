@@ -203,9 +203,9 @@ void RadioButtonGroup::Trace(blink::Visitor* visitor) {
 // Explicity define empty constructor and destructor in order to prevent the
 // compiler from generating them as inlines. So we don't need to to define
 // RadioButtonGroup in the header.
-RadioButtonGroupScope::RadioButtonGroupScope() {}
+RadioButtonGroupScope::RadioButtonGroupScope() = default;
 
-RadioButtonGroupScope::~RadioButtonGroupScope() {}
+RadioButtonGroupScope::~RadioButtonGroupScope() = default;
 
 void RadioButtonGroupScope::AddButton(HTMLInputElement* element) {
   DCHECK_EQ(element->type(), InputTypeNames::radio);

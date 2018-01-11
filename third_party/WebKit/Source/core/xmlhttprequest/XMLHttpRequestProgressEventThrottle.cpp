@@ -84,7 +84,8 @@ XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(
   DCHECK(target);
 }
 
-XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle() {}
+XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle() =
+    default;
 
 void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
     const AtomicString& type,

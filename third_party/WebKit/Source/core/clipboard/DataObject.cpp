@@ -74,7 +74,7 @@ DataObject* DataObject::Create() {
   return new DataObject;
 }
 
-DataObject::~DataObject() {}
+DataObject::~DataObject() = default;
 
 size_t DataObject::length() const {
   return item_list_.size();

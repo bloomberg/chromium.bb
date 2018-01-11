@@ -605,7 +605,7 @@ TokenPreloadScanner::TokenPreloadScanner(
   css_scanner_.SetReferrerPolicy(document_parameters_->referrer_policy);
 }
 
-TokenPreloadScanner::~TokenPreloadScanner() {}
+TokenPreloadScanner::~TokenPreloadScanner() = default;
 
 TokenPreloadScannerCheckpoint TokenPreloadScanner::CreateCheckpoint() {
   TokenPreloadScannerCheckpoint checkpoint = checkpoints_.size();
@@ -848,7 +848,7 @@ HTMLPreloadScanner::HTMLPreloadScanner(
                scanner_type),
       tokenizer_(HTMLTokenizer::Create(options)) {}
 
-HTMLPreloadScanner::~HTMLPreloadScanner() {}
+HTMLPreloadScanner::~HTMLPreloadScanner() = default;
 
 void HTMLPreloadScanner::AppendToEnd(const SegmentedString& source) {
   source_.Append(source);

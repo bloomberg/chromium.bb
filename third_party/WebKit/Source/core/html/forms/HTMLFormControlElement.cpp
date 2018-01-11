@@ -66,7 +66,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
   SetHasCustomStyleCallbacks();
 }
 
-HTMLFormControlElement::~HTMLFormControlElement() {}
+HTMLFormControlElement::~HTMLFormControlElement() = default;
 
 void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
   ListedElement::Trace(visitor);

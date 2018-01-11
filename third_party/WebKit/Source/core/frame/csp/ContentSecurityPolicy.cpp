@@ -233,7 +233,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
     execution_context_->DisableEval(disable_eval_error_message_);
 }
 
-ContentSecurityPolicy::~ContentSecurityPolicy() {}
+ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
 void ContentSecurityPolicy::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);

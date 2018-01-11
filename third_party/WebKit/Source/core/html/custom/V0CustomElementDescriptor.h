@@ -50,8 +50,8 @@ class V0CustomElementDescriptor {
                             const AtomicString& local_name)
       : type_(type), namespace_uri_(namespace_uri), local_name_(local_name) {}
 
-  V0CustomElementDescriptor() {}
-  ~V0CustomElementDescriptor() {}
+  V0CustomElementDescriptor() = default;
+  ~V0CustomElementDescriptor() = default;
 
   // Specifies whether the custom element is in the HTML or SVG
   // namespace.

@@ -41,7 +41,7 @@ class CORE_EXPORT NGLineBreaker {
                 NGExclusionSpace*,
                 unsigned handled_float_index,
                 const NGInlineBreakToken* = nullptr);
-  ~NGLineBreaker() {}
+  ~NGLineBreaker() = default;
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.

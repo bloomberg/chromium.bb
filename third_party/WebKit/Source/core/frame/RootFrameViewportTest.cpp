@@ -187,7 +187,7 @@ class VisualViewportStub : public ScrollableAreaStub {
 
 class RootFrameViewportTest : public ::testing::Test {
  public:
-  RootFrameViewportTest() {}
+  RootFrameViewportTest() = default;
 
  protected:
   virtual void SetUp() {}

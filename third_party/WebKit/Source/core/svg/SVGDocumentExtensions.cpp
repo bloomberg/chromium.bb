@@ -31,7 +31,7 @@ namespace blink {
 SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
     : document_(document) {}
 
-SVGDocumentExtensions::~SVGDocumentExtensions() {}
+SVGDocumentExtensions::~SVGDocumentExtensions() = default;
 
 void SVGDocumentExtensions::AddTimeContainer(SVGSVGElement* element) {
   time_containers_.insert(element);

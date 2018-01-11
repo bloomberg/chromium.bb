@@ -355,7 +355,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   void Trace(blink::Visitor*);
 
  protected:
-  ~ChromeClient() override {}
+  ~ChromeClient() override = default;
 
   virtual void ShowMouseOverURL(const HitTestResult&) = 0;
   virtual void SetWindowRect(const IntRect&, LocalFrame&) = 0;

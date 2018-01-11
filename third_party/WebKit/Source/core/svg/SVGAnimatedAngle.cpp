@@ -43,7 +43,7 @@ SVGAnimatedAngle::SVGAnimatedAngle(SVGElement* context_element)
           SVGNames::orientAttr,
           BaseValue()->OrientType())) {}
 
-SVGAnimatedAngle::~SVGAnimatedAngle() {}
+SVGAnimatedAngle::~SVGAnimatedAngle() = default;
 
 void SVGAnimatedAngle::Trace(blink::Visitor* visitor) {
   visitor->Trace(orient_type_);

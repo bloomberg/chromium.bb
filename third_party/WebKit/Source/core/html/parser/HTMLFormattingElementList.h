@@ -55,7 +55,7 @@ class HTMLFormattingElementList {
     explicit Entry(HTMLStackItem* item) : item_(item) {}
     enum MarkerEntryType { kMarkerEntry };
     explicit Entry(MarkerEntryType) : item_(nullptr) {}
-    ~Entry() {}
+    ~Entry() = default;
 
     bool IsMarker() const { return !item_; }
 

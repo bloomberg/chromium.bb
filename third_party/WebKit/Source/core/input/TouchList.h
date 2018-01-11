@@ -60,7 +60,7 @@ class CORE_EXPORT TouchList final : public ScriptWrappable {
   void Trace(blink::Visitor*);
 
  private:
-  TouchList() {}
+  TouchList() = default;
 
   TouchList(HeapVector<Member<Touch>>& touches) { values_.swap(touches); }
 

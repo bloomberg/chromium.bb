@@ -33,7 +33,7 @@
 
 namespace blink {
 
-TrackEvent::TrackEvent() {}
+TrackEvent::TrackEvent() = default;
 
 TrackEvent::TrackEvent(const AtomicString& type,
                        const TrackEventInit& initializer)
@@ -52,7 +52,7 @@ TrackEvent::TrackEvent(const AtomicString& type,
     NOTREACHED();
 }
 
-TrackEvent::~TrackEvent() {}
+TrackEvent::~TrackEvent() = default;
 
 const AtomicString& TrackEvent::InterfaceName() const {
   return EventNames::TrackEvent;

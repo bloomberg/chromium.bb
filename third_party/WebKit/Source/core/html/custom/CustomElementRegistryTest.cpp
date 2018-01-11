@@ -255,7 +255,7 @@ class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
   STACK_ALLOCATED();
 
  public:
-  LogUpgradeBuilder() {}
+  LogUpgradeBuilder() = default;
 
   CustomElementDefinition* Build(const CustomElementDescriptor& descriptor,
                                  CustomElementDefinition::Id) override {

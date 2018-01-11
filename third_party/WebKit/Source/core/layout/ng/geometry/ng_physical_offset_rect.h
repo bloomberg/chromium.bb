@@ -17,7 +17,7 @@ class LayoutRect;
 // NGPhysicalOffsetRect is the position and size of a rect (typically a
 // fragment) relative to its parent rect in the physical coordinate system.
 struct CORE_EXPORT NGPhysicalOffsetRect {
-  NGPhysicalOffsetRect() {}
+  NGPhysicalOffsetRect() = default;
   NGPhysicalOffsetRect(const NGPhysicalOffset& offset,
                        const NGPhysicalSize& size)
       : offset(offset), size(size) {}

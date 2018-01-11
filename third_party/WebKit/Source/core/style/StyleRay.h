@@ -20,7 +20,7 @@ class StyleRay : public BasicShape {
   };
 
   static scoped_refptr<StyleRay> Create(float angle, RaySize, bool contain);
-  virtual ~StyleRay() {}
+  virtual ~StyleRay() = default;
 
   float Angle() const { return angle_; }
   RaySize Size() const { return size_; }

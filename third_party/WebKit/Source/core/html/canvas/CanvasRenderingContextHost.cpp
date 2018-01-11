@@ -11,7 +11,7 @@
 
 namespace blink {
 
-CanvasRenderingContextHost::CanvasRenderingContextHost() {}
+CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
 
 ScriptPromise CanvasRenderingContextHost::Commit(
     scoped_refptr<StaticBitmapImage> bitmap_image,

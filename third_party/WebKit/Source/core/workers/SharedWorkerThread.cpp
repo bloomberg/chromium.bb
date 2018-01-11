@@ -47,7 +47,7 @@ SharedWorkerThread::SharedWorkerThread(
           WorkerBackingThread::Create("SharedWorker Thread")),
       name_(name.IsolatedCopy()) {}
 
-SharedWorkerThread::~SharedWorkerThread() {}
+SharedWorkerThread::~SharedWorkerThread() = default;
 
 void SharedWorkerThread::ClearWorkerBackingThread() {
   worker_backing_thread_ = nullptr;

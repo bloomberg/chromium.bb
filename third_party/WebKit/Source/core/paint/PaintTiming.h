@@ -31,7 +31,7 @@ class CORE_EXPORT PaintTiming final
       WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult, double)>;
 
  public:
-  virtual ~PaintTiming() {}
+  virtual ~PaintTiming() = default;
 
   static PaintTiming& From(Document&);
 

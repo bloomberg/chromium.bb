@@ -91,7 +91,7 @@ FontResource::FontResource(const ResourceRequest& resource_request,
       load_limit_state_(kLoadNotStarted),
       cors_failed_(false) {}
 
-FontResource::~FontResource() {}
+FontResource::~FontResource() = default;
 
 void FontResource::DidAddClient(ResourceClient* c) {
   DCHECK(FontResourceClient::IsExpectedType(c));

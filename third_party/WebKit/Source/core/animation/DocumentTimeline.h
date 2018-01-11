@@ -64,7 +64,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     // Calls DocumentTimeline's wake() method after duration seconds.
     virtual void WakeAfter(double duration) = 0;
     virtual void ServiceOnNextFrame() = 0;
-    virtual ~PlatformTiming() {}
+    virtual ~PlatformTiming() = default;
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
@@ -76,7 +76,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   static DocumentTimeline* Create(ExecutionContext*,
                                   const DocumentTimelineOptions&);
 
-  ~DocumentTimeline() override {}
+  ~DocumentTimeline() override = default;
 
   bool IsDocumentTimeline() const final { return true; }
 

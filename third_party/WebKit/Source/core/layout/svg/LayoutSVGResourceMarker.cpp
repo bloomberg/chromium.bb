@@ -29,7 +29,7 @@ namespace blink {
 LayoutSVGResourceMarker::LayoutSVGResourceMarker(SVGMarkerElement* node)
     : LayoutSVGResourceContainer(node), needs_transform_update_(true) {}
 
-LayoutSVGResourceMarker::~LayoutSVGResourceMarker() {}
+LayoutSVGResourceMarker::~LayoutSVGResourceMarker() = default;
 
 void LayoutSVGResourceMarker::UpdateLayout() {
   DCHECK(NeedsLayout());

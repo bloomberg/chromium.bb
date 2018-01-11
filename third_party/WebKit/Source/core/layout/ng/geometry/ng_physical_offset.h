@@ -19,7 +19,7 @@ struct NGPhysicalSize;
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.
 struct CORE_EXPORT NGPhysicalOffset {
-  NGPhysicalOffset() {}
+  NGPhysicalOffset() = default;
   NGPhysicalOffset(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
 
   LayoutUnit left;

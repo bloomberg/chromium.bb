@@ -43,7 +43,7 @@ CustomEvent::CustomEvent(ScriptState* script_state,
   }
 }
 
-CustomEvent::~CustomEvent() {}
+CustomEvent::~CustomEvent() = default;
 
 void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const AtomicString& type,

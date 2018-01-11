@@ -45,7 +45,7 @@ SVGAngleTearOff::SVGAngleTearOff(SVGAngle* target_property,
                                    property_is_anim_val,
                                    attribute_name) {}
 
-SVGAngleTearOff::~SVGAngleTearOff() {}
+SVGAngleTearOff::~SVGAngleTearOff() = default;
 
 void SVGAngleTearOff::setValue(float value, ExceptionState& exception_state) {
   if (IsImmutable()) {

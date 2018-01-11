@@ -28,7 +28,7 @@
 
 namespace blink {
 
-DOMRectList::DOMRectList() {}
+DOMRectList::DOMRectList() = default;
 
 DOMRectList::DOMRectList(const Vector<FloatQuad>& quads) {
   list_.ReserveInitialCapacity(quads.size());

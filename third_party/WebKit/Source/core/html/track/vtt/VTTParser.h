@@ -48,7 +48,7 @@ class VTTScanner;
 
 class VTTParserClient : public GarbageCollectedMixin {
  public:
-  virtual ~VTTParserClient() {}
+  virtual ~VTTParserClient() = default;
 
   virtual void NewCuesParsed() = 0;
   virtual void FileFailedToParse() = 0;
@@ -73,7 +73,7 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   static VTTParser* Create(VTTParserClient* client, Document& document) {
     return new VTTParser(client, document);
   }
-  ~VTTParser() {}
+  ~VTTParser() = default;
 
   static inline bool IsRecognizedTag(const AtomicString& tag_name) {
     return tag_name == HTMLNames::iTag || tag_name == HTMLNames::bTag ||

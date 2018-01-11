@@ -36,7 +36,7 @@ using namespace HTMLNames;
 BaseTextInputType::BaseTextInputType(HTMLInputElement& element)
     : TextFieldInputType(element) {}
 
-BaseTextInputType::~BaseTextInputType() {}
+BaseTextInputType::~BaseTextInputType() = default;
 
 int BaseTextInputType::MaxLength() const {
   return GetElement().maxLength();

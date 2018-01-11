@@ -16,7 +16,7 @@ namespace blink {
 class UnderlyingSizeListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~UnderlyingSizeListChecker() final {}
+  ~UnderlyingSizeListChecker() final = default;
 
   static std::unique_ptr<UnderlyingSizeListChecker> Create(
       const NonInterpolableList& underlying_list) {
@@ -50,7 +50,7 @@ class UnderlyingSizeListChecker
 class InheritedSizeListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedSizeListChecker() final {}
+  ~InheritedSizeListChecker() final = default;
 
   static std::unique_ptr<InheritedSizeListChecker> Create(
       const CSSProperty& property,

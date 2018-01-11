@@ -12,7 +12,7 @@ InspectorResourceContainer::InspectorResourceContainer(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames) {}
 
-InspectorResourceContainer::~InspectorResourceContainer() {}
+InspectorResourceContainer::~InspectorResourceContainer() = default;
 
 void InspectorResourceContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);

@@ -12,8 +12,7 @@ TextOffset::TextOffset() : offset_(0) {}
 
 TextOffset::TextOffset(Text* text, int offset) : text_(text), offset_(offset) {}
 
-TextOffset::TextOffset(const TextOffset& other)
-    : text_(other.text_), offset_(other.offset_) {}
+TextOffset::TextOffset(const TextOffset& other) = default;
 
 bool TextOffset::IsNull() const {
   return !text_;

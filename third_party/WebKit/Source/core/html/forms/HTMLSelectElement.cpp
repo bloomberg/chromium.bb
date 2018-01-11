@@ -103,7 +103,7 @@ HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
   return select;
 }
 
-HTMLSelectElement::~HTMLSelectElement() {}
+HTMLSelectElement::~HTMLSelectElement() = default;
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, select_multiple, ("select-multiple"));

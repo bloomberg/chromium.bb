@@ -67,7 +67,7 @@ namespace {
 class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
  public:
   HTTPRequestHeaderValidator() : is_safe_(true) {}
-  ~HTTPRequestHeaderValidator() override {}
+  ~HTTPRequestHeaderValidator() override = default;
 
   void VisitHeader(const WebString& name, const WebString& value) override;
   bool IsSafe() const { return is_safe_; }

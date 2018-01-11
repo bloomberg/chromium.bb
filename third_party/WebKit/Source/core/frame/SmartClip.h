@@ -42,7 +42,7 @@ class CORE_EXPORT SmartClipData {
   STACK_ALLOCATED();
 
  public:
-  SmartClipData() {}
+  SmartClipData() = default;
 
   SmartClipData(const IntRect& rect, const String& string)
       : rect_in_viewport_(rect), string_(string) {}

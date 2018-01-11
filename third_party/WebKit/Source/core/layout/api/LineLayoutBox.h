@@ -26,7 +26,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   explicit LineLayoutBox(std::nullptr_t) : LineLayoutBoxModel(nullptr) {}
 
-  LineLayoutBox() {}
+  LineLayoutBox() = default;
 
   LayoutPoint Location() const { return ToBox()->Location(); }
 

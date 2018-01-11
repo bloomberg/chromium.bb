@@ -40,7 +40,7 @@ void SVGMPathElement::Trace(blink::Visitor* visitor) {
 
 DEFINE_NODE_FACTORY(SVGMPathElement)
 
-SVGMPathElement::~SVGMPathElement() {}
+SVGMPathElement::~SVGMPathElement() = default;
 
 void SVGMPathElement::BuildPendingResource() {
   ClearResourceReferences();

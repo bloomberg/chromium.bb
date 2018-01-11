@@ -58,7 +58,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     UBiDiLevel bidi_level = 0xff;
 
     // Empty constructor needed for |resize()|.
-    Child() {}
+    Child() = default;
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
     Child(NGLogicalOffset offset) : offset(offset) {}
@@ -107,7 +107,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     STACK_ALLOCATED();
 
    public:
-    ChildList() {}
+    ChildList() = default;
     void operator=(ChildList&& other) {
       children_ = std::move(other.children_);
     }

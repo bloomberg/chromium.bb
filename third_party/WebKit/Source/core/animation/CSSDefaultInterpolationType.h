@@ -12,7 +12,7 @@ namespace blink {
 
 class CORE_EXPORT CSSDefaultNonInterpolableValue : public NonInterpolableValue {
  public:
-  ~CSSDefaultNonInterpolableValue() final {}
+  ~CSSDefaultNonInterpolableValue() final = default;
 
   static scoped_refptr<CSSDefaultNonInterpolableValue> Create(
       const CSSValue* css_value) {

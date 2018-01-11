@@ -23,7 +23,7 @@ WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
   web_view_->SetCompositorVisibility(true);
 }
 
-WebViewFrameWidget::~WebViewFrameWidget() {}
+WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close() {
   // Note: it's important to use the captured main frame pointer here. During

@@ -230,6 +230,6 @@ MutationRecord* MutationRecord::CreateWithNullOldValue(MutationRecord* record) {
   return new MutationRecordWithNullOldValue(record);
 }
 
-MutationRecord::~MutationRecord() {}
+MutationRecord::~MutationRecord() = default;
 
 }  // namespace blink

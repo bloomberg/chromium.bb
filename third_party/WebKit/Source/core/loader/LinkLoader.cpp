@@ -130,7 +130,7 @@ LinkLoader::LinkLoader(LinkLoaderClient* client,
   DCHECK(client_);
 }
 
-LinkLoader::~LinkLoader() {}
+LinkLoader::~LinkLoader() = default;
 
 void LinkLoader::NotifyFinished() {
   DCHECK(finish_observer_);

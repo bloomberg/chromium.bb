@@ -109,7 +109,7 @@ Event::Event(const AtomicString& event_type,
                                    : ComposedMode::kScoped,
             platform_time_stamp) {}
 
-Event::~Event() {}
+Event::~Event() = default;
 
 bool Event::IsScopedInV0() const {
   return isTrusted() && is_event_type_scoped_in_v0_;

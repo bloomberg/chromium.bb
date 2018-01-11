@@ -213,7 +213,7 @@ AccessibleNode::AccessibleNode(Document& document)
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
 }
 
-AccessibleNode::~AccessibleNode() {}
+AccessibleNode::~AccessibleNode() = default;
 
 // static
 AccessibleNode* AccessibleNode::Create(Document& document) {

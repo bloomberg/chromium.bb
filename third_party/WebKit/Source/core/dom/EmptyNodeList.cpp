@@ -36,7 +36,7 @@
 
 namespace blink {
 
-EmptyNodeList::~EmptyNodeList() {}
+EmptyNodeList::~EmptyNodeList() = default;
 
 Node* EmptyNodeList::VirtualOwnerNode() const {
   return &OwnerNode();

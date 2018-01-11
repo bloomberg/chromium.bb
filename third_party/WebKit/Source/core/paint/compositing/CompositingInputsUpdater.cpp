@@ -19,7 +19,7 @@ namespace blink {
 CompositingInputsUpdater::CompositingInputsUpdater(PaintLayer* root_layer)
     : geometry_map_(kUseTransforms), root_layer_(root_layer) {}
 
-CompositingInputsUpdater::~CompositingInputsUpdater() {}
+CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 
 void CompositingInputsUpdater::Update() {
   TRACE_EVENT0("blink", "CompositingInputsUpdater::update");

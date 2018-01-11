@@ -38,7 +38,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
  public:
-  ~AnimatableDouble() override {}
+  ~AnimatableDouble() override = default;
 
   static scoped_refptr<AnimatableDouble> Create(double number) {
     return base::AdoptRef(new AnimatableDouble(number));

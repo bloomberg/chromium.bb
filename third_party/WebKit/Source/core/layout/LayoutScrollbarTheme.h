@@ -34,7 +34,7 @@ class WebMouseEvent;
 
 class LayoutScrollbarTheme final : public ScrollbarTheme {
  public:
-  ~LayoutScrollbarTheme() override {}
+  ~LayoutScrollbarTheme() override = default;
 
   int ScrollbarThickness(ScrollbarControlSize control_size) override {
     return ScrollbarTheme::DeprecatedStaticGetTheme().ScrollbarThickness(

@@ -22,7 +22,7 @@ class LineLayoutListMarker : public LineLayoutBox {
 
   explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) {}
 
-  LineLayoutListMarker() {}
+  LineLayoutListMarker() = default;
 
   bool IsInside() const { return ToListMarker()->IsInside(); }
 

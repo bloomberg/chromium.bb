@@ -142,7 +142,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
   InitLocationModifiers(initializer.location());
 }
 
-KeyboardEvent::~KeyboardEvent() {}
+KeyboardEvent::~KeyboardEvent() = default;
 
 void KeyboardEvent::initKeyboardEvent(ScriptState* script_state,
                                       const AtomicString& type,

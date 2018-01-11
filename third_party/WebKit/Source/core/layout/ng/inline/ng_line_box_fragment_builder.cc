@@ -23,7 +23,7 @@ NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
     : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
 
-NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() {}
+NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() = default;
 
 void NGLineBoxFragmentBuilder::Reset() {
   children_.clear();

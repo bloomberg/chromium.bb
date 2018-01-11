@@ -85,7 +85,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       time_origin_(time_origin),
       serverTiming_(serverTiming) {}
 
-PerformanceResourceTiming::~PerformanceResourceTiming() {}
+PerformanceResourceTiming::~PerformanceResourceTiming() = default;
 
 ResourceLoadTiming* PerformanceResourceTiming::GetResourceLoadTiming() const {
   return timing_.get();

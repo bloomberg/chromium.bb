@@ -41,7 +41,7 @@ namespace blink {
 class HTMLContentSelectFilter
     : public GarbageCollectedFinalized<HTMLContentSelectFilter> {
  public:
-  virtual ~HTMLContentSelectFilter() {}
+  virtual ~HTMLContentSelectFilter() = default;
   virtual bool CanSelectNode(const HeapVector<Member<Node>, 32>& siblings,
                              int nth) const = 0;
 

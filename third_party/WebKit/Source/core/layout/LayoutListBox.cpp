@@ -51,7 +51,7 @@ LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
   DCHECK(IsHTMLSelectElement(element));
 }
 
-LayoutListBox::~LayoutListBox() {}
+LayoutListBox::~LayoutListBox() = default;
 
 inline HTMLSelectElement* LayoutListBox::SelectElement() const {
   return ToHTMLSelectElement(GetNode());

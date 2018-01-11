@@ -34,7 +34,7 @@ const StyleImage* GetStyleImage(const CSSProperty& property,
 
 class CSSImageNonInterpolableValue : public NonInterpolableValue {
  public:
-  ~CSSImageNonInterpolableValue() final {}
+  ~CSSImageNonInterpolableValue() final = default;
 
   static scoped_refptr<CSSImageNonInterpolableValue> Create(CSSValue* start,
                                                             CSSValue* end) {
@@ -158,7 +158,7 @@ bool CSSImageInterpolationType::EqualNonInterpolableValues(
 class UnderlyingImageChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~UnderlyingImageChecker() final {}
+  ~UnderlyingImageChecker() final = default;
 
   static std::unique_ptr<UnderlyingImageChecker> Create(
       const InterpolationValue& underlying) {
@@ -201,7 +201,7 @@ InterpolationValue CSSImageInterpolationType::MaybeConvertInitial(
 class InheritedImageChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedImageChecker() final {}
+  ~InheritedImageChecker() final = default;
 
   static std::unique_ptr<InheritedImageChecker> Create(
       const CSSProperty& property,

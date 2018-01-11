@@ -432,7 +432,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
         plugin_(plugin),
         print_params_(print_params) {}
 
-  ~ChromePluginPrintContext() override {}
+  ~ChromePluginPrintContext() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(plugin_);

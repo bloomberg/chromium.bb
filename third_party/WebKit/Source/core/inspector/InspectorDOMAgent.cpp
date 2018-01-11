@@ -236,7 +236,7 @@ InspectorDOMAgent::InspectorDOMAgent(
       last_node_id_(1),
       suppress_attribute_modified_event_(false) {}
 
-InspectorDOMAgent::~InspectorDOMAgent() {}
+InspectorDOMAgent::~InspectorDOMAgent() = default;
 
 void InspectorDOMAgent::Restore() {
   if (!Enabled())

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-ElementIntersectionObserverData::ElementIntersectionObserverData() {}
+ElementIntersectionObserverData::ElementIntersectionObserverData() = default;
 
 IntersectionObservation* ElementIntersectionObserverData::GetObservationFor(
     IntersectionObserver& observer) {

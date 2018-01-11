@@ -51,7 +51,7 @@ PerformanceEntry::PerformanceEntry(const String& name,
       entry_type_enum_(ToEntryTypeEnum(entry_type)),
       index_(index_seq.GetNext()) {}
 
-PerformanceEntry::~PerformanceEntry() {}
+PerformanceEntry::~PerformanceEntry() = default;
 
 String PerformanceEntry::name() const {
   return name_;

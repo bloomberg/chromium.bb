@@ -55,7 +55,7 @@ class DocumentAnimations {
       Optional<CompositorElementIdSet>&);
 
  private:
-  DocumentAnimations() {}
+  DocumentAnimations() = default;
 };
 
 }  // namespace blink

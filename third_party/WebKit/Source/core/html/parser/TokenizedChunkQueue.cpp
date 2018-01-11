@@ -9,9 +9,9 @@
 
 namespace blink {
 
-TokenizedChunkQueue::TokenizedChunkQueue() {}
+TokenizedChunkQueue::TokenizedChunkQueue() = default;
 
-TokenizedChunkQueue::~TokenizedChunkQueue() {}
+TokenizedChunkQueue::~TokenizedChunkQueue() = default;
 
 bool TokenizedChunkQueue::Enqueue(
     std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk) {

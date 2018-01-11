@@ -105,7 +105,7 @@ LayoutView::LayoutView(Document* document)
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
 }
 
-LayoutView::~LayoutView() {}
+LayoutView::~LayoutView() = default;
 
 bool LayoutView::HitTest(HitTestResult& result) {
   // We have to recursively update layout/style here because otherwise, when the

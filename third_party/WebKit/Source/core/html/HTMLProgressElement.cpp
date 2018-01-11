@@ -41,7 +41,7 @@ HTMLProgressElement::HTMLProgressElement(Document& document)
   UseCounter::Count(document, WebFeature::kProgressElement);
 }
 
-HTMLProgressElement::~HTMLProgressElement() {}
+HTMLProgressElement::~HTMLProgressElement() = default;
 
 HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
   HTMLProgressElement* progress = new HTMLProgressElement(document);

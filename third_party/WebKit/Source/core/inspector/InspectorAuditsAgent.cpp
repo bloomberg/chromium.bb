@@ -67,7 +67,7 @@ void InspectorAuditsAgent::Trace(blink::Visitor* visitor) {
 InspectorAuditsAgent::InspectorAuditsAgent(InspectorNetworkAgent* network_agent)
     : network_agent_(network_agent) {}
 
-InspectorAuditsAgent::~InspectorAuditsAgent() {}
+InspectorAuditsAgent::~InspectorAuditsAgent() = default;
 
 protocol::Response InspectorAuditsAgent::getEncodedResponse(
     const String& request_id,

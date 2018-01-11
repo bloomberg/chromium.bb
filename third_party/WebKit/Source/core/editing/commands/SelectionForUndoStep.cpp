@@ -25,24 +25,13 @@ SelectionForUndoStep SelectionForUndoStep::From(
   return result;
 }
 
-SelectionForUndoStep::SelectionForUndoStep(const SelectionForUndoStep& other)
-    : base_(other.base_),
-      extent_(other.extent_),
-      affinity_(other.affinity_),
-      is_base_first_(other.is_base_first_),
-      is_directional_(other.is_directional_) {}
+SelectionForUndoStep::SelectionForUndoStep(const SelectionForUndoStep& other) =
+    default;
 
 SelectionForUndoStep::SelectionForUndoStep() = default;
 
 SelectionForUndoStep& SelectionForUndoStep::operator=(
-    const SelectionForUndoStep& other) {
-  base_ = other.base_;
-  extent_ = other.extent_;
-  affinity_ = other.affinity_;
-  is_base_first_ = other.is_base_first_;
-  is_directional_ = other.is_directional_;
-  return *this;
-}
+    const SelectionForUndoStep& other) = default;
 
 bool SelectionForUndoStep::operator==(const SelectionForUndoStep& other) const {
   if (IsNone())

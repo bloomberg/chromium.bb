@@ -225,7 +225,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
 class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
  public:
-  ~EventTargetWithInlineData() override {}
+  ~EventTargetWithInlineData() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(event_target_data_);

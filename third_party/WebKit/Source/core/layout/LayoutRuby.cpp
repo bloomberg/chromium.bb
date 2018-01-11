@@ -56,7 +56,7 @@ LayoutRubyAsInline::LayoutRubyAsInline(Element* element)
   UseCounter::Count(GetDocument(), WebFeature::kRenderRuby);
 }
 
-LayoutRubyAsInline::~LayoutRubyAsInline() {}
+LayoutRubyAsInline::~LayoutRubyAsInline() = default;
 
 void LayoutRubyAsInline::StyleDidChange(StyleDifference diff,
                                         const ComputedStyle* old_style) {
@@ -121,7 +121,7 @@ LayoutRubyAsBlock::LayoutRubyAsBlock(Element* element)
   UseCounter::Count(GetDocument(), WebFeature::kRenderRuby);
 }
 
-LayoutRubyAsBlock::~LayoutRubyAsBlock() {}
+LayoutRubyAsBlock::~LayoutRubyAsBlock() = default;
 
 void LayoutRubyAsBlock::StyleDidChange(StyleDifference diff,
                                        const ComputedStyle* old_style) {

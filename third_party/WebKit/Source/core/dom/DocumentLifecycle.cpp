@@ -88,7 +88,7 @@ DocumentLifecycle::DisallowThrottlingScope::~DisallowThrottlingScope() {
 DocumentLifecycle::DocumentLifecycle()
     : state_(kUninitialized), detach_count_(0), disallow_transition_count_(0) {}
 
-DocumentLifecycle::~DocumentLifecycle() {}
+DocumentLifecycle::~DocumentLifecycle() = default;
 
 #if DCHECK_IS_ON()
 

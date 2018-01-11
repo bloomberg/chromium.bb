@@ -134,7 +134,7 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope() {
 #endif
 
 struct SameSizeAsLayoutObject : DisplayItemClient {
-  ~SameSizeAsLayoutObject() override {}  // Allocate vtable pointer.
+  ~SameSizeAsLayoutObject() override = default;  // Allocate vtable pointer.
   void* pointers[5];
   Member<void*> members[1];
 #if DCHECK_IS_ON()

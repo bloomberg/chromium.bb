@@ -44,7 +44,7 @@ Filter::Filter(Expression* expr, HeapVector<Member<Predicate>>& predicates)
   SetIsContextSizeSensitive(expr_->IsContextSizeSensitive());
 }
 
-Filter::~Filter() {}
+Filter::~Filter() = default;
 
 void Filter::Trace(blink::Visitor* visitor) {
   visitor->Trace(expr_);
@@ -80,7 +80,7 @@ LocationPath::LocationPath() : absolute_(false) {
   SetIsContextNodeSensitive(true);
 }
 
-LocationPath::~LocationPath() {}
+LocationPath::~LocationPath() = default;
 
 void LocationPath::Trace(blink::Visitor* visitor) {
   visitor->Trace(steps_);
@@ -181,7 +181,7 @@ Path::Path(Expression* filter, LocationPath* path)
   SetIsContextSizeSensitive(filter->IsContextSizeSensitive());
 }
 
-Path::~Path() {}
+Path::~Path() = default;
 
 void Path::Trace(blink::Visitor* visitor) {
   visitor->Trace(filter_);

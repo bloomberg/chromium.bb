@@ -48,7 +48,7 @@ RadioNodeList::RadioNodeList(ContainerNode& root_node,
                                                 : NodeListRootType::kNode),
       name_(name) {}
 
-RadioNodeList::~RadioNodeList() {}
+RadioNodeList::~RadioNodeList() = default;
 
 static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
   if (!IsHTMLInputElement(element))

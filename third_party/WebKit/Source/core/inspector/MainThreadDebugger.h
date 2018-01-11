@@ -54,7 +54,7 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
     USING_FAST_MALLOC(ClientMessageLoop);
 
    public:
-    virtual ~ClientMessageLoop() {}
+    virtual ~ClientMessageLoop() = default;
     virtual void Run(LocalFrame*) = 0;
     virtual void QuitNow() = 0;
     virtual void RunIfWaitingForDebugger(LocalFrame*) = 0;

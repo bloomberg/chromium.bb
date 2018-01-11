@@ -36,7 +36,7 @@ namespace blink {
 class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
  public:
   static GestureEvent* Create(AbstractView*, const WebGestureEvent&);
-  ~GestureEvent() override {}
+  ~GestureEvent() override = default;
 
   bool IsGestureEvent() const override;
 

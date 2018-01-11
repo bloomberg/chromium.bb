@@ -25,7 +25,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(
   }
 }
 
-PromiseRejectionEvent::~PromiseRejectionEvent() {}
+PromiseRejectionEvent::~PromiseRejectionEvent() = default;
 
 void PromiseRejectionEvent::Dispose() {
   // Clear ScopedPersistents so that V8 doesn't call phantom callbacks

@@ -271,7 +271,7 @@ class CORE_EXPORT ObjectPaintProperties {
 #endif
 
  private:
-  ObjectPaintProperties() {}
+  ObjectPaintProperties() = default;
 
   // Return true if the property tree structure changes (an existing node was
   // deleted), and false otherwise. See the class-level comment ("update & clear

@@ -54,7 +54,7 @@ LinkImport* LinkImport::Create(HTMLLinkElement* owner) {
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner), child_(nullptr) {}
 
-LinkImport::~LinkImport() {}
+LinkImport::~LinkImport() = default;
 
 Document* LinkImport::ImportedDocument() const {
   if (!child_ || !owner_ || !owner_->isConnected())

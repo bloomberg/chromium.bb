@@ -67,7 +67,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       delegates_focus_(false),
       unused_(0) {}
 
-ShadowRoot::~ShadowRoot() {}
+ShadowRoot::~ShadowRoot() = default;
 
 ShadowRoot* ShadowRoot::YoungerShadowRoot() const {
   if (GetType() == ShadowRootType::V0 && shadow_root_rare_data_v0_)

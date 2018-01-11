@@ -17,7 +17,7 @@ LinkManifest* LinkManifest::Create(HTMLLinkElement* owner) {
 
 LinkManifest::LinkManifest(HTMLLinkElement* owner) : LinkResource(owner) {}
 
-LinkManifest::~LinkManifest() {}
+LinkManifest::~LinkManifest() = default;
 
 void LinkManifest::Process() {
   if (!owner_ || !owner_->GetDocument().GetFrame())

@@ -42,7 +42,7 @@ EditCommand::EditCommand(Document& document)
   DCHECK(document_->GetFrame());
 }
 
-EditCommand::~EditCommand() {}
+EditCommand::~EditCommand() = default;
 
 InputEvent::InputType EditCommand::GetInputType() const {
   return InputEvent::InputType::kNone;

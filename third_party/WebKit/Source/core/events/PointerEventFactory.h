@@ -81,7 +81,7 @@ class CORE_EXPORT PointerEventFactory {
  private:
   typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;
   typedef struct IncomingId : public std::pair<int, int> {
-    IncomingId() {}
+    IncomingId() = default;
     IncomingId(WebPointerProperties::PointerType pointer_type, int raw_id)
         : std::pair<int, int>(static_cast<int>(pointer_type), raw_id) {}
     int PointerTypeInt() const { return first; }

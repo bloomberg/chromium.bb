@@ -36,7 +36,7 @@ namespace blink {
 
 ElementAnimations::ElementAnimations() : animation_style_change_(false) {}
 
-ElementAnimations::~ElementAnimations() {}
+ElementAnimations::~ElementAnimations() = default;
 
 void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
   for (const auto& entry : animations_) {

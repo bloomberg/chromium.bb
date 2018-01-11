@@ -58,7 +58,7 @@ ScriptResource::ScriptResource(
     const TextResourceDecoderOptions& decoder_options)
     : TextResource(resource_request, kScript, options, decoder_options) {}
 
-ScriptResource::~ScriptResource() {}
+ScriptResource::~ScriptResource() = default;
 
 void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
                                   WebProcessMemoryDump* memory_dump) const {

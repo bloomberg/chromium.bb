@@ -29,7 +29,7 @@ class PathBuilder {
 
  public:
   PathBuilder() : path_(protocol::ListValue::create()) {}
-  virtual ~PathBuilder() {}
+  virtual ~PathBuilder() = default;
 
   std::unique_ptr<protocol::ListValue> Release() { return std::move(path_); }
 
@@ -320,7 +320,7 @@ InspectorHighlight::InspectorHighlight(
     element_info_ = BuildElementInfo(ToElement(node));
 }
 
-InspectorHighlight::~InspectorHighlight() {}
+InspectorHighlight::~InspectorHighlight() = default;
 
 void InspectorHighlight::AppendQuad(const FloatQuad& quad,
                                     const Color& fill_color,

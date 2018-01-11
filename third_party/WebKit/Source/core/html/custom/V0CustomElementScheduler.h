@@ -67,7 +67,7 @@ class V0CustomElementScheduler final
   static void CallbackDispatcherDidFinish();
 
  private:
-  V0CustomElementScheduler() {}
+  V0CustomElementScheduler() = default;
 
   static void EnqueueMicrotaskStep(Document&,
                                    V0CustomElementMicrotaskStep*,

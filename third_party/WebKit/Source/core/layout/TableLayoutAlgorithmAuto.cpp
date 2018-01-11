@@ -35,7 +35,7 @@ TableLayoutAlgorithmAuto::TableLayoutAlgorithmAuto(LayoutTable* table)
       effective_logical_width_dirty_(true),
       scaled_width_from_percent_columns_() {}
 
-TableLayoutAlgorithmAuto::~TableLayoutAlgorithmAuto() {}
+TableLayoutAlgorithmAuto::~TableLayoutAlgorithmAuto() = default;
 
 void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
   Layout& column_layout = layout_struct_[eff_col];

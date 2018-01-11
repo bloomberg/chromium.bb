@@ -42,7 +42,7 @@ WorkerInspectorProxy* WorkerInspectorProxy::Create() {
   return new WorkerInspectorProxy();
 }
 
-WorkerInspectorProxy::~WorkerInspectorProxy() {}
+WorkerInspectorProxy::~WorkerInspectorProxy() = default;
 
 const String& WorkerInspectorProxy::InspectorId() {
   if (inspector_id_.IsEmpty())

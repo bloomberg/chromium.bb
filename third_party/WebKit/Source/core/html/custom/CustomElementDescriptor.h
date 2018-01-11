@@ -33,7 +33,7 @@ class CORE_EXPORT CustomElementDescriptor final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  CustomElementDescriptor() {}
+  CustomElementDescriptor() = default;
 
   CustomElementDescriptor(const AtomicString& name,
                           const AtomicString& local_name)

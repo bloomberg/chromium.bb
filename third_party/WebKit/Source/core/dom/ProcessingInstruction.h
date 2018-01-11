@@ -57,7 +57,7 @@ class ProcessingInstruction final : public CharacterData,
   // For XSLT
   class DetachableEventListener : public GarbageCollectedMixin {
    public:
-    virtual ~DetachableEventListener() {}
+    virtual ~DetachableEventListener() = default;
     virtual EventListener* ToEventListener() = 0;
     // Detach event listener from its processing instruction.
     virtual void Detach() = 0;

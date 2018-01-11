@@ -60,7 +60,7 @@ WebFallbackThemeEngine::State GetWebFallbackThemeState(const Node* node) {
 
 }  // anonymous namespace
 
-ThemePainter::ThemePainter() {}
+ThemePainter::ThemePainter() = default;
 
 bool ThemePainter::Paint(const LayoutObject& o,
                          const PaintInfo& paint_info,

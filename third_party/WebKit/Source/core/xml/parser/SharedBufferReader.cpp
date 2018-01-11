@@ -41,7 +41,7 @@ namespace blink {
 SharedBufferReader::SharedBufferReader(scoped_refptr<const SharedBuffer> buffer)
     : buffer_(std::move(buffer)), current_offset_(0) {}
 
-SharedBufferReader::~SharedBufferReader() {}
+SharedBufferReader::~SharedBufferReader() = default;
 
 int SharedBufferReader::ReadData(char* output_buffer, int asked_to_read) {
   if (!buffer_ || current_offset_ > buffer_->size())

@@ -41,7 +41,7 @@ class Element;
 class V0CustomElementObserver
     : public GarbageCollectedFinalized<V0CustomElementObserver> {
  public:
-  virtual ~V0CustomElementObserver() {}
+  virtual ~V0CustomElementObserver() = default;
 
   // API for CustomElement to kick off notifications
   static void NotifyElementWasDestroyed(Element*);
@@ -49,7 +49,7 @@ class V0CustomElementObserver
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  V0CustomElementObserver() {}
+  V0CustomElementObserver() = default;
 
   void Observe(Element*);
   void Unobserve(Element*);

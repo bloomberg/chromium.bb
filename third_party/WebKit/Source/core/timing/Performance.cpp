@@ -112,8 +112,7 @@ Performance::Performance(LocalDOMWindow* window)
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
       DOMWindowClient(window) {}
 
-Performance::~Performance() {
-}
+Performance::~Performance() = default;
 
 ExecutionContext* Performance::GetExecutionContext() const {
   if (!GetFrame())

@@ -32,7 +32,7 @@ SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layout_object,
   DCHECK(resources_);
 }
 
-SVGResourcesCycleSolver::~SVGResourcesCycleSolver() {}
+SVGResourcesCycleSolver::~SVGResourcesCycleSolver() = default;
 
 struct ActiveFrame {
   typedef SVGResourcesCycleSolver::ResourceSet ResourceSet;

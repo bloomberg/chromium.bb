@@ -10,7 +10,7 @@ AudioTrackList* AudioTrackList::Create(HTMLMediaElement& media_element) {
   return new AudioTrackList(media_element);
 }
 
-AudioTrackList::~AudioTrackList() {}
+AudioTrackList::~AudioTrackList() = default;
 
 AudioTrackList::AudioTrackList(HTMLMediaElement& media_element)
     : TrackListBase<AudioTrack>(&media_element) {}

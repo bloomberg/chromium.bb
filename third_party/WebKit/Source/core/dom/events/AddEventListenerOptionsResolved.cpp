@@ -15,7 +15,7 @@ AddEventListenerOptionsResolved::AddEventListenerOptionsResolved(
       passive_forced_for_document_target_(false),
       passive_specified_(false) {}
 
-AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() {}
+AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() = default;
 
 void AddEventListenerOptionsResolved::Trace(blink::Visitor* visitor) {
   AddEventListenerOptions::Trace(visitor);

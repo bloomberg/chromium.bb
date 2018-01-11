@@ -17,7 +17,7 @@ namespace blink {
 // Care must be taken when converting this to a NGLogicalOffset to respect the
 // text direction.
 struct CORE_EXPORT NGBfcOffset {
-  NGBfcOffset() {}
+  NGBfcOffset() = default;
   NGBfcOffset(LayoutUnit line_offset, LayoutUnit block_offset)
       : line_offset(line_offset), block_offset(block_offset) {}
 

@@ -35,7 +35,7 @@ class CORE_EXPORT WorkletModuleResponsesMap
   // details.
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
-    virtual ~Client() {}
+    virtual ~Client() = default;
     virtual void OnRead(const ModuleScriptCreationParams&) = 0;
     virtual void OnFailed() = 0;
   };

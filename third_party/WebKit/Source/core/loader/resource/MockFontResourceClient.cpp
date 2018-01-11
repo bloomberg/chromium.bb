@@ -12,7 +12,7 @@ MockFontResourceClient::MockFontResourceClient()
     : font_load_short_limit_exceeded_called_(false),
       font_load_long_limit_exceeded_called_(false) {}
 
-MockFontResourceClient::~MockFontResourceClient() {}
+MockFontResourceClient::~MockFontResourceClient() = default;
 
 void MockFontResourceClient::FontLoadShortLimitExceeded(FontResource*) {
   ASSERT_FALSE(font_load_short_limit_exceeded_called_);

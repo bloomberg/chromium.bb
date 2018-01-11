@@ -44,7 +44,7 @@ StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
   best_fit_image_->AddObserver(this);
 }
 
-StyleFetchedImageSet::~StyleFetchedImageSet() {}
+StyleFetchedImageSet::~StyleFetchedImageSet() = default;
 
 void StyleFetchedImageSet::Dispose() {
   best_fit_image_->RemoveObserver(this);

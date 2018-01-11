@@ -43,7 +43,7 @@ class CORE_EXPORT EventListener
     kNativeEventListenerType,
   };
 
-  virtual ~EventListener() {}
+  virtual ~EventListener() = default;
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
   virtual const String& Code() const { return g_empty_string; }

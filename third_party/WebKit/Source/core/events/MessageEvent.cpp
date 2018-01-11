@@ -139,7 +139,7 @@ MessageEvent::MessageEvent(DOMArrayBuffer* data,
       data_as_array_buffer_(data),
       origin_(origin) {}
 
-MessageEvent::~MessageEvent() {}
+MessageEvent::~MessageEvent() = default;
 
 MessageEvent* MessageEvent::Create(const AtomicString& type,
                                    const MessageEventInit& initializer,

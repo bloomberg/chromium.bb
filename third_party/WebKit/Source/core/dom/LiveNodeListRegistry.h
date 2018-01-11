@@ -35,7 +35,7 @@ class CORE_EXPORT LiveNodeListRegistry {
   using Entry = std::pair<UntracedMember<const LiveNodeListBase>, unsigned>;
 
  public:
-  LiveNodeListRegistry() {}
+  LiveNodeListRegistry() = default;
   void Add(const LiveNodeListBase*, NodeListInvalidationType);
   void Remove(const LiveNodeListBase*, NodeListInvalidationType);
 

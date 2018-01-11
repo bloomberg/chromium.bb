@@ -34,7 +34,7 @@ TagCollection::TagCollection(ContainerNode& root_node,
     : HTMLCollection(root_node, type, kDoesNotOverrideItemAfter),
       qualified_name_(qualified_name) {}
 
-TagCollection::~TagCollection() {}
+TagCollection::~TagCollection() = default;
 
 bool TagCollection::ElementMatches(const Element& test_node) const {
   if (qualified_name_ == g_star_atom)
@@ -53,7 +53,7 @@ TagCollectionNS::TagCollectionNS(ContainerNode& root_node,
   DCHECK(namespace_uri_.IsNull() || !namespace_uri_.IsEmpty());
 }
 
-TagCollectionNS::~TagCollectionNS() {}
+TagCollectionNS::~TagCollectionNS() = default;
 
 bool TagCollectionNS::ElementMatches(const Element& test_node) const {
   // Implements

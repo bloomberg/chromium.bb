@@ -23,7 +23,7 @@ IntersectionObserverController::IntersectionObserverController(
     Document* document)
     : PausableObject(document), callback_fired_while_suspended_(false) {}
 
-IntersectionObserverController::~IntersectionObserverController() {}
+IntersectionObserverController::~IntersectionObserverController() = default;
 
 void IntersectionObserverController::PostTaskToDeliverObservations() {
   DCHECK(GetExecutionContext());

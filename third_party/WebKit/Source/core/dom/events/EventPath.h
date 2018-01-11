@@ -93,7 +93,7 @@ class CORE_EXPORT EventPath final
   }
 
  private:
-  EventPath();
+  EventPath() = delete;
 
   void Initialize();
   void CalculatePath();

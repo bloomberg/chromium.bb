@@ -263,7 +263,7 @@ LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node) : LayoutBlock(node) {
   SetChildrenInline(true);
 }
 
-LayoutBlockFlow::~LayoutBlockFlow() {}
+LayoutBlockFlow::~LayoutBlockFlow() = default;
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(Document* document) {
   LayoutBlockFlow* layout_block_flow = RuntimeEnabledFeatures::LayoutNGEnabled()

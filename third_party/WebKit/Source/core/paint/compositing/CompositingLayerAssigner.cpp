@@ -44,7 +44,7 @@ CompositingLayerAssigner::CompositingLayerAssigner(
     PaintLayerCompositor* compositor)
     : compositor_(compositor), layers_changed_(false) {}
 
-CompositingLayerAssigner::~CompositingLayerAssigner() {}
+CompositingLayerAssigner::~CompositingLayerAssigner() = default;
 
 void CompositingLayerAssigner::Assign(
     PaintLayer* update_root,

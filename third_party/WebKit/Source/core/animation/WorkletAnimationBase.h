@@ -15,7 +15,7 @@ class Document;
 
 class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
  public:
-  virtual ~WorkletAnimationBase() {}
+  virtual ~WorkletAnimationBase() = default;
 
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and failure_message

@@ -19,7 +19,7 @@ class ScrollStateCallback
       : native_scroll_behavior_(WebNativeScrollBehavior::kDisableNativeScroll) {
   }
 
-  virtual ~ScrollStateCallback() {}
+  virtual ~ScrollStateCallback() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(ScrollState*) = 0;

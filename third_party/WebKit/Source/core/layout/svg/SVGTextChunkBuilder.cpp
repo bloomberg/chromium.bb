@@ -109,7 +109,7 @@ void ChunkLengthAccumulator::ProcessRange(BoxListConstIterator box_start,
 
 }  // namespace
 
-SVGTextChunkBuilder::SVGTextChunkBuilder() {}
+SVGTextChunkBuilder::SVGTextChunkBuilder() = default;
 
 void SVGTextChunkBuilder::ProcessTextChunks(
     const Vector<SVGInlineTextBox*>& line_layout_boxes) {

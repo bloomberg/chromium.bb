@@ -17,7 +17,7 @@ namespace blink {
 
 SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
 
-SnapCoordinator::~SnapCoordinator() {}
+SnapCoordinator::~SnapCoordinator() = default;
 
 SnapCoordinator* SnapCoordinator::Create() {
   return new SnapCoordinator();

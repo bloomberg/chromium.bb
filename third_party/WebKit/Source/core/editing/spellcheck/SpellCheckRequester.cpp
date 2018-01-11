@@ -70,7 +70,7 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
   }
 
  private:
-  virtual ~WebTextCheckingCompletionImpl() {}
+  virtual ~WebTextCheckingCompletionImpl() = default;
 
   Persistent<SpellCheckRequest> request_;
 };
@@ -91,7 +91,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
   DCHECK(root_editable_element_);
 }
 
-SpellCheckRequest::~SpellCheckRequest() {}
+SpellCheckRequest::~SpellCheckRequest() = default;
 
 void SpellCheckRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(requester_);
@@ -165,7 +165,7 @@ SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
           this,
           &SpellCheckRequester::TimerFiredToProcessQueuedRequest) {}
 
-SpellCheckRequester::~SpellCheckRequester() {}
+SpellCheckRequester::~SpellCheckRequester() = default;
 
 WebTextCheckClient* SpellCheckRequester::GetTextCheckerClient() const {
   return GetFrame().GetSpellChecker().GetTextCheckerClient();

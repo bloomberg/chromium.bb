@@ -73,7 +73,7 @@ class LayoutAnalyzer {
     LayoutUnit height_;
   };
 
-  LayoutAnalyzer() {}
+  LayoutAnalyzer() = default;
 
   void Reset();
   void Push(const LayoutObject&);

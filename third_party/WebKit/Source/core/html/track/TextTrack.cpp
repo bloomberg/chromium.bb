@@ -97,7 +97,7 @@ TextTrack::TextTrack(const AtomicString& kind,
       rendered_track_index_(kInvalidTrackIndex),
       has_been_configured_(false) {}
 
-TextTrack::~TextTrack() {}
+TextTrack::~TextTrack() = default;
 
 bool TextTrack::IsValidKindKeyword(const String& value) {
   if (value == SubtitlesKeyword())

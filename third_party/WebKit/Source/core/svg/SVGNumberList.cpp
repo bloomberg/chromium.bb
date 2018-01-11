@@ -27,9 +27,9 @@
 
 namespace blink {
 
-SVGNumberList::SVGNumberList() {}
+SVGNumberList::SVGNumberList() = default;
 
-SVGNumberList::~SVGNumberList() {}
+SVGNumberList::~SVGNumberList() = default;
 
 String SVGNumberList::ValueAsString() const {
   StringBuilder builder;

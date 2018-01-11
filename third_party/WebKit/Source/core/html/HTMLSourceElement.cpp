@@ -66,7 +66,7 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLSourceElement)
 
-HTMLSourceElement::~HTMLSourceElement() {}
+HTMLSourceElement::~HTMLSourceElement() = default;
 
 void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
   RemoveMediaQueryListListener();

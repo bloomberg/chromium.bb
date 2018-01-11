@@ -39,7 +39,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
  public:
-  ~AnimatableTransform() override {}
+  ~AnimatableTransform() override = default;
   static scoped_refptr<AnimatableTransform> Create(
       const TransformOperations& transform,
       double zoom) {

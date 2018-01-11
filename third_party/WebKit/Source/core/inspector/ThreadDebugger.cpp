@@ -37,7 +37,7 @@ ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
       v8_inspector_(v8_inspector::V8Inspector::create(isolate, this)),
       v8_tracing_cpu_profiler_(v8::TracingCpuProfiler::Create(isolate)) {}
 
-ThreadDebugger::~ThreadDebugger() {}
+ThreadDebugger::~ThreadDebugger() = default;
 
 // static
 ThreadDebugger* ThreadDebugger::From(v8::Isolate* isolate) {

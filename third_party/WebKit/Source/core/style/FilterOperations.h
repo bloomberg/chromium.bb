@@ -97,7 +97,7 @@ class FilterOperationsWrapper
   void Trace(blink::Visitor* visitor) { visitor->Trace(operations_); }
 
  private:
-  FilterOperationsWrapper() {}
+  FilterOperationsWrapper() = default;
 
   explicit FilterOperationsWrapper(const FilterOperations& operations)
       : operations_(operations) {}

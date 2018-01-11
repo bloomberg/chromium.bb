@@ -60,7 +60,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
   SetIntrinsicSize(intrinsic_size);
 }
 
-LayoutSVGRoot::~LayoutSVGRoot() {}
+LayoutSVGRoot::~LayoutSVGRoot() = default;
 
 void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {

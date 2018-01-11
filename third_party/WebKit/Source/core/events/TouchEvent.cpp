@@ -246,7 +246,7 @@ TouchEvent::TouchEvent(const AtomicString& type,
       changed_touches_(TouchList::Create(initializer.changedTouches())),
       current_touch_action_(TouchAction::kTouchActionAuto) {}
 
-TouchEvent::~TouchEvent() {}
+TouchEvent::~TouchEvent() = default;
 
 const AtomicString& TouchEvent::InterfaceName() const {
   return EventNames::TouchEvent;

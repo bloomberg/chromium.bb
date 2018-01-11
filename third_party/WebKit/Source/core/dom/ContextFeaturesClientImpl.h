@@ -52,7 +52,7 @@ class CORE_EXPORT ContextFeaturesClientImpl final
   void UrlDidChange(Document*) override;
 
  private:
-  ContextFeaturesClientImpl() {}
+  ContextFeaturesClientImpl() = default;
 
   bool AskIfIsEnabled(Document*,
                       ContextFeatures::FeatureType,

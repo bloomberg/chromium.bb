@@ -45,7 +45,8 @@ struct ContentAlignmentData {
   STACK_ALLOCATED();
 
  public:
-  ContentAlignmentData(){};
+  ContentAlignmentData() = default;
+  ;
   ContentAlignmentData(LayoutUnit position, LayoutUnit distribution)
       : position_offset(position), distribution_offset(distribution) {}
 
@@ -62,7 +63,7 @@ LayoutGrid::LayoutGrid(Element* element)
     UseCounter::Count(GetDocument(), WebFeature::kCSSGridLayout);
 }
 
-LayoutGrid::~LayoutGrid() {}
+LayoutGrid::~LayoutGrid() = default;
 
 LayoutGrid* LayoutGrid::CreateAnonymous(Document* document) {
   LayoutGrid* layout_grid = new LayoutGrid(nullptr);

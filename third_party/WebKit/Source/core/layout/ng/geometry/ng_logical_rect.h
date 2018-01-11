@@ -16,7 +16,7 @@ class LayoutRect;
 // NGLogicalRect is the position and size of a rect (typically a fragment)
 // relative to the parent.
 struct CORE_EXPORT NGLogicalRect {
-  NGLogicalRect() {}
+  NGLogicalRect() = default;
   NGLogicalRect(const NGLogicalOffset& offset, const NGLogicalSize& size)
       : offset(offset), size(size) {}
 

@@ -37,7 +37,7 @@ class Node;
 
 class DragState final : public GarbageCollected<DragState> {
  public:
-  DragState() {}
+  DragState() = default;
 
   // Element that may be a drag source, for the current mouse gesture.
   Member<Node> drag_src_;

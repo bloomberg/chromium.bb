@@ -93,7 +93,7 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
     : inspected_frames_(inspected_frames),
       dom_debugger_agent_(dom_debugger_agent) {}
 
-InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() {}
+InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
     std::unique_ptr<protocol::Array<String>> style_whitelist,

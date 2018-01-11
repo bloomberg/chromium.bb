@@ -30,7 +30,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
                 bool horizontal)
       : TextPainterBase(context, font, text_origin, text_bounds, horizontal),
         fragment_(text_fragment) {}
-  ~NGTextPainter() {}
+  ~NGTextPainter() = default;
 
   void ClipDecorationsStripe(float upper,
                              float stripe_width,

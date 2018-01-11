@@ -1040,7 +1040,7 @@ Editor::Editor(LocalFrame& frame)
       default_paragraph_separator_(kEditorParagraphSeparatorIsDiv),
       overwrite_mode_enabled_(false) {}
 
-Editor::~Editor() {}
+Editor::~Editor() = default;
 
 void Editor::Clear() {
   should_style_with_css_ = false;

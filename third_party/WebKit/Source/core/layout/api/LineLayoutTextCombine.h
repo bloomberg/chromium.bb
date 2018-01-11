@@ -22,7 +22,7 @@ class LineLayoutTextCombine : public LineLayoutText {
 
   explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) {}
 
-  LineLayoutTextCombine() {}
+  LineLayoutTextCombine() = default;
 
   bool IsCombined() const { return ToTextCombine()->IsCombined(); }
 

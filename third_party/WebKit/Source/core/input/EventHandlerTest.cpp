@@ -768,7 +768,7 @@ TEST_F(EventHandlerTest, FakeMouseMoveNotStartDrag) {
 
 class TooltipCapturingChromeClient : public EmptyChromeClient {
  public:
-  TooltipCapturingChromeClient() {}
+  TooltipCapturingChromeClient() = default;
 
   void SetToolTip(LocalFrame&, const String& str, TextDirection) override {
     last_tool_tip_ = str;
@@ -782,7 +782,7 @@ class TooltipCapturingChromeClient : public EmptyChromeClient {
 
 class EventHandlerTooltipTest : public EventHandlerTest {
  public:
-  EventHandlerTooltipTest() {}
+  EventHandlerTooltipTest() = default;
 
   void SetUp() override {
     chrome_client_ = new TooltipCapturingChromeClient();
@@ -828,7 +828,7 @@ TEST_F(EventHandlerTooltipTest, mouseLeaveClearsTooltip) {
 
 class UnbufferedInputEventsTrackingChromeClient : public EmptyChromeClient {
  public:
-  UnbufferedInputEventsTrackingChromeClient() {}
+  UnbufferedInputEventsTrackingChromeClient() = default;
 
   void RequestUnbufferedInputEvents(LocalFrame*) override {
     received_unbuffered_request_ = true;
@@ -897,7 +897,7 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
 
 class NavigationCapturingFrameClient : public EmptyLocalFrameClient {
  public:
-  NavigationCapturingFrameClient() {}
+  NavigationCapturingFrameClient() = default;
 
   bool NavigateBackForward(int offset) const override {
     offset_ = offset;
@@ -912,7 +912,7 @@ class NavigationCapturingFrameClient : public EmptyLocalFrameClient {
 
 class EventHandlerNavigationTest : public EventHandlerTest {
  public:
-  EventHandlerNavigationTest() {}
+  EventHandlerNavigationTest() = default;
 
   void SetUp() override {
     frame_client_ = new NavigationCapturingFrameClient();

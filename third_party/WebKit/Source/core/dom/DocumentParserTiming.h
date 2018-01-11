@@ -20,7 +20,7 @@ class DocumentParserTiming final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentParserTiming);
 
  public:
-  virtual ~DocumentParserTiming() {}
+  virtual ~DocumentParserTiming() = default;
 
   static DocumentParserTiming& From(Document&);
 

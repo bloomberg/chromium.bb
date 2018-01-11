@@ -13,7 +13,7 @@ class CORE_EXPORT ReportBody : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~ReportBody() {}
+  virtual ~ReportBody() = default;
 };
 
 }  // namespace blink

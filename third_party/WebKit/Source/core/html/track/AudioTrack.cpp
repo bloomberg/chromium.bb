@@ -16,7 +16,7 @@ AudioTrack::AudioTrack(const String& id,
     : TrackBase(WebMediaPlayer::kAudioTrack, kind, label, language, id),
       enabled_(enabled) {}
 
-AudioTrack::~AudioTrack() {}
+AudioTrack::~AudioTrack() = default;
 
 void AudioTrack::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);

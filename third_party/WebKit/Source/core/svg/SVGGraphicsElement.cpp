@@ -42,7 +42,7 @@ SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tag_name,
   AddToPropertyMap(transform_);
 }
 
-SVGGraphicsElement::~SVGGraphicsElement() {}
+SVGGraphicsElement::~SVGGraphicsElement() = default;
 
 void SVGGraphicsElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(transform_);

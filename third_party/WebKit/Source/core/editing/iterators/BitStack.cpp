@@ -33,7 +33,7 @@ static const unsigned kBitInWordMask = kBitsInWord - 1;
 
 BitStack::BitStack() : size_(0) {}
 
-BitStack::~BitStack() {}
+BitStack::~BitStack() = default;
 
 void BitStack::Push(bool bit) {
   unsigned index = size_ / kBitsInWord;

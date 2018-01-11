@@ -33,7 +33,7 @@ class CORE_EXPORT SpaceSplitString {
   USING_FAST_MALLOC(SpaceSplitString);
 
  public:
-  SpaceSplitString() {}
+  SpaceSplitString() = default;
   explicit SpaceSplitString(const AtomicString& string) { Set(string); }
 
   bool operator!=(const SpaceSplitString& other) const {

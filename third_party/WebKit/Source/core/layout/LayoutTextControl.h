@@ -113,7 +113,7 @@ class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
  public:
   explicit LayoutTextControlInnerContainer(Element* element)
       : LayoutFlexibleBox(element) {}
-  ~LayoutTextControlInnerContainer() override {}
+  ~LayoutTextControlInnerContainer() override = default;
 
   LayoutUnit BaselinePosition(FontBaseline baseline,
                               bool first_line,

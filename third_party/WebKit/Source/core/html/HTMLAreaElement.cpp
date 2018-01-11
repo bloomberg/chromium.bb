@@ -53,7 +53,7 @@ inline HTMLAreaElement::HTMLAreaElement(Document& document)
 // HTMLAreaElement.h, when including HTMLAreaElement.h, msvc tries to expand
 // the destructor and causes a compile error because of lack of blink::Path
 // definition.
-HTMLAreaElement::~HTMLAreaElement() {}
+HTMLAreaElement::~HTMLAreaElement() = default;
 
 DEFINE_NODE_FACTORY(HTMLAreaElement)
 

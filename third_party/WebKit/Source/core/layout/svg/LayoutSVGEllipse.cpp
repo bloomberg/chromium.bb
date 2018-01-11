@@ -35,7 +35,7 @@ namespace blink {
 LayoutSVGEllipse::LayoutSVGEllipse(SVGGeometryElement* node)
     : LayoutSVGShape(node), use_path_fallback_(false) {}
 
-LayoutSVGEllipse::~LayoutSVGEllipse() {}
+LayoutSVGEllipse::~LayoutSVGEllipse() = default;
 
 void LayoutSVGEllipse::UpdateShapeFromElement() {
   // Before creating a new object we need to clear the cached bounding box

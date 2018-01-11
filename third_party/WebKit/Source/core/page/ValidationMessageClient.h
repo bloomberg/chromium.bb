@@ -37,7 +37,7 @@ class Element;
 
 class ValidationMessageClient : public GarbageCollectedMixin {
  public:
-  virtual ~ValidationMessageClient() {}
+  virtual ~ValidationMessageClient() = default;
 
   // Show validation message for the specified anchor element. An
   // implementation of this function may hide the message automatically after

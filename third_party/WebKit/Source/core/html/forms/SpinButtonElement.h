@@ -48,7 +48,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   };
   class SpinButtonOwner : public GarbageCollectedMixin {
    public:
-    virtual ~SpinButtonOwner() {}
+    virtual ~SpinButtonOwner() = default;
     virtual void FocusAndSelectSpinButtonOwner() = 0;
     virtual bool ShouldSpinButtonRespondToMouseEvents() = 0;
     virtual bool ShouldSpinButtonRespondToWheelEvents() = 0;

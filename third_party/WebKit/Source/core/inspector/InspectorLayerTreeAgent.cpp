@@ -238,7 +238,7 @@ InspectorLayerTreeAgent::InspectorLayerTreeAgent(
       client_(client),
       suppress_layer_paint_events_(false) {}
 
-InspectorLayerTreeAgent::~InspectorLayerTreeAgent() {}
+InspectorLayerTreeAgent::~InspectorLayerTreeAgent() = default;
 
 void InspectorLayerTreeAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);

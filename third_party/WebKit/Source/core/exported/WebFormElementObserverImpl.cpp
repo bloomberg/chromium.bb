@@ -130,7 +130,7 @@ WebFormElementObserverImpl::WebFormElementObserverImpl(
   mutation_callback_ = new ObserverCallback(element, std::move(callback));
 }
 
-WebFormElementObserverImpl::~WebFormElementObserverImpl() {}
+WebFormElementObserverImpl::~WebFormElementObserverImpl() = default;
 
 void WebFormElementObserverImpl::Disconnect() {
   mutation_callback_->Disconnect();

@@ -16,7 +16,7 @@ PlatformEventController::PlatformEventController(Document* document)
       is_active_(false),
       document_(document) {}
 
-PlatformEventController::~PlatformEventController() {}
+PlatformEventController::~PlatformEventController() = default;
 
 void PlatformEventController::UpdateCallback() {
   DCHECK(HasLastData());
