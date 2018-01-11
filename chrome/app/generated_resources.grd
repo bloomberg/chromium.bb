@@ -763,7 +763,7 @@ are declared in build/common.gypi.
             Save Password
           </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
-            Generate Password
+            Generate Password...
           </message>
         </if>
       </if>
