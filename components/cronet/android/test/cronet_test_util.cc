@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/cronet_url_request_context.h"
 #include "jni/CronetTestUtil_jni.h"
 #include "net/url_request/url_request.h"
 
@@ -28,14 +29,14 @@ scoped_refptr<base::SingleThreadTaskRunner> TestUtil::GetTaskRunner(
     jlong jcontext_adapter) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
-  return context_adapter->network_thread_->task_runner();
+  return context_adapter->context_->network_thread_.task_runner();
 }
 
 // static
 net::URLRequestContext* TestUtil::GetURLRequestContext(jlong jcontext_adapter) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
-  return context_adapter->context_.get();
+  return context_adapter->context_->network_tasks_->context_.get();
 }
 
 // static
@@ -43,10 +44,11 @@ void TestUtil::RunAfterContextInitOnNetworkThread(jlong jcontext_adapter,
                                                   const base::Closure& task) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
-  if (context_adapter->is_context_initialized_) {
+  if (context_adapter->context_->network_tasks_->is_context_initialized_) {
     task.Run();
   } else {
-    context_adapter->tasks_waiting_for_context_.push(task);
+    context_adapter->context_->network_tasks_->tasks_waiting_for_context_.push(
+        task);
   }
 }
 

@@ -139,14 +139,6 @@ zip("cronet_impl_version_srcjar") {
 }
 
 _cronet_version_header_include_dir = "$target_gen_dir/cronet_version_header"
-process_version("cronet_version_header") {
-  template_file = "//components/cronet/version.h.in"
-  output = "$_cronet_version_header_include_dir/components/cronet/version.h"
-  extra_args = [
-    "-e",
-    "VERSION_FULL=\"$chrome_version_full\"",
-  ]
-}
 
 proto_library("cronet_android_cert_proto") {
   visibility = [ "//components/cronet/android/*" ]
@@ -167,9 +159,10 @@ source_set("cronet_static") {
     ":cronet_android_cert_proto",
     ":cronet_jni_headers",
     ":cronet_jni_registration",
-    ":cronet_version_header",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//components/cronet:cronet_common",
+    "//components/cronet:cronet_version_header",
     "//components/cronet/native:cronet_native_impl",
     "//components/metrics",
     "//components/prefs",
@@ -198,16 +191,6 @@ source_set("cronet_static") {
     "//components/cronet/android/metrics_util.h",
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
-    "//components/cronet/cronet_prefs_manager.cc",
-    "//components/cronet/cronet_prefs_manager.h",
-    "//components/cronet/histogram_manager.cc",
-    "//components/cronet/histogram_manager.h",
-    "//components/cronet/host_cache_persistence_manager.cc",
-    "//components/cronet/host_cache_persistence_manager.h",
-    "//components/cronet/stale_host_resolver.cc",
-    "//components/cronet/stale_host_resolver.h",
-    "//components/cronet/url_request_context_config.cc",
-    "//components/cronet/url_request_context_config.h",
   ]
 
   include_dirs = [ _cronet_version_header_include_dir ]
@@ -492,6 +475,7 @@ shared_library("cronet_tests") {
     # Cronet header files to facilitate accessing these fields.
     "//components/cronet/android/cronet_url_request_adapter.h",
     "//components/cronet/android/cronet_url_request_context_adapter.h",
+    "//components/cronet/cronet_url_request_context.h",
     "//components/cronet/url_request_context_config.h",
     "test/cronet_test_jni.cc",
     "test/cronet_test_util.cc",
@@ -510,10 +494,10 @@ shared_library("cronet_tests") {
   deps = [
     ":cronet",
     ":cronet_tests_jni_headers",
-    ":cronet_version_header",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//components/cronet:cronet_version_header",
     "//components/cronet/native:cronet_native_tests",
     "//components/prefs",
     "//net",
@@ -855,11 +839,6 @@ android_apk("cronet_perf_test_apk") {
 test("cronet_unittests") {
   sources = [
     "//components/cronet/android/cert/cert_verifier_cache_serializer_unittest.cc",
-    "//components/cronet/histogram_manager_unittest.cc",
-    "//components/cronet/host_cache_persistence_manager_unittest.cc",
-    "//components/cronet/run_all_unittests.cc",
-    "//components/cronet/stale_host_resolver_unittest.cc",
-    "//components/cronet/url_request_context_config_unittest.cc",
   ]
 
   deps = [
@@ -867,6 +846,7 @@ test("cronet_unittests") {
     ":cronet_static",
     "//base",
     "//base/test:test_support",
+    "//components/cronet:cronet_common_unittests",
     "//components/cronet/native:cronet_native_unittests",
     "//components/metrics",
     "//components/prefs:test_support",
