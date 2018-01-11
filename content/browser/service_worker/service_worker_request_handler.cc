@@ -26,6 +26,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/service_worker_modes.h"
+#include "content/public/common/url_constants.h"
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
@@ -58,6 +59,14 @@ class ServiceWorkerRequestInterceptor
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
 };
 
+bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
+#if defined(OS_CHROMEOS)
+  return url.SchemeIs(kExternalFileScheme);
+#else   // OS_CHROMEOS
+  return false;
+#endif  // OS_CHROMEOS
+}
+
 }  // namespace
 
 // static
@@ -86,7 +95,8 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   if (!request->url().SchemeIsHTTPOrHTTPS() &&
-      !OriginCanAccessServiceWorkers(request->url())) {
+      !OriginCanAccessServiceWorkers(request->url()) &&
+      !SchemeMaySupportRedirectingToHTTPS(request->url())) {
     return;
   }
 
