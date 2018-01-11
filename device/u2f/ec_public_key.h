@@ -31,10 +31,13 @@ class ECPublicKey : public PublicKey {
 
   ~ECPublicKey() override;
 
-  // Produces a CBOR-encoded public key encoded in the following format:
-  // { alg: eccAlgName, x: biguint, y: biguint }
-  // where eccAlgName = "ES256" / "ES384" / "ES512"
-  std::vector<uint8_t> EncodeAsCBOR() const override;
+  // Produces a key in COSE_key format, which is an integer-keyed CBOR map:
+  // { 1 ("kty") : 2 (the EC2 key id),
+  //   3 ("alg") : -7 (the ES256 COSEAlgorithmIdentifier),
+  //  -1 ("crv"): 1 (the P-256 EC identifier),
+  //  -2: x-coordinate,
+  //  -3: y-coordinate }
+  std::vector<uint8_t> EncodeAsCOSEKey() const override;
 
  private:
   const std::vector<uint8_t> x_coordinate_;
