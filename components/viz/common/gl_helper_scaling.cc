@@ -191,6 +191,15 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     if (output_rect.IsEmpty())
       return;  // No work to do.
     gfx::RectF src_rect = ToSourceRect(output_rect);
+
+    // Ensure conflicting GL capabilities are disabled. The following explicity
+    // disables those known to possibly be enabled in GL compositing code, while
+    // the helper method call will DCHECK a wider set.
+    gl_->Disable(GL_SCISSOR_TEST);
+    gl_->Disable(GL_STENCIL_TEST);
+    gl_->Disable(GL_BLEND);
+    DCheckNoConflictingCapabilitiesAreEnabled();
+
     if (subscaler_) {
       gfx::RectF overscan_rect = src_rect;
       PadForOverscan(&overscan_rect);
@@ -300,6 +309,20 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   }
 
  private:
+  // In DCHECK-enabled builds, this checks that no conflicting GL capability is
+  // currently enabled in the GL context. Any of these might cause problems when
+  // the shader draw operations are executed.
+  void DCheckNoConflictingCapabilitiesAreEnabled() const {
+    DCHECK_NE(gl_->IsEnabled(GL_BLEND), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_CULL_FACE), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_DEPTH_TEST), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_POLYGON_OFFSET_FILL), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_SAMPLE_ALPHA_TO_COVERAGE), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_SAMPLE_COVERAGE), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_SCISSOR_TEST), GL_TRUE);
+    DCHECK_NE(gl_->IsEnabled(GL_STENCIL_TEST), GL_TRUE);
+  }
+
   // Expands the given |sampling_rect| to account for the extra pixels bordering
   // it that will be sampled by the shaders.
   void PadForOverscan(gfx::RectF* sampling_rect) const {

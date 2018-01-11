@@ -3535,8 +3535,11 @@ TEST_F(GLRendererPixelTestWithFlippedOutputSurface, ExplicitFlipTest) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
+  // Note: RunPixelTest() will issue a CopyOutputRequest on the root pass. The
+  // implementation should realize the output surface is flipped, and return a
+  // right-side up result regardless (i.e., NOT blue_yellow_flipped.png).
   EXPECT_TRUE(this->RunPixelTest(
-      &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")),
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
       cc::ExactPixelComparator(true)));
 }
 
