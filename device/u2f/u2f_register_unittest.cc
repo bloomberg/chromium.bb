@@ -30,35 +30,30 @@ namespace {
 
 constexpr char kTestRelyingPartyId[] = "google.com";
 
-// CBOR-encoded EC public key.
-// Diagnostic notation:
-// {"x": h'F868CE3869605224CE1059C0047EF01B830F2AD93BE27A3211F44E894560E695',
-//  "y": h'4E11538CABA2DF1CC1A6F250ED9F0C8B28B39DA44539DFABD46B589CD0E202E5',
-//  "alg": "ES256"}
-constexpr uint8_t kTestECPublicKeyCBOR[] = {
+// EC public key encoded in COSE_Key format.
+// x : F868CE3869605224CE1059C0047EF01B830F2AD93BE27A3211F44E894560E695
+// y : 4E11538CABA2DF1CC1A6F250ED9F0C8B28B39DA44539DFABD46B589CD0E202E5
+constexpr uint8_t kTestECPublicKeyCOSE[] = {
     // clang-format off
-    0xA3,  // map(3)
-      0x61,  // text(1)
-        0x78,  // "x"
+    0xA5,  // map(5)
+      0x01, 0x02,  // kty: EC key type
+      0x03, 0x26,  // alg: EC256 signature algorithm
+      0x20, 0x01,  // crv: P-256 curve
+      0x21,  // x-coordinate
       0x58, 0x20,  // bytes(32)
         0xF8, 0x68, 0xCE, 0x38, 0x69, 0x60, 0x52, 0x24, 0xCE, 0x10, 0x59, 0xC0,
         0x04, 0x7E, 0xF0, 0x1B, 0x83, 0x0F, 0x2A, 0xD9, 0x3B, 0xE2, 0x7A, 0x32,
         0x11, 0xF4, 0x4E, 0x89, 0x45, 0x60, 0xE6, 0x95,
-      0x61,  // text(1)
-        0x79,  // "y"
+      0x22,  // y-coordinate
       0x58, 0x20,  // bytes(32)
       0x4E, 0x11, 0x53, 0x8C, 0xAB, 0xA2, 0xDF, 0x1C, 0xC1, 0xA6, 0xF2, 0x50,
       0xED, 0x9F, 0x0C, 0x8B, 0x28, 0xB3, 0x9D, 0xA4, 0x45, 0x39, 0xDF, 0xAB,
       0xD4, 0x6B, 0x58, 0x9C, 0xD0, 0xE2, 0x02, 0xE5,
-      0x63,  // text(3)
-        0x61, 0x6C, 0x67,  // "alg"
-      0x65,  // text(5)
-        0x45, 0x53, 0x32, 0x35, 0x36,  // "ES256"
     // clang-format on
 };
 
-// The attested credential data, excluding the CBOR public key bytes. Append
-// with kTestECPublicKeyCBOR to get the complete attestation data.
+// The attested credential data, excluding the public key bytes. Append
+// with kTestECPublicKeyCOSE to get the complete attestation data.
 constexpr uint8_t kTestAttestedCredentialDataPrefix[] = {
     // clang-format off
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -204,14 +199,14 @@ constexpr uint8_t kAuthDataCBOR[] = {
     // clang-format off
     0x68,  // text(8)
       0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61,  // "authData"
-    0x58, 0xCA  // bytes(202). i.e.,the authenticator_data bytearray
+    0x58, 0xC4  // bytes(196). i.e.,the authenticator_data bytearray
     // clang-format on
 };
 
 // Helpers for testing U2f register responses.
-std::vector<uint8_t> GetTestECPublicKeyCBOR() {
-  return std::vector<uint8_t>(std::begin(kTestECPublicKeyCBOR),
-                              std::end(kTestECPublicKeyCBOR));
+std::vector<uint8_t> GetTestECPublicKeyCOSE() {
+  return std::vector<uint8_t>(std::begin(kTestECPublicKeyCOSE),
+                              std::end(kTestECPublicKeyCOSE));
 }
 
 std::vector<uint8_t> GetTestRegisterResponse() {
@@ -230,13 +225,13 @@ std::vector<uint8_t> GetU2fAttestationStatementCBOR() {
 }
 
 std::vector<uint8_t> GetTestAttestedCredentialDataBytes() {
-  // Combine kTestAttestedCredentialDataPrefix and kTestECPublicKeyCBOR.
+  // Combine kTestAttestedCredentialDataPrefix and kTestECPublicKeyCOSE.
   std::vector<uint8_t> test_attested_data(
       std::begin(kTestAttestedCredentialDataPrefix),
       std::end(kTestAttestedCredentialDataPrefix));
   test_attested_data.insert(test_attested_data.end(),
-                            std::begin(kTestECPublicKeyCBOR),
-                            std::end(kTestECPublicKeyCBOR));
+                            std::begin(kTestECPublicKeyCOSE),
+                            std::end(kTestECPublicKeyCOSE));
   return test_attested_data;
 }
 
@@ -645,7 +640,7 @@ TEST_F(U2fRegisterTest, TestSerializedPublicKey) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(
           u2f_parsing_utils::kEs256, GetTestRegisterResponse());
-  EXPECT_EQ(GetTestECPublicKeyCBOR(), public_key->EncodeAsCBOR());
+  EXPECT_EQ(GetTestECPublicKeyCOSE(), public_key->EncodeAsCOSEKey());
 }
 
 // Test that the attestation statement cbor map is constructed properly.

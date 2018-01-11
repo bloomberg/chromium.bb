@@ -57,11 +57,10 @@ AttestedCredentialData::~AttestedCredentialData() = default;
 
 std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   std::vector<uint8_t> attestation_data;
-  std::vector<uint8_t> cbor_encoded_key = public_key_->EncodeAsCBOR();
   u2f_parsing_utils::Append(&attestation_data, aaguid_);
   u2f_parsing_utils::Append(&attestation_data, credential_id_length_);
   u2f_parsing_utils::Append(&attestation_data, credential_id_);
-  u2f_parsing_utils::Append(&attestation_data, std::move(cbor_encoded_key));
+  u2f_parsing_utils::Append(&attestation_data, public_key_->EncodeAsCOSEKey());
   return attestation_data;
 }
 

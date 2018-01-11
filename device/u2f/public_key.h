@@ -18,12 +18,12 @@ class PublicKey {
  public:
   virtual ~PublicKey();
 
-  // The credential public key as a CBOR map according to a format
-  // defined per public key type.
-  virtual std::vector<uint8_t> EncodeAsCBOR() const = 0;
+  // The credential public key as a COSE_Key map as defined in Section 7
+  // of https://tools.ietf.org/html/rfc8152.
+  virtual std::vector<uint8_t> EncodeAsCOSEKey() const = 0;
 
  protected:
-  PublicKey(const std::string algorithm);
+  explicit PublicKey(std::string algorithm);
 
   const std::string algorithm_;
 

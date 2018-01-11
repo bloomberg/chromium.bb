@@ -46,11 +46,13 @@ ECPublicKey::ECPublicKey(std::string algorithm,
 
 ECPublicKey::~ECPublicKey() = default;
 
-std::vector<uint8_t> ECPublicKey::EncodeAsCBOR() const {
+std::vector<uint8_t> ECPublicKey::EncodeAsCOSEKey() const {
   cbor::CBORValue::MapValue map;
-  map[cbor::CBORValue("alg")] = cbor::CBORValue(algorithm_);
-  map[cbor::CBORValue("x")] = cbor::CBORValue(x_coordinate_);
-  map[cbor::CBORValue("y")] = cbor::CBORValue(y_coordinate_);
+  map[cbor::CBORValue(1)] = cbor::CBORValue(2);
+  map[cbor::CBORValue(3)] = cbor::CBORValue(-7);
+  map[cbor::CBORValue(-1)] = cbor::CBORValue(1);
+  map[cbor::CBORValue(-2)] = cbor::CBORValue(x_coordinate_);
+  map[cbor::CBORValue(-3)] = cbor::CBORValue(y_coordinate_);
   return *cbor::CBORWriter::Write(cbor::CBORValue(std::move(map)));
 }
 
