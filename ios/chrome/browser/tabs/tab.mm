@@ -62,7 +62,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
@@ -71,7 +70,6 @@
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -202,8 +200,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 @synthesize passKitDialogProvider = passKitDialogProvider_;
 @synthesize delegate = delegate_;
 @synthesize dialogDelegate = dialogDelegate_;
-@synthesize snapshotOverlayProvider = snapshotOverlayProvider_;
-@synthesize tabSnapshottingDelegate = tabSnapshottingDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 @synthesize legacyFullscreenControllerDelegate =
     legacyFullscreenControllerDelegate_;
@@ -387,7 +383,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   DCHECK_EQ(_webStateImpl, webState);
   self.overscrollActionsControllerDelegate = nil;
   self.passKitDialogProvider = nil;
-  self.snapshotOverlayProvider = nil;
 
   [_openInController detachFromWebController];
   _openInController = nil;
@@ -958,46 +953,8 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
     self.webState->WasHidden();
 }
 
-#pragma mark - SnapshotGeneratorDelegate
-
-- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
-  DCHECK_EQ(_webStateImpl, webState);
-  return !PagePlaceholderTabHelper::FromWebState(webState)
-              ->displaying_placeholder();
-}
-
-- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
-  DCHECK_EQ(_webStateImpl, webState);
-  if (self.tabSnapshottingDelegate)
-    return [self.tabSnapshottingDelegate snapshotEdgeInsetsForTab:self];
-
-  if (self.tabHeadersDelegate) {
-    CGFloat headerHeight = [self.tabHeadersDelegate tabHeaderHeightForTab:self];
-    return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
-  }
-
-  return UIEdgeInsetsZero;
-}
-
-- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
-    (web::WebState*)webState {
-  DCHECK_EQ(_webStateImpl, webState);
-  return [snapshotOverlayProvider_ snapshotOverlaysForTab:self];
-}
-
-- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
-  DCHECK_EQ(_webStateImpl, webState);
-  id<CRWNativeContent> nativeContent = [self.webController nativeController];
-  if ([nativeContent respondsToSelector:@selector(willUpdateSnapshot)]) {
-    [nativeContent willUpdateSnapshot];
-  }
+- (void)willUpdateSnapshot {
   [_overscrollActionsController clear];
-}
-
-- (void)didUpdateSnapshotForWebState:(web::WebState*)webState
-                           withImage:(UIImage*)snapshot {
-  DCHECK_EQ(_webStateImpl, webState);
-  [_parentTabModel notifyTabSnapshotChanged:self withImage:snapshot];
 }
 
 @end

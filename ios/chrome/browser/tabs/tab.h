@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
@@ -28,14 +27,12 @@ class GURL;
 @protocol PassKitDialogProvider;
 @class PasswordController;
 @class SnapshotManager;
-@protocol SnapshotOverlayProvider;
 @class FormSuggestionController;
 @protocol TabDelegate;
 @protocol TabDialogDelegate;
 @class Tab;
 @protocol TabHeadersDelegate;
 @class TabModel;
-@protocol TabSnapshottingDelegate;
 @protocol FindInPageControllerDelegate;
 
 namespace ios {
@@ -80,7 +77,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Chrome's WebContents in that it encapsulates rendering. Acts as the
 // delegate for the WebState in order to process info about pages having
 // loaded.
-@interface Tab : NSObject<SnapshotGeneratorDelegate>
+@interface Tab : NSObject
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
@@ -103,7 +100,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) BOOL canGoForward;
 @property(nonatomic, weak) id<TabDelegate> delegate;
 @property(nonatomic, weak) id<TabHeadersDelegate> tabHeadersDelegate;
-@property(nonatomic, weak) id<TabSnapshottingDelegate> tabSnapshottingDelegate;
 @property(nonatomic, readonly) id<FindInPageControllerDelegate>
     findInPageControllerDelegate;
 
@@ -120,7 +116,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
     OverscrollActionsController* overscrollActionsController;
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
     overscrollActionsControllerDelegate;
-@property(nonatomic, weak) id<SnapshotOverlayProvider> snapshotOverlayProvider;
 
 // Delegate used to show HTTP Authentication dialogs.
 @property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
@@ -190,6 +185,9 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Called when this tab is hidden.
 - (void)wasHidden;
+
+// Called before capturing a snapshot for Tab.
+- (void)willUpdateSnapshot;
 
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;

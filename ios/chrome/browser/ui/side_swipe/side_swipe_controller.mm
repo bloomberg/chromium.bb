@@ -484,9 +484,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show horizontal swipe stack view for iPhone.
 - (void)handleiPhoneTabSwipe:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
+    Tab* currentTab = [model_ currentTab];
+    DCHECK(currentTab.webState);
+
     if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       // If the toolbar is hidden, move it to visible.
-      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+      [currentTab updateFullscreenWithToolbarVisible:YES];
     }
 
     inSwipe_ = YES;
@@ -495,8 +498,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Add horizontal stack view controller.
     CGFloat headerHeight =
-        [self.snapshotDelegate snapshotEdgeInsetsForTab:[model_ currentTab]]
+        [self.snapshotDelegate
+            snapshotEdgeInsetsForWebState:currentTab.webState]
             .top;
+
     if (tabSideSwipeView_) {
       [tabSideSwipeView_ setFrame:frame];
       [tabSideSwipeView_ setTopMargin:headerHeight];
@@ -513,8 +518,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     }
 
     // Ensure that there's an up-to-date snapshot of the current tab.
-    SnapshotTabHelper::FromWebState([model_ currentTab].webState)
+    SnapshotTabHelper::FromWebState(currentTab.webState)
         ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+
     // Hide the infobar after snapshot has been updated (see the previous line)
     // to avoid it obscuring the cards in the side swipe view.
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
