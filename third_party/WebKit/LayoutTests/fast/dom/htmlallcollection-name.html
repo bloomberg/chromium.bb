@@ -24,7 +24,6 @@
 
 <script>
 test(() => { assert_true(!!document.all.a); }, '<a> should be found.');
-test(() => { assert_true(!!document.all.applet); }, '<applet> should be found.');
 test(() => { assert_true(!!document.all.button); }, '<button> should be found.');
 test(() => { assert_true(!!document.all.embed); }, '<embed> should be found.');
 test(() => { assert_true(!!document.all.form); }, '<form> should be found.');
@@ -40,6 +39,7 @@ test(() => { assert_true(!!document.all.textarea); }, '<textarea> should be foun
 test(() => { assert_equals(document.all.area, undefined); }, '<area> should not be found.');
 test(() => { assert_equals(document.all.option, undefined); }, '<option> should not be found.');
 test(() => { assert_equals(document.all.output, undefined); }, '<output> should not be found.');
+test(() => { assert_equals(document.all.applet, undefined); }, '<applet> should not be found.');
 
 document.documentElement.innerHTML = '<frameset name="frameset"><frame name="frame"></frame></frameset>';
 test(() => { assert_true(!!document.all.frame); }, '<frame> should be found.');

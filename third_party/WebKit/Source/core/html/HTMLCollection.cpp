@@ -322,14 +322,13 @@ Element* HTMLCollection::VirtualItemAfter(Element*) const {
 // although it returns any type of element by id.
 static inline bool NameShouldBeVisibleInDocumentAll(
     const HTMLElement& element) {
-  return element.HasTagName(aTag) || element.HasTagName(appletTag) ||
-         element.HasTagName(buttonTag) || element.HasTagName(embedTag) ||
-         element.HasTagName(formTag) || element.HasTagName(frameTag) ||
-         element.HasTagName(framesetTag) || element.HasTagName(iframeTag) ||
-         element.HasTagName(imgTag) || element.HasTagName(inputTag) ||
-         element.HasTagName(mapTag) || element.HasTagName(metaTag) ||
-         element.HasTagName(objectTag) || element.HasTagName(selectTag) ||
-         element.HasTagName(textareaTag);
+  return element.HasTagName(aTag) || element.HasTagName(buttonTag) ||
+         element.HasTagName(embedTag) || element.HasTagName(formTag) ||
+         element.HasTagName(frameTag) || element.HasTagName(framesetTag) ||
+         element.HasTagName(iframeTag) || element.HasTagName(imgTag) ||
+         element.HasTagName(inputTag) || element.HasTagName(mapTag) ||
+         element.HasTagName(metaTag) || element.HasTagName(objectTag) ||
+         element.HasTagName(selectTag) || element.HasTagName(textareaTag);
 }
 
 Element* HTMLCollection::TraverseToFirst() const {

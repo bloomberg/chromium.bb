@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS document.applets is always empty
-PASS HTMLAppletElement is no more
-FAIL document.all cannot find applet assert_equals: expected (undefined) undefined but got (object) Element node <applet name="war" align="left"></applet>
-PASS document cannot find applet
-PASS window cannot find applet
-PASS applet is not styled
-Harness: the test ran to completion.
-
