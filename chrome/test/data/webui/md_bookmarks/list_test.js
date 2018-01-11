@@ -161,3 +161,38 @@ suite('<bookmarks-list> integration test', function() {
     assertDeepEquals('5', store.data.selection.anchor);
   });
 });
+
+suite('<bookmarks-list> command manager integration test', function() {
+  let app;
+  let store;
+
+  setup(function() {
+    store = new bookmarks.TestStore({
+      nodes: testTree(createFolder('1', [])),
+      selectedFolder: '1',
+    });
+    store.replaceSingleton();
+    store.setReducersEnabled(true);
+
+    app = document.createElement('bookmarks-app');
+    app.style.height = '100%';
+    app.style.width = '100%';
+    app.style.position = 'absolute';
+
+    replaceBody(app);
+
+    Polymer.dom.flush();
+  });
+
+  test('show context menu', () => {
+    const list = app.$$('bookmarks-list');
+    list.fire('contextmenu', {clientX: 0, clientY: 0});
+
+    const commandManager = app.$$('bookmarks-command-manager');
+
+    assertEquals(MenuSource.LIST, commandManager.menuSource_);
+    assertDeepEquals(
+        [Command.ADD_BOOKMARK, Command.ADD_FOLDER],
+        commandManager.menuCommands_);
+  });
+});

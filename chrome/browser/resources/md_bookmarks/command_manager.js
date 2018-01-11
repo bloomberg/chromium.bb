@@ -667,6 +667,11 @@ cr.define('bookmarks', function() {
             Command.IMPORT,
             Command.EXPORT,
           ];
+        case MenuSource.LIST:
+          return [
+            Command.ADD_BOOKMARK,
+            Command.ADD_FOLDER,
+          ];
         case MenuSource.NONE:
           return [];
       }
