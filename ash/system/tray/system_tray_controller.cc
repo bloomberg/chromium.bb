@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/update/tray_update.h"
@@ -167,19 +168,10 @@ void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
 }
 
 void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
-  ash::SystemTray* tray =
-      Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  if (!tray)
-    return;
-
-  tray->SetVisible(visible);
-  tray->GetWidget()->SetOpacity(visible ? 1.f : 0.f);
-  if (visible) {
-    tray->GetWidget()->Show();
-  } else {
-    tray->CloseBubble();
-    tray->GetWidget()->Hide();
-  }
+  auto* status_area =
+      Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
+  if (status_area)
+    status_area->SetSystemTrayVisibility(visible);
 }
 
 void SystemTrayController::SetUse24HourClock(bool use_24_hour) {

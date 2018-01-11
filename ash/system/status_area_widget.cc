@@ -129,6 +129,22 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
     overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
 
+void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
+  if (!system_tray_)
+    return;
+
+  system_tray_->SetVisible(visible);
+  // Opacity is set to prevent flakiness in kiosk browser tests. See
+  // https://crbug.com/624584.
+  SetOpacity(visible ? 1.f : 0.f);
+  if (visible) {
+    Show();
+  } else {
+    system_tray_->CloseBubble();
+    Hide();
+  }
+}
+
 bool StatusAreaWidget::ShouldShowShelf() const {
   // The system tray bubble may or may not want to force the shelf to be
   // visible.

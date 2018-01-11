@@ -299,8 +299,7 @@ cr.define('cr.ui.login', function() {
            this.displayType_ == DISPLAY_TYPE.USER_ADDING);
       var showingViewsLogin = loadTimeData.valueExists('showViewsLogin') &&
           loadTimeData.getString('showViewsLogin') == 'on' &&
-          (this.displayType_ == DISPLAY_TYPE.LOGIN ||
-           this.displayType_ == DISPLAY_TYPE.OOBE);
+          (this.displayType_ == DISPLAY_TYPE.LOGIN);
       return showingViewsLock || showingViewsLogin;
     },
 
