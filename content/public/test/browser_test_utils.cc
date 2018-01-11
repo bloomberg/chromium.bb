@@ -70,6 +70,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_names.mojom.h"
@@ -2390,8 +2391,17 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest) {
   return static_cast<content::WebContentsImpl*>(guest)->GetOuterWebContents();
 }
 
+bool IsNetworkServiceRunningInProcess() {
+  return base::FeatureList::IsEnabled(features::kNetworkService) &&
+         (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSingleProcess) ||
+          base::FeatureList::IsEnabled(features::kNetworkServiceInProcess));
+}
+
 void SimulateNetworkServiceCrash() {
   CHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  CHECK(!IsNetworkServiceRunningInProcess())
+      << "Can't crash the network service if it's running in-process!";
   mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);

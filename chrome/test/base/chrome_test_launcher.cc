@@ -151,13 +151,21 @@ int LaunchChromeTests(size_t parallel_jobs,
 #endif
 
   // Setup a working test environment for the network service in case it's used.
-  content::NetworkServiceTestHelper network_service_test_helper;
-  ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::Bind(
-      [](content::NetworkServiceTestHelper* helper,
-         service_manager::BinderRegistry* registry) {
-        helper->RegisterNetworkBinders(registry);
-      },
-      &network_service_test_helper));
+  // Only create this object in the utility process, so that its members don't
+  // interfere with other test objects in the browser process.
+  std::unique_ptr<content::NetworkServiceTestHelper>
+      network_service_test_helper;
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType) == switches::kUtilityProcess) {
+    network_service_test_helper =
+        std::make_unique<content::NetworkServiceTestHelper>();
+    ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::Bind(
+        [](content::NetworkServiceTestHelper* helper,
+           service_manager::BinderRegistry* registry) {
+          helper->RegisterNetworkBinders(registry);
+        },
+        network_service_test_helper.get()));
+  }
 
 #if defined(OS_CHROMEOS)
   // Inject the test interfaces for ash. Use a callback to avoid linking test
