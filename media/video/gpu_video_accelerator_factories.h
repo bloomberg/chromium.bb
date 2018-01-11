@@ -116,7 +116,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Pixel format of the hardware video frames created when GpuMemoryBuffers
   // video frames are enabled.
-  virtual OutputFormat VideoFrameOutputFormat() = 0;
+  virtual OutputFormat VideoFrameOutputFormat(size_t bit_depth) = 0;
 
   virtual std::unique_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
 
