@@ -9,25 +9,33 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 // Handles details of signing the user in with SigninManager and turning on
 // sync for an account that is already present in the token service.
 class DiceTurnSyncOnHelper {
  public:
+  // Behavior when the signin is aborted (by an error or cancelled by the user).
+  enum class SigninAbortedMode {
+    // The token is revoked and the account is signed out of the web.
+    REMOVE_ACCOUNT,
+    // The account is kept.
+    KEEP_ACCOUNT
+  };
+
   // Create a helper that turns sync on for an account that is already present
   // in the token service.
   DiceTurnSyncOnHelper(Profile* profile,
                        Browser* browser,
                        signin_metrics::AccessPoint signin_access_point,
                        signin_metrics::Reason signin_reason,
-                       const std::string& account_id);
+                       const std::string& account_id,
+                       SigninAbortedMode signin_aborted_mode);
 
   virtual ~DiceTurnSyncOnHelper();
 
  private:
-  void Initialize();
-
   // Handles can offer sign-in errors.  It returns true if there is an error,
   // and false otherwise.
   bool HandleCanOfferSigninError();
@@ -39,20 +47,24 @@ class DiceTurnSyncOnHelper {
   bool HandleCrossAccountError();
 
   // Callback used with ConfirmEmailDialogDelegate.
-  void ConfirmEmailAction(content::WebContents* web_contents,
-                          SigninEmailConfirmationDialog::Action action);
+  void ConfirmEmailAction(SigninEmailConfirmationDialog::Action action);
 
   // Creates the sync starter.
   void CreateSyncStarter(OneClickSigninSyncStarter::ProfileMode profile_mode);
+
+  // Aborts the flow.
+  void Abort();
 
   Profile* profile_;
   Browser* browser_;
   signin_metrics::AccessPoint signin_access_point_;
   signin_metrics::Reason signin_reason_;
 
+  // Whether the refresh token should be deleted if the Sync flow is aborted.
+  SigninAbortedMode signin_aborted_mode_;
+
   // Account information.
-  const std::string gaia_id_;
-  const std::string email_;
+  const AccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };

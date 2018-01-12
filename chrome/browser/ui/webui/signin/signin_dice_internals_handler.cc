@@ -63,11 +63,12 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   std::string email = tracker->GetAccountInfo(account_id).email;
   VLOG(1) << "[Dice] Start syncing with account " << email;
 
-  // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
+  // DiceTurnSyncOnHelper is suicidal (it will kill itself once it finishes
   // enabling sync).
   new DiceTurnSyncOnHelper(
       profile_, browser, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-      signin_metrics::Reason::REASON_UNKNOWN_REASON, account_id);
+      signin_metrics::Reason::REASON_UNKNOWN_REASON, account_id,
+      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
 }
 
 void SigninDiceInternalsHandler::HandleDisableSync(
