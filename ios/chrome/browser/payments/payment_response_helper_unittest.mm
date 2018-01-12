@@ -82,7 +82,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
     std::unique_ptr<base::DictionaryValue> response_value =
         data_util::GetBasicCardResponseFromAutofillCreditCard(
             credit_card_, base::ASCIIToUTF16("123"), billing_address, "en-US")
-            .ToDictionaryValue();
+            ->ToDictionaryValue();
     std::string stringified_details;
     base::JSONWriter::Write(*response_value, &stringified_details);
     return stringified_details;
@@ -120,28 +120,21 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponse) {
          EXPECT_EQ(GetStringifiedDetails(), response.details);
 
          EXPECT_TRUE(!!response.shipping_address);
-         EXPECT_EQ(base::ASCIIToUTF16("US"),
-                   response.shipping_address->country);
+         EXPECT_EQ("US", response.shipping_address->country);
          ASSERT_EQ(2U, response.shipping_address->address_line.size());
-         EXPECT_EQ(base::ASCIIToUTF16("666 Erebus St."),
+         EXPECT_EQ("666 Erebus St.",
                    response.shipping_address->address_line[0]);
-         EXPECT_EQ(base::ASCIIToUTF16("Apt 8"),
-                   response.shipping_address->address_line[1]);
-         EXPECT_EQ(base::ASCIIToUTF16("CA"), response.shipping_address->region);
-         EXPECT_EQ(base::ASCIIToUTF16("Elysium"),
-                   response.shipping_address->city);
-         EXPECT_EQ(base::string16(),
+         EXPECT_EQ("Apt 8", response.shipping_address->address_line[1]);
+         EXPECT_EQ("CA", response.shipping_address->region);
+         EXPECT_EQ("Elysium", response.shipping_address->city);
+         EXPECT_EQ(std::string(),
                    response.shipping_address->dependent_locality);
-         EXPECT_EQ(base::ASCIIToUTF16("91111"),
-                   response.shipping_address->postal_code);
-         EXPECT_EQ(base::string16(), response.shipping_address->sorting_code);
-         EXPECT_EQ(base::string16(), response.shipping_address->language_code);
-         EXPECT_EQ(base::ASCIIToUTF16("Underworld"),
-                   response.shipping_address->organization);
-         EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"),
-                   response.shipping_address->recipient);
-         EXPECT_EQ(base::ASCIIToUTF16("16502111111"),
-                   response.shipping_address->phone);
+         EXPECT_EQ("91111", response.shipping_address->postal_code);
+         EXPECT_EQ(std::string(), response.shipping_address->sorting_code);
+         EXPECT_EQ(std::string(), response.shipping_address->language_code);
+         EXPECT_EQ("Underworld", response.shipping_address->organization);
+         EXPECT_EQ("John H. Doe", response.shipping_address->recipient);
+         EXPECT_EQ("16502111111", response.shipping_address->phone);
 
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::ASCIIToUTF16("+16502111111"), response.payer_phone);

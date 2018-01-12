@@ -40,12 +40,6 @@ class PaymentResponseHelper
                         Delegate* delegate);
   ~PaymentResponseHelper() override;
 
-  // Returns a new mojo PaymentAddress based on the specified
-  // |profile| and |app_locale|.
-  static mojom::PaymentAddressPtr GetMojomPaymentAddressFromAutofillProfile(
-      const autofill::AutofillProfile& profile,
-      const std::string& app_locale);
-
   // PaymentInstrument::Delegate
   void OnInstrumentDetailsReady(
       const std::string& method_name,

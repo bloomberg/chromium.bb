@@ -63,6 +63,7 @@ static_library("core") {
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/link_header_util",
+    "//components/payments/mojom",
     "//components/pref_registry",
     "//components/strings:components_strings_grit",
     "//net",

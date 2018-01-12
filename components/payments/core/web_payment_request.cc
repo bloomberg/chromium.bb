@@ -20,12 +20,11 @@ static const char kPaymentRequestOptions[] = "options";
 }  // namespace
 
 WebPaymentRequest::WebPaymentRequest() {}
-WebPaymentRequest::WebPaymentRequest(const WebPaymentRequest& other) = default;
 WebPaymentRequest::~WebPaymentRequest() = default;
 
 bool WebPaymentRequest::operator==(const WebPaymentRequest& other) const {
   return payment_request_id == other.payment_request_id &&
-         shipping_address == other.shipping_address &&
+         shipping_address.Equals(other.shipping_address) &&
          shipping_option == other.shipping_option &&
          method_data == other.method_data && details == other.details &&
          options == other.options;
@@ -33,6 +32,22 @@ bool WebPaymentRequest::operator==(const WebPaymentRequest& other) const {
 
 bool WebPaymentRequest::operator!=(const WebPaymentRequest& other) const {
   return !(*this == other);
+}
+
+WebPaymentRequest::WebPaymentRequest(const WebPaymentRequest& other) {
+  *this = other;
+}
+
+WebPaymentRequest& WebPaymentRequest::operator=(
+    const WebPaymentRequest& other) {
+  payment_request_id = other.payment_request_id;
+  shipping_address = other.shipping_address ? other.shipping_address->Clone()
+                                            : mojom::PaymentAddress::New();
+  shipping_option = other.shipping_option;
+  method_data = other.method_data;
+  details = other.details;
+  options = other.options;
+  return *this;
 }
 
 bool WebPaymentRequest::FromDictionaryValue(
