@@ -153,7 +153,7 @@ BOOL HistogramTester::CheckBucketCount(
   if (failure_block) {
     failure_block([NSString
         stringWithFormat:
-            @"Histogram \"%s\" doe not have the "
+            @"Histogram \"%s\" does not have the "
              "right number of samples(%d) in the expected bucket(%d). It has "
              "(%d).",
             name.c_str(), expected_count, sample, actual_count]);
@@ -174,7 +174,7 @@ BOOL HistogramTester::CheckTotalCount(const std::string& name,
   }
   if (failure_block) {
     failure_block(
-        [NSString stringWithFormat:@"Histogram \"%s\" doe not have the "
+        [NSString stringWithFormat:@"Histogram \"%s\" does not have the "
                                     "right total number of samples(%d). It has "
                                     "(%d).",
                                    name.c_str(), expected_count, actual_count]);
