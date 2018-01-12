@@ -12,7 +12,10 @@ Polymer({
     destination: Object,
 
     /** @type {!print_preview_new.State} */
-    state: Object,
+    state: {
+      type: Object,
+      notify: true,
+    },
 
     /** @private {boolean} */
     printInProgress_: {
@@ -53,7 +56,7 @@ Polymer({
 
   /** @private */
   onCancelButtonTap_: function() {
-    this.printInProgress_ = false;
+    this.set('state.cancelled', true);
   },
 
   /**
