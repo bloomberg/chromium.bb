@@ -20,7 +20,8 @@ UserActivityLogger::UserActivityLogger(
     ui::UserActivityDetector* detector,
     chromeos::PowerManagerClient* power_manager_client,
     session_manager::SessionManager* session_manager,
-    viz::mojom::VideoDetectorObserverRequest request)
+    viz::mojom::VideoDetectorObserverRequest request,
+    const chromeos::ChromeUserManager* user_manager)
     : logger_delegate_(delegate),
       idle_event_observer_(this),
       user_activity_observer_(this),
@@ -28,6 +29,7 @@ UserActivityLogger::UserActivityLogger(
       session_manager_observer_(this),
       session_manager_(session_manager),
       binding_(this, std::move(request)),
+      user_manager_(user_manager),
       idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)) {
   DCHECK(logger_delegate_);
   DCHECK(idle_event_notifier);
@@ -196,6 +198,18 @@ void UserActivityLogger::ExtractFeatures(
     features_.set_on_battery(
         *external_power_ == power_manager::PowerSupplyProperties::DISCONNECTED);
   }
+
+  if (user_manager_) {
+    if (user_manager_->IsEnterpriseManaged()) {
+      features_.set_device_management(UserActivityEvent::Features::MANAGED);
+    } else {
+      features_.set_device_management(UserActivityEvent::Features::UNMANAGED);
+    }
+  } else {
+    features_.set_device_management(
+        UserActivityEvent::Features::UNKNOWN_MANAGEMENT);
+  }
+
   logger_delegate_->UpdateOpenTabsURLs();
 }
 

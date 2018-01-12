@@ -134,6 +134,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
     return AddUserRecord(user);
   }
 
+  // Returns true if device is enterprise managed.
+  virtual bool IsEnterpriseManaged() const = 0;
+
  protected:
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
@@ -157,9 +160,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void HandleUserOAuthTokenStatusChange(
       const AccountId& account_id,
       User::OAuthTokenStatus status) const = 0;
-
-  // Returns true if device is enterprise managed.
-  virtual bool IsEnterpriseManaged() const = 0;
 
   // Loads device local accounts from the Local state and fills in
   // |device_local_accounts_set|.
