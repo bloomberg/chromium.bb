@@ -48,6 +48,7 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
         GetLineCount(), autofill::Suggestion("", "", "", 0));
     return suggestions;
   }
+  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
 
@@ -90,6 +91,11 @@ class AutofillPopupViewCocoaUnitTest : public CocoaTest {
   void SetUp() override {
     CocoaTest::SetUp();
     feature_list.InitAndEnableFeature(autofill::kCreditCardAutofillTouchBar);
+
+    // Ensure the strings in the model are elided with the BROWSER typesetter
+    // (i.e. CoreText), since this test can only show Cocoa UI.
+    EXPECT_CALL(autofill_popup_controller_,
+                SetTypesetter(gfx::Typesetter::BROWSER));
 
     view_.reset([[AutofillPopupViewCocoa alloc]
         initWithController:&autofill_popup_controller_

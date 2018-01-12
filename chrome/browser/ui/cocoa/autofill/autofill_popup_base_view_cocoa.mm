@@ -49,8 +49,10 @@
 - (id)initWithDelegate:(autofill::AutofillPopupViewDelegate*)delegate
                  frame:(NSRect)frame {
   self = [super initWithFrame:frame];
-  if (self)
+  if (self) {
     popup_delegate_ = delegate;
+    popup_delegate_->SetTypesetter(gfx::Typesetter::BROWSER);
+  }
 
   return self;
 }
