@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
-#include "ash/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -97,7 +96,6 @@ class AccessibilityManager
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
       public session_manager::SessionManagerObserver,
-      public ash::ShellObserver,
       public input_method::InputMethodManager::Observer {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
@@ -226,10 +224,6 @@ class AccessibilityManager
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(const user_manager::User* active_user) override;
-
-  // ShellObserver overrides:
-  void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
 
   void SetProfileForTest(Profile* profile);
 

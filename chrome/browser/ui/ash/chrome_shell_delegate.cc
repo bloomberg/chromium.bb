@@ -94,12 +94,8 @@ void InitAfterFirstSessionStart() {
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
-  AccessibilityDelegateImpl() {
-    ash::Shell::Get()->AddShellObserver(AccessibilityManager::Get());
-  }
-  ~AccessibilityDelegateImpl() override {
-    ash::Shell::Get()->RemoveShellObserver(AccessibilityManager::Get());
-  }
+  AccessibilityDelegateImpl() = default;
+  ~AccessibilityDelegateImpl() override = default;
 
   void SetMagnifierEnabled(bool enabled) override {
     DCHECK(chromeos::MagnificationManager::Get());

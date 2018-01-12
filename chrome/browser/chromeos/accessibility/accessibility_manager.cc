@@ -1241,12 +1241,6 @@ void AccessibilityManager::ActiveUserChanged(
     SetProfile(ProfileManager::GetActiveUserProfile());
 }
 
-void AccessibilityManager::OnFullscreenStateChanged(bool is_fullscreen,
-                                                    aura::Window* root_window) {
-  if (chromevox_panel_)
-    chromevox_panel_->UpdateWidgetBounds();
-}
-
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
 }
