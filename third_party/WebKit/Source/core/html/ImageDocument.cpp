@@ -27,6 +27,7 @@
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/events/EventListener.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/ContentSettingsClient.h"
@@ -38,12 +39,12 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/DocumentLoader.h"
@@ -238,10 +239,10 @@ void ImageDocument::CreateDocumentStructure() {
                                "min-width: min-content;"
                                "height: 100%;"
                                "width: 100%;");
-    HTMLContentElement* content = HTMLContentElement::Create(*this);
-    div_element_->AppendChild(content);
+    HTMLSlotElement* slot = HTMLSlotElement::CreateUserAgentDefaultSlot(*this);
+    div_element_->AppendChild(slot);
 
-    ShadowRoot& shadow_root = body->EnsureLegacyUserAgentShadowRootV0();
+    ShadowRoot& shadow_root = body->EnsureUserAgentShadowRootV1();
     shadow_root.AppendChild(div_element_);
   } else {
     body->setAttribute(styleAttr, "margin: 0px;");
