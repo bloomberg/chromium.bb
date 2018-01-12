@@ -1002,4 +1002,67 @@ TEST_F(NativeExtensionBindingsSystemUnittest, AliasedAPIsAreDifferentObjects) {
   EXPECT_FALSE(equal);
 }
 
+// Tests that script can overwrite the value of an API.
+TEST_F(NativeExtensionBindingsSystemUnittest, CanOverwriteAPIs) {
+  scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
+
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Function> overwrite_api =
+      FunctionFromString(context, "(function() { chrome.runtime = 'bar'; })");
+  RunFunction(overwrite_api, context, 0, nullptr);
+  v8::Local<v8::Value> property =
+      V8ValueFromScriptSource(context, "chrome.runtime");
+  EXPECT_TRUE(property->IsString());
+  EXPECT_EQ("bar", gin::V8ToString(property));
+}
+
+// Tests that script can delete an API property.
+TEST_F(NativeExtensionBindingsSystemUnittest, CanDeleteAPIs) {
+  scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
+
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Object> chrome =
+      GetPropertyFromObject(context->Global(), context, "chrome")
+          .As<v8::Object>();
+  v8::Local<v8::String> runtime_key = gin::StringToSymbol(isolate(), "runtime");
+
+  {
+    v8::Maybe<bool> has_runtime = chrome->HasOwnProperty(context, runtime_key);
+    ASSERT_TRUE(has_runtime.IsJust());
+    EXPECT_TRUE(has_runtime.FromJust());
+  }
+
+  v8::Local<v8::Function> delete_api =
+      FunctionFromString(context, "(function() { delete chrome.runtime; })");
+  RunFunction(delete_api, context, 0, nullptr);
+
+  {
+    v8::Maybe<bool> has_runtime = chrome->HasOwnProperty(context, runtime_key);
+    ASSERT_TRUE(has_runtime.IsJust());
+    EXPECT_FALSE(has_runtime.FromJust());
+  }
+
+  v8::Local<v8::Value> property =
+      V8ValueFromScriptSource(context, "chrome.runtime");
+  EXPECT_TRUE(property->IsUndefined());
+}
+
 }  // namespace extensions

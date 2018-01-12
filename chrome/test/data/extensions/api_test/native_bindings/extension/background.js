@@ -38,6 +38,17 @@ var tests = [
     chrome.test.assertFalse(!!chrome.power);
     chrome.test.succeed();
   },
+  function overwriteApi() {
+    chrome.test.assertTrue(chrome.hasOwnProperty('history'));
+    let oldHistory = chrome.history;
+    chrome.history = 'foo';
+    chrome.test.assertEq('foo', chrome.history);
+    delete chrome.history;
+    chrome.test.assertFalse(chrome.hasOwnProperty('history'));
+    chrome.test.assertEq(undefined, chrome.history);
+    chrome.history = oldHistory;
+    chrome.test.succeed();
+  },
   function events() {
     var createdEvent = new Promise((resolve, reject) => {
       chrome.tabs.onCreated.addListener(tab => {
@@ -96,6 +107,13 @@ var tests = [
     chrome.test.assertTrue(!!chrome.cast.streaming);
     chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport);
     chrome.test.assertTrue(!!chrome.cast.streaming.udpTransport.setOptions);
+
+    // Verify that we can overwite prefixed APIs.
+    let oldUdpTransport = chrome.cast.streaming.udpTransport;
+    chrome.cast.streaming.udpTransport = 'foo';
+    chrome.test.assertEq('foo', chrome.cast.streaming.udpTransport);
+    chrome.cast.streaming.udpTransport = oldUdpTransport;
+
     chrome.test.succeed();
   },
   function injectScript() {
