@@ -942,7 +942,6 @@
           'gtest_tests': 'chromium_mac_fyi_gtests',
           'isolated_scripts': 'chromium_isolated_scripts',
         },
-        'use_swarming': False,
       },
       'Chromium Win 10 GCE Tests': {
         'test_suites': {
