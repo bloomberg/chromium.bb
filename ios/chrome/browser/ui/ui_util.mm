@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -54,6 +55,12 @@ bool IsIPhoneX() {
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
   return (idiom == UIUserInterfaceIdiomPhone &&
           CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
+}
+
+bool IsAdaptiveToolbarEnabled() {
+  if (tests_hook::ForceAdaptiveToolbar())
+    return true;
+  return base::FeatureList::IsEnabled(kAdaptiveToolbar);
 }
 
 bool IsSafeAreaCompatibleToolbarEnabled() {

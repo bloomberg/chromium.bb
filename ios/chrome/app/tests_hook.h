@@ -31,6 +31,11 @@ bool DisableSigninRecallPromo();
 // infobar won't be shown during testing.
 bool DisableUpdateService();
 
+// TODO(crbug.com/800266): Removes this hook.
+// Returns true if the AdaptiveToolbar UI should be displayed, overriding the
+// flag value.
+bool ForceAdaptiveToolbar();
+
 // Global integration tests setup.  This is not used by EarlGrey-based
 // integration tests.
 void SetUpTestsIfPresent();

@@ -34,6 +34,10 @@ bool DisableUpdateService() {
   return true;
 }
 
+bool ForceAdaptiveToolbar() {
+  return false;
+}
+
 void SetUpTestsIfPresent() {
   // No-op for Earl Grey.
 }
