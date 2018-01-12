@@ -469,27 +469,32 @@ void PermissionRequestManager::FinalizeBubble(
   PermissionUmaUtil::PermissionPromptResolved(requests_, web_contents(),
                                               permission_action);
 
-  if (permission_action == PermissionAction::IGNORED) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    PermissionDecisionAutoBlocker* autoblocker =
-        PermissionDecisionAutoBlocker::GetForProfile(profile);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlocker::GetForProfile(profile);
 
-    for (PermissionRequest* request : requests_) {
-      // TODO(timloh): We only support ignore embargo for permissions which use
-      // PermissionRequestImpl as the other subclasses don't support
-      // GetContentSettingsType.
-      if (request->GetContentSettingsType() == CONTENT_SETTINGS_TYPE_DEFAULT)
-        continue;
+  for (PermissionRequest* request : requests_) {
+    // TODO(timloh): We only support dismiss and ignore embargo for permissions
+    // which use PermissionRequestImpl as the other subclasses don't support
+    // GetContentSettingsType.
+    if (request->GetContentSettingsType() == CONTENT_SETTINGS_TYPE_DEFAULT)
+      continue;
 
-      PermissionEmbargoStatus embargo_status =
-          PermissionEmbargoStatus::NOT_EMBARGOED;
+    PermissionEmbargoStatus embargo_status =
+        PermissionEmbargoStatus::NOT_EMBARGOED;
+    if (permission_action == PermissionAction::DISMISSED) {
+      if (autoblocker->RecordDismissAndEmbargo(
+              request->GetOrigin(), request->GetContentSettingsType())) {
+        embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
+      }
+    } else if (permission_action == PermissionAction::IGNORED) {
       if (autoblocker->RecordIgnoreAndEmbargo(
               request->GetOrigin(), request->GetContentSettingsType())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
       }
-      PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
     }
+    PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
 
   std::vector<PermissionRequest*>::iterator requests_iter;
