@@ -398,7 +398,9 @@ bool InputMethodController::FinishComposingText(
     Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
 
     if (is_too_long) {
-      ReplaceComposition(ComposingText());
+      // Whether or not ReplaceComposition() succeeds, we still want to restore
+      // the old selection.
+      ignore_result(ReplaceComposition(ComposingText()));
     } else {
       Clear();
       DispatchCompositionEndEvent(GetFrame(), composing);
@@ -430,7 +432,10 @@ bool InputMethodController::FinishComposingText(
     return false;
 
   if (is_too_long) {
-    ReplaceComposition(ComposingText());
+    // Don't move caret or dispatch compositionend event if
+    // ReplaceComposition() fails.
+    if (!ReplaceComposition(ComposingText()))
+      return false;
   } else {
     Clear();
   }
@@ -690,7 +695,10 @@ void InputMethodController::SetComposition(
   if (text.IsEmpty()) {
     if (HasComposition()) {
       Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
-      ReplaceComposition(g_empty_string);
+      // Do not attempt to apply IME selection offsets if ReplaceComposition()
+      // fails (we compute the new range assuming the replacement will succeed).
+      if (!ReplaceComposition(g_empty_string))
+        return;
     } else {
       // It's weird to call |setComposition()| with empty text outside
       // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so
