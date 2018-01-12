@@ -358,8 +358,7 @@ void VisualViewport::CreateLayerTree() {
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
-  coordinator->SetLayerIsContainerForFixedPositionLayers(
-      inner_viewport_scroll_layer_.get(), true);
+  inner_viewport_scroll_layer_->SetIsContainerForFixedPositionLayers(true);
   coordinator->UpdateUserInputScrollable(this);
 
   // Set masks to bounds so the compositor doesn't clobber a manually

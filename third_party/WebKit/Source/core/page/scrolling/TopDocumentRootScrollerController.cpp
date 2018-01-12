@@ -116,11 +116,17 @@ void SetNeedsCompositingUpdateOnAncestors(ScrollableArea* area) {
     if (!frame->IsLocalFrame())
       continue;
 
-    PaintLayerCompositor* plc =
-        ToLocalFrame(frame)->View()->GetLayoutView()->Compositor();
-    if (plc) {
-      plc->SetNeedsCompositingUpdate(
-          kCompositingUpdateAfterCompositingInputChange);
+    LayoutView* layout_view = ToLocalFrame(frame)->View()->GetLayoutView();
+
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+      PaintLayer* frame_root_layer = layout_view->Layer();
+      DCHECK(frame_root_layer);
+      frame_root_layer->SetNeedsCompositingInputsUpdate();
+    } else {
+      if (PaintLayerCompositor* plc = layout_view->Compositor()) {
+        plc->SetNeedsCompositingUpdate(
+            kCompositingUpdateAfterCompositingInputChange);
+      }
     }
   }
 }

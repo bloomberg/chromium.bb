@@ -246,13 +246,6 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   }
 }
 
-void ScrollingCoordinator::SetLayerIsContainerForFixedPositionLayers(
-    GraphicsLayer* layer,
-    bool enable) {
-  if (WebLayer* scrollable_layer = toWebLayer(layer))
-    scrollable_layer->SetIsContainerForFixedPositionLayers(enable);
-}
-
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
                                                   GraphicsLayer* except) {
   if (layer && layer != except && toWebLayer(layer))
