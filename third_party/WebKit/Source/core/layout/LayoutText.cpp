@@ -393,29 +393,44 @@ static IntRect EllipsisRectForBox(InlineTextBox* box,
   return IntRect();
 }
 
+void LayoutText::AccumlateQuads(Vector<FloatQuad>& quads,
+                                const IntRect& ellipsis_rect,
+                                LocalOrAbsoluteOption local_or_absolute,
+                                MapCoordinatesFlags mode,
+                                const LayoutRect& passed_boundaries) const {
+  FloatRect boundaries(passed_boundaries);
+  if (!ellipsis_rect.IsEmpty()) {
+    if (Style()->IsHorizontalWritingMode())
+      boundaries.SetWidth(ellipsis_rect.MaxX() - boundaries.X());
+    else
+      boundaries.SetHeight(ellipsis_rect.MaxY() - boundaries.Y());
+  }
+  quads.push_back(local_or_absolute == kAbsoluteQuads
+                      ? LocalToAbsoluteQuad(boundaries, mode)
+                      : boundaries);
+}
+
 void LayoutText::Quads(Vector<FloatQuad>& quads,
                        ClippingOption option,
                        LocalOrAbsoluteOption local_or_absolute,
                        MapCoordinatesFlags mode) const {
-  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
-    FloatRect boundaries(box->FrameRect());
-
-    // Shorten the width of this text box if it ends in an ellipsis.
-    // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the
-    // subpixellayout branch.
-    IntRect ellipsis_rect = (option == kClipToEllipsis)
-                                ? EllipsisRectForBox(box, 0, TextLength())
-                                : IntRect();
-    if (!ellipsis_rect.IsEmpty()) {
-      if (Style()->IsHorizontalWritingMode())
-        boundaries.SetWidth(ellipsis_rect.MaxX() - boundaries.X());
-      else
-        boundaries.SetHeight(ellipsis_rect.MaxY() - boundaries.Y());
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragment()) {
+    const auto children =
+        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
+    for (const auto& child : children) {
+      // TODO(layout-dev): We should have NG version of |EllipsisRectForBox()|
+      AccumlateQuads(quads, IntRect(), local_or_absolute, mode,
+                     child.RectInContainerBox().ToLayoutRect());
     }
-    if (local_or_absolute == kAbsoluteQuads)
-      quads.push_back(LocalToAbsoluteQuad(boundaries, mode));
-    else
-      quads.push_back(boundaries);
+    return;
+  }
+  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
+    const IntRect ellipsis_rect = (option == kClipToEllipsis)
+                                      ? EllipsisRectForBox(box, 0, TextLength())
+                                      : IntRect();
+    AccumlateQuads(quads, ellipsis_rect, local_or_absolute, mode,
+                   box->FrameRect());
   }
 }
 

@@ -385,4 +385,18 @@ TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
       ToLayoutText(two.firstChild()->GetLayoutObject())->LinesBoundingBox());
 }
 
+TEST_P(ParameterizedLayoutTextTest, QuadsBasic) {
+  LoadAhem();
+  SetBasicBody(
+      "<style>p {font: 13px/17px Ahem;}</style>"
+      "<p id=one>one</p>");
+  const Element& one = *GetDocument().getElementById("one");
+  Vector<FloatQuad> actual_quads;
+  ToLayoutText(one.firstChild()->GetLayoutObject())->Quads(actual_quads);
+  EXPECT_EQ(
+      Vector<FloatQuad>({FloatQuad(FloatPoint(8, 10), FloatPoint(47, 10),
+                                   FloatPoint(47, 23), FloatPoint(8, 23))}),
+      actual_quads);
+}
+
 }  // namespace blink
