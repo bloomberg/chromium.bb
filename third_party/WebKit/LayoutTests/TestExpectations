@@ -1830,6 +1830,7 @@ crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-fetch.any.
 crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-002.html [ Failure ]
 crbug.com/626703 external/wpt/quirks/active-and-hover-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-table-001.html [ Failure ]
