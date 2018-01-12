@@ -11,26 +11,18 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/gamepad_device_mac.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-
-#if defined(__OBJC__)
-@class NSArray;
-#else
-class NSArray;
-#endif
 
 namespace device {
 
 class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
  public:
-  typedef GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherMac,
-                                        GAMEPAD_SOURCE_MAC_HID>
-      Factory;
+  using Factory = GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherMac,
+                                                GAMEPAD_SOURCE_MAC_HID>;
 
   GamepadPlatformDataFetcherMac();
   ~GamepadPlatformDataFetcherMac() override;
@@ -39,6 +31,14 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
 
   void GetGamepadData(bool devices_changed_hint) override;
   void PauseHint(bool paused) override;
+  void PlayEffect(
+      int source_id,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+  void ResetVibration(
+      int source_id,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
 
  private:
   bool enabled_;
@@ -61,30 +61,37 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
 
   void OnAddedToProvider() override;
 
+  // Returns the index of the first empty slot, or Gamepads::kItemsLengthCap if
+  // there are no empty slots.
   size_t GetEmptySlot();
+
+  // Returns the index of the slot allocated for this device, or the first empty
+  // slot if none is yet allocated. If there is no allocated or empty slots,
+  // returns Gamepads::kItemsLengthCap.
   size_t GetSlotForDevice(IOHIDDeviceRef device);
 
+  // Returns the index of the slot allocated for the device with the specified
+  // |location_id|, or Gamepads::kItemsLengthCap if none is yet allocated.
+  size_t GetSlotForLocation(int location_id);
+
+  // Query device info for |device| and add it to |devices_| if it is a
+  // gamepad.
   void DeviceAdd(IOHIDDeviceRef device);
-  bool CheckCollection(IOHIDElementRef element);
-  bool AddButtonsAndAxes(NSArray* elements, PadState* state, size_t slot);
+
+  // Remove |device| from the set of connected devices.
   void DeviceRemove(IOHIDDeviceRef device);
+
+  // Update the gamepad state for the button or axis referred to by |value|.
   void ValueChanged(IOHIDValueRef value);
 
+  // Register for connection events and value change notifications for HID
+  // devices.
   void RegisterForNotifications();
+
+  // Unregister from connection events and value change notifications.
   void UnregisterFromNotifications();
 
-  // Side-band data that's not passed to the consumer, but we need to maintain
-  // to update data_.
-  struct AssociatedData {
-    int location_id;
-    IOHIDDeviceRef device_ref;
-    IOHIDElementRef button_elements[Gamepad::kButtonsLengthCap];
-    IOHIDElementRef axis_elements[Gamepad::kAxesLengthCap];
-    CFIndex axis_minimums[Gamepad::kAxesLengthCap];
-    CFIndex axis_maximums[Gamepad::kAxesLengthCap];
-    CFIndex axis_report_sizes[Gamepad::kAxesLengthCap];
-  };
-  AssociatedData associated_[Gamepads::kItemsLengthCap];
+  std::unique_ptr<GamepadDeviceMac> devices_[Gamepads::kItemsLengthCap];
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherMac);
 };
