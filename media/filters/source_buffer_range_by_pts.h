@@ -82,7 +82,11 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // Finds the next keyframe from |buffers_| starting at or after |timestamp|
   // and creates and returns a new SourceBufferRangeByPts with the buffers from
   // that keyframe onward. The buffers in the new SourceBufferRangeByPts are
-  // moved out of this range. If there is no keyframe at or after |timestamp|,
+  // moved out of this range. The start time of the new SourceBufferRangeByPts
+  // is set to the later of |timestamp| and this range's GetStartTimestamp().
+  // Note that this may result in temporary overlap of the new range and this
+  // range until the caller truncates any nonkeyframes out of this range with
+  // time > |timestamp|.  If there is no keyframe at or after |timestamp|,
   // SplitRange() returns null and this range is unmodified. This range can
   // become empty if |timestamp| <= the PTS of the first buffer in this range.
   // |highest_frame_| is updated, if necessary.
@@ -180,6 +184,17 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
 
  private:
   typedef std::map<base::TimeDelta, int> KeyframeMap;
+
+  // Helper method for Appending |range| to the end of this range.  If |range|'s
+  // first buffer time is before the time of the last buffer in this range,
+  // returns kNoTimestamp.  Otherwise, returns the closest time within
+  // [|range|'s start time, |range|'s first buffer time] that is at or after the
+  // this range's GetEndTimestamp(). This allows |range| to potentially be
+  // determined to be adjacent within fudge room for appending to the end of
+  // this range, especially if |range| has a start time that is before its first
+  // buffer's time.
+  base::TimeDelta NextRangeStartTimeForAppendRangeToEnd(
+      const SourceBufferRangeByPts& range) const;
 
   // Returns an index (or iterator) into |buffers_| pointing to the first buffer
   // at or after |timestamp|.  If |skip_given_timestamp| is true, this returns

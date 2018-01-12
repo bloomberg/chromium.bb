@@ -679,28 +679,26 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // threshold.
   CheckExpectedRangesByTimestamp(audio_.get(),
                                  "{ [55,85) [100,130) [200,230) }");
-  // Note that the range adjacency logic used in this case is doesn't consider
-  // DTS 85 to be close enough to [100,140), since the first DTS in video
+  // Note that the range adjacency logic used in this case considers
+  // DTS 85 to be close enough to [100,140), even though the first DTS in video
   // range [100,140) is actually 110. The muxed data started a coded frame
-  // group at time 100, but actual DTS is used for adjacency checks while
-  // appending.
-  CheckExpectedRangesByTimestamp(video_.get(),
-                                 "{ [55,95) [100,140) [200,240) }");
+  // group at time 100, informing the adjacency logic.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [55,140) [200,240) }");
 
   // Verify the buffers.
   // Re-seek now that we've appended data earlier than what already satisfied
   // our initial seek to start.
   SeekStream(audio_.get(), Milliseconds(55));
-  SeekStream(video_.get(), Milliseconds(55));
   CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
-  CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
   SeekStream(audio_.get(), Milliseconds(100));
-  SeekStream(video_.get(), Milliseconds(100));
   CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
-  CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
   SeekStream(audio_.get(), Milliseconds(200));
-  SeekStream(video_.get(), Milliseconds(200));
   CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
+
+  SeekStream(video_.get(), Milliseconds(55));
+  CheckReadsThenReadStalls(video_.get(),
+                           "65:10 75:20 85:30 110:10 120:20 130:30");
+  SeekStream(video_.get(), Milliseconds(200));
   CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
 }
 
@@ -1163,18 +1161,12 @@ TEST_P(FrameProcessorTest, OOOKeyframePts_1) {
     // frame at 100ms is processed with an adjusted coded frame group start to
     // be 0.001ms, which is just after the highest timestamp before it in the
     // overlapped range. This enables it to be continuous with the frame before
-    // it.
-    // TODO(wolenetz): Likewise, fix MergeWithAdjacentRangeIfNecessary() to
-    // consider range start times, so that there is no resulting discontinuity
-    // between it and the next frame (at 1000ms) in the result of the overlap
-    // append. See https://crbug.com/791095.
-    CheckExpectedRangesByTimestamp(audio_.get(),
-                                   "{ [0,110) [500,510) [1000,1010) }");
-    CheckReadsThenReadStalls(audio_.get(), "0 100");
-    SeekStream(audio_.get(), Milliseconds(500));
-    CheckReadsThenReadStalls(audio_.get(), "500");
-    SeekStream(audio_.get(), Milliseconds(1000));
-    CheckReadsThenReadStalls(audio_.get(), "1000");
+    // it. The remainder of the overlapped range (the buffer at [1000,1010)) is
+    // adjusted to have a range start time at the split point (110), and is
+    // within fudge room and merged into [0,110). The same happens with the
+    // buffer appended [500,510).
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 100 500 1000");
   }
 }
 
@@ -1198,15 +1190,11 @@ TEST_P(FrameProcessorTest, OOOKeyframePts_2) {
     // frame at 100ms is processed with an adjusted coded frame group start to
     // be 0.001ms, which is just after the highest timestamp before it in the
     // overlapped range. This enables it to be continuous with the frame before
-    // it.
-    // TODO(wolenetz): Likewise, fix MergeWithAdjacentRangeIfNecessary() to
-    // consider range start times, so that there is no resulting discontinuity
-    // between it and the next frame (at 1000ms) in the result of the overlap
-    // append. See https://crbug.com/791095.
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,110) [1000,1010) }");
-    CheckReadsThenReadStalls(audio_.get(), "0 100");
-    SeekStream(audio_.get(), Milliseconds(1000));
-    CheckReadsThenReadStalls(audio_.get(), "1000");
+    // it. The remainder of the overlapped range (the buffer at [1000,1010)) is
+    // adjusted to have a range start time at the split point (110), and is
+    // within fudge room and merged into [0,110).
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 100 1000");
   }
 }
 
@@ -1405,6 +1393,10 @@ TEST_P(FrameProcessorTest,
 
   // TODO(wolenetz): Here, [1060,1140) should demux continuously without read
   // stall in the middle. See https://crbug.com/791095.
+  // Note that this particular gap remains due to a combination of deep
+  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
+  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
+  // logic. This part still needs to be fixed.
   SeekStream(video_.get(), Milliseconds(1060));
   CheckReadsThenReadStalls(video_.get(), "1060 1000 1050 1010 1040 1020 1030");
   SeekStream(video_.get(), Milliseconds(1070));
@@ -1512,6 +1504,10 @@ TEST_P(FrameProcessorTest,
   CheckExpectedRangesByTimestamp(video_.get(), "{ [120,165) }");
   // TODO(wolenetz): Here, [120,165) should demux continuously without read
   // stall in the middle. See https://crbug.com/791095.
+  // Note that this particular gap remains due to a combination of deep
+  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
+  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
+  // logic. This part still needs to be fixed.
   CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
   SeekStream(video_.get(), Milliseconds(145));
   CheckReadsThenReadStalls(video_.get(), "145 125 155 135");
@@ -1561,6 +1557,10 @@ TEST_P(FrameProcessorTest,
   // though the next buffered GOP keyframe after 130 is at 155, it is continuous
   // with overlapping append's adjusted group start time of 140.001ms. See
   // https://crbug.com/791095.
+  // Note that this particular gap remains due to a combination of deep
+  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
+  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
+  // logic. This part still needs to be fixed.
   CheckExpectedRangesByTimestamp(video_.get(), "{ [120,140) [140,165) }");
   CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
   SeekStream(video_.get(), Milliseconds(155));

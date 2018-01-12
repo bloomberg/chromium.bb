@@ -39,6 +39,26 @@ SourceBufferRangeByDts::SourceBufferRangeByDts(
 
 SourceBufferRangeByDts::~SourceBufferRangeByDts() = default;
 
+DecodeTimestamp SourceBufferRangeByDts::NextRangeStartTimeForAppendRangeToEnd(
+    const SourceBufferRangeByDts& range) const {
+  DCHECK(!buffers_.empty());
+  DCHECK(!range.buffers_.empty());
+
+  DecodeTimestamp next_range_first_buffer_time =
+      range.buffers_.front()->GetDecodeTimestamp();
+  DecodeTimestamp this_range_end_time = GetEndTimestamp();
+  if (next_range_first_buffer_time < this_range_end_time)
+    return kNoDecodeTimestamp();
+
+  DecodeTimestamp next_range_start_time = range.GetStartTimestamp();
+  DCHECK(next_range_start_time <= next_range_first_buffer_time);
+
+  if (next_range_start_time >= this_range_end_time)
+    return next_range_start_time;
+
+  return this_range_end_time;
+}
+
 void SourceBufferRangeByDts::AppendRangeToEnd(
     const SourceBufferRangeByDts& range,
     bool transfer_current_position) {
@@ -48,7 +68,8 @@ void SourceBufferRangeByDts::AppendRangeToEnd(
   if (transfer_current_position && range.next_buffer_index_ >= 0)
     next_buffer_index_ = range.next_buffer_index_ + buffers_.size();
 
-  AppendBuffersToEnd(range.buffers_, kNoDecodeTimestamp());
+  AppendBuffersToEnd(range.buffers_,
+                     NextRangeStartTimeForAppendRangeToEnd(range));
 }
 
 void SourceBufferRangeByDts::DeleteAll(BufferQueue* deleted_buffers) {
@@ -57,7 +78,8 @@ void SourceBufferRangeByDts::DeleteAll(BufferQueue* deleted_buffers) {
 
 bool SourceBufferRangeByDts::CanAppendRangeToEnd(
     const SourceBufferRangeByDts& range) const {
-  return CanAppendBuffersToEnd(range.buffers_, kNoDecodeTimestamp());
+  return CanAppendBuffersToEnd(range.buffers_,
+                               NextRangeStartTimeForAppendRangeToEnd(range));
 }
 
 void SourceBufferRangeByDts::AppendBuffersToEnd(
@@ -171,14 +193,10 @@ std::unique_ptr<SourceBufferRangeByDts> SourceBufferRangeByDts::SplitRange(
   BufferQueue::iterator starting_point = buffers_.begin() + keyframe_index;
   BufferQueue removed_buffers(starting_point, buffers_.end());
 
-  DecodeTimestamp new_range_start_decode_timestamp = kNoDecodeTimestamp();
-  if (GetStartTimestamp() < buffers_.front()->GetDecodeTimestamp() &&
-      timestamp < removed_buffers.front()->GetDecodeTimestamp()) {
-    // The split is in the gap between |range_start_decode_time_| and the first
-    // buffer of the new range so we should set the start time of the new range
-    // to |timestamp| so we preserve part of the gap in the new range.
-    new_range_start_decode_timestamp = timestamp;
-  }
+  DecodeTimestamp new_range_start_decode_timestamp =
+      std::max(timestamp, GetStartTimestamp());
+  DCHECK(new_range_start_decode_timestamp <=
+         removed_buffers.front()->GetDecodeTimestamp());
 
   keyframe_map_.erase(new_beginning_keyframe, keyframe_map_.end());
   FreeBufferRange(starting_point, buffers_.end());

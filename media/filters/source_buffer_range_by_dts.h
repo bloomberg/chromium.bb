@@ -80,10 +80,12 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
   // Finds the next keyframe from |buffers_| starting at or after |timestamp|
   // and creates and returns a new SourceBufferRangeByDts with the buffers from
   // that keyframe onward. The buffers in the new SourceBufferRangeByDts are
-  // moved out of this range. If there is no keyframe at or after |timestamp|,
-  // SplitRange() returns null and this range is unmodified. This range can
-  // become empty if |timestamp| <= the DTS of the first buffer in this range.
-  // |highest_frame_| is updated, if necessary.
+  // moved out of this range. The start time of the new SourceBufferRangeByDts
+  // is set to the later of |timestamp| and this range's GetStartTimestamp().
+  // If there is no keyframe at or after |timestamp|, SplitRange() returns null
+  // and this range is unmodified. This range can become empty if |timestamp| <=
+  // the DTS of the first buffer in this range.  |highest_frame_| is updated, if
+  // necessary.
   std::unique_ptr<SourceBufferRangeByDts> SplitRange(DecodeTimestamp timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
@@ -180,6 +182,17 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
 
  private:
   typedef std::map<DecodeTimestamp, int> KeyframeMap;
+
+  // Helper method for Appending |range| to the end of this range.  If |range|'s
+  // first buffer time is before the time of the last buffer in this range,
+  // returns kNoDecodeTimestamp().  Otherwise, returns the closest time within
+  // [|range|'s start time, |range|'s first buffer time] that is at or after the
+  // time of the last buffer in this range. This allows |range| to potentially
+  // be determined to be adjacent within fudge room for appending to the end of
+  // this range, especially if |range| has a start time that is before its first
+  // buffer's time.
+  DecodeTimestamp NextRangeStartTimeForAppendRangeToEnd(
+      const SourceBufferRangeByDts& range) const;
 
   // Helper method to delete buffers in |buffers_| starting at
   // |starting_point|, an iterator in |buffers_|.
