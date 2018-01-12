@@ -167,6 +167,11 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Count how many bytes are in buffer at this moment.
   size_t BytesBuffered() const;
 
+  // Returns number of bytes available to be read out.
+  size_t ReadableBytes() const;
+
+  bool allow_overlapping_data() const { return allow_overlapping_data_; }
+
  private:
   friend class test::QuicStreamSequencerBufferPeer;
 
@@ -215,9 +220,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Get the index of the logical 1st block to start next read.
   size_t NextBlockToRead() const;
-
-  // Returns number of bytes available to be read out.
-  size_t ReadableBytes() const;
 
   // Returns offset of first missing byte.
   QuicStreamOffset FirstMissingByte() const;

@@ -38,18 +38,6 @@ bool SimpleDataProducer::WriteStreamData(QuicStreamId id,
   return send_buffer_map_[id]->WriteStreamData(offset, data_length, writer);
 }
 
-void SimpleDataProducer::OnFrameAcked(const QuicFrame& frame,
-                                      QuicTime::Delta /*ack_delay_time*/) {
-  if (frame.type != STREAM_FRAME ||
-      !QuicContainsKey(send_buffer_map_, frame.stream_frame->stream_id)) {
-    return;
-  }
-  QuicByteCount newly_acked_length = 0;
-  send_buffer_map_[frame.stream_frame->stream_id]->OnStreamDataAcked(
-      frame.stream_frame->offset, frame.stream_frame->data_length,
-      &newly_acked_length);
-}
-
 }  // namespace test
 
 }  // namespace net

@@ -587,6 +587,49 @@ TEST_F(QuicStreamSequencerTest, OverlappingFramesReceived) {
   sequencer_->OnStreamFrame(frame2);
 }
 
+TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
+  if (!GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
+    return;
+  }
+  QuicStreamId id =
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0);
+  const string data(1000, '.');
+
+  // Received [0, 1000).
+  QuicStreamFrame frame1(id, false, 0, data);
+  EXPECT_CALL(stream_, OnDataAvailable());
+  sequencer_->OnStreamFrame(frame1);
+  // Consume [0, 500).
+  QuicStreamSequencerTest::ConsumeData(500);
+  EXPECT_EQ(500u, sequencer_->NumBytesConsumed());
+  EXPECT_EQ(500u, sequencer_->NumBytesBuffered());
+
+  // Received [500, 1500).
+  QuicStreamFrame frame2(id, false, 500, data);
+  // Do not call OnDataAvailable as there are readable bytes left in the buffer.
+  EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+  sequencer_->OnStreamFrame(frame2);
+  // Consume [1000, 1500).
+  QuicStreamSequencerTest::ConsumeData(1000);
+  EXPECT_EQ(1500u, sequencer_->NumBytesConsumed());
+  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
+
+  // Received [1498, 1503).
+  QuicStreamFrame frame3(id, false, 1498, QuicStringPiece("hello"));
+  EXPECT_CALL(stream_, OnDataAvailable());
+  sequencer_->OnStreamFrame(frame3);
+  QuicStreamSequencerTest::ConsumeData(3);
+  EXPECT_EQ(1503u, sequencer_->NumBytesConsumed());
+  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
+
+  // Received [1000, 1005).
+  QuicStreamFrame frame4(id, false, 1000, QuicStringPiece("hello"));
+  EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+  sequencer_->OnStreamFrame(frame4);
+  EXPECT_EQ(1503u, sequencer_->NumBytesConsumed());
+  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
+}
+
 TEST_F(QuicStreamSequencerTest, InOrderTimestamps) {
   // This test verifies that timestamps returned by
   // GetReadableRegion() are in the correct sequence when frames

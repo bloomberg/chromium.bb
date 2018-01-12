@@ -183,7 +183,12 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
     WaitUntil(timeout_ms, [this]() { return response_size() != 0; });
   }
 
-  void MigrateSocket(const QuicIpAddress& new_host);
+  // Migrate local address to <|new_host|, a random port>.
+  // Return whether the migration succeeded.
+  bool MigrateSocket(const QuicIpAddress& new_host);
+  // Migrate local address to <|new_host|, |port|>.
+  // Return whether the migration succeeded.
+  bool MigrateSocketWithSpecifiedPort(const QuicIpAddress& new_host, int port);
   QuicIpAddress bind_to_address() const;
   void set_bind_to_address(QuicIpAddress address);
   const QuicSocketAddress& address() const;

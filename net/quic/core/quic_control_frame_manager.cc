@@ -28,31 +28,8 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
   }
   if (id == least_unacked_ + control_frames_.size()) {
     // This is a newly sent control frame. Save a copy of this frame.
-    switch (frame.type) {
-      case RST_STREAM_FRAME:
-        control_frames_.emplace_back(
-            QuicFrame(new QuicRstStreamFrame(*frame.rst_stream_frame)));
-        return;
-      case GOAWAY_FRAME:
-        control_frames_.emplace_back(
-            QuicFrame(new QuicGoAwayFrame(*frame.goaway_frame)));
-        return;
-      case WINDOW_UPDATE_FRAME:
-        control_frames_.emplace_back(
-            QuicFrame(new QuicWindowUpdateFrame(*frame.window_update_frame)));
-        return;
-      case BLOCKED_FRAME:
-        control_frames_.emplace_back(
-            QuicFrame(new QuicBlockedFrame(*frame.blocked_frame)));
-        return;
-      case PING_FRAME:
-        control_frames_.emplace_back(
-            QuicFrame(QuicPingFrame(frame.ping_frame.control_frame_id)));
-        return;
-      default:
-        DCHECK(false);
-        return;
-    }
+    control_frames_.emplace_back(CopyRetransmittableControlFrame(frame));
+    return;
   }
   if (QuicContainsKey(pending_retransmissions_, id)) {
     // This is retransmitted control frame.
