@@ -343,6 +343,8 @@ void PaintLayerClipper::CalculateRects(
     ClipRect& background_rect,
     ClipRect& foreground_rect,
     const LayoutPoint* offset_from_root) const {
+  // This feature is not supported for this method.
+  DCHECK(context.respect_overflow_clip != kIgnoreOverflowClipAndScroll);
   if (use_geometry_mapper_) {
     DCHECK(fragment_data);
     auto* local_borderbox = fragment_data->LocalBorderBoxProperties();
@@ -630,6 +632,12 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
       &context.root_layer->GetLayoutObject() == layout_view &&
       output != LayoutRect(LayoutRect::InfiniteIntRect()))
     output.Move(LayoutSize(layout_view->GetFrameView()->GetScrollOffset()));
+
+  if (context.respect_overflow_clip == kIgnoreOverflowClipAndScroll &&
+      context.root_layer->ScrollsOverflow()) {
+    output.Move(
+        LayoutSize(context.root_layer->GetScrollableArea()->GetScrollOffset()));
+  }
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,
