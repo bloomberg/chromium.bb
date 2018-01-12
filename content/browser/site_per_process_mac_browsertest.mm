@@ -278,10 +278,13 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
   // We don't check the gesture target yet, since on mac the GesturePinchBegin
   // isn't sent until the first PinchUpdate.
 
+  InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kGesturePinchBegin);
   NSEvent* pinchUpdateEvent =
       MockGestureEvent(NSEventTypeMagnify, 0.25, gesture_point.x(),
                        gesture_point.y(), NSEventPhaseChanged);
   [cocoa_view magnifyWithEvent:pinchUpdateEvent];
+  waiter.Wait();
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
 
   NSEvent* pinchEndEvent =
