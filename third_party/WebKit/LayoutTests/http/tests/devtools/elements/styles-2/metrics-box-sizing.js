@@ -82,23 +82,20 @@
     return event;
   }
 
+  var section = UI.panels.elements._metricsWidget;
+
   TestRunner.runTestSuite([
     function testBorderBoxInit1(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('border-box', next);
     },
 
-    function testBorderBoxInit2(next) {
-      section = UI.panels.elements._metricsWidget;
-      section.expand();
-      TestRunner.addSniffer(section._updateController._updateThrottler, '_processCompletedForTests', next);
-    },
-
-    function testInitialBorderBoxMetrics(next) {
-      var spanElements = section.element.getElementsByClassName('content')[0].getElementsByTagName('span');
+    async function testInitialBorderBoxMetrics(next) {
+      await section.doUpdate();
+      var spanElements = section.contentElement.getElementsByClassName('content')[0].getElementsByTagName('span');
       contentWidthElement = spanElements[0];
       contentHeightElement = spanElements[1];
       TestRunner.addResult('=== Initial border-box ===');
-      dumpMetrics(section.element);
+      dumpMetrics(section.contentElement);
       contentWidthElement.dispatchEvent(createDoubleClickEvent());
       contentWidthElement.textContent = '60';
       contentWidthElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
@@ -107,7 +104,7 @@
 
     function testModifiedBorderBoxMetrics(next) {
       TestRunner.addResult('=== Modified border-box ===');
-      dumpMetrics(section.element);
+      dumpMetrics(section.contentElement);
       next();
     },
 
@@ -115,18 +112,13 @@
       ElementsTestRunner.selectNodeWithId('content-box', next);
     },
 
-    function testContentBoxInit2(next) {
-      section = UI.panels.elements._metricsWidget;
-      section.expand();
-      TestRunner.addSniffer(section._updateController._updateThrottler, '_processCompletedForTests', next);
-    },
-
-    function testInitialContentBoxMetrics(next) {
-      var spanElements = section.element.getElementsByClassName('content')[0].getElementsByTagName('span');
+    async function testInitialContentBoxMetrics(next) {
+      await section.doUpdate();
+      var spanElements = section.contentElement.getElementsByClassName('content')[0].getElementsByTagName('span');
       contentWidthElement = spanElements[0];
       contentHeightElement = spanElements[1];
       TestRunner.addResult('=== Initial content-box ===');
-      dumpMetrics(section.element);
+      dumpMetrics(section.contentElement);
       contentWidthElement.dispatchEvent(createDoubleClickEvent());
       contentWidthElement.textContent = '60';
       contentWidthElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
@@ -140,7 +132,7 @@
       }
 
       TestRunner.addResult('=== Modified content-box ===');
-      dumpMetrics(section.element);
+      dumpMetrics(section.contentElement);
       TestRunner.evaluateInPage('dumpDimensions()', callback);
     }
   ]);
