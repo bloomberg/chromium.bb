@@ -14,7 +14,7 @@ CFLAGS += -std=c99 -Wall -Wsign-compare -Wpointer-arith -Wcast-qual \
 
 ifdef DRV_AMDGPU
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_amdgpu)
-	LDLIBS += -lamdgpuaddr
+	LDLIBS += -ldrm_amdgpu -ldl
 endif
 ifdef DRV_EXYNOS
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_exynos)

@@ -96,7 +96,7 @@ struct backend {
 #define DRM_FORMAT_MOD_LINEAR DRM_FORMAT_MOD_NONE
 #endif
 
-#define LINEAR_METADATA (struct format_metadata) { 0, 1, DRM_FORMAT_MOD_LINEAR }
+#define LINEAR_METADATA (struct format_metadata) { 1, 0, DRM_FORMAT_MOD_LINEAR }
 // clang-format on
 
 #endif
