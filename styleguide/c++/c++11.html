@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
 Copyright 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
@@ -458,6 +458,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>Allows more widespread use of <code>const_iterator</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/container/vector/begin">std::vector::cbegin</a>, <a href="http://en.cppreference.com/w/cpp/container/vector/end">std::vector::cend<a></td>
 <td>Applies to all containers, not just <code>vector</code>. Consider using <code>const_iterator</code> over <code>iterator</code> where possible for the same reason as using <code>const</code> variables and functions where possible; see Effective Modern C++ item 13. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/cS83F_buqLM">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Container Compaction Functions</td>
+<td><code>std::vector::shrink_to_fit()</code>, <code>std::deque::shrink_to_fit()</code>, <code>std::string::shrink_to_fit()</code></td>
+<td>Requests the removal of unused space in the container</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/vector/shrink_to_fit">std::vector::shrink_to_fit</a>, <a href="http://en.cppreference.com/w/cpp/container/deque/shrink_to_fit">std::deque::shrink_to_fit</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/shrink_to_fit">std::basic_string::shrink_to_fit</a></td>
+<td></td>
 </tr>
 
 <tr>
@@ -1042,14 +1050,6 @@ than binary literals.</td>
 <td>Functions within <code>&lt;complex&gt;</code></td>
 <td>Adds inverse trigonomentric and hyperbolic non-member functions to the <code>&lt;complex&gt;</code> library.</td>
 <td><a href="http://en.cppreference.com/w/cpp/numeric/complex">std::complex</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>Container Compaction Functions</td>
-<td><code>std::vector::shrink_to_fit()</code>, <code>std::deque::shrink_to_fit()</code>, <code>std::string::shrink_to_fit()</code></td>
-<td>Requests the removal of unused space in the container</td>
-<td><a href="http://en.cppreference.com/w/cpp/container/vector/shrink_to_fit">std::vector::shrink_to_fit</a>, <a href="http://en.cppreference.com/w/cpp/container/deque/shrink_to_fit">std::deque::shrink_to_fit</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/shrink_to_fit">std::basic_string::shrink_to_fit</a></td>
 <td></td>
 </tr>
 
