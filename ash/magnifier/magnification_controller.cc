@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "base/command_line.h"
+#include "base/numerics/ranges.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
@@ -44,13 +45,12 @@
 
 namespace {
 
-const float kMaxMagnifiedScale = 4.0f;
-const float kMaxMagnifiedScaleThreshold = 4.0f;
+const float kMaxMagnifiedScale = 20.0f;
 const float kMinMagnifiedScaleThreshold = 1.1f;
 const float kNonMagnifiedScale = 1.0f;
 
 const float kInitialMagnifiedScale = 2.0f;
-const float kScrollScaleChangeFactor = 0.0125f;
+const float kScrollScaleChangeFactor = 0.00125f;
 
 // Default animation parameters for redrawing the magnification window.
 const gfx::Tween::Type kDefaultAnimationTweenType = gfx::Tween::EASE_OUT;
@@ -512,16 +512,7 @@ bool MagnificationControllerImpl::IsMagnified() const {
 }
 
 void MagnificationControllerImpl::ValidateScale(float* scale) {
-  // Adjust the scale to just |kNonMagnifiedScale| if scale is smaller than
-  // |kMinMagnifiedScaleThreshold|;
-  if (*scale < kMinMagnifiedScaleThreshold)
-    *scale = kNonMagnifiedScale;
-
-  // Adjust the scale to just |kMinMagnifiedScale| if scale is bigger than
-  // |kMinMagnifiedScaleThreshold|;
-  if (*scale > kMaxMagnifiedScaleThreshold)
-    *scale = kMaxMagnifiedScale;
-
+  *scale = base::ClampToRange(*scale, kNonMagnifiedScale, kMaxMagnifiedScale);
   DCHECK(kNonMagnifiedScale <= *scale && *scale <= kMaxMagnifiedScale);
 }
 
@@ -679,8 +670,18 @@ void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
 
 void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->IsAltDown() && event->IsControlDown()) {
-    if (event->type() == ui::ET_SCROLL_FLING_START ||
-        event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+    if (event->type() == ui::ET_SCROLL_FLING_START) {
+      event->StopPropagation();
+      return;
+    } else if (event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+      float scale = GetScale();
+      // Jump back to exactly 1.0 if we are just a tiny bit zoomed in.
+      // TODO(katie): These events are not fired after every scroll, which means
+      // we don't always jump back to 1.0. Look into why they are missing.
+      if (scale < kMinMagnifiedScaleThreshold) {
+        scale = kNonMagnifiedScale;
+        SetScale(scale, true);
+      }
       event->StopPropagation();
       return;
     }
@@ -688,7 +689,15 @@ void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
     if (event->type() == ui::ET_SCROLL) {
       ui::ScrollEvent* scroll_event = event->AsScrollEvent();
       float scale = GetScale();
-      scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
+
+      // Adjust the scale linearly based on the y_offset.
+      float linear_adjustment =
+          std::sqrt((scale - kNonMagnifiedScale) /
+                    (kMaxMagnifiedScale - kNonMagnifiedScale));
+      linear_adjustment += scroll_event->y_offset() * kScrollScaleChangeFactor;
+      scale = (kMaxMagnifiedScale - kNonMagnifiedScale) *
+                  std::pow(linear_adjustment, 2) +
+              kNonMagnifiedScale;
       SetScale(scale, true);
       event->StopPropagation();
       return;
@@ -710,6 +719,8 @@ void MagnificationControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
   if (!IsEnabled())
     return;
 
+  // TODO(katie): Scroll and pinch gestures are not firing at very high
+  // magnification, i.e. above about a scale of 5 on a snappy test device.
   const ui::GestureEventDetails& details = event->details();
   if (details.type() == ui::ET_GESTURE_SCROLL_UPDATE &&
       details.touch_points() == 2) {
@@ -722,12 +733,17 @@ void MagnificationControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
   } else if (details.type() == ui::ET_GESTURE_PINCH_UPDATE &&
              details.touch_points() == 3) {
     float scale = GetScale() * details.scale();
-    scale = std::max(scale, kMinMagnifiedScaleThreshold);
-    scale = std::min(scale, kMaxMagnifiedScaleThreshold);
-
     point_of_interest_ = event->root_location();
     SetScale(scale, false);
     event->SetHandled();
+  } else if (details.type() == ui::ET_GESTURE_PINCH_END &&
+             details.touch_points() == 3) {
+    float scale = GetScale();
+    // Jump back to exactly 1.0 if we are just a tiny bit zoomed in.
+    if (scale < kMinMagnifiedScaleThreshold) {
+      scale = kNonMagnifiedScale;
+      SetScale(scale, true);
+    }
   }
 }
 
