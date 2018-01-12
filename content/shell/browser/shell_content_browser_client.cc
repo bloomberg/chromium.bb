@@ -41,6 +41,7 @@
 #include "content/shell/grit/shell_resources.h"
 #include "media/mojo/features.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/test/echo/echo_service.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -189,7 +190,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
     if (url.scheme() == kProtocolList[i])
       return true;
   }
-  return false;
+  return net::URLRequest::IsHandledProtocol(url.scheme());
 }
 
 void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
