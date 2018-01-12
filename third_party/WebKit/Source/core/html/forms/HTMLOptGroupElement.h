@@ -45,6 +45,9 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   String GroupLabelText() const;
   HTMLDivElement& OptGroupLabelElement() const;
 
+  // Used for slot assignment.
+  static bool CanAssignToOptGroupSlot(const Node&);
+
  private:
   explicit HTMLOptGroupElement(Document&);
   ~HTMLOptGroupElement() override;

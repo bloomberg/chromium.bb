@@ -50,6 +50,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHRElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/forms/FormData.h"
 #include "core/html/forms/HTMLFormElement.h"
@@ -99,11 +100,17 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
 
 HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
   HTMLSelectElement* select = new HTMLSelectElement(document);
-  select->EnsureLegacyUserAgentShadowRootV0();
+  select->EnsureUserAgentShadowRootV1();
   return select;
 }
 
 HTMLSelectElement::~HTMLSelectElement() = default;
+
+// static
+bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
+  return node.HasTagName(optionTag) || node.HasTagName(optgroupTag) ||
+         node.HasTagName(hrTag);
+}
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, select_multiple, ("select-multiple"));
@@ -1820,9 +1827,8 @@ void HTMLSelectElement::Trace(blink::Visitor* visitor) {
 }
 
 void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  HTMLContentElement* content = HTMLContentElement::Create(GetDocument());
-  content->setAttribute(selectAttr, "option,optgroup,hr");
-  root.AppendChild(content);
+  root.AppendChild(
+      HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
 }
 
 HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
