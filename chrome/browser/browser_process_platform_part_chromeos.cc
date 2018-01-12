@@ -169,9 +169,9 @@ void BrowserProcessPlatformPart::StartTearDown() {
   profile_helper_.reset();
 }
 
-std::unique_ptr<policy::BrowserPolicyConnector>
+std::unique_ptr<policy::ChromeBrowserPolicyConnector>
 BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
-  return std::unique_ptr<policy::BrowserPolicyConnector>(
+  return std::unique_ptr<policy::ChromeBrowserPolicyConnector>(
       new policy::BrowserPolicyConnectorChromeOS());
 }
 

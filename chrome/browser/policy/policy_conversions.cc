@@ -6,10 +6,10 @@
 
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_namespace.h"
