@@ -4,6 +4,7 @@
 
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
+#include "base/trace_event/trace_event.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {
@@ -13,26 +14,31 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser()
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
     scheduler::RendererSchedulerImpl* scheduler)
-    : scheduler_(scheduler) {}
+    : scheduler_(scheduler),
+      trace_id_(WebScopedVirtualTimePauser::next_trace_id_++) {}
 
 WebScopedVirtualTimePauser::~WebScopedVirtualTimePauser() {
   if (paused_ && scheduler_)
-    scheduler_->DecrementVirtualTimePauseCount();
+    DecrementVirtualTimePauseCount();
 }
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
     WebScopedVirtualTimePauser&& other) {
+  virtual_time_when_paused_ = other.virtual_time_when_paused_;
   paused_ = other.paused_;
   scheduler_ = std::move(other.scheduler_);
   other.scheduler_ = nullptr;
+  trace_id_ = other.trace_id_;
 }
 
 WebScopedVirtualTimePauser& WebScopedVirtualTimePauser::operator=(
     WebScopedVirtualTimePauser&& other) {
   if (scheduler_ && paused_)
-    scheduler_->DecrementVirtualTimePauseCount();
+    DecrementVirtualTimePauseCount();
+  virtual_time_when_paused_ = other.virtual_time_when_paused_;
   paused_ = other.paused_;
   scheduler_ = std::move(other.scheduler_);
+  trace_id_ = other.trace_id_;
   other.scheduler_ = nullptr;
   return *this;
 }
@@ -43,10 +49,24 @@ void WebScopedVirtualTimePauser::PauseVirtualTime(bool paused) {
 
   paused_ = paused;
   if (paused_) {
-    scheduler_->IncrementVirtualTimePauseCount();
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
+        trace_id_);
+    virtual_time_when_paused_ = scheduler_->IncrementVirtualTimePauseCount();
   } else {
-    scheduler_->DecrementVirtualTimePauseCount();
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "renderer.scheduler", "WebScopedVirtualTimePauser::PauseVirtualTime",
+        trace_id_);
+    DecrementVirtualTimePauseCount();
   }
 }
+
+void WebScopedVirtualTimePauser::DecrementVirtualTimePauseCount() {
+  scheduler_->DecrementVirtualTimePauseCount();
+  scheduler_->MaybeAdvanceVirtualTime(virtual_time_when_paused_ +
+                                      base::TimeDelta::FromMilliseconds(10));
+}
+
+int WebScopedVirtualTimePauser::next_trace_id_ = 0;
 
 }  // namespace blink
