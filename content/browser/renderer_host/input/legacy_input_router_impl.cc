@@ -211,6 +211,10 @@ void LegacyInputRouterImpl::ProgressFling(base::TimeTicks current_time) {
   gesture_event_queue_.ProgressFling(current_time);
 }
 
+void LegacyInputRouterImpl::StopFling() {
+  gesture_event_queue_.StopFling();
+}
+
 bool LegacyInputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LegacyInputRouterImpl, message)

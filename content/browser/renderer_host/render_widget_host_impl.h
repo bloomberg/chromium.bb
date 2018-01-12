@@ -631,6 +631,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnImeCancelComposition() override;
 
   void ProgressFling(base::TimeTicks current_time);
+  void StopFling();
 
  protected:
   // ---------------------------------------------------------------------------

@@ -65,6 +65,9 @@ class CONTENT_EXPORT FlingController {
   // Used to progress an active fling on every begin frame.
   void ProgressFling(base::TimeTicks current_time);
 
+  // Used to halt an active fling progress whenever needed.
+  void StopFling();
+
   bool FilterGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
 
   void OnGestureEventAck(const GestureEventWithLatencyInfo& acked_event,

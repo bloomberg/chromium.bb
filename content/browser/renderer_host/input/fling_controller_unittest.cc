@@ -204,6 +204,22 @@ TEST_F(FlingControllerTest, EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
+TEST_F(FlingControllerTest, EarlyFlingCancelationOnFlingStop) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
+  SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
+  EXPECT_TRUE(FlingInProgress());
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
+  EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
+
+  fling_controller_->StopFling();
+  EXPECT_FALSE(FlingInProgress());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, last_sent_wheel_.momentum_phase);
+  EXPECT_EQ(0.f, last_sent_wheel_.delta_x);
+  EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
+}
+
 // TODO(sahel): Enable the test once boosting is enabled for touchpad fling.
 // https://crbug.com/249063
 TEST_F(FlingControllerTest, DISABLED_ControllerBoostsFling) {

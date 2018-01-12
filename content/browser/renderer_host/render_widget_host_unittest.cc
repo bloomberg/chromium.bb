@@ -126,6 +126,7 @@ class MockInputRouter : public InputRouter {
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
   void ProgressFling(base::TimeTicks time) override {}
+  void StopFling() override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {
