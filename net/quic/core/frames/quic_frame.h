@@ -89,6 +89,10 @@ GetControlFrameId(const QuicFrame& frame);
 QUIC_EXPORT_PRIVATE void SetControlFrameId(QuicControlFrameId control_frame_id,
                                            QuicFrame* frame);
 
+// Returns a copy of |frame|.
+QUIC_EXPORT_PRIVATE QuicFrame
+CopyRetransmittableControlFrame(const QuicFrame& frame);
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_FRAMES_QUIC_FRAME_H_

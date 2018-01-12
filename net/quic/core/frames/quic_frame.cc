@@ -153,6 +153,32 @@ void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
   }
 }
 
+QuicFrame CopyRetransmittableControlFrame(const QuicFrame& frame) {
+  QuicFrame copy;
+  switch (frame.type) {
+    case RST_STREAM_FRAME:
+      copy = QuicFrame(new QuicRstStreamFrame(*frame.rst_stream_frame));
+      break;
+    case GOAWAY_FRAME:
+      copy = QuicFrame(new QuicGoAwayFrame(*frame.goaway_frame));
+      break;
+    case WINDOW_UPDATE_FRAME:
+      copy = QuicFrame(new QuicWindowUpdateFrame(*frame.window_update_frame));
+      break;
+    case BLOCKED_FRAME:
+      copy = QuicFrame(new QuicBlockedFrame(*frame.blocked_frame));
+      break;
+    case PING_FRAME:
+      copy = QuicFrame(QuicPingFrame(frame.ping_frame.control_frame_id));
+      break;
+    default:
+      QUIC_BUG << "Try to copy a non-retransmittable control frame: " << frame;
+      copy = QuicFrame(QuicPingFrame(kInvalidControlFrameId));
+      break;
+  }
+  return copy;
+}
+
 std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
   switch (frame.type) {
     case PADDING_FRAME: {

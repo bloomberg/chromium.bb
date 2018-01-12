@@ -47,6 +47,7 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       return;
     }
   }
+  const size_t previous_readable_bytes = buffered_frames_.ReadableBytes();
   size_t bytes_written;
   string error_details;
   QuicErrorCode result = buffered_frames_.OnStreamData(
@@ -73,7 +74,12 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     return;
   }
 
-  if (byte_offset == buffered_frames_.BytesConsumed()) {
+  bool can_continue_read = byte_offset == buffered_frames_.BytesConsumed();
+  if (buffered_frames_.allow_overlapping_data()) {
+    can_continue_read =
+        previous_readable_bytes == 0 && buffered_frames_.ReadableBytes() > 0;
+  }
+  if (can_continue_read) {
     if (ignore_read_data_) {
       FlushBufferedFrames();
     } else {

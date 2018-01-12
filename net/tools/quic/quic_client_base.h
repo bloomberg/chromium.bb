@@ -214,6 +214,8 @@ class QuicClientBase {
 
   QuicIpAddress bind_to_address() const { return bind_to_address_; }
 
+  void set_local_port(int local_port) { local_port_ = local_port; }
+
   int local_port() const { return local_port_; }
 
   const QuicSocketAddress& server_address() const { return server_address_; }
