@@ -150,19 +150,34 @@ TEST_F(PreviewsContentUtilTest,
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
-  // Main frame preview cases:
+  // Simple cases:
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
             previews::GetMainFramePreviewsType(content::SERVER_LITE_PAGE_ON));
+  EXPECT_EQ(previews::PreviewsType::LOFI,
+            previews::GetMainFramePreviewsType(content::SERVER_LOFI_ON));
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
             previews::GetMainFramePreviewsType(content::NOSCRIPT_ON));
+  EXPECT_EQ(previews::PreviewsType::LOFI,
+            previews::GetMainFramePreviewsType(content::CLIENT_LOFI_ON));
 
   // NONE cases:
   EXPECT_EQ(previews::PreviewsType::NONE,
             previews::GetMainFramePreviewsType(content::PREVIEWS_UNSPECIFIED));
   EXPECT_EQ(previews::PreviewsType::NONE,
-            previews::GetMainFramePreviewsType(content::CLIENT_LOFI_ON));
-  EXPECT_EQ(previews::PreviewsType::NONE,
-            previews::GetMainFramePreviewsType(content::SERVER_LOFI_ON));
+            previews::GetMainFramePreviewsType(content::PREVIEWS_NO_TRANSFORM));
+
+  // Precedence cases:
+  EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
+            previews::GetMainFramePreviewsType(
+                content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
+                content::NOSCRIPT_ON | content::CLIENT_LOFI_ON));
+  EXPECT_EQ(previews::PreviewsType::LOFI,
+            previews::GetMainFramePreviewsType(content::SERVER_LOFI_ON |
+                                               content::NOSCRIPT_ON |
+                                               content::CLIENT_LOFI_ON));
+  EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
+            previews::GetMainFramePreviewsType(content::NOSCRIPT_ON |
+                                               content::CLIENT_LOFI_ON));
 }
 
 }  // namespace

@@ -142,4 +142,13 @@ TEST_F(ChromeResourceDispatcherHostDelegateTest,
       content::NOSCRIPT_ON,
       ChromeResourceDispatcherHostDelegateTest::DetermineCommittedPreviews(
           fake_request.get(), enabled_previews));
+
+  // Now ensure that the no transform directive honored for NoScript.
+  previews::PreviewsUserData::Create(fake_request.get(), 1);
+  previews::PreviewsUserData::GetData(*fake_request.get())
+      ->SetCacheControlNoTransformDirective();
+  EXPECT_EQ(
+      content::PREVIEWS_OFF,
+      ChromeResourceDispatcherHostDelegateTest::DetermineCommittedPreviews(
+          fake_request.get(), enabled_previews));
 }

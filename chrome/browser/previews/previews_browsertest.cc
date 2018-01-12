@@ -34,6 +34,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     https_url_ = https_server_.GetURL("/noscript_test.html");
     EXPECT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
+    https_no_transform_url_ =
+        https_server_.GetURL("/noscript_test_with_no_transform_header.html");
+    EXPECT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
+
     // Set up http server with resource monitor and redirect handler.
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
     http_server_.RegisterRequestMonitor(base::Bind(
@@ -57,6 +61,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   }
 
   const GURL& https_url() const { return https_url_; }
+  const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
   bool noscript_css_requested() const { return noscript_css_requested_; }
@@ -88,6 +93,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer http_server_;
   GURL https_url_;
+  GURL https_no_transform_url_;
   GURL http_url_;
   GURL redirect_url_;
   bool noscript_css_requested_;
@@ -161,6 +167,19 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
   EXPECT_FALSE(noscript_css_requested());
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+                       NoScriptPreviewsEnabledButNoTransformDirective) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
+
+  // Verify loaded js resource but not css triggered by noscript tag.
+  EXPECT_TRUE(noscript_js_requested());
+  EXPECT_FALSE(noscript_css_requested());
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
