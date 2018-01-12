@@ -11,14 +11,6 @@ config("private_config") {
   visibility = [ ":motion_animator_objc" ]
 }
 
-# TODO(crbug.com/796159): Remove when the issue is fixed in a Motion Animator
-# release. The bug is fixed already on their trunk:
-# https://github.com/material-motion/motion-animator-objc/pull/103
-config("workaround_config") {
-  include_dirs = [ "../motion_interchange_objc/src/src" ]
-  visibility = [ ":motion_animator_objc" ]
-}
-
 source_set("motion_animator_objc") {
   sources = [
     "src/src/CATransaction+MotionAnimator.h",
@@ -61,7 +53,6 @@ source_set("motion_animator_objc") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":private_config",
-    ":workaround_config",
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]
