@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -24,14 +25,10 @@
 // static
 AuthenticationService* AuthenticationServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<AuthenticationService*>(
+  AuthenticationService* service = static_cast<AuthenticationService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
-}
-
-AuthenticationService* AuthenticationServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
-  return static_cast<AuthenticationService*>(
-      GetInstance()->GetServiceForBrowserState(browser_state, false));
+  CHECK(!service || service->initialized());
+  return service;
 }
 
 // static
@@ -39,6 +36,16 @@ AuthenticationServiceFactory* AuthenticationServiceFactory::GetInstance() {
   return base::Singleton<
       AuthenticationServiceFactory,
       base::LeakySingletonTraits<AuthenticationServiceFactory>>::get();
+}
+
+// static
+void AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+    ios::ChromeBrowserState* browser_state,
+    std::unique_ptr<AuthenticationServiceDelegate> delegate) {
+  AuthenticationService* service = static_cast<AuthenticationService*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, true));
+  CHECK(service && !service->initialized());
+  service->Initialize(std::move(delegate));
 }
 
 AuthenticationServiceFactory::AuthenticationServiceFactory()
@@ -59,18 +66,20 @@ AuthenticationServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  std::unique_ptr<AuthenticationService> service(new AuthenticationService(
-      browser_state, browser_state->GetPrefs(),
+  return std::make_unique<AuthenticationService>(
+      browser_state->GetPrefs(),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state)));
-  service->Initialize();
-  return service;
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
 void AuthenticationServiceFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   AuthenticationService::RegisterPrefs(registry);
+}
+
+bool AuthenticationServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }

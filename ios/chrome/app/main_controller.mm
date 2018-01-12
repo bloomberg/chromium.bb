@@ -98,7 +98,9 @@
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/browser_state_data_remover.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -235,6 +237,36 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 // The delay, in seconds, for cleaning external files.
 const int kExternalFilesCleanupDelaySeconds = 60;
+
+// Delegate for the AuthenticationService.
+class MainControllerAuthenticationServiceDelegate
+    : public AuthenticationServiceDelegate {
+ public:
+  explicit MainControllerAuthenticationServiceDelegate(
+      ios::ChromeBrowserState* browser_state);
+  ~MainControllerAuthenticationServiceDelegate() override;
+
+  // AuthenticationServiceDelegate implementation.
+  void ClearBrowsingData(ProceduralBlock completion) override;
+
+ private:
+  ios::ChromeBrowserState* browser_state_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MainControllerAuthenticationServiceDelegate);
+};
+
+MainControllerAuthenticationServiceDelegate::
+    MainControllerAuthenticationServiceDelegate(
+        ios::ChromeBrowserState* browser_state)
+    : browser_state_(browser_state) {}
+
+MainControllerAuthenticationServiceDelegate::
+    ~MainControllerAuthenticationServiceDelegate() = default;
+
+void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
+    ProceduralBlock completion) {
+  BrowserStateDataRemover::ClearData(browser_state_, completion);
+}
 
 }  // namespace
 
@@ -675,6 +707,16 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                        tabModelObserver:self
                              applicationCommandEndpoint:self];
 
+  // Force an obvious initialization of the AuthenticationService. This must
+  // be done before creation of the UI to ensure the service is initialised
+  // before use (it is a security issue, so accessing the service CHECK if
+  // this is not the case).
+  DCHECK(_mainBrowserState);
+  AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
+      _mainBrowserState,
+      std::make_unique<MainControllerAuthenticationServiceDelegate>(
+          _mainBrowserState));
+
   // Send "Chrome Opened" event to the feature_engagement::Tracker on cold
   // start.
   feature_engagement::TrackerFactory::GetForBrowserState(chromeBrowserState)
@@ -1009,22 +1051,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kAuthenticationServiceNotification
                   block:^{
-                    DCHECK(_mainBrowserState);
-                    // Force an obvious initialization of the
-                    // AuthenticationService.
-                    // This is done for clarity purpose only, and should be
-                    // removed
-                    // alongside the delayed initialization. See
-                    // crbug.com/464306.
-                    AuthenticationServiceFactory::GetForBrowserState(
-                        _mainBrowserState);
-                    if (![self currentBrowserState]) {
-                      // Active browser state should have been set before
-                      // scheduling
-                      // any authentication service notification.
-                      NOTREACHED();
-                      return;
-                    }
+                    // Active browser state should have been set before
+                    // scheduling any authentication service notification.
+                    DCHECK([self currentBrowserState]);
                     if ([SignedInAccountsViewController
                             shouldBePresentedForBrowserState:
                                 [self currentBrowserState]]) {

@@ -39,8 +39,7 @@ class AuthenticationServiceFake : public AuthenticationService {
   NSString* GetAuthenticatedUserEmail() override;
 
  private:
-  AuthenticationServiceFake(ios::ChromeBrowserState* browser_state,
-                            PrefService* pref_service,
+  AuthenticationServiceFake(PrefService* pref_service,
                             ProfileOAuth2TokenService* token_service,
                             SyncSetupService* sync_setup_service,
                             AccountTrackerService* account_tracker,
