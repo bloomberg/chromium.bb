@@ -17,7 +17,8 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
       max_task_starvation_count_(0),
       can_advance_virtual_time_(true),
       observer_(nullptr),
-      helper_(helper) {
+      helper_(helper),
+      initial_time_(initial_time) {
   helper_->AddTaskObserver(this);
 }
 
@@ -31,11 +32,12 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   if (!can_advance_virtual_time_ || !NextScheduledRunTime(&run_time))
     return base::nullopt;
 
-  task_starvation_count_ = 0;
-  AdvanceTo(run_time);
-  if (observer_)
-    observer_->OnVirtualTimeAdvanced();
-  return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+  if (MaybeAdvanceVirtualTime(run_time)) {
+    task_starvation_count_ = 0;
+    return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+  }
+
+  return base::nullopt;
 }
 
 void AutoAdvancingVirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
@@ -68,6 +70,31 @@ void AutoAdvancingVirtualTimeDomain::SetMaxVirtualTimeTaskStarvationCount(
     task_starvation_count_ = 0;
 }
 
+void AutoAdvancingVirtualTimeDomain::SetVirtualTimeFence(
+    base::TimeTicks virtual_time_fence) {
+  DCHECK_GE(virtual_time_fence, virtual_time_fence);
+  virtual_time_fence_ = virtual_time_fence;
+}
+
+bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceVirtualTime(
+    base::TimeTicks new_virtual_time) {
+  // If set, don't advance past the end of |virtual_time_fence_|.
+  if (!virtual_time_fence_.is_null() &&
+      new_virtual_time > virtual_time_fence_) {
+    new_virtual_time = virtual_time_fence_;
+  }
+
+  if (new_virtual_time <= Now())
+    return false;
+
+  AdvanceTo(new_virtual_time);
+
+  if (observer_)
+    observer_->OnVirtualTimeAdvanced();
+
+  return true;
+}
+
 const char* AutoAdvancingVirtualTimeDomain::GetName() const {
   return "AutoAdvancingVirtualTimeDomain";
 }
@@ -85,10 +112,8 @@ void AutoAdvancingVirtualTimeDomain::DidProcessTask(
   // Delayed tasks are being excessively starved, so allow virtual time to
   // advance.
   base::TimeTicks run_time;
-  if (NextScheduledRunTime(&run_time)) {
-    AdvanceTo(run_time);
+  if (NextScheduledRunTime(&run_time) && MaybeAdvanceVirtualTime(run_time))
     task_starvation_count_ = 0;
-  }
 }
 
 AutoAdvancingVirtualTimeDomain::Observer::Observer() = default;

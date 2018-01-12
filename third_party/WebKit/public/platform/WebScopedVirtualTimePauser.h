@@ -6,6 +6,7 @@
 #define WebScopedVirtualTimePauser_h
 
 #include "WebCommon.h"
+#include "base/time/time.h"
 
 namespace blink {
 namespace scheduler {
@@ -36,8 +37,14 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   void PauseVirtualTime(bool paused);
 
  private:
+  void DecrementVirtualTimePauseCount();
+
+  base::TimeTicks virtual_time_when_paused_;
   bool paused_ = false;
   scheduler::RendererSchedulerImpl* scheduler_;  // NOT OWNED
+  int trace_id_;
+
+  static int next_trace_id_;
 };
 
 }  // namespace blink

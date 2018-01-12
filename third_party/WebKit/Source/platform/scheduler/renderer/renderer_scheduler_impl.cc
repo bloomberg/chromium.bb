@@ -1768,6 +1768,10 @@ base::TimeTicks RendererSchedulerImpl::EnableVirtualTime() {
   return main_thread_only().initial_virtual_time;
 }
 
+bool RendererSchedulerImpl::IsVirualTimeEnabled() const {
+  return main_thread_only().use_virtual_time;
+}
+
 void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
   if (!main_thread_only().use_virtual_time)
     return;
@@ -1834,15 +1838,25 @@ bool RendererSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return !main_thread_only().virtual_time_stopped;
 }
 
-void RendererSchedulerImpl::IncrementVirtualTimePauseCount() {
+base::TimeTicks RendererSchedulerImpl::IncrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count++;
   ApplyVirtualTimePolicy();
+
+  if (virtual_time_domain_)
+    return virtual_time_domain_->Now();
+  return tick_clock()->NowTicks();
 }
 
 void RendererSchedulerImpl::DecrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count--;
   DCHECK_GE(main_thread_only().virtual_time_pause_count, 0);
   ApplyVirtualTimePolicy();
+}
+
+void RendererSchedulerImpl::MaybeAdvanceVirtualTime(
+    base::TimeTicks new_virtual_time) {
+  if (virtual_time_domain_)
+    virtual_time_domain_->MaybeAdvanceVirtualTime(new_virtual_time);
 }
 
 void RendererSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
@@ -1874,8 +1888,6 @@ void RendererSchedulerImpl::RemoveVirtualTimeObserver(
 }
 
 void RendererSchedulerImpl::OnVirtualTimeAdvanced() {
-  DCHECK(!main_thread_only().virtual_time_stopped);
-
   for (auto& observer : main_thread_only().virtual_time_observers) {
     observer.OnVirtualTimeAdvanced(virtual_time_domain_->Now() -
                                    main_thread_only().initial_virtual_time);
