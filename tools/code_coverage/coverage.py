@@ -56,7 +56,6 @@ import argparse
 import json
 import os
 import subprocess
-import threading
 import urllib2
 
 sys.path.append(
@@ -471,6 +470,9 @@ def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
   profdata_file_path = _CreateCoverageProfileDataFromProfRawData(
       profraw_file_paths)
 
+  for profraw_file_path in profraw_file_paths:
+    os.remove(profraw_file_path)
+
   return profdata_file_path
 
 
@@ -522,14 +524,9 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
     if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
       os.remove(os.path.join(OUTPUT_DIR, file_or_dir))
 
-  # Run different test targets in parallel to generate profraw data files.
-  threads = []
+  # Run all test targets to generate profraw data files.
   for target, command in zip(targets, commands):
-    thread = threading.Thread(target=_ExecuteCommand, args=(target, command))
-    thread.start()
-    threads.append(thread)
-  for thread in threads:
-    thread.join()
+    _ExecuteCommand(target, command)
 
   profraw_file_paths = []
   for file_or_dir in os.listdir(OUTPUT_DIR):
@@ -555,14 +552,19 @@ def _ExecuteCommand(target, command):
     target: A target built with coverage instrumentation.
     command: A command used to run the target.
   """
-  if _IsTargetGTestTarget(target):
-    # This test argument is required and only required for gtest unit test
-    # targets because by default, they run tests in parallel, and that won't
-    # generated code coverage data correctly.
-    command += ' --test-launcher-jobs=1'
-
+  # Per Clang "Source-based Code Coverage" doc:
+  # "%Nm" expands out to the instrumented binary's signature. When this pattern
+  # is specified, the runtime creates a pool of N raw profiles which are used
+  # for on-line profile merging. The runtime takes care of selecting a raw
+  # profile from the pool, locking it, and updating it before the program exits.
+  # If N is not specified (i.e the pattern is "%m"), it's assumed that N = 1.
+  # N must be between 1 and 9. The merge pool specifier can only occur once per
+  # filename pattern.
+  #
+  # 4 is chosen because it creates some level of parallelism, but it's not too
+  # big to consume too much computing resource or disk space.
   expected_profraw_file_name = os.extsep.join(
-      [target, '%p', PROFRAW_FILE_EXTENSION])
+      [target, '%4m', PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(OUTPUT_DIR,
                                             expected_profraw_file_name)
   output_file_name = os.extsep.join([target + '_output', 'txt'])
@@ -663,27 +665,6 @@ def _GetBinaryPath(command):
     A relative path to the binary.
   """
   return command.split()[0]
-
-
-def _IsTargetGTestTarget(target):
-  """Returns True if the target is a gtest target.
-
-  Args:
-    target: A target built with coverage instrumentation.
-
-  Returns:
-    A boolean value indicates whether the target is a gtest target.
-  """
-  global GTEST_TARGET_NAMES
-  if GTEST_TARGET_NAMES is None:
-    output = subprocess.check_output(['gn', 'refs', BUILD_DIR, 'testing/gtest'])
-    list_of_gtest_targets = [
-        gtest_target for gtest_target in output.splitlines() if gtest_target
-    ]
-    GTEST_TARGET_NAMES = set(
-        [gtest_target.split(':')[1] for gtest_target in list_of_gtest_targets])
-
-  return target in GTEST_TARGET_NAMES
 
 
 def _VerifyTargetExecutablesAreInBuildDirectory(commands):
