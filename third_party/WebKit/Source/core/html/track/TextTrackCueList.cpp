@@ -59,9 +59,6 @@ void TextTrackCueList::CollectActiveCues(TextTrackCueList& active_cues) const {
 }
 
 bool TextTrackCueList::Add(TextTrackCue* cue) {
-  DCHECK_GE(cue->startTime(), 0);
-  DCHECK_GE(cue->endTime(), 0);
-
   // Maintain text track cue order:
   // https://html.spec.whatwg.org/#text-track-cue-order
   size_t index = FindInsertionIndex(cue);
