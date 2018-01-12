@@ -61,6 +61,7 @@ TEST_F(SpatialNavigationTest, FindContainerWhenEnclosingContainerIsIframe) {
 
 TEST_F(SpatialNavigationTest,
        FindContainerWhenEnclosingContainerIsScrollableOverflowBox) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"

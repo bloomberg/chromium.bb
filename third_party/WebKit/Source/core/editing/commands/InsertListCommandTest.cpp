@@ -15,6 +15,7 @@ namespace blink {
 class InsertListCommandTest : public EditingTestBase {};
 
 TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // Needs to be editable to use InsertListCommand.
   GetDocument().setDesignMode("on");
   // Set up the condition:

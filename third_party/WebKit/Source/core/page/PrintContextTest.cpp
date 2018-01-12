@@ -165,6 +165,7 @@ TEST_F(PrintContextTest, LinkTarget) {
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   MockPageContextCanvas canvas;
   SetBodyInnerHTML("<div style='padding-top: 50px'>" +
                    InlineHtmlForLink("http://www.google.com",
@@ -184,6 +185,7 @@ TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
 }
 
 TEST_F(PrintContextTest, LinkTargetContainingABlock) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       "<div style='padding-top: 50px'>" +

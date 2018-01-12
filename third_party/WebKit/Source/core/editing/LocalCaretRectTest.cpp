@@ -189,6 +189,7 @@ TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
 TEST_F(LocalCaretRectTest, Images) {
   // This test only records the current behavior. Future changes are allowed.
 
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   LoadAhem();
   SetBodyContent(
       "<div id=div style='font: 10px/10px Ahem; width: 30px'>"

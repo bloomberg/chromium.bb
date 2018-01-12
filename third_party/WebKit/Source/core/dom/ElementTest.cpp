@@ -250,6 +250,7 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
 
 TEST_F(ElementTest, GetElementsByClassNameCrash) {
   // Test for a crash in NodeListsNodeData::AddCache().
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   ASSERT_TRUE(GetDocument().InQuirksMode());
   GetDocument().body()->getElementsByClassName("ABC DEF");
   GetDocument().body()->getElementsByClassName("ABC DEF");
