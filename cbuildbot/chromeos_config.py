@@ -2351,7 +2351,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'glados',
-      'guado',
       'guado_moblab',
       'hana',
       'kahlee',
@@ -2418,6 +2417,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cobblepot', # contact:jkoleszar@
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
+      'guado', # contact:egemih@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
@@ -2471,6 +2471,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_separate_symbols = frozenset([
       'amd64-generic',
+  ])
+
+  _paladin_bluestreak_hwtest_boards = frozenset([
+      'guado',
   ])
 
   ### Master paladin (CQ builder).
@@ -2557,6 +2561,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
                   pool=constants.HWTEST_PALADIN_POOL)
           ],
           hw_tests_override=None)
+    if board in _paladin_bluestreak_hwtest_boards:
+      customizations.update(
+          hw_tests=hw_test_list.BluestreakPoolPreCQ(),
+          hw_tests_override=hw_test_list.BluestreakPoolPreCQ())
     if board not in _paladin_important_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
