@@ -38,7 +38,6 @@ static_library("suggestions") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/pref_registry",
-    "//components/signin/core/browser",
     "//components/sync",
     "//components/variations",
     "//components/variations/net",
@@ -66,11 +65,14 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/image_fetcher/core",
     "//components/leveldb_proto:test_support",
+
+    # TODO(blundell): Remove the below dep.
     "//components/signin/core/browser:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",
     "//net:test_support",
+    "//services/identity/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -19,18 +19,16 @@
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,8 +56,7 @@ SuggestionsServiceFactory::SuggestionsServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "SuggestionsService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::SigninManagerFactory::GetInstance());
-  DependsOn(OAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
 }
 
@@ -71,10 +68,8 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state);
-  ProfileOAuth2TokenService* token_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
   browser_sync::ProfileSyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   base::FilePath database_dir(
@@ -100,10 +95,9 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
       new ImageManager(std::move(image_fetcher), std::move(db), database_dir));
 
   return std::make_unique<SuggestionsServiceImpl>(
-      signin_manager, token_service, sync_service,
-      browser_state->GetRequestContext(), std::move(suggestions_store),
-      std::move(thumbnail_manager), std::move(blacklist_store),
-      std::make_unique<base::DefaultTickClock>());
+      identity_manager, sync_service, browser_state->GetRequestContext(),
+      std::move(suggestions_store), std::move(thumbnail_manager),
+      std::move(blacklist_store), std::make_unique<base::DefaultTickClock>());
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(
