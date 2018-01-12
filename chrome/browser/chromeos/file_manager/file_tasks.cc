@@ -140,6 +140,24 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
   return false;
 }
 
+// Gets the profile in which a file task owned by |extension| should be
+// launched - for example, it makes sure that a file task is not handled in OTR
+// profile for platform apps (outside a guest session).
+Profile* GetProfileForExtensionTask(Profile* profile,
+                                    const extensions::Extension& extension) {
+  // In guest profile, all available task handlers are in OTR profile.
+  if (profile->IsGuestSession()) {
+    DCHECK(profile->IsOffTheRecord());
+    return profile;
+  }
+
+  // Outside guest sessions, if the task is handled by a platform app, launch
+  // the handler in the original profile.
+  if (extension.is_platform_app())
+    return profile->GetOriginalProfile();
+  return profile;
+}
+
 void ExecuteByArcAfterMimeTypesCollected(
     Profile* profile,
     const TaskDescriptor& task,
@@ -332,20 +350,19 @@ bool ExecuteFileTask(Profile* profile,
   if (!extension)
     return false;
 
+  Profile* extension_task_profile =
+      GetProfileForExtensionTask(profile, *extension);
+
   // Execute the task.
   if (task.task_type == TASK_TYPE_FILE_BROWSER_HANDLER) {
     return file_browser_handlers::ExecuteFileBrowserHandler(
-        profile,
-        extension,
-        task.action_id,
-        file_urls,
-        done);
+        extension_task_profile, extension, task.action_id, file_urls, done);
   } else if (task.task_type == TASK_TYPE_FILE_HANDLER) {
     std::vector<base::FilePath> paths;
     for (size_t i = 0; i != file_urls.size(); ++i)
       paths.push_back(file_urls[i].path());
-    apps::LaunchPlatformAppWithFileHandler(
-        profile, extension, task.action_id, paths);
+    apps::LaunchPlatformAppWithFileHandler(extension_task_profile, extension,
+                                           task.action_id, paths);
     if (!done.is_null())
       done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
     return true;
