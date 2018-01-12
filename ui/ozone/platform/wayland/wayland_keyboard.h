@@ -58,6 +58,8 @@ class WaylandKeyboard {
                          int32_t rate,
                          int32_t delay);
 
+  void UpdateModifier(int modifier_flag, bool down);
+
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
   EventDispatchCallback callback_;

@@ -65,6 +65,9 @@ class EVENTS_EXPORT EventModifiers {
   // Return the mask for the specified modifier.
   static int GetEventFlagFromModifier(unsigned int modifier);
 
+  // Return the modifier for the specified mask.
+  static int GetModifierFromEventFlag(int flag);
+
  private:
   // Count of keys pressed for each modifier.
   int modifiers_down_[MODIFIER_NUM_MODIFIERS];
