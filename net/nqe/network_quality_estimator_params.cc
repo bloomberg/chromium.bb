@@ -588,12 +588,6 @@ int64_t NetworkQualityEstimatorParams::GetThroughputMinTransferSizeBits()
          1000;
 }
 
-// static
-const char* NetworkQualityEstimatorParams::GetNameForConnectionType(
-    NetworkChangeNotifier::ConnectionType connection_type) {
-  return GetNameForConnectionTypeInternal(connection_type);
-}
-
 const nqe::internal::NetworkQuality&
 NetworkQualityEstimatorParams::DefaultObservation(
     NetworkChangeNotifier::ConnectionType type) const {

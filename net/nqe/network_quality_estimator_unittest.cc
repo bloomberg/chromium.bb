@@ -286,14 +286,6 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
                                       false, 3);
   histogram_tester.ExpectTotalCount("NQE.RatioMedianRTT.WiFi", 0);
 
-  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile0.Unknown", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile10.Unknown", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile50.Unknown", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile90.Unknown", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile100.Unknown", 1);
-
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile50.Unknown", 0);
-
   EXPECT_FALSE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_FALSE(
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
@@ -2392,13 +2384,6 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile50.2G", 1);
-  histogram_tester.ExpectBucketCount("NQE.TransportRTT.Percentile50.2G",
-                                     rtt.InMilliseconds(), 1);
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile10.2G", 1);
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile50.2G", 1);
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile90.2G", 1);
-  histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile100.2G", 1);
 
   // Verify that metrics are logged correctly on main-frame requests.
   histogram_tester.ExpectTotalCount("NQE.MainFrame.TransportRTT.Percentile50",

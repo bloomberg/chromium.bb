@@ -421,9 +421,6 @@ class NET_EXPORT NetworkQualityEstimator
   // quality is available, OnUpdatedEstimateAvailable() is called.
   void MaybeQueryExternalEstimateProvider() const;
 
-  // Records UMA when there is a change in connection type.
-  void RecordMetricsOnConnectionTypeChanged() const;
-
   // Records UMA on whether the NetworkID was available or not. Called right
   // after a network change event.
   void RecordNetworkIDAvailability() const;

@@ -47,10 +47,6 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   // a default value is used.
   EffectiveConnectionTypeAlgorithm GetEffectiveConnectionTypeAlgorithm() const;
 
-  // Returns a descriptive name corresponding to |connection_type|.
-  static const char* GetNameForConnectionType(
-      NetworkChangeNotifier::ConnectionType connection_type);
-
   // Returns the default observation for connection |type|. The default
   // observations are different for different connection types (e.g., 2G, 3G,
   // 4G, WiFi). The default observations may be used to determine the network
