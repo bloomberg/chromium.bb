@@ -25,9 +25,10 @@ class SiteInstance;
 class StoragePartitionImpl;
 
 // Interacts with the UI thread to keep RenderProcessHosts alive while the
-// ServiceWorker system is using them. It also tracks candidate processes
-// for each pattern. Each instance of ServiceWorkerProcessManager is destroyed
-// on the UI thread shortly after its ServiceWorkerContextWrapper is destroyed.
+// ServiceWorker system is using them. There is one process manager per
+// ServiceWorkerContextWrapper. Each instance of ServiceWorkerProcessManager is
+// destroyed on the UI thread shortly after its ServiceWorkerContextWrapper is
+// destroyed.
 class CONTENT_EXPORT ServiceWorkerProcessManager {
  public:
   // The return value for AllocateWorkerProcess().
@@ -57,20 +58,16 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // Returns true if Shutdown() has been called. May be called by any thread.
   bool IsShutdown();
 
-  // Returns a reference to a running process suitable for starting the service
-  // worker described by |emdedded_worker_id|, |pattern|, and |script_url|.
+  // Returns a reference to a renderer process suitable for starting the service
+  // worker described by |emdedded_worker_id|, |pattern|, and |script_url|. The
+  // process will be kept alive until ReleaseWorkerProcess() is called.
   //
-  // AllocateWorkerProcess() tries to return a process that already exists in
-  // this ServiceWorkerProcessManager's map of processes, populated via
-  // AddProcessReferenceToPattern().  If one is not found, or
-  // |can_use_existing_process| is false, it will instead use SiteInstance to
-  // get a process, possibly creating a new one.
+  // An existing process is used when possible. If |can_use_existing_process| is
+  // false, or a suitable existing process is not found, a new process may be
+  // created.
   //
   // If SERVICE_WORKER_OK is returned, |out_info| contains information about the
   // process.
-  //
-  // Allocation can fail with SERVICE_WORKER_PROCESS_NOT_FOUND if
-  // RenderProcessHost::Init fails.
   //
   // Called on the UI thread.
   ServiceWorkerStatusCode AllocateWorkerProcess(int embedded_worker_id,
@@ -80,7 +77,7 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
                                                 AllocatedProcessInfo* out_info);
 
   // Drops a reference to a process that was running a Service Worker, and its
-  // SiteInstance.  This must match a call to AllocateWorkerProcess.
+  // SiteInstance. This must match a call to AllocateWorkerProcess().
   //
   // Called on the UI thread.
   void ReleaseWorkerProcess(int embedded_worker_id);
@@ -99,14 +96,6 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     new_process_id_for_test_ = process_id;
   }
 
-  // Adds/removes process reference for the |pattern|, the process with highest
-  // references count will be chosen to start a worker.
-  void AddProcessReferenceToPattern(const GURL& pattern, int process_id);
-  void RemoveProcessReferenceFromPattern(const GURL& pattern, int process_id);
-
-  // Returns true if the |pattern| has at least one process to run.
-  bool PatternHasProcessToRun(const GURL& pattern) const;
-
   // AsWeakPtr() can be called from any thread, but the WeakPtr must be
   // dereferenced on the UI thread only.
   base::WeakPtr<ServiceWorkerProcessManager> AsWeakPtr() { return weak_this_; }
@@ -116,50 +105,7 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
-                           FindAvailableProcess);
-  FRIEND_TEST_ALL_PREFIXES(
-      ServiceWorkerProcessManagerTest,
-      AllocateWorkerProcess_FindAvailableProcess_NonPlzNavigate);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
-                           AllocateWorkerProcess_WithProcessReuse);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
-                           AllocateWorkerProcess_WithoutProcessReuse);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
-                           AllocateWorkerProcess_InShutdown);
-
-  // Information about the process for an EmbeddedWorkerInstance.
-  struct ProcessInfo {
-    explicit ProcessInfo(const scoped_refptr<SiteInstance>& site_instance);
-    explicit ProcessInfo(int process_id);
-    ProcessInfo(const ProcessInfo& other);
-    ~ProcessInfo();
-
-    // Stores the SiteInstance the Worker lives inside. This needs to outlive
-    // the instance's use of its RPH to uphold assumptions in the
-    // ContentBrowserClient interface.
-    scoped_refptr<SiteInstance> site_instance;
-
-    // In case the process was allocated without using a SiteInstance, we need
-    // to store a process ID to decrement a worker reference on shutdown.
-    // TODO(jyasskin): Implement http://crbug.com/372045 or thread a frame_id in
-    // so all processes can be allocated with a SiteInstance.
-    int process_id;
-  };
-
-  // Maps the process ID to its reference count.
-  typedef std::map<int, int> ProcessRefMap;
-
-  // Maps registration scope pattern to ProcessRefMap.
-  typedef std::map<const GURL, ProcessRefMap> PatternProcessRefMap;
-
-  // Returns a process vector sorted by the reference count for the |pattern|.
-  std::vector<int> SortProcessesForPattern(const GURL& pattern) const;
-
-  // Returns the id of an available process for this pattern, or
-  // ChildProcessHost::kInvalidUniqueID if there is none.
-  int FindAvailableProcess(const GURL& pattern);
+  friend class ServiceWorkerProcessManagerTest;
 
   // Guarded by |browser_context_lock_|.
   // Written only on the UI thread, so the UI thread doesn't need to acquire the
@@ -175,23 +121,17 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // May be null during initialization and in unit tests.
   StoragePartitionImpl* storage_partition_;
 
-  // Maps the ID of a running EmbeddedWorkerInstance to information about the
-  // process it's running inside. Since the Instances themselves live on the IO
-  // thread, this can be slightly out of date:
-  //  * instance_info_ is populated while an Instance is STARTING and before
-  //    it's RUNNING.
-  //  * instance_info_ is depopulated in a message sent as the Instance becomes
-  //    STOPPED.
-  std::map<int, ProcessInfo> instance_info_;
+  // Maps the ID of a running EmbeddedWorkerInstance to the SiteInstance whose
+  // renderer process it's running inside. Since the embedded workers themselves
+  // live on the IO thread, this can be slightly out of date:
+  //  * The map is populated while a worker is STARTING and before it's RUNNING.
+  //  * The map is depopulated in a message sent as the worker becomes STOPPED.
+  std::map<int, scoped_refptr<SiteInstance>> worker_process_map_;
 
   // In unit tests, this will be returned as the process for all
   // EmbeddedWorkerInstances.
   int process_id_for_test_;
   int new_process_id_for_test_;
-
-  // Candidate processes info for each pattern, should be accessed on the
-  // UI thread.
-  PatternProcessRefMap pattern_processes_;
 
   // Used to double-check that we don't access *this after it's destroyed.
   base::WeakPtr<ServiceWorkerProcessManager> weak_this_;

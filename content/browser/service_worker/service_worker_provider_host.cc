@@ -579,8 +579,7 @@ void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
     const GURL& pattern) {
-  associated_patterns_.push_back(pattern);
-  IncreaseProcessReference(pattern);
+  // TODO(falken): Remove this no-op.
 }
 
 void ServiceWorkerProviderHost::ClaimedByRegistration(
@@ -761,18 +760,12 @@ void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
 
 void ServiceWorkerProviderHost::IncreaseProcessReference(
     const GURL& pattern) {
-  if (context_ && context_->process_manager()) {
-    context_->process_manager()->AddProcessReferenceToPattern(
-        pattern, render_process_id_);
-  }
+  // TODO(falken): Remove this no-op.
 }
 
 void ServiceWorkerProviderHost::DecreaseProcessReference(
     const GURL& pattern) {
-  if (context_ && context_->process_manager()) {
-    context_->process_manager()->RemoveProcessReferenceFromPattern(
-        pattern, render_process_id_);
-  }
+  // TODO(falken): Remove this no-op.
 }
 
 void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {

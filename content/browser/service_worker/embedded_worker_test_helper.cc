@@ -464,8 +464,6 @@ void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(const GURL& pattern,
     dispatcher_host->Init(wrapper_.get());
     dispatcher_hosts_[process_id] = std::move(dispatcher_host);
   }
-  wrapper_->process_manager()->AddProcessReferenceToPattern(pattern,
-                                                            process_id);
 }
 
 bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {

@@ -268,8 +268,6 @@ class ServiceWorkerVersionTest : public testing::Test {
     // Simulate adding one process to the pattern.
     helper_->SimulateAddProcessToPattern(pattern_,
                                          helper_->mock_render_process_id());
-    ASSERT_TRUE(helper_->context()->process_manager()
-        ->PatternHasProcessToRun(pattern_));
   }
 
   virtual std::unique_ptr<MessageReceiver> GetMessageReceiver() {

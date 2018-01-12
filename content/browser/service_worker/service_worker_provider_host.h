@@ -302,8 +302,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // purposes. This can only be called if IsProviderForClient() is true.
   void CountFeature(uint32_t feature);
 
-  // Adds reference of this host's process to the |pattern|, the reference will
-  // be removed in destructor.
+  // A no-op just here to keep patch size small as code is deleted.
+  // TODO(falken): Remove this.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);
 
   // |registration| claims the document to be controlled.
@@ -413,7 +413,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Discards all references to matching registrations.
   void RemoveAllMatchingRegistrations();
 
-  // Increase/decrease this host's process reference for |pattern|.
+  // These are no-ops that are just here to keep patch size small as code is
+  // deleted.
+  // TODO(falken): Remove these.
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);
 
