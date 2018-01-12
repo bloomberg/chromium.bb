@@ -381,6 +381,10 @@ void TestWebContents::SaveFrameWithHeaders(const GURL& url,
   save_frame_headers_ = headers;
 }
 
+void TestWebContents::SetMainFrameMimeType(const std::string& mime_type) {
+  WebContentsImpl::SetMainFrameMimeType(mime_type);
+}
+
 void TestWebContents::SetWasRecentlyAudible(bool audible) {
   audio_stream_monitor()->set_was_recently_audible_for_testing(audible);
 }

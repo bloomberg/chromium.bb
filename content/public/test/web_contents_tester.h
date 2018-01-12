@@ -127,6 +127,9 @@ class WebContentsTester {
   // Sets the return value of GetLastCommittedUrl() of TestWebContents.
   virtual void SetLastCommittedURL(const GURL& url) = 0;
 
+  // Sets the return value of GetContentsMimeType().
+  virtual void SetMainFrameMimeType(const std::string& mime_type) = 0;
+
   // Override WasRecentlyAudible for testing.
   virtual void SetWasRecentlyAudible(bool audible) = 0;
 

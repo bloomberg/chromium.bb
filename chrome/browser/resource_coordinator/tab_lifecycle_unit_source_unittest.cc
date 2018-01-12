@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -204,11 +204,11 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   base::SimpleTestTickClock test_clock_;
 
  private:
-  content::TestWebContents* CreateAndNavigateWebContents() {
-    content::TestWebContents* web_contents =
-        content::TestWebContents::Create(profile(), nullptr);
+  content::WebContents* CreateAndNavigateWebContents() {
+    content::WebContents* web_contents = CreateTestWebContents();
     // Commit an URL to allow discarding.
-    web_contents->NavigateAndCommit(GURL("https://www.example.com"));
+    content::WebContentsTester::For(web_contents)
+        ->NavigateAndCommit(GURL("https://www.example.com"));
     return web_contents;
   }
 
