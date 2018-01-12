@@ -91,7 +91,10 @@ FFMPEG_TEST_CASE(Cr100492,
                  DECODER_ERROR_NOT_SUPPORTED,
                  DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(Cr100543, "security/100543.webm", PIPELINE_OK, PIPELINE_OK);
-FFMPEG_TEST_CASE(Cr101458, "security/101458.webm", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr101458,
+                 "security/101458.webm",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr108416, "security/108416.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr110849,
                  "security/110849.mkv",
@@ -103,8 +106,8 @@ FFMPEG_TEST_CASE(Cr112384,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr112976,
                  "security/112976.ogg",
-                 PIPELINE_OK,
-                 DEMUXER_ERROR_COULD_NOT_PARSE);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr116927,
                  "security/116927.ogv",
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
@@ -135,9 +138,12 @@ FFMPEG_TEST_CASE(Cr142738,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr152691,
                  "security/152691.mp3",
-                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE,
                  PIPELINE_ERROR_DECODE);
-FFMPEG_TEST_CASE(Cr161639, "security/161639.m4a", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr161639,
+                 "security/161639.m4a",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr222754,
                  "security/222754.mp4",
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
@@ -150,7 +156,10 @@ FFMPEG_TEST_CASE(Cr234630b,
 FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK, PIPELINE_OK);
 // Test for out-of-bounds access with slightly corrupt file (detection logic
 // thinks it's a MONO file, but actually contains STEREO audio).
-FFMPEG_TEST_CASE(Cr275590, "security/275590.m4a", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr275590,
+                 "security/275590.m4a",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr444522,
                  "security/444522.mp4",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
@@ -173,8 +182,8 @@ FFMPEG_TEST_CASE(Cr449958,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr536601,
                  "security/536601.m4a",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr532967,
                  "security/532967.webm",
                  PIPELINE_OK,
@@ -197,8 +206,14 @@ FFMPEG_TEST_CASE(Cr639961,
                  "security/639961.flac",
                  PIPELINE_ERROR_INITIALIZATION_FAILED,
                  PIPELINE_ERROR_INITIALIZATION_FAILED);
-FFMPEG_TEST_CASE(Cr640889, "security/640889.flac", PIPELINE_OK, PIPELINE_OK);
-FFMPEG_TEST_CASE(Cr640912, "security/640912.flac", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr640889,
+                 "security/640889.flac",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr640912,
+                 "security/640912.flac",
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 // TODO(liberato): before crbug.com/658440 was fixed, this would fail if run
 // twice under ASAN.  If run once, then it doesn't.  However, it still catches
 // issues in crbug.com/662118, so it's included anyway.
@@ -237,16 +252,16 @@ FFMPEG_TEST_CASE(MP4_1,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(MP4_2,
                  "security/clockh264aac_200701257.mp4",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(MP4_5,
                  "security/clockh264aac_3022500.mp4",
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 FFMPEG_TEST_CASE(MP4_6,
                  "security/clockh264aac_344289.mp4",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(MP4_7,
                  "security/clockh264mp3_187697.mp4",
                  PIPELINE_OK,
@@ -311,8 +326,8 @@ FFMPEG_TEST_CASE(OGV_12,
                  DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(OGV_14,
                  "security/smclocktheora_2_10405.ogv",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(OGV_15,
                  "security/smclocktheora_2_10619.ogv",
                  DECODER_ERROR_NOT_SUPPORTED,
