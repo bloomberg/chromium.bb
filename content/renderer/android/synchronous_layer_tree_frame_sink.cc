@@ -168,8 +168,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(sink_client))
     return false;
 
-  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
-      viz::SurfaceManager::LifetimeType::SEQUENCES);
+  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>();
 
   DCHECK(begin_frame_source_);
   client_->SetBeginFrameSource(begin_frame_source_.get());

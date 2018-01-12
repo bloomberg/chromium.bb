@@ -14,6 +14,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -54,9 +55,13 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type,
   thread_checker_.DetachFromThread();
   if (using_surface_references()) {
     reference_factory_ = new StubSurfaceReferenceFactory();
-    temporary_reference_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(10), this,
-        &SurfaceManager::MarkOldTemporaryReferences);
+
+    // Android WebView doesn't have a task runner and doesn't need the timer.
+    if (base::SequencedTaskRunnerHandle::IsSet()) {
+      temporary_reference_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(10), this,
+          &SurfaceManager::MarkOldTemporaryReferences);
+    }
     // TODO(kylechar): After collecting UMA stats on the number of old temporary
     // references, we may want to turn the timer off when there are no temporary
     // references to avoid waking the thread unnecessarily.
