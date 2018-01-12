@@ -18,13 +18,21 @@
 
 PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi) {
   if (!left_mi) return DC_PRED;
+#if CONFIG_INTRABC
+  assert(!is_inter_block(&left_mi->mbmi) || is_intrabc_block(&left_mi->mbmi));
+#else
   assert(!is_inter_block(&left_mi->mbmi));
+#endif  // CONFIG_INTRABC
   return left_mi->mbmi.mode;
 }
 
 PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi) {
   if (!above_mi) return DC_PRED;
+#if CONFIG_INTRABC
+  assert(!is_inter_block(&above_mi->mbmi) || is_intrabc_block(&above_mi->mbmi));
+#else
   assert(!is_inter_block(&above_mi->mbmi));
+#endif  // CONFIG_INTRABC
   return above_mi->mbmi.mode;
 }
 
