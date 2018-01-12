@@ -3184,7 +3184,6 @@ crbug.com/591099 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/591099 external/wpt/html/semantics/selectors/pseudo-classes/dir01.html [ Failure ]
 crbug.com/591099 external/wpt/html/semantics/selectors/pseudo-classes/inrange-outofrange.html [ Crash ]
 crbug.com/591099 external/wpt/html/semantics/selectors/pseudo-classes/readwrite-readonly.html [ Crash ]
-crbug.com/591099 external/wpt/html/semantics/text-level-semantics/the-br-element/br-bidi-in-inline-ancestors.html [ Failure ]
 crbug.com/591099 external/wpt/html/syntax/parsing/named-character-references.html [ Timeout ]
 crbug.com/591099 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-1.htm [ Pass Timeout ]
 crbug.com/591099 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-4.htm [ Pass Timeout ]
