@@ -7,17 +7,17 @@
 
 #include "base/observer_list.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
-
-class ProfileOAuth2TokenService;
 
 namespace identity {
 
 // Primary client-side interface to the Identity Service, encapsulating a
 // connection to a remote implementation of mojom::IdentityManager. See
 // ./README.md for detailed documentation.
-class IdentityManager : public SigninManagerBase::Observer {
+class IdentityManager : public SigninManagerBase::Observer,
+                        public OAuth2TokenService::DiagnosticsObserver {
  public:
   class Observer {
    public:
@@ -35,6 +35,20 @@ class IdentityManager : public SigninManagerBase::Observer {
 
    protected:
     virtual ~Observer() {}
+  };
+
+  // Observer interface for classes that want to monitor status of various
+  // requests. Mostly useful in tests and debugging contexts (e.g., WebUI).
+  class DiagnosticsObserver {
+   public:
+    // Called when receiving request for access token.
+    virtual void OnAccessTokenRequested(
+        const std::string& account_id,
+        const std::string& consumer_id,
+        const OAuth2TokenService::ScopeSet& scopes) {}
+
+   protected:
+    virtual ~DiagnosticsObserver() {}
   };
 
   IdentityManager(SigninManagerBase* signin_manager,
@@ -64,11 +78,19 @@ class IdentityManager : public SigninManagerBase::Observer {
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
+  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
  private:
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
+
+  // OAuth2TokenService::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override;
 
   // Updates |primary_account_info_| and notifies observers. Invoked
   // asynchronously from GoogleSigninSucceeded() to mimic the effect of
@@ -80,6 +102,13 @@ class IdentityManager : public SigninManagerBase::Observer {
   // receiving this call asynchronously from the Identity Service.
   void HandleGoogleSignedOut(const AccountInfo& account_info);
 
+  // Notifies diagnostics observers. Invoked asynchronously from
+  // OnAccessTokenRequested() to mimic the effect of receiving this call
+  // asynchronously from the Identity Service.
+  void HandleOnAccessTokenRequested(const std::string& account_id,
+                                    const std::string& consumer_id,
+                                    const OAuth2TokenService::ScopeSet& scopes);
+
   // Backing signin classes. NOTE: We strive to limit synchronous access to
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is backed by
@@ -90,9 +119,10 @@ class IdentityManager : public SigninManagerBase::Observer {
   // The latest (cached) value of the primary account.
   AccountInfo primary_account_info_;
 
-  // List of observers.
-  // Makes sure list is empty on destruction.
+  // Lists of observers.
+  // Makes sure lists are empty on destruction.
   base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };
