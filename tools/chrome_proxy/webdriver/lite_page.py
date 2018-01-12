@@ -452,44 +452,6 @@ class LitePage(IntegrationTest):
       histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
       self.assertEqual(histogram, {})
 
-  # Checks that the server provides a preview (either Lite Page or fallback
-  # to LoFi) for a "heavy" page over a 3G connection.
-  @ChromeVersionEqualOrAfterM(61)
-  def testPreviewProvidedForHeavyPage(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg(
-          '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
-          'force_effective_connection_type/3G,'
-          'DataReductionProxyServerExperiments.Enabled:'
-          'exp/integration_test_policy')
-      test_driver.AddChromeArg(
-          '--force-fieldtrials=NetworkQualityEstimator/Enabled/'
-          'DataReductionProxyServerExperiments/Enabled')
-
-      # Open a URL that is specially marked as a heavy page for integration
-      # test purposes (requires using the "exp=integration_test_policy" value
-      # in chrome-proxy header).
-      test_driver.LoadURL('http://check.googlezip.net/previews/heavy_page.html')
-
-      lite_page_responses = 0
-      page_policies_responses = 0
-      for response in test_driver.GetHTTPResponses():
-        self.assertEqual('3G', response.request_headers['chrome-proxy-ect'])
-        self.assertIn('exp=integration_test_policy',
-          response.request_headers['chrome-proxy'])
-        if response.url.endswith('html'):
-          if self.checkLitePageResponse(response):
-            lite_page_responses = lite_page_responses + 1
-          elif 'chrome-proxy' in response.response_headers:
-            self.assertIn('page-policies',
-                             response.response_headers['chrome-proxy'])
-            page_policies_responses = page_policies_responses + 1
-
-      self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
-
   # Checks the default of whether server previews are enabled or not
   # based on whether running on Android (enabled) or not (disabled).
   # This is a regression test that the DataReductionProxyDecidesTransform
