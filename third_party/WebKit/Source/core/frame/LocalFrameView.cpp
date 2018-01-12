@@ -911,43 +911,6 @@ void LocalFrameView::CountObjectsNeedingLayout(unsigned& needs_layout_objects,
   }
 }
 
-inline void LocalFrameView::ForceLayoutParentViewIfNeeded() {
-  AutoReset<bool> prevent_update_layout(&forcing_layout_parent_view_, true);
-  auto* owner_layout_object = frame_->OwnerLayoutObject();
-  if (!owner_layout_object || !owner_layout_object->GetFrame())
-    return;
-
-  LayoutReplaced* content_box = EmbeddedReplacedContent();
-  if (!content_box)
-    return;
-
-  LayoutSVGRoot* svg_root = ToLayoutSVGRoot(content_box);
-  if (svg_root->EverHadLayout() && !svg_root->NeedsLayout())
-    return;
-
-  // If the embedded SVG document appears the first time, the ownerLayoutObject
-  // has already finished layout without knowing about the existence of the
-  // embedded SVG document, because LayoutReplaced embeddedReplacedContent()
-  // returns 0, as long as the embedded document isn't loaded yet. Before
-  // bothering to lay out the SVG document, mark the ownerLayoutObject needing
-  // layout and ask its LocalFrameView for a layout. After that the
-  // LayoutEmbeddedObject (ownerLayoutObject) carries the correct size, which
-  // LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying out
-  // for the first time, or when the LayoutSVGRoot size has changed dynamically
-  // (eg. via <script>).
-  LocalFrameView* frame_view = owner_layout_object->GetFrame()->View();
-
-  // Mark the owner layoutObject as needing layout.
-  owner_layout_object
-      ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kUnknown);
-
-  // Synchronously enter layout, to layout the view containing the host
-  // object/embed/iframe.
-  DCHECK(frame_view);
-  frame_view->UpdateLayout();
-}
-
 void LocalFrameView::PerformPreLayoutTasks() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::performPreLayoutTasks");
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPreLayout);
@@ -1051,7 +1014,7 @@ std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
 #define PERFORM_LAYOUT_TRACE_CATEGORIES \
   "blink,benchmark,rail," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
 
-bool LocalFrameView::PerformLayout(bool in_subtree_layout) {
+void LocalFrameView::PerformLayout(bool in_subtree_layout) {
   DCHECK(in_subtree_layout || layout_subtree_root_list_.IsEmpty());
 
   int contents_height_before_layout = GetLayoutView()->DocumentRect().Height();
@@ -1072,12 +1035,6 @@ bool LocalFrameView::PerformLayout(bool in_subtree_layout) {
     ScheduleOrthogonalWritingModeRootsForLayout();
   }
 
-  // ForceLayoutParentViewIfNeeded can cause this view to become detached.  If
-  // that happens, abandon layout.
-  bool was_attached = is_attached_;
-  ForceLayoutParentViewIfNeeded();
-  if (was_attached && !is_attached_)
-    return false;
 
   DCHECK(!IsInPerformLayout());
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
@@ -1122,7 +1079,6 @@ bool LocalFrameView::PerformLayout(bool in_subtree_layout) {
       .MarkNextPaintAsMeaningfulIfNeeded(
           layout_object_counter_, contents_height_before_layout,
           GetLayoutView()->DocumentRect().Height(), VisibleHeight());
-  return true;
 }
 
 void LocalFrameView::ScheduleOrPerformPostLayoutTasks() {
@@ -1294,12 +1250,7 @@ void LocalFrameView::UpdateLayout() {
 
     IntSize old_size(Size());
 
-    if (!PerformLayout(in_subtree_layout)) {
-      TRACE_EVENT_END0("devtools.timeline", "Layout");
-      DCHECK(nested_layout_count_);
-      nested_layout_count_--;
-      return;
-    }
+    PerformLayout(in_subtree_layout);
 
     UpdateScrollbars();
     UpdateParentScrollableAreaSet();
@@ -3475,6 +3426,15 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   // out.
 
   frame_->GetDocument()->UpdateStyleAndLayoutTree();
+
+  // Update style for all embedded replaced content under this frame, so
+  // that intrinsic size computation for any embedded objects has up-to-date
+  // information.
+  // TODO(chrishtr): generalize this to fully separate style from layout.
+  ForAllChildLocalFrameViews([](LocalFrameView& view) {
+    if (view.EmbeddedReplacedContent())
+      view.GetLayoutView()->GetDocument().UpdateStyleAndLayoutTree();
+  });
 
   CHECK(!ShouldThrottleRendering());
   CHECK(frame_->GetDocument()->IsActive());
