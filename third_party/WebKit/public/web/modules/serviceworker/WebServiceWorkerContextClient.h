@@ -80,7 +80,7 @@ class WebServiceWorkerContextClient {
                           std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
 
   // Similar to OpenNewTab above. For PaymentRequestEvent#openWindow().
-  virtual void OpenNewPopup(
+  virtual void OpenPaymentHandlerWindow(
       const WebURL&,
       std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
 

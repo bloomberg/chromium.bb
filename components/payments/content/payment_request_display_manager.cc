@@ -13,42 +13,56 @@ namespace payments {
 class PaymentRequest;
 
 PaymentRequestDisplayManager::DisplayHandle::DisplayHandle(
-    PaymentRequestDisplayManager* display_manager)
-    : display_manager_(display_manager) {
-  display_manager_->SetHandleAlive(true);
+    PaymentRequestDisplayManager* display_manager,
+    ContentPaymentRequestDelegate* delegate)
+    : display_manager_(display_manager), delegate_(delegate) {
+  display_manager_->set_current_handle(this);
 }
 
 PaymentRequestDisplayManager::DisplayHandle::~DisplayHandle() {
-  display_manager_->SetHandleAlive(false);
+  display_manager_->set_current_handle(nullptr);
 }
 
 void PaymentRequestDisplayManager::DisplayHandle::Show(
-    ContentPaymentRequestDelegate* delegate,
     PaymentRequest* request) {
   DCHECK(request);
-  DCHECK(delegate);
+  DCHECK(delegate_);
 
-  delegate->ShowDialog(request);
+  delegate_->ShowDialog(request);
+}
+
+void PaymentRequestDisplayManager::DisplayHandle::DisplayPaymentHandlerWindow(
+    const GURL& url) {
+  DCHECK(delegate_);
+  delegate_->EmbedPaymentHandlerWindow(url);
 }
 
 PaymentRequestDisplayManager::PaymentRequestDisplayManager()
-    : handle_alive_(false) {}
+    : current_handle_(nullptr) {}
 
 PaymentRequestDisplayManager::~PaymentRequestDisplayManager() {}
 
 std::unique_ptr<PaymentRequestDisplayManager::DisplayHandle>
-PaymentRequestDisplayManager::TryShow() {
+PaymentRequestDisplayManager::TryShow(ContentPaymentRequestDelegate* delegate) {
   std::unique_ptr<PaymentRequestDisplayManager::DisplayHandle> handle = nullptr;
-  if (!handle_alive_) {
-    handle =
-        std::make_unique<PaymentRequestDisplayManager::DisplayHandle>(this);
+  if (!current_handle_) {
+    handle = std::make_unique<PaymentRequestDisplayManager::DisplayHandle>(
+        this, delegate);
   }
 
   return handle;
 }
 
-void PaymentRequestDisplayManager::SetHandleAlive(bool handle_alive) {
-  handle_alive_ = handle_alive;
+void PaymentRequestDisplayManager::ShowPaymentHandlerWindow(
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
+  bool success = false;
+  if (current_handle_) {
+    current_handle_->DisplayPaymentHandlerWindow(url);
+    success = true;
+  }
+  std::move(callback).Run(
+      success);  // TODO(anthonyvd): Run this after the page has loaded.
 }
 
 }  // namespace payments

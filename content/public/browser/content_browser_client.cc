@@ -15,6 +15,7 @@
 #include "content/public/browser/memory_coordinator_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -628,5 +629,12 @@ void ContentBrowserClient::CreateUsbDeviceManager(
 void ContentBrowserClient::CreateUsbChooserService(
     RenderFrameHost* render_frame_host,
     device::mojom::UsbChooserServiceRequest request) {}
+
+bool ContentBrowserClient::ShowPaymentHandlerWindow(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
+  return false;
+}
 
 }  // namespace content

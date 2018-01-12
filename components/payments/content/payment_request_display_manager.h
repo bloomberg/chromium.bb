@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/gurl.h"
 
 namespace payments {
 
@@ -21,12 +22,15 @@ class PaymentRequestDisplayManager : public KeyedService {
  public:
   class DisplayHandle {
    public:
-    explicit DisplayHandle(PaymentRequestDisplayManager* display_manager);
+    explicit DisplayHandle(PaymentRequestDisplayManager* display_manager,
+                           ContentPaymentRequestDelegate* delegate);
     ~DisplayHandle();
-    void Show(ContentPaymentRequestDelegate* delegate, PaymentRequest* request);
+    void Show(PaymentRequest* request);
+    void DisplayPaymentHandlerWindow(const GURL& url);
 
    private:
     PaymentRequestDisplayManager* display_manager_;
+    ContentPaymentRequestDelegate* delegate_;
     DISALLOW_COPY_AND_ASSIGN(DisplayHandle);
   };
 
@@ -35,13 +39,18 @@ class PaymentRequestDisplayManager : public KeyedService {
 
   // If no PaymentRequest is currently showing, returns a unique_ptr to a
   // display handle that can be used to display the PaymentRequest dialog. The
-  // UI is considered open until the handle object is deleted.
-  std::unique_ptr<DisplayHandle> TryShow();
+  // UI is considered open until the handle object is deleted. |callback| is
+  // called with true if the window is finished opening successfully, false if
+  // opening it failed.
+  std::unique_ptr<DisplayHandle> TryShow(
+      ContentPaymentRequestDelegate* delegate);
+  void ShowPaymentHandlerWindow(const GURL& url,
+                                base::OnceCallback<void(bool)> callback);
 
  private:
-  void SetHandleAlive(bool handle_alive);
+  void set_current_handle(DisplayHandle* handle) { current_handle_ = handle; }
 
-  bool handle_alive_;
+  DisplayHandle* current_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDisplayManager);
 };
