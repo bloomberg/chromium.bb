@@ -199,7 +199,7 @@ void AddFeatureAndFieldTrialFlags(const char* enable_features_switch,
     cmd_line->AppendSwitchASCII(disable_features_switch, disabled_features);
 
   std::string field_trial_states;
-  FieldTrialList::AllStatesToString(&field_trial_states);
+  FieldTrialList::AllStatesToString(&field_trial_states, false);
   if (!field_trial_states.empty()) {
     cmd_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                 field_trial_states);
@@ -456,18 +456,9 @@ bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
   return true;
 }
 
-bool FieldTrial::GetState(State* field_trial_state) {
-  if (!enable_field_trial_)
-    return false;
-  FinalizeGroupChoice();
-  field_trial_state->trial_name = &trial_name_;
-  field_trial_state->group_name = &group_name_;
-  field_trial_state->activated = group_reported_;
-  return true;
-}
-
-bool FieldTrial::GetStateWhileLocked(State* field_trial_state) {
-  if (!enable_field_trial_)
+bool FieldTrial::GetStateWhileLocked(State* field_trial_state,
+                                     bool include_expired) {
+  if (!include_expired && !enable_field_trial_)
     return false;
   FinalizeGroupChoiceImpl(true);
   field_trial_state->trial_name = &trial_name_;
@@ -648,14 +639,15 @@ void FieldTrialList::StatesToString(std::string* output) {
 }
 
 // static
-void FieldTrialList::AllStatesToString(std::string* output) {
+void FieldTrialList::AllStatesToString(std::string* output,
+                                       bool include_expired) {
   if (!global_)
     return;
   AutoLock auto_lock(global_->lock_);
 
   for (const auto& registered : global_->registered_) {
     FieldTrial::State trial;
-    if (!registered.second->GetStateWhileLocked(&trial))
+    if (!registered.second->GetStateWhileLocked(&trial, include_expired))
       continue;
     DCHECK_EQ(std::string::npos,
               trial.trial_name->find(kPersistentStringSeparator));
@@ -1335,7 +1327,7 @@ void FieldTrialList::AddToAllocatorWhileLocked(
     return;
 
   FieldTrial::State trial_state;
-  if (!field_trial->GetStateWhileLocked(&trial_state))
+  if (!field_trial->GetStateWhileLocked(&trial_state, false))
     return;
 
   // Or if we've already added it. We must check after GetState since it can
