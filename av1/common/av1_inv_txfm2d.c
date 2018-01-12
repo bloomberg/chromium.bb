@@ -252,18 +252,18 @@ static const int8_t inv_shift_32x32[2] = { -1, -5 };
 #if CONFIG_TX64X64
 static const int8_t inv_shift_64x64[2] = { -1, -5 };
 #endif
-static const int8_t inv_shift_4x8[2] = { 0, -5 };
-static const int8_t inv_shift_8x4[2] = { 0, -5 };
-static const int8_t inv_shift_8x16[2] = { -1, -5 };
-static const int8_t inv_shift_16x8[2] = { -1, -5 };
-static const int8_t inv_shift_16x32[2] = { -1, -5 };
-static const int8_t inv_shift_32x16[2] = { -1, -5 };
+static const int8_t inv_shift_4x8[2] = { 0, -4 };
+static const int8_t inv_shift_8x4[2] = { 0, -4 };
+static const int8_t inv_shift_8x16[2] = { -1, -4 };
+static const int8_t inv_shift_16x8[2] = { -1, -4 };
+static const int8_t inv_shift_16x32[2] = { -1, -4 };
+static const int8_t inv_shift_32x16[2] = { -1, -4 };
 #if CONFIG_TX64X64
-static const int8_t inv_shift_32x64[2] = { -1, -5 };
-static const int8_t inv_shift_64x32[2] = { -1, -5 };
+static const int8_t inv_shift_32x64[2] = { -1, -4 };
+static const int8_t inv_shift_64x32[2] = { -1, -4 };
 #endif
-static const int8_t inv_shift_4x16[2] = { -1, -5 };
-static const int8_t inv_shift_16x4[2] = { -1, -5 };
+static const int8_t inv_shift_4x16[2] = { -1, -4 };
+static const int8_t inv_shift_16x4[2] = { -1, -4 };
 static const int8_t inv_shift_8x32[2] = { -1, -5 };
 static const int8_t inv_shift_32x8[2] = { -1, -5 };
 #if CONFIG_TX64X64
@@ -301,43 +301,17 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, TX_SIZE tx_size,
                              int bd) {
-  // Note when assigning txfm_size_col, we use the txfm_size from the
-  // row configuration and vice versa. This is intentionally done to
-  // accurately perform rectangular transforms. When the transform is
-  // rectangular, the number of columns will be the same as the
-  // txfm_size stored in the row cfg struct. It will make no difference
-  // for square transforms.
   const int fwd_shift = inv_start_range[tx_size];
-  const int txfm_size_col = cfg->row_cfg->txfm_size;
-  const int txfm_size_row = cfg->col_cfg->txfm_size;
-  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
-  if (txfm_size_col == txfm_size_row) assert(rect_type == 0);
-  int rect_type_shift = 0;
-  // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = cfg->shift;
-
-  int shift1 = shift[1];
-  if (rect_type == 1 || rect_type == -1) {
-    rect_type_shift = 1;
-  } else if (rect_type == 2 || rect_type == -2) {
-    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
-    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
-    // for any additional shift.
-    rect_type_shift = (txfm_size_max == 16 ? 1 : 0);
-  }
-  while (rect_type_shift > 0 && shift1 < 0) {
-    shift1++;
-    rect_type_shift--;
-  }
-
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
   }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
+  // TODO(angiebird): correct the range for rect txfms
   for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_col[i] = cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] +
-                         bd + 1 + rect_type_shift;
+    stage_range_col[i] =
+        cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] + bd + 1;
   }
 }
 
@@ -356,25 +330,6 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = cfg->shift;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
-  int rect_type2_shift = 0;
-  int rect_type1_shift = 0;
-  int shift1 = shift[1];
-  if (rect_type == 1 || rect_type == -1) {
-    rect_type1_shift = 1;
-    while (rect_type1_shift > 0 && shift1 < 0) {
-      shift1++;
-      rect_type1_shift--;
-    }
-  } else if (rect_type == 2 || rect_type == -2) {
-    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
-    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
-    // for any additional shift.
-    rect_type2_shift = (txfm_size_max == 16 ? 1 : 0);
-    while (rect_type2_shift > 0 && shift1 < 0) {
-      shift1++;
-      rect_type2_shift--;
-    }
-  }
   int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
   int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
   assert(cfg->row_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
@@ -398,15 +353,6 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   for (r = 0; r < txfm_size_row; ++r) {
     txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
     av1_round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
-    // Multiply everything by Sqrt2 if the transform is rectangular with
-    // log ratio being 1 or -1, if the log ratio is 2 or -2, multiply by
-    // 2^rect_type2_shift.
-    if (rect_type1_shift == 1) {
-      for (c = 0; c < txfm_size_col; ++c)
-        buf_ptr[c] = (int32_t)dct_const_round_shift(buf_ptr[c] * Sqrt2);
-    } else if (rect_type2_shift) {
-      av1_round_shift_array(buf_ptr, txfm_size_col, -rect_type2_shift);
-    }
     clamp_buf(buf_ptr, txfm_size_col, bd + 8);
     input += txfm_size_col;
     buf_ptr += txfm_size_col;
@@ -423,12 +369,12 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
         temp_in[r] = buf[r * txfm_size_col + (txfm_size_col - c - 1)];
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
-    if (abs(rect_type) == 1 && rect_type1_shift == 0) {
+    if (abs(rect_type) == 1) {
       for (r = 0; r < txfm_size_row; ++r) {
         temp_out[r] = (int32_t)dct_const_round_shift(temp_out[r] * InvSqrt2);
       }
     }
-    av1_round_shift_array(temp_out, txfm_size_row, -shift1);
+    av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
     clamp_buf(temp_out, txfm_size_row, bd + 1);
     if (cfg->ud_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r) {
