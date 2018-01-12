@@ -68,7 +68,7 @@ MediaWebContentsObserverAndroid::GetSurfaceViewManager(
 
 void MediaWebContentsObserverAndroid::SuspendAllMediaPlayers() {
   web_contents()->ForEachFrame(
-      base::Bind(&SuspendAllMediaPlayersInRenderFrame));
+      base::BindRepeating(&SuspendAllMediaPlayersInRenderFrame));
 }
 
 bool MediaWebContentsObserverAndroid::RequestPlay(

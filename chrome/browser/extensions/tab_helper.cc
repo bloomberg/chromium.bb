@@ -168,9 +168,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
-  // The Unretained() is safe because ForEachFrame is synchronous.
+  // The Unretained() is safe because ForEachFrame() is synchronous.
   web_contents->ForEachFrame(
-      base::Bind(&TabHelper::SetTabId, base::Unretained(this)));
+      base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
       SessionTabHelper::IdForTab(web_contents),

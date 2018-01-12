@@ -1105,7 +1105,7 @@ class SavePageOriginalVsSavedComparisonTest
       int expected_number_of_frames,
       const std::vector<std::string>& expected_substrings) {
     int actual_number_of_frames = 0;
-    GetCurrentTab(browser())->ForEachFrame(base::Bind(
+    GetCurrentTab(browser())->ForEachFrame(base::BindRepeating(
         &IncrementInteger, base::Unretained(&actual_number_of_frames)));
     EXPECT_EQ(expected_number_of_frames, actual_number_of_frames);
 

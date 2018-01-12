@@ -151,8 +151,8 @@ ExtensionMessagePort::ExtensionMessagePort(
 
   frame_tracker_->TrackTabFrames(tab);
   if (include_child_frames) {
-    tab->ForEachFrame(base::Bind(&ExtensionMessagePort::RegisterFrame,
-                                 base::Unretained(this)));
+    tab->ForEachFrame(base::BindRepeating(&ExtensionMessagePort::RegisterFrame,
+                                          base::Unretained(this)));
   } else {
     RegisterFrame(rfh);
   }

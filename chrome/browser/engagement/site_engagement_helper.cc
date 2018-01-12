@@ -60,7 +60,7 @@ SiteEngagementService::Helper::~Helper() {
 void SiteEngagementService::Helper::OnEngagementLevelChanged(
     const GURL& url,
     blink::mojom::EngagementLevel level) {
-  web_contents()->ForEachFrame(base::Bind(
+  web_contents()->ForEachFrame(base::BindRepeating(
       &SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin,
       base::Unretained(this), url::Origin::Create(url), level));
 }

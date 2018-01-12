@@ -114,8 +114,8 @@ WebContentsEntry::~WebContentsEntry() {
 
 void WebContentsEntry::CreateAllTasks() {
   DCHECK(web_contents()->GetMainFrame());
-  web_contents()->ForEachFrame(base::Bind(&WebContentsEntry::CreateTaskForFrame,
-                                          base::Unretained(this)));
+  web_contents()->ForEachFrame(base::BindRepeating(
+      &WebContentsEntry::CreateTaskForFrame, base::Unretained(this)));
 }
 
 void WebContentsEntry::ClearAllTasks(bool notify_observer) {

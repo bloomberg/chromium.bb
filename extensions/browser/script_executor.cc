@@ -53,8 +53,8 @@ class Handler : public content::WebContentsObserver {
         callback_(callback) {
     if (root_rfh_) {
       if (include_sub_frames_) {
-        web_contents->ForEachFrame(base::Bind(&Handler::SendExecuteCode,
-                                              base::Unretained(this), params));
+        web_contents->ForEachFrame(base::BindRepeating(
+            &Handler::SendExecuteCode, base::Unretained(this), params));
       } else {
         SendExecuteCode(params, root_rfh_);
       }

@@ -81,7 +81,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   //
   // This method, in combination with |FrameDeleted|, is appropriate for
   // observers wishing to track the set of current RenderFrameHosts -- i.e.,
-  // those hosts that would be visited by calling WebContents::ForEachFrame.
+  // those hosts that would be visited by calling WebContents::ForEachFrame().
   virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
                                       RenderFrameHost* new_host) {}
 

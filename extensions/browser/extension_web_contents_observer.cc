@@ -40,8 +40,8 @@ ExtensionWebContentsObserver::ExtensionWebContentsObserver(
       browser_context_(web_contents->GetBrowserContext()),
       dispatcher_(browser_context_) {
   web_contents->ForEachFrame(
-      base::Bind(&ExtensionWebContentsObserver::InitializeFrameHelper,
-                 base::Unretained(this)));
+      base::BindRepeating(&ExtensionWebContentsObserver::InitializeFrameHelper,
+                          base::Unretained(this)));
   dispatcher_.set_delegate(this);
 }
 

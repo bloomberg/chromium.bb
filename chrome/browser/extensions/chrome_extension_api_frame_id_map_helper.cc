@@ -49,8 +49,8 @@ void ChromeExtensionApiFrameIdMapHelper::Observe(
   int tab_id = session_tab_helper->session_id().id();
   int window_id = session_tab_helper->window_id().id();
   web_contents->ForEachFrame(
-      base::Bind(&ExtensionApiFrameIdMap::UpdateTabAndWindowId,
-                 base::Unretained(owner_), tab_id, window_id));
+      base::BindRepeating(&ExtensionApiFrameIdMap::UpdateTabAndWindowId,
+                          base::Unretained(owner_), tab_id, window_id));
 }
 
 }  // namespace extensions
