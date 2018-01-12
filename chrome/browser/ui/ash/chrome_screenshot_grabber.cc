@@ -585,10 +585,6 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
 
     // Assign image for notification preview. It might be empty.
     optional_field.image = image;
-
-    // Screenshot notification has different representation in new style
-    // notification. This has no effect on old style notification.
-    optional_field.use_image_as_icon = true;
   }
 
   std::unique_ptr<message_center::Notification> notification =

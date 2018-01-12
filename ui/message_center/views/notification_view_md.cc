@@ -902,18 +902,16 @@ void NotificationViewMD::CreateOrUpdateIconView(
     right_content_->AddChildView(icon_view_);
   }
 
-  // If |use_image_as_icon| is set, use |image| as the icon on the right
-  // side, instead of |icon|.
+  const bool use_image_for_icon = notification.icon().IsEmpty();
   gfx::ImageSkia icon;
-  if (notification.use_image_as_icon())
+  if (use_image_for_icon)
     icon = notification.image().AsImageSkia();
   else
     icon = notification.icon().AsImageSkia();
   icon_view_->SetImage(icon, icon.size());
 
-  // If |use_image_as_icon| is set, hide the icon on the right side when
-  // the notification is expanded.
-  hide_icon_on_expanded_ = notification.use_image_as_icon();
+  // Hide the icon on the right side when the notification is expanded.
+  hide_icon_on_expanded_ = use_image_for_icon;
 }
 
 void NotificationViewMD::CreateOrUpdateSmallIconView(

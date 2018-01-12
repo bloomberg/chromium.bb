@@ -63,12 +63,6 @@ SkColor RichNotificationDataStructTraits::accent_color(
 }
 
 // static
-bool RichNotificationDataStructTraits::use_image_as_icon(
-    const message_center::RichNotificationData& r) {
-  return r.use_image_as_icon;
-}
-
-// static
 bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
                                             RichNotificationData* out) {
   out->progress = data.progress();
@@ -77,7 +71,6 @@ bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
   out->clickable = data.clickable();
   out->pinned = data.pinned();
   out->accent_color = data.accent_color();
-  out->use_image_as_icon = data.use_image_as_icon();
   return data.ReadProgressStatus(&out->progress_status) &&
          data.ReadAccessibleName(&out->accessible_name);
 }
