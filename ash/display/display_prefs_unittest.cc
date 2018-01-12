@@ -15,7 +15,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -740,10 +739,6 @@ TEST_F(DisplayPrefsTest, StorePowerStateNormalUser) {
 }
 
 TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
-  // TODO(mash): Figure out correct behavior for mus/mash.
-  // http://crbug.com/800925
-  if (ash::Shell::GetAshConfig() != ash::Config::CLASSIC)
-    return;
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences(false);
@@ -752,10 +747,6 @@ TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
 }
 
 TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
-  // TODO(mash): Figure out correct behavior for mus/mash.
-  // http://crbug.com/800925
-  if (ash::Shell::GetAshConfig() != ash::Config::CLASSIC)
-    return;
   ash::Shell* shell = ash::Shell::Get();
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
