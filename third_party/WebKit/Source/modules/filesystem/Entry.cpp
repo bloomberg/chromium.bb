@@ -34,7 +34,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/bindings/ScriptState.h"
@@ -69,27 +68,31 @@ void Entry::getMetadata(ScriptState* script_state,
 void Entry::moveTo(ScriptState* script_state,
                    DirectoryEntry* parent,
                    const String& name,
-                   EntryCallback* success_callback,
+                   V8EntryCallback* success_callback,
                    V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_MoveTo_Method_IsolatedFileSystem);
   }
-  file_system_->Move(this, parent, name, success_callback,
-                     ScriptErrorCallback::Wrap(error_callback));
+  file_system_->Move(
+      this, parent, name,
+      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void Entry::copyTo(ScriptState* script_state,
                    DirectoryEntry* parent,
                    const String& name,
-                   EntryCallback* success_callback,
+                   V8EntryCallback* success_callback,
                    V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_CopyTo_Method_IsolatedFileSystem);
   }
-  file_system_->Copy(this, parent, name, success_callback,
-                     ScriptErrorCallback::Wrap(error_callback));
+  file_system_->Copy(
+      this, parent, name,
+      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void Entry::remove(ScriptState* script_state,
@@ -104,14 +107,15 @@ void Entry::remove(ScriptState* script_state,
 }
 
 void Entry::getParent(ScriptState* script_state,
-                      EntryCallback* success_callback,
+                      V8EntryCallback* success_callback,
                       V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetParent_Method_IsolatedFileSystem);
   }
-  file_system_->GetParent(this, success_callback,
-                          ScriptErrorCallback::Wrap(error_callback));
+  file_system_->GetParent(
+      this, EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 String Entry::toURL(ScriptState* script_state) const {

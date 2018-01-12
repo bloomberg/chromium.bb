@@ -32,10 +32,10 @@
 
 namespace blink {
 
-class EntryCallback;
 class EntrySync;
 class ExceptionState;
 class FileSystemCallback;
+class V8EntryCallback;
 class V8ErrorCallback;
 class WorkerGlobalScope;
 
@@ -59,7 +59,7 @@ class WorkerGlobalScopeFileSystem {
                                                         ExceptionState&);
   static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&,
                                               const String& url,
-                                              EntryCallback* success_callback,
+                                              V8EntryCallback* success_callback,
                                               V8ErrorCallback*);
   static EntrySync* webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope&,
                                                         const String& url,

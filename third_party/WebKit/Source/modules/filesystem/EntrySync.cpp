@@ -58,21 +58,23 @@ Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
 EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
                              const String& name,
                              ExceptionState& exception_state) const {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
   file_system_->Move(this, parent, name, helper->GetSuccessCallback(),
                      helper->GetErrorCallback(),
                      DOMFileSystemBase::kSynchronous);
-  return helper->GetResult(exception_state);
+  Entry* entry = helper->GetResultOrThrow(exception_state);
+  return entry ? EntrySync::Create(entry) : nullptr;
 }
 
 EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
                              const String& name,
                              ExceptionState& exception_state) const {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
   file_system_->Copy(this, parent, name, helper->GetSuccessCallback(),
                      helper->GetErrorCallback(),
                      DOMFileSystemBase::kSynchronous);
-  return helper->GetResult(exception_state);
+  Entry* entry = helper->GetResultOrThrow(exception_state);
+  return entry ? EntrySync::Create(entry) : nullptr;
 }
 
 void EntrySync::remove(ExceptionState& exception_state) const {

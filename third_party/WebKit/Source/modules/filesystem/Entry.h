@@ -39,8 +39,8 @@
 namespace blink {
 
 class DirectoryEntry;
-class EntryCallback;
 class MetadataCallback;
+class V8EntryCallback;
 class V8ErrorCallback;
 class VoidCallback;
 
@@ -59,18 +59,18 @@ class MODULES_EXPORT Entry : public EntryBase {
   void moveTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
-              EntryCallback* success_callback = nullptr,
+              V8EntryCallback* success_callback = nullptr,
               V8ErrorCallback* = nullptr) const;
   void copyTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
-              EntryCallback* success_callback = nullptr,
+              V8EntryCallback* success_callback = nullptr,
               V8ErrorCallback* = nullptr) const;
   void remove(ScriptState*,
               VoidCallback* success_callback = nullptr,
               V8ErrorCallback* = nullptr) const;
   void getParent(ScriptState*,
-                 EntryCallback* success_callback = nullptr,
+                 V8EntryCallback* success_callback = nullptr,
                  V8ErrorCallback* = nullptr) const;
   String toURL(ScriptState*) const;
 
