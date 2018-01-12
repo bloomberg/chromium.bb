@@ -20,7 +20,9 @@ class CastNetworkDelegate : public net::NetworkDelegateImpl {
 
   virtual void Initialize() = 0;
 
-  virtual bool IsWhitelisted(const GURL& gurl, int render_process_id,
+  virtual bool IsWhitelisted(const GURL& gurl,
+                             const std::string& session_id,
+                             int render_process_id,
                              bool for_device_auth) const = 0;
 
  private:
