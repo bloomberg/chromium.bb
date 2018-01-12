@@ -2506,9 +2506,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
-  if (IsPinchToZoomEnabled())
-    command_line->AppendSwitch(switches::kEnablePinch);
-
 #if defined(OS_WIN)
   command_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,
@@ -2550,13 +2547,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDatabases,
     switches::kDisableDistanceFieldText,
     switches::kDisableFileSystem,
-    switches::kDisableGestureRequirementForPresentation,
     switches::kDisableGpuMemoryBufferVideoFrames,
     switches::kDisableGpuVsync,
     switches::kDisableLowResTiling,
     switches::kDisableHistogramCustomizer,
     switches::kDisableLCDText,
-    switches::kDisableLocalStorage,
     switches::kDisableLogging,
     switches::kDisableMediaSuspend,
     switches::kDisableNotifications,
@@ -2564,12 +2559,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
     switches::kDisablePresentationAPI,
-    switches::kDisablePinch,
     switches::kDisableRGBA4444Textures,
     switches::kDisableRTCSmoothnessAlgorithm,
     switches::kDisableSharedWorkers,
     switches::kDisableSkiaRuntimeOpts,
-    switches::kDisableSmoothScrolling,
     switches::kDisableSpeechAPI,
     switches::kDisableThreadedCompositing,
     switches::kDisableThreadedScrolling,
@@ -2594,7 +2587,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLogging,
     switches::kEnableNetworkInformationDownlinkMax,
     switches::kEnableOOPRasterization,
-    switches::kEnablePinch,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePrintBrowser,
@@ -2603,8 +2595,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaintV175,
     switches::kEnableSlimmingPaintV2,
-    switches::kEnableSmoothScrolling,
-    switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
     switches::kEnableUseZoomForDSF,
@@ -2624,7 +2614,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kMainFrameResizesAreOrientationChanges,
     switches::kMaxUntiledLayerWidth,
     switches::kMaxUntiledLayerHeight,
     switches::kDisableMojoLocalStorage,
@@ -2641,7 +2630,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRendererStartupDialog,
     switches::kRootLayerScrolls,
     switches::kShowPaintRects,
-    switches::kSitePerProcess,
     switches::kStatsCollectionController,
     switches::kTestType,
     switches::kTouchEventFeatureDetection,
@@ -2692,7 +2680,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebRtcSrtpEncryptedHeaders,
     switches::kEnableWebRtcStunOrigin,
     switches::kEnforceWebRtcIPPermissionCheck,
-    switches::kForceWebRtcIPHandlingPolicy,
     switches::kWebRtcMaxCaptureFramerate,
 #endif
     switches::kEnableLowEndDeviceMode,
