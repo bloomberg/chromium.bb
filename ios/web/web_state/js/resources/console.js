@@ -7,7 +7,7 @@
 
 goog.provide('__crWeb.console');
 
-goog.require('__crWeb.message');
+// Requires __crWeb.message provided by __crWeb.allFramesWebBundle.
 
 /**
  * Namespace for this module.

@@ -5,10 +5,11 @@
 // Set of scripts required by web layer backed up by WKWebView.
 goog.provide('__crWeb.mainFrameWebBundle');
 
+// Requires __crWeb.form provided by __crWeb.allFramesWebBundle.
+
 goog.require('__crWeb.console');
 goog.require('__crWeb.contextMenu');
 goog.require('__crWeb.error');
-goog.require('__crWeb.form');
 goog.require('__crWeb.legacy');
 goog.require('__crWeb.scrollWorkaround');
 goog.require('__crWeb.navigation');

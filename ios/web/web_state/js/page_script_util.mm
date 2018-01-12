@@ -23,10 +23,21 @@ namespace {
 // JavaScript call). Injecting the script multiple times invalidates the
 // __gCrWeb.windowId variable and will break the ability to send messages from
 // JS to the native code. Wrapping injected script into "if (!injected)" check
-// prevents multiple injections into the same page.
-NSString* MakeScriptInjectableOnce(NSString* script) {
-  NSString* kScriptTemplate = @"if (typeof __gCrWeb !== 'object') { %@; }";
-  return [NSString stringWithFormat:kScriptTemplate, script];
+// prevents multiple injections into the same page. |script_identifier| should
+// identify the script being injected in order to enforce the injection of
+// |script| to only once.
+// NOTE: |script_identifier| will be used as the prefix for a JavaScript var, so
+// it must adhere to JavaScript var naming rules.
+NSString* MakeScriptInjectableOnce(NSString* script_identifier,
+                                   NSString* script) {
+  NSString* kOnceWrapperTemplate =
+      @"if (typeof %@ === 'undefined') { var %@ = true; %%@ }";
+  NSString* injected_var_name =
+      [NSString stringWithFormat:@"%@_injected", script_identifier];
+  NSString* once_wrapper =
+      [NSString stringWithFormat:kOnceWrapperTemplate, injected_var_name,
+                                 injected_var_name];
+  return [NSString stringWithFormat:once_wrapper, script];
 }
 
 }  // namespace
@@ -67,11 +78,12 @@ NSString* GetEarlyPageScriptForMainFrame(BrowserState* browser_state) {
 
   NSString* script =
       [NSString stringWithFormat:@"%@; %@", web_bundle, embedder_page_script];
-  return MakeScriptInjectableOnce(script);
+  return MakeScriptInjectableOnce(@"early_main_frame", script);
 }
 
 NSString* GetEarlyPageScriptForAllFrames(BrowserState* browser_state) {
-  return MakeScriptInjectableOnce(GetPageScript(@"all_frames_web_bundle"));
+  return MakeScriptInjectableOnce(@"early_all_frames",
+                                  GetPageScript(@"all_frames_web_bundle"));
 }
 
 }  // namespace web
