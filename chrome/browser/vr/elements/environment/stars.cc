@@ -44,11 +44,11 @@ static constexpr char const* kVertexShader = SHADER(
   varying mediump float v_Opacity;
 
   float Twinkle(float t) {
-    return sin(t + 5.0f * cos(t + 3.0f)) * 0.25 + 0.75;
+    return sin(t + 5.0 * cos(t + 3.0)) * 0.25 + 0.75;
   }
 
   void main() {
-    float twinkle = 1.0f;
+    float twinkle = 1.0;
     v_Opacity = a_Opacity * Twinkle(u_Time + a_Phase);
     gl_Position = u_ModelViewProjMatrix * a_Position;
   }
