@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/ScrollSnapMarginInline.h"
+#include "core/css/properties/shorthands/ScrollMarginInline.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
@@ -10,14 +10,14 @@
 namespace blink {
 namespace CSSShorthand {
 
-bool ScrollSnapMarginInline::ParseShorthand(
+bool ScrollMarginInline::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
-      scrollSnapMarginInlineShorthand(), important, context, range, properties);
+      scrollMarginInlineShorthand(), important, context, range, properties);
 }
 
 }  // namespace CSSShorthand

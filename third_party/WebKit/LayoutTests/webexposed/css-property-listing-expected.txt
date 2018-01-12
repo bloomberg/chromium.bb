@@ -290,6 +290,14 @@ All changes to this list should go through Blink's feature review process: http:
     ry
     scale
     scroll-behavior
+    scroll-margin-block-end
+    scroll-margin-block-start
+    scroll-margin-bottom
+    scroll-margin-inline-end
+    scroll-margin-inline-start
+    scroll-margin-left
+    scroll-margin-right
+    scroll-margin-top
     scroll-padding-block-end
     scroll-padding-block-start
     scroll-padding-bottom
@@ -299,14 +307,6 @@ All changes to this list should go through Blink's feature review process: http:
     scroll-padding-right
     scroll-padding-top
     scroll-snap-align
-    scroll-snap-margin-block-end
-    scroll-snap-margin-block-start
-    scroll-snap-margin-bottom
-    scroll-snap-margin-inline-end
-    scroll-snap-margin-inline-start
-    scroll-snap-margin-left
-    scroll-snap-margin-right
-    scroll-snap-margin-top
     scroll-snap-stop
     scroll-snap-type
     shape-image-threshold
@@ -619,6 +619,17 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
+    scroll-margin
+        scroll-margin-bottom
+        scroll-margin-left
+        scroll-margin-right
+        scroll-margin-top
+    scroll-margin-block
+        scroll-margin-block-end
+        scroll-margin-block-start
+    scroll-margin-inline
+        scroll-margin-inline-end
+        scroll-margin-inline-start
     scroll-padding
         scroll-padding-bottom
         scroll-padding-left
@@ -630,17 +641,6 @@ All changes to this list should go through Blink's feature review process: http:
     scroll-padding-inline
         scroll-padding-inline-end
         scroll-padding-inline-start
-    scroll-snap-margin
-        scroll-snap-margin-bottom
-        scroll-snap-margin-left
-        scroll-snap-margin-right
-        scroll-snap-margin-top
-    scroll-snap-margin-block
-        scroll-snap-margin-block-end
-        scroll-snap-margin-block-start
-    scroll-snap-margin-inline
-        scroll-snap-margin-inline-end
-        scroll-snap-margin-inline-start
     text-decoration
         text-decoration-color
         text-decoration-line

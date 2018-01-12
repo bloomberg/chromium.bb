@@ -512,12 +512,12 @@ String StylePropertySerializer::GetPropertyValue(
       return Get2Values(scrollPaddingBlockShorthand());
     case CSSPropertyScrollPaddingInline:
       return Get2Values(scrollPaddingInlineShorthand());
-    case CSSPropertyScrollSnapMargin:
-      return Get4Values(scrollSnapMarginShorthand());
-    case CSSPropertyScrollSnapMarginBlock:
-      return Get2Values(scrollSnapMarginBlockShorthand());
-    case CSSPropertyScrollSnapMarginInline:
-      return Get2Values(scrollSnapMarginInlineShorthand());
+    case CSSPropertyScrollMargin:
+      return Get4Values(scrollMarginShorthand());
+    case CSSPropertyScrollMarginBlock:
+      return Get2Values(scrollMarginBlockShorthand());
+    case CSSPropertyScrollMarginInline:
+      return Get2Values(scrollMarginInlineShorthand());
     default:
       return String();
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/ScrollSnapMarginRight.h"
+#include "core/css/properties/longhands/ScrollMarginLeft.h"
 
 #include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
@@ -12,7 +12,7 @@
 namespace blink {
 namespace CSSLonghand {
 
-const CSSValue* ScrollSnapMarginRight::ParseSingleValue(
+const CSSValue* ScrollMarginLeft::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
@@ -20,13 +20,13 @@ const CSSValue* ScrollSnapMarginRight::ParseSingleValue(
                        CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 
-const CSSValue* ScrollSnapMarginRight::CSSValueFromComputedStyleInternal(
+const CSSValue* ScrollMarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return ZoomAdjustedPixelValue(style.ScrollSnapMarginRight(), style);
+  return ZoomAdjustedPixelValue(style.ScrollMarginLeft(), style);
 }
 
 }  // namespace CSSLonghand
