@@ -654,7 +654,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
-      'build_type')
+      'build_type', 'metadata_url', 'toolchain_url')
 
   _SQL_FETCH_ANNOTATIONS = (
       'SELECT aT.build_id, aT.last_updated, last_annotator, '

@@ -18,6 +18,8 @@ FAKE_BUILD_STATUS = {
     'id': 1234,
     'buildbucket_id': 'buildbucket_value',
     'status': 'pass',
+    'artifacts_url': 'fake_artifacts_url',
+    'toolchain_url': 'fake_toolchain_url',
     'stages': [
         {'name': 'stage_a', 'status': 'pass'},
         {'name': 'stage_b', 'status': 'pass'},
@@ -58,7 +60,8 @@ class BuildresultReportTest(BuildresultTest):
     expected = '''cidb_id: 1234
 buildbucket_id: buildbucket_value
 status: pass
-artifacts_url: None
+artifacts_url: fake_artifacts_url
+toolchain_url: fake_toolchain_url
 stages:
   stage_a: pass
   stage_b: pass
@@ -75,7 +78,8 @@ stages:
             'cidb_id': 1234,
             'buildbucket_id': 'buildbucket_value',
             'status': 'pass',
-            'artifacts_url': None,
+            'artifacts_url': 'fake_artifacts_url',
+            'toolchain_url': 'fake_toolchain_url',
             'stages': {
                 'stage_a': 'pass',
                 'stage_b': 'pass',

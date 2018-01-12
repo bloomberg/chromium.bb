@@ -8,12 +8,12 @@
 from __future__ import print_function
 
 import json
+import os
 
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.cli.cros import cros_cidbcreds
 from chromite.lib import cros_logging as logging
-
 
 
 def FetchBuildStatus(db, buildbucket_id=None, cidb_id=None):
@@ -39,6 +39,13 @@ def FetchBuildStatus(db, buildbucket_id=None, cidb_id=None):
     logging.error('Build not finished. Status: %s', build_status['status'])
     raise SystemExit(2)
 
+  # We don't actually store the artifacts_url, but we store a URL for a specific
+  # artifact we can use to derive it.
+  build_status['artifacts_url'] = None
+  if build_status['metadata_url']:
+    build_status['artifacts_url'] = os.path.dirname(
+        build_status['metadata_url'])
+
   # Find stage information.
   build_status['stages'] = db.GetBuildStages(build_status['id'])
 
@@ -61,7 +68,8 @@ def Report(build_statuses):
         'cidb_id: %s' % build_status['id'],
         'buildbucket_id: %s' % build_status['buildbucket_id'],
         'status: %s' % build_status['status'],
-        'artifacts_url: %s' % None,  # TODO(dgarrett): Populate when available.
+        'artifacts_url: %s' % build_status['artifacts_url'],
+        'toolchain_url: %s' % build_status['toolchain_url'],
         'stages:\n'
     ])
     for stage in build_status['stages']:
@@ -88,7 +96,8 @@ def ReportJson(build_statuses):
         'buildbucket_id': build_status['buildbucket_id'],
         'status': build_status['status'],
         'stages': {s['name']: s['status'] for s in build_status['stages']},
-        'artifacts_url': None,  # TODO(dgarrett): Populate when available.
+        'artifacts_url': build_status['artifacts_url'],
+        'toolchain_url': build_status['toolchain_url'],
     }
 
   return json.dumps(report)
