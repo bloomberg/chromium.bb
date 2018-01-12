@@ -74,7 +74,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     case service_manager::SANDBOX_TYPE_NO_SANDBOX:
       break;
     case service_manager::SANDBOX_TYPE_CDM:
-    case service_manager::SANDBOX_TYPE_GPU:
     case service_manager::SANDBOX_TYPE_PPAPI:
     case service_manager::SANDBOX_TYPE_RENDERER:
     case service_manager::SANDBOX_TYPE_UTILITY:
