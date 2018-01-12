@@ -19,11 +19,15 @@ size_t GetFaviconCacheSize() {
 
 }  // namespace
 
+// static
+const int FaviconCache::kEmptyFaviconCacheLifetimeInSeconds = 60;
+
 FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
                            history::HistoryService* history_service)
     : favicon_service_(favicon_service),
       history_observer_(this),
       mru_cache_(GetFaviconCacheSize()),
+      pages_without_favicons_(GetFaviconCacheSize()),
       weak_factory_(this) {
   if (history_service)
     history_observer_.Add(history_service);
@@ -34,13 +38,20 @@ FaviconCache::~FaviconCache() {}
 gfx::Image FaviconCache::GetFaviconForPageUrl(
     const GURL& page_url,
     FaviconFetchedCallback on_favicon_fetched) {
+  if (!favicon_service_)
+    return gfx::Image();
+
+  if (page_url.is_empty() || !page_url.is_valid())
+    return gfx::Image();
+
+  // Early exit if we have a cached favicon ready.
   auto cache_iterator = mru_cache_.Get(page_url);
   if (cache_iterator != mru_cache_.end())
     return cache_iterator->second;
 
-  // We don't have the favicon in the cache. We kick off the request and return
-  // an empty gfx::Image.
-  if (!favicon_service_)
+  // Early exit if we've already established that the page lacks a favicon.
+  AgeOutOldCachedEmptyFavicons();
+  if (pages_without_favicons_.Peek(page_url) != pages_without_favicons_.end())
     return gfx::Image();
 
   // We have an outstanding request for this page. Add one more waiting callback
@@ -66,9 +77,11 @@ gfx::Image FaviconCache::GetFaviconForPageUrl(
 void FaviconCache::OnFaviconFetched(
     const GURL& page_url,
     const favicon_base::FaviconImageResult& result) {
-  // TODO(tommycli): Also cache null image results with a reasonable expiry.
-  if (result.image.IsEmpty())
+  if (result.image.IsEmpty()) {
+    pages_without_favicons_.Put(page_url, GetTimeNow());
+    pending_requests_.erase(page_url);
     return;
+  }
 
   mru_cache_.Put(page_url, result.image);
 
@@ -78,6 +91,33 @@ void FaviconCache::OnFaviconFetched(
     std::move(callback).Run(result.image);
   }
   pending_requests_.erase(it);
+}
+
+void FaviconCache::OnURLVisited(history::HistoryService* history_service,
+                                ui::PageTransition transition,
+                                const history::URLRow& row,
+                                const history::RedirectList& redirects,
+                                base::Time visit_time) {
+  auto it = pages_without_favicons_.Peek(row.url());
+  if (it != pages_without_favicons_.end())
+    pages_without_favicons_.Erase(it);
+}
+
+void FaviconCache::AgeOutOldCachedEmptyFavicons() {
+  // TODO(tommycli): This code is based on chrome_browser_net::TimedCache.
+  // Investigate combining.
+  base::TimeDelta max_duration =
+      base::TimeDelta::FromSeconds(kEmptyFaviconCacheLifetimeInSeconds);
+  base::TimeTicks age_cutoff = GetTimeNow() - max_duration;
+  auto eldest = pages_without_favicons_.rbegin();
+  while (eldest != pages_without_favicons_.rend() &&
+         eldest->second <= age_cutoff) {
+    eldest = pages_without_favicons_.Erase(eldest);
+  }
+}
+
+base::TimeTicks FaviconCache::GetTimeNow() {
+  return base::TimeTicks::Now();
 }
 
 void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
