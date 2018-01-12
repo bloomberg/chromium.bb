@@ -2104,6 +2104,38 @@
         "hw_tests_override": null,
         "vm_tests": []
     },
+    "amd64-generic-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "amd64-generic"
+        ]
+    },
+    "amd64-generic-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "amd64-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "amd64-generic-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "amd64-generic"
+        ]
+    },
+    "amd64-generic-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "amd64-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "amd64-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -2591,6 +2623,38 @@
         ],
         "vm_tests": []
     },
+    "arm-generic-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "arm-generic"
+        ]
+    },
+    "arm-generic-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "arm-generic-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "arm-generic"
+        ]
+    },
+    "arm-generic-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "arm-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -2747,6 +2811,38 @@
         ],
         "vm_tests": []
     },
+    "arm64-generic-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "arm64-generic"
+        ]
+    },
+    "arm64-generic-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm64-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "arm64-generic-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "arm64-generic"
+        ]
+    },
+    "arm64-generic-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm64-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "arm64-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -2895,6 +2991,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "arm64-llvmpipe-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "arm64-llvmpipe"
+        ]
+    },
+    "arm64-llvmpipe-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "arm64-llvmpipe-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "arm64-llvmpipe"
+        ]
+    },
+    "arm64-llvmpipe-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "arm64-llvmpipe-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -3507,6 +3635,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "auron-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "auron"
+        ]
+    },
+    "auron-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "auron"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "auron-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "auron"
+        ]
+    },
+    "auron-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "auron"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "auron-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -12900,6 +13060,38 @@
         ],
         "vm_tests": []
     },
+    "coral-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "coral"
+        ]
+    },
+    "coral-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "coral"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "coral-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "coral"
+        ]
+    },
+    "coral-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "coral"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "coral-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -19152,6 +19344,38 @@
         ],
         "vm_tests": []
     },
+    "fizz-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "fizz"
+        ]
+    },
+    "fizz-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "fizz-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "fizz"
+        ]
+    },
+    "fizz-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "fizz-moblab-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -20712,6 +20936,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "glados-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "glados"
+        ]
+    },
+    "glados-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "glados"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "glados-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "glados"
+        ]
+    },
+    "glados-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "glados"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "glados-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -22682,6 +22938,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "grunt-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "grunt"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "grunt-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "grunt"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "grunt-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -26714,6 +27002,38 @@
         ],
         "vm_tests": []
     },
+    "kahlee-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kahlee"
+        ]
+    },
+    "kahlee-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "kahlee"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "kahlee-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kahlee"
+        ]
+    },
+    "kahlee-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "kahlee"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "kahlee-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -28577,6 +28897,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "kunimitsu-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kunimitsu"
+        ]
+    },
+    "kunimitsu-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "kunimitsu"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "kunimitsu-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kunimitsu"
+        ]
+    },
+    "kunimitsu-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "kunimitsu"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "kunimitsu-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -31564,6 +31916,80 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "lasilla-sky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "lasilla-sky-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "lasilla-sky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "lasilla-sky-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "lasilla-sky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -35890,6 +36316,58 @@
         ],
         "vm_tests": []
     },
+    "moblab-generic-vm-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "buildslave_type": "baremetal",
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "moblab-generic-vm-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "buildslave_type": "baremetal",
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "moblab-generic-vm-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "buildslave_type": "baremetal",
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
+    },
+    "moblab-generic-vm-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "buildslave_type": "baremetal",
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
+    },
     "moblab-generic-vm-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -39099,6 +39577,38 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "nyan-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "nyan"
+        ]
+    },
+    "nyan-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "nyan"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "nyan-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "nyan"
+        ]
+    },
+    "nyan-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "nyan"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "nyan-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -46302,6 +46812,38 @@
         ],
         "vm_tests": []
     },
+    "rainier-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "rainier"
+        ]
+    },
+    "rainier-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rainier"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "rainier-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "rainier"
+        ]
+    },
+    "rainier-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rainier"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "rainier-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -46705,6 +47247,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "rambi-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "rambi"
+        ]
+    },
+    "rambi-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rambi"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "rambi-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "rambi"
+        ]
+    },
+    "rambi-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rambi"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "rambi-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -47124,6 +47698,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "reef-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
+    "reef-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "reef"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "reef-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
+    "reef-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "reef"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "reef-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -49171,6 +49777,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "rowan-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "rowan"
+        ]
+    },
+    "rowan-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rowan"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "rowan-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "rowan"
+        ]
+    },
+    "rowan-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "rowan"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "rowan-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -51776,6 +52414,38 @@
         ],
         "vm_tests": []
     },
+    "slippy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "slippy"
+        ]
+    },
+    "slippy-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "slippy"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "slippy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "slippy"
+        ]
+    },
+    "slippy-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "slippy"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "slippy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -52173,6 +52843,50 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "smaug-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "smaug"
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
+    },
+    "smaug-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "smaug"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests_override": null
+    },
+    "smaug-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "smaug"
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
+    },
+    "smaug-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "smaug"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests_override": null
     },
     "smaug-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -55658,6 +56372,128 @@
         ],
         "vm_tests": []
     },
+    "tael-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "tael"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tael-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "tael"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "disk_layout": "base",
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tael-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "tael"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tael-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "tael"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "disk_layout": "base",
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
     "tael-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -55838,6 +56674,128 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "tatl-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "tatl"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tatl-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "tatl"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "disk_layout": "base",
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tatl-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "tatl"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
+    },
+    "tatl-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "tatl"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "disk_layout": "base",
+        "display_label": "tryjob",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ]
     },
     "tatl-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -57892,6 +58850,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "umaro-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "umaro"
+        ]
+    },
+    "umaro-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "umaro"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "umaro-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "umaro"
+        ]
+    },
+    "umaro-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "umaro"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "umaro-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -60938,6 +61928,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_pinky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_pinky"
+        ]
+    },
+    "veyron_pinky-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "veyron_pinky"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "veyron_pinky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_pinky"
+        ]
+    },
+    "veyron_pinky-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "veyron_pinky"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "veyron_pinky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -64818,6 +65840,42 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "x32-generic-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x32-generic"
+        ],
+        "usepkg_toolchain": false
+    },
+    "x32-generic-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x32-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "usepkg_toolchain": false
+    },
+    "x32-generic-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x32-generic"
+        ],
+        "usepkg_toolchain": false
+    },
+    "x32-generic-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x32-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "usepkg_toolchain": false
+    },
     "x32-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -65010,6 +66068,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x86-alex-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-alex"
+        ]
+    },
+    "x86-alex-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-alex"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-alex-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-alex"
+        ]
+    },
+    "x86-alex-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-alex"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "x86-alex-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -65399,6 +66489,38 @@
         ],
         "vm_tests": []
     },
+    "x86-alex_he-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-alex_he"
+        ]
+    },
+    "x86-alex_he-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-alex_he"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-alex_he-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-alex_he"
+        ]
+    },
+    "x86-alex_he-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-alex_he"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "x86-alex_he-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -65760,6 +66882,38 @@
         ],
         "vm_tests": []
     },
+    "x86-generic-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-generic"
+        ]
+    },
+    "x86-generic-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-generic-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-generic"
+        ]
+    },
+    "x86-generic-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-generic"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "x86-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -66012,6 +67166,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x86-mario-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-mario"
+        ]
+    },
+    "x86-mario-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-mario"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-mario-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-mario"
+        ]
+    },
+    "x86-mario-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-mario"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "x86-mario-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -66401,6 +67587,38 @@
         ],
         "vm_tests": []
     },
+    "x86-zgb-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-zgb"
+        ]
+    },
+    "x86-zgb-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-zgb"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-zgb-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-zgb"
+        ]
+    },
+    "x86-zgb-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-zgb"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
     "x86-zgb-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -66788,6 +68006,38 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x86-zgb_he-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x86-zgb_he"
+        ]
+    },
+    "x86-zgb_he-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-zgb_he"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
+    },
+    "x86-zgb_he-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x86-zgb_he"
+        ]
+    },
+    "x86-zgb_he-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "x86-zgb_he"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null
     },
     "x86-zgb_he-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",

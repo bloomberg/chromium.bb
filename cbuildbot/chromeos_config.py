@@ -1918,7 +1918,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
 
   toolchain_tryjob_boards = builder_to_boards_dict[
-      config_lib.CONFIG_TEMPLATE_RELEASE]
+      config_lib.CONFIG_TEMPLATE_RELEASE] | boards_dict['all_boards']
 
   site_config.AddForBoards(
       'llvm-toolchain',
