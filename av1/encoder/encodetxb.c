@@ -588,41 +588,45 @@ static void write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
 }
 
 void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
-                         int mi_col, aom_writer *w, int plane,
-                         BLOCK_SIZE bsize) {
+                         int mi_col, aom_writer *w, BLOCK_SIZE bsize) {
   MACROBLOCKD *xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const int stepr = tx_size_high_unit[tx_size];
-  const int stepc = tx_size_wide_unit[tx_size];
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+  const int num_planes = av1_num_planes(cm);
+  int block[MAX_MB_PLANE] = { 0 };
   int row, col;
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-
-  if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                           pd->subsampling_y))
-    return;
-
-  int blk_row, blk_col;
-  int block = 0;
-  const int step = stepr * stepc;
-  const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+  const struct macroblockd_plane *const y_pd = &xd->plane[0];
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, y_pd);
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
+  const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
+  const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, y_pd);
   int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
   int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
   mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
   mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
   for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
-    const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
     for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
-      const int unit_width = AOMMIN(mu_blocks_wide + col, max_blocks_wide);
+      for (int plane = 0; plane < num_planes; ++plane) {
+        const struct macroblockd_plane *const pd = &xd->plane[plane];
+        if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                                 pd->subsampling_y))
+          continue;
+        const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
+        const int stepr = tx_size_high_unit[tx_size];
+        const int stepc = tx_size_wide_unit[tx_size];
+        const int step = stepr * stepc;
 
-      for (blk_row = row; blk_row < unit_height; blk_row += stepr) {
-        for (blk_col = col; blk_col < unit_width; blk_col += stepc) {
-          write_coeffs_txb_wrap(cm, x, w, plane, block, blk_row, blk_col,
-                                tx_size);
-          block += step;
+        const int unit_height = ROUND_POWER_OF_TWO(
+            AOMMIN(mu_blocks_high + row, max_blocks_high), pd->subsampling_y);
+        const int unit_width = ROUND_POWER_OF_TWO(
+            AOMMIN(mu_blocks_wide + col, max_blocks_wide), pd->subsampling_x);
+        for (int blk_row = row >> pd->subsampling_y; blk_row < unit_height;
+             blk_row += stepr) {
+          for (int blk_col = col >> pd->subsampling_x; blk_col < unit_width;
+               blk_col += stepc) {
+            write_coeffs_txb_wrap(cm, x, w, plane, block[plane], blk_row,
+                                  blk_col, tx_size);
+            block[plane] += step;
+          }
         }
       }
     }

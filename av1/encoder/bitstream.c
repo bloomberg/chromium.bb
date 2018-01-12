@@ -1949,7 +1949,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if !CONFIG_LV_MAP
     assert(*tok < tok_end);
 #endif
-    for (plane = 0; plane < num_planes; ++plane) {
+
+    if (!is_inter_block(mbmi))
+      av1_write_coeffs_mb(cm, x, mi_row, mi_col, w, mbmi->sb_type);
+
+    for (plane = 0; plane < num_planes && is_inter_block(mbmi); ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type, pd->subsampling_x,
                                pd->subsampling_y)) {
@@ -1996,9 +2000,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         }
 #endif  // CONFIG_RD_DEBUG
       } else {
-#if CONFIG_LV_MAP
-        av1_write_coeffs_mb(cm, x, mi_row, mi_col, w, plane, bsize);
-#else
+#if !CONFIG_LV_MAP
         const TX_SIZE tx = av1_get_tx_size(plane, xd);
         const int bkw = tx_size_wide_unit[tx];
         const int bkh = tx_size_high_unit[tx];
