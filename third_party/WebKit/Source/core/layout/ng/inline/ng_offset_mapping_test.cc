@@ -830,4 +830,76 @@ TEST_P(ParameterizedNGOffsetMappingTest, NoWrapSpaceAndCollapsibleSpace) {
             4u, 5u, 8u);
 }
 
+TEST_P(ParameterizedNGOffsetMappingTest, BiDiAroundForcedBreakInPreLine) {
+  SetupHtml("t",
+            "<div id=t style='white-space: pre-line'>"
+            "<bdo dir=rtl id=bdo>foo\nbar</bdo></div>");
+
+  const Node* text = GetElementById("bdo")->firstChild();
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+
+  EXPECT_EQ(String(u"\u202Efoo\u202C"
+                   u"\n"
+                   u"\u202Ebar\u202C"),
+            mapping.GetText());
+
+  // Offset mapping should skip generated BiDi control characters.
+  ASSERT_EQ(3u, mapping.GetUnits().size());
+  TEST_UNIT(mapping.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, text, 0u,
+            3u, 1u, 4u);  // "foo"
+  TEST_UNIT(mapping.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, text, 3u,
+            4u, 5u, 6u);  // "\n"
+  TEST_UNIT(mapping.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, text, 4u,
+            7u, 7u, 10u);  // "bar"
+  TEST_RANGE(mapping.GetRanges(), text, 0u, 3u);
+}
+
+TEST_P(ParameterizedNGOffsetMappingTest, BiDiAroundForcedBreakInPreWrap) {
+  SetupHtml("t",
+            "<div id=t style='white-space: pre-wrap'>"
+            "<bdo dir=rtl id=bdo>foo\nbar</bdo></div>");
+
+  const Node* text = GetElementById("bdo")->firstChild();
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+
+  EXPECT_EQ(String(u"\u202Efoo\u202C"
+                   u"\n"
+                   u"\u202Ebar\u202C"),
+            mapping.GetText());
+
+  // Offset mapping should skip generated BiDi control characters.
+  ASSERT_EQ(3u, mapping.GetUnits().size());
+  TEST_UNIT(mapping.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, text, 0u,
+            3u, 1u, 4u);  // "foo"
+  TEST_UNIT(mapping.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, text, 3u,
+            4u, 5u, 6u);  // "\n"
+  TEST_UNIT(mapping.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, text, 4u,
+            7u, 7u, 10u);  // "bar"
+  TEST_RANGE(mapping.GetRanges(), text, 0u, 3u);
+}
+
+TEST_P(ParameterizedNGOffsetMappingTest, BiDiAroundForcedBreakInPre) {
+  SetupHtml("t",
+            "<div id=t style='white-space: pre'>"
+            "<bdo dir=rtl id=bdo>foo\nbar</bdo></div>");
+
+  const Node* text = GetElementById("bdo")->firstChild();
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+
+  EXPECT_EQ(String(u"\u202Efoo\u202C"
+                   u"\n"
+                   u"\u202Ebar\u202C"),
+            mapping.GetText());
+
+  // Offset mapping should skip generated BiDi control characters.
+  ASSERT_EQ(3u, mapping.GetUnits().size());
+  TEST_UNIT(mapping.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, text, 0u,
+            3u, 1u, 4u);  // "foo"
+  TEST_UNIT(mapping.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, text, 3u,
+            4u, 5u, 6u);  // "\n"
+  TEST_UNIT(mapping.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, text, 4u,
+            7u, 7u, 10u);  // "bar"
+  TEST_RANGE(mapping.GetRanges(), text, 0u, 3u);
+}
+
 }  // namespace blink

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -26,16 +27,6 @@ class CORE_EXPORT NGOffsetMappingBuilder {
  public:
   NGOffsetMappingBuilder();
 
-  // Associate the offset mapping with a simple annotation with the given node
-  // as its value.
-  void Annotate(const LayoutObject*);
-
-  // Annotate the offset range with the given node.
-  void AnnotateRange(unsigned start, unsigned end, const LayoutObject*);
-
-  // Annotatie the offset range ending at domain end of the specified length.
-  void AnnotateSuffix(unsigned length, const LayoutObject*);
-
   // Append an identity offset mapping of the specified length with null
   // annotation to the builder.
   void AppendIdentityMapping(unsigned length);
@@ -49,6 +40,54 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // Append an expanded offset mapping to the specified length with null
   // annotation to the builder.
   // void AppendExpandedMapping(unsigned length);
+
+  // A scope-like object that, mappings appended inside the scope are marked as
+  // from the given source node. When multiple scopes nest, only the inner-most
+  // scope is effective. Note that at most one of the nested scopes may have a
+  // non-null node.
+  //
+  // Example:
+  //
+  // NGOffsetMappingBuilder builder;
+  //
+  // {
+  //   NGOffsetMappingBuilder::SourceNodeScope scope(&builder, node);
+  //
+  //   // These 3 characters are marked as from source node |node|.
+  //   builder.AppendIdentity(3);
+  //
+  //   {
+  //     NGOffsetMappingBuilder::SourceNodeScope unset_scope(&builder, nullptr);
+  //
+  //     // This character is marked as having no source node.
+  //     builder.AppendCollapsed(1);
+  //   }
+  //
+  //   // These 2 characters are marked as from source node |node|.
+  //   builder.AppendIdentity(2);
+  //
+  //   // Not allowed.
+  //   // NGOffsetMappingBuilder::SourceNodeScope scope(&builder, node2);
+  // }
+  //
+  // // This character is marked as having no source node.
+  // builder.AppendIdentity(1);
+  class SourceNodeScope {
+    STACK_ALLOCATED();
+
+   public:
+    SourceNodeScope(NGOffsetMappingBuilder* builder, const LayoutObject* node);
+    ~SourceNodeScope();
+
+   private:
+    AutoReset<const LayoutObject*> auto_reset_;
+
+#if DCHECK_IS_ON()
+    NGOffsetMappingBuilder* builder_ = nullptr;
+#endif
+
+    DISALLOW_COPY_AND_ASSIGN(SourceNodeScope);
+  };
 
   // This function should only be called by NGInlineItemsBuilder during
   // whitespace collapsing, and in the case that the target string of the
@@ -91,6 +130,11 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // will be replaced by a real efficient implementation.
   Vector<unsigned> mapping_;
 
+  const LayoutObject* current_source_node_ = nullptr;
+#if DCHECK_IS_ON()
+  bool has_nonnull_node_scope_ = false;
+#endif
+
   // A mock implementation that stores the annotation value of all offsets in
   // the plain way. It will be replaced by a real implementation for efficiency.
   Vector<const LayoutObject*> annotation_;
@@ -104,6 +148,8 @@ class CORE_EXPORT NGOffsetMappingBuilder {
     bool is_enter;
   };
   Vector<InlineBoundary> boundaries_;
+
+  friend class SourceNodeScope;
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingBuilder);
 };
