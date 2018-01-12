@@ -19,6 +19,7 @@
 #include "base/win/windows_version.h"
 #include "media/capture/video/win/capability_list_win.h"
 #include "media/capture/video/win/sink_filter_win.h"
+#include "media/capture/video/win/video_capture_device_utils_win.h"
 
 using base::win::ScopedCoMem;
 
@@ -127,8 +128,8 @@ class MFReaderCallback final
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
         buffer->Lock(&data, &max_length, &length);
-        observer_->OnIncomingCapturedData(data, length, 0, reference_time,
-                                          timestamp);
+        observer_->OnIncomingCapturedData(data, length, GetCameraRotation(),
+                                          reference_time, timestamp);
         buffer->Unlock();
       }
     }
