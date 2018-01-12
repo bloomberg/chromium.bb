@@ -39,6 +39,8 @@ per-file include_tracer.py=thakis@chromium.org
 
 per-file ipc_messages_log.py=yfriedman@chromium.org
 
+per-file licenses.py=ichikawa@chromium.org
+
 per-file remove_stale_pyc_files.py=dtu@chromium.org
 
 per-file roll_angle.py=kbr@chromium.org
