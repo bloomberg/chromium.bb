@@ -5,8 +5,11 @@
 #include "chrome/profiling/profiling_service.h"
 
 #include "base/logging.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 
 namespace profiling {
 
@@ -74,14 +77,17 @@ void ProfilingService::DumpProcessesForTracing(
     bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     DumpProcessesForTracingCallback callback) {
+  if (!helper_) {
+    context()->connector()->BindInterface(
+        resource_coordinator::mojom::kServiceName, &helper_);
+  }
+
   // Need a memory map to make sense of the dump. The dump will be triggered
   // in the memory map global dump callback.
-  // TODO(brettw) this should be a OnceCallback to avoid base::Passed.
-  memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->GetVmRegionsForHeapProfiler(base::Bind(
-          &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
-          weak_factory_.GetWeakPtr(), keep_small_allocations,
-          strip_path_from_mapped_files, base::Passed(&callback)));
+  helper_->GetVmRegionsForHeapProfiler(base::Bind(
+      &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
+      weak_factory_.GetWeakPtr(), keep_small_allocations,
+      strip_path_from_mapped_files, base::Passed(&callback)));
 }
 
 void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {

@@ -72,6 +72,9 @@ void ResourceCoordinatorService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
       base::Unretained(memory_instrumentation_coordinator_.get())));
+  registry_.AddInterface(base::BindRepeating(
+      &memory_instrumentation::CoordinatorImpl::BindHeapProfilerHelperRequest,
+      base::Unretained(memory_instrumentation_coordinator_.get())));
 
   tracing_agent_registry_ = std::make_unique<tracing::AgentRegistry>();
   registry_.AddInterface(

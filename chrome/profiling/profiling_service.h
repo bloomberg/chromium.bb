@@ -75,6 +75,7 @@ class ProfilingService : public service_manager::Service,
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::ProfilingService> binding_set_;
 
+  memory_instrumentation::mojom::HeapProfilerHelperPtr helper_;
   MemlogConnectionManager connection_manager_;
 
   // Must be last.

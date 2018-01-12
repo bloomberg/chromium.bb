@@ -81,15 +81,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
       MemoryDumpLevelOfDetail,
       RequestGlobalMemoryDumpAndAppendToTraceCallback);
 
-  // Requests a global dump retrieving only the memory maps for all the client
-  // processes registered. Does not add anything to the trace. The returned
-  // GlobalMemoryDump will have only the |os_dump| field populated.
-  // Returns asynchronously, via the callback argument:
-  //  (true, global_dump) if succeeded;
-  //  (false, nullptr) if failed.
-  // The callback will be posted on the same thread of the caller.
-  void GetVmRegionsForHeapProfiler(RequestGlobalDumpCallback);
-
  private:
   MemoryInstrumentation(service_manager::Connector* connector,
                         const std::string& service_name);

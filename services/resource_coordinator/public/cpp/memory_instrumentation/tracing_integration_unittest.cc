@@ -130,9 +130,6 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
       MemoryDumpLevelOfDetail level_of_detail,
       const RequestGlobalMemoryDumpAndAppendToTraceCallback&) override;
 
-  void GetVmRegionsForHeapProfiler(
-      const GetVmRegionsForHeapProfilerCallback&) override {}
-
  private:
   mojo::BindingSet<mojom::Coordinator> bindings_;
   MemoryTracingIntegrationTest* client_;

@@ -12,6 +12,7 @@
           "resource_coordinator::mojom::CoordinationUnitIntrospector"
         ],
         "coordination_unit": [ "resource_coordinator::mojom::CoordinationUnitProvider" ],
+        "heap_profiling": [ "memory_instrumentation::mojom::HeapProfilerHelper" ],
         "page_signal": [ "resource_coordinator::mojom::PageSignalGenerator" ],
         "tracing": [ "tracing::mojom::Coordinator" ],
         "tests": [ "*" ]
