@@ -2231,6 +2231,12 @@ be describing additional metrics about the same event.
       0, [5%, 10%) is mapped to 5 etc.
     </summary>
   </metric>
+  <metric name="DeviceManagement">
+    <summary>
+      An enum representing whether the device is managed, defined in
+      |chromeos::power::ml::UserActivityEvent::Features::ManagementType|.
+    </summary>
+  </metric>
   <metric name="DeviceMode">
     <summary>
       An enum representing the mode of the device, defined in

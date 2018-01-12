@@ -42,6 +42,7 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
     features->set_device_type(UserActivityEvent::Features::CHROMEBOOK);
     features->set_device_mode(UserActivityEvent::Features::CLAMSHELL);
     features->set_battery_percent(96.0);
+    features->set_device_management(UserActivityEvent::Features::UNMANAGED);
   }
 
   void UpdateOpenTabsURLs() {
@@ -69,7 +70,9 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
       {UserActivity::kRecentTimeActiveName, 10},
       {UserActivity::kDeviceTypeName, 1},  // CHROMEBOOK
       {UserActivity::kDeviceModeName, 2},  // CLAMSHELL
-      {UserActivity::kBatteryPercentName, 95}};
+      {UserActivity::kBatteryPercentName, 95},
+      {UserActivity::kDeviceManagementName, 2}  // UNMANAGED
+  };
 
  private:
   UserActivityEvent user_activity_event_;
