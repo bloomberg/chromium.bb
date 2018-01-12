@@ -17,7 +17,7 @@ Running: selectIframeNode
 Execution Context: main
           matches: true
 
-Running: selectIframeImmediateChild
+Running: selectIframeContentDocument
 Execution Context: iframe
           matches: true
 
