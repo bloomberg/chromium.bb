@@ -31,7 +31,6 @@ struct GpuPreferences;
 class MailboxManager;
 class TransferBufferManager;
 class ServiceDiscardableManager;
-class ServiceTransferCache;
 class DecoderContext;
 
 namespace gles2 {
@@ -204,8 +203,6 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return discardable_manager_;
   }
 
-  ServiceTransferCache* transfer_cache() const { return transfer_cache_.get(); }
-
   uint32_t GetMemRepresented() const;
 
   // Loses all the context associated with this group.
@@ -322,14 +319,6 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   GpuFeatureInfo gpu_feature_info_;
 
   ServiceDiscardableManager* discardable_manager_;
-
-  // ServiceTransferCache uses Ids based on transfer buffer shm_id+offset, which
-  // are guaranteed to be unique within the scope of the TransferBufferManager
-  // which generates them. Because of this, |transfer_cache_| must have the same
-  // scope as |transfer_buffer_manager_|. In the future, we could add a channel
-  // Id to allow a single ServiceTransferCache to be shared among multiple
-  // ContextGroups.
-  std::unique_ptr<ServiceTransferCache> transfer_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

@@ -216,6 +216,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Gets the ImageManager for this context.
   ImageManager* GetImageManagerForTest() override;
 
+  ServiceTransferCache* GetTransferCacheForTest() override;
+
   // Returns false if there are no pending queries.
   bool HasPendingQueries() const override;
 

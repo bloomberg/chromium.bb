@@ -211,8 +211,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   static void InitializeDefaultServiceForTesting(
       const GpuFeatureInfo& gpu_feature_info);
 
-  gpu::gles2::ContextGroup* ContextGroupForTesting() const {
-    return context_group_.get();
+  gpu::ServiceTransferCache* GetTransferCacheForTest() const {
+    return decoder_->GetTransferCacheForTest();
   }
 
   // The serializer interface to the GPU service (i.e. thread).
@@ -249,7 +249,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     ServiceDiscardableManager* discardable_manager() {
       return &discardable_manager_;
     }
-    ServiceTransferCache* transfer_cache() { return &transfer_cache_; }
     gles2::ShaderTranslatorCache* shader_translator_cache() {
       return &shader_translator_cache_;
     }
@@ -269,7 +268,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     GpuProcessActivityFlags activity_flags_;
     gles2::ImageManager image_manager_;
     ServiceDiscardableManager discardable_manager_;
-    ServiceTransferCache transfer_cache_;
     gles2::ShaderTranslatorCache shader_translator_cache_;
     gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   };

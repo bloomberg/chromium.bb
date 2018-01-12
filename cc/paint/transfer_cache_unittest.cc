@@ -66,7 +66,7 @@ class TransferCacheTest : public testing::Test {
   void TearDown() override { context_.reset(); }
 
   gpu::ServiceTransferCache* ServiceTransferCache() {
-    return context_->ContextGroupForTesting()->transfer_cache();
+    return context_->GetTransferCacheForTest();
   }
 
   gpu::gles2::GLES2Implementation* Gl() {
