@@ -23,7 +23,6 @@
 interface HTMLAnchorElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
     [CEReactions, Reflect] attribute DOMString download;
-    // FIXME: ping should be a DOMTokenList.
     [CEReactions, Reflect] attribute USVString ping;
     [CEReactions, Reflect] attribute DOMString rel;
     [SameObject, PutForwards=value] readonly attribute DOMTokenList relList;
