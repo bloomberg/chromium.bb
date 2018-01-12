@@ -728,30 +728,6 @@ void ServiceWorkerContextCore::DeleteAndStartOver(
   storage_->DeleteAndStartOver(callback);
 }
 
-std::unique_ptr<ServiceWorkerProviderHost>
-ServiceWorkerContextCore::TransferProviderHostOut(int process_id,
-                                                  int provider_id) {
-  ProviderMap* map = GetProviderMapForProcess(process_id);
-  ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
-  std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
-      transferee->PrepareForCrossSiteTransfer();
-  return map->Replace(provider_id, std::move(provisional_host));
-}
-
-void ServiceWorkerContextCore::TransferProviderHostIn(
-    int new_process_id,
-    int new_provider_id,
-    std::unique_ptr<ServiceWorkerProviderHost> transferee) {
-  ProviderMap* map = GetProviderMapForProcess(new_process_id);
-  ServiceWorkerProviderHost* provisional_host = map->Lookup(new_provider_id);
-  if (!provisional_host)
-    return;
-
-  DCHECK(provisional_host->document_url().is_empty());
-  transferee->CompleteCrossSiteTransfer(provisional_host);
-  map->Replace(new_provider_id, std::move(transferee));
-}
-
 void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
