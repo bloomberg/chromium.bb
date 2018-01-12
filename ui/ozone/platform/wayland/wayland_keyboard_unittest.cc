@@ -74,6 +74,78 @@ TEST_P(WaylandKeyboardTest, Keypress) {
   EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
 }
 
+TEST_P(WaylandKeyboardTest, AltModifierKeypress) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Alt
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 56 /* left Alt */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsKeyEvent());
+
+  auto* key_event = event->AsKeyEvent();
+
+  EXPECT_EQ(ui::EF_ALT_DOWN, key_event->flags());
+  EXPECT_EQ(ui::VKEY_MENU, key_event->key_code());
+  EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
+}
+
+TEST_P(WaylandKeyboardTest, ControlModifierKeypress) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Control
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 29 /* left Control */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsKeyEvent());
+
+  auto* key_event = event->AsKeyEvent();
+
+  EXPECT_EQ(ui::EF_CONTROL_DOWN, key_event->flags());
+  EXPECT_EQ(ui::VKEY_CONTROL, key_event->key_code());
+  EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
+}
+
+TEST_P(WaylandKeyboardTest, ShiftModifierKeypress) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Shift
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 42 /* left Shift */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsKeyEvent());
+
+  auto* key_event = event->AsKeyEvent();
+
+  EXPECT_EQ(ui::EF_SHIFT_DOWN, key_event->flags());
+  EXPECT_EQ(ui::VKEY_SHIFT, key_event->key_code());
+  EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
+}
+
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
                         WaylandKeyboardTest,
                         ::testing::Values(kXdgShellV5));

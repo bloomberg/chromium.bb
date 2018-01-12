@@ -24,37 +24,6 @@ namespace {
 const int kRepeatDelayMs = 500;
 const int kRepeatIntervalMs = 50;
 
-int EventFlagToEvdevModifier(int flag) {
-  switch (flag) {
-    case EF_SHIFT_DOWN:
-      return MODIFIER_SHIFT;
-    case EF_CONTROL_DOWN:
-      return MODIFIER_CONTROL;
-    case EF_ALT_DOWN:
-      return MODIFIER_ALT;
-    case EF_COMMAND_DOWN:
-      return MODIFIER_COMMAND;
-    case EF_ALTGR_DOWN:
-      return MODIFIER_ALTGR;
-    case EF_MOD3_DOWN:
-      return MODIFIER_MOD3;
-    case EF_CAPS_LOCK_ON:
-      return MODIFIER_CAPS_LOCK;
-    case EF_LEFT_MOUSE_BUTTON:
-      return MODIFIER_LEFT_MOUSE_BUTTON;
-    case EF_MIDDLE_MOUSE_BUTTON:
-      return MODIFIER_MIDDLE_MOUSE_BUTTON;
-    case EF_RIGHT_MOUSE_BUTTON:
-      return MODIFIER_RIGHT_MOUSE_BUTTON;
-    case EF_BACK_MOUSE_BUTTON:
-      return MODIFIER_BACK_MOUSE_BUTTON;
-    case EF_FORWARD_MOUSE_BUTTON:
-      return MODIFIER_FORWARD_MOUSE_BUTTON;
-    default:
-      return MODIFIER_NONE;
-  }
-}
-
 }  // namespace
 
 KeyboardEvdev::KeyboardEvdev(EventModifiers* modifiers,
@@ -127,7 +96,7 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
   if (modifier_flag == EF_NONE)
     return;
 
-  int modifier = EventFlagToEvdevModifier(modifier_flag);
+  int modifier = EventModifiers::GetModifierFromEventFlag(modifier_flag);
   if (modifier == MODIFIER_NONE)
     return;
 

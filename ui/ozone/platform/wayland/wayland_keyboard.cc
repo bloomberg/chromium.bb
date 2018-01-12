@@ -14,6 +14,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/layout_util.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
@@ -108,8 +109,12 @@ void WaylandKeyboard::Key(void* data,
           dom_code, flags, &dom_key, &key_code))
     return;
 
-  // TODO(tonikitoo): handle repeat here.
   bool down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
+
+  // TODO(tonikitoo,msisov): only the two lines below if not handling repeat.
+  int flag = ModifierDomKeyToEventFlag(dom_key);
+  keyboard->UpdateModifier(flag, down);
+
   ui::KeyEvent event(
       down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
       keyboard->event_modifiers_.GetModifierFlags(), dom_key,
@@ -138,6 +143,18 @@ void WaylandKeyboard::RepeatInfo(void* data,
                                  int32_t delay) {
   // TODO(tonikitoo): Implement proper repeat handling.
   NOTIMPLEMENTED();
+}
+
+void WaylandKeyboard::UpdateModifier(int modifier_flag, bool down) {
+  if (modifier_flag == EF_NONE)
+    return;
+
+  int modifier = EventModifiers::GetModifierFromEventFlag(modifier_flag);
+  if (modifier == MODIFIER_NONE)
+    return;
+
+  // TODO(tonikitoo,msisov) handle capslock here.
+  event_modifiers_.UpdateModifier(modifier, down);
 }
 
 }  // namespace ui
