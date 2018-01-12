@@ -132,8 +132,8 @@ class HashSet {
   ValueType Take(ValuePeekInType);
   ValueType TakeAny();
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
     impl_.Trace(visitor);
   }
 

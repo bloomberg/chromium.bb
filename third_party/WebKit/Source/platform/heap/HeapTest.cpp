@@ -79,12 +79,25 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
   IntWrapper() = delete;
   int x_;
 };
+
+struct IntWrapperHash {
+  static unsigned GetHash(const IntWrapper& key) {
+    return WTF::HashInt(static_cast<uint32_t>(key.Value()));
+  }
+
+  static bool Equal(const IntWrapper& a, const IntWrapper& b) { return a == b; }
+};
+
 static_assert(WTF::IsTraceable<IntWrapper>::value,
               "IsTraceable<> template failed to recognize trace method.");
 static_assert(WTF::IsTraceable<HeapVector<IntWrapper>>::value,
               "HeapVector<IntWrapper> must be traceable.");
 static_assert(WTF::IsTraceable<HeapDeque<IntWrapper>>::value,
               "HeapDeque<IntWrapper> must be traceable.");
+static_assert(WTF::IsTraceable<HeapHashSet<IntWrapper, IntWrapperHash>>::value,
+              "HeapHashSet<IntWrapper> must be traceable.");
+static_assert(WTF::IsTraceable<HeapHashMap<int, IntWrapper>>::value,
+              "HeapHashMap<int, IntWrapper> must be traceable.");
 
 class KeyWithCopyingMoveConstructor final {
  public:
