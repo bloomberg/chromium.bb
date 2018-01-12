@@ -321,7 +321,7 @@ html[dir=rtl] #fakebox > input {
 
 #fakebox-text {
   bottom: 4px;
-  color: rgba(0, 0, 0, 0.38);
+  color: rgba(0, 0, 0, 0.42);
   font-family: arial, sans-serif;
   font-size: 16px;
   left: 13px;
