@@ -118,7 +118,7 @@ class NetworkHandler : public DevToolsDomainHandler,
       override;
 
   void NavigationPreloadRequestSent(const std::string& request_id,
-                                    const ResourceRequest& request);
+                                    const network::ResourceRequest& request);
   void NavigationPreloadResponseReceived(const std::string& request_id,
                                          const GURL& url,
                                          const ResourceResponseHead& head);

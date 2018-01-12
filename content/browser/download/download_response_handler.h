@@ -34,7 +34,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
     virtual void OnReceiveRedirect() = 0;
   };
 
-  DownloadResponseHandler(ResourceRequest* resource_request,
+  DownloadResponseHandler(network::ResourceRequest* resource_request,
                           Delegate* delegate,
                           std::unique_ptr<DownloadSaveInfo> save_info,
                           bool is_parallel_request,

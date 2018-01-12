@@ -179,7 +179,7 @@ class FakeURLLoaderFactory final : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
@@ -210,7 +210,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     fetch_event_count_++;
@@ -223,13 +223,13 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   }
 
   int fetch_event_count() const { return fetch_event_count_; }
-  const ResourceRequest& fetch_event_request() const {
+  const network::ResourceRequest& fetch_event_request() const {
     return fetch_event_request_;
   }
 
  private:
   int fetch_event_count_ = 0;
-  ResourceRequest fetch_event_request_;
+  network::ResourceRequest fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
   mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
 
@@ -276,7 +276,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   }
 
   void StartRequest(mojom::URLLoaderFactory* factory, const GURL& url) {
-    ResourceRequest request;
+    network::ResourceRequest request;
     request.url = url;
     request.resource_type = static_cast<int>(RESOURCE_TYPE_SUB_RESOURCE);
     mojom::URLLoaderPtr loader;

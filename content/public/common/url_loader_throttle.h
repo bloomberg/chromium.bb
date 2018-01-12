@@ -15,9 +15,12 @@ namespace net {
 struct RedirectInfo;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 
-struct ResourceRequest;
 struct ResourceResponseHead;
 
 // A URLLoaderThrottle gets notified at various points during the process of
@@ -65,7 +68,7 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void DetachFromCurrentSequence();
 
   // Called before the resource request is started.
-  virtual void WillStartRequest(ResourceRequest* request, bool* defer);
+  virtual void WillStartRequest(network::ResourceRequest* request, bool* defer);
 
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new

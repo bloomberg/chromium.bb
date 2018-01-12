@@ -6,4 +6,5 @@ include_rules = [
   "+ipc",
   "+mojo/public/cpp",
   "+net/http/redirect_info.h",
+  "+services/network/public/cpp",
 ]

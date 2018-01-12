@@ -34,7 +34,7 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!ShouldHandleScriptRequest(resource_request)) {
@@ -64,7 +64,7 @@ void ServiceWorkerScriptURLLoaderFactory::Clone(
 }
 
 bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
-    const ResourceRequest& resource_request) {
+    const network::ResourceRequest& resource_request) {
   if (!context_ || !provider_host_)
     return false;
 

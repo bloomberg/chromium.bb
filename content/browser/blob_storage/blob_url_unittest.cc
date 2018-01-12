@@ -273,7 +273,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       GetHandleFromBuilder();  // To add to StorageContext.
       const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
           .CreateUrlMapping(url, blob_data_->uuid());
-      ResourceRequest request;
+      network::ResourceRequest request;
       request.url = url;
       request.method = method;
       request.headers = extra_headers;

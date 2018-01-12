@@ -139,7 +139,7 @@ void DataAvailable(scoped_refptr<ResourceResponse> headers,
                                 source, std::move(client_info), bytes));
 }
 
-void StartURLLoader(const ResourceRequest& request,
+void StartURLLoader(const network::ResourceRequest& request,
                     int frame_tree_node_id,
                     mojom::URLLoaderClientPtrInfo client_info,
                     ResourceContext* resource_context) {
@@ -232,7 +232,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& request,
+                            const network::ResourceRequest& request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {

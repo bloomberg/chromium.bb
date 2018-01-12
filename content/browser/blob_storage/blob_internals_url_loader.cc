@@ -11,7 +11,7 @@
 namespace content {
 
 void StartBlobInternalsURLLoader(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderClientPtrInfo client_info,
     ChromeBlobStorageContext* blob_storage_context) {
   scoped_refptr<net::HttpResponseHeaders> headers(

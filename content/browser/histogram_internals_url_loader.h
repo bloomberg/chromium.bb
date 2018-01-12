@@ -10,7 +10,7 @@
 namespace content {
 
 // Creates the data for chrome://histograms.
-void StartHistogramInternalsURLLoader(const ResourceRequest& request,
+void StartHistogramInternalsURLLoader(const network::ResourceRequest& request,
                                       mojom::URLLoaderClientPtr client);
 }  // namespace content
 

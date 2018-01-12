@@ -75,7 +75,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
@@ -188,7 +188,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     int request_id = 10;
     uint32_t options = 0;
 
-    ResourceRequest request;
+    network::ResourceRequest request;
     request.url = version_->script_url();
     request.method = "GET";
     // TODO(nhiroki): Test importScripts() cases.

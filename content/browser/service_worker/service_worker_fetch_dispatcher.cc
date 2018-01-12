@@ -93,7 +93,7 @@ class DelegatingURLLoader final : public mojom::URLLoader {
 };
 
 void NotifyNavigationPreloadRequestSentOnUI(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -130,7 +130,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   using WorkerId = std::pair<int, int>;
   explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client,
                                      base::OnceClosure on_response,
-                                     const ResourceRequest& request)
+                                     const network::ResourceRequest& request)
       : binding_(this),
         client_(std::move(client)),
         on_response_(std::move(on_response)),
@@ -455,7 +455,7 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
 
 // S13nServiceWorker
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<ServiceWorkerVersion> version,
     const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
@@ -711,7 +711,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       mojo::MakeRequest(&url_loader_factory),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
   // TODO(horo): Set site_for_cookies to support Same-site Cookies.
@@ -775,7 +775,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
 // S13nServiceWorker
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
-    const ResourceRequest& original_request,
+    const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
     base::OnceClosure on_response) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
@@ -788,7 +788,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   if (request_->request_body)
     return false;
 
-  ResourceRequest resource_request(original_request);
+  network::ResourceRequest resource_request(original_request);
   // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
   // for the service worker navigation preload request.
   resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;

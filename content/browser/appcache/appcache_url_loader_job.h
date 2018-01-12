@@ -17,7 +17,6 @@
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"

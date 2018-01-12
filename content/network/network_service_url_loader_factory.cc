@@ -8,7 +8,7 @@
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/network/url_loader.h"
-#include "content/public/common/resource_request.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& url_request,
+    const network::ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   bool report_raw_headers = false;

@@ -37,6 +37,7 @@ struct RedirectInfo;
 }
 
 namespace network {
+struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 }
 
@@ -44,7 +45,6 @@ namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
 struct ResourceResponseInfo;
-struct ResourceRequest;
 struct ResourceResponseHead;
 struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
@@ -84,7 +84,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
   virtual void StartSync(
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -102,7 +102,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   // You can pass an optional argument |loading_task_runner| to specify task
   // queue to execute loading tasks on.
   virtual int StartAsync(
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const url::Origin& frame_origin,

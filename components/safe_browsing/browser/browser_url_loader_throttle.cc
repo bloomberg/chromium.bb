@@ -9,10 +9,10 @@
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/utils.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace safe_browsing {
 
@@ -45,7 +45,7 @@ BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
 }
 
 void BrowserURLLoaderThrottle::WillStartRequest(
-    content::ResourceRequest* request,
+    network::ResourceRequest* request,
     bool* defer) {
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);

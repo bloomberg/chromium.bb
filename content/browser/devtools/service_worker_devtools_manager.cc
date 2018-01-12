@@ -179,7 +179,7 @@ void ServiceWorkerDevToolsManager::NavigationPreloadRequestSent(
     int worker_process_id,
     int worker_route_id,
     const std::string& request_id,
-    const ResourceRequest& request) {
+    const network::ResourceRequest& request) {
   const WorkerId worker_id(worker_process_id, worker_route_id);
   auto it = live_hosts_.find(worker_id);
   if (it == live_hosts_.end())

@@ -1165,7 +1165,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
         base::FeatureList::IsEnabled(features::kNetworkService)) {
       // TODO(arthursonzogni): Pass the real ResourceRequest. For the moment
       // only these 4 parameters will be used, but it may evolve quickly.
-      auto resource_request = std::make_unique<ResourceRequest>();
+      auto resource_request = std::make_unique<network::ResourceRequest>();
       resource_request->url = common_params_.url;
       resource_request->method = common_params_.method;
       resource_request->request_initiator = begin_params_->initiator_origin;

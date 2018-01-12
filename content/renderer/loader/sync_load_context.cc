@@ -8,17 +8,17 @@
 
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
 // static
 void SyncLoadContext::StartAsyncWithWaitableEvent(
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -37,7 +37,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
 }
 
 SyncLoadContext::SyncLoadContext(
-    ResourceRequest* request,
+    network::ResourceRequest* request,
     mojom::URLLoaderFactoryPtrInfo url_loader_factory,
     SyncLoadResponse* response,
     base::WaitableEvent* event)

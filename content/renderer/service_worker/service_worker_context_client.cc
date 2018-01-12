@@ -205,7 +205,7 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
   return web_client_info;
 }
 
-void ToWebServiceWorkerRequest(const ResourceRequest& request,
+void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
                                blink::WebServiceWorkerRequest* web_request) {
   DCHECK(web_request);
   web_request->SetURL(blink::WebURL(request.url));
@@ -1284,7 +1284,7 @@ void ServiceWorkerContextClient::Claim(
 }
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
@@ -1558,7 +1558,7 @@ void ServiceWorkerContextClient::DispatchLegacyFetchEvent(
 
 // S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {

@@ -42,7 +42,7 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   // Instances of CORSURLLoader are owned by this class and their pipe so that

@@ -16,10 +16,10 @@ class URLRequest;
 
 namespace network {
 struct HttpRawRequestResponseInfo;
+struct ResourceRequest;
 }
 
 namespace content {
-struct ResourceRequest;
 struct ResourceResponse;
 
 // Helper utilities shared between network service and ResourceDispatcherHost
@@ -38,7 +38,7 @@ scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
 
 void AttachAcceptHeader(ResourceType type, net::URLRequest* request);
 
-int BuildLoadFlagsForRequest(const ResourceRequest& request_data);
+int BuildLoadFlagsForRequest(const network::ResourceRequest& request_data);
 
 }  // namespace content
 

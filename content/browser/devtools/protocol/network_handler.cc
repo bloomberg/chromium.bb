@@ -39,7 +39,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -50,6 +49,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -975,7 +975,7 @@ Response NetworkHandler::SetBypassServiceWorker(bool bypass) {
 
 void NetworkHandler::NavigationPreloadRequestSent(
     const std::string& request_id,
-    const ResourceRequest& request) {
+    const network::ResourceRequest& request) {
   if (!enabled_)
     return;
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());

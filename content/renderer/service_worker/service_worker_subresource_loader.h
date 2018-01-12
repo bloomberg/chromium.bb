@@ -43,7 +43,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      const ResourceRequest& resource_request,
+      const network::ResourceRequest& resource_request,
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
@@ -57,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
  private:
   void DeleteSoon();
 
-  void StartRequest(const ResourceRequest& resource_request);
+  void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
   void OnFetchEventFinished(blink::mojom::ServiceWorkerEventStatus status,
                             base::Time dispatch_event_time);
@@ -112,7 +112,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
-  std::unique_ptr<ResourceRequest> inflight_fetch_request_;
+  std::unique_ptr<network::ResourceRequest> inflight_fetch_request_;
   bool fetch_request_restarted_;
 
   // These are given by the constructor (as the params for
@@ -123,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   // |resource_request_| changes due to redirects.
-  ResourceRequest resource_request_;
+  network::ResourceRequest resource_request_;
 
   // For network fallback.
   scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter_;
@@ -163,7 +163,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& resource_request,
+                            const network::ResourceRequest& resource_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;

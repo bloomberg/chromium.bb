@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

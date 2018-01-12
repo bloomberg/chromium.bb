@@ -16,13 +16,13 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/resource_request.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -158,11 +158,12 @@ DownloadInterruptReason HandleRequestCompletionStatus(
       error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
 }
 
-std::unique_ptr<ResourceRequest> CreateResourceRequest(
+std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     DownloadUrlParameters* params) {
   DCHECK(params->offset() >= 0);
 
-  std::unique_ptr<ResourceRequest> request(new ResourceRequest);
+  std::unique_ptr<network::ResourceRequest> request(
+      new network::ResourceRequest);
   request->method = params->method();
   request->url = params->url();
   request->request_initiator = params->initiator();

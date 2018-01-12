@@ -43,7 +43,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      ResourceRequest* url_request,
+      network::ResourceRequest* url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -59,7 +59,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       StartLoaderCallback start_loader_callback,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       int32_t routing_id,
-      ResourceRequest* url_request,
+      network::ResourceRequest* url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -97,7 +97,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
              int32_t request_id,
              uint32_t options,
              StartLoaderCallback start_loader_callback,
-             ResourceRequest* url_request,
+             network::ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void StartNow(mojom::URLLoaderFactory* factory,
@@ -105,7 +105,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
                 int32_t request_id,
                 uint32_t options,
                 StartLoaderCallback start_loader_callback,
-                ResourceRequest* url_request,
+                network::ResourceRequest* url_request,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Processes the result of a URLLoaderThrottle call, adding the throttle to
@@ -188,7 +188,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
               int32_t in_request_id,
               uint32_t in_options,
               StartLoaderCallback in_start_loader_callback,
-              ResourceRequest* in_url_request,
+              network::ResourceRequest* in_url_request,
               scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
     ~StartInfo();
 
@@ -199,7 +199,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
 
     StartLoaderCallback start_loader_callback;
 
-    ResourceRequest url_request;
+    network::ResourceRequest url_request;
     // |task_runner_| is used to set up |client_binding_|.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };

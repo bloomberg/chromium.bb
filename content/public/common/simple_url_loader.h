@@ -24,9 +24,12 @@ struct NetworkTrafficAnnotationTag;
 struct RedirectInfo;
 }  // namespace net
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 
-struct ResourceRequest;
 struct ResourceResponseHead;
 
 namespace mojom {
@@ -95,7 +98,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // started by calling any one of the Download methods once. The loader may not
   // be reused.
   static std::unique_ptr<SimpleURLLoader> Create(
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       const net::NetworkTrafficAnnotationTag& annotation_tag);
 
   virtual ~SimpleURLLoader();

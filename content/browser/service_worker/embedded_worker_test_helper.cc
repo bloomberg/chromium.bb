@@ -240,7 +240,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchFetchEvent(
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
@@ -638,7 +638,7 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
-    const ResourceRequest& /* request */,
+    const network::ResourceRequest& /* request */,
     mojom::FetchEventPreloadHandlePtr /* preload_handle */,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
@@ -936,7 +936,7 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int thread_id,
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback

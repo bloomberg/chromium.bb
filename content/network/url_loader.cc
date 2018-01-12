@@ -17,7 +17,6 @@
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -28,6 +27,7 @@
 #include "net/cert/symantec_certs.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -193,7 +193,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 URLLoader::URLLoader(NetworkContext* context,
                      mojom::URLLoaderRequest url_loader_request,
                      int32_t options,
-                     const ResourceRequest& request,
+                     const network::ResourceRequest& request,
                      bool report_raw_headers,
                      mojom::URLLoaderClientPtr url_loader_client,
                      const net::NetworkTrafficAnnotationTag& traffic_annotation,

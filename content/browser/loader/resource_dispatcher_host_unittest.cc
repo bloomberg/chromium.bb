@@ -54,7 +54,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -82,6 +81,7 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -93,10 +93,10 @@ using storage::ShareableFileReference;
 
 namespace content {
 
-static ResourceRequest CreateResourceRequest(const char* method,
-                                             ResourceType type,
-                                             const GURL& url) {
-  ResourceRequest request;
+static network::ResourceRequest CreateResourceRequest(const char* method,
+                                                      ResourceType type,
+                                                      const GURL& url) {
+  network::ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
   request.site_for_cookies = url;  // bypass third-party cookie blocking
@@ -899,7 +899,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithRenderFrame(
     ResourceType type,
     mojom::URLLoaderRequest loader_request,
     mojom::URLLoaderClientPtr client) {
-  ResourceRequest request = CreateResourceRequest("GET", type, url);
+  network::ResourceRequest request = CreateResourceRequest("GET", type, url);
   request.render_frame_id = render_frame_id;
   filter_->CreateLoaderAndStart(
       std::move(loader_request), render_view_id, request_id,
@@ -915,7 +915,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
     ResourceType type,
     mojom::URLLoaderRequest loader_request,
     mojom::URLLoaderClientPtr client) {
-  ResourceRequest request = CreateResourceRequest("GET", type, url);
+  network::ResourceRequest request = CreateResourceRequest("GET", type, url);
   filter->CreateLoaderAndStart(
       std::move(loader_request), render_view_id, request_id,
       mojom::kURLLoadOptionNone, request, std::move(client),
@@ -929,7 +929,7 @@ void ResourceDispatcherHostTest::
         ResourceType type,
         mojom::URLLoaderRequest loader_request,
         mojom::URLLoaderClientPtr client) {
-  ResourceRequest request = CreateResourceRequest("GET", type, url);
+  network::ResourceRequest request = CreateResourceRequest("GET", type, url);
   DCHECK_EQ(web_contents_filter_->child_id(),
             web_contents_->GetMainFrame()->GetProcess()->GetID());
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
@@ -946,7 +946,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
     net::RequestPriority priority,
     mojom::URLLoaderRequest loader_request,
     mojom::URLLoaderClientPtr client) {
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/priority"));
   request.render_frame_id = render_frame_id;
   request.priority = priority;
@@ -1048,7 +1048,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToNetworkCache) {
                   mojo::MakeRequest(&loader1), client1.CreateInterfacePtr());
 
   // Cache-only request.
-  ResourceRequest request_to_cache = CreateResourceRequest(
+  network::ResourceRequest request_to_cache = CreateResourceRequest(
       "GET", RESOURCE_TYPE_IMAGE, net::URLRequestTestJob::test_url_3());
   request_to_cache.download_to_network_cache_only = true;
   filter_->CreateLoaderAndStart(
@@ -1142,9 +1142,9 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
   feature_list.InitAndDisableFeature(
       features::kKeepAliveRendererForKeepaliveRequests);
   // test_url_1's data is available synchronously, so use 2 and 3.
-  ResourceRequest request_prefetch = CreateResourceRequest(
+  network::ResourceRequest request_prefetch = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PREFETCH, net::URLRequestTestJob::test_url_2());
-  ResourceRequest request_ping = CreateResourceRequest(
+  network::ResourceRequest request_ping = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PING, net::URLRequestTestJob::test_url_3());
 
   filter_->CreateLoaderAndStart(
@@ -1194,7 +1194,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PREFETCH,
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
@@ -2351,7 +2351,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // Make a request which downloads to file.
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   filter_->CreateLoaderAndStart(

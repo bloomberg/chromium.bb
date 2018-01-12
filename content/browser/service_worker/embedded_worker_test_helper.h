@@ -231,7 +231,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
           callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
@@ -338,7 +338,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
           finish_callback);
   void OnFetchEventStub(
       int thread_id,
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback

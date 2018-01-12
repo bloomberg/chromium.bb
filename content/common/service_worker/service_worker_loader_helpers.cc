@@ -10,10 +10,10 @@
 #include "base/strings/stringprintf.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -42,7 +42,8 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
 
 // static
 std::unique_ptr<ServiceWorkerFetchRequest>
-ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
+ServiceWorkerLoaderHelpers::CreateFetchRequest(
+    const network::ResourceRequest& request) {
   auto new_request = std::make_unique<ServiceWorkerFetchRequest>();
   new_request->mode = request.fetch_request_mode;
   new_request->is_main_resource_load = ServiceWorkerUtils::IsMainResourceType(
@@ -119,7 +120,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
 // static
 base::Optional<net::RedirectInfo>
 ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
-    const ResourceRequest& original_request,
+    const network::ResourceRequest& original_request,
     const ResourceResponseHead& response_head,
     bool token_binding_negotiated) {
   std::string new_location;

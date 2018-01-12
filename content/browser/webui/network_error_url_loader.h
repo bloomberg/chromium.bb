@@ -10,7 +10,7 @@
 namespace content {
 
 // Creates the data for chrome://network-error.
-void StartNetworkErrorsURLLoader(const ResourceRequest& request,
+void StartNetworkErrorsURLLoader(const network::ResourceRequest& request,
                                  mojom::URLLoaderClientPtr client);
 
 }  // namespace content

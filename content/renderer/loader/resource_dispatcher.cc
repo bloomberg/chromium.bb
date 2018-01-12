@@ -25,7 +25,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -41,6 +40,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -56,7 +56,7 @@ void RemoteToLocalTimeTicks(
   *time = converter.ToLocalTimeTicks(remote_time).ToTimeTicks();
 }
 
-void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
+void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
   if ((request.referrer_policy == Referrer::GetDefaultReferrerPolicy() ||
        request.referrer_policy ==
            net::URLRequest::
@@ -364,7 +364,7 @@ ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
 }
 
 void ResourceDispatcher::StartSync(
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -398,7 +398,7 @@ void ResourceDispatcher::StartSync(
 }
 
 int ResourceDispatcher::StartAsync(
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const url::Origin& frame_origin,

@@ -89,7 +89,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/resource_request.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -111,6 +110,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
@@ -717,7 +717,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     int routing_id,
     int request_id,
     bool is_sync_load,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
@@ -745,7 +745,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     ResourceRequesterInfo* requester_info,
     int route_id,
     int request_id,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     LoaderMap::iterator iter,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
@@ -816,7 +816,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
 void ResourceDispatcherHostImpl::CompleteTransfer(
     ResourceRequesterInfo* requester_info,
     int request_id,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     int route_id,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
@@ -870,7 +870,7 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
 void ResourceDispatcherHostImpl::BeginRequest(
     ResourceRequesterInfo* requester_info,
     int request_id,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     bool is_sync_load,
     int route_id,
     mojom::URLLoaderRequest mojo_request,
@@ -1009,7 +1009,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     scoped_refptr<ResourceRequesterInfo> requester_info,
     int request_id,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     bool is_sync_load,
     int route_id,
     const net::HttpRequestHeaders& headers,
@@ -1283,7 +1283,7 @@ std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandler(
     ResourceRequesterInfo* requester_info,
     net::URLRequest* request,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     int route_id,
     int child_id,
     ResourceContext* resource_context,
@@ -2039,7 +2039,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
@@ -2458,7 +2458,7 @@ ResourceLoader* ResourceDispatcherHostImpl::GetLoader(int child_id,
 
 bool ResourceDispatcherHostImpl::ShouldServiceRequest(
     int child_id,
-    const ResourceRequest& request_data,
+    const network::ResourceRequest& request_data,
     const net::HttpRequestHeaders& headers,
     ResourceRequesterInfo* requester_info,
     ResourceContext* resource_context) {

@@ -26,7 +26,7 @@ void BitmapFetcher::Init(const std::string& referrer,
   if (simple_loader_ != NULL)
     return;
 
-  auto resource_request = std::make_unique<content::ResourceRequest>();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url_;
   resource_request->referrer = GURL(referrer);
   resource_request->referrer_policy = referrer_policy;

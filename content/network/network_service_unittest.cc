@@ -131,7 +131,7 @@ class NetworkServiceTestWithService
   ~NetworkServiceTestWithService() override {}
 
   void LoadURL(const GURL& url) {
-    ResourceRequest request;
+    network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
     request.request_initiator = url::Origin();
@@ -139,7 +139,8 @@ class NetworkServiceTestWithService
     client_->RunUntilComplete();
   }
 
-  void StartLoadingURL(const ResourceRequest& request, uint32_t process_id) {
+  void StartLoadingURL(const network::ResourceRequest& request,
+                       uint32_t process_id) {
     client_.reset(new TestURLLoaderClient());
     mojom::URLLoaderFactoryPtr loader_factory;
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
@@ -192,7 +193,7 @@ TEST_F(NetworkServiceTestWithService, Basic) {
 
 // Verifies that raw headers are only reported if requested.
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.url = test_server()->GetURL("/server-redirect?/echo");
   request.method = "GET";
   request.request_initiator = url::Origin();
@@ -206,7 +207,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
 }
 
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.url = test_server()->GetURL("/server-redirect?/echo");
   request.method = "GET";
   request.report_raw_headers = true;
@@ -249,7 +250,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
 
 TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   const uint32_t process_id = 42;
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.url = test_server()->GetURL("/nocache.html");
   request.method = "GET";
   request.report_raw_headers = true;
@@ -281,7 +282,7 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   network_conditions->offline = true;
   context()->SetNetworkConditions("42", std::move(network_conditions));
 
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.url = test_server()->GetURL("/nocache.html");
   request.method = "GET";
 

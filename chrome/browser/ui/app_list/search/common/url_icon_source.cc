@@ -10,11 +10,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -42,7 +42,7 @@ UrlIconSource::~UrlIconSource() {
 void UrlIconSource::StartIconFetch() {
   icon_fetch_attempted_ = true;
 
-  auto resource_request = std::make_unique<content::ResourceRequest>();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = icon_url_;
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   net::NetworkTrafficAnnotationTag traffic_annotation =

@@ -20,10 +20,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -113,7 +113,7 @@ void TermsOfServiceScreen::StartDownload() {
           })");
   // Start downloading the Terms of Service.
 
-  auto resource_request = std::make_unique<content::ResourceRequest>();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(terms_of_service_url);
   // Request a text/plain MIME type as only plain-text Terms of Service are
   // accepted.

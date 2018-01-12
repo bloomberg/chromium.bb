@@ -19,7 +19,7 @@ namespace content {
 
 namespace {
 
-bool CalculateCORSFlag(const ResourceRequest& request) {
+bool CalculateCORSFlag(const network::ResourceRequest& request) {
   if (request.fetch_request_mode == FetchRequestMode::kNavigate &&
       (request.resource_type == RESOURCE_TYPE_MAIN_FRAME ||
        request.resource_type == RESOURCE_TYPE_SUB_FRAME)) {
@@ -43,7 +43,7 @@ CORSURLLoader::CORSURLLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory)

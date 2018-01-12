@@ -90,7 +90,7 @@ class ServiceWorkerURLTrackingRequestHandler
     return nullptr;
   }
 
-  void MaybeCreateLoader(const ResourceRequest& resource_request,
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
                          ResourceContext*,
                          LoaderCallback callback) override {
     // |provider_host_| may have been deleted when the request is resumed.

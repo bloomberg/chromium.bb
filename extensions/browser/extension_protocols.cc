@@ -728,7 +728,7 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
 };
 
 void LoadExtensionResourceFromFileOnBackgroundSequence(
-    const content::ResourceRequest& request,
+    const network::ResourceRequest& request,
     const std::string& extension_id,
     const base::FilePath& directory_path,
     const base::FilePath& relative_path,
@@ -744,14 +744,14 @@ void LoadExtensionResourceFromFileOnBackgroundSequence(
   auto loader_observer =
       std::make_unique<FileLoaderObserver>(std::move(verify_job));
 
-  content::ResourceRequest file_request = request;
+  network::ResourceRequest file_request = request;
   file_request.url = net::FilePathToFileURL(resource.GetFilePath());
   content::CreateFileURLLoader(file_request, std::move(loader),
                                std::move(client), std::move(loader_observer));
 }
 
 void CreateVerifierAndLoadFile(
-    const content::ResourceRequest& request,
+    const network::ResourceRequest& request,
     const std::string& extension_id,
     const base::FilePath& directory_path,
     const base::FilePath& relative_path,
@@ -795,7 +795,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const content::ResourceRequest& request,
+                            const network::ResourceRequest& request,
                             content::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {

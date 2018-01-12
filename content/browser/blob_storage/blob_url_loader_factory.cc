@@ -42,7 +42,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
                       public mojom::URLLoader {
  public:
   BlobURLLoader(mojom::URLLoaderRequest url_loader_request,
-                const ResourceRequest& request,
+                const network::ResourceRequest& request,
                 mojom::URLLoaderClientPtr client,
                 std::unique_ptr<storage::BlobDataHandle> blob_handle)
       : binding_(this, std::move(url_loader_request)),
@@ -58,7 +58,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
   }
 
  private:
-  void Start(const ResourceRequest& request) {
+  void Start(const network::ResourceRequest& request) {
     if (!blob_handle_) {
       OnComplete(net::ERR_FILE_NOT_FOUND, 0);
       delete this;
@@ -251,7 +251,7 @@ void BlobURLLoaderFactory::BindOnIO(mojom::URLLoaderFactoryRequest request) {
 // static
 void BlobURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest loader,
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderClientPtr client,
     std::unique_ptr<storage::BlobDataHandle> blob_handle) {
   new BlobURLLoader(std::move(loader), request, std::move(client),
@@ -263,7 +263,7 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

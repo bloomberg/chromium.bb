@@ -10,9 +10,9 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace storage {
 class FileSystemContext;
@@ -28,7 +28,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   static std::unique_ptr<ResourceDownloader> BeginDownload(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<DownloadUrlParameters> download_url_parameters,
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       scoped_refptr<storage::FileSystemContext> file_system_context,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -43,7 +43,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   // transferred.
   static std::unique_ptr<ResourceDownloader> InterceptNavigationResponse(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
@@ -53,7 +53,7 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   ResourceDownloader(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       const GURL& site_url,
       const GURL& tab_url,
@@ -85,7 +85,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   base::WeakPtr<UrlDownloadHandler::Delegate> delegate_;
 
   // The ResourceRequest for this object.
-  std::unique_ptr<ResourceRequest> resource_request_;
+  std::unique_ptr<network::ResourceRequest> resource_request_;
 
   // Object that will handle the response.
   std::unique_ptr<mojom::URLLoaderClient> url_loader_client_;

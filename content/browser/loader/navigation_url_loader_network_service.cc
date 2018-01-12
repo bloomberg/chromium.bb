@@ -174,7 +174,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
  public:
   URLLoaderRequestController(
       std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers,
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       ResourceContext* resource_context,
       scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
       const GURL& url,
@@ -265,7 +265,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         base::Unretained(service_worker_navigation_handle_core),
         base::Unretained(appcache_handle_core));
 
-    ResourceRequest resource_request;
+    network::ResourceRequest resource_request;
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         std::move(create_url_loader),
         std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
@@ -657,7 +657,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers_;
   size_t handler_index_ = 0;
 
-  std::unique_ptr<ResourceRequest> resource_request_;
+  std::unique_ptr<network::ResourceRequest> resource_request_;
   int frame_tree_node_id_ = 0;
   GlobalRequestID global_request_id_;
   net::RedirectInfo redirect_info_;
@@ -778,7 +778,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   }
 
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
-  auto new_request = std::make_unique<ResourceRequest>();
+  auto new_request = std::make_unique<network::ResourceRequest>();
 
   new_request->method = request_info->common_params.method;
   new_request->url = request_info->common_params.url;

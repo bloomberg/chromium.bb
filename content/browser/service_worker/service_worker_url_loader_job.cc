@@ -59,7 +59,7 @@ class ServiceWorkerURLLoaderJob::StreamWaiter
 ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
     LoaderCallback callback,
     Delegate* delegate,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : loader_callback_(std::move(callback)),
       delegate_(delegate),
@@ -157,8 +157,8 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
 
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::make_unique<ResourceRequest>(resource_request_), active_worker,
-      base::nullopt /* timeout */,
+      std::make_unique<network::ResourceRequest>(resource_request_),
+      active_worker, base::nullopt /* timeout */,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),

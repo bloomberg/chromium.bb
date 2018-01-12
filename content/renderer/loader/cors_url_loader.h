@@ -27,7 +27,7 @@ class CONTENT_EXPORT CORSURLLoader : public mojom::URLLoader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      const ResourceRequest& resource_request,
+      const network::ResourceRequest& resource_request,
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory);
