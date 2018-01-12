@@ -17,6 +17,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_SRC_FILES := \
 	amdgpu.c \
+	amlogic.c \
 	cirrus.c \
 	drv.c \
 	evdi.c \

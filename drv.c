@@ -23,6 +23,9 @@
 #ifdef DRV_AMDGPU
 extern const struct backend backend_amdgpu;
 #endif
+#ifdef DRV_AMLOGIC
+extern const struct backend backend_amlogic;
+#endif
 extern const struct backend backend_evdi;
 #ifdef DRV_EXYNOS
 extern const struct backend backend_exynos;
