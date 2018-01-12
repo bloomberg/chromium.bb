@@ -157,6 +157,13 @@ void AppsContainerView::OnWillBeShown() {
   app_list_folder_view()->items_grid_view()->ClearAnySelectedView();
 }
 
+void AppsContainerView::OnWillBeHidden() {
+  if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
+    apps_grid_view_->EndDrag(true);
+  else if (show_state_ == SHOW_ACTIVE_FOLDER)
+    app_list_folder_view_->CloseFolderPage();
+}
+
 gfx::Rect AppsContainerView::GetSearchBoxBounds() const {
   return GetSearchBoxBoundsForState(contents_view()->GetActiveState());
 }

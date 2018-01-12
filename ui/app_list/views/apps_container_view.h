@@ -72,6 +72,7 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
 
   // AppListPage overrides:
   void OnWillBeShown() override;
+  void OnWillBeHidden() override;
   gfx::Rect GetSearchBoxBounds() const override;
   gfx::Rect GetSearchBoxBoundsForState(
       AppListModel::State state) const override;
