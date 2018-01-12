@@ -24,7 +24,6 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/display_shutdown_observer.h"
@@ -450,8 +449,8 @@ void Shell::DestroyKeyboard() {
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
-  if (GetAshConfig() == Config::MASH)
-    return false;  // Only occurs in tests.
+  // This function is only called from Chrome, hence the DCHECK for not-MASH.
+  DCHECK(GetAshConfig() != Config::MASH);
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
       resolution_notification_controller_->DoesNotificationTimeout());
@@ -661,7 +660,7 @@ Shell::~Shell() {
 
   user_metrics_recorder_->OnShellShuttingDown();
 
-  display_configuration_observer_.reset();
+  shell_delegate_->PreShutdown();
   display_prefs_.reset();
 
   // Remove the focus from any window. This will prevent overhead and side
@@ -915,12 +914,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // is available and store requests will be queued in the meanwhile.
   display_prefs_ = std::make_unique<DisplayPrefs>();
 
+  // TODO(stevenjb): Move DisplayConfigurationObserver to Ash also.
   shell_delegate_->PreInit();
-
-  // Set the observer now so that we can save the initial state in
-  // InitializeDisplayManager().
-  display_configuration_observer_ =
-      std::make_unique<DisplayConfigurationObserver>();
 
   InitializeDisplayManager();
 

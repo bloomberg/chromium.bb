@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
@@ -1639,7 +1638,6 @@ class DisplayInfoProviderChromeosTouchviewTest
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableTabletMode);
     DisplayInfoProviderChromeosTest::SetUp();
-    ash_test_helper()->DisableTabletMirrorModeForTest();
   }
 
  private:
