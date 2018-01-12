@@ -73,9 +73,6 @@ AV1_CX_SRCS-yes += encoder/mcomp.h
 AV1_CX_SRCS-yes += encoder/encoder.h
 AV1_CX_SRCS-yes += encoder/random.h
 AV1_CX_SRCS-yes += encoder/ratectrl.h
-ifeq ($(CONFIG_XIPHRC),yes)
-AV1_CX_SRCS-yes += encoder/ratectrl_xiph.h
-endif
 AV1_CX_SRCS-yes += encoder/rd.h
 AV1_CX_SRCS-yes += encoder/rdopt.h
 AV1_CX_SRCS-yes += encoder/tokenize.h
@@ -89,9 +86,6 @@ AV1_CX_SRCS-yes += encoder/picklpf.h
 AV1_CX_SRCS-$(CONFIG_LOOP_RESTORATION) += encoder/pickrst.c
 AV1_CX_SRCS-$(CONFIG_LOOP_RESTORATION) += encoder/pickrst.h
 AV1_CX_SRCS-yes += encoder/ratectrl.c
-ifeq ($(CONFIG_XIPHRC),yes)
-AV1_CX_SRCS-yes += encoder/ratectrl_xiph.c
-endif
 AV1_CX_SRCS-yes += encoder/rd.c
 AV1_CX_SRCS-yes += encoder/rdopt.c
 AV1_CX_SRCS-yes += encoder/segmentation.c

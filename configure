@@ -266,7 +266,6 @@ EXPERIMENT_LIST="
     inter_stats_only
     kf_ctx
     cfl
-    xiphrc
     dct_only
     daala_tx
     daala_tx4

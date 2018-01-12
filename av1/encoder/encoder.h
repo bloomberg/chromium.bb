@@ -34,9 +34,6 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/tokenize.h"
-#if CONFIG_XIPHRC
-#include "av1/encoder/ratectrl_xiph.h"
-#endif
 
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
@@ -468,9 +465,6 @@ typedef struct AV1_COMP {
   int64_t first_time_stamp_ever;
 
   RATE_CONTROL rc;
-#if CONFIG_XIPHRC
-  od_rc_state od_rc;
-#endif
   double framerate;
 
   // NOTE(zoeliu): Any inter frame allows maximum of REF_FRAMES inter

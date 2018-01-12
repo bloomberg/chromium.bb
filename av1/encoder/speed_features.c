@@ -526,11 +526,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   set_dev_sf(cpi, sf, oxcf->dev_sf);
 
-  if (oxcf->mode == GOOD
-#if CONFIG_XIPHRC
-      || oxcf->pass == 1
-#endif
-      )
+  if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, oxcf->speed);
 
   // sf->partition_search_breakout_dist_thr is set assuming max 64x64
@@ -569,11 +565,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   }
 #endif  // CONFIG_INTRABC
 
-#if !CONFIG_XIPHRC
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.
   if (oxcf->pass == 1) sf->optimize_coefficients = NO_TRELLIS_OPT;
-#endif
 
   // No recode for 1 pass.
   if (oxcf->pass == 0) {
