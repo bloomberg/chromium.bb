@@ -29,7 +29,8 @@ class NavigationContext {
   // The WebState the navigation is taking place in.
   virtual WebState* GetWebState() = 0;
 
-  // The URL the WebState is navigating to.
+  // The URL the WebState is navigating to. This may change during the
+  // navigation when encountering a server redirect.
   virtual const GURL& GetUrl() const = 0;
 
   // Returns the page transition type for this navigation.
