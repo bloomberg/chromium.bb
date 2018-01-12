@@ -2457,6 +2457,11 @@ const char kArcVpnName[] = "Enable ARC VPN integration";
 const char kArcVpnDescription[] =
     "Allow Android VPN clients to tunnel Chrome traffic.";
 
+const char kAshDisableV1AppBackButtonName[] =
+    "Disable BackButton on V1 app window";
+const char kAshDisableV1AppBackButtonDescription[] =
+    "Enable this flag to disable back button on V1 app window.";
+
 const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "

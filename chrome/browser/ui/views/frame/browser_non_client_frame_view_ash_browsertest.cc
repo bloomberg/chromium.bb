@@ -571,26 +571,8 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
             frame_header->app_and_domain_render_text_->display_rect());
 }
 
-namespace {
-
-class BrowserNonClientFrameViewAshBackButtonTest : public InProcessBrowserTest {
- public:
-  BrowserNonClientFrameViewAshBackButtonTest() = default;
-  ~BrowserNonClientFrameViewAshBackButtonTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(ash::switches::kAshEnableV1AppBackButton);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAshBackButtonTest);
-};
-
-}  // namespace
-
 // Test if the V1 apps' frame has a back button.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
-                       V1BackButton) {
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, V1BackButton) {
   browser()->window()->Close();
 
   // Open a new app window.

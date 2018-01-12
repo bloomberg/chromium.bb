@@ -25,7 +25,7 @@ ASH_PUBLIC_EXPORT extern const char kAshDisableSmoothScreenRotation[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTabletAutohideTitlebars[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTabletSplitView[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTouchExplorationMode[];
-ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];
+ASH_PUBLIC_EXPORT extern const char kAshDisableV1AppBackButton[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableDisplayMoveWindowAccels[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableKeyboardShortcutViewer[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
