@@ -2553,7 +2553,7 @@ crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-us
 # TO BE REMOVED AFTER NEXT IMPORT (crbug.com/801357)
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_bits.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_keys.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.worker.html [ Failure ]
+crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Failure Pass Timeout ]
 crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/digest/digest.worker.html [ Failure ]
 crbug.com/709227 external/wpt/WebCryptoAPI/encrypt_decrypt/aes_cbc.worker.html [ Failure ]
