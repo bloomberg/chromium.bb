@@ -35,20 +35,6 @@ namespace blink {
 
 class RangeTest : public EditingTestBase {};
 
-TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div><select><option>012</option></div>");
-  Element* const select_element = GetDocument().QuerySelector("select");
-  const Position& position =
-      Position::AfterNode(*select_element->UserAgentShadowRoot());
-  Range* const range =
-      Range::CreateAdjustedToTreeScope(GetDocument(), position);
-  EXPECT_EQ(range->startContainer(), select_element->parentNode());
-  EXPECT_EQ(static_cast<unsigned>(range->startOffset()),
-            select_element->NodeIndex());
-  EXPECT_TRUE(range->collapsed());
-}
-
 TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   GetDocument().body()->SetInnerHTMLFromString("<span><b>abc</b>def</span>");
   GetDocument().GetSettings()->SetScriptEnabled(true);

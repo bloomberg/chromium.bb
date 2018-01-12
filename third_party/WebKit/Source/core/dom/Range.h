@@ -59,7 +59,6 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                        Node* end_container,
                        unsigned end_offset);
   static Range* Create(Document&, const Position&, const Position&);
-  static Range* CreateAdjustedToTreeScope(const TreeScope&, const Position&);
 
   void Dispose();
 

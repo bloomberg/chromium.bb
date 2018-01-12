@@ -163,22 +163,6 @@ Range* Range::Create(Document& owner_document,
                    end.ComputeOffsetInContainerNode());
 }
 
-// TODO(yosin): We should move |Range::createAdjustedToTreeScope()| to
-// "Document.cpp" since it is use only one place in "Document.cpp".
-Range* Range::CreateAdjustedToTreeScope(const TreeScope& tree_scope,
-                                        const Position& position) {
-  DCHECK(position.IsNotNull());
-  // Note: Since |Position::computeContanerNode()| returns |nullptr| if
-  // |position| is |BeforeAnchor| or |AfterAnchor|.
-  Node* const anchor_node = position.AnchorNode();
-  if (anchor_node->GetTreeScope() == tree_scope)
-    return Create(tree_scope.GetDocument(), position, position);
-  Node* const shadow_host = tree_scope.AncestorInThisScope(anchor_node);
-  return Range::Create(tree_scope.GetDocument(),
-                       Position::BeforeNode(*shadow_host),
-                       Position::BeforeNode(*shadow_host));
-}
-
 void Range::Dispose() {
   // A prompt detach from the owning Document helps avoid GC overhead.
   owner_document_->DetachRange(this);
