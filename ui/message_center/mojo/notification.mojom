@@ -29,7 +29,6 @@ struct RichNotificationData {
   bool pinned;
   mojo.common.mojom.String16 accessible_name;
   uint32 accent_color;
-  bool use_image_as_icon;
 };
 
 // TODO(mhashmi): Add the rest of the fields for a Notification

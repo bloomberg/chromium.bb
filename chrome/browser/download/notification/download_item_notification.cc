@@ -352,7 +352,6 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
   notification_->set_title(GetTitle());
   notification_->set_message(GetSubStatusString());
   notification_->set_progress_status(GetStatusString());
-  notification_->set_use_image_as_icon(true);
 
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);

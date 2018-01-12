@@ -74,7 +74,6 @@ struct StructTraits<message_center::mojom::RichNotificationDataDataView,
   static const base::string16& accessible_name(
       const message_center::RichNotificationData& r);
   static SkColor accent_color(const message_center::RichNotificationData& r);
-  static bool use_image_as_icon(const message_center::RichNotificationData& r);
   static bool Read(message_center::mojom::RichNotificationDataDataView data,
                    message_center::RichNotificationData* out);
 };
