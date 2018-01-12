@@ -542,9 +542,24 @@ void AudioNode::Dispose() {
 #endif
   BaseAudioContext::GraphAutoLocker locker(context());
   Handler().Dispose();
-  if (context()->ContextState() == BaseAudioContext::kRunning) {
+
+  if (context()->HasRealtimeConstraint()) {
+    // Always add the handler to the orphan list because the audio
+    // thread could still be running (for a short time) even when the
+    // context is closed.  These will get cleaned up in the post
+    // render task if audio thread is running or when the context is
+    // colleced (in the worst case).
     context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
         std::move(handler_));
+  } else {
+    // For an offline context, only need to save the handler when the
+    // context is running.  The change in the context state is
+    // synchronous with the main thread (even though the offline
+    // thread is not synchronized to the main thread).
+    if (context()->ContextState() == BaseAudioContext::kRunning) {
+      context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
+          std::move(handler_));
+    }
   }
 }
 
