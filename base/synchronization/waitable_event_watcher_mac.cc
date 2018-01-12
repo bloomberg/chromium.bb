@@ -16,8 +16,11 @@ WaitableEventWatcher::~WaitableEventWatcher() {
   StopWatching();
 }
 
-bool WaitableEventWatcher::StartWatching(WaitableEvent* event,
-                                         EventCallback callback) {
+bool WaitableEventWatcher::StartWatching(
+    WaitableEvent* event,
+    EventCallback callback,
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!source_ || dispatch_source_testcancel(source_));
 
   // Keep a reference to the receive right, so that if the event is deleted
@@ -29,8 +32,6 @@ bool WaitableEventWatcher::StartWatching(WaitableEvent* event,
   // Locals for capture by the block. Accessing anything through the |this| or
   // |event| pointers is not safe, since either may have been deleted by the
   // time the handler block is invoked.
-  scoped_refptr<SequencedTaskRunner> task_runner =
-      SequencedTaskRunnerHandle::Get();
   WeakPtr<WaitableEventWatcher> weak_this = weak_ptr_factory_.GetWeakPtr();
   const bool auto_reset =
       event->policy_ == WaitableEvent::ResetPolicy::AUTOMATIC;

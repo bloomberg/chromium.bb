@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -76,6 +77,7 @@ class BASE_EXPORT WaitableEventWatcher
 {
  public:
   using EventCallback = OnceCallback<void(WaitableEvent*)>;
+
   WaitableEventWatcher();
 
 #if defined(OS_WIN)
@@ -86,7 +88,10 @@ class BASE_EXPORT WaitableEventWatcher
 
   // When |event| is signaled, |callback| is called on the sequence that called
   // StartWatching().
-  bool StartWatching(WaitableEvent* event, EventCallback callback);
+  // |task_runner| is used for asynchronous executions of calling |callback|.
+  bool StartWatching(WaitableEvent* event,
+                     EventCallback callback,
+                     scoped_refptr<SequencedTaskRunner> task_runner);
 
   // Cancel the current watch. Must be called from the same sequence which
   // started the watch.
