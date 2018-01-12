@@ -59,6 +59,11 @@ function setUp() {
   handler = new DeviceHandler();
 }
 
+function setUpInIncognitoContext() {
+  chrome.extension.inIncognitoContext = true;
+  handler = new DeviceHandler();
+}
+
 function testGoodDevice(callback) {
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
@@ -653,6 +658,36 @@ function testNotificationClicked(callback) {
       callback);
 }
 
+function testMiscMessagesInIncognito() {
+  setUpInIncognitoContext();
+  chrome.fileManagerPrivate.onDeviceChanged.dispatch(
+      {type: 'format_start', devicePath: '/device/path'});
+  // No notification sent by this instance in incognito context.
+  assertEquals(0, Object.keys(chrome.notifications.items).length);
+  assertFalse(chrome.notifications.resolver.settled);
+}
+
+function testMountCompleteInIncognito() {
+  setUpInIncognitoContext();
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: false,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label'
+    },
+    shouldNotify: true
+  });
+
+  assertEquals(0, Object.keys(chrome.notifications.items).length);
+  // TODO(yamaguchi): I think this test is incomplete.
+  // This looks as if notification is not generated yet because the promise
+  // is not settled yet. Same for testGoodDeviceNotNavigated.
+  assertFalse(chrome.notifications.resolver.settled);
+}
+
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
@@ -678,6 +713,7 @@ function setupChromeApis() {
       },
       cloudImportDisabled: false
     },
+    extension: {inIncognitoContext: false},
     fileManagerPrivate: {
       onDeviceChanged: {
         addListener: function(listener) {
@@ -692,7 +728,7 @@ function setupChromeApis() {
     },
     i18n: {
       getUILanguage: function() {
-        return 'en-US'
+        return 'en-US';
       }
     },
     notifications: {
@@ -705,7 +741,10 @@ function setupChromeApis() {
         }
         callback();
       },
-      clear: function(id, callback) { delete this.items[id]; callback(); },
+      clear: function(id, callback) {
+        delete this.items[id];
+        callback();
+      },
       items: {},
       onButtonClicked: {
         addListener: function(listener) {
@@ -722,10 +761,10 @@ function setupChromeApis() {
       }
     },
     runtime: {
-      getURL: function(path) { return path; },
-      onStartup: {
-        addListener: function() {}
-      }
+      getURL: function(path) {
+        return path;
+      },
+      onStartup: {addListener: function() {}}
     }
   };
 }
