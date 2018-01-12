@@ -140,6 +140,11 @@ enum aom_dec_control_id {
    */
   AV1_SET_DECODE_TILE_ROW,
   AV1_SET_DECODE_TILE_COL,
+  /** control function to set the tile coding mode. A value that is equal to
+   *  zero indicates the tiles are coded in normal tile mode. A value that is
+   *  1 indicates the tiles are coded in large-scale tile mode.
+   */
+  AV1_SET_TILE_MODE,
 
   /** control function to set an aom_inspect_cb callback that is invoked each
    * time a frame is decoded.  When compiled without --enable-inspection, this
@@ -180,6 +185,8 @@ AOM_CTRL_USE_TYPE(AV1_SET_DECODE_TILE_ROW, int)
 #define AOM_CTRL_AV1_SET_DECODE_TILE_ROW
 AOM_CTRL_USE_TYPE(AV1_SET_DECODE_TILE_COL, int)
 #define AOM_CTRL_AV1_SET_DECODE_TILE_COL
+AOM_CTRL_USE_TYPE(AV1_SET_TILE_MODE, unsigned int)
+#define AOM_CTRL_AV1_SET_TILE_MODE
 AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
 #define AOM_CTRL_AV1_SET_INSPECTION_CALLBACK
 /*!\endcond */

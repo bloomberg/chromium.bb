@@ -122,7 +122,8 @@ int main(int argc, char **argv) {
 
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
-
+  // Decode reference frames.
+  aom_codec_control_(&codec, AV1_SET_TILE_MODE, 0);
   // How many reference images we need to encode.
   u_blocks = (lf_width + lf_blocksize - 1) / lf_blocksize;
   v_blocks = (lf_height + lf_blocksize - 1) / lf_blocksize;
@@ -171,6 +172,7 @@ int main(int argc, char **argv) {
   if (aom_codec_control(&codec, AV1_SET_REFERENCE, &ref)) {
     die_codec(&codec, "Failed to set reference image.");
   }
+  aom_codec_control_(&codec, AV1_SET_TILE_MODE, 1);
   aom_codec_control_(&codec, AV1_SET_DECODE_TILE_ROW, tile_t);
   aom_codec_control_(&codec, AV1_SET_DECODE_TILE_COL, tile_s);
   aom_codec_err_t aom_status =

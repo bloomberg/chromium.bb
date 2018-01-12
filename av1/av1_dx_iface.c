@@ -55,6 +55,7 @@ struct aom_codec_alg_priv {
   int skip_loop_filter;
   int decode_tile_row;
   int decode_tile_col;
+  unsigned int tile_mode;
 
   // Frame parallel related.
   int frame_parallel_decode;  // frame-based threading.
@@ -301,9 +302,6 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
     const int frame_marker = aom_rb_read_literal(&rb, 2);
     const BITSTREAM_PROFILE profile = av1_read_profile(&rb);
-#if CONFIG_EXT_TILE
-    unsigned int large_scale_tile;
-#endif  // CONFIG_EXT_TILE
 
     if (frame_marker != AOM_FRAME_MARKER) return AOM_CODEC_UNSUP_BITSTREAM;
 
@@ -311,10 +309,6 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
     if ((profile >= 2 && data_sz <= 1) || data_sz < 1)
       return AOM_CODEC_UNSUP_BITSTREAM;
-
-#if CONFIG_EXT_TILE
-    large_scale_tile = aom_rb_read_literal(&rb, 1);
-#endif  // CONFIG_EXT_TILE
 
     if (aom_rb_read_bit(&rb)) {     // show an existing frame
       aom_rb_read_literal(&rb, 3);  // Frame buffer to show.
@@ -335,9 +329,6 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     if (si->is_kf) {
       /* TODO: Move outside frame loop or inside key-frame branch */
       read_sequence_header(&seq_params, &rb);
-#if CONFIG_EXT_TILE
-      if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
-#endif  // CONFIG_EXT_TILE
     }
 #endif  // CONFIG_REFERENCE_BUFFER
 
@@ -568,10 +559,14 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     // thread or loopfilter thread.
     frame_worker_data->pbi->max_threads =
         (ctx->frame_parallel_decode == 0) ? ctx->cfg.threads : 0;
-
     frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
     frame_worker_data->pbi->common.frame_parallel_decode =
         ctx->frame_parallel_decode;
+#if CONFIG_EXT_TILE
+    frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
+    frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
+    frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
+#endif  // CONFIG_EXT_TILE
     worker->hook = (AVxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
@@ -627,11 +622,6 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
     frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
 #endif
-
-#if CONFIG_EXT_TILE
-    frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
-    frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
-#endif  // CONFIG_EXT_TILE
 
     worker->had_error = 0;
     winterface->execute(worker);
@@ -1271,6 +1261,12 @@ static aom_codec_err_t ctrl_set_decode_tile_col(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_tile_mode(aom_codec_alg_priv_t *ctx,
+                                          va_list args) {
+  ctx->tile_mode = va_arg(args, unsigned int);
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_set_inspection_callback(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
 #if !CONFIG_INSPECTION
@@ -1300,6 +1296,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
   { AV1_SET_DECODE_TILE_ROW, ctrl_set_decode_tile_row },
   { AV1_SET_DECODE_TILE_COL, ctrl_set_decode_tile_col },
+  { AV1_SET_TILE_MODE, ctrl_set_tile_mode },
   { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
 
   // Getters

@@ -46,6 +46,7 @@ class AV1ExtTileTest
     cfg.allow_lowbitdepth = 1;
 
     decoder_ = codec_->CreateDecoder(cfg, 0);
+    decoder_->Control(AV1_SET_TILE_MODE, 1);
     decoder_->Control(AV1_SET_DECODE_TILE_ROW, -1);
     decoder_->Control(AV1_SET_DECODE_TILE_COL, -1);
 

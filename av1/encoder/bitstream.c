@@ -3501,10 +3501,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
   write_profile(cm->profile, wb);
 
-#if CONFIG_EXT_TILE
-  aom_wb_write_literal(wb, cm->large_scale_tile, 1);
-#endif  // CONFIG_EXT_TILE
-
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
 
@@ -3831,10 +3827,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                                           struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-
-#if CONFIG_EXT_TILE
-  aom_wb_write_literal(wb, cm->large_scale_tile, 1);
-#endif  // CONFIG_EXT_TILE
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;

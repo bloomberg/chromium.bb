@@ -172,6 +172,7 @@ class AVxEncoderThreadTest
 TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
 #if CONFIG_AV1 && CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
+  decoder_->Control(AV1_SET_TILE_MODE, 0);
 #endif  // CONFIG_AV1 && CONFIG_EXT_TILE
   DoTest();
 }
@@ -181,6 +182,7 @@ class AVxEncoderThreadTestLarge : public AVxEncoderThreadTest {};
 TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) {
 #if CONFIG_AV1 && CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
+  decoder_->Control(AV1_SET_TILE_MODE, 0);
 #endif  // CONFIG_AV1 && CONFIG_EXT_TILE
   DoTest();
 }
@@ -208,6 +210,7 @@ class AVxEncoderThreadLSTest : public AVxEncoderThreadTest {
 
 TEST_P(AVxEncoderThreadLSTest, EncoderResultTest) {
   cfg_.large_scale_tile = 1;
+  decoder_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
 }
 
@@ -215,6 +218,7 @@ class AVxEncoderThreadLSTestLarge : public AVxEncoderThreadLSTest {};
 
 TEST_P(AVxEncoderThreadLSTestLarge, EncoderResultTest) {
   cfg_.large_scale_tile = 1;
+  decoder_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
 }
 

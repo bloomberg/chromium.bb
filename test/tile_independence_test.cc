@@ -127,6 +127,8 @@ class TileIndependenceTest
 TEST_P(TileIndependenceTest, MD5Match) {
 #if CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
+  fw_dec_->Control(AV1_SET_TILE_MODE, 0);
+  inv_dec_->Control(AV1_SET_TILE_MODE, 0);
 #endif  // CONFIG_EXT_TILE
   DoTest();
 }
@@ -141,6 +143,8 @@ class TileIndependenceTestLarge : public TileIndependenceTest {
 TEST_P(TileIndependenceTestLarge, MD5Match) {
 #if CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
+  fw_dec_->Control(AV1_SET_TILE_MODE, 0);
+  inv_dec_->Control(AV1_SET_TILE_MODE, 0);
 #endif  // CONFIG_EXT_TILE
   DoTest();
 }
@@ -155,6 +159,8 @@ class TileIndependenceLSTest : public TileIndependenceTest {};
 
 TEST_P(TileIndependenceLSTest, MD5Match) {
   cfg_.large_scale_tile = 1;
+  fw_dec_->Control(AV1_SET_TILE_MODE, 1);
+  inv_dec_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
 }
 
@@ -162,6 +168,8 @@ class TileIndependenceLSTestLarge : public TileIndependenceTestLarge {};
 
 TEST_P(TileIndependenceLSTestLarge, MD5Match) {
   cfg_.large_scale_tile = 1;
+  fw_dec_->Control(AV1_SET_TILE_MODE, 1);
+  inv_dec_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
 }
 

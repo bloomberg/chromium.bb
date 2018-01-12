@@ -1598,6 +1598,10 @@ static void initialize_encoder(struct stream_state *stream,
 
 #if CONFIG_EXT_TILE
     if (strcmp(global->codec->name, "av1") == 0) {
+      aom_codec_control(&stream->decoder, AV1_SET_TILE_MODE,
+                        stream->config.cfg.large_scale_tile);
+      ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_mode");
+
       aom_codec_control(&stream->decoder, AV1_SET_DECODE_TILE_ROW, -1);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_row");
 

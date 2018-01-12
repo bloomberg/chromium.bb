@@ -2517,13 +2517,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                        "Unsupported bitstream profile");
 #endif
 
-#if CONFIG_EXT_TILE
-  cm->large_scale_tile = aom_rb_read_literal(rb, 1);
-#if CONFIG_REFERENCE_BUFFER
-  if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
-#endif  // CONFIG_REFERENCE_BUFFER
-#endif  // CONFIG_EXT_TILE
-
   cm->show_existing_frame = aom_rb_read_bit(rb);
 #if CONFIG_FWD_KF
   cm->reset_decoder_state = 0;

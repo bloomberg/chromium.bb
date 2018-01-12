@@ -107,6 +107,9 @@ static const arg_def_t framestatsarg =
 static const arg_def_t outbitdeptharg =
     ARG_DEF(NULL, "output-bit-depth", 1, "Output bit-depth for decoded frames");
 #if CONFIG_EXT_TILE
+static const arg_def_t tilem = ARG_DEF(NULL, "tile-mode", 1,
+                                       "Tile coding mode "
+                                       "(0 for normal tile coding mode)");
 static const arg_def_t tiler = ARG_DEF(NULL, "tile-row", 1,
                                        "Row index of tile to decode "
                                        "(-1 for all rows)");
@@ -122,7 +125,7 @@ static const arg_def_t *all_args[] = {
   &verbosearg,  &scalearg,       &fb_arg,      &md5arg,     &framestatsarg,
   &continuearg, &outbitdeptharg,
 #if CONFIG_EXT_TILE
-  &tiler,       &tilec,
+  &tilem,       &tiler,          &tilec,
 #endif  // CONFIG_EXT_TILE
   NULL
 };
@@ -509,6 +512,7 @@ static int main_loop(int argc, const char **argv_) {
   aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
   unsigned int output_bit_depth = 0;
 #if CONFIG_EXT_TILE
+  unsigned int tile_mode = 0;
   int tile_row = -1;
   int tile_col = -1;
 #endif  // CONFIG_EXT_TILE
@@ -616,6 +620,8 @@ static int main_loop(int argc, const char **argv_) {
       output_bit_depth = arg_parse_uint(&arg);
     }
 #if CONFIG_EXT_TILE
+    else if (arg_match(&arg, &tilem, argi))
+      tile_mode = arg_parse_int(&arg);
     else if (arg_match(&arg, &tiler, argi))
       tile_row = arg_parse_int(&arg);
     else if (arg_match(&arg, &tilec, argi))
@@ -726,6 +732,12 @@ static int main_loop(int argc, const char **argv_) {
   if (!quiet) fprintf(stderr, "%s\n", decoder.name);
 
 #if CONFIG_AV1_DECODER && CONFIG_EXT_TILE
+  if (aom_codec_control(&decoder, AV1_SET_TILE_MODE, tile_mode)) {
+    fprintf(stderr, "Failed to set decode_tile_mode: %s\n",
+            aom_codec_error(&decoder));
+    goto fail;
+  }
+
   if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_ROW, tile_row)) {
     fprintf(stderr, "Failed to set decode_tile_row: %s\n",
             aom_codec_error(&decoder));
