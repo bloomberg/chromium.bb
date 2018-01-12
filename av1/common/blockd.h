@@ -908,7 +908,7 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
                                           TX_SIZE tx_size) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
-  if (CONFIG_DCT_ONLY || is_inter_block(mbmi) || plane_type != PLANE_TYPE_Y ||
+  if (is_inter_block(mbmi) || plane_type != PLANE_TYPE_Y ||
       xd->lossless[mbmi->segment_id] || tx_size >= TX_32X32)
     return DCT_DCT;
 
