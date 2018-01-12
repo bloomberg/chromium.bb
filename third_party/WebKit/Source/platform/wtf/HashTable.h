@@ -792,8 +792,8 @@ class HashTable final
   template <typename HashTranslator, typename T>
   const ValueType* Lookup(const T&) const;
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher);
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
 
 #if DCHECK_IS_ON()
   void EnterAccessForbiddenScope() {
@@ -2089,14 +2089,10 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-template <typename VisitorDispatcher>
-void HashTable<Key,
-               Value,
-               Extractor,
-               HashFunctions,
-               Traits,
-               KeyTraits,
-               Allocator>::Trace(VisitorDispatcher visitor) {
+template <typename VisitorDispatcher, typename A>
+std::enable_if_t<A::kIsGarbageCollected>
+HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
+    Trace(VisitorDispatcher visitor) {
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 // XXX: this will simply crash.
 // Allocator::MarkNoTracing(visitor, stats_);
