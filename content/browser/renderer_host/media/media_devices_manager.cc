@@ -255,11 +255,6 @@ void MediaDevicesManager::StartMonitoring() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaDevicesManager::StartMonitoringOnUIThread,
                  base::Unretained(this)));
-
-  // TODO(guidou): Remove this statement once the Mac device monitor is fixed to
-  //  correctly report device-change events for output-only audio devices.
-  // See http://crbug.com/648173.
-  SetCachePolicy(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, CachePolicy::NO_CACHE);
 #endif
 }
 
