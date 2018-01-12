@@ -12,6 +12,7 @@
 #include "WebFrameLoadType.h"
 #include "WebHistoryItem.h"
 #include "WebImeTextSpan.h"
+#include "base/callback.h"
 #include "base/unguessable_token.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebFocusType.h"
@@ -424,6 +425,22 @@ class WebLocalFrame : public WebFrame {
                                         int argc,
                                         v8::Local<v8::Value> argv[],
                                         WebScriptExecutionCallback*) = 0;
+
+  enum class PausableTaskResult {
+    // The context was invalid or destroyed.
+    kContextInvalidOrDestroyed,
+    // Script is not paused.
+    kReady,
+  };
+  using PausableTaskCallback = base::OnceCallback<void(PausableTaskResult)>;
+
+  // Queues a callback to run script when the context is not paused, e.g. for a
+  // modal JS dialog or window.print(). This callback can run immediately if the
+  // context is not paused. If the context is invalidated before becoming
+  // unpaused, the callback will be run with a kContextInvalidOrDestroyed value.
+  // This asserts that the context is valid at the time of this
+  // call.
+  virtual void PostPausableTask(PausableTaskCallback) = 0;
 
   enum ScriptExecutionType {
     // Execute script synchronously, unless the page is suspended.
