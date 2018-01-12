@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -240,8 +241,9 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
                                         bool enumerate_video_input,
                                         bool enumerate_audio_output,
                                         bool permission_override_value = true) {
-    host_->SetPermissionChecker(std::make_unique<MediaDevicesPermissionChecker>(
-        permission_override_value));
+    media_stream_manager_->media_devices_manager()->SetPermissionChecker(
+        std::make_unique<MediaDevicesPermissionChecker>(
+            permission_override_value));
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
@@ -341,7 +343,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   }
 
   void SubscribeAndWaitForResult(bool has_permission) {
-    host_->SetPermissionChecker(
+    media_stream_manager_->media_devices_manager()->SetPermissionChecker(
         std::make_unique<MediaDevicesPermissionChecker>(has_permission));
     uint32_t subscription_id = 0u;
     for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {

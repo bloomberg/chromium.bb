@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
@@ -62,9 +61,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   // MediaDeviceChangeSubscriber implementation.
   void OnDevicesChanged(MediaDeviceType type,
                         const MediaDeviceInfoArray& device_infos) override;
-
-  void SetPermissionChecker(
-      std::unique_ptr<MediaDevicesPermissionChecker> permission_checker);
 
   void SetDeviceChangeListenerForTesting(
       blink::mojom::MediaDevicesListenerPtr listener);
@@ -171,7 +167,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
-  std::unique_ptr<MediaDevicesPermissionChecker> permission_checker_;
   std::vector<uint32_t> device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
 
   // This field can only be accessed on the UI thread.
