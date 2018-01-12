@@ -19,6 +19,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
+#include "components/viz/test/test_frame_sink_manager_client.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,54 +53,6 @@ gpu::SyncToken GenTestSyncToken(int id) {
             gpu::CommandBufferId::FromUnsafeValue(id), 1);
   return token;
 }
-
-// A test mojom::FrameSinkManagerClient that by default drops temporary
-// references unless SetTemporaryReferenceToAssign() is used.
-class FakeFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
- public:
-  explicit FakeFrameSinkManagerClient(mojom::FrameSinkManager* manager)
-      : manager_(manager) {}
-  ~FakeFrameSinkManagerClient() override = default;
-
-  // Sets owner for |surface_id| when OnFirstSurfaceActivation() is called. If
-  // not set the temporary reference will be dropped.
-  void SetTemporaryReferenceToAssign(const SurfaceId& surface_id,
-                                     const FrameSinkId& frame_sink_id) {
-    temporary_references_to_assign_[surface_id] = frame_sink_id;
-  }
-
-  // mojom::FrameSinkManagerClient:
-  void OnSurfaceCreated(const SurfaceId& surface_id) override {
-    auto iter = temporary_references_to_assign_.find(surface_id);
-    if (iter == temporary_references_to_assign_.end()) {
-      manager_->DropTemporaryReference(surface_id);
-      return;
-    }
-
-    manager_->AssignTemporaryReference(surface_id, iter->second);
-    temporary_references_to_assign_.erase(iter);
-  }
-
-  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
-  void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override {}
-  void OnAggregatedHitTestRegionListUpdated(
-      const FrameSinkId& frame_sink_id,
-      mojo::ScopedSharedBufferHandle active_handle,
-      uint32_t active_handle_size,
-      mojo::ScopedSharedBufferHandle idle_handle,
-      uint32_t idle_handle_sizes) override {}
-  void SwitchActiveAggregatedHitTestRegionList(
-      const FrameSinkId& frame_sink_id,
-      uint8_t active_handle_index) override {}
-  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                           uint32_t frame_token) override {}
-
- private:
-  mojom::FrameSinkManager* const manager_;
-  base::flat_map<SurfaceId, FrameSinkId> temporary_references_to_assign_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFrameSinkManagerClient);
-};
 
 class CompositorFrameSinkSupportTest : public testing::Test {
  public:
@@ -180,9 +133,12 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     support_->RefResources(surface->GetActiveFrame().resource_list);
   }
 
+  // testing::Test implementation:
+  void TearDown() override { frame_sink_manager_client_.Reset(); }
+
  protected:
   FrameSinkManagerImpl manager_;
-  FakeFrameSinkManagerClient frame_sink_manager_client_;
+  TestFrameSinkManagerClient frame_sink_manager_client_;
   FakeCompositorFrameSinkClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   FakeExternalBeginFrameSource begin_frame_source_;
@@ -563,16 +519,17 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
 // is deleted.
 TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
   constexpr FrameSinkId parent_frame_sink_id(1234, 5678);
+  frame_sink_manager_client_.SetFrameSinkHierarchy(parent_frame_sink_id,
+                                                   support_->frame_sink_id());
+
   manager_.RegisterFrameSinkId(parent_frame_sink_id);
   manager_.SetFrameSinkDebugLabel(parent_frame_sink_id, "parent_frame_sink_id");
 
   const LocalSurfaceId local_surface_id(5, kArbitraryToken);
   const SurfaceId surface_id(support_->frame_sink_id(), local_surface_id);
 
-  // When CompositorFrame is submitted, a temporary refrence will be created and
-  // |parent_frame_sink_id| will be assigned as the owner.
-  frame_sink_manager_client_.SetTemporaryReferenceToAssign(
-      surface_id, parent_frame_sink_id);
+  // When CompositorFrame is submitted, a temporary reference will be created
+  // and |parent_frame_sink_id| will be assigned as the owner.
   support_->SubmitCompositorFrame(local_surface_id,
                                   MakeDefaultCompositorFrame());
 

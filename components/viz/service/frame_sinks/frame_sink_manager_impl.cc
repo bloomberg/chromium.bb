@@ -393,8 +393,14 @@ bool FrameSinkManagerImpl::ChildContains(
 void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (client_)
+  if (client_) {
     client_->OnSurfaceCreated(surface_id);
+  } else {
+    // There is no client to assign an owner for the temporary reference, so we
+    // can drop the temporary reference safely.
+    if (surface_manager_.using_surface_references())
+      surface_manager_.DropTemporaryReference(surface_id);
+  }
 }
 
 void FrameSinkManagerImpl::OnFirstSurfaceActivation(
