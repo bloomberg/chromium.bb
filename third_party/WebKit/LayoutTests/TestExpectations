@@ -3042,10 +3042,6 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
-# For Skia roll
-crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
-crbug.com/630695 svg/custom/massive-coordinates.svg [ NeedsManualRebaseline ]
-
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
