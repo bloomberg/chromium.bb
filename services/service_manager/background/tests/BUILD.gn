@@ -17,6 +17,7 @@ source_set("unittests") {
   deps = [
     ":test_service_interfaces",
     "//base",
+    "//base/test:test_support",
     "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
     "//testing/gtest",
