@@ -918,9 +918,11 @@ void PaintController::GenerateRasterInvalidation(
   }
 
   auto reason = client.GetPaintInvalidationReason();
-  if (reason != PaintInvalidationReason::kRectangle &&
-      reason != PaintInvalidationReason::kSelection &&
-      reason != PaintInvalidationReason::kIncremental) {
+  if ((reason != PaintInvalidationReason::kRectangle &&
+       reason != PaintInvalidationReason::kSelection &&
+       reason != PaintInvalidationReason::kIncremental) ||
+      // Need full invalidation when visual rect location changed.
+      old_item->VisualRect().Location() != new_item->VisualRect().Location()) {
     GenerateFullRasterInvalidation(chunk, *old_item, *new_item);
     return;
   }
