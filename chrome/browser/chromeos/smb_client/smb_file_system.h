@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -41,8 +42,14 @@ class RequestManager;
 // Allows Files App to mount smb filesystems.
 class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
  public:
-  explicit SmbFileSystem(
-      const file_system_provider::ProvidedFileSystemInfo& file_system_info);
+  using UnmountCallback = base::OnceCallback<base::File::Error(
+      const ProviderId&,
+      const std::string&,
+      file_system_provider::Service::UnmountReason)>;
+
+  SmbFileSystem(
+      const file_system_provider::ProvidedFileSystemInfo& file_system_info,
+      UnmountCallback unmount_callback);
   ~SmbFileSystem() override;
 
   static base::File::Error TranslateError(smbprovider::ErrorType);
@@ -169,7 +176,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
  private:
   void HandleRequestUnmountCallback(
       const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
+      smbprovider::ErrorType error);
 
   void HandleRequestReadDirectoryCallback(
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
@@ -190,6 +197,11 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback,
       smbprovider::ErrorType error) const;
 
+  base::File::Error RunUnmountCallback(
+      const ProviderId& provider_id,
+      const std::string& file_system_id,
+      file_system_provider::Service::UnmountReason reason);
+
   int32_t GetMountId() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
@@ -198,6 +210,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
   file_system_provider::OpenedFiles opened_files_;
   storage::AsyncFileUtil::EntryList entry_list_;
   file_system_provider::Watchers watchers_;
+
+  UnmountCallback unmount_callback_;
 
   base::WeakPtrFactory<SmbFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SmbFileSystem);
