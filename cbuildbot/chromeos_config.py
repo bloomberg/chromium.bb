@@ -724,6 +724,10 @@ _moblab_boards = frozenset([
     'moblab-generic-vm',
 ])
 
+_scribe_boards = frozenset([
+    'guado-macrophage',
+])
+
 _termina_boards = frozenset([
     'tatl',
     'tael',
@@ -740,7 +744,8 @@ _toolchains_from_source = frozenset([
     'x32-generic',
 ])
 
-_noimagetest_boards = _lakitu_boards | _loonix_boards | _termina_boards
+_noimagetest_boards = (_lakitu_boards | _loonix_boards | _termina_boards
+                       | _scribe_boards)
 
 _nohwqual_boards = (_lakitu_boards | _lassen_boards | _loonix_boards
                     | _termina_boards | _beaglebone_boards)

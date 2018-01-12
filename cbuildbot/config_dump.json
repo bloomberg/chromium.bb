@@ -24436,7 +24436,8 @@
         "boards": [
             "guado-macrophage"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "guado-macrophage-full": {
         "_template": "full",
@@ -24444,6 +24445,7 @@
             "guado-macrophage"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -24454,7 +24456,8 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "guado-macrophage"
-        ]
+        ],
+        "image_test": false
     },
     "guado-macrophage-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
@@ -24464,13 +24467,15 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "guado-macrophage-llvm-toolchain": {
         "_template": "llvm_toolchain",
         "boards": [
             "guado-macrophage"
-        ]
+        ],
+        "image_test": false
     },
     "guado-macrophage-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
@@ -24480,20 +24485,23 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "guado-macrophage-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "guado-macrophage"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "guado-macrophage-paladin": {
         "_template": "paladin",
         "boards": [
             "guado-macrophage"
         ],
+        "image_test": false,
         "important": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -24514,6 +24522,7 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "important": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -24524,6 +24533,7 @@
             "guado-macrophage"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "vm_tests": []
     },
     "guado-macrophage-release": {
@@ -24532,6 +24542,7 @@
         "boards": [
             "guado-macrophage"
         ],
+        "image_test": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -24551,6 +24562,7 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "paygen": false,
         "push_image": false,
         "vm_tests": [],
