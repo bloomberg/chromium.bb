@@ -26,7 +26,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   ~ShellBrowserMainParts() override;
 
   // BrowserMainParts overrides.
-  void PreEarlyInitialization() override;
+  int PreEarlyInitialization() override;
   int PreCreateThreads() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;

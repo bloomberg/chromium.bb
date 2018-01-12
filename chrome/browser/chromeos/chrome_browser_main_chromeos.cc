@@ -559,7 +559,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 
 // content::BrowserMainParts and ChromeBrowserMainExtraParts overrides ---------
 
-void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
+int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   base::CommandLine* singleton_command_line =
       base::CommandLine::ForCurrentProcess();
 
@@ -597,7 +597,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     chrome::SetChannel(channel);
 #endif
 
-  ChromeBrowserMainPartsLinux::PreEarlyInitialization();
+  return ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
