@@ -72,11 +72,6 @@ class CORE_EXPORT CSSPropertyValueSet
 
     const CSSValue& Value() const { return PropertyValue(); }
 
-    // FIXME: Remove this.
-    CSSPropertyValue ToCSSPropertyValue() const {
-      return CSSPropertyValue(PropertyMetadata(), PropertyValue());
-    }
-
     const CSSPropertyValueMetadata& PropertyMetadata() const;
 
    private:

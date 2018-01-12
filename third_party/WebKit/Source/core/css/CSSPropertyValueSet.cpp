@@ -181,8 +181,9 @@ MutableCSSPropertyValueSet::MutableCSSPropertyValueSet(
   } else {
     property_vector_.ReserveInitialCapacity(other.PropertyCount());
     for (unsigned i = 0; i < other.PropertyCount(); ++i) {
+      PropertyReference property = other.PropertyAt(i);
       property_vector_.UncheckedAppend(
-          other.PropertyAt(i).ToCSSPropertyValue());
+          CSSPropertyValue(property.PropertyMetadata(), property.Value()));
     }
   }
 }
@@ -474,10 +475,13 @@ void MutableCSSPropertyValueSet::MergeAndOverrideOnConflict(
     PropertyReference to_merge = other->PropertyAt(n);
     // TODO(leviw): This probably doesn't work correctly with Custom Properties
     CSSPropertyValue* old = FindCSSPropertyWithID(to_merge.Id());
-    if (old)
-      SetProperty(to_merge.ToCSSPropertyValue(), old);
-    else
-      property_vector_.push_back(to_merge.ToCSSPropertyValue());
+    if (old) {
+      SetProperty(
+          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()), old);
+    } else {
+      property_vector_.push_back(
+          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()));
+    }
   }
 }
 

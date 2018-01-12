@@ -1360,8 +1360,10 @@ void EditingStyle::MergeStyle(const CSSPropertyValueSet* style,
       value = nullptr;
     }
 
-    if (mode == kOverrideValues || (mode == kDoNotOverrideValues && !value))
-      mutable_style_->SetProperty(property.ToCSSPropertyValue());
+    if (mode == kOverrideValues || (mode == kDoNotOverrideValues && !value)) {
+      mutable_style_->SetProperty(
+          CSSPropertyValue(property.PropertyMetadata(), property.Value()));
+    }
   }
 }
 
