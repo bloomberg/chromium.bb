@@ -162,7 +162,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile(cm->dq_type, mb->qindex, ref, plane_type);
+#if !CONFIG_AOM_QM
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
+#endif  // !CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
   int64_t rd_cost0, rd_cost1;
   int16_t t0, t1;
@@ -255,16 +257,25 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       if (x_a != 0) {
 #if CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+        dx = av1_dequant_coeff_nuq(x_a, dqv, dq, rc != 0, 0) - coeff[rc];
+#else
         dx = av1_dequant_coeff_nuq(x_a, dqv, dequant_val[rc != 0], 0) -
              coeff[rc];
+#endif  // CONFIG_AOM_QM
 #else   // CONFIG_NEW_QUANT
         dx -= (dqv + sz) ^ sz;
 #endif  // CONFIG_NEW_QUANT
         d2_a = ((int64_t)dx * dx + depth_round) >> depth_shift;
 #else  // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+        dx = av1_dequant_coeff_nuq(x_a, dqv, dq, rc != 0, 0) -
+             (coeff[rc] * (1 << shift));
+#else
         dx = av1_dequant_coeff_nuq(x_a, dqv, dequant_val[rc != 0], 0) -
              (coeff[rc] * (1 << shift));
+#endif  // CONFIG_AOM_QM
         dx >>= xd->bd - 8;
 #else   // CONFIG_NEW_QUANT
         dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
@@ -345,16 +356,24 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         if (x_a != 0) {
 #if CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dq, rc != 0, 0);
+#else
           dqc_a =
               av1_dequant_abscoeff_nuq(abs(x_a), dqv, dequant_val[rc != 0], 0);
+#endif  // CONFIG_AOM_QM
           if (sz) dqc_a = -dqc_a;
 #else
           dqc_a = x_a * dqv;
 #endif  // CONFIG_NEW_QUANT
 #else   // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dq, rc != 0, shift);
+#else
           dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dequant_val[rc != 0],
                                            shift);
+#endif  // CONFIG_AOM_QM
           if (sz) dqc_a = -dqc_a;
 #else
           if (x_a < 0)

@@ -72,18 +72,21 @@ static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
 static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
 #if CONFIG_NEW_QUANT
-                        dequant_val_type_nuq *dq_val,
+#if CONFIG_AOM_QM
+                        int dq_profile,
 #else
+                        dequant_val_type_nuq *dq_val,
+#endif  // CONFIG_AOM_QM
+#endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
                         qm_val_t *iqm[TX_SIZES_ALL],
 #endif  // CONFIG_AOM_QM
-#endif  // CONFIG_NEW_QUANT
                         int ctx, const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int max_eob = av1_get_max_eob(tx_size);
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-#if CONFIG_AOM_QM && !CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
   const qm_val_t *iqmatrix = iqm[tx_size];
 #endif  // CONFIG_AOM_QM
   (void)tx_type;
@@ -99,13 +102,21 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const uint8_t *band_translate = get_band_translate(tx_size);
   int v, token;
   int32_t dqv = dq[0];
-#if CONFIG_NEW_QUANT
+#if CONFIG_NEW_QUANT && !CONFIG_AOM_QM
   const tran_low_t *dqv_val = &dq_val[0][0];
-#endif  // CONFIG_NEW_QUANT
+#endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
 
 #if !CONFIG_DAALA_TX
   int dq_shift = av1_get_tx_scale(tx_size);
 #endif
+
+#if CONFIG_NEW_QUANT
+#if CONFIG_DAALA_TX
+  int nq_shift = 0;
+#else
+  int nq_shift = dq_shift;
+#endif  // CONFIG_DAALA_TX
+#endif  // CONFIG_NEW_QUANT
 
   band = *band_translate++;
 
@@ -115,9 +126,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     int last_pos = (c + 1 == max_eob);
     int first_pos = (c == 0);
 
-#if CONFIG_NEW_QUANT
+#if CONFIG_NEW_QUANT && !CONFIG_AOM_QM
     dqv_val = &dq_val[band != 0][0];
-#endif  // CONFIG_NEW_QUANT
+#endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
 
     comb_token = last_pos ? 2 * av1_read_record_bit(xd->counts, r, ACCT_STR) + 2
                           : av1_read_record_symbol(
@@ -156,9 +167,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     if (token > ONE_TOKEN)
       token += av1_read_record_symbol(xd->counts, r, coef_tail_cdfs[band][ctx],
                                       TAIL_TOKENS, ACCT_STR);
-#if CONFIG_NEW_QUANT
+#if CONFIG_NEW_QUANT && !CONFIG_AOM_QM
     dqv_val = &dq_val[band != 0][0];
-#endif  // CONFIG_NEW_QUANT
+#endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
 
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     token_cache[scan[c]] = av1_pt_energy_class[token];
@@ -168,19 +179,19 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     av1_record_coeff(xd->counts, val);
 #endif
 
-#if CONFIG_NEW_QUANT
-#if !CONFIG_DAALA_TX
-    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, dq_shift);
-#else
-    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, 0);
-#endif
-#else
 #if CONFIG_AOM_QM
     // Apply quant matrix only for 2D transforms
     if (IS_2D_TRANSFORM(tx_type) && iqmatrix != NULL)
       dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
             AOM_QM_BITS;
 #endif
+#if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+    v = av1_dequant_abscoeff_nuq(val, dqv, dq_profile, band != 0, nq_shift);
+#else
+    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, nq_shift);
+#endif  // CONFIG_AOM_QM
+#else
 #if !CONFIG_DAALA_TX
     v = (int)(((int64_t)val * dqv) >> dq_shift);
 #else
@@ -299,7 +310,11 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
   const int eob =
       decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                   dq, pd->seg_iqmatrix[seg_id],
+#else
                    pd->seg_dequant_nuq_QTX[seg_id][dq],
+#endif  // CONFIG_AOM_QM
 #else
 #if CONFIG_AOM_QM
                    pd->seg_iqmatrix[seg_id],

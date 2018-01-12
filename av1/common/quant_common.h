@@ -75,9 +75,20 @@ void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
                              int dq_off_index);
 void av1_get_cuml_bins_nuq(int q, int is_ac_coeff, tran_low_t *cuml_bins,
                            int q_profile);
-tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq,
+tran_low_t av1_dequant_abscoeff_nuq(int v, int q,
+#if CONFIG_AOM_QM
+                                    int q_profile, int is_ac_coeff,
+#else
+                                    const tran_low_t *dq,
+#endif  // CONFIG_AOM_QM
                                     int shift);
-tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq, int shift);
+tran_low_t av1_dequant_coeff_nuq(int v, int q,
+#if CONFIG_AOM_QM
+                                 int q_profile, int is_ac_coeff,
+#else
+                                 const tran_low_t *dq,
+#endif  // CONFIG_AOM_QM
+                                 int shift);
 
 static INLINE int qindex_to_qrange(int qindex) {
   return (qindex < 140 ? 1 : 0);

@@ -134,12 +134,20 @@ static INLINE tran_low_t get_lower_coeff(tran_low_t qc) {
 
 static INLINE tran_low_t qcoeff_to_dqcoeff(tran_low_t qc,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                                           int dq_idx, int is_ac_coeff,
+#else
                                            const tran_low_t *nq_dq,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                                            int dqv, int shift) {
   int sgn = qc < 0 ? -1 : 1;
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+  int dqcoeff = av1_dequant_coeff_nuq(abs(qc), dqv, dq_idx, is_ac_coeff, shift);
+#else
   int dqcoeff = av1_dequant_coeff_nuq(abs(qc), dqv, nq_dq, shift);
+#endif  // CONFIG_AOM_QM
   return sgn * dqcoeff;
 #endif  // CONFIG_NEW_QUANT
 
@@ -278,7 +286,11 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   const tran_low_t tqc = txb_info->tcoeff[coeff_idx];
   const int dqv = txb_info->dequant[coeff_idx != 0];
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+  const int dq_idx = txb_info->dq_idx;
+#else
   const tran_low_t *nq_dequant_val = txb_info->nq_dequant_vals[coeff_idx != 0];
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
 
   const int coeff_ctx =
@@ -293,7 +305,11 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   } else {
     const tran_low_t dqc = qcoeff_to_dqcoeff(qc,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                                             dq_idx, coeff_idx != 0,
+#else
                                              nq_dequant_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                                              dqv, txb_info->shift);
     const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
@@ -301,7 +317,11 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
     // distortion difference when coefficient is quantized to 0
     const tran_low_t dqc0 = qcoeff_to_dqcoeff(0,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                                              dq_idx, coeff_idx != 0,
+#else
                                               nq_dequant_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                                               dqv, txb_info->shift);
 
@@ -322,7 +342,11 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
     } else {
       stats->low_dqc = qcoeff_to_dqcoeff(stats->low_qc,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                                         dq_idx, coeff_idx != 0,
+#else
                                          nq_dequant_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                                          dqv, txb_info->shift);
       const int64_t low_dqc_dist =
@@ -366,11 +390,19 @@ static INLINE void update_coeff(const int coeff_idx, const tran_low_t qc,
   update_qcoeff(coeff_idx, qc, txb_info);
   const int dqv = txb_info->dequant[coeff_idx != 0];
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+  const int dq_idx = txb_info->dq_idx;
+#else
   const tran_low_t *nq_dequant_val = txb_info->nq_dequant_vals[coeff_idx != 0];
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
   txb_info->dqcoeff[coeff_idx] = qcoeff_to_dqcoeff(qc,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                                                   dq_idx, coeff_idx != 0,
+#else
                                                    nq_dequant_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                                                    dqv, txb_info->shift);
 }
@@ -2024,7 +2056,9 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const LV_MAP_COEFF_COST txb_costs = x->coeff_costs[txs_ctx][plane_type];
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
+#if !CONFIG_AOM_QM
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
+#endif  // !CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const LV_MAP_EOB_COST txb_eob_costs =
@@ -2050,7 +2084,11 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     tcoeff,
     dequant,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+    dq,
+#else
     dequant_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
     shift,
     tx_size,

@@ -22,7 +22,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *const r, const int blk_row,
                             const int blk_col, const int plane,
 #if CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+                            int dq_profile,
+#else
                             dequant_val_type_nuq *dq_val,
+#endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                             const TXB_CTX *const txb_ctx, const TX_SIZE tx_size,
                             int16_t *const max_scan_line, int *const eob);
