@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -656,18 +655,8 @@ void DisplayPrefs::LoadDisplayPreferences(bool first_run_after_boot,
     std::string value = local_state->GetString(prefs::kDisplayPowerState);
     chromeos::DisplayPowerState power_state;
     if (GetDisplayPowerStateFromString(value, &power_state)) {
-      if (ash::Shell::GetAshConfig() != ash::Config::CLASSIC) {
-        // In mus/mash this is called asynchronously so may occur after
-        // DisplayConfig::ForceInitialConfigure() so call  SetDisplayPower()
-        // instead of SetInitialDisplayPower. TODO(mash): Fix this properly.
-        // http://crbug.com/800925.
-        ash::Shell::Get()->display_configurator()->SetDisplayPower(
-            power_state, display::DisplayConfigurator::kSetDisplayPowerNoFlags,
-            base::Bind([](bool) {}));
-      } else {
-        ash::Shell::Get()->display_configurator()->SetInitialDisplayPower(
-            power_state);
-      }
+      ash::Shell::Get()->display_configurator()->SetInitialDisplayPower(
+          power_state);
     }
   }
 }
