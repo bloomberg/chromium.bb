@@ -51,9 +51,6 @@ void SigninManagerBase::RegisterProfilePrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
-  registry->RegisterInt64Pref(
-      prefs::kGoogleServicesRefreshTokenAnnotateScheduledTime,
-      base::Time().ToInternalValue());
   registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
