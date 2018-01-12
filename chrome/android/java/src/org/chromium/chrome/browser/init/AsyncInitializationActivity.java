@@ -129,19 +129,18 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public final void setContentViewAndLoadLibrary() {
-        // Unless it was called before, {@link #setContentView} inflates the decorView and the basic
-        // UI hierarchy as stubs. This is done here before kicking long running I/O because
-        // inflation accesses resource files (XML, etc) even if we are inflating views defined by
-        // the framework. If this operation gets blocked because other long running I/O are running,
-        // we delay onCreate(), onStart() and first draw consequently.
-
-        setContentView();
-        if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
+        // Start loading libraries before setContentView(). This "hides" library loading behind
+        // UI inflation and prevents stalling UI thread. See crbug.com/796957 for details.
+        // Note that for optimal performance AsyncInitTaskRunner.startBackgroundTasks() needs
+        // to start warmup renderer only after library is loaded.
 
         if (!mStartupDelayed) {
             // Kick off long running IO tasks that can be done in parallel.
             mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
         }
+
+        setContentView();
+        if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
     }
 
     /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks()}.*/
