@@ -1858,10 +1858,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_TXK_SEL
   // full forward transform and quantization
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT ||
-      cpi->sf.optimize_coefficients == NO_TRELLIS_OPT) {
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    AV1_XFORM_QUANT_B);
+  if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
+    av1_xform_quant(
+        cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+        USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
@@ -3510,10 +3510,10 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                       NULL, 0, bw, bh);
   }
 
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT ||
-      cpi->sf.optimize_coefficients == NO_TRELLIS_OPT) {
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    AV1_XFORM_QUANT_B);
+  if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
+    av1_xform_quant(
+        cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+        USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
 
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,

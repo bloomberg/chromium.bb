@@ -31,6 +31,12 @@
 extern "C" {
 #endif
 
+#if CONFIG_NEW_QUANT
+#define USE_B_QUANT_NO_TRELLIS 0
+#else
+#define USE_B_QUANT_NO_TRELLIS 1
+#endif  // CONFIG_NEW_QUANT
+
 #define MAX_MB_PLANE 3
 
 // Set COMPOUND_SEGMENT_TYPE to one of the three
