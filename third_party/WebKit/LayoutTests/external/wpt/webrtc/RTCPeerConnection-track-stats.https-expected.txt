@@ -7,5 +7,9 @@ FAIL addTrack(): Media stream stats references track stats assert_true: Has stat
 PASS Legacy addStream(): Media stream stats references track stats
 PASS O/A exchange yields outbound RTP stream stats for sending track
 PASS O/A exchange yields inbound RTP stream stats for receiving track
+FAIL replaceTrack() before offer: new track attachment stats present assert_true: Has stats for replaced track expected true got false
+PASS replaceTrack() after offer, before answer: new track attachment stats present
+PASS replaceTrack() after answer: new track attachment stats present
+FAIL replaceTrack(): original track attachment stats present after replacing assert_true: Has stats for original track expected true got false
 Harness: the test ran to completion.
 
