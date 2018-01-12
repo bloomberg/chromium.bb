@@ -839,6 +839,23 @@ below:
         Couldn't load plugin.
       </message>
 
+      <!-- Byte size units -->
+      <message name="IDS_UNITS_KIBIBYTES" desc="Units tag indicating a quantity of kilobytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> KB
+      </message>
+      <message name="IDS_UNITS_MEBIBYTES" desc="Units tag indicating a quantity of megabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> MB
+      </message>
+      <message name="IDS_UNITS_GIBIBYTES" desc="Units tag indicating a quantity of gigabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> GB
+      </message>
+      <message name="IDS_UNITS_TEBIBYTES" desc="Units tag indicating a quantity of terabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> TB
+      </message>
+      <message name="IDS_UNITS_PEBIBYTES" desc="Units tag indicating a quantity of petabytes">
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB
+      </message>
+
     </messages>
   </release>
 </grit>
