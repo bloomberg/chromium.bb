@@ -1061,4 +1061,68 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
       document->GetViewportDescription().max_height.GetFloatValue());
 }
 
+TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementNoMedia) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_StyleElementMediaNoValue) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_StyleElementMediaEmpty) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media=''>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+// TODO(futhark@chromium.org): The test cases below where all queries are either
+// "all" or "not all", we could have detected those and not trigger an active
+// stylesheet update for those cases.
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_StyleElementMediaNoValid) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media=',,'>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaAll) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media='all'>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_StyleElementMediaNotAll) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media='not all'>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaType) {
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style media='print'>div{color:pink}</style>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetStyleEngine().MediaQueryAffectingValueChanged();
+  EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
 }  // namespace blink

@@ -154,8 +154,10 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   // If type is empty or CSS, this is a CSS style sheet.
   const AtomicString& type = this->type();
   if (IsCSS(element, type) && passes_content_security_policy_checks) {
-    scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media());
-
+    scoped_refptr<MediaQuerySet> media_queries;
+    const AtomicString& media_string = media();
+    if (!media_string.IsEmpty())
+      media_queries = MediaQuerySet::Create(media_string);
     loading_ = true;
     TextPosition start_position =
         start_position_ == TextPosition::BelowRangePosition()
