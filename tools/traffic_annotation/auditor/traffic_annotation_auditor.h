@@ -176,7 +176,7 @@ class TrafficAnnotationAuditor {
 
   // Generates files list to Run clang tool on. Please refer to RunClangTool
   // function's comment.
-  bool GenerateFilesListForClangTool(
+  void GenerateFilesListForClangTool(
       const std::vector<std::string>& path_filters,
       bool filter_files_based_on_heuristics,
       bool use_compile_commands,
