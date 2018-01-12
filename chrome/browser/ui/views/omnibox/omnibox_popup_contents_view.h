@@ -24,6 +24,10 @@ class OmniboxEditModel;
 class OmniboxResultView;
 class OmniboxView;
 
+namespace ui {
+struct AXNodeData;
+}
+
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
                                  public OmniboxPopupView,
@@ -72,6 +76,7 @@ class OmniboxPopupContentsView : public views::View,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void GetAccessibleNodeData(ui::AXNodeData*) override;
 
  private:
   class AutocompletePopupWidget;

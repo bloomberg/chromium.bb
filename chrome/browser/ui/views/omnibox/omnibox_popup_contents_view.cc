@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_recorder.h"
@@ -447,6 +448,11 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
   return static_cast<OmniboxResultView*>(child_at(static_cast<int>(i)));
+}
+
+void OmniboxPopupContentsView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_LIST_BOX;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
