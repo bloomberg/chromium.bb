@@ -70,7 +70,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   void setShadowOffsetY(double);
 
   double shadowBlur() const;
-  void setShadowBlur(double);
+  virtual void setShadowBlur(double);
 
   String shadowColor() const;
   void setShadowColor(const String&);
