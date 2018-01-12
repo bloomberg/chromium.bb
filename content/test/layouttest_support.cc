@@ -286,7 +286,8 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
     DCHECK(layer_tree_frame_sink_from_commit_);
   }
   void DidActivate() override {}
-  void WillSwap(viz::CompositorFrameMetadata*) override {
+  void WillSwap(viz::CompositorFrameMetadata*,
+                cc::RenderFrameMetadata*) override {
     layer_tree_frame_sink_from_commit_->RequestCopyOfOutput(
         std::move(copy_request_));
   }

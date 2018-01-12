@@ -79,6 +79,7 @@ class WebMouseEvent;
 
 namespace cc {
 struct BeginFrameAck;
+class RenderFrameMetadata;
 }  // namespace cc
 
 namespace gfx {
@@ -801,6 +802,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       uint32_t last_shared_bitmap_sequence_number) override;
   void SetupInputRouter();
 
+  void OnRenderFrameMetadata(const cc::RenderFrameMetadata& metadata);
+
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -1019,6 +1022,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
   viz::CompositorFrameMetadata last_frame_metadata_;
+  cc::RenderFrameMetadata last_render_frame_metadata_;
 
   // Last non-zero frame token received from the renderer. Any swap messsages
   // having a token less than or equal to this value will be processed.

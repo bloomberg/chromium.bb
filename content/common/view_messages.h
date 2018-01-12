@@ -768,6 +768,10 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 // Sent in reply to ViewMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 
+// Sent once a frame with new RenderFrameMetadata has been submitted.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_OnRenderFrameSubmitted,
+                    cc::RenderFrameMetadata /* metadata */)
+
 // Acknowledges that a SelectWordAroundCaret completed with the specified
 // result and adjustments to the selection offsets.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectWordAroundCaretAck,
