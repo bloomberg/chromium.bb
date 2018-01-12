@@ -89,6 +89,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   bool IsRTL() const override;
   const std::vector<autofill::Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
+  void SetTypesetter(gfx::Typesetter typesetter) override;
   int GetElidedValueWidthForRow(int row) override;
   int GetElidedLabelWidthForRow(int row) override;
 #endif
@@ -176,7 +177,13 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // line is currently selected.
   base::Optional<int> selected_line_;
 
+  // The typesetter to use when eliding text. This must be BROWSER when the UI
+  // is drawn by Cocoa on macOS.
+  gfx::Typesetter typesetter_ = gfx::Typesetter::HARFBUZZ;
+
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPopupControllerImpl);
 };
 
 }  // namespace autofill

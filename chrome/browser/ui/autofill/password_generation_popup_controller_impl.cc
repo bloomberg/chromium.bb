@@ -274,6 +274,9 @@ PasswordGenerationPopupControllerImpl::GetSuggestions() {
 }
 
 #if !defined(OS_ANDROID)
+void PasswordGenerationPopupControllerImpl::SetTypesetter(
+    gfx::Typesetter typesetter) {}
+
 int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(int row) {
   return 0;
 }

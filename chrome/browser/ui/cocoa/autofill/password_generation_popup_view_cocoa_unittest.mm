@@ -62,6 +62,7 @@ class MockPasswordGenerationPopupController
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
   MOCK_METHOD0(GetSuggestions, const std::vector<autofill::Suggestion>());
+  void SetTypesetter(gfx::Typesetter Typesetter) override {}
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int));
 

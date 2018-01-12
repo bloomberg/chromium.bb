@@ -55,6 +55,7 @@ class MockAutofillPopupController : public AutofillPopupController {
     return suggestions;
   }
 #if !defined(OS_ANDROID)
+  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
 #endif
