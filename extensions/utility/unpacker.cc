@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <set>
 #include <tuple>
 #include <utility>
 
@@ -26,6 +25,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_resource_path_normalizer.h"
 #include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
@@ -221,10 +221,16 @@ bool Unpacker::Run() {
   }
   extension->AddInstallWarnings(warnings);
 
-  // Decode any images that the browser needs to display.
-  std::set<base::FilePath> image_paths =
+  // Decode any images that the browser needs to display. |GetBrowserImagePaths|
+  // can contain duplicates like "icon.png" and "./icon.png". It is required to
+  // normalize paths to avoid unpacking of the same icon twice.
+  const std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension.get());
-  for (const base::FilePath& path : image_paths) {
+  if (!VerifyOriginalImagePaths(image_paths))
+    return false;  // Error was already reported.
+  const std::set<base::FilePath> normalized_image_paths =
+      NormalizeExtensionResourcePaths(image_paths);
+  for (const base::FilePath& path : normalized_image_paths) {
     if (!AddDecodedImage(path))
       return false;  // Error was already reported.
   }
@@ -292,15 +298,6 @@ bool Unpacker::DumpMessageCatalogsToFile() {
 }
 
 bool Unpacker::AddDecodedImage(const base::FilePath& path) {
-  // Make sure it's not referencing a file outside the extension's subdir.
-  if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
-    SetUTF16Error(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
-        base::i18n::GetDisplayStringInLTRDirectionality(
-            path.LossyDisplayName())));
-    return false;
-  }
-
   SkBitmap image_bitmap = DecodeImage(extension_dir_.Append(path));
   if (image_bitmap.isNull()) {
     SetUTF16Error(l10n_util::GetStringFUTF16(
@@ -311,6 +308,21 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
   }
 
   internal_data_->decoded_images.push_back(std::make_tuple(image_bitmap, path));
+  return true;
+}
+
+bool Unpacker::VerifyOriginalImagePaths(
+    const std::set<base::FilePath>& image_paths) {
+  for (const base::FilePath& path : image_paths) {
+    // Make sure it's not referencing a file outside the extension's subdir.
+    if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
+      SetUTF16Error(l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
+          base::i18n::GetDisplayStringInLTRDirectionality(
+              path.LossyDisplayName())));
+      return false;
+    }
+  }
   return true;
 }
 

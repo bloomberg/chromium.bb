@@ -30,6 +30,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_resource_path_normalizer.h"
 #include "extensions/common/extension_unpacker.mojom.h"
 #include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
@@ -823,7 +824,12 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
   // originals are gone for good.
   std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
-  if (image_paths.size() != images.size()) {
+
+  // Decoded |images| set contains normalized paths and |image_paths| contains
+  // original paths. It is required to check sizes of normalized sets.
+  std::set<base::FilePath> normalized_image_paths =
+      NormalizeExtensionResourcePaths(image_paths);
+  if (normalized_image_paths.size() != images.size()) {
     // Decoded images don't match what's in the manifest.
     ReportFailure(
         DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
@@ -833,9 +839,9 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
     return false;
   }
 
-  for (std::set<base::FilePath>::iterator it = image_paths.begin();
-       it != image_paths.end(); ++it) {
-    base::FilePath path = *it;
+  // Report if original icons paths invalid. Normalization procedure may skip
+  // invalid paths, so it is required to check exactly original paths.
+  for (const auto& path : image_paths) {
     if (path.IsAbsolute() || path.ReferencesParent()) {
       // Invalid path for browser image.
       ReportFailure(INVALID_PATH_FOR_BROWSER_IMAGE,
@@ -844,6 +850,9 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
                         ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
       return false;
     }
+  }
+
+  for (const auto& path : normalized_image_paths) {
     if (!base::DeleteFile(extension_root_.Append(path), false)) {
       // Error removing old image file.
       ReportFailure(ERROR_REMOVING_OLD_IMAGE_FILE,
@@ -854,16 +863,31 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
     }
   }
 
+  // Get install icon normalized path. Original install icon path may be empty
+  // and it is ok. But if original install icon path is not empty, it should be
+  // normalized successfully.
   const std::string& install_icon_path =
       IconsInfo::GetIcons(extension_.get())
           .Get(extension_misc::EXTENSION_ICON_LARGE,
                ExtensionIconSet::MATCH_BIGGER);
+  base::FilePath normalized_install_icon_path;
+  if (!install_icon_path.empty() &&
+      !NormalizeExtensionResourcePath(
+          base::FilePath::FromUTF8Unsafe(install_icon_path),
+          &normalized_install_icon_path)) {
+    // Invalid path for browser image.
+    ReportFailure(INVALID_PATH_FOR_BROWSER_IMAGE,
+                  l10n_util::GetStringFUTF16(
+                      IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                      ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
+    return false;
+  }
 
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {
     const SkBitmap& image = std::get<0>(images[i]);
-    base::FilePath path_suffix = std::get<1>(images[i]);
-    if (path_suffix.MaybeAsASCII() == install_icon_path)
+    const base::FilePath& path_suffix = std::get<1>(images[i]);
+    if (path_suffix == normalized_install_icon_path)
       *install_icon = image;
 
     if (path_suffix.IsAbsolute() || path_suffix.ReferencesParent()) {
