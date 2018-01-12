@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.NotificationManagerCompat;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -56,8 +56,7 @@ class WebappActionsNotificationManager {
             return;
         }
 
-        NotificationManager nm = (NotificationManager) mWebappActivity.getSystemService(
-                Context.NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this.mWebappActivity);
         nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, createNotification());
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.WEBAPP_ACTIONS,
@@ -87,7 +86,7 @@ class WebappActionsNotificationManager {
                 .setShowWhen(false)
                 .setAutoCancel(false)
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_MIN)
+                .setPriority(NotificationManagerCompat.IMPORTANCE_MIN)
                 .setContentIntent(focusIntent)
                 .addAction(R.drawable.ic_share_white_24dp,
                         mWebappActivity.getResources().getString(R.string.share), shareIntent)
@@ -99,8 +98,7 @@ class WebappActionsNotificationManager {
 
     public void cancelNotification() {
         if (!isEnabled()) return;
-        NotificationManager nm = (NotificationManager) mWebappActivity.getSystemService(
-                Context.NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this.mWebappActivity);
         nm.cancel(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS);
     }
 

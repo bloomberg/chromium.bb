@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.media;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ContextUtils;
@@ -54,7 +54,7 @@ public class MediaCaptureNotificationService extends Service {
     private static final int MEDIATYPE_AUDIO_ONLY = 3;
     private static final int MEDIATYPE_SCREEN_CAPTURE = 4;
 
-    private NotificationManager mNotificationManager;
+    private NotificationManagerCompat mNotificationManagerCompat;
     private Context mContext;
     private SharedPreferences mSharedPreferences;
     private final SparseIntArray mNotifications = new SparseIntArray();
@@ -62,8 +62,7 @@ public class MediaCaptureNotificationService extends Service {
     @Override
     public void onCreate() {
         mContext = getApplicationContext();
-        mNotificationManager = (NotificationManager) mContext.getSystemService(
-                Context.NOTIFICATION_SERVICE);
+        mNotificationManagerCompat = NotificationManagerCompat.from(mContext);
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
         super.onCreate();
     }
@@ -118,7 +117,8 @@ public class MediaCaptureNotificationService extends Service {
         if (notificationIds == null) return;
         Iterator<String> iterator = notificationIds.iterator();
         while (iterator.hasNext()) {
-            mNotificationManager.cancel(NOTIFICATION_NAMESPACE, Integer.parseInt(iterator.next()));
+            mNotificationManagerCompat.cancel(
+                    NOTIFICATION_NAMESPACE, Integer.parseInt(iterator.next()));
         }
         SharedPreferences.Editor sharedPreferenceEditor = mSharedPreferences.edit();
         sharedPreferenceEditor.remove(MediaCaptureNotificationService.WEBRTC_NOTIFICATION_IDS);
@@ -150,7 +150,7 @@ public class MediaCaptureNotificationService extends Service {
      */
     private void destroyNotification(int notificationId) {
         if (doesNotificationExist(notificationId)) {
-            mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
+            mNotificationManagerCompat.cancel(NOTIFICATION_NAMESPACE, notificationId);
             mNotifications.delete(notificationId);
             updateSharedPreferencesEntry(notificationId, true);
         }
@@ -186,7 +186,7 @@ public class MediaCaptureNotificationService extends Service {
             if (mediaType == MEDIATYPE_SCREEN_CAPTURE) {
                 // Add a "Stop" button to the screen capture notification and turn the notification
                 // into a high priority one.
-                builder.setPriority(Notification.PRIORITY_HIGH);
+                builder.setPriority(NotificationManagerCompat.IMPORTANCE_HIGH);
                 builder.setVibrate(new long[0]);
                 builder.addAction(R.drawable.ic_stop_white_36dp,
                         mContext.getResources().getString(R.string.accessibility_stop),
@@ -201,7 +201,7 @@ public class MediaCaptureNotificationService extends Service {
         builder.setContentText(contentText.toString());
 
         Notification notification = builder.buildWithBigTextStyle(contentText.toString());
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
+        mNotificationManagerCompat.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
         NotificationUmaTracker.getInstance().onNotificationShown(
