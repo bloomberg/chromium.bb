@@ -1040,12 +1040,11 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
 void ScrollAnimatorMac::StartScrollbarPaintTimer() {
   // Post a task with 1 ms delay to give a chance to run other immediate tasks
   // that may cancel this.
-  initial_scrollbar_paint_task_handle_ =
-      task_runner_->PostDelayedCancellableTask(
-          FROM_HERE,
-          WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
-                    WrapWeakPersistent(this)),
-          TimeDelta::FromMilliseconds(1));
+  initial_scrollbar_paint_task_handle_ = PostDelayedCancellableTask(
+      *task_runner_, FROM_HERE,
+      WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
+                WrapWeakPersistent(this)),
+      TimeDelta::FromMilliseconds(1));
 }
 
 bool ScrollAnimatorMac::ScrollbarPaintTimerIsActive() const {
@@ -1069,9 +1068,10 @@ void ScrollAnimatorMac::SendContentAreaScrolledSoon(const ScrollOffset& delta) {
 
   if (send_content_area_scrolled_task_handle_.IsActive())
     return;
-  send_content_area_scrolled_task_handle_ = task_runner_->PostCancellableTask(
-      FROM_HERE, WTF::Bind(&ScrollAnimatorMac::SendContentAreaScrolledTask,
-                           WrapWeakPersistent(this)));
+  send_content_area_scrolled_task_handle_ = PostCancellableTask(
+      *task_runner_, FROM_HERE,
+      WTF::Bind(&ScrollAnimatorMac::SendContentAreaScrolledTask,
+                WrapWeakPersistent(this)));
 }
 
 void ScrollAnimatorMac::SendContentAreaScrolledTask() {

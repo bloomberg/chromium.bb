@@ -56,14 +56,10 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
     // one). The time to action call will then cancel the time to dismiss as it
     // is not needed.
     DCHECK(!current_task_handle_.IsActive());
-    current_task_handle_ =
-        GetDocument()
-            .GetTaskRunner(TaskType::kMediaElementEvent)
-            ->PostCancellableTask(
-                FROM_HERE,
-                WTF::Bind(
-                    &MediaControlOverflowMenuListElement::MaybeRecordTimeTaken,
-                    WrapWeakPersistent(this), kTimeToDismiss));
+    current_task_handle_ = PostCancellableTask(
+        *GetDocument().GetTaskRunner(TaskType::kMediaElementEvent), FROM_HERE,
+        WTF::Bind(&MediaControlOverflowMenuListElement::MaybeRecordTimeTaken,
+                  WrapWeakPersistent(this), kTimeToDismiss));
   }
 }
 

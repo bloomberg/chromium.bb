@@ -701,8 +701,8 @@ void Resource::AddClient(ResourceClient* client, WebTaskRunner* task_runner) {
       !TypeNeedsSynchronousCacheHit(GetType())) {
     clients_awaiting_callback_.insert(client);
     if (!async_finish_pending_clients_task_.IsActive()) {
-      async_finish_pending_clients_task_ = task_runner->PostCancellableTask(
-          FROM_HERE,
+      async_finish_pending_clients_task_ = PostCancellableTask(
+          *task_runner, FROM_HERE,
           WTF::Bind(&Resource::FinishPendingClients, WrapWeakPersistent(this)));
     }
     return;

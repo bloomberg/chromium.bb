@@ -1260,12 +1260,11 @@ void ResourceFetcher::ClearContext() {
     // The use of WrapPersistent creates a reference cycle intentionally,
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
     // complete or the timer fires.
-    keepalive_loaders_task_handle_ =
-        Context().GetLoadingTaskRunner()->PostDelayedCancellableTask(
-            FROM_HERE,
-            WTF::Bind(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
-                      WrapPersistent(this)),
-            kKeepaliveLoadersTimeout);
+    keepalive_loaders_task_handle_ = PostDelayedCancellableTask(
+        *Context().GetLoadingTaskRunner(), FROM_HERE,
+        WTF::Bind(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
+                  WrapPersistent(this)),
+        kKeepaliveLoadersTimeout);
   }
 }
 

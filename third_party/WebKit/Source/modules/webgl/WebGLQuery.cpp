@@ -94,9 +94,10 @@ GLuint WebGLQuery::GetQueryResult() {
 void WebGLQuery::ScheduleAllowAvailabilityUpdate() {
   if (task_handle_.IsActive())
     return;
-  task_handle_ = task_runner_->PostCancellableTask(
-      FROM_HERE, WTF::Bind(&WebGLQuery::AllowAvailabilityUpdate,
-                           WrapWeakPersistent(this)));
+  task_handle_ =
+      PostCancellableTask(*task_runner_, FROM_HERE,
+                          WTF::Bind(&WebGLQuery::AllowAvailabilityUpdate,
+                                    WrapWeakPersistent(this)));
 }
 
 void WebGLQuery::AllowAvailabilityUpdate() {
