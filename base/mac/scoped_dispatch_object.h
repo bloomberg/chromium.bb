@@ -15,7 +15,7 @@ namespace internal {
 
 template <typename T>
 struct ScopedDispatchObjectTraits {
-  static constexpr T InvalidValue() { return nullptr; }
+  static T InvalidValue() { return nullptr; }
   static T Retain(T object) {
     dispatch_retain(object);
     return object;
