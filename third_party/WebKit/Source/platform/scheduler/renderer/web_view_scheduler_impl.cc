@@ -191,8 +191,6 @@ bool WebViewSchedulerImpl::VirtualTimeAllowedToAdvance() const {
 void WebViewSchedulerImpl::GrantVirtualTimeBudget(
     base::TimeDelta budget,
     base::OnceClosure budget_exhausted_callback) {
-  renderer_scheduler_->GetVirtualTimeDomain()->SetVirtualTimeFence(
-      renderer_scheduler_->GetVirtualTimeDomain()->Now() + budget);
   renderer_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
       FROM_HERE, std::move(budget_exhausted_callback), budget);
 }
