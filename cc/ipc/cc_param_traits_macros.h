@@ -6,6 +6,7 @@
 #define CC_IPC_CC_PARAM_TRAITS_MACROS_H_
 
 #include "cc/paint/filter_operation.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
@@ -206,6 +207,10 @@ IPC_STRUCT_TRAITS_BEGIN(viz::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(content_source_id)
   IPC_STRUCT_TRAITS_MEMBER(begin_frame_ack)
   IPC_STRUCT_TRAITS_MEMBER(frame_token)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::RenderFrameMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

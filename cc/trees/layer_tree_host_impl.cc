@@ -71,6 +71,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -1801,6 +1802,13 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   return metadata;
 }
 
+RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
+  RenderFrameMetadata metadata;
+  metadata.root_scroll_offset =
+      gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+  return metadata;
+}
+
 bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
@@ -1866,7 +1874,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   metadata.may_contain_video = frame->may_contain_video;
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
 
-  active_tree()->FinishSwapPromises(&metadata);
+  RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
+
+  active_tree()->FinishSwapPromises(&metadata, &render_frame_metadata);
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
   ui::LatencyInfo& new_latency_info = metadata.latency_info.back();

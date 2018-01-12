@@ -31,6 +31,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/switches.h"
@@ -630,6 +631,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OnRenderFrameSubmitted,
+                        OnRenderFrameMetadata)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -2917,6 +2920,11 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
 void RenderWidgetHostImpl::ProgressFling(base::TimeTicks current_time) {
   if (input_router_)
     input_router_->ProgressFling(current_time);
+}
+
+void RenderWidgetHostImpl::OnRenderFrameMetadata(
+    const cc::RenderFrameMetadata& metadata) {
+  last_render_frame_metadata_ = metadata;
 }
 
 }  // namespace content
