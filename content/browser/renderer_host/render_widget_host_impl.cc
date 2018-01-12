@@ -2922,6 +2922,11 @@ void RenderWidgetHostImpl::ProgressFling(base::TimeTicks current_time) {
     input_router_->ProgressFling(current_time);
 }
 
+void RenderWidgetHostImpl::StopFling() {
+  if (input_router_)
+    input_router_->StopFling();
+}
+
 void RenderWidgetHostImpl::OnRenderFrameMetadata(
     const cc::RenderFrameMetadata& metadata) {
   last_render_frame_metadata_ = metadata;

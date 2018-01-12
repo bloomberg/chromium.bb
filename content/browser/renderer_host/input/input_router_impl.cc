@@ -212,6 +212,10 @@ void InputRouterImpl::ProgressFling(base::TimeTicks current_time) {
   gesture_event_queue_.ProgressFling(current_time);
 }
 
+void InputRouterImpl::StopFling() {
+  gesture_event_queue_.StopFling();
+}
+
 void InputRouterImpl::CancelTouchTimeout() {
   touch_event_queue_.SetAckTimeoutEnabled(false);
 }

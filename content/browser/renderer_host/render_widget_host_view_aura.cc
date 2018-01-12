@@ -1053,6 +1053,19 @@ void RenderWidgetHostViewAura::GestureEventAck(
   if (overscroll_controller_) {
     overscroll_controller_->ReceivedEventACK(
         event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+    // Terminate an active fling when the ACK for a GSU generated from the fling
+    // progress (GSU with inertial state) is consumed and the overscrolling mode
+    // is not |OVERSCROLL_NONE|. The early fling termination generates a GSE
+    // which completes the overscroll action. Without this change the overscroll
+    // action would complete at the end of the active fling progress which
+    // causes noticeable delay in cases that the fling velocity is large.
+    // https://crbug.com/797855
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+        event.data.scroll_update.inertial_phase ==
+            blink::WebGestureEvent::kMomentumPhase &&
+        overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
+      host_->StopFling();
+    }
   }
 }
 

@@ -84,6 +84,11 @@ void GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
   fling_controller_.ProgressFling(current_time);
 }
 
+void GestureEventQueue::StopFling() {
+  fling_in_progress_ = false;
+  fling_controller_.StopFling();
+}
+
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
   // When the GFS is processed by the fling_controller_ the controller handles
