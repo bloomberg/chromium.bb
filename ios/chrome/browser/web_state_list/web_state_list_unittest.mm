@@ -36,6 +36,7 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_moved_called_ = false;
     web_state_replaced_called_ = false;
     web_state_detached_called_ = false;
+    web_state_activated_called_ = false;
   }
 
   // Returns whether WebStateInsertedAt was invoked.
@@ -49,6 +50,11 @@ class WebStateListTestObserver : public WebStateListObserver {
 
   // Returns whether WebStateDetachedAt was invoked.
   bool web_state_detached_called() const { return web_state_detached_called_; }
+
+  // Returns whether WebStateActivatedAt was invoked.
+  bool web_state_activated_called() const {
+    return web_state_activated_called_;
+  }
 
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -78,11 +84,20 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_detached_called_ = true;
   }
 
+  void WebStateActivatedAt(WebStateList* web_state_list,
+                           web::WebState* old_web_state,
+                           web::WebState* new_web_state,
+                           int active_index,
+                           int reason) override {
+    web_state_activated_called_ = true;
+  }
+
  private:
   bool web_state_inserted_called_ = false;
   bool web_state_moved_called_ = false;
   bool web_state_replaced_called_ = false;
   bool web_state_detached_called_ = false;
+  bool web_state_activated_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListTestObserver);
 };
@@ -201,6 +216,7 @@ TEST_F(WebStateListTest, ActivateWebState) {
 
   web_state_list_.ActivateWebStateAt(0);
 
+  EXPECT_TRUE(observer_.web_state_activated_called());
   ASSERT_EQ(1, web_state_list_.count());
   EXPECT_EQ(web_state_list_.GetWebStateAt(0),
             web_state_list_.GetActiveWebState());
@@ -212,6 +228,7 @@ TEST_F(WebStateListTest, InsertActivate) {
       WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE,
       WebStateOpener());
 
+  EXPECT_TRUE(observer_.web_state_activated_called());
   ASSERT_EQ(1, web_state_list_.count());
   EXPECT_EQ(web_state_list_.GetWebStateAt(0),
             web_state_list_.GetActiveWebState());
@@ -220,6 +237,7 @@ TEST_F(WebStateListTest, InsertActivate) {
 TEST_F(WebStateListTest, InsertInheritOpener) {
   AppendNewWebState(kURL0);
   web_state_list_.ActivateWebStateAt(0);
+  EXPECT_TRUE(observer_.web_state_activated_called());
   ASSERT_EQ(1, web_state_list_.count());
   ASSERT_EQ(web_state_list_.GetWebStateAt(0),
             web_state_list_.GetActiveWebState());
@@ -352,6 +370,7 @@ TEST_F(WebStateListTest, ReplaceWebStateAt) {
       web_state_list_.ReplaceWebStateAt(1, CreateWebState(kURL2)));
 
   EXPECT_TRUE(observer_.web_state_replaced_called());
+  EXPECT_TRUE(observer_.web_state_activated_called());
   EXPECT_EQ(2, web_state_list_.count());
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(0)->GetVisibleURL().spec());
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
