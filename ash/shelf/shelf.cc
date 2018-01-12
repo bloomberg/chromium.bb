@@ -17,6 +17,7 @@
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "base/logging.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/types/display_constants.h"
@@ -287,6 +288,10 @@ void Shelf::NotifyShelfIconPositionsChanged() {
 
 StatusAreaWidget* Shelf::GetStatusAreaWidget() const {
   return shelf_widget_->status_area_widget();
+}
+
+TrayBackgroundView* Shelf::GetSystemTrayAnchor() const {
+  return GetStatusAreaWidget()->GetSystemTrayAnchor();
 }
 
 void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {

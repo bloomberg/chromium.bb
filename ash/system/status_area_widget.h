@@ -24,6 +24,7 @@ class PaletteTray;
 class Shelf;
 class StatusAreaWidgetDelegate;
 class SystemTray;
+class TrayBackgroundView;
 class VirtualKeyboardTray;
 class WebNotificationTray;
 
@@ -50,6 +51,12 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
 
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);
+
+  // Get the tray button that the system tray bubble and the notification center
+  // bubble will be anchored. Usually |system_tray_|, but when the overview
+  // button is visible (i.e. tablet mode is enabled), it returns
+  // |overview_button_tray_|.
+  TrayBackgroundView* GetSystemTrayAnchor() const;
 
   StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;

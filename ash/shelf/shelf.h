@@ -38,6 +38,7 @@ class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
 class ShelfObserver;
+class TrayBackgroundView;
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
@@ -133,6 +134,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   void NotifyShelfIconPositionsChanged();
   StatusAreaWidget* GetStatusAreaWidget() const;
+
+  // Get the tray button that the system tray bubble and the notification center
+  // bubble will be anchored. See also: StatusAreaWidget::GetSystemTrayAnchor()
+  TrayBackgroundView* GetSystemTrayAnchor() const;
 
   void set_is_tablet_mode_animation_running(bool value) {
     is_tablet_mode_animation_running_ = value;

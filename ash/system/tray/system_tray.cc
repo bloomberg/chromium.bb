@@ -480,8 +480,10 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     }
 
     system_bubble_ = std::make_unique<SystemBubbleWrapper>();
-    system_bubble_->InitView(this, GetBubbleAnchor(), GetBubbleAnchorInsets(),
-                             items, system_tray_type, &init_params, persistent);
+    system_bubble_->InitView(
+        this, shelf()->GetSystemTrayAnchor()->GetBubbleAnchor(),
+        shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets(), items,
+        system_tray_type, &init_params, persistent);
 
     // Record metrics for the system menu when the default view is invoked.
     if (!detailed)
