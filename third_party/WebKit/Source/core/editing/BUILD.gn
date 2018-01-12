@@ -46,6 +46,8 @@ blink_core_sources("editing") {
     "LayoutSelection.h",
     "LocalCaretRect.cpp",
     "LocalCaretRect.h",
+    "NGFlatTreeShorthands.cpp",
+    "NGFlatTreeShorthands.h",
     "PlainTextRange.cpp",
     "PlainTextRange.h",
     "Position.cpp",

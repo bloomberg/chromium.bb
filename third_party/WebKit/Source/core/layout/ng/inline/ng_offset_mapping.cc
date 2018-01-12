@@ -64,11 +64,6 @@ const LayoutBlockFlow* NGInlineFormattingContextOf(const Position& position) {
   return layout_object->EnclosingNGBlockFlow();
 }
 
-const LayoutBlockFlow* NGInlineFormattingContextOf(
-    const PositionInFlatTree& position) {
-  return NGInlineFormattingContextOf(ToPositionInDOMTree(position));
-}
-
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
                                          const Node& node,
                                          unsigned dom_start,

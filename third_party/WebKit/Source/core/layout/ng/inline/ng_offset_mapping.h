@@ -187,7 +187,6 @@ class CORE_EXPORT NGOffsetMapping {
 };
 
 CORE_EXPORT const LayoutBlockFlow* NGInlineFormattingContextOf(const Position&);
-const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
 
 }  // namespace blink
 
