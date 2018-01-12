@@ -290,6 +290,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool CanBeSelectionLeafInternal() const final { return true; }
 
  private:
+  void AccumlateQuads(Vector<FloatQuad>&,
+                      const IntRect& ellipsis_rect,
+                      LocalOrAbsoluteOption,
+                      MapCoordinatesFlags mode,
+                      const LayoutRect&) const;
+
   void ComputePreferredLogicalWidths(float lead_width);
   void ComputePreferredLogicalWidths(
       float lead_width,
