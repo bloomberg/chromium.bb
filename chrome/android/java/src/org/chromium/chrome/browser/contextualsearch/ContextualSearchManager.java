@@ -366,6 +366,18 @@ public class ContextualSearchManager
         return mSelectionController.getBaseWebContents();
     }
 
+    /** @return The Base Page's {@link URL}. */
+    @Nullable
+    private URL getBasePageURL() {
+        WebContents baseWebContents = mSelectionController.getBaseWebContents();
+        if (baseWebContents == null) return null;
+        try {
+            return new URL(baseWebContents.getVisibleUrl());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
     /** Notifies that the base page has started loading a page. */
     public void onBasePageLoadStarted() {
         mSelectionController.onBasePageLoadStarted();
@@ -1474,6 +1486,18 @@ public class ContextualSearchManager
         // The selection was just cleared, so we'll want to remove our UX unless it was due to
         // another Tap while the Bar is showing.
         mInternalStateController.enter(InternalState.SELECTION_CLEARED_RECOGNIZED);
+    }
+
+    @Override
+    public void logNonHeuristicFeatures(ContextualSearchRankerLogger rankerLogger) {
+        boolean didOptIn = !mPolicy.isUserUndecided();
+        rankerLogger.logFeature(ContextualSearchRankerLogger.Feature.DID_OPT_IN, didOptIn);
+        boolean isHttp = mPolicy.isBasePageHTTP(getBasePageURL());
+        rankerLogger.logFeature(ContextualSearchRankerLogger.Feature.IS_HTTP, isHttp);
+        String contentLanguage = mContext.getDetectedLanguage();
+        boolean isLanguageMismatch = mTranslateController.needsTranslation(contentLanguage);
+        rankerLogger.logFeature(
+                ContextualSearchRankerLogger.Feature.IS_LANGUAGE_MISMATCH, isLanguageMismatch);
     }
 
     /** Shows the given selection as the Search Term in the Bar. */
