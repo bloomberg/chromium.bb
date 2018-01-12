@@ -174,11 +174,6 @@ PositionInFlatTree ComputeEndRespectingGranularity(
     const PositionInFlatTreeWithAffinity&,
     TextGranularity);
 
-// TODO(editing-dev): We should move |AdjustSelectionWithTrailingWhitespace()|
-// to "SelectionController.cpp" as file local function.
-CORE_EXPORT SelectionInFlatTree
-AdjustSelectionWithTrailingWhitespace(const SelectionInFlatTree&);
-
 }  // namespace blink
 
 #ifndef NDEBUG
