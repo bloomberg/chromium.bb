@@ -395,9 +395,20 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
   // of the form "<keyword> <query>", where our query is |user_text_|.
   // So we need to adjust the cursor position forward by the length of
   // any keyword added by MaybePrependKeyword() above.
-  if (is_keyword_selected())
-    cursor_position += input_text.length() - user_text_.length();
-
+  if (is_keyword_selected()) {
+    // If there is user text, the cursor is past the keyword and doesn't
+    // account for its size.  Add the keyword's size to the position passed
+    // to autocomplete.
+    if (!user_text_.empty()) {
+      cursor_position += input_text.length() - user_text_.length();
+    } else {
+      // Otherwise, cursor may point into keyword or otherwise not account
+      // for the keyword's size (depending on how this code is reached).
+      // Pass a cursor at end of input to autocomplete.  This is safe in all
+      // conditions.
+      cursor_position = input_text.length();
+    }
+  }
   input_ = AutocompleteInput(input_text, cursor_position, ClassifyPage(),
                              client_->GetSchemeClassifier());
   input_.set_current_url(client_->GetURL());
