@@ -308,7 +308,6 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
     stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
   }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
-  // TODO(angiebird): correct the range for rect txfms
   for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_col[i] =
         cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] + bd + 1;
@@ -341,17 +340,25 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   const TxfmFunc txfm_func_col = inv_txfm_type_to_func(cfg->col_cfg->txfm_type);
   const TxfmFunc txfm_func_row = inv_txfm_type_to_func(cfg->row_cfg->txfm_type);
 
-  // txfm_buf's length is  txfm_size_row * txfm_size_col + 2 * txfm_size_row
+  // txfm_buf's length is  txfm_size_row * txfm_size_col + 2 *
+  // AOMMAX(txfm_size_row, txfm_size_col)
   // it is used for intermediate data buffering
   int32_t *temp_in = txfm_buf;
-  int32_t *temp_out = temp_in + txfm_size_row;
-  int32_t *buf = temp_out + txfm_size_row;
+  int32_t *temp_out = temp_in + AOMMAX(txfm_size_row, txfm_size_col);
+  int32_t *buf = temp_out + AOMMAX(txfm_size_row, txfm_size_col);
   int32_t *buf_ptr = buf;
   int c, r;
 
   // Rows
   for (r = 0; r < txfm_size_row; ++r) {
-    txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
+    if (abs(rect_type) == 1) {
+      for (c = 0; c < txfm_size_col; ++c) {
+        temp_in[c] = (int32_t)dct_const_round_shift(input[c] * InvSqrt2);
+      }
+      txfm_func_row(temp_in, buf_ptr, cos_bit_row, stage_range_row);
+    } else {
+      txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
+    }
     av1_round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
     clamp_buf(buf_ptr, txfm_size_col, bd + 8);
     input += txfm_size_col;
@@ -369,11 +376,6 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
         temp_in[r] = buf[r * txfm_size_col + (txfm_size_col - c - 1)];
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
-    if (abs(rect_type) == 1) {
-      for (r = 0; r < txfm_size_row; ++r) {
-        temp_out[r] = (int32_t)dct_const_round_shift(temp_out[r] * InvSqrt2);
-      }
-    }
     av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
     clamp_buf(temp_out, txfm_size_row, bd + 1);
     if (cfg->ud_flip == 0) {

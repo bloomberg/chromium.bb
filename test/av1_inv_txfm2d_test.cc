@@ -169,7 +169,7 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
 #if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 5, 0.38));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 5, 0.38));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 5, 0.39));
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 3, 0.38));
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 3, 0.38));
     }
