@@ -9110,7 +9110,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
-  rd_cost->rate = INT_MAX;
+  av1_invalid_rd_stats(rd_cost);
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     x->pred_mv_sad[ref_frame] = INT_MAX;
