@@ -179,6 +179,11 @@ GRPC_SUPPORT_EXPORT
 // This is the exact string servers will see.
 + (NSString*)getUserAgent;
 
+// Sets priority of the network thread. The |priority| should be a
+// floating point number between 0.0 to 1.0, where 1.0 is highest priority.
+// This method can be called multiple times before or after |start| method.
++ (void)setNetworkThreadPriority:(double)priority;
+
 // Get a pointer to global instance of cronet_engine for GRPC C API.
 + (stream_engine*)getGlobalEngine;
 

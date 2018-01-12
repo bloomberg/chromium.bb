@@ -60,6 +60,7 @@ QuicHintVector gQuicHints;
 NSString* gExperimentalOptions;
 NSString* gUserAgent;
 BOOL gUserAgentPartial;
+double gNetworkThreadPriority;
 NSString* gSslKeyLogFileName;
 std::vector<std::unique_ptr<cronet::URLRequestContextConfig::Pkp>> gPkpList;
 RequestFilterBlock gRequestFilterBlock;
@@ -309,6 +310,10 @@ class CronetHttpProtocolHandlerDelegate
   return gChromeNet.Get()->GetFileThreadRunnerForTesting();
 }
 
++ (base::SingleThreadTaskRunner*)getNetworkThreadRunnerForTesting {
+  return gChromeNet.Get()->GetNetworkThreadRunnerForTesting();
+}
+
 + (void)startInternal {
   std::string user_agent = base::SysNSStringToUTF8(gUserAgent);
 
@@ -330,6 +335,10 @@ class CronetHttpProtocolHandlerDelegate
   gChromeNet.Get()
       ->set_enable_public_key_pinning_bypass_for_local_trust_anchors(
           gEnablePKPBypassForLocalTrustAnchors);
+  if (gNetworkThreadPriority !=
+      cronet::CronetEnvironment::kKeepDefaultThreadPriority) {
+    gChromeNet.Get()->SetNetworkThreadPriority(gNetworkThreadPriority);
+  }
   for (const auto& quicHint : gQuicHints) {
     gChromeNet.Get()->AddQuicHint(quicHint->host, quicHint->port,
                                   quicHint->alternate_port);
@@ -440,6 +449,13 @@ class CronetHttpProtocolHandlerDelegate
                             encoding:[NSString defaultCStringEncoding]];
 }
 
++ (void)setNetworkThreadPriority:(double)priority {
+  gNetworkThreadPriority = priority;
+  if (gChromeNet.Get()) {
+    gChromeNet.Get()->SetNetworkThreadPriority(priority);
+  };
+}
+
 + (stream_engine*)getGlobalEngine {
   DCHECK(gChromeNet.Get().get());
   if (gChromeNet.Get().get()) {
@@ -531,6 +547,8 @@ class CronetHttpProtocolHandlerDelegate
   gExperimentalOptions = @"{}";
   gUserAgent = nil;
   gUserAgentPartial = NO;
+  gNetworkThreadPriority =
+      cronet::CronetEnvironment::kKeepDefaultThreadPriority;
   gSslKeyLogFileName = nil;
   gPkpList.clear();
   gRequestFilterBlock = nil;

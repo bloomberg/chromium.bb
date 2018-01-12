@@ -4,8 +4,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/path_service.h"
-#include "base/threading/thread.h"
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/cronet/ios/test/test_server.h"
@@ -13,10 +13,6 @@
 #include "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
-
-namespace {
-typedef void (^BlockType)(void);
-}  // namespace
 
 namespace cronet {
 class PrefsTest : public CronetTestBase {
@@ -64,18 +60,12 @@ class PrefsTest : public CronetTestBase {
     dispatch_semaphore_t lock = dispatch_semaphore_create(0);
     __block NSString* file_content = nil;
     __block NSError* block_error = nil;
-    base::SingleThreadTaskRunner* file_runner =
-        [Cronet getFileThreadRunnerForTesting];
-    file_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&PrefsTest::ExecuteBlockOnFileThread, base::Unretained(this),
-                   ^{
-                     file_content =
-                         [NSString stringWithContentsOfFile:file
-                                                   encoding:NSUTF8StringEncoding
-                                                      error:&block_error];
-                     dispatch_semaphore_signal(lock);
-                   }));
+    PostBlockToFileThread(FROM_HERE, ^{
+      file_content = [NSString stringWithContentsOfFile:file
+                                               encoding:NSUTF8StringEncoding
+                                                  error:&block_error];
+      dispatch_semaphore_signal(lock);
+    });
 
     // Wait for the file thread to finish reading the file content.
     dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
@@ -84,8 +74,6 @@ class PrefsTest : public CronetTestBase {
     }
     return file_content;
   }
-
-  void ExecuteBlockOnFileThread(BlockType block) { block(); }
 
   NSURLSession* session_;
 };

@@ -123,7 +123,10 @@ bool IsNetLogPathValid(const base::FilePath& path) {
 
 namespace cronet {
 
-base::SingleThreadTaskRunner* CronetEnvironment::GetNetworkThreadTaskRunner() {
+const double CronetEnvironment::kKeepDefaultThreadPriority = -1;
+
+base::SingleThreadTaskRunner* CronetEnvironment::GetNetworkThreadTaskRunner()
+    const {
   if (network_io_thread_) {
     return network_io_thread_->task_runner().get();
   }
@@ -256,7 +259,8 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent,
       user_agent_(user_agent),
       user_agent_partial_(user_agent_partial),
       net_log_(new net::NetLog),
-      enable_pkp_bypass_for_local_trust_anchors_(true) {}
+      enable_pkp_bypass_for_local_trust_anchors_(true),
+      network_thread_priority_(kKeepDefaultThreadPriority) {}
 
 void CronetEnvironment::Start() {
   // Threads setup.
@@ -316,6 +320,10 @@ CronetEnvironment::~CronetEnvironment() {
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
   base::DisallowBlocking();
+
+  if (network_thread_priority_ != kKeepDefaultThreadPriority) {
+    SetNetworkThreadPriorityOnNetworkThread(network_thread_priority_);
+  }
 
   static bool ssl_key_log_file_set = false;
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
@@ -425,6 +433,19 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   }
 }
 
+void CronetEnvironment::SetNetworkThreadPriority(double priority) {
+  DCHECK_LE(priority, 1.0);
+  DCHECK_GE(priority, 0.0);
+  network_thread_priority_ = priority;
+  if (network_io_thread_) {
+    PostToNetworkThread(
+        FROM_HERE,
+        base::BindRepeating(
+            &CronetEnvironment::SetNetworkThreadPriorityOnNetworkThread,
+            base::Unretained(this), priority));
+  }
+}
+
 std::string CronetEnvironment::user_agent() {
   const net::HttpUserAgentSettings* user_agent_settings =
       main_context_->http_user_agent_settings();
@@ -460,6 +481,16 @@ void CronetEnvironment::SetHostResolverRulesOnNetworkThread(
   event->Signal();
 }
 
+void CronetEnvironment::SetNetworkThreadPriorityOnNetworkThread(
+    double priority) {
+  DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
+  DCHECK_LE(priority, 1.0);
+  DCHECK_GE(priority, 0.0);
+  if (priority >= 0.0 && priority <= 1.0) {
+    [NSThread setThreadPriority:priority];
+  }
+}
+
 std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
   return base::SysNSStringToUTF8([[NSBundle mainBundle]
              objectForInfoDictionaryKey:@"CFBundleDisplayName"]) +
@@ -469,6 +500,11 @@ std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
 base::SingleThreadTaskRunner* CronetEnvironment::GetFileThreadRunnerForTesting()
     const {
   return file_thread_->task_runner().get();
+}
+
+base::SingleThreadTaskRunner*
+CronetEnvironment::GetNetworkThreadRunnerForTesting() const {
+  return GetNetworkThreadTaskRunner();
 }
 
 CronetEnvironment::CronetNetworkThread::CronetNetworkThread(

@@ -4,6 +4,8 @@
 
 #include "cronet_test_base.h"
 
+#include "base/location.h"
+#include "base/threading/thread.h"
 #include "components/grpc_support/test/quic_test_server.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
@@ -258,6 +260,24 @@ std::unique_ptr<net::MockCertVerifier> CronetTestBase::CreateMockCertVerifier(
   return mock_cert_verifier;
 }
 
+void CronetTestBase::PostBlockToFileThread(const base::Location& from_here,
+                                           BlockType block) {
+  base::SingleThreadTaskRunner* file_runner =
+      [Cronet getFileThreadRunnerForTesting];
+  file_runner->PostTask(from_here,
+                        base::BindOnce(&CronetTestBase::ExecuteBlock,
+                                       base::Unretained(this), block));
+}
+
+void CronetTestBase::PostBlockToNetworkThread(const base::Location& from_here,
+                                              BlockType block) {
+  base::SingleThreadTaskRunner* network_runner =
+      [Cronet getNetworkThreadRunnerForTesting];
+  network_runner->PostTask(from_here,
+                           base::BindOnce(&CronetTestBase::ExecuteBlock,
+                                          base::Unretained(this), block));
+}
+
 bool CronetTestBase::CalculatePublicKeySha256(const net::X509Certificate& cert,
                                               net::HashValue* out_hash_value) {
   // Extract the public key from the cert.
@@ -273,6 +293,10 @@ bool CronetTestBase::CalculatePublicKeySha256(const net::X509Certificate& cert,
   crypto::SHA256HashString(spki_bytes, out_hash_value->data(),
                            crypto::kSHA256Length);
   return true;
+}
+
+void CronetTestBase::ExecuteBlock(BlockType block) {
+  block();
 }
 
 }  // namespace cronet
