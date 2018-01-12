@@ -74,10 +74,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Destroy the Surface once a set of sequence numbers has been satisfied.
   void DestroySurface(const SurfaceId& surface_id);
 
-  // Called when |surface_id| or one of its descendents is determined to be
-  // damaged at aggregation time.
-  void SurfaceSubtreeDamaged(const SurfaceId& surface_id);
-
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
 
   void AddObserver(SurfaceObserver* obs) { observer_list_.AddObserver(obs); }

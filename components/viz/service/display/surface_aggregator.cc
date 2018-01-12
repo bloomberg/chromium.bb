@@ -1040,7 +1040,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     // Surface. Therefore, no code before this point should have assumed
     // anything about the presence or absence of copy requests after this point.
     surface->NotifyAggregatedDamage(damage_rect);
-    manager_->SurfaceSubtreeDamaged(surface->surface_id());
   }
 
   CHECK(debug_weak_this.get());

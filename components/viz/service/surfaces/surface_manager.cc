@@ -156,12 +156,6 @@ void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {
   surfaces_to_destroy_.insert(surface_id);
 }
 
-void SurfaceManager::SurfaceSubtreeDamaged(const SurfaceId& surface_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  for (auto& observer : observer_list_)
-    observer.OnSurfaceSubtreeDamaged(surface_id);
-}
-
 void SurfaceManager::RequireSequence(const SurfaceId& surface_id,
                                      const SurfaceSequence& sequence) {
   DCHECK_EQ(lifetime_type_, LifetimeType::SEQUENCES);
