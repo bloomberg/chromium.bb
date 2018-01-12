@@ -24,10 +24,12 @@ foreach(typemap_import, _typemap_imports) {
 
 typemaps = []
 foreach(typemap, _typemaps) {
-  typemaps += [ {
-        filename = typemap
-        config = read_file(typemap, "scope")
-      } ]
+  typemaps += [
+    {
+      filename = typemap
+      config = read_file(typemap, "scope")
+    },
+  ]
 }
 
 blacklist = []
