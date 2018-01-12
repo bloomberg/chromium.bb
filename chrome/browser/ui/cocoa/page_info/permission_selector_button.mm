@@ -30,6 +30,12 @@
     [self selectItemWithTag:permissionInfo.setting];
 
     [self setButtonTitle:permissionInfo profile:profile];
+
+    NSString* description = base::SysUTF16ToNSString(
+        PageInfoUI::PermissionTypeToUIString(permissionInfo.type));
+    [[self cell]
+        accessibilitySetOverrideValue:description
+                         forAttribute:NSAccessibilityDescriptionAttribute];
   }
   return self;
 }
