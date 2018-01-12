@@ -74,12 +74,6 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
       dump_type, level_of_detail, callback);
 }
 
-void MemoryInstrumentation::GetVmRegionsForHeapProfiler(
-    RequestGlobalDumpCallback callback) {
-  const auto& coordinator = GetCoordinatorBindingForCurrentThread();
-  coordinator->GetVmRegionsForHeapProfiler(callback);
-}
-
 const mojom::CoordinatorPtr&
 MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
   mojom::CoordinatorPtr* coordinator =

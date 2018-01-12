@@ -259,7 +259,10 @@ interface Coordinator {
   RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,
                                           LevelOfDetail level_of_detail) =>
       (bool success, uint64 dump_id);
+};
 
+// Used by the Chrome heap profiler
+interface HeapProfilerHelper {
   // Broadcasts a RequestOSMemoryDump-only request for all registered client
   // processes, retrieves only their memory maps and returns them in the field
   // |global_memory_dump.process_dumps.os_dump.memory_maps_for_heap_profiler|.
