@@ -84,7 +84,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 5
+          "shards": 10
         },
         "test": "browser_tests"
       },
@@ -108,7 +108,7 @@
         "name": "site_per_process_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 5
+          "shards": 10
         },
         "test": "browser_tests"
       },
