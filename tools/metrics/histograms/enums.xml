@@ -25046,6 +25046,7 @@ from previous Chrome versions.
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
+  <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
   <int value="-1980328793" label="trace-upload-url"/>
   <int value="-1977496883" label="ViewPasswords:enabled"/>
   <int value="-1973722176" label="VoiceSearchOnLocalNtp:enabled"/>
@@ -25124,6 +25125,7 @@ from previous Chrome versions.
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
+  <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839637286" label="AutofillCreditCardBankNameDisplay:disabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
   <int value="-1838482444" label="disable-settings-window"/>

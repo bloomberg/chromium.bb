@@ -1642,6 +1642,12 @@ const char kWebXrDescription[] =
     "Allow web applications to access experimental APIs to interact with "
     "Virtual Reality (VR) and Augmented Reality (AR) devices.";
 
+const char kWebXrOrientationSensorDeviceName[] =
+    "WebXR orientation sensor device";
+const char kWebXrOrientationSensorDeviceDescription[] =
+    "When no VR platform device is available, expose a non-presenting device "
+    "based on the device's orientation sensors, if available.";
+
 const char kWifiCredentialSyncName[] = "WiFi credential sync";
 const char kWifiCredentialSyncDescription[] =
     "Enables synchronizing WiFi network settings across devices. When enabled, "

@@ -1007,6 +1007,9 @@ extern const char kWebVrExperimentalRenderingDescription[];
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
 
+extern const char kWebXrOrientationSensorDeviceName[];
+extern const char kWebXrOrientationSensorDeviceDescription[];
+
 extern const char kWifiCredentialSyncName[];
 extern const char kWifiCredentialSyncDescription[];
 

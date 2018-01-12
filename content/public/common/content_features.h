@@ -116,6 +116,7 @@ CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebVrExperimentalRendering;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
 CONTENT_EXPORT extern const base::Feature kWebXr;
+CONTENT_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
 CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
 
 #if defined(OS_ANDROID)
