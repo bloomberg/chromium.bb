@@ -8,7 +8,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content_public.browser.WebContents;
 
@@ -89,15 +88,12 @@ public class DomDistillerTabUtils {
     /**
      * Check if the distiller should report mobile-friendly pages as non-distillable.
      *
-     * @return True if heuristic is ADABOOST_MODEL, and neither "Simplified view for accessibility"
-     * nor TalkBack is enabled.
+     * @return True if heuristic is ADABOOST_MODEL, and "Simplified view for accessibility"
+     * is disabled.
      */
     public static boolean shouldExcludeMobileFriendly() {
-        if (PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED)
-                || AccessibilityUtil.isAccessibilityEnabled()) {
-            return false;
-        }
-        return getDistillerHeuristics() == DistillerHeuristicsType.ADABOOST_MODEL;
+        return !PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED)
+                && getDistillerHeuristics() == DistillerHeuristicsType.ADABOOST_MODEL;
     }
 
     /**
