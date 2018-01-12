@@ -3165,6 +3165,104 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
 }
 #endif  // CONFIG_EXT_INTRA
 
+// Given selected prediction mode, search for the best tx type and size.
+static void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                            BLOCK_SIZE bsize, const int *bmode_costs,
+                            int plt_ctx, int64_t *best_rd, int *rate,
+                            int *rate_tokenonly, int64_t *distortion,
+                            int *skippable, MB_MODE_INFO *best_mbmi,
+                            PICK_MODE_CONTEXT *ctx) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  RD_STATS rd_stats;
+  super_block_yrd(cpi, x, &rd_stats, bsize, *best_rd);
+  if (rd_stats.rate == INT_MAX) return;
+  int this_rate_tokenonly = rd_stats.rate;
+  if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
+    // super_block_yrd above includes the cost of the tx_size in the
+    // tokenonly rate, but for intra blocks, tx_size is always coded
+    // (prediction granularity), so we account for it in the full rate,
+    // not the tokenonly rate.
+    this_rate_tokenonly -= tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
+  }
+  int this_rate = this_rate_tokenonly + bmode_costs[mbmi->mode];
+  const int use_palette = mbmi->palette_mode_info.palette_size[0] > 0;
+#if CONFIG_FILTER_INTRA
+  const int use_filter_intra = mbmi->filter_intra_mode_info.use_filter_intra;
+#endif  // CONFIG_FILTER_INTRA
+#if CONFIG_INTRABC
+  const int use_intrabc = mbmi->use_intrabc;
+#endif  // CONFIG_INTRABC
+  // Can only activate one mode.
+  assert((mbmi->mode != DC_PRED) + use_palette +
+#if CONFIG_INTRABC
+             use_intrabc +
+#endif
+             use_filter_intra <=
+         1);
+  const int try_palette =
+      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+  if (try_palette && mbmi->mode == DC_PRED) {
+    const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
+    this_rate += x->palette_y_mode_cost[bsize_ctx][plt_ctx][use_palette];
+    if (use_palette) {
+      const uint8_t *const color_map = xd->plane[0].color_index_map;
+      int block_width, block_height, rows, cols;
+      av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
+                               &cols);
+      const int plt_size = mbmi->palette_mode_info.palette_size[0];
+      int palette_mode_cost =
+          x->palette_y_size_cost[bsize_ctx][plt_size - PALETTE_MIN_SIZE] +
+          write_uniform_cost(plt_size, color_map[0]);
+      uint16_t color_cache[2 * PALETTE_MAX_SIZE];
+      const int n_cache = av1_get_palette_cache(xd, 0, color_cache);
+      palette_mode_cost +=
+          av1_palette_color_cost_y(&mbmi->palette_mode_info, color_cache,
+                                   n_cache, cpi->common.bit_depth);
+      palette_mode_cost +=
+          av1_cost_color_map(x, 0, bsize, mbmi->tx_size, PALETTE_MAP);
+      this_rate += palette_mode_cost;
+    }
+  }
+#if CONFIG_FILTER_INTRA
+  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+    this_rate += x->filter_intra_cost[mbmi->tx_size][use_filter_intra];
+    if (use_filter_intra) {
+      this_rate += x->filter_intra_mode_cost[mbmi->filter_intra_mode_info
+                                                 .filter_intra_mode];
+    }
+  }
+#endif  // CONFIG_FILTER_INTRA
+#if CONFIG_EXT_INTRA
+  if (av1_is_directional_mode(mbmi->mode, bsize)) {
+    if (av1_use_angle_delta(bsize)) {
+#if CONFIG_EXT_INTRA_MOD
+      this_rate += x->angle_delta_cost[mbmi->mode - V_PRED]
+                                      [MAX_ANGLE_DELTA + mbmi->angle_delta[0]];
+#else
+      this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
+                                      MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
+#endif  // CONFIG_EXT_INTRA_MOD
+    }
+  }
+#endif  // CONFIG_EXT_INTRA
+#if CONFIG_INTRABC
+  if (bsize >= BLOCK_8X8 && cpi->common.allow_screen_content_tools)
+    this_rate += x->intrabc_cost[use_intrabc];
+#endif  // CONFIG_INTRABC
+  const int64_t this_rd = RDCOST(x->rdmult, this_rate, rd_stats.dist);
+  if (this_rd < *best_rd) {
+    *best_mbmi = *mbmi;
+    *best_rd = this_rd;
+    *rate = this_rate;
+    *rate_tokenonly = this_rate_tokenonly;
+    *distortion = rd_stats.dist;
+    *skippable = rd_stats.skip;
+    memcpy(ctx->blk_skip[0], x->blk_skip[0],
+           sizeof(uint8_t) * ctx->num_4x4_blk);
+  }
+}
+
 // This function is used only for intra_only frames
 static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       int *rate, int *rate_tokenonly,
@@ -3175,7 +3273,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
   assert(!is_inter_block(mbmi));
-  MB_MODE_INFO best_mbmi = *mbmi;
   int64_t best_model_rd = INT64_MAX;
 #if CONFIG_EXT_INTRA
   const int rows = block_size_high[bsize];
@@ -3199,7 +3296,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const MODE_INFO *left_mi = xd->left_mi;
   const PREDICTION_MODE A = av1_above_block_mode(above_mi);
   const PREDICTION_MODE L = av1_left_block_mode(left_mi);
-  const PREDICTION_MODE FINAL_MODE_SEARCH = PAETH_PRED + 1;
 
 #if CONFIG_KF_CTX
   const int above_ctx = intra_mode_context[A];
@@ -3238,20 +3334,13 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
     x->use_default_intra_tx_type = 0;
 
+  MB_MODE_INFO best_mbmi = *mbmi;
   /* Y Search for intra prediction mode */
-  for (int mode_idx = DC_PRED; mode_idx <= FINAL_MODE_SEARCH; ++mode_idx) {
+  for (int mode_idx = DC_PRED; mode_idx < INTRA_MODES; ++mode_idx) {
     RD_STATS this_rd_stats;
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd, this_model_rd;
-    if (mode_idx == FINAL_MODE_SEARCH) {
-      if (x->use_default_intra_tx_type == 0) break;
-      mbmi->mode = best_mbmi.mode;
-      x->use_default_intra_tx_type = 0;
-    } else {
-      assert(mode_idx < INTRA_MODES);
-      mbmi->mode = intra_rd_search_mode_order[mode_idx];
-    }
-
+    mbmi->mode = intra_rd_search_mode_order[mode_idx];
 #if CONFIG_EXT_INTRA
     mbmi->angle_delta[0] = 0;
 #endif  // CONFIG_EXT_INTRA
@@ -3349,6 +3438,14 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 #endif  // CONFIG_FILTER_INTRA
+
+  if (x->use_default_intra_tx_type) {
+    *mbmi = best_mbmi;
+    x->use_default_intra_tx_type = 0;
+    intra_block_yrd(cpi, x, bsize, bmode_costs, palette_y_mode_ctx, &best_rd,
+                    rate, rate_tokenonly, distortion, skippable, &best_mbmi,
+                    ctx);
+  }
 
   *mbmi = best_mbmi;
   return best_rd;
