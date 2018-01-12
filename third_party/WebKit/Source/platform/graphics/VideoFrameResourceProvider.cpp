@@ -34,9 +34,11 @@ VideoFrameResourceProvider::VideoFrameResourceProvider(
       weak_ptr_factory_(this) {}
 
 VideoFrameResourceProvider::~VideoFrameResourceProvider() {
-  viz::ContextProvider::ScopedContextLock lock(context_provider_);
-  resource_updater_ = nullptr;
-  resource_provider_ = nullptr;
+  if (context_provider_) {
+    viz::ContextProvider::ScopedContextLock lock(context_provider_);
+    resource_updater_ = nullptr;
+    resource_provider_ = nullptr;
+  }
 }
 
 void VideoFrameResourceProvider::ObtainContextProvider() {
