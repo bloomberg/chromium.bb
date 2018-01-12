@@ -62,7 +62,7 @@ HTMLObjectElement* HTMLObjectElement::Create(Document& document,
                                              bool created_by_parser) {
   HTMLObjectElement* element =
       new HTMLObjectElement(document, created_by_parser);
-  element->EnsureLegacyUserAgentShadowRootV0();
+  element->EnsureUserAgentShadowRootV1();
   return element;
 }
 

@@ -51,7 +51,7 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
 HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
                                            bool created_by_parser) {
   HTMLEmbedElement* element = new HTMLEmbedElement(document, created_by_parser);
-  element->EnsureLegacyUserAgentShadowRootV0();
+  element->EnsureUserAgentShadowRootV1();
   return element;
 }
 

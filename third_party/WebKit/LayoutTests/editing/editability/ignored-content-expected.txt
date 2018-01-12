@@ -17,7 +17,8 @@ This test ensures WebKit does not ignore the content of hr, datagrid, and object
 |     "<#selection-anchor>world<#selection-focus>"
 |   " WebKit"
 |   <shadow:root>
-|     <content>
+|     <slot>
+|       name="user-agent-default-slot"
 
 The result below should be identical to the result above:
 | <hr>
@@ -36,4 +37,5 @@ The result below should be identical to the result above:
 |     "world"
 |   " WebKit"
 |   <shadow:root>
-|     <content>
+|     <slot>
+|       name="user-agent-default-slot"
