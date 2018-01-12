@@ -246,11 +246,10 @@ void ServiceWorkerRegistration::ClearWhenReady() {
     Clear();
 }
 
-void ServiceWorkerRegistration::AbortPendingClear(
-    const StatusCallback& callback) {
+void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
   DCHECK(context_);
   if (!is_uninstalling()) {
-    callback.Run(SERVICE_WORKER_OK);
+    std::move(callback).Run(SERVICE_WORKER_OK);
     return;
   }
   is_uninstalling_ = false;
@@ -261,12 +260,9 @@ void ServiceWorkerRegistration::AbortPendingClear(
   DCHECK(most_recent_version.get());
   context_->storage()->NotifyInstallingRegistration(this);
   context_->storage()->StoreRegistration(
-      this,
-      most_recent_version.get(),
-      base::Bind(&ServiceWorkerRegistration::OnRestoreFinished,
-                 this,
-                 callback,
-                 most_recent_version));
+      this, most_recent_version.get(),
+      base::BindOnce(&ServiceWorkerRegistration::OnRestoreFinished, this,
+                     std::move(callback), most_recent_version));
 }
 
 void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
@@ -420,8 +416,6 @@ void ServiceWorkerRegistration::ContinueActivation(
   activating_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::ACTIVATE,
       base::BindOnce(&ServiceWorkerRegistration::DispatchActivateEvent, this,
-                     activating_version),
-      base::BindOnce(&ServiceWorkerRegistration::OnActivateEventFinished, this,
                      activating_version));
 }
 
@@ -441,7 +435,7 @@ void ServiceWorkerRegistration::DeleteVersion(
     // Delete the records from the db.
     context_->storage()->DeleteRegistration(
         id(), pattern().GetOrigin(),
-        base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, protect));
+        base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
     // But not from memory if there is a version in the pipeline.
     // TODO(falken): Fix this logic. There could be a running register job for
     // this registration that hasn't set installing_version() yet.
@@ -488,7 +482,12 @@ void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
 }
 
 void ServiceWorkerRegistration::DispatchActivateEvent(
-    scoped_refptr<ServiceWorkerVersion> activating_version) {
+    scoped_refptr<ServiceWorkerVersion> activating_version,
+    ServiceWorkerStatusCode start_worker_status) {
+  if (start_worker_status != SERVICE_WORKER_OK) {
+    OnActivateEventFinished(activating_version, start_worker_status);
+    return;
+  }
   if (activating_version != active_version()) {
     OnActivateEventFinished(activating_version, SERVICE_WORKER_ERROR_FAILED);
     return;
@@ -499,8 +498,8 @@ void ServiceWorkerRegistration::DispatchActivateEvent(
       << "Worker stopped too soon after it was started.";
   int request_id = activating_version->StartRequest(
       ServiceWorkerMetrics::EventType::ACTIVATE,
-      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
-                 activating_version));
+      base::BindOnce(&ServiceWorkerRegistration::OnActivateEventFinished, this,
+                     activating_version));
   activating_version->event_dispatcher()->DispatchActivateEvent(
       activating_version->CreateSimpleEventCallback(request_id));
 }
@@ -531,7 +530,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   context_->storage()->UpdateToActiveState(
-      this, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      this, base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 void ServiceWorkerRegistration::OnDeleteFinished(
@@ -581,16 +580,16 @@ void ServiceWorkerRegistration::Clear() {
 }
 
 void ServiceWorkerRegistration::OnRestoreFinished(
-    const StatusCallback& callback,
+    StatusCallback callback,
     scoped_refptr<ServiceWorkerVersion> version,
     ServiceWorkerStatusCode status) {
   if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
   context_->storage()->NotifyDoneInstallingRegistration(
       this, version.get(), status);
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 }  // namespace content

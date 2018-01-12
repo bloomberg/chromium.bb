@@ -202,15 +202,21 @@ void ReadNotificationDatabaseData(
 
 // -----------------------------------------------------------------------------
 
-// Dispatches the notificationclick event on |service_worker|. Must be called on
-// the IO thread, and with the worker running.
+// Dispatches the notificationclick event on |service_worker|.
+// Must be called on the IO thread.
 void DispatchNotificationClickEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply,
-    ServiceWorkerVersion::StatusCallback callback) {
+    ServiceWorkerVersion::StatusCallback callback,
+    ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (start_worker_status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(start_worker_status);
+    return;
+  }
+
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK, std::move(callback));
 
@@ -239,9 +245,7 @@ void DoDispatchNotificationClickEvent(
           base::WrapRefCounted(service_worker_registration->active_version()),
           notification_database_data, action_index, reply,
           base::BindOnce(&ServiceWorkerNotificationEventFinished,
-                         dispatch_complete_callback)),
-      base::BindOnce(&ServiceWorkerNotificationEventFinished,
-                     dispatch_complete_callback));
+                         dispatch_complete_callback)));
 }
 
 // -----------------------------------------------------------------------------
@@ -277,13 +281,19 @@ void DeleteNotificationDataFromDatabase(
                  dispatch_complete_callback));
 }
 
-// Dispatches the notificationclose event on |service_worker|. Must be called on
-// the IO thread, and with the worker running.
+// Dispatches the notificationclose event on |service_worker|.
+// Must be called on the IO thread.
 void DispatchNotificationCloseEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
-    ServiceWorkerVersion::StatusCallback callback) {
+    ServiceWorkerVersion::StatusCallback callback,
+    ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (start_worker_status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(start_worker_status);
+    return;
+  }
+
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE, std::move(callback));
 
@@ -310,10 +320,7 @@ void DoDispatchNotificationCloseEvent(
             notification_database_data,
             base::BindOnce(&DeleteNotificationDataFromDatabase, notification_id,
                            notification_database_data.origin,
-                           notification_context, dispatch_complete_callback)),
-        base::BindOnce(&DeleteNotificationDataFromDatabase, notification_id,
-                       notification_database_data.origin, notification_context,
-                       dispatch_complete_callback));
+                           notification_context, dispatch_complete_callback)));
   } else {
     DeleteNotificationDataFromDatabase(
         notification_id, notification_database_data.origin,

@@ -129,7 +129,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       service_worker_dispatcher_host_unittest::BackgroundSyncManagerTest,
       RegisterWithoutLiveSWRegistration);
 
-  using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
+  using StatusCallback =
+      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
   enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
   // Debugging for https://crbug.com/750267
   enum class Phase { kInitial, kAddedToContext, kRemovedFromContext };
@@ -156,7 +157,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const url::Origin& source_origin,
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
-      const StatusCallback& callback);
+      StatusCallback callback);
   template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventInternal(
       scoped_refptr<ServiceWorkerVersion> worker,
@@ -164,7 +165,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const url::Origin& source_origin,
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const base::Optional<base::TimeDelta>& timeout,
-      const StatusCallback& callback,
+      StatusCallback callback,
       SourceInfoPtr source_info);
   template <typename SourceInfoPtr>
   void DispatchExtendableMessageEventAfterStartWorker(
@@ -174,12 +175,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const std::vector<blink::MessagePortChannel>& sent_message_ports,
       SourceInfoPtr source_info,
       const base::Optional<base::TimeDelta>& timeout,
-      const StatusCallback& callback);
-  template <typename SourceInfoPtr>
-  void DidFailToDispatchExtendableMessageEvent(
-      const std::vector<blink::MessagePortChannel>& sent_message_ports,
-      SourceInfoPtr source_info,
-      const StatusCallback& callback,
+      StatusCallback callback,
       ServiceWorkerStatusCode status);
   void ReleaseSourceInfo(blink::mojom::ServiceWorkerClientInfoPtr source_info);
   void ReleaseSourceInfo(blink::mojom::ServiceWorkerObjectInfoPtr source_info);

@@ -121,7 +121,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void OnStartWorkerFinished(ServiceWorkerStatusCode status);
   void OnStoreRegistrationComplete(ServiceWorkerStatusCode status);
   void InstallAndContinue();
-  void DispatchInstallEvent();
+  void DispatchInstallEvent(ServiceWorkerStatusCode start_worker_status);
   void OnInstallFinished(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus event_status,

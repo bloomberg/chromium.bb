@@ -791,13 +791,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::INSTALL,
         base::BindOnce(&self::DispatchInstallEventOnIOThread,
-                       base::Unretained(this), done, result),
-        CreateReceiver(BrowserThread::UI, done, result));
+                       base::Unretained(this), done, result));
   }
 
-  void DispatchInstallEventOnIOThread(const base::Closure& done,
-                                      ServiceWorkerStatusCode* result) {
+  void DispatchInstallEventOnIOThread(
+      const base::Closure& done,
+      ServiceWorkerStatusCode* result,
+      ServiceWorkerStatusCode start_worker_status) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ASSERT_EQ(SERVICE_WORKER_OK, start_worker_status);
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
@@ -844,13 +846,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::ACTIVATE,
         base::BindOnce(&self::DispatchActivateEventOnIOThread,
-                       base::Unretained(this), done, result),
-        CreateReceiver(BrowserThread::UI, done, result));
+                       base::Unretained(this), done, result));
   }
 
-  void DispatchActivateEventOnIOThread(const base::Closure& done,
-                                       ServiceWorkerStatusCode* result) {
+  void DispatchActivateEventOnIOThread(
+      const base::Closure& done,
+      ServiceWorkerStatusCode* result,
+      ServiceWorkerStatusCode start_worker_status) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ASSERT_EQ(SERVICE_WORKER_OK, start_worker_status);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
     int request_id =

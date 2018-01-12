@@ -545,21 +545,19 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
   version_->RunAfterStartWorker(
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToStartWorker,
                      weak_factory_.GetWeakPtr()));
 }
 
-void ServiceWorkerFetchDispatcher::DidStartWorker() {
+void ServiceWorkerFetchDispatcher::DidStartWorker(
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK) {
+    EndNetLogEventWithServiceWorkerStatus(
+        net_log_, net::NetLogEventType::SERVICE_WORKER_START_WORKER, status);
+    DidFail(status);
+    return;
+  }
   net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
   DispatchFetchEvent();
-}
-
-void ServiceWorkerFetchDispatcher::DidFailToStartWorker(
-    ServiceWorkerStatusCode status) {
-  EndNetLogEventWithServiceWorkerStatus(
-      net_log_, net::NetLogEventType::SERVICE_WORKER_START_WORKER, status);
-  DidFail(status);
 }
 
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {

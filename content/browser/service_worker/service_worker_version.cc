@@ -100,25 +100,19 @@ void RunCallbacks(ServiceWorkerVersion* version,
     std::move(callback).Run(arg);
 }
 
-// A callback adapter to start a |task| after StartWorker.
-void RunTaskAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
-                             StatusCallback error_callback,
-                             base::OnceClosure task,
-                             ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK) {
-    if (!error_callback.is_null())
-      std::move(error_callback).Run(status);
-    return;
-  }
-  if (version->running_status() != EmbeddedWorkerStatus::RUNNING) {
+// An adapter to run a |callback| after StartWorker.
+void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
+                                 StatusCallback callback,
+                                 ServiceWorkerStatusCode status) {
+  if (status == SERVICE_WORKER_OK &&
+      version->running_status() != EmbeddedWorkerStatus::RUNNING) {
     // We've tried to start the worker (and it has succeeded), but
     // it looks it's not running yet.
     NOTREACHED() << "The worker's not running after successful StartWorker";
-    if (!error_callback.is_null())
-      std::move(error_callback).Run(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
     return;
   }
-  std::move(task).Run();
+  std::move(callback).Run(status);
 }
 
 void KillEmbeddedWorkerProcess(int process_id) {
@@ -489,10 +483,10 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   // ServiceWorkerProviderHost::CompleteStartWorkerPreparation.
   context_->storage()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
-      base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
-                 weak_factory_.GetWeakPtr(), purpose, status_,
-                 is_browser_startup_complete,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(
+          &ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
+          weak_factory_.GetWeakPtr(), purpose, status_,
+          is_browser_startup_complete, std::move(callback)));
 }
 
 void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
@@ -545,8 +539,8 @@ void ServiceWorkerVersion::StartUpdate() {
     return;
   context_->storage()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
-      base::Bind(&ServiceWorkerVersion::FoundRegistrationForUpdate,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerVersion::FoundRegistrationForUpdate,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::DeferScheduledUpdate() {
@@ -679,16 +673,15 @@ ServiceWorkerVersion::CreateSimpleEventCallback(int request_id) {
 
 void ServiceWorkerVersion::RunAfterStartWorker(
     ServiceWorkerMetrics::EventType purpose,
-    base::OnceClosure task,
-    StatusCallback error_callback) {
+    StatusCallback callback) {
   if (running_status() == EmbeddedWorkerStatus::RUNNING) {
     DCHECK(start_callbacks_.empty());
-    std::move(task).Run();
+    std::move(callback).Run(SERVICE_WORKER_OK);
     return;
   }
-  StartWorker(purpose, base::BindOnce(
-                           &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-                           std::move(error_callback), std::move(task)));
+  StartWorker(purpose,
+              base::BindOnce(&RunCallbackAfterStartWorker,
+                             weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ServiceWorkerVersion::AddControllee(

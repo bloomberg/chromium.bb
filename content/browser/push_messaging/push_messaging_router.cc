@@ -70,8 +70,9 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
   // receive it right away. If not, it will be revived from storage.
   service_worker_context->FindReadyRegistrationForId(
       service_worker_registration_id, origin,
-      base::Bind(&PushMessagingRouter::FindServiceWorkerRegistrationCallback,
-                 payload, deliver_message_callback));
+      base::BindOnce(
+          &PushMessagingRouter::FindServiceWorkerRegistrationCallback, payload,
+          deliver_message_callback));
 }
 
 // static
@@ -106,9 +107,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
       ServiceWorkerMetrics::EventType::PUSH,
       base::BindOnce(&PushMessagingRouter::DeliverMessageToWorker,
                      base::WrapRefCounted(version), service_worker_registration,
-                     payload, deliver_message_callback),
-      base::BindOnce(&PushMessagingRouter::DeliverMessageEnd,
-                     deliver_message_callback, service_worker_registration));
+                     payload, deliver_message_callback));
 }
 
 // static
@@ -116,12 +115,19 @@ void PushMessagingRouter::DeliverMessageToWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     const PushEventPayload& payload,
-    const DeliverMessageCallback& deliver_message_callback) {
+    const DeliverMessageCallback& deliver_message_callback,
+    ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (start_worker_status != SERVICE_WORKER_OK) {
+    DeliverMessageEnd(deliver_message_callback, service_worker_registration,
+                      start_worker_status);
+    return;
+  }
+
   int request_id = service_worker->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::PUSH,
-      base::Bind(&PushMessagingRouter::DeliverMessageEnd,
-                 deliver_message_callback, service_worker_registration),
+      base::BindOnce(&PushMessagingRouter::DeliverMessageEnd,
+                     deliver_message_callback, service_worker_registration),
       base::TimeDelta::FromSeconds(kPushMessageTimeoutSeconds),
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 

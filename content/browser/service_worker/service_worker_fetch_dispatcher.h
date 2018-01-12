@@ -96,8 +96,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   void DidWaitForActivation();
   void StartWorker();
-  void DidStartWorker();
-  void DidFailToStartWorker(ServiceWorkerStatusCode status);
+  void DidStartWorker(ServiceWorkerStatusCode status);
   void DispatchFetchEvent();
   void DidFailToDispatch(std::unique_ptr<ResponseCallback> callback,
                          ServiceWorkerStatusCode status);
