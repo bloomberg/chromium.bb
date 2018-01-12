@@ -1826,7 +1826,6 @@ crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-xhr.any.wo
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
-crbug.com/626703 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-002.html [ Failure ]
 crbug.com/626703 external/wpt/quirks/active-and-hover-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-table-001.html [ Failure ]
@@ -2550,26 +2549,6 @@ crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-us
 # ====== Random order flaky tests end here ======
 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
-# TO BE REMOVED AFTER NEXT IMPORT (crbug.com/801357)
-crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_bits.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/ecdh_keys.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Failure Pass Timeout ]
-crbug.com/709227 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/digest/digest.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/encrypt_decrypt/aes_cbc.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/encrypt_decrypt/aes_ctr.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/encrypt_decrypt/aes_gcm.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/encrypt_decrypt/rsa.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/idlharness.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/import_export/ec_importKey.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/import_export/rsa_importKey.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/import_export/symmetric_importKey.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/ecdsa.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/hmac.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/rsa_pkcs.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/sign_verify/rsa_pss.worker.html [ Failure ]
-crbug.com/709227 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.worker.html [ Failure ]
-# END OF TO-BE-REMOVED
 crbug.com/709227 external/wpt/console/console-count-label-conversion.any.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-count-label-conversion.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.html [ Failure ]
@@ -3294,6 +3273,8 @@ crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.h
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Pass Timeout ]
 crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
+crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Pass Timeout ]
+crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Pass Timeout ]
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
