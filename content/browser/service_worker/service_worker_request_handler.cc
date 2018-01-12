@@ -271,34 +271,16 @@ void ServiceWorkerRequestHandler::MaybeCreateLoader(
 void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(
     int old_process_id) {
   CHECK(!IsBrowserSideNavigationEnabled());
-  if (!provider_host_ || !context_)
-    return;
-  old_process_id_ = old_process_id;
-  old_provider_id_ = provider_host_->provider_id();
-  host_for_cross_site_transfer_ = context_->TransferProviderHostOut(
-      old_process_id, provider_host_->provider_id());
-  DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
 }
 
 void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
     int new_process_id, int new_provider_id) {
   CHECK(!IsBrowserSideNavigationEnabled());
-  if (!host_for_cross_site_transfer_.get() || !context_)
-    return;
-  DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
-  context_->TransferProviderHostIn(new_process_id, new_provider_id,
-                                   std::move(host_for_cross_site_transfer_));
-  DCHECK_EQ(provider_host_->provider_id(), new_provider_id);
 }
 
 void ServiceWorkerRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
     int old_process_id) {
   CHECK(!IsBrowserSideNavigationEnabled());
-  if (!host_for_cross_site_transfer_.get() || !context_ ||
-      old_process_id_ != old_process_id) {
-    return;
-  }
-  CompleteCrossSiteTransfer(old_process_id_, old_provider_id_);
 }
 
 bool ServiceWorkerRequestHandler::SanityCheckIsSameContext(
@@ -319,9 +301,6 @@ ServiceWorkerRequestHandler::ServiceWorkerRequestHandler(
     : context_(context),
       provider_host_(provider_host),
       blob_storage_context_(blob_storage_context),
-      resource_type_(resource_type),
-      old_process_id_(0),
-      old_provider_id_(kInvalidServiceWorkerProviderId) {
-}
+      resource_type_(resource_type) {}
 
 }  // namespace content

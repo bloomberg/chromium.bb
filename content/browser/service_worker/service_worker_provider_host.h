@@ -75,19 +75,21 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 // resource loads made directly by the service worker.
 //
 // A ServiceWorkerProviderHost is created in the following situations:
-// 1) When it's for a document or worker (i.e., a service
-// worker client), the provider host is created when
-// ServiceWorkerNetworkProvider is created on the renderer process. Mojo's
-// connection from ServiceWorkerNetworkProvider is established on the creation
-// time.
-// 2) When it's for a running service worker, the provider host is created on
-// the browser process before launching the service worker's thread. Mojo's
-// connection to the renderer is established with the StartWorker message.
-// 3) When PlzNavigate is turned on, an instance is pre-created on the browser
-// before ServiceWorkerNetworkProvider is created on the renderer because
-// navigation is initiated on the browser side. In that case, establishment of
-// Mojo's connection will be deferred until ServiceWorkerNetworkProvider is
-// created on the renderer.
+//
+// 1) For a client created for a navigation (for both top-level and
+// non-top-level frames), the provider host for the resulting document is
+// pre-created by the browser process. Upon navigation commit, the
+// ServiceWorkerNetworkProvider is created on the renderer, at which point the
+// Mojo connection is established.
+//
+// 2) For clients created by the renderer not due to navigations (SharedWorkers
+// and about:blank iframes), the provider host is created when the
+// ServiceWorkerNetworkProvider is created by the renderer process.
+//
+// 3) For service workers, the provider host is created on the browser process
+// before sending the start worker IPC message. The provider host's Mojo's
+// connection to the renderer is established in the start worker message.
+//
 // Destruction of the ServiceWorkerProviderHost instance happens on
 // disconnection of the Mojo's pipe from the renderer side regardless of what
 // the provider is for.
@@ -99,7 +101,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  public:
   using WebContentsGetter = base::Callback<WebContents*(void)>;
 
-  // PlzNavigate
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
   // the navigation succeed. |is_parent_frame_is_secure| should be true for main
@@ -308,14 +309,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(ServiceWorkerRegistration* registration);
 
-  // Methods to support cross site navigations.
-  std::unique_ptr<ServiceWorkerProviderHost> PrepareForCrossSiteTransfer();
-  void CompleteCrossSiteTransfer(ServiceWorkerProviderHost* provisional_host);
-  ServiceWorkerDispatcherHost* dispatcher_host() const {
-    return dispatcher_host_.get();
-  }
-
-  // PlzNavigate
   // Completes initialization of provider hosts used for navigation requests.
   void CompleteNavigationInitialized(
       int process_id,
@@ -436,6 +429,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // be null while |controller_| is non-null in the strange case of cross-site
   // transfer, which will be removed when the non-PlzNavigate code path is
   // removed.
+  // TODO(falken): As non-PlzNavigate and cross-site transfer were removed, see
+  // if this can be simplified.
   void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
                                       bool notify_controllerchange);
 
@@ -513,15 +508,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int render_process_id_;
 
   // For provider hosts that are hosting a running service worker, the id of the
-  // service worker thread. Otherwise, |kDocumentMainThreadId|. May be
-  // |kInvalidEmbeddedWorkerThreadId| before the hosted service worker starts
-  // up, or during cross-site transfers.
+  // service worker thread or |kInvalidEmbeddedWorkerThreadId| before the
+  // service worker starts up. Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
-  // Keeps the basic provider's info provided from the renderer side.
   ServiceWorkerProviderHostInfo info_;
 
-  // PlzNavigate
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.
   WebContentsGetter web_contents_getter_;
@@ -562,13 +554,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   // |dispatcher_host_| is expected to outlive |this| because it destroys
-  // |this| upon destruction. However, it may be null in several cases:
+  // |this| upon destruction. However, it may be null in some cases:
   // 1) In some tests.
-  // 2) PlzNavigate and service worker startup pre-create a
+  // 2) Navigations and service worker startup pre-create a
   // ServiceWorkerProviderHost instance before there is a renderer assigned to
   // it. The dispatcher host is set once the instance starts hosting a
   // renderer.
-  // 3) During cross-site transfer.
   base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host_;
 
   bool allow_association_;

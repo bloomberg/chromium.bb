@@ -52,8 +52,8 @@ namespace content {
 
 namespace {
 
-// Provider host for navigation with PlzNavigate or when service worker's
-// context is created on the browser side. This function provides the next
+// Used for provider hosts precreated by the browser process (navigations or
+// service worker execution contexts). This function provides the next
 // ServiceWorkerProviderHost ID for them, starts at -2 and keeps going down.
 int NextBrowserProvidedProviderId() {
   static int g_next_browser_provided_provider_id = -2;
@@ -145,7 +145,6 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     const WebContentsGetter& web_contents_getter) {
-  CHECK(IsBrowserSideNavigationEnabled());
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
       ServiceWorkerProviderHostInfo(
@@ -205,23 +204,15 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     // context gets started.
     DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id);
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
-  } else {
-    // PlzNavigate
-    DCHECK(render_process_id != ChildProcessHost::kInvalidUniqueID ||
-           IsBrowserSideNavigationEnabled());
   }
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
   // |client_| and |binding_| will be bound on CompleteNavigationInitialized
-  // (providers for clients created during PlzNavigate) or on
+  // (providers created for navigation) or on
   // CompleteStartWorkerPreparation (providers for service workers).
-  if (!info_.client_ptr_info.is_valid() && !info_.host_request.is_pending()) {
-    DCHECK(IsBrowserSideNavigationEnabled() ||
-           info_.type ==
-               blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
+  if (!info_.client_ptr_info.is_valid() && !info_.host_request.is_pending())
     return;
-  }
 
   container_.Bind(std::move(info_.client_ptr_info));
   binding_.Bind(std::move(info_.host_request));
@@ -604,82 +595,10 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   }
 }
 
-std::unique_ptr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
-  DCHECK(!IsBrowserSideNavigationEnabled());
-  DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_NE(MSG_ROUTING_NONE, info_.route_id);
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
-  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, info_.type);
-
-  // Clear the controller from the renderer-side provider, since no one knows
-  // what's going to happen until after cross-site transfer finishes.
-  if (controller_) {
-    SendSetControllerServiceWorker(nullptr,
-                                   false /* notify_controllerchange */);
-  }
-
-  std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
-      base::WrapUnique(new ServiceWorkerProviderHost(
-          process_id(),
-          ServiceWorkerProviderHostInfo(std::move(info_), binding_.Unbind(),
-                                        container_.PassInterface()),
-          context_, dispatcher_host_));
-
-  for (const GURL& pattern : associated_patterns_)
-    DecreaseProcessReference(pattern);
-
-  RemoveAllMatchingRegistrations();
-
-  render_process_id_ = ChildProcessHost::kInvalidUniqueID;
-  render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
-  dispatcher_host_ = nullptr;
-  return provisional_host;
-}
-
-void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
-    ServiceWorkerProviderHost* provisional_host) {
-  DCHECK(!IsBrowserSideNavigationEnabled());
-  DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
-  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, provisional_host->process_id());
-  DCHECK_NE(MSG_ROUTING_NONE, provisional_host->frame_id());
-
-  render_process_id_ = provisional_host->process_id();
-  render_thread_id_ = kDocumentMainThreadId;
-  dispatcher_host_ = provisional_host->dispatcher_host()
-                         ? provisional_host->dispatcher_host()->AsWeakPtr()
-                         : nullptr;
-  info_ = std::move(provisional_host->info_);
-
-  // Take the connection over from the provisional host.
-  DCHECK(!container_.is_bound());
-  DCHECK(!binding_.is_bound());
-  container_.Bind(provisional_host->container_.PassInterface());
-  binding_.Bind(provisional_host->binding_.Unbind());
-  binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context_,
-                     provisional_host->process_id(), provider_id()));
-
-  for (const GURL& pattern : associated_patterns_)
-    IncreaseProcessReference(pattern);
-  SyncMatchingRegistrations();
-
-  // Now that the provider is stable and the connection is established,
-  // send it the SetController IPC if there is a controller.
-  if (controller_) {
-    SendSetControllerServiceWorker(controller_.get(),
-                                   false /* notify_controllerchange */);
-  }
-}
-
-// PlzNavigate
 void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     int process_id,
     ServiceWorkerProviderHostInfo info,
     base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host) {
-  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_.type);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);

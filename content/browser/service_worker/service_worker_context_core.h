@@ -274,15 +274,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // in a disabled state until it's done.
   void DeleteAndStartOver(const StatusCallback& callback);
 
-  // Methods to support cross site navigations.
-  std::unique_ptr<ServiceWorkerProviderHost> TransferProviderHostOut(
-      int process_id,
-      int provider_id);
-  void TransferProviderHostIn(
-      int new_process_id,
-      int new_host_id,
-      std::unique_ptr<ServiceWorkerProviderHost> provider_host);
-
   void ClearAllServiceWorkersForTest(base::OnceClosure callback);
 
   // Determines if there is a ServiceWorker registration that matches |url|, and

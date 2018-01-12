@@ -137,7 +137,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
 
-  // Methods to support cross site navigations.
+  // These are obsolete, needed for non-PlzNavigate.
+  // TODO(falken): Remove these completely.
   void PrepareForCrossSiteTransfer(int old_process_id);
   void CompleteCrossSiteTransfer(int new_process_id,
                                  int new_provider_id);
@@ -161,10 +162,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   ResourceType resource_type_;
 
  private:
-  std::unique_ptr<ServiceWorkerProviderHost> host_for_cross_site_transfer_;
-  int old_process_id_;
-  int old_provider_id_;
-
   static int user_data_key_;  // Only address is used.
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);
