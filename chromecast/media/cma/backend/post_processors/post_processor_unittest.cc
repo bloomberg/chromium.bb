@@ -23,48 +23,34 @@ namespace post_processor_test {
 
 void TestDelay(AudioPostProcessor* pp, int sample_rate) {
   EXPECT_TRUE(pp->SetSampleRate(sample_rate));
-
-  const int kNumFrames = GetMaximumFrames(sample_rate);
-  const int kSinFreq = 2000;
-  std::vector<float> data = GetSineData(kNumFrames, kSinFreq, sample_rate);
-  std::vector<float> expected = GetSineData(kNumFrames, kSinFreq, sample_rate);
-
-  int expected_delay_frames =
-      pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
-  int delayed_frames = 0;
-
-  // PostProcessors that run in dedicated threads may need to delay
-  // until they get data processed asyncronously.
-  while (expected_delay_frames >= delayed_frames + kNumFrames) {
-    delayed_frames += kNumFrames;
-    for (int i = 0; i < kNumFrames * kNumChannels; ++i) {
-      EXPECT_EQ(0.0f, data[i]) << i;
-    }
-    std::vector<float> data = GetSineData(kNumFrames, kSinFreq, sample_rate);
-    expected_delay_frames =
-        pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
-
-    ASSERT_GE(expected_delay_frames, delayed_frames);
+  const int test_size_frames = kBufSizeFrames * 10;
+  std::vector<float> data_in =
+      GetStereoChirp(test_size_frames, 0.0, 1.0, 1.0, 0.0);
+  std::vector<float> data_out = data_in;
+  int expected_delay;
+  for (int i = 0; i < test_size_frames; i += kBufSizeFrames * kNumChannels) {
+    expected_delay = pp->ProcessFrames(&data_out[i], kBufSizeFrames, 1.0, 0.0);
   }
-
-  for (int ch = 0; ch < kNumChannels; ++ch) {
-    ASSERT_NE(expected[ch], 0.0);
-
-    // Find the index of non-zero frame in this buffer.
-    int actual_nonzero_frame = -1;
-    for (int f = 0; f < kNumFrames; ++f) {
-      if (data[f * kNumChannels + ch] != 0.0) {
-        actual_nonzero_frame = f;
-        break;
-      }
+  float max_sum = 0;
+  int max_idx = -1;  // index (offset), corresponding to maximum x-correlation.
+  // Find the offset of maximum x-correlation of in/out.
+  // Search range should be larger than post-processor's expected delay.
+  float search_range = expected_delay + kBufSizeFrames;
+  for (int offset = 0; offset < search_range; ++offset) {
+    float sum = 0.0;
+    int upper_search_limit = kNumChannels * (test_size_frames - search_range);
+    // Mean of test signal is 0, so we can use simplified x-correlation formula.
+    // Since we search for max, no need in x-correlation normalization.
+    for (int i = 0; i < upper_search_limit; ++i) {
+      sum += data_in[i] * data_out[i + offset * kNumChannels];
     }
 
-    int actual_delay = actual_nonzero_frame + delayed_frames;
-    EXPECT_NE(actual_nonzero_frame, -1)
-        << "Output was uniformly zero after " << delayed_frames + kNumFrames
-        << " audio frames for channel " << ch;
-    EXPECT_EQ(expected_delay_frames, actual_delay) << "For channel " << ch;
+    if (sum >= max_sum) {
+      max_sum = sum;
+      max_idx = offset;
+    }
   }
+  EXPECT_EQ(max_idx, expected_delay);
 }
 
 void TestRingingTime(AudioPostProcessor* pp, int sample_rate) {
@@ -206,6 +192,26 @@ std::vector<float> GetSineData(size_t frames,
         cos(static_cast<float>(i) * frequency * 2 * M_PI / sample_rate);
   }
   return sine;
+}
+
+std::vector<float> GetStereoChirp(size_t frames,
+                                  float start_frequency_left,
+                                  float end_frequency_left,
+                                  float start_frequency_right,
+                                  float end_frequency_right) {
+  std::vector<float> chirp(frames * 2);
+  float ang_left = 0.0;
+  float ang_right = 0.0;
+  for (size_t i = 0; i < frames; i += 2) {
+    ang_left += start_frequency_left +
+                i * (end_frequency_left - start_frequency_left) * M_PI / frames;
+    ang_right +=
+        start_frequency_left +
+        i * (end_frequency_right - start_frequency_right) * M_PI / frames;
+    chirp[i] = sin(ang_left);
+    chirp[i + 1] = sin(ang_right);
+  }
+  return chirp;
 }
 
 PostProcessorTest::PostProcessorTest() : sample_rate_(GetParam()) {}

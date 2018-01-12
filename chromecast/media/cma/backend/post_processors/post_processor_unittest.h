@@ -34,6 +34,7 @@ namespace media {
 namespace post_processor_test {
 
 const int kNumChannels = 2;
+const int kBufSizeFrames = 256;
 
 void TestDelay(AudioPostProcessor* pp, int sample_rate);
 void TestRingingTime(AudioPostProcessor* pp, int sample_rate);
@@ -63,6 +64,17 @@ float SineAmplitude(std::vector<float> data, int num_channels);
 // |frequency| is in hz.
 // Channel 0 will be sin(n) and channel 1 will be cos(n).
 std::vector<float> GetSineData(size_t frames, float frequency, int sample_rate);
+
+// Returns a vector of interleaved stereo chirp waveform with |frames| frames
+// from |start_frequency_left| to |start_frequency_left| for left channel and
+// from |start_frequency_right| to |end_frequency_right| for right channel,
+// where |start_frequency_x| and |end_frequency_x| are normalized frequencies
+// (2 * freq_in_hz / sample_rate) i.e. 0 - DC, 1 - nyquist.
+std::vector<float> GetStereoChirp(size_t frames,
+                                  float start_frequency_left,
+                                  float end_frequency_left,
+                                  float start_frequency_right,
+                                  float end_frequency_right);
 
 class PostProcessorTest : public ::testing::TestWithParam<int> {
  protected:
