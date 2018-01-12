@@ -145,7 +145,7 @@ class CORE_EXPORT InputMethodController final
 
   // Inserts the given text string in the place of the existing composition.
   // Returns true if did replace.
-  bool ReplaceComposition(const String& text);
+  bool ReplaceComposition(const String& text) WARN_UNUSED_RESULT;
   // Inserts the given text string in the place of the existing composition
   // and moves caret. Returns true if did replace and moved caret successfully.
   bool ReplaceCompositionAndMoveCaret(
