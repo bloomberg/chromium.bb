@@ -1081,6 +1081,43 @@ TEST_F(CacheStorageManagerTest, CacheSizePaddedAfterReopen) {
   EXPECT_EQ(cache_size_before_close, Size(origin1_));
 }
 
+TEST_F(CacheStorageManagerTest, QuotaCorrectAfterReopen) {
+  const std::string kCacheName = "foo";
+
+  // Choose a response type that will not be padded so that the expected
+  // cache size can be calculated.
+  const FetchResponseType response_type = FetchResponseType::kCORS;
+
+  // Create a new cache.
+  int64_t cache_size;
+  {
+    EXPECT_TRUE(Open(origin1_, kCacheName));
+    CacheStorageCacheHandle cache_handle = std::move(callback_cache_handle_);
+    base::RunLoop().RunUntilIdle();
+
+    const GURL kFooURL = origin1_.Resolve("foo");
+    EXPECT_TRUE(CachePut(cache_handle.value(), kFooURL, response_type));
+    cache_size = Size(origin1_);
+
+    EXPECT_EQ(cache_size, GetQuotaOriginUsage(origin1_));
+  }
+
+  // Wait for the dereferenced cache to be closed.
+  base::RunLoop().RunUntilIdle();
+
+  // Now reopen the cache.
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  CacheStorageCacheHandle cache_handle = std::move(callback_cache_handle_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(cache_size, GetQuotaOriginUsage(origin1_));
+
+  // And write a second equally sized value and verify size is doubled.
+  const GURL kBarURL = origin1_.Resolve("bar");
+  EXPECT_TRUE(CachePut(cache_handle.value(), kBarURL, response_type));
+
+  EXPECT_EQ(2 * cache_size, GetQuotaOriginUsage(origin1_));
+}
+
 TEST_F(CacheStorageManagerTest, PersistedCacheKeyUsed) {
   const GURL kFooURL = origin1_.Resolve("foo");
   const std::string kCacheName = "foo";
