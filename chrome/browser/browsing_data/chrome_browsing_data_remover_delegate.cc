@@ -1014,7 +1014,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           base::BindOnce(
               &ChromeBrowsingDataRemoverDelegate::OnWaitableEventSignaled,
               weak_ptr_factory_.GetWeakPtr());
-      watcher_.StartWatching(event, std::move(watcher_callback));
+      watcher_.StartWatching(event, std::move(watcher_callback),
+                             base::SequencedTaskRunnerHandle::Get());
     } else {
       // TODO(msramek): Store filters from the currently executed task on the
       // object to avoid having to copy them to callback methods.

@@ -122,10 +122,11 @@ WaitableEventWatcher::~WaitableEventWatcher() {
 // The Handle is how the user cancels a wait. After deleting the Handle we
 // insure that the delegate cannot be called.
 // -----------------------------------------------------------------------------
-bool WaitableEventWatcher::StartWatching(WaitableEvent* event,
-                                         EventCallback callback) {
+bool WaitableEventWatcher::StartWatching(
+    WaitableEvent* event,
+    EventCallback callback,
+    scoped_refptr<SequencedTaskRunner> task_runner) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK(SequencedTaskRunnerHandle::Get());
 
   // A user may call StartWatching from within the callback function. In this
   // case, we won't know that we have finished watching, expect that the Flag
@@ -148,14 +149,13 @@ bool WaitableEventWatcher::StartWatching(WaitableEvent* event,
       kernel->signaled_ = false;
 
     // No hairpinning - we can't call the delegate directly here. We have to
-    // post a task to the SequencedTaskRunnerHandle as usual.
-    SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                               std::move(internal_callback));
+    // post a task to |task_runner| as usual.
+    task_runner->PostTask(FROM_HERE, std::move(internal_callback));
     return true;
   }
 
   kernel_ = kernel;
-  waiter_ = new AsyncWaiter(SequencedTaskRunnerHandle::Get(),
+  waiter_ = new AsyncWaiter(std::move(task_runner),
                             std::move(internal_callback), cancel_flag_.get());
   event->Enqueue(waiter_);
 

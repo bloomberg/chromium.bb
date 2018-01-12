@@ -259,6 +259,10 @@ class IPC_EXPORT ChannelProxy : public Sender {
       return ipc_task_runner_;
     }
 
+    scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner() {
+      return listener_task_runner_;
+    }
+
     // Dispatches a message on the listener thread.
     void OnDispatchMessage(const Message& message);
 
