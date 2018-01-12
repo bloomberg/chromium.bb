@@ -9539,6 +9539,315 @@
             "chrome_internal"
         ]
     },
+    "capri-zfpga-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "capri-zfpga-factory": {
+        "_template": "factory",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "images": [
+            "test"
+        ],
+        "sync_chrome": false
+    },
+    "capri-zfpga-factory-tryjob": {
+        "_template": "factory",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "images": [
+            "test"
+        ],
+        "push_image": false,
+        "sync_chrome": false
+    },
+    "capri-zfpga-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "hw_tests_override": [],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-firmware-tryjob": {
+        "_template": "firmware",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "manifest": "official.xml",
+        "push_image": false,
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-full": {
+        "_template": "full",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "capri-zfpga-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "capri-zfpga-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "capri-zfpga-paladin": {
+        "_template": "paladin",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "description": "Commit Queue (internal)",
+        "hw_tests_override": [],
+        "image_test": false,
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "capri-zfpga-paladin-tryjob": {
+        "_template": "paladin",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "chroot_replace": true,
+        "debug": true,
+        "description": "Commit Queue (internal)",
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "image_test": false,
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "capri-zfpga-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "capri-zfpga-release": {
+        "_template": "release",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "dev_installer_prebuilts": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "paygen": false,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "capri-zfpga-release-tryjob": {
+        "_template": "release",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "capri-zfpga"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "dev_installer_prebuilts": false,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "capri-zfpga-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "capri-zfpga"
+        ],
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "caroline-arc64-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -34759,6 +35068,7 @@
             "bob-paladin",
             "butterfly-paladin",
             "capri-paladin",
+            "capri-zfpga-paladin",
             "caroline-paladin",
             "cave-paladin",
             "chell-nowithdebug-paladin",
@@ -34882,6 +35192,7 @@
             "bob-paladin",
             "butterfly-paladin",
             "capri-paladin",
+            "capri-zfpga-paladin",
             "caroline-paladin",
             "cave-paladin",
             "chell-nowithdebug-paladin",

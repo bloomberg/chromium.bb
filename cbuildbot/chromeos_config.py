@@ -464,6 +464,7 @@ _arm_internal_release_boards = frozenset([
     'beaglebone_servo',
     'bob',
     'capri',
+    'capri-zfpga',
     'cobblepot',
     'daisy',
     'daisy_skate',
@@ -705,6 +706,7 @@ _lassen_boards = frozenset([
 
 _loonix_boards = frozenset([
     'capri',
+    'capri-zfpga',
     'cobblepot',
     'gonzo',
     'lasilla-ground',
@@ -2459,6 +2461,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'capri', # contact:ghines@
+      'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
