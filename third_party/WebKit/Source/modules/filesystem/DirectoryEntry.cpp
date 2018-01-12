@@ -33,7 +33,6 @@
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryReader.h"
-#include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileSystemFlags.h"
 
@@ -49,18 +48,22 @@ DirectoryReader* DirectoryEntry::createReader() {
 
 void DirectoryEntry::getFile(const String& path,
                              const FileSystemFlags& options,
-                             EntryCallback* success_callback,
+                             V8EntryCallback* success_callback,
                              V8ErrorCallback* error_callback) {
-  file_system_->GetFile(this, path, options, success_callback,
-                        ScriptErrorCallback::Wrap(error_callback));
+  file_system_->GetFile(
+      this, path, options,
+      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void DirectoryEntry::getDirectory(const String& path,
                                   const FileSystemFlags& options,
-                                  EntryCallback* success_callback,
+                                  V8EntryCallback* success_callback,
                                   V8ErrorCallback* error_callback) {
-  file_system_->GetDirectory(this, path, options, success_callback,
-                             ScriptErrorCallback::Wrap(error_callback));
+  file_system_->GetDirectory(
+      this, path, options,
+      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void DirectoryEntry::removeRecursively(VoidCallback* success_callback,

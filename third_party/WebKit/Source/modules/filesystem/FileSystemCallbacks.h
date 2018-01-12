@@ -46,7 +46,6 @@ class DOMFileSystemBase;
 class DirectoryReaderBase;
 class DirectoryReaderOnDidReadCallback;
 class Entry;
-class EntryCallback;
 class ExecutionContext;
 class FileCallback;
 class FileMetadata;
@@ -54,6 +53,7 @@ class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
+class V8EntryCallback;
 class V8ErrorCallback;
 class VoidCallback;
 
@@ -84,13 +84,19 @@ class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
   bool ShouldScheduleCallback() const;
 
   template <typename CB, typename CBArg>
-  void InvokeOrScheduleCallback(CB*, CBArg);
-
-  template <typename CB, typename CBArg>
   void HandleEventOrScheduleCallback(CB*, CBArg*);
 
   template <typename CB>
   void HandleEventOrScheduleCallback(CB*);
+
+  // Invokes the given callback synchronously or asynchronously depending on
+  // the result of |ShouldScheduleCallback|.
+  template <typename CallbackMemberFunction,
+            typename CallbackClass,
+            typename... Args>
+  void InvokeOrScheduleCallback(CallbackMemberFunction&&,
+                                CallbackClass&&,
+                                Args&&...);
 
   Persistent<ErrorCallbackBase> error_callback_;
   Persistent<DOMFileSystemBase> file_system_;
@@ -116,8 +122,33 @@ class ScriptErrorCallback final : public ErrorCallbackBase {
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
  public:
+  class OnDidGetEntryCallback
+      : public GarbageCollectedFinalized<OnDidGetEntryCallback> {
+   public:
+    virtual ~OnDidGetEntryCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess(Entry*) = 0;
+
+   protected:
+    OnDidGetEntryCallback() = default;
+  };
+
+  class OnDidGetEntryV8Impl : public OnDidGetEntryCallback {
+   public:
+    static OnDidGetEntryV8Impl* Create(V8EntryCallback* callback) {
+      return new OnDidGetEntryV8Impl(callback);
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess(Entry*) override;
+
+   private:
+    OnDidGetEntryV8Impl(V8EntryCallback* callback) : callback_(callback) {}
+
+    Member<V8EntryCallback> callback_;
+  };
+
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
-      EntryCallback*,
+      OnDidGetEntryCallback*,
       ErrorCallbackBase*,
       ExecutionContext*,
       DOMFileSystemBase*,
@@ -126,13 +157,13 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
   void DidSucceed() override;
 
  private:
-  EntryCallbacks(EntryCallback*,
+  EntryCallbacks(OnDidGetEntryCallback*,
                  ErrorCallbackBase*,
                  ExecutionContext*,
                  DOMFileSystemBase*,
                  const String& expected_path,
                  bool is_directory);
-  Persistent<EntryCallback> success_callback_;
+  Persistent<OnDidGetEntryCallback> success_callback_;
   String expected_path_;
   bool is_directory_;
 };
@@ -179,9 +210,11 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
 
 class ResolveURICallbacks final : public FileSystemCallbacksBase {
  public:
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(EntryCallback*,
-                                                          ErrorCallbackBase*,
-                                                          ExecutionContext*);
+  using OnDidGetEntryCallback = EntryCallbacks::OnDidGetEntryCallback;
+  using OnDidGetEntryV8Impl = EntryCallbacks::OnDidGetEntryV8Impl;
+
+  static std::unique_ptr<AsyncFileSystemCallbacks>
+  Create(OnDidGetEntryCallback*, ErrorCallbackBase*, ExecutionContext*);
   void DidResolveURL(const String& name,
                      const KURL& root_url,
                      FileSystemType,
@@ -189,8 +222,10 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
                      bool is_directry) override;
 
  private:
-  ResolveURICallbacks(EntryCallback*, ErrorCallbackBase*, ExecutionContext*);
-  Persistent<EntryCallback> success_callback_;
+  ResolveURICallbacks(OnDidGetEntryCallback*,
+                      ErrorCallbackBase*,
+                      ExecutionContext*);
+  Persistent<OnDidGetEntryCallback> success_callback_;
 };
 
 class MetadataCallbacks final : public FileSystemCallbacksBase {
