@@ -53,6 +53,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -761,6 +762,16 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetValue(friendly_suggestion_text_);
   }
   node_data->html_attributes.push_back(std::make_pair("type", "url"));
+
+  // Establish a "CONTROLS" relationship between the omnibox and the
+  // the popup. This allows a screen reader to understand the relationship
+  // between the omnibox and the list of suggestions, and determine which
+  // suggestion is currently selected, even though focus remains here on
+  // the omnibox.
+  int32_t popup_view_id =
+      popup_view_->GetViewAccessibility().GetUniqueId().Get();
+  std::vector<int32_t> controlled_ids = {popup_view_id};
+  node_data->AddIntListAttribute(ui::AX_ATTR_CONTROLS_IDS, controlled_ids);
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;

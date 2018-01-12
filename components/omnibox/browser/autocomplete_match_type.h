@@ -73,11 +73,17 @@ struct AutocompleteMatchType {
   // match for use in a screenreader or other assistive technology.
   // The |label_prefix_length| is an optional out param that provides the number
   // of characters in the label that were added before the actual match_text.
+  // This version appends ", n of m" positional info the the label:
   static base::string16 ToAccessibilityLabel(
       const AutocompleteMatch& match,
       const base::string16& match_text,
       size_t match_index,
       size_t total_matches,
+      int* label_prefix_length = nullptr);
+  // This version returns a plain label without ", n of m" positional info:
+  static base::string16 ToAccessibilityLabel(
+      const AutocompleteMatch& match,
+      const base::string16& match_text,
       int* label_prefix_length = nullptr);
 };
 
