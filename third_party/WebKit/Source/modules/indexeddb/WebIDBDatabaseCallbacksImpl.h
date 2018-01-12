@@ -26,12 +26,16 @@
 #ifndef WebIDBDatabaseCallbacksImpl_h
 #define WebIDBDatabaseCallbacksImpl_h
 
+#include <memory>
+
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-
-#include <memory>
+#include "public/platform/modules/indexeddb/WebIDBObservation.h"
 
 namespace blink {
 
@@ -49,7 +53,7 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void OnAbort(long long transaction_id, const WebIDBDatabaseError&) override;
   void OnComplete(long long transaction_id) override;
   void OnChanges(const ObservationIndexMap&,
-                 const WebVector<WebIDBObservation>& observations,
+                 WebVector<WebIDBObservation> observations,
                  const TransactionMap& transactions) override;
   void Detach() override;
 

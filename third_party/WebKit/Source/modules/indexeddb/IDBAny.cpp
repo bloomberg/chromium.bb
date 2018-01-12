@@ -89,7 +89,7 @@ IDBObjectStore* IDBAny::IdbObjectStore() const {
 const IDBKey* IDBAny::Key() const {
   // If type is IDBValueType then instead use value()->primaryKey().
   DCHECK_EQ(type_, kKeyType);
-  return idb_key_.Get();
+  return idb_key_.get();
 }
 
 IDBValue* IDBAny::Value() const {
@@ -129,7 +129,8 @@ IDBAny::IDBAny(Vector<std::unique_ptr<IDBValue>> values)
 IDBAny::IDBAny(std::unique_ptr<IDBValue> value)
     : type_(kIDBValueType), idb_value_(std::move(value)) {}
 
-IDBAny::IDBAny(IDBKey* key) : type_(kKeyType), idb_key_(key) {}
+IDBAny::IDBAny(std::unique_ptr<IDBKey> key)
+    : type_(kKeyType), idb_key_(std::move(key)) {}
 
 IDBAny::IDBAny(int64_t value) : type_(kIntegerType), integer_(value) {}
 
@@ -139,7 +140,6 @@ void IDBAny::Trace(blink::Visitor* visitor) {
   visitor->Trace(idb_database_);
   visitor->Trace(idb_index_);
   visitor->Trace(idb_object_store_);
-  visitor->Trace(idb_key_);
 }
 
 }  // namespace blink

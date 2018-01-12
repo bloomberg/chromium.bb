@@ -15,7 +15,9 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObservation.h"
 
+using blink::WebVector;
 using blink::WebIDBDatabaseCallbacks;
+using blink::WebIDBObservation;
 
 namespace content {
 
@@ -38,33 +40,28 @@ void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
 
 void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
                                 indexed_db::mojom::ObserverChangesPtr changes) {
-  std::vector<blink::WebIDBObservation> web_observations;
+  WebVector<WebIDBObservation> web_observations;
+  web_observations.reserve(changes->observations.size());
   for (const auto& observation : changes->observations) {
-    blink::WebIDBObservation web_observation;
-    web_observation.object_store_id = observation->object_store_id;
-    web_observation.type = observation->type;
-    web_observation.key_range =
-        WebIDBKeyRangeBuilder::Build(observation->key_range);
-    if (observation->value) {
-      IndexedDBCallbacksImpl::ConvertValue(observation->value,
-                                           &web_observation.value);
-    }
-    web_observations.push_back(std::move(web_observation));
+    web_observations.emplace_back(
+        observation->object_store_id, observation->type,
+        WebIDBKeyRangeBuilder::Build(observation->key_range),
+        IndexedDBCallbacksImpl::ConvertValue(observation->value));
   }
+
   std::unordered_map<int32_t, std::pair<int64_t, std::vector<int64_t>>>
       observer_transactions;
-
   for (const auto& transaction_pair : changes->transaction_map) {
-    std::pair<int64_t, std::vector<int64_t>>& obs_txn =
-        observer_transactions[transaction_pair.first];
-    obs_txn.first = transaction_pair.second->id;
-    for (int64_t scope : transaction_pair.second->scope) {
-      obs_txn.second.push_back(scope);
-    }
+    // Moving an int64_t is rather silly. Sadly, std::make_pair's overloads
+    // accept either two rvalue arguments, or none.
+    observer_transactions[transaction_pair.first] =
+        std::make_pair<int64_t, std::vector<int64_t>>(
+            std::move(transaction_pair.second->id),
+            std::move(transaction_pair.second->scope));
   }
 
-  callbacks->OnChanges(changes->observation_index_map, web_observations,
-                       observer_transactions);
+  callbacks->OnChanges(changes->observation_index_map,
+                       std::move(web_observations), observer_transactions);
 }
 
 }  // namespace

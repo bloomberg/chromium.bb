@@ -104,18 +104,19 @@ class IDBRequestTest : public ::testing::Test {
 void EnsureIDBCallbacksDontThrow(IDBRequest* request,
                                  ExceptionState& exception_state) {
   ASSERT_TRUE(request->transaction());
+  V8TestingScope scope;
 
   request->HandleResponse(
       DOMException::Create(kAbortError, "Description goes here."));
   request->HandleResponse(nullptr, IDBKey::CreateInvalid(),
                           IDBKey::CreateInvalid(),
-                          CreateNullIDBValueForTesting());
+                          CreateNullIDBValueForTesting(scope.GetIsolate()));
   request->HandleResponse(IDBKey::CreateInvalid());
-  request->HandleResponse(CreateNullIDBValueForTesting());
+  request->HandleResponse(CreateNullIDBValueForTesting(scope.GetIsolate()));
   request->HandleResponse(static_cast<int64_t>(0));
   request->HandleResponse();
   request->HandleResponse(IDBKey::CreateInvalid(), IDBKey::CreateInvalid(),
-                          CreateNullIDBValueForTesting());
+                          CreateNullIDBValueForTesting(scope.GetIsolate()));
   request->EnqueueResponse(Vector<String>());
 
   EXPECT_TRUE(!exception_state.HadException());

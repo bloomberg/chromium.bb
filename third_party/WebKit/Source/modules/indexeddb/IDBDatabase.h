@@ -120,7 +120,7 @@ class MODULES_EXPORT IDBDatabase final
   void OnAbort(int64_t, DOMException*);
   void OnComplete(int64_t);
   void OnChanges(const WebIDBDatabaseCallbacks::ObservationIndexMap&,
-                 const WebVector<WebIDBObservation>& observations,
+                 WebVector<WebIDBObservation> observations,
                  const WebIDBDatabaseCallbacks::TransactionMap& transactions);
 
   // ScriptWrappable

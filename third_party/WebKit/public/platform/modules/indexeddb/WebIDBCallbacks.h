@@ -37,7 +37,7 @@ class WebIDBDatabase;
 class WebIDBDatabaseError;
 class WebIDBKey;
 struct WebIDBMetadata;
-struct WebIDBValue;
+class WebIDBValue;
 
 class WebIDBCallbacks {
  public:
@@ -47,18 +47,16 @@ class WebIDBCallbacks {
   virtual void OnError(const WebIDBDatabaseError&) = 0;
   virtual void OnSuccess(const WebVector<WebString>&) = 0;
   virtual void OnSuccess(WebIDBCursor*,
-                         const WebIDBKey&,
-                         const WebIDBKey& primary_key,
-                         const WebIDBValue&) = 0;
+                         WebIDBKey,
+                         WebIDBKey primary_key,
+                         WebIDBValue) = 0;
   virtual void OnSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
-  virtual void OnSuccess(const WebIDBKey&) = 0;
-  virtual void OnSuccess(const WebIDBValue&) = 0;
-  virtual void OnSuccess(const WebVector<WebIDBValue>&) = 0;
+  virtual void OnSuccess(WebIDBKey) = 0;
+  virtual void OnSuccess(WebIDBValue) = 0;
+  virtual void OnSuccess(WebVector<WebIDBValue>) = 0;
   virtual void OnSuccess(long long) = 0;
   virtual void OnSuccess() = 0;
-  virtual void OnSuccess(const WebIDBKey&,
-                         const WebIDBKey& primary_key,
-                         const WebIDBValue&) = 0;
+  virtual void OnSuccess(WebIDBKey, WebIDBKey primary_key, WebIDBValue) = 0;
   virtual void OnBlocked(long long old_version) = 0;
   virtual void OnUpgradeNeeded(long long old_version,
                                WebIDBDatabase*,

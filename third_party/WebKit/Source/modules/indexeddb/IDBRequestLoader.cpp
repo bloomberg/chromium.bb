@@ -103,8 +103,8 @@ void IDBRequestLoader::DidFinishLoading() {
   file_reader_loading_ = false;
 #endif  // DCHECK_IS_ON()
 
-  *current_value_ = IDBValueUnwrapper::Unwrap(
-      std::move(*current_value_), SharedBuffer::AdoptVector(wrapped_data_));
+  IDBValueUnwrapper::Unwrap(SharedBuffer::AdoptVector(wrapped_data_),
+                            current_value_->get());
   ++current_value_;
 
   StartNextValue();

@@ -21,21 +21,38 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
   MockWebIDBCallbacks();
   ~MockWebIDBCallbacks();
   MOCK_METHOD1(OnError, void(const blink::WebIDBDatabaseError&));
-  MOCK_METHOD3(OnSuccess,
+
+  void OnSuccess(blink::WebIDBKey,
+                 blink::WebIDBKey primaryKey,
+                 blink::WebIDBValue) override;
+  MOCK_METHOD3(DoOnSuccess,
                void(const blink::WebIDBKey& key,
                     const blink::WebIDBKey& primaryKey,
                     const blink::WebIDBValue& value));
+
   MOCK_METHOD1(OnSuccess, void(const blink::WebVector<blink::WebString>&));
-  MOCK_METHOD4(OnSuccess,
+
+  void OnSuccess(blink::WebIDBCursor* cursor,
+                 blink::WebIDBKey key,
+                 blink::WebIDBKey primaryKey,
+                 blink::WebIDBValue value) override;
+  MOCK_METHOD4(DoOnSuccess,
                void(blink::WebIDBCursor*,
                     const blink::WebIDBKey&,
                     const blink::WebIDBKey& primaryKey,
                     const blink::WebIDBValue&));
+
   MOCK_METHOD2(OnSuccess,
                void(blink::WebIDBDatabase*, const blink::WebIDBMetadata&));
-  MOCK_METHOD1(OnSuccess, void(const blink::WebIDBKey&));
-  MOCK_METHOD1(OnSuccess, void(const blink::WebIDBValue&));
-  MOCK_METHOD1(OnSuccess, void(const blink::WebVector<blink::WebIDBValue>&));
+  void OnSuccess(blink::WebIDBKey) override;
+  MOCK_METHOD1(DoOnSuccess, void(const blink::WebIDBKey&));
+
+  void OnSuccess(blink::WebIDBValue) override;
+  MOCK_METHOD1(DoOnSuccess, void(const blink::WebIDBValue&));
+
+  void OnSuccess(blink::WebVector<blink::WebIDBValue>) override;
+  MOCK_METHOD1(DoOnSuccess, void(const blink::WebVector<blink::WebIDBValue>&));
+
   MOCK_METHOD1(OnSuccess, void(long long));
   MOCK_METHOD0(OnSuccess, void());
   MOCK_METHOD1(OnBlocked, void(long long oldVersion));

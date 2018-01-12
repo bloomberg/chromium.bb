@@ -27,6 +27,8 @@
 
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/indexeddb/WebIDBObservation.h"
 
 namespace blink {
 
@@ -66,12 +68,13 @@ void IDBDatabaseCallbacks::OnComplete(int64_t transaction_id) {
 
 void IDBDatabaseCallbacks::OnChanges(
     const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
-    const WebVector<WebIDBObservation>& observations,
+    WebVector<WebIDBObservation> observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   if (!database_)
     return;
 
-  database_->OnChanges(observation_index_map, observations, transactions);
+  database_->OnChanges(observation_index_map, std::move(observations),
+                       transactions);
 }
 
 void IDBDatabaseCallbacks::Connect(IDBDatabase* database) {

@@ -194,6 +194,7 @@ IDBValueUnwrapper::IDBValueUnwrapper() {
   Reset();
 }
 
+// static
 bool IDBValueUnwrapper::IsWrapped(IDBValue* value) {
   DCHECK(value);
 
@@ -206,6 +207,7 @@ bool IDBValueUnwrapper::IsWrapped(IDBValue* value) {
          header[2] == kReplaceWithBlob;
 }
 
+// static
 bool IDBValueUnwrapper::IsWrapped(
     const Vector<std::unique_ptr<IDBValue>>& values) {
   for (const auto& value : values) {
@@ -215,24 +217,15 @@ bool IDBValueUnwrapper::IsWrapped(
   return false;
 }
 
-std::unique_ptr<IDBValue> IDBValueUnwrapper::Unwrap(
-    std::unique_ptr<IDBValue> wrapped_value,
-    scoped_refptr<SharedBuffer>&& wrapper_blob_content) {
+// static
+void IDBValueUnwrapper::Unwrap(
+    scoped_refptr<SharedBuffer>&& wrapper_blob_content,
+    IDBValue* wrapped_value) {
   DCHECK(wrapped_value);
   DCHECK(wrapped_value->data_);
 
-  // Create an IDBValue with the same blob information, minus the last blob.
-  Vector<scoped_refptr<BlobDataHandle>> blob_data =
-      wrapped_value->TakeBlobData();
-  Vector<WebBlobInfo> blob_info = wrapped_value->TakeBlobInfo();
-  DCHECK_EQ(blob_data.size(), blob_info.size());
-  DCHECK_GT(blob_info.size(), 0U);
-  blob_data.pop_back();
-  blob_info.pop_back();
-
-  return IDBValue::Create(std::move(wrapper_blob_content), std::move(blob_data),
-                          std::move(blob_info), wrapped_value->PrimaryKey(),
-                          wrapped_value->KeyPath());
+  wrapped_value->SetData(wrapper_blob_content);
+  wrapped_value->TakeLastBlob();
 }
 
 bool IDBValueUnwrapper::Parse(IDBValue* value) {

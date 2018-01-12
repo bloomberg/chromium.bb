@@ -53,7 +53,7 @@ class IDBRequestQueueItem {
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*, base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      IDBKey*,
+                      std::unique_ptr<IDBKey>,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<IDBValue>,
@@ -64,15 +64,15 @@ class IDBRequestQueueItem {
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      IDBKey*,
-                      IDBKey* primary_key,
+                      std::unique_ptr<IDBKey>,
+                      std::unique_ptr<IDBKey> primary_key,
                       std::unique_ptr<IDBValue>,
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<WebIDBCursor>,
-                      IDBKey*,
-                      IDBKey* primary_key,
+                      std::unique_ptr<IDBKey>,
+                      std::unique_ptr<IDBKey> primary_key,
                       std::unique_ptr<IDBValue>,
                       bool attach_loader,
                       base::OnceClosure on_result_load_complete);
@@ -126,20 +126,20 @@ class IDBRequestQueueItem {
   // The IDBRequest that will receive a callback for this result.
   Persistent<IDBRequest> request_;
 
-  // The key argument to the IDBRequest callback.
-  //
-  // Only used if mode_ is kKeyPrimaryKeyValue.
-  Persistent<IDBKey> key_;
-
-  // The primary_key argument to the IDBRequest callback.
-  //
-  // Only used if mode_ is kKeyPrimaryKeyValue.
-  Persistent<IDBKey> primary_key_;
-
   // The error argument to the IDBRequest callback.
   //
   // Only used if the mode_ is kError.
   Persistent<DOMException> error_;
+
+  // The key argument to the IDBRequest callback.
+  //
+  // Only used if mode_ is kKeyPrimaryKeyValue.
+  std::unique_ptr<IDBKey> key_;
+
+  // The primary_key argument to the IDBRequest callback.
+  //
+  // Only used if mode_ is kKeyPrimaryKeyValue.
+  std::unique_ptr<IDBKey> primary_key_;
 
   // All the values that will be passed back to the IDBRequest.
   Vector<std::unique_ptr<IDBValue>> values_;

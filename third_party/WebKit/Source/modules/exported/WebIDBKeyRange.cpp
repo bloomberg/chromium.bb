@@ -35,14 +35,14 @@ void WebIDBKeyRange::Assign(const WebIDBKeyRange& other) {
   private_ = other.private_;
 }
 
-void WebIDBKeyRange::Assign(const WebIDBKey& lower,
-                            const WebIDBKey& upper,
+void WebIDBKeyRange::Assign(WebIDBKey lower,
+                            WebIDBKey upper,
                             bool lower_open,
                             bool upper_open) {
-  if (!lower.IsValid() && !upper.IsValid()) {
+  if (!lower.View().IsValid() && !upper.View().IsValid()) {
     private_.Reset();
   } else {
-    private_ = IDBKeyRange::Create(lower, upper,
+    private_ = IDBKeyRange::Create(lower.ReleaseIdbKey(), upper.ReleaseIdbKey(),
                                    lower_open ? IDBKeyRange::kLowerBoundOpen
                                               : IDBKeyRange::kLowerBoundClosed,
                                    upper_open ? IDBKeyRange::kUpperBoundOpen
@@ -54,16 +54,16 @@ void WebIDBKeyRange::Reset() {
   private_.Reset();
 }
 
-WebIDBKey WebIDBKeyRange::Lower() const {
+WebIDBKeyView WebIDBKeyRange::Lower() const {
   if (!private_.Get())
-    return WebIDBKey::CreateInvalid();
-  return WebIDBKey(private_->Lower());
+    return WebIDBKeyView(nullptr);
+  return WebIDBKeyView(private_->Lower());
 }
 
-WebIDBKey WebIDBKeyRange::Upper() const {
+WebIDBKeyView WebIDBKeyRange::Upper() const {
   if (!private_.Get())
-    return WebIDBKey::CreateInvalid();
-  return WebIDBKey(private_->Upper());
+    return WebIDBKeyView(nullptr);
+  return WebIDBKeyView(private_->Upper());
 }
 
 bool WebIDBKeyRange::LowerOpen() const {

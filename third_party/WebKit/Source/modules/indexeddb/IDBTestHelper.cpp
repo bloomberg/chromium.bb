@@ -17,7 +17,7 @@
 
 namespace blink {
 
-std::unique_ptr<IDBValue> CreateNullIDBValueForTesting() {
+std::unique_ptr<IDBValue> CreateNullIDBValueForTesting(v8::Isolate* isolate) {
   scoped_refptr<SerializedScriptValue> null_ssv =
       SerializedScriptValue::NullValue();
 
@@ -26,10 +26,13 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting() {
   scoped_refptr<SharedBuffer> idb_value_buffer = SharedBuffer::Create();
   idb_value_buffer->Append(reinterpret_cast<const char*>(ssv_wire_bytes.data()),
                            ssv_wire_bytes.length());
-  return IDBValue::Create(std::move(idb_value_buffer),
-                          Vector<scoped_refptr<BlobDataHandle>>(),
-                          Vector<WebBlobInfo>(), IDBKey::CreateNumber(42.0),
-                          IDBKeyPath(String("primaryKey")));
+  std::unique_ptr<IDBValue> idb_value = IDBValue::Create(
+      std::move(idb_value_buffer), Vector<scoped_refptr<BlobDataHandle>>(),
+      Vector<WebBlobInfo>());
+  idb_value->SetInjectedPrimaryKey(IDBKey::CreateNumber(42.0),
+                                   IDBKeyPath(String("primaryKey")));
+  idb_value->SetIsolate(isolate);
+  return idb_value;
 }
 
 std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
@@ -50,12 +53,13 @@ std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
       wrapper.TakeBlobDataHandles();
   Vector<WebBlobInfo> blob_infos = wrapper.TakeBlobInfo();
   scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
-  IDBKey* key = IDBKey::CreateNumber(42.0);
-  IDBKeyPath key_path(String("primaryKey"));
 
-  std::unique_ptr<IDBValue> idb_value = IDBValue::Create(
-      std::move(wrapped_marker_buffer), std::move(blob_data_handles),
-      std::move(blob_infos), key, key_path);
+  std::unique_ptr<IDBValue> idb_value =
+      IDBValue::Create(std::move(wrapped_marker_buffer),
+                       std::move(blob_data_handles), std::move(blob_infos));
+  idb_value->SetInjectedPrimaryKey(IDBKey::CreateNumber(42.0),
+                                   IDBKeyPath(String("primaryKey")));
+  idb_value->SetIsolate(isolate);
 
   DCHECK_EQ(create_wrapped_value,
             IDBValueUnwrapper::IsWrapped(idb_value.get()));
