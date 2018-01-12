@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
@@ -35,6 +34,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -321,7 +321,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
         REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone,
-        scoped_refptr<ResourceRequestBody>());
+        scoped_refptr<network::ResourceRequestBody>());
   }
 
   int NextVersionId() { return next_version_id_++; }

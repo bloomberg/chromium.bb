@@ -29,6 +29,10 @@ namespace base {
 class FilePath;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;
@@ -37,7 +41,6 @@ class FileSystemURL;
 namespace content {
 
 class SiteInstance;
-class ResourceRequestBody;
 
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     : public ChildProcessSecurityPolicy {
@@ -98,15 +101,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Validate that |child_id| in |file_system_context| is allowed to access
   // data in the POST body specified by |body|.  Can be called on any thread.
-  bool CanReadRequestBody(int child_id,
-                          const storage::FileSystemContext* file_system_context,
-                          const scoped_refptr<ResourceRequestBody>& body);
+  bool CanReadRequestBody(
+      int child_id,
+      const storage::FileSystemContext* file_system_context,
+      const scoped_refptr<network::ResourceRequestBody>& body);
 
   // Validate that the renderer process for |site_instance| is allowed to access
   // data in the POST body specified by |body|.  Has to be called on the UI
   // thread.
-  bool CanReadRequestBody(SiteInstance* site_instance,
-                          const scoped_refptr<ResourceRequestBody>& body);
+  bool CanReadRequestBody(
+      SiteInstance* site_instance,
+      const scoped_refptr<network::ResourceRequestBody>& body);
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking

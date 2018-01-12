@@ -21,13 +21,15 @@ namespace net {
 class UploadDataStream;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace storage {
 class BlobStorageContext;
 }
 
 namespace content {
-
-class ResourceRequestBody;
 
 class CONTENT_EXPORT UploadDataStreamBuilder {
  public:
@@ -42,7 +44,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   // filesystem URLs.  |file_task_runner| is used to perform file operations
   // when the data gets uploaded.
   static std::unique_ptr<net::UploadDataStream> Build(
-      ResourceRequestBody* body,
+      network::ResourceRequestBody* body,
       storage::BlobStorageContext* blob_context,
       storage::FileSystemContext* file_system_context,
       base::SingleThreadTaskRunner* file_task_runner);

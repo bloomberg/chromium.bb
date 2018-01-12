@@ -22,7 +22,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request_body.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -160,7 +160,7 @@ class NavigationController {
     // Used in LOAD_TYPE_HTTP_POST loads only. Carries the post data of the
     // load.  Ownership is transferred to NavigationController after
     // LoadURLWithParams call.
-    scoped_refptr<ResourceRequestBody> post_data;
+    scoped_refptr<network::ResourceRequestBody> post_data;
 
     // True if this URL should be able to access local resources.
     bool can_load_local_resources;

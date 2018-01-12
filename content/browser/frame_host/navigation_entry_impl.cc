@@ -490,11 +490,12 @@ int64_t NavigationEntryImpl::GetPostID() const {
 }
 
 void NavigationEntryImpl::SetPostData(
-    const scoped_refptr<ResourceRequestBody>& data) {
-  post_data_ = static_cast<ResourceRequestBody*>(data.get());
+    const scoped_refptr<network::ResourceRequestBody>& data) {
+  post_data_ = static_cast<network::ResourceRequestBody*>(data.get());
 }
 
-scoped_refptr<ResourceRequestBody> NavigationEntryImpl::GetPostData() const {
+scoped_refptr<network::ResourceRequestBody> NavigationEntryImpl::GetPostData()
+    const {
   return post_data_.get();
 }
 
@@ -665,7 +666,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const FrameNavigationEntry& frame_entry,
-    const scoped_refptr<ResourceRequestBody>& post_body,
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,

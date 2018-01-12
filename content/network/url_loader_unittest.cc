@@ -26,7 +26,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -482,7 +481,8 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     resource_type_ = type;
   }
-  void set_request_body(scoped_refptr<ResourceRequestBody> request_body) {
+  void set_request_body(
+      scoped_refptr<network::ResourceRequestBody> request_body) {
     request_body_ = request_body;
   }
 
@@ -578,7 +578,7 @@ class URLLoaderTest : public testing::Test {
   bool add_custom_accept_header_ = false;
   bool expect_redirect_ = false;
   ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
-  scoped_refptr<ResourceRequestBody> request_body_;
+  scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // Used to ensure that methods are called either before or after a request is
   // made, since the test fixture is meant to be used only once.
@@ -1123,7 +1123,8 @@ TEST_F(URLLoaderTest, SetPrefetchFlag) {
 TEST_F(URLLoaderTest, UploadBytes) {
   const std::string kRequestBody = "Request Body";
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendBytes(kRequestBody.c_str(), kRequestBody.length());
   set_request_body(std::move(request_body));
 
@@ -1139,7 +1140,8 @@ TEST_F(URLLoaderTest, UploadFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendFileRange(
       file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
   set_request_body(std::move(request_body));
@@ -1157,7 +1159,8 @@ TEST_F(URLLoaderTest, UploadFileWithRange) {
       << "File not found: " << file_path.value();
   expected_body = expected_body.substr(1, expected_body.size() - 2);
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendFileRange(file_path, 1, expected_body.size(),
                                 base::Time());
   set_request_body(std::move(request_body));
@@ -1174,7 +1177,8 @@ TEST_F(URLLoaderTest, UploadRawFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendRawFileRange(
       OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
       std::numeric_limits<uint64_t>::max(), base::Time());
@@ -1193,7 +1197,8 @@ TEST_F(URLLoaderTest, UploadRawFileWithRange) {
       << "File not found: " << file_path.value();
   expected_body = expected_body.substr(1, expected_body.size() - 2);
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendRawFileRange(OpenFileForUpload(file_path),
                                    GetTestFilePath("should_be_ignored"), 1,
                                    expected_body.size(), base::Time());
@@ -1212,7 +1217,8 @@ TEST_F(URLLoaderTest, UploadDataPipe) {
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto resource_request_body =
+      base::MakeRefCounted<network::ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1229,7 +1235,8 @@ TEST_F(URLLoaderTest, UploadDataPipe_Redirect307) {
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto resource_request_body =
+      base::MakeRefCounted<network::ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
   set_expect_redirect();
@@ -1254,7 +1261,8 @@ TEST_F(URLLoaderTest, UploadDataPipeWithLotsOfData) {
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
       request_body, mojo::MakeRequest(&data_pipe_getter_ptr));
 
-  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto resource_request_body =
+      base::MakeRefCounted<network::ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1271,7 +1279,8 @@ TEST_F(URLLoaderTest, UploadDataPipeError) {
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
   data_pipe_getter->set_start_error(net::ERR_ACCESS_DENIED);
 
-  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto resource_request_body =
+      base::MakeRefCounted<network::ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1286,7 +1295,8 @@ TEST_F(URLLoaderTest, UploadDataPipeClosedEarly) {
       kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
   data_pipe_getter->set_pipe_closed_early(true);
 
-  auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto resource_request_body =
+      base::MakeRefCounted<network::ResourceRequestBody>();
   resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
   set_request_body(std::move(resource_request_body));
 
@@ -1301,7 +1311,8 @@ TEST_F(URLLoaderTest, UploadDoubleRawFile) {
   ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
       << "File not found: " << file_path.value();
 
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  scoped_refptr<network::ResourceRequestBody> request_body(
+      new network::ResourceRequestBody());
   request_body->AppendRawFileRange(
       OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
       std::numeric_limits<uint64_t>::max(), base::Time());

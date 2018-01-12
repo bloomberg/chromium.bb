@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_H_
-#define CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_BODY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_BODY_H_
 
 #include <stdint.h>
 
@@ -15,18 +15,15 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "services/network/public/cpp/data_element.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace network {
 
 // ResourceRequestBody represents body (i.e. upload data) of a HTTP request.
-class CONTENT_EXPORT ResourceRequestBody
+class ResourceRequestBody
     : public base::RefCountedThreadSafe<ResourceRequestBody> {
  public:
-  typedef network::DataElement Element;
-
   ResourceRequestBody();
 
   // Creates ResourceRequestBody that holds a copy of |bytes|.
@@ -51,11 +48,11 @@ class CONTENT_EXPORT ResourceRequestBody
                                  uint64_t offset,
                                  uint64_t length,
                                  const base::Time& expected_modification_time);
-  void AppendDataPipe(network::mojom::DataPipeGetterPtr data_pipe_getter);
+  void AppendDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
 
-  const std::vector<Element>* elements() const { return &elements_; }
-  std::vector<Element>* elements_mutable() { return &elements_; }
-  void swap_elements(std::vector<Element>* elements) {
+  const std::vector<DataElement>* elements() const { return &elements_; }
+  std::vector<DataElement>* elements_mutable() { return &elements_; }
+  void swap_elements(std::vector<DataElement>* elements) {
     elements_.swap(*elements);
   }
 
@@ -65,7 +62,7 @@ class CONTENT_EXPORT ResourceRequestBody
   void set_identifier(int64_t id) { identifier_ = id; }
   int64_t identifier() const { return identifier_; }
 
-  // Returns paths referred to by |elements| of type Element::TYPE_FILE.
+  // Returns paths referred to by |elements| of type DataElement::TYPE_FILE.
   std::vector<base::FilePath> GetReferencedFiles() const;
 
   // Sets the flag which indicates whether the post data contains sensitive
@@ -80,7 +77,7 @@ class CONTENT_EXPORT ResourceRequestBody
 
   ~ResourceRequestBody();
 
-  std::vector<Element> elements_;
+  std::vector<DataElement> elements_;
   int64_t identifier_;
 
   bool contains_sensitive_info_;
@@ -88,6 +85,6 @@ class CONTENT_EXPORT ResourceRequestBody
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestBody);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_BODY_H_

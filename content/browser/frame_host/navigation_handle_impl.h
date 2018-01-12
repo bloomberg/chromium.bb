@@ -38,7 +38,6 @@ class AppCacheNavigationHandle;
 class ChromeAppCacheService;
 class NavigationUIData;
 class NavigatorDelegate;
-class ResourceRequestBody;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 
@@ -69,7 +68,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_form_submission,
       const base::Optional<std::string>& suggested_filename,
       const std::string& method = std::string(),
-      scoped_refptr<content::ResourceRequestBody> resource_request_body =
+      scoped_refptr<network::ResourceRequestBody> resource_request_body =
           nullptr,
       const Referrer& sanitized_referrer = content::Referrer(),
       bool has_user_gesture = false,
@@ -112,7 +111,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   RenderFrameHostImpl* GetParentFrame() override;
   const base::TimeTicks& NavigationStart() override;
   bool IsPost() override;
-  const scoped_refptr<ResourceRequestBody>& GetResourceRequestBody() override;
+  const scoped_refptr<network::ResourceRequestBody>& GetResourceRequestBody()
+      override;
   const Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;
@@ -379,7 +379,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_form_submission,
       const base::Optional<std::string>& suggested_filename,
       const std::string& method,
-      scoped_refptr<content::ResourceRequestBody> resource_request_body,
+      scoped_refptr<network::ResourceRequestBody> resource_request_body,
       const Referrer& sanitized_referrer,
       bool has_user_gesture,
       ui::PageTransition transition,
@@ -457,7 +457,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The POST body associated with this navigation.  This will be null for GET
   // and/or other non-POST requests (or if a response to a POST request was a
   // redirect that changed the method to GET - for example 302).
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
 
   // The state the navigation is in.
   State state_;

@@ -970,7 +970,7 @@ void SimpleURLLoaderImpl::AttachStringForUpload(
   DCHECK(resource_request_->method != "GET" &&
          resource_request_->method != "HEAD");
 
-  resource_request_->request_body = new ResourceRequestBody();
+  resource_request_->request_body = new network::ResourceRequestBody();
 
   if (upload_data.length() <= kMaxUploadStringSizeToCopy) {
     int copy_length = static_cast<int>(upload_data.length());
@@ -1000,7 +1000,7 @@ void SimpleURLLoaderImpl::AttachFileForUpload(
 
   // Create an empty body to make DCHECKing that there's no upload body yet
   // simpler.
-  resource_request_->request_body = new ResourceRequestBody();
+  resource_request_->request_body = new network::ResourceRequestBody();
   // TODO(mmenke): Open the file in the current process and append the file
   // handle instead of the file path.
   resource_request_->request_body->AppendFileRange(
@@ -1113,7 +1113,7 @@ void SimpleURLLoaderImpl::StartRequest(
   // code doesn't call the Clone() method), so need to create another one, if
   // uploading a string via a data pipe.
   if (string_upload_data_pipe_getter_) {
-    resource_request_->request_body = new ResourceRequestBody();
+    resource_request_->request_body = new network::ResourceRequestBody();
     network::mojom::DataPipeGetterPtr data_pipe_getter;
     resource_request_->request_body->AppendDataPipe(
         string_upload_data_pipe_getter_->GetPtrForNewUpload());

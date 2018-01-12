@@ -12,8 +12,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/page_state_serialization.h"
-#include "content/public/common/resource_request_body.h"
 #include "jni/ResourceRequestBody_jni.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 using base::android::JavaParamRef;
 
@@ -24,7 +24,7 @@ namespace {
 base::android::ScopedJavaLocalRef<jbyteArray>
 JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(
     JNIEnv* env,
-    const ResourceRequestBody& body) {
+    const network::ResourceRequestBody& body) {
   std::string encoded = EncodeResourceRequestBody(body);
   return base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(encoded.data()), encoded.size());
@@ -43,18 +43,18 @@ JNI_ResourceRequestBody_CreateResourceRequestBodyFromBytes(
 
   std::vector<uint8_t> post_data;
   base::android::JavaByteArrayToByteVector(env, j_post_data, &post_data);
-  scoped_refptr<ResourceRequestBody> body =
-      ResourceRequestBody::CreateFromBytes(
+  scoped_refptr<network::ResourceRequestBody> body =
+      network::ResourceRequestBody::CreateFromBytes(
           reinterpret_cast<const char*>(post_data.data()), post_data.size());
 
   return JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(
-      env, static_cast<const ResourceRequestBody&>(*body));
+      env, static_cast<const network::ResourceRequestBody&>(*body));
 }
 
 base::android::ScopedJavaLocalRef<jobject>
 ConvertResourceRequestBodyToJavaObject(
     JNIEnv* env,
-    const scoped_refptr<ResourceRequestBody>& body) {
+    const scoped_refptr<network::ResourceRequestBody>& body) {
   if (!body)
     return base::android::ScopedJavaLocalRef<jobject>();
 
@@ -66,7 +66,8 @@ ConvertResourceRequestBodyToJavaObject(
   return Java_ResourceRequestBody_createFromEncodedNativeForm(env, j_encoded);
 }
 
-scoped_refptr<ResourceRequestBody> ExtractResourceRequestBodyFromJavaObject(
+scoped_refptr<network::ResourceRequestBody>
+ExtractResourceRequestBodyFromJavaObject(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_body) {
   if (!j_body)

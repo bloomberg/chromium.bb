@@ -39,13 +39,16 @@ namespace blink {
 class MessagePortChannel;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace storage {
 class BlobStorageContext;
 }
 
 namespace content {
 
-class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRegistrationObjectHost;
@@ -269,7 +272,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      scoped_refptr<ResourceRequestBody> body,
+      scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
   // Used to get a ServiceWorkerObjectInfo to send to the renderer. Finds an

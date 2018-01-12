@@ -53,7 +53,7 @@ CommonNavigationParams::CommonNavigationParams(
     PreviewsState previews_state,
     const base::TimeTicks& navigation_start,
     std::string method,
-    const scoped_refptr<ResourceRequestBody>& post_data,
+    const scoped_refptr<network::ResourceRequestBody>& post_data,
     base::Optional<SourceLocation> source_location,
     CSPDisposition should_check_main_world_csp,
     bool started_from_context_menu,

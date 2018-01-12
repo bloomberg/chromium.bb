@@ -102,7 +102,6 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -132,6 +131,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -3078,7 +3078,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                                 WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_TYPED, false);
   params.uses_post = true;
-  params.post_data = content::ResourceRequestBody::CreateFromBytes(
+  params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
   NavigateToURLWithParams(params, false);
 }

@@ -34,10 +34,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 using content::WebContents;
 
@@ -104,7 +104,7 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
   param.url = url;
   param.is_renderer_initiated = !is_browser_initiated;
   param.uses_post = true;
-  param.post_data = content::ResourceRequestBody::CreateFromBytes(
+  param.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
 
   ui_test_utils::NavigateToURL(&param);

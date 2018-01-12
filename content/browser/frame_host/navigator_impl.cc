@@ -263,7 +263,7 @@ bool NavigatorImpl::NavigateToEntry(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     bool is_pending_entry,
-    const scoped_refptr<ResourceRequestBody>& post_body) {
+    const scoped_refptr<network::ResourceRequestBody>& post_body) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   GURL dest_url = frame_entry.url();
@@ -570,7 +570,7 @@ void NavigatorImpl::RequestOpenURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
     bool uses_post,
-    const scoped_refptr<ResourceRequestBody>& body,
+    const scoped_refptr<network::ResourceRequestBody>& body,
     const std::string& extra_headers,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
@@ -666,7 +666,7 @@ void NavigatorImpl::RequestTransferURL(
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
     const std::string& method,
-    scoped_refptr<ResourceRequestBody> post_body,
+    scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
@@ -998,7 +998,7 @@ void NavigatorImpl::RequestNavigation(
     PreviewsState previews_state,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
-    const scoped_refptr<ResourceRequestBody>& post_body,
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
     base::TimeTicks navigation_start) {
   DCHECK(frame_tree_node);
 

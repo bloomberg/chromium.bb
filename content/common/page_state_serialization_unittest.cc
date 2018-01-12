@@ -37,11 +37,11 @@ void ExpectEquality(const std::vector<T>& expected,
 }
 
 template <>
-void ExpectEquality(const ResourceRequestBody::Element& expected,
-                    const ResourceRequestBody::Element& actual) {
+void ExpectEquality(const network::DataElement& expected,
+                    const network::DataElement& actual) {
   EXPECT_EQ(expected.type(), actual.type());
-  if (expected.type() == ResourceRequestBody::Element::TYPE_BYTES &&
-      actual.type() == ResourceRequestBody::Element::TYPE_BYTES) {
+  if (expected.type() == network::DataElement::TYPE_BYTES &&
+      actual.type() == network::DataElement::TYPE_BYTES) {
     EXPECT_EQ(std::string(expected.bytes(), expected.length()),
               std::string(actual.bytes(), actual.length()));
   }
@@ -131,7 +131,7 @@ class PageStateSerializationTest : public testing::Test {
   void PopulateHttpBody(
       ExplodedHttpBody* http_body,
       std::vector<base::Optional<base::string16>>* referenced_files) {
-    http_body->request_body = new ResourceRequestBody();
+    http_body->request_body = new network::ResourceRequestBody();
     http_body->request_body->set_identifier(12345);
     http_body->contains_passwords = false;
     http_body->http_content_type = base::UTF8ToUTF16("text/foo");
@@ -174,7 +174,7 @@ class PageStateSerializationTest : public testing::Test {
 
     if (!is_child) {
       frame_state->http_body.http_content_type = base::UTF8ToUTF16("foo/bar");
-      frame_state->http_body.request_body = new ResourceRequestBody();
+      frame_state->http_body.request_body = new network::ResourceRequestBody();
       frame_state->http_body.request_body->set_identifier(789);
 
       std::string test_body("first data block");
@@ -648,7 +648,7 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_HttpBody) {
   ExplodedPageState state;
   ExplodedHttpBody& http_body = state.top.http_body;
 
-  http_body.request_body = new ResourceRequestBody();
+  http_body.request_body = new network::ResourceRequestBody();
   http_body.request_body->set_identifier(12345);
   http_body.contains_passwords = false;
   http_body.http_content_type = base::UTF8ToUTF16("text/foo");

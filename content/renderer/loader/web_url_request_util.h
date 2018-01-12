@@ -9,10 +9,10 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -39,16 +39,16 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 
 // Takes a ResourceRequestBody and converts into WebHTTPBody.
 blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
-    const ResourceRequestBody& input);
+    const network::ResourceRequestBody& input);
 
 // Takes a WebHTTPBody and converts into a ResourceRequestBody.
-scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
+scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
     const blink::WebHTTPBody& httpBody);
 
 // Takes a WebURLRequest and sets the appropriate information
 // in a ResourceRequestBody structure. Returns an empty scoped_refptr
 // if the request body is not present.
-scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
+scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(
     const blink::WebURLRequest& request);
 
 // Helper functions to convert enums from the blink type to the content

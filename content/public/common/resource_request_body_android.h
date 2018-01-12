@@ -11,21 +11,23 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
-namespace content {
-
+namespace network {
 class ResourceRequestBody;
+}
+
+namespace content {
 
 // Returns an instance of org.chromium.content_public.common.ResourceRequestBody
 // that contains serialized representation of the |native_object|.
 CONTENT_EXPORT base::android::ScopedJavaLocalRef<jobject>
 ConvertResourceRequestBodyToJavaObject(
     JNIEnv* env,
-    const scoped_refptr<ResourceRequestBody>& native_object);
+    const scoped_refptr<network::ResourceRequestBody>& native_object);
 
-// Reconstructs the native C++ content::ResourceRequestBody object based on
+// Reconstructs the native C++ network::ResourceRequestBody object based on
 // org.chromium.content_public.common.ResourceRequestBody (|java_object|) passed
 // in as an argument.
-CONTENT_EXPORT scoped_refptr<ResourceRequestBody>
+CONTENT_EXPORT scoped_refptr<network::ResourceRequestBody>
 ExtractResourceRequestBodyFromJavaObject(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& java_object);

@@ -18,7 +18,6 @@
 #include "content/network/network_service_impl.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -79,17 +78,17 @@ void PopulateResourceResponse(net::URLRequest* request,
 // ResourceRequestBody.
 class BytesElementReader : public net::UploadBytesElementReader {
  public:
-  BytesElementReader(ResourceRequestBody* resource_request_body,
-                     const ResourceRequestBody::Element& element)
+  BytesElementReader(network::ResourceRequestBody* resource_request_body,
+                     const network::DataElement& element)
       : net::UploadBytesElementReader(element.bytes(), element.length()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
+    DCHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
   }
 
   ~BytesElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(BytesElementReader);
 };
@@ -100,31 +99,31 @@ class BytesElementReader : public net::UploadBytesElementReader {
 // files survive until upload completion.
 class FileElementReader : public net::UploadFileElementReader {
  public:
-  FileElementReader(ResourceRequestBody* resource_request_body,
+  FileElementReader(network::ResourceRequestBody* resource_request_body,
                     base::TaskRunner* task_runner,
-                    const ResourceRequestBody::Element& element)
+                    const network::DataElement& element)
       : net::UploadFileElementReader(task_runner,
                                      element.path(),
                                      element.offset(),
                                      element.length(),
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBody::Element::TYPE_FILE, element.type());
+    DCHECK_EQ(network::DataElement::TYPE_FILE, element.type());
   }
 
   ~FileElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(FileElementReader);
 };
 
 class RawFileElementReader : public net::UploadFileElementReader {
  public:
-  RawFileElementReader(ResourceRequestBody* resource_request_body,
+  RawFileElementReader(network::ResourceRequestBody* resource_request_body,
                        base::TaskRunner* task_runner,
-                       const ResourceRequestBody::Element& element)
+                       const network::DataElement& element)
       : net::UploadFileElementReader(
             task_runner,
             // TODO(mmenke): Is duplicating this necessary?
@@ -134,52 +133,52 @@ class RawFileElementReader : public net::UploadFileElementReader {
             element.length(),
             element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBody::Element::TYPE_RAW_FILE, element.type());
+    DCHECK_EQ(network::DataElement::TYPE_RAW_FILE, element.type());
   }
 
   ~RawFileElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(RawFileElementReader);
 };
 
 // TODO: copied from content/browser/loader/upload_data_stream_builder.cc.
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
-    ResourceRequestBody* body,
+    network::ResourceRequestBody* body,
     base::SequencedTaskRunner* file_task_runner) {
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES:
+      case network::DataElement::TYPE_BYTES:
         element_readers.push_back(
             std::make_unique<BytesElementReader>(body, element));
         break;
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case network::DataElement::TYPE_FILE:
         element_readers.push_back(std::make_unique<FileElementReader>(
             body, file_task_runner, element));
         break;
-      case ResourceRequestBody::Element::TYPE_RAW_FILE:
+      case network::DataElement::TYPE_RAW_FILE:
         element_readers.push_back(std::make_unique<RawFileElementReader>(
             body, file_task_runner, element));
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case network::DataElement::TYPE_FILE_FILESYSTEM:
         CHECK(false) << "Should never be reached";
         break;
-      case ResourceRequestBody::Element::TYPE_BLOB: {
+      case network::DataElement::TYPE_BLOB: {
         CHECK(false) << "Network service always uses DATA_PIPE for blobs.";
         break;
       }
-      case ResourceRequestBody::Element::TYPE_DATA_PIPE: {
+      case network::DataElement::TYPE_DATA_PIPE: {
         element_readers.push_back(std::make_unique<DataPipeElementReader>(
             body, const_cast<network::DataElement*>(&element)
                       ->ReleaseDataPipeGetter()));
         break;
       }
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBody::Element::TYPE_UNKNOWN:
+      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
+      case network::DataElement::TYPE_BYTES_DESCRIPTION:
+      case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;
     }

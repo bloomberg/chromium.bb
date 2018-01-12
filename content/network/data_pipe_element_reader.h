@@ -13,11 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_request_body.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 
 namespace net {
@@ -32,7 +32,7 @@ class CONTENT_EXPORT DataPipeElementReader : public net::UploadElementReader {
   // |resource_request_body| is just passed in to keep the object around for the
   // life of the ElementReader.
   DataPipeElementReader(
-      scoped_refptr<ResourceRequestBody> resource_request_body,
+      scoped_refptr<network::ResourceRequestBody> resource_request_body,
       network::mojom::DataPipeGetterPtr data_pipe_getter_);
 
   ~DataPipeElementReader() override;
@@ -60,7 +60,7 @@ class CONTENT_EXPORT DataPipeElementReader : public net::UploadElementReader {
   // the caller to update |buf_| and |buf_length_| if needed.
   int ReadInternal(net::IOBuffer* buf, int buf_length);
 
-  scoped_refptr<ResourceRequestBody> resource_request_body_;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
   network::mojom::DataPipeGetterPtr data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
   mojo::SimpleWatcher handle_watcher_;

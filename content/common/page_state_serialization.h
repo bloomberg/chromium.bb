@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_request_body.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -28,7 +28,7 @@ constexpr int kMaxScrollAnchorSelectorLength = 500;
 
 struct CONTENT_EXPORT ExplodedHttpBody {
   base::Optional<base::string16> http_content_type;
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<network::ResourceRequestBody> request_body;
   bool contains_passwords;
 
   ExplodedHttpBody();
@@ -98,12 +98,13 @@ CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(
 // Converts results of EncodeResourceRequestBody (passed in as a pair of |data|
 // + |size|) back into a ResourceRequestBody.  Returns nullptr if the
 // decoding fails (e.g. if |data| is malformed).
-scoped_refptr<ResourceRequestBody> DecodeResourceRequestBody(const char* data,
-                                                             size_t size);
+scoped_refptr<network::ResourceRequestBody> DecodeResourceRequestBody(
+    const char* data,
+    size_t size);
 
 // Encodes |resource_request_body| into |encoded|.
 std::string EncodeResourceRequestBody(
-    const ResourceRequestBody& resource_request_body);
+    const network::ResourceRequestBody& resource_request_body);
 #endif
 
 }  // namespace content

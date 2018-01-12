@@ -267,12 +267,12 @@ class Helper : public EmbeddedWorkerTestHelper {
 
   void ReadRequestBody(std::string* out_string) {
     ASSERT_TRUE(request_body_);
-    const std::vector<ResourceRequestBody::Element>* elements =
+    const std::vector<network::DataElement>* elements =
         request_body_->elements();
     // So far this test expects a single bytes element.
     ASSERT_EQ(1u, elements->size());
-    const ResourceRequestBody::Element& element = elements->front();
-    ASSERT_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
+    const network::DataElement& element = elements->front();
+    ASSERT_EQ(network::DataElement::TYPE_BYTES, element.type());
     *out_string = std::string(element.bytes(), element.length());
   }
 
@@ -428,7 +428,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
-  scoped_refptr<ResourceRequestBody> request_body_;
+  scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // For ResponseMode::kBlob.
   blink::mojom::BlobPtr blob_body_;
@@ -641,7 +641,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, RequestBody) {
   const std::string kData = "hi this is the request body";
 
   // Create a request with a body.
-  auto request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
   request_body->AppendBytes(kData.c_str(), kData.length());
   std::unique_ptr<ResourceRequest> request = CreateRequest();
   request->method = "POST";

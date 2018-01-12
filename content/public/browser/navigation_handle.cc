@@ -32,13 +32,13 @@ NavigationHandle::CreateNavigationHandleForTesting(
     ui::PageTransition transition) {
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
-  scoped_refptr<ResourceRequestBody> resource_request_body;
+  scoped_refptr<network::ResourceRequestBody> resource_request_body;
   std::string method = "GET";
   if (is_post) {
     method = "POST";
 
     std::string body = "test=body";
-    resource_request_body = new ResourceRequestBody();
+    resource_request_body = new network::ResourceRequestBody();
     resource_request_body->AppendBytes(body.data(), body.size());
   }
   std::unique_ptr<NavigationHandleImpl> handle_impl =

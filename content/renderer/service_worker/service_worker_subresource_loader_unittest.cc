@@ -111,12 +111,12 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   void ReadRequestBody(std::string* out_string) {
     ASSERT_TRUE(request_body_);
-    const std::vector<ResourceRequestBody::Element>* elements =
+    const std::vector<network::DataElement>* elements =
         request_body_->elements();
     // So far this test expects a single bytes element.
     ASSERT_EQ(1u, elements->size());
-    const ResourceRequestBody::Element& element = elements->front();
-    ASSERT_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
+    const network::DataElement& element = elements->front();
+    ASSERT_EQ(network::DataElement::TYPE_BYTES, element.type());
     *out_string = std::string(element.bytes(), element.length());
   }
 
@@ -228,7 +228,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
-  scoped_refptr<ResourceRequestBody> request_body_;
+  scoped_refptr<network::ResourceRequestBody> request_body_;
 
   int fetch_event_count_ = 0;
   ResourceRequest fetch_event_request_;
@@ -859,7 +859,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RequestBody) {
       CreateSubresourceLoaderFactory();
 
   // Create a request with a body.
-  auto request_body = base::MakeRefCounted<ResourceRequestBody>();
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
   const std::string kData = "hi this is the request body";
   request_body->AppendBytes(kData.c_str(), kData.length());
   ResourceRequest request = CreateRequest(kUrl);

@@ -100,6 +100,10 @@ class Range;
 class Rect;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace content {
 class AssociatedInterfaceProviderImpl;
 class AssociatedInterfaceRegistryImpl;
@@ -121,7 +125,6 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
-class ResourceRequestBody;
 class SensorProviderProxyImpl;
 class StreamHandle;
 class TimeoutMonitor;
@@ -894,7 +897,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |body|.  It is important that the ResourceRequestBody has been validated
   // upon receipt from the renderer process to prevent it from forging access to
   // files without the user's consent.
-  void GrantFileAccessFromResourceRequestBody(const ResourceRequestBody& body);
+  void GrantFileAccessFromResourceRequestBody(
+      const network::ResourceRequestBody& body);
 
   void UpdatePermissionsForNavigation(
       const CommonNavigationParams& common_params,

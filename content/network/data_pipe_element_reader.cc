@@ -15,7 +15,7 @@
 namespace content {
 
 DataPipeElementReader::DataPipeElementReader(
-    scoped_refptr<ResourceRequestBody> resource_request_body,
+    scoped_refptr<network::ResourceRequestBody> resource_request_body,
     network::mojom::DataPipeGetterPtr data_pipe_getter_)
     : resource_request_body_(std::move(resource_request_body)),
       data_pipe_getter_(std::move(data_pipe_getter_)),
