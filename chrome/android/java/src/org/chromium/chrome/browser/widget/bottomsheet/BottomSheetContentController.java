@@ -361,7 +361,8 @@ public class BottomSheetContentController
         mLabelsEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_BOTTOM_NAV_LABELS);
         if (mLabelsEnabled) {
-            ((ImageView) findViewById(R.id.bottom_nav_shadow)).setVisibility(View.VISIBLE);
+            ImageView bottomNavShadow = (ImageView) findViewById(R.id.bottom_nav_shadow);
+            if (bottomNavShadow != null) bottomNavShadow.setVisibility(View.VISIBLE);
         } else {
             hideMenuLabels();
         }
