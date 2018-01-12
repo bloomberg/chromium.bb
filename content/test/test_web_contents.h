@@ -88,6 +88,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetLastCommittedURL(const GURL& url) override;
   void SetWasRecentlyAudible(bool audible) override;
   void SetIsCurrentlyAudible(bool audible) override;
+  void TestOnUserInteraction(blink::WebInputEvent::Type type) override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();
