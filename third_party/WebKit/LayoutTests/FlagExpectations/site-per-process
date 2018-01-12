@@ -28,8 +28,8 @@ crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 # https://crbug.com/393285: Text-autosizing doesn't support OOPIFs.
 # https://crbug.com/667551: Pixel dumps don't support OOPIFs.
 # Both of the bugs above need to be fixed, before enabling the tests below.
-crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure ]
-crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
+crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
+crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
