@@ -87,17 +87,6 @@ void NGFragmentBuilder::RemoveChildren() {
 
 NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
-  if (children_.IsEmpty()) {
-    // Ideally, breaking should only occur *between* children, not *before* a
-    // first child.
-    //
-    // TODO(crbug.com/796077): There's one exception here - class C break points
-    // [1]. We should identify them here and not set the "last resort break"
-    // flag in that case.
-    //
-    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-    has_last_resort_break_ = true;
-  }
   if (child.IsInline()) {
     if (inline_break_tokens_.IsEmpty()) {
       // In some cases we may want to break before the first line, as a last
@@ -289,7 +278,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
       end_margin_strut_, intrinsic_block_size_, minimal_space_shortage_,
       initial_break_before_, previous_break_after_, has_forced_break_,
-      NGLayoutResult::kSuccess));
+      is_pushed_by_floats_, NGLayoutResult::kSuccess));
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
@@ -300,7 +289,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
       nullptr, oof_positioned_descendants, positioned_floats,
       unpositioned_floats_, nullptr, bfc_offset_, end_margin_strut_,
       LayoutUnit(), LayoutUnit(), EBreakBetween::kAuto, EBreakBetween::kAuto,
-      false, status));
+      false, false, status));
 }
 
 // Finds FragmentPairs that define inline containing blocks.

@@ -100,6 +100,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Return true if the fragment broke because a forced break before a child.
   bool HasForcedBreak() const { return has_forced_break_; }
 
+  // Return true if this fragment got its block offset increased by the presence
+  // of floats.
+  bool IsPushedByFloats() const { return is_pushed_by_floats_; }
+
   scoped_refptr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
@@ -120,6 +124,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       EBreakBetween initial_break_before,
       EBreakBetween final_break_after,
       bool has_forced_break,
+      bool is_pushed_by_floats,
       NGLayoutResultStatus status);
 
   scoped_refptr<NGPhysicalFragment> physical_fragment_;
@@ -138,6 +143,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   EBreakBetween final_break_after_;
 
   unsigned has_forced_break_ : 1;
+
+  unsigned is_pushed_by_floats_ : 1;
 
   unsigned status_ : 1;
 };

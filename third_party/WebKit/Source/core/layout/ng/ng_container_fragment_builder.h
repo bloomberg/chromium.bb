@@ -108,6 +108,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
       const LayoutObject* container);
 
+  NGContainerFragmentBuilder& SetIsPushedByFloats() {
+    is_pushed_by_floats_ = true;
+    return *this;
+  }
+
 #ifndef NDEBUG
   String ToString() const;
 #endif
@@ -173,6 +178,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   Vector<NGLogicalOffset> offsets_;
 
   bool has_last_resort_break_ = false;
+
+  bool is_pushed_by_floats_ = false;
 };
 
 }  // namespace blink
