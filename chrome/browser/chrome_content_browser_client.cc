@@ -1818,7 +1818,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFile,
       switches::kProfilingFlush,
       switches::kReaderModeHeuristics,
-      switches::kSitePerProcess,
       translate::switches::kTranslateSecurityOrigin,
     };
 
@@ -1859,12 +1858,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         !command_line->HasSwitch(switches::kDisableBreakpad))
       command_line->AppendSwitch(switches::kDisableBreakpad);
   }
-
-  // The command line switch kEnableBenchmarking needs to be specified along
-  // with the kEnableStatsTable switch to ensure that the stats table global
-  // is initialized correctly.
-  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking))
-    DCHECK(command_line->HasSwitch(switches::kEnableStatsTable));
 
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type,

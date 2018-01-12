@@ -435,9 +435,6 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 // Enable spatial navigation
 const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
 
-// Enables StatsTable, logging statistics to a global named shared memory table.
-const char kEnableStatsTable[]              = "enable-stats-table";
-
 // Blocks all insecure requests from secure contexts, and prevents the user
 // from overriding that decision.
 const char kEnableStrictMixedContentChecking[] =

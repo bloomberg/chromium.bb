@@ -43,17 +43,6 @@ namespace content {
 
 class ChildProcessLauncherBrowserTest : public ContentBrowserTest {};
 
-class StatsTableBrowserTest : public ChildProcessLauncherBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableStatsTable);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(StatsTableBrowserTest, StartWithStatTable) {
-  NavigateToURL(shell(), GURL("about:blank"));
-}
-
 IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
   GURL url("about:blank");
   Shell* window = shell();
