@@ -12,7 +12,7 @@
  *            label: string,
  *            isGaiaAvatar: (boolean|undefined)}}
  */
-var AvatarIcon;
+let AvatarIcon;
 
 Polymer({
   is: 'cr-profile-avatar-selector',

@@ -29,7 +29,7 @@ Polymer({
    * @private
    */
   onTap_: function(event) {
-    var element = Polymer.dom(event).rootTarget;
+    const element = Polymer.dom(event).rootTarget;
 
     // Handle the tap event only if the target is a '<a>' element.
     if (element.nodeName == 'A') {

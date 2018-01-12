@@ -15,6 +15,7 @@
     {
       'target_name': 'create_profile',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_profile_avatar_selector/compiled_resources2.gyp:cr_profile_avatar_selector',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',

@@ -11,14 +11,14 @@
 
 
 cr.define('cr.ui', function() {
-  var DisplayManager = cr.ui.login.DisplayManager;
+  const DisplayManager = cr.ui.login.DisplayManager;
 
   /**
    * Maximum possible height of the #login-header-bar, including the padding
    * and the border.
-   * @const {number}
+   * @type {number}
    */
-  var MAX_LOGIN_HEADER_BAR_HEIGHT = 57;
+  const MAX_LOGIN_HEADER_BAR_HEIGHT = 57;
 
   /**
    * Manages initialization of screens, transitions, and error messages.
@@ -52,11 +52,12 @@ cr.define('cr.ui', function() {
      * @type {{width: number, height: number}}
      */
     get clientAreaSize() {
-      var userManagerPages = document.querySelector('user-manager-pages');
-      var width = userManagerPages.offsetWidth;
+      const userManagerPages = document.querySelector('user-manager-pages');
+      const width = userManagerPages.offsetWidth;
       // Deduct the maximum possible height of the #login-header-bar from the
       // height of #animated-pages. Result is the remaining visible height.
-      var height = userManagerPages.offsetHeight - MAX_LOGIN_HEADER_BAR_HEIGHT;
+      const height =
+          userManagerPages.offsetHeight - MAX_LOGIN_HEADER_BAR_HEIGHT;
       return {width: width, height: height};
     }
   };
@@ -68,7 +69,7 @@ cr.define('cr.ui', function() {
    * @param {!Event} event The event containing ID of the selected page.
    */
   UserManager.onPageChanged_ = function(event) {
-    var userPodsPageVisible = event.detail.page == 'user-pods-page';
+    const userPodsPageVisible = event.detail.page == 'user-pods-page';
     cr.ui.UserManager.getInstance().userPodsPageVisible = userPodsPageVisible;
     if (userPodsPageVisible)
       $('pod-row').rebuildPods();
@@ -98,7 +99,7 @@ cr.define('cr.ui', function() {
     UserManager.getInstance().showScreen(
         {id: 'account-picker', data: {disableAddUser: false}});
     // Hide control options if the user does not have the right permissions.
-    var controlBar = document.querySelector('control-bar');
+    const controlBar = document.querySelector('control-bar');
     controlBar.showGuest = showGuest;
     controlBar.showAddPerson = showAddPerson;
 
@@ -170,12 +171,12 @@ cr.define('cr.ui', function() {
 });
 
 // Alias to Oobe for use in src/ui/login/account_picker/user_pod_row.js
-var Oobe = cr.ui.UserManager;
+const Oobe = cr.ui.UserManager;
 
 // Allow selection events on components with editable text (password field)
 // bug (http://code.google.com/p/chromium/issues/detail?id=125863)
 disableTextSelectAndDrag(function(e) {
-  var src = e.target;
+  const src = e.target;
   return src instanceof HTMLTextAreaElement ||
       src instanceof HTMLInputElement && /text|password|search/.test(src.type);
 });
