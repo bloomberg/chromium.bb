@@ -201,10 +201,7 @@
     resetEventLog();
 
     textInputController.insertText('');
-    assert_array_equals(eventLog, [
-      'beforeinput: isComposing=false, data=""',
-      'textInput: data=""',
-    ]);
+    assert_array_equals(eventLog, []);
   }, 'insertText without open composition, empty text');
 
   test(() => {

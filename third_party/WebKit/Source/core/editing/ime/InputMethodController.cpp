@@ -601,8 +601,12 @@ bool InputMethodController::InsertTextAndMoveCaret(
     return false;
   int text_start = selection_range.Start();
 
-  if (!InsertText(text))
-    return false;
+  // Don't fire events for a no-op operation.
+  if (!text.IsEmpty() || selection_range.length() > 0) {
+    if (!InsertText(text))
+      return false;
+  }
+
   Element* root_editable_element =
       GetFrame()
           .Selection()

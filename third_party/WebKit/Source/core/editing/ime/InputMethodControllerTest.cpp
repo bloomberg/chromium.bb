@@ -1292,7 +1292,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   GetDocument().setTitle(g_empty_string);
   GetDocument().UpdateStyleAndLayout();
   Controller().CommitText("", ime_text_spans, 0);
-  EXPECT_STREQ("beforeinput.data:;", GetDocument().title().Utf8().data());
+  EXPECT_STREQ("", GetDocument().title().Utf8().data());
 
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("n", ime_text_spans, 1, 1);
