@@ -137,7 +137,8 @@ class PLATFORM_EXPORT ScriptWrappable
   }
 
   bool SetReturnValue(v8::ReturnValue<v8::Value> return_value) {
-    return_value.Set(main_world_wrapper_);
+    v8::Isolate* isolate = return_value.GetIsolate();
+    return_value.Set(main_world_wrapper_.Get(isolate));
     return ContainsWrapper();
   }
 
