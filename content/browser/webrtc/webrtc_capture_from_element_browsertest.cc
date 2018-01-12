@@ -108,15 +108,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
-  DISABLED_VerifyCanvasCaptureOffscreenCanvasCommitFrames
-#else
-#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
-  VerifyCanvasCaptureOffscreenCanvasCommitFrames
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
+                       VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
                   kCanvasCaptureTestHtmlFile);
 }
