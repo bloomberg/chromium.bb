@@ -42,7 +42,7 @@ BrowserAccessibility* FindNodeWithChildTreeId(BrowserAccessibility* node,
 // Map from AXTreeID to BrowserAccessibilityManager
 using AXTreeIDMap = base::hash_map<ui::AXTreeIDRegistry::AXTreeID,
                                    BrowserAccessibilityManager*>;
-base::LazyInstance<AXTreeIDMap>::DestructorAtExit g_ax_tree_id_map =
+base::LazyInstance<AXTreeIDMap>::Leaky g_ax_tree_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
 // A function to call when focus changes, for testing only.

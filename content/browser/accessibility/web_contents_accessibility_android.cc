@@ -186,9 +186,9 @@ enum {
 
 using SearchKeyToPredicateMap =
     base::hash_map<base::string16, AccessibilityMatchPredicate>;
-base::LazyInstance<SearchKeyToPredicateMap>::DestructorAtExit
+base::LazyInstance<SearchKeyToPredicateMap>::Leaky
     g_search_key_to_predicate_map = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::string16>::DestructorAtExit g_all_search_keys =
+base::LazyInstance<base::string16>::Leaky g_all_search_keys =
     LAZY_INSTANCE_INITIALIZER;
 
 bool SectionPredicate(BrowserAccessibility* start, BrowserAccessibility* node) {
