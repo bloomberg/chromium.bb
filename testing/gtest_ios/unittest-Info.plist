@@ -26,34 +26,21 @@
 	<array>
 		<string>chromium</string>
 		<string>chromiums</string>
-		<string>comgooglemaps-v2</string>
-		<string>comgooglemaps-x-callback</string>
 		<string>comgooglemaps</string>
 		<string>googleapp</string>
 		<string>googlechrome</string>
 		<string>googlechromes</string>
-		<string>googledocs-v2</string>
-		<string>googledocs-x-callback</string>
+		<string>googledevicepolicy</string>
 		<string>googledocs</string>
-		<string>googledrive-v1</string>
 		<string>googledrive</string>
-		<string>googlegmail-x-callback</string>
 		<string>googlegmail</string>
 		<string>googlephotos</string>
-		<string>googlephotos-x-callback</string>
 		<string>googleplaymusic</string>
-		<string>googlesheets-v2</string>
-		<string>googlesheets-x-callback</string>
 		<string>googlesheets</string>
-		<string>googleslides-v2</string>
-		<string>googleslides-x-callback</string>
 		<string>googleslides</string>
-		<string>gplus-v2</string>
-		<string>gplus-v3</string>
 		<string>gplus</string>
+		<string>inbox-gmail</string>
 		<string>vnd.google.calendar</string>
-		<string>vnd.youtube</string>
-		<string>youtube</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
