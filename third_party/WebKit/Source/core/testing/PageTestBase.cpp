@@ -22,6 +22,9 @@ PageTestBase::~PageTestBase() = default;
 void PageTestBase::SetUp() {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+
+  // Use no-quirks (ake "strict") mode by default.
+  GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
 }
 
 void PageTestBase::SetUp(IntSize size) {

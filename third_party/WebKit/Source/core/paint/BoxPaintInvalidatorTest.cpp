@@ -78,7 +78,6 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
  private:
   void SetUp() override {
     RenderingTest::SetUp();
-    GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
     EnableCompositing();
     SetBodyInnerHTML(R"HTML(
       <style>

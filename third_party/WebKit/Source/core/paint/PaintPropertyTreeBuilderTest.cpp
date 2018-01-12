@@ -202,6 +202,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   LoadTestData("position-and-scroll.html");
 
   Element* scroller = GetDocument().getElementById("scroller");
@@ -1345,6 +1346,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   SetBodyInnerHTML(R"HTML(
     <div style='column-count:2;'>
       <div style='columns: 2'>

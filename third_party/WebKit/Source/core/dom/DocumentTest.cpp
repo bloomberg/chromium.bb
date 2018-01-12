@@ -959,6 +959,7 @@ INSTANTIATE_TEST_CASE_P(All, ParameterizedDocumentTest, ::testing::Bool());
 // Android does not support non-overlay top-level scrollbars.
 #if !defined(OS_ANDROID)
 TEST_P(ParameterizedDocumentTest, ElementFromPointOnScrollbar) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
 
@@ -986,6 +987,7 @@ TEST_P(ParameterizedDocumentTest, ElementFromPointOnScrollbar) {
 #endif  // defined(OS_ANDROID)
 
 TEST_P(ParameterizedDocumentTest, ElementFromPointWithPageZoom) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
 

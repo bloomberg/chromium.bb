@@ -161,6 +161,7 @@ TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
 }
 
 TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   GetDocument().View()->GetFrame().GetPage()->GetVisualViewport().SetScale(2.f);
   GetDocument().body()->SetInnerHTMLFromString(
       "<input type='date' style='width:200px;height:50px' />");
