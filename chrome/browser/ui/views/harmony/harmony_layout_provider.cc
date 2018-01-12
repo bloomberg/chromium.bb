@@ -34,8 +34,6 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
 int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
-    case views::DISTANCE_BUTTON_IMAGE_LABEL_PADDING:
-      return kHarmonyLayoutUnit * 3 / 4;
     case DISTANCE_CONTENT_LIST_VERTICAL_SINGLE:
       return kHarmonyLayoutUnit / 4;
     case DISTANCE_CONTENT_LIST_VERTICAL_MULTI:
@@ -87,13 +85,11 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
     case views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
       return kHarmonyLayoutUnit * 7;
     case views::DISTANCE_RELATED_LABEL_HORIZONTAL:
-      return kHarmonyLayoutUnit;
     case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
-      return kHarmonyLayoutUnit / 2;
+    case views::DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN:
+      return 3 * kHarmonyLayoutUnit / 4;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return 0;
-    case views::DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN:
-      return kHarmonyLayoutUnit;
     case views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING:
       return kHarmonyLayoutUnit / 2;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:

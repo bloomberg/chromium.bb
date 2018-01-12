@@ -51,9 +51,6 @@ enum DistanceMetric {
 
   // The default padding to add on each side of a button's label.
   DISTANCE_BUTTON_HORIZONTAL_PADDING = VIEWS_DISTANCE_START,
-  // The default padding to use between the image and label of a button with
-  // both.
-  DISTANCE_BUTTON_IMAGE_LABEL_PADDING,
   // The maximum width a button can have and still influence the sizes of
   // other linked buttons.  This allows short buttons to have linked widths
   // without long buttons making things overly wide.
