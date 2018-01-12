@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
 
 namespace cc {
@@ -70,14 +71,16 @@ class PaintOpHelper {
         const auto* op = static_cast<const DrawDRRectOp*>(base_op);
         str << "DrawDRRectOp(outer="
             << PaintOpHelper::SkiaTypeToString(op->outer)
-            << ", inner=" << PaintOpHelper::SkiaTypeToString(op->inner) << ")";
+            << ", inner=" << PaintOpHelper::SkiaTypeToString(op->inner)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawImage: {
         const auto* op = static_cast<const DrawImageOp*>(base_op);
         str << "DrawImageOp(image=" << PaintOpHelper::ImageToString(op->image)
             << ", left=" << PaintOpHelper::SkiaTypeToString(op->left)
-            << ", top=" << PaintOpHelper::SkiaTypeToString(op->top) << ")";
+            << ", top=" << PaintOpHelper::SkiaTypeToString(op->top)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawImageRect: {
@@ -87,13 +90,13 @@ class PaintOpHelper {
             << ", src=" << PaintOpHelper::SkiaTypeToString(op->src)
             << ", dst=" << PaintOpHelper::SkiaTypeToString(op->dst)
             << ", constraint=" << PaintOpHelper::EnumToString(op->constraint)
-            << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawIRect: {
         const auto* op = static_cast<const DrawIRectOp*>(base_op);
         str << "DrawIRectOp(rect=" << PaintOpHelper::SkiaTypeToString(op->rect)
-            << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawLine: {
@@ -101,19 +104,20 @@ class PaintOpHelper {
         str << "DrawLineOp(x0=" << PaintOpHelper::SkiaTypeToString(op->x0)
             << ", y0=" << PaintOpHelper::SkiaTypeToString(op->y0)
             << ", x1=" << PaintOpHelper::SkiaTypeToString(op->x1)
-            << ", y1=" << PaintOpHelper::SkiaTypeToString(op->y1) << ")";
+            << ", y1=" << PaintOpHelper::SkiaTypeToString(op->y1)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawOval: {
         const auto* op = static_cast<const DrawOvalOp*>(base_op);
         str << "DrawOvalOp(oval=" << PaintOpHelper::SkiaTypeToString(op->oval)
-            << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawPath: {
         const auto* op = static_cast<const DrawPathOp*>(base_op);
         str << "DrawPathOp(path=" << PaintOpHelper::SkiaTypeToString(op->path)
-            << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawRecord: {
@@ -125,13 +129,14 @@ class PaintOpHelper {
       case PaintOpType::DrawRect: {
         const auto* op = static_cast<const DrawRectOp*>(base_op);
         str << "DrawRectOp(rect=" << PaintOpHelper::SkiaTypeToString(op->rect)
-            << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawRRect: {
         const auto* op = static_cast<const DrawRRectOp*>(base_op);
         str << "DrawRRectOp(rrect="
-            << PaintOpHelper::SkiaTypeToString(op->rrect) << ")";
+            << PaintOpHelper::SkiaTypeToString(op->rrect)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::DrawTextBlob: {
@@ -139,7 +144,8 @@ class PaintOpHelper {
         str << "DrawTextBlobOp(blob="
             << PaintOpHelper::TextBlobToString(op->blob)
             << ", x=" << PaintOpHelper::SkiaTypeToString(op->x)
-            << ", y=" << PaintOpHelper::SkiaTypeToString(op->y) << ")";
+            << ", y=" << PaintOpHelper::SkiaTypeToString(op->y)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::Noop: {
@@ -163,7 +169,8 @@ class PaintOpHelper {
       case PaintOpType::SaveLayer: {
         const auto* op = static_cast<const SaveLayerOp*>(base_op);
         str << "SaveLayerOp(bounds="
-            << PaintOpHelper::SkiaTypeToString(op->bounds) << ")";
+            << PaintOpHelper::SkiaTypeToString(op->bounds)
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
       case PaintOpType::SaveLayerAlpha: {
@@ -197,7 +204,6 @@ class PaintOpHelper {
     return str.str();
   }
 
- private:
   template <typename T>
   static std::string SkiaTypeToString(const T&) {
     return "<unknown skia type>";
@@ -318,7 +324,7 @@ class PaintOpHelper {
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkData> data) {
-    return "<SkData>";
+    return data ? "<SkData>" : "(nil)";
   }
 
   static std::string SkiaTypeToString(const ThreadsafePath& path) {
@@ -328,6 +334,108 @@ class PaintOpHelper {
   static std::string SkiaTypeToString(const SkPath& path) {
     // TODO(vmpstr): SkPath has a dump function which we can use here?
     return "<SkPath>";
+  }
+
+  static std::string SkiaTypeToString(PaintFlags::Hinting hinting) {
+    switch (hinting) {
+      case PaintFlags::kNo_Hinting:
+        return "kNo_Hinting";
+      case PaintFlags::kSlight_Hinting:
+        return "kSlight_Hinting";
+      case PaintFlags::kNormal_Hinting:
+        return "kNormal_Hinting";
+      case PaintFlags::kFull_Hinting:
+        return "kFull_Hinting";
+    }
+    return "<unknown PaintFlags::Hinting>";
+  }
+
+  static std::string SkiaTypeToString(PaintFlags::TextEncoding encoding) {
+    switch (encoding) {
+      case PaintFlags::kUTF8_TextEncoding:
+        return "kUTF8_TextEncoding";
+      case PaintFlags::kUTF16_TextEncoding:
+        return "kUTF16_TextEncoding";
+      case PaintFlags::kUTF32_TextEncoding:
+        return "kUTF32_TextEncoding";
+      case PaintFlags::kGlyphID_TextEncoding:
+        return "kGlyphID_TextEncoding";
+    }
+    return "<unknown PaintFlags::TextEncoding>";
+  }
+
+  static std::string SkiaTypeToString(SkFilterQuality quality) {
+    switch (quality) {
+      case kNone_SkFilterQuality:
+        return "kNone_SkFilterQuality";
+      case kLow_SkFilterQuality:
+        return "kLow_SkFilterQuality";
+      case kMedium_SkFilterQuality:
+        return "kMedium_SkFilterQuality";
+      case kHigh_SkFilterQuality:
+        return "kHigh_SkFilterQuality";
+    }
+    return "<unknown SkFilterQuality>";
+  }
+
+  static std::string SkiaTypeToString(PaintFlags::Cap cap) {
+    switch (cap) {
+      case PaintFlags::kButt_Cap:
+        return "kButt_Cap";
+      case PaintFlags::kRound_Cap:
+        return "kRound_Cap";
+      case PaintFlags::kSquare_Cap:
+        return "kSquare_Cap";
+    }
+    return "<unknown PaintFlags::Cap>";
+  }
+
+  static std::string SkiaTypeToString(PaintFlags::Join join) {
+    switch (join) {
+      case PaintFlags::kMiter_Join:
+        return "kMiter_Join";
+      case PaintFlags::kRound_Join:
+        return "kRound_Join";
+      case PaintFlags::kBevel_Join:
+        return "kBevel_Join";
+    }
+    return "<unknown PaintFlags::Join>";
+  }
+
+  static std::string SkiaTypeToString(const sk_sp<SkTypeface>& typeface) {
+    return typeface ? "<SkTypeface>" : "(nil)";
+  }
+
+  static std::string SkiaTypeToString(const sk_sp<SkColorFilter>& filter) {
+    if (!filter)
+      return "(nil)";
+    SkString str;
+    filter->toString(&str);
+    return str.c_str();
+  }
+
+  static std::string SkiaTypeToString(const sk_sp<SkMaskFilter>& filter) {
+    if (!filter)
+      return "(nil)";
+    SkString str;
+    filter->toString(&str);
+    return str.c_str();
+  }
+
+  static std::string SkiaTypeToString(const sk_sp<SkPathEffect>& effect) {
+    if (!effect)
+      return "(nil)";
+    SkString str;
+    effect->toString(&str);
+    return str.c_str();
+  }
+
+  static std::string SkiaTypeToString(const sk_sp<SkDrawLooper>& looper) {
+    if (!looper)
+      return "(nil)";
+    SkString str;
+    looper->toString(&str);
+    return str.c_str();
   }
 
   template <typename T>
@@ -367,12 +475,70 @@ class PaintOpHelper {
   }
 
   static std::string RecordToString(const sk_sp<const PaintRecord>& record) {
-    return "<paint record>";
+    return record ? "<paint record>" : "(nil)";
   }
 
   static std::string TextBlobToString(
       const scoped_refptr<PaintTextBlob>& blob) {
-    return "<paint text blob>";
+    return blob ? "<paint text blob>" : "(nil)";
+  }
+
+  static std::string PaintShaderToString(const PaintShader* shader) {
+    return shader ? "<PaintShader>" : "(nil)";
+  }
+
+  static std::string PaintFilterToString(const sk_sp<PaintFilter> filter) {
+    return filter ? "<PaintFilter>" : "(nil)";
+  }
+
+  static std::string FlagsToString(const PaintFlags& flags) {
+    std::ostringstream str;
+    str << std::boolalpha;
+    str << "[color=" << PaintOpHelper::SkiaTypeToString(flags.getColor());
+    str << ", blendMode="
+        << PaintOpHelper::SkiaTypeToString(flags.getBlendMode());
+    str << ", isAntiAlias=" << flags.isAntiAlias();
+    str << ", isVerticalText=" << flags.isVerticalText();
+    str << ", isSubpixelText=" << flags.isSubpixelText();
+    str << ", isLCDRenderText=" << flags.isLCDRenderText();
+    str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());
+    str << ", isAutohinted=" << flags.isAutohinted();
+    str << ", isDither=" << flags.isDither();
+    str << ", textEncoding="
+        << PaintOpHelper::SkiaTypeToString(flags.getTextEncoding());
+    str << ", textSize="
+        << PaintOpHelper::SkiaTypeToString(flags.getTextSize());
+    str << ", filterQuality="
+        << PaintOpHelper::SkiaTypeToString(flags.getFilterQuality());
+    str << ", strokeWidth="
+        << PaintOpHelper::SkiaTypeToString(flags.getStrokeWidth());
+    str << ", strokeMiter="
+        << PaintOpHelper::SkiaTypeToString(flags.getStrokeMiter());
+    str << ", strokeCap="
+        << PaintOpHelper::SkiaTypeToString(flags.getStrokeCap());
+    str << ", strokeJoin="
+        << PaintOpHelper::SkiaTypeToString(flags.getStrokeJoin());
+    str << ", typeface="
+        << PaintOpHelper::SkiaTypeToString(flags.getTypeface());
+    str << ", colorFilter="
+        << PaintOpHelper::SkiaTypeToString(flags.getColorFilter());
+    str << ", maskFilter="
+        << PaintOpHelper::SkiaTypeToString(flags.getMaskFilter());
+    str << ", shader=" << PaintOpHelper::PaintShaderToString(flags.getShader());
+    str << ", hasShader=" << flags.HasShader();
+    str << ", shaderIsOpaque=" << (flags.HasShader() && flags.ShaderIsOpaque());
+    str << ", pathEffect="
+        << PaintOpHelper::SkiaTypeToString(flags.getPathEffect());
+    str << ", imageFilter="
+        << PaintOpHelper::PaintFilterToString(flags.getImageFilter());
+    str << ", drawLooper="
+        << PaintOpHelper::SkiaTypeToString(flags.getLooper());
+    str << ", isSimpleOpacity=" << flags.IsSimpleOpacity();
+    str << ", supportsFoldingAlpha=" << flags.SupportsFoldingAlpha();
+    str << ", isValid=" << flags.IsValid();
+    str << ", hasDiscardableImages=" << flags.HasDiscardableImages();
+    str << "]";
+    return str.str();
   }
 };
 

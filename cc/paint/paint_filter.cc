@@ -102,7 +102,8 @@ bool PaintFilter::operator==(const PaintFilter& other) const {
     return false;
   if (crop_rect_) {
     if (crop_rect_->flags() != other.crop_rect_->flags() ||
-        crop_rect_->rect() != other.crop_rect_->rect()) {
+        !PaintOp::AreSkRectsEqual(crop_rect_->rect(),
+                                  other.crop_rect_->rect())) {
       return false;
     }
   }
