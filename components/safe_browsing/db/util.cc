@@ -58,6 +58,32 @@ bool ThreatMetadata::operator!=(const ThreatMetadata& other) const {
   return !operator==(other);
 }
 
+std::unique_ptr<base::trace_event::TracedValue> ThreatMetadata::ToTracedValue()
+    const {
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+
+  value->SetInteger("threat_pattern_type",
+                    static_cast<int>(threat_pattern_type));
+
+  value->BeginArray("api_permissions");
+  for (const std::string& permission : api_permissions) {
+    value->AppendString(permission);
+  }
+  value->EndArray();
+
+  value->BeginDictionary("subresource_filter_match");
+  for (const auto& it : subresource_filter_match) {
+    value->BeginArray("match_metadata");
+    value->AppendInteger(static_cast<int>(it.first));
+    value->AppendInteger(static_cast<int>(it.second));
+    value->EndArray();
+  }
+  value->EndDictionary();
+
+  value->SetString("popuplation_id", population_id);
+  return value;
+}
+
 // SBCachedFullHashResult ------------------------------------------------------
 
 SBCachedFullHashResult::SBCachedFullHashResult() {}
