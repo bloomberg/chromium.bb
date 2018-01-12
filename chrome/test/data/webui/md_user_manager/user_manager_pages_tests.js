@@ -6,7 +6,7 @@ cr.define('user_manager.user_manager_pages_tests', function() {
   function registerTests() {
     suite('UserManagerPagesTests', function() {
       /** @type {?UserManagerPagesElement} */
-      var pagesElement = null;
+      let pagesElement = null;
 
       setup(function() {
         pagesElement = document.createElement('user-manager-pages');
@@ -36,7 +36,7 @@ cr.define('user_manager.user_manager_pages_tests', function() {
 
       test('Create profile page gets restamped', function() {
         /** @type {?CreateProfileElement} */
-        var createProfileElement = null;
+        let createProfileElement = null;
 
         // Not initially in the DOM.
         createProfileElement = pagesElement.$$('create-profile');

@@ -6,13 +6,13 @@ cr.define('user_manager.import_supervised_user_tests', function() {
   function registerTests() {
     suite('ImportSupervisedUserTests', function() {
       /** @type {?ImportSupervisedUserElement} */
-      var importElement = null;
+      let importElement = null;
 
       /**
        * @param {!HTMLElement} element
        * @return {string}
        */
-      var getProfileName = function(element) {
+      const getProfileName = function(element) {
         return element.querySelector('.profile-name').textContent.trim();
       };
 
@@ -44,11 +44,11 @@ cr.define('user_manager.import_supervised_user_tests', function() {
       test('Can import supervised user', function() {
         return new Promise(function(resolve, reject) {
           /** @type {!SignedInUser} */
-          var signedInUser = {username: 'username',
+          const signedInUser = {username: 'username',
                               profilePath: 'path/to/profile'};
 
           /** @type {!Array<!SupervisedUser>} */
-          var supervisedUsers = [{name: 'supervised user 1',
+          const supervisedUsers = [{name: 'supervised user 1',
                                   onCurrentDevice: true},
                                  {name: 'supervised user 3',
                                   onCurrentDevice: false},
@@ -80,20 +80,21 @@ cr.define('user_manager.import_supervised_user_tests', function() {
           assertEquals(loadTimeData.getString('supervisedUserImportText'),
                        importElement.$$('#message').textContent.trim());
 
-          var selectorElement = importElement.$$('paper-listbox');
+          const selectorElement = importElement.$$('paper-listbox');
           assertTrue(!!selectorElement);
 
           // Supervised users are ordered correctly (Ones that are not on the
           // current device appear first, then they are alphabetically order in
           // ascending order).
-          var items = selectorElement.querySelectorAll('paper-item');
+          const items = selectorElement.querySelectorAll('paper-item');
           assertEquals(3, items.length);
           assertEquals('supervised user 2', getProfileName(items[0]));
           assertEquals('supervised user 3', getProfileName(items[1]));
           assertEquals('supervised user 1', getProfileName(items[2]));
 
           // Supervised users that are on this device are disabled.
-          var selectableItems = selectorElement.querySelectorAll('[disabled]');
+          const selectableItems =
+              selectorElement.querySelectorAll('[disabled]');
           assertEquals(1, selectableItems.length);
           assertEquals('supervised user 1', getProfileName(selectableItems[0]));
 

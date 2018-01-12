@@ -66,7 +66,7 @@ Polymer({
    * @return {boolean}
    */
   isPresentIn_: function(selectedPage, var_args) {
-    var pages = Array.prototype.slice.call(arguments, 1);
+    const pages = Array.prototype.slice.call(arguments, 1);
     return pages.indexOf(selectedPage) !== -1;
   }
 });
