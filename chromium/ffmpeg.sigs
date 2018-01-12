@@ -15,7 +15,6 @@ const char *avcodec_get_name(enum AVCodecID id);
 void av_packet_unref(AVPacket *pkt);
 void av_init_packet(AVPacket *pkt);
 void avcodec_flush_buffers(AVCodecContext *avctx);
-int av_lockmgr_register(AVLockMgrOperation cb);
 void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
 uint8_t *av_packet_get_side_data(AVPacket *pkt, enum AVPacketSideDataType type, int *size);
 int av_packet_copy_props(AVPacket *dst, const AVPacket *src);

@@ -37,16 +37,6 @@ Current patches:
   libavformat/mov.c
     Always use av_realloc() for |extradata|. https://crbug.com/721872
 
-    Prevent NULL dereference in get_current_frag_stream_info. Applied from
-    e-mail to ffmpeg-devel@ list; should be upstream by M65 roll.
-    http://crbug.com/786269
-
-    Prevent leak of |frame_duration_buffer|. http://crbug.com/782074. Should be
-    upstream by M65 roll.
-
-    Prevent leak of |extradata|. http://crbug.com/786808. Should be upstream by
-    M65 roll.
-
   libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
     code that may be a security risk. Discuss with cevans@ before removing.
@@ -85,43 +75,11 @@ Current patches:
 
   libavformat/utils.c
     av_read_frame() : Prevent undefined shift with wrap_bits > 63. Pushed to
-    upstream, so should be upstream by M65 roll. http://crbug.com/783459
-
-  libavcodec/mpegaudiodsp.c
-    ff_mpadsp_init() : Use ff_thread_once() to prevent multiple initialization
-    of static tables. Pushed to upstream, so should be upstream by M65 roll.
-    http://crbug.com/784159
+    upstream, so should be upstream by M66 roll. http://crbug.com/783459
 
   libavformat/oggdec.c
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
-
-    Call ogg_read_close() upon failure when AV_EF_EXPLODE is set; otherwise
-    memory allocated for streams is leaked. Pushed to upstream, so should be
-    upstream by M65 roll. http://crbug.com/786813 http://crbug.com/786719
-
-    Respect AVERROR codes returned by codec->header() and codec->parse(). Pushed
-    to upstream so should be upstream by M65 roll. http://crbug.com/788550
-
-  libavformat/oggparseopus.c
-    Free extradata before allocating extradata again. Pushed to upstream so
-    should be upstream by M65 roll. http://crbug.com/787803
-
-  libavformat/oggparseogm.c
-    Free extradata before allocating extradata again. Pushed to upstream so
-    should be upstream by M65 roll. http://crbug.com/786803
-
-  libavformat/oggparsevp8.c
-    Don't perform calculations on duration when it's AV_NOPTS_VALUE. Pushed to
-    upstream so should be upstream by M65 roll. http://crbug.com/787351
-
-  libavcodec/mpeg4videodec.c:
-    decode_user_data() : Fix undefined shift in version string. Pushed upstream,
-    so should be upstream by M65 roll. http://crbug.com/779924
-
-  libavcodec/vorbis.c
-    ff_vorbis_len2vlc() : Fix undefined shift. Pushed upstream, so should be
-    upstream by M65 roll. http://crbug.com/787347
 
   libavcodec/arm/sbrdsp_init_arm.c
     ff_sbrdsp_init_arm() : Temporary fix for audio being played with screech

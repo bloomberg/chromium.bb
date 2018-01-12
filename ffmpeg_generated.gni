@@ -1,4 +1,4 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,6 +74,8 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/options.c",
     "libavcodec/opus.c",
     "libavcodec/opus_parser.c",
+    "libavcodec/opus_rc.c",
+    "libavcodec/opustab.c",
     "libavcodec/parser.c",
     "libavcodec/pcm.c",
     "libavcodec/profiles.c",

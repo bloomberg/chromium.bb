@@ -30,7 +30,6 @@
 /ffmpeg
 /ffplay
 /ffprobe
-/ffserver
 /config.asm
 /config.h
 /coverage.info

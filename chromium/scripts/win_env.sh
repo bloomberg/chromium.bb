@@ -22,7 +22,7 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-VSPATH=$1/win_toolchain/vs_files/d3cb0e37bdd120ad0ac4650b674b09e81be45616
+VSPATH=$1/win_toolchain/vs_files/1180cb75833ea365097e279efb2d5d7a42dee4b0
 
 if [ ! -d $VSPATH ]; then
   echo "Visual Studio 2015 toolchain not found: $VSPATH"
@@ -74,21 +74,25 @@ case "$2" in
     add_path $VSPATH/win_sdk/bin/x86
     add_path $VSPATH/VC/bin/amd64_x86
     add_path $VSPATH/VC/bin/amd64
+    add_path $VSPATH/VC/Tools/MSVC/14.11.25503/bin/HostX86/x86
 
-    add_lib_path $VSPATH/VC/lib
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/ucrt/x86
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/um/x86
-    add_lib_path $VSPATH/VC/atlmfc/lib
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/lib/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.15063.0/ucrt/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.15063.0/um/x86
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/atlmfc/lib/x86
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/bin/HostX86/x86
     ;;
 
   "x64")
     add_path $VSPATH/win_sdk/bin/x64
     add_path $VSPATH/VC/bin/amd64
+    add_path $VSPATH/VC/Tools/MSVC/14.11.25503/bin/HostX64/x64
 
-    add_lib_path $VSPATH/VC/lib/amd64
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/ucrt/x64
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/um/x64
-    add_lib_path $VSPATH/VC/atlmfc/lib/amd64
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/lib/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.15063.0/ucrt/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.15063.0/um/x64
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/atlmfc/lib/x64
+    add_lib_path $VSPATH/VC/Tools/MSVC/14.11.25503/bin/HostX64/x64
     ;;
 
   *)
@@ -99,11 +103,11 @@ esac
 
 # Common for x86 and x64.
 add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
-add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/ucrt
-add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/um
-add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/shared
-add_include_path $VSPATH/VC/include
-add_include_path $VSPATH/VC/atlmfc/include
+add_include_path $VSPATH/win_sdk/Include/10.0.15063.0/ucrt
+add_include_path $VSPATH/win_sdk/Include/10.0.15063.0/um
+add_include_path $VSPATH/win_sdk/Include/10.0.15063.0/shared
+add_include_path $VSPATH/VC/Tools/MSVC/14.11.25503/include
+add_include_path $VSPATH/VC/Tools/MSVC/14.11.25503/atlmfc/include
 
 export PATH=$path:$PATH
 export INCLUDE=$include

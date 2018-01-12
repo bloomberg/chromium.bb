@@ -92,7 +92,9 @@ static av_cold int dnxhd_decode_init(AVCodecContext *avctx)
 
     ctx->avctx = avctx;
     ctx->cid = -1;
-    avctx->colorspace = AVCOL_SPC_BT709;
+    if (avctx->colorspace == AVCOL_SPC_UNSPECIFIED) {
+        avctx->colorspace = AVCOL_SPC_BT709;
+    }
 
     avctx->coded_width  = FFALIGN(avctx->width,  16);
     avctx->coded_height = FFALIGN(avctx->height, 16);
@@ -380,6 +382,10 @@ static av_always_inline int dnxhd_decode_dct_block(const DNXHDContext *ctx,
 
     UPDATE_CACHE(bs, &row->gb);
     GET_VLC(len, bs, &row->gb, ctx->dc_vlc.table, DNXHD_DC_VLC_BITS, 1);
+    if (len < 0) {
+        ret = len;
+        goto error;
+    }
     if (len) {
         level = GET_CACHE(bs, &row->gb);
         LAST_SKIP_BITS(bs, &row->gb, len);
@@ -433,7 +439,7 @@ static av_always_inline int dnxhd_decode_dct_block(const DNXHDContext *ctx,
         GET_VLC(index1, bs, &row->gb, ctx->ac_vlc.table,
                 DNXHD_VLC_BITS, 2);
     }
-
+error:
     CLOSE_READER(bs, &row->gb);
     return ret;
 }

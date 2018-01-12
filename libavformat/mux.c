@@ -432,17 +432,25 @@ static int init_pts(AVFormatContext *s)
             break;
         }
 
-        if (!st->priv_pts)
-            st->priv_pts = av_mallocz(sizeof(*st->priv_pts));
-        if (!st->priv_pts)
+        if (!st->internal->priv_pts)
+            st->internal->priv_pts = av_mallocz(sizeof(*st->internal->priv_pts));
+        if (!st->internal->priv_pts)
             return AVERROR(ENOMEM);
 
         if (den != AV_NOPTS_VALUE) {
             if (den <= 0)
                 return AVERROR_INVALIDDATA;
 
-            frac_init(st->priv_pts, 0, 0, den);
+            frac_init(st->internal->priv_pts, 0, 0, den);
         }
+    }
+
+    if (s->avoid_negative_ts < 0) {
+        av_assert2(s->avoid_negative_ts == AVFMT_AVOID_NEG_TS_AUTO);
+        if (s->oformat->flags & (AVFMT_TS_NEGATIVE | AVFMT_NOTIMESTAMPS)) {
+            s->avoid_negative_ts = 0;
+        } else
+            s->avoid_negative_ts = AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE;
     }
 
     return 0;
@@ -458,25 +466,6 @@ static void flush_if_needed(AVFormatContext *s)
     }
 }
 
-static int write_header_internal(AVFormatContext *s)
-{
-    if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
-        avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_HEADER);
-    if (s->oformat->write_header) {
-        int ret = s->oformat->write_header(s);
-        if (ret >= 0 && s->pb && s->pb->error < 0)
-            ret = s->pb->error;
-        s->internal->write_header_ret = ret;
-        if (ret < 0)
-            return ret;
-        flush_if_needed(s);
-    }
-    s->internal->header_written = 1;
-    if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
-        avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_UNKNOWN);
-    return 0;
-}
-
 int avformat_init_output(AVFormatContext *s, AVDictionary **options)
 {
     int ret = 0;
@@ -490,14 +479,6 @@ int avformat_init_output(AVFormatContext *s, AVDictionary **options)
     if (s->oformat->init && ret) {
         if ((ret = init_pts(s)) < 0)
             return ret;
-
-        if (s->avoid_negative_ts < 0) {
-            av_assert2(s->avoid_negative_ts == AVFMT_AVOID_NEG_TS_AUTO);
-            if (s->oformat->flags & (AVFMT_TS_NEGATIVE | AVFMT_NOTIMESTAMPS)) {
-                s->avoid_negative_ts = 0;
-            } else
-                s->avoid_negative_ts = AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE;
-        }
 
         return AVSTREAM_INIT_IN_INIT_OUTPUT;
     }
@@ -515,23 +496,22 @@ int avformat_write_header(AVFormatContext *s, AVDictionary **options)
         if ((ret = avformat_init_output(s, options)) < 0)
             return ret;
 
-    if (!(s->oformat->check_bitstream && s->flags & AVFMT_FLAG_AUTO_BSF)) {
-        ret = write_header_internal(s);
+    if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
+        avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_HEADER);
+    if (s->oformat->write_header) {
+        ret = s->oformat->write_header(s);
+        if (ret >= 0 && s->pb && s->pb->error < 0)
+            ret = s->pb->error;
         if (ret < 0)
             goto fail;
+        flush_if_needed(s);
     }
+    if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
+        avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_UNKNOWN);
 
     if (!s->internal->streams_initialized) {
         if ((ret = init_pts(s)) < 0)
             goto fail;
-
-        if (s->avoid_negative_ts < 0) {
-            av_assert2(s->avoid_negative_ts == AVFMT_AVOID_NEG_TS_AUTO);
-            if (s->oformat->flags & (AVFMT_TS_NEGATIVE | AVFMT_NOTIMESTAMPS)) {
-                s->avoid_negative_ts = 0;
-            } else
-                s->avoid_negative_ts = AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE;
-        }
     }
 
     return streams_already_initialized;
@@ -601,7 +581,7 @@ static int compute_muxer_pkt_fields(AVFormatContext *s, AVStream *st, AVPacket *
         }
         pkt->dts =
 //        pkt->pts= st->cur_dts;
-            pkt->pts = st->priv_pts->val;
+            pkt->pts = st->internal->priv_pts->val;
     }
 
     //calculate dts from pts
@@ -638,7 +618,7 @@ static int compute_muxer_pkt_fields(AVFormatContext *s, AVStream *st, AVPacket *
             av_ts2str(pkt->pts), av_ts2str(pkt->dts));
 
     st->cur_dts = pkt->dts;
-    st->priv_pts->val = pkt->dts;
+    st->internal->priv_pts->val = pkt->dts;
 
     /* update pts */
     switch (st->codecpar->codec_type) {
@@ -650,12 +630,12 @@ static int compute_muxer_pkt_fields(AVFormatContext *s, AVStream *st, AVPacket *
         /* HACK/FIXME, we skip the initial 0 size packets as they are most
          * likely equal to the encoder delay, but it would be better if we
          * had the real timestamps from the encoder */
-        if (frame_size >= 0 && (pkt->size || st->priv_pts->num != st->priv_pts->den >> 1 || st->priv_pts->val)) {
-            frac_add(st->priv_pts, (int64_t)st->time_base.den * frame_size);
+        if (frame_size >= 0 && (pkt->size || st->internal->priv_pts->num != st->internal->priv_pts->den >> 1 || st->internal->priv_pts->val)) {
+            frac_add(st->internal->priv_pts, (int64_t)st->time_base.den * frame_size);
         }
         break;
     case AVMEDIA_TYPE_VIDEO:
-        frac_add(st->priv_pts, (int64_t)st->time_base.den * st->time_base.num);
+        frac_add(st->internal->priv_pts, (int64_t)st->time_base.den * st->time_base.num);
         break;
     }
     return 0;
@@ -739,12 +719,6 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
-    if (!s->internal->header_written) {
-        ret = s->internal->write_header_ret ? s->internal->write_header_ret : write_header_internal(s);
-        if (ret < 0)
-            goto fail;
-    }
-
     if ((pkt->flags & AV_PKT_FLAG_UNCODED_FRAME)) {
         AVFrame *frame = (AVFrame *)pkt->data;
         av_assert0(pkt->size == UNCODED_FRAME_PACKET_SIZE);
@@ -759,8 +733,6 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         if (s->pb->error < 0)
             ret = s->pb->error;
     }
-
-fail:
 
     if (ret < 0) {
         pkt->pts = pts_backup;
@@ -894,11 +866,6 @@ int av_write_frame(AVFormatContext *s, AVPacket *pkt)
 
     if (!pkt) {
         if (s->oformat->flags & AVFMT_ALLOW_FLUSH) {
-            if (!s->internal->header_written) {
-                ret = s->internal->write_header_ret ? s->internal->write_header_ret : write_header_internal(s);
-                if (ret < 0)
-                    return ret;
-            }
             ret = s->oformat->write_packet(s, NULL);
             flush_if_needed(s);
             if (ret >= 0 && s->pb && s->pb->error < 0)
@@ -1282,14 +1249,8 @@ int av_write_trailer(AVFormatContext *s)
             goto fail;
     }
 
-    if (!s->internal->header_written) {
-        ret = s->internal->write_header_ret ? s->internal->write_header_ret : write_header_internal(s);
-        if (ret < 0)
-            goto fail;
-    }
-
 fail:
-    if (s->internal->header_written && s->oformat->write_trailer) {
+    if (s->oformat->write_trailer) {
         if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
             avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_TRAILER);
         if (ret >= 0) {
@@ -1302,7 +1263,6 @@ fail:
     if (s->oformat->deinit)
         s->oformat->deinit(s);
 
-    s->internal->header_written =
     s->internal->initialized =
     s->internal->streams_initialized = 0;
 
