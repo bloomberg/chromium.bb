@@ -518,6 +518,7 @@ post_process_cmdline() {
     soft_enable filter_intra
     soft_enable ext_skip
     soft_enable frame_sign_bias
+    soft_enable ref_adapt
     soft_enable ext_warped_motion
     soft_enable horzonly_frame_superres
 
