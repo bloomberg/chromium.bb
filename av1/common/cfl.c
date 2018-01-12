@@ -186,8 +186,10 @@ static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
 }
 
 static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
-                                     int dst_stride, int width, int height,
+                                     int dst_stride, TX_SIZE tx_size,
                                      int alpha_q3, int bit_depth) {
+  const int height = tx_size_high[tx_size];
+  const int width = tx_size_wide[tx_size];
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] = clip_pixel_highbd(
@@ -234,6 +236,11 @@ cfl_predict_lbd_fn get_predict_lbd_fn_c(TX_SIZE tx_size) {
   return cfl_build_prediction_lbd;
 }
 
+cfl_predict_hbd_fn get_predict_hbd_fn_c(TX_SIZE tx_size) {
+  (void)tx_size;
+  return cfl_build_prediction_hbd;
+}
+
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        TX_SIZE tx_size, int plane) {
   CFL_CTX *const cfl = &xd->cfl;
@@ -244,13 +251,12 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
-  assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
+  assert((tx_size_high[tx_size] - 1) * CFL_BUF_LINE + tx_size_wide[tx_size] <=
+         CFL_BUF_SQUARE);
   if (get_bitdepth_data_path_index(xd)) {
     uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
-    cfl_build_prediction_hbd(cfl->pred_buf_q3, dst_16, dst_stride, width,
-                             height, alpha_q3, xd->bd);
+    get_predict_hbd_fn(tx_size)(cfl->pred_buf_q3, dst_16, dst_stride, tx_size,
+                                alpha_q3, xd->bd);
     return;
   }
   get_predict_lbd_fn(tx_size)(cfl->pred_buf_q3, dst, dst_stride, tx_size,

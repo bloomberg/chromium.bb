@@ -591,6 +591,9 @@ if (aom_config("CONFIG_CFL") eq "yes") {
 
   add_proto qw/cfl_predict_lbd_fn get_predict_lbd_fn/, "TX_SIZE tx_size";
   specialize qw/get_predict_lbd_fn ssse3 avx2/;
+
+  add_proto qw/cfl_predict_hbd_fn get_predict_hbd_fn/, "TX_SIZE tx_size";
+  specialize qw/get_predict_hbd_fn ssse3 avx2/;
 }
 
 1;

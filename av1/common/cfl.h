@@ -21,6 +21,10 @@ typedef void (*cfl_predict_lbd_fn)(const int16_t *pred_buf_q3, uint8_t *dst,
                                    int dst_stride, TX_SIZE tx_size,
                                    int alpha_q3);
 
+typedef void (*cfl_predict_hbd_fn)(const int16_t *pred_buf_q3, uint16_t *dst,
+                                   int dst_stride, TX_SIZE tx_size,
+                                   int alpha_q3, int bd);
+
 static INLINE int is_cfl_allowed(const MB_MODE_INFO *mbmi) {
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(bsize < BLOCK_SIZES_ALL);
