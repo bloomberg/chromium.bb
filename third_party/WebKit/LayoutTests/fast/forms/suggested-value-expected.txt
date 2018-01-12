@@ -88,8 +88,8 @@ instead of "initial value".
 |     <shadow:root>
 |       "inserted value"
 |   <shadow:root>
-|     <content>
-|       select="option,optgroup,hr"
+|     <slot>
+|       name="user-agent-custom-assign-slot"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

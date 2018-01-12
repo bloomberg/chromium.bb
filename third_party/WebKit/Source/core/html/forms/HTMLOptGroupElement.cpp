@@ -27,8 +27,8 @@
 
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
@@ -51,8 +51,13 @@ HTMLOptGroupElement::~HTMLOptGroupElement() = default;
 
 HTMLOptGroupElement* HTMLOptGroupElement::Create(Document& document) {
   HTMLOptGroupElement* opt_group_element = new HTMLOptGroupElement(document);
-  opt_group_element->EnsureLegacyUserAgentShadowRootV0();
+  opt_group_element->EnsureUserAgentShadowRootV1();
   return opt_group_element;
+}
+
+// static
+bool HTMLOptGroupElement::CanAssignToOptGroupSlot(const Node& node) {
+  return node.HasTagName(optionTag) || node.HasTagName(hrTag);
 }
 
 bool HTMLOptGroupElement::IsDisabledFormControl() const {
@@ -141,9 +146,8 @@ void HTMLOptGroupElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   label->SetIdAttribute(ShadowElementNames::OptGroupLabel());
   root.AppendChild(label);
 
-  HTMLContentElement* content = HTMLContentElement::Create(GetDocument());
-  content->setAttribute(selectAttr, "option,hr");
-  root.AppendChild(content);
+  root.AppendChild(
+      HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
 }
 
 void HTMLOptGroupElement::UpdateGroupLabel() {

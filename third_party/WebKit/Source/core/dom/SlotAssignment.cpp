@@ -12,6 +12,8 @@
 #include "core/dom/V0InsertionPoint.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/HTMLSlotElement.h"
+#include "core/html/forms/HTMLOptGroupElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"
 
 namespace blink {
@@ -20,6 +22,10 @@ namespace {
 bool ShouldAssignToCustomSlot(const Node& node) {
   if (IsHTMLDetailsElement(node.parentElement()))
     return HTMLDetailsElement::IsFirstSummary(node);
+  if (IsHTMLSelectElement(node.parentElement()))
+    return HTMLSelectElement::CanAssignToSelectSlot(node);
+  if (IsHTMLOptGroupElement(node.parentElement()))
+    return HTMLOptGroupElement::CanAssignToOptGroupSlot(node);
   return false;
 }
 }  // anonymous namespace
