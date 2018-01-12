@@ -5,17 +5,29 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositingInputsUpdater.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-using CompositingInputsUpdaterTest = RenderingTest;
+typedef bool TestParamRootLayerScrolling;
+class CompositingInputsUpdaterTest
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
+ public:
+  CompositingInputsUpdaterTest()
+      : ScopedRootLayerScrollingForTest(GetParam()),
+        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, CompositingInputsUpdaterTest, ::testing::Bool());
 
 // Tests that transitioning a sticky away from an ancestor overflow layer that
 // does not have a scrollable area does not crash.
 //
 // See http://crbug.com/467721#c14
-TEST_F(CompositingInputsUpdaterTest,
+TEST_P(CompositingInputsUpdaterTest,
        ChangingAncestorOverflowLayerAwayFromNonScrollableDoesNotCrash) {
   // The setup for this test is quite complex. We need UpdateRecursive to
   // transition directly from a non-scrollable ancestor overflow layer to a
@@ -81,6 +93,38 @@ TEST_F(CompositingInputsUpdaterTest,
       inner_scroller->GetScrollableArea()->GetStickyConstraintsMap().Contains(
           sticky->Layer()));
   EXPECT_EQ(sticky->Layer()->AncestorOverflowLayer(), inner_scroller->Layer());
+}
+
+TEST_P(CompositingInputsUpdaterTest, UnclippedAndClippedRectsUnderScroll) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=clip style="overflow: hidden; position: relative">
+      <div id=target style="transform: translateZ(0); width: 200px; height: 200px; background: lightgray"></div>
+     </div>
+     <div style="position: relative; width: 20px; height: 3000px"></div>
+  )HTML");
+
+  LayoutBoxModelObject* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+
+  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
+      ScrollOffset(0, 25), kUserScroll);
+  GetDocument()
+      .View()
+      ->GetLayoutView()
+      ->Layer()
+      ->SetNeedsCompositingInputsUpdate();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    EXPECT_EQ(IntRect(8, -17, 200, 200),
+              target->Layer()->ClippedAbsoluteBoundingBox());
+    EXPECT_EQ(IntRect(8, -17, 200, 200),
+              target->Layer()->UnclippedAbsoluteBoundingBox());
+  } else {
+    EXPECT_EQ(IntRect(8, 8, 200, 200),
+              target->Layer()->ClippedAbsoluteBoundingBox());
+    EXPECT_EQ(IntRect(8, 8, 200, 200),
+              target->Layer()->UnclippedAbsoluteBoundingBox());
+  }
 }
 
 }  // namespace blink
