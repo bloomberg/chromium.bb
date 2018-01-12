@@ -117,6 +117,19 @@ class TimeTest : public testing::Test {
   Time comparison_time_pdt_;
 };
 
+// Test conversion to/from microseconds since the Windows epoch.
+// Conversions should be idempotent and non-lossy.
+TEST_F(TimeTest, MicrosecondsSinceWindowsEpoch) {
+  const TimeDelta delta = TimeDelta::FromMicroseconds(123);
+  EXPECT_EQ(delta,
+            Time::FromDeltaSinceWindowsEpoch(delta).ToDeltaSinceWindowsEpoch());
+
+  const Time now = Time::Now();
+  const Time actual =
+      Time::FromDeltaSinceWindowsEpoch(now.ToDeltaSinceWindowsEpoch());
+  EXPECT_EQ(now, actual);
+}
+
 // Test conversion to/from time_t.
 TEST_F(TimeTest, TimeT) {
   EXPECT_EQ(10, Time().FromTimeT(10).ToTimeT());

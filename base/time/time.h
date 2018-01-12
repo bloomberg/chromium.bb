@@ -15,7 +15,7 @@
 //
 // TimeTicks and ThreadTicks represent an abstract time that is most of the time
 // incrementing, for use in measuring time durations. Internally, they are
-// represented in microseconds. They can not be converted to a human-readable
+// represented in microseconds. They cannot be converted to a human-readable
 // time, but are guaranteed not to decrease (unlike the Time class). Note that
 // TimeTicks may "stand still" (e.g., if the computer is suspended), and
 // ThreadTicks will "stand still" whenever the thread has been de-scheduled by
@@ -33,11 +33,11 @@
 //
 // So many choices!  Which time class should you use?  Examples:
 //
-//   Time:        Interpreting the wall-clock time provided by a remote
-//                system. Detecting whether cached resources have
-//                expired. Providing the user with a display of the current date
-//                and time. Determining the amount of time between events across
-//                re-boots of the machine.
+//   Time:        Interpreting the wall-clock time provided by a remote system.
+//                Detecting whether cached resources have expired. Providing the
+//                user with a display of the current date and time. Determining
+//                the amount of time between events across re-boots of the
+//                machine.
 //
 //   TimeTicks:   Tracking the amount of time a task runs. Executing delayed
 //                tasks at the right time. Computing presentation timestamps.
@@ -357,7 +357,8 @@ class TimeBase {
   // use this and do arithmetic on it, as it is more error prone than using the
   // provided operators.
   //
-  // DEPRECATED - Do not use in new code. http://crbug.com/634507
+  // DEPRECATED - Do not use in new code. For serializing Time values, prefer
+  // Time::ToDeltaSinceWindowsEpoch().InMicroseconds(). http://crbug.com/634507
   int64_t ToInternalValue() const { return us_; }
 
   // The amount of time since the origin (or "zero") point. This is a syntactic
@@ -414,12 +415,13 @@ class TimeBase {
     return us_ >= other.us_;
   }
 
-  // Converts an integer value representing TimeClass to a class. This is used
-  // when deserializing a |TimeClass| structure, using a value known to be
+  // Converts an integer value representing TimeClass to a class. This may be
+  // used when deserializing a |TimeClass| structure, using a value known to be
   // compatible. It is not provided as a constructor because the integer type
   // may be unclear from the perspective of a caller.
   //
-  // DEPRECATED - Do not use in new code. http://crbug.com/634507
+  // DEPRECATED - Do not use in new code. For deserializing Time values, prefer
+  // Time::FromDeltaSinceWindowsEpoch(). http://crbug.com/634507
   static TimeClass FromInternalValue(int64_t us) { return TimeClass(us); }
 
  protected:
@@ -520,6 +522,20 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // time and system time even on virtual environments including our test bot.
   // For timing sensitive unittests, this function should be used.
   static Time NowFromSystemTime();
+
+  // Converts to/from TimeDeltas relative to the Windows epoch (1601-01-01
+  // 00:00:00 UTC). Prefer these methods for opaque serialization and
+  // deserialization of time values, e.g.
+  //
+  //   // Serialization:
+  //   base::Time last_updated = ...;
+  //   SaveToDatabase(last_updated.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  //
+  //   // Deserialization:
+  //   base::Time last_updated = base::Time::FromDeltaSinceWindowsEpoch(
+  //       base::TimeDelta::FromMicroseconds(LoadFromDatabase()));
+  static Time FromDeltaSinceWindowsEpoch(TimeDelta delta);
+  TimeDelta ToDeltaSinceWindowsEpoch() const;
 
   // Converts to/from time_t in UTC and a Time class.
   static Time FromTimeT(time_t tt);
