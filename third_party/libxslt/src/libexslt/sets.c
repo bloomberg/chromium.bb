@@ -1,7 +1,7 @@
 #define IN_LIBEXSLT
 #include "libexslt/libexslt.h"
 
-#if defined(WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
+#if defined(_WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
 #include <win32config.h>
 #else
 #include "config.h"
@@ -34,14 +34,12 @@ exsltSetsDifferenceFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     arg2 = xmlXPathPopNodeSet(ctxt);
-    if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+    if (xmlXPathCheckError(ctxt))
 	return;
-    }
 
     arg1 = xmlXPathPopNodeSet(ctxt);
     if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+        xmlXPathFreeNodeSet(arg2);
 	return;
     }
 
@@ -71,14 +69,12 @@ exsltSetsIntersectionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     arg2 = xmlXPathPopNodeSet(ctxt);
-    if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+    if (xmlXPathCheckError(ctxt))
 	return;
-    }
 
     arg1 = xmlXPathPopNodeSet(ctxt);
     if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+        xmlXPathFreeNodeSet(arg2);
 	return;
     }
 
@@ -150,14 +146,12 @@ exsltSetsHasSameNodesFunction (xmlXPathParserContextPtr ctxt,
     }
 
     arg2 = xmlXPathPopNodeSet(ctxt);
-    if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+    if (xmlXPathCheckError(ctxt))
 	return;
-    }
 
     arg1 = xmlXPathPopNodeSet(ctxt);
     if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+        xmlXPathFreeNodeSet(arg2);
 	return;
     }
 
@@ -186,14 +180,12 @@ exsltSetsLeadingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     arg2 = xmlXPathPopNodeSet(ctxt);
-    if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+    if (xmlXPathCheckError(ctxt))
 	return;
-    }
 
     arg1 = xmlXPathPopNodeSet(ctxt);
     if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+	xmlXPathFreeNodeSet(arg2);
 	return;
     }
 
@@ -233,14 +225,12 @@ exsltSetsTrailingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     arg2 = xmlXPathPopNodeSet(ctxt);
-    if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+    if (xmlXPathCheckError(ctxt))
 	return;
-    }
 
     arg1 = xmlXPathPopNodeSet(ctxt);
     if (xmlXPathCheckError(ctxt)) {
-	xmlXPathSetTypeError(ctxt);
+	xmlXPathFreeNodeSet(arg2);
 	return;
     }
 

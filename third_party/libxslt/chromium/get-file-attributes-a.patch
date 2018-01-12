@@ -3,7 +3,7 @@ index 89de90bd3f1e..965175f79ca4 100644
 --- src/libxslt/security.c
 +++ src/libxslt/security.c
 @@ -282,7 +282,7 @@ xsltCheckFilename (const char *path)
- #if defined(WIN32) && !defined(__CYGWIN__)
+ #if defined(_WIN32) && !defined(__CYGWIN__)
      DWORD dwAttrs;
  
 -    dwAttrs = GetFileAttributes(path);

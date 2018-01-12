@@ -1,7 +1,7 @@
 #define IN_LIBEXSLT
 #include "libexslt/libexslt.h"
 
-#if defined(WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
+#if defined(_WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
 #include <win32config.h>
 #else
 #include "config.h"
@@ -29,10 +29,16 @@
  *
  * Returns the data for this transformation
  */
-static xmlHashTablePtr
+static void *
 exsltSaxonInit (xsltTransformContextPtr ctxt ATTRIBUTE_UNUSED,
 		const xmlChar *URI ATTRIBUTE_UNUSED) {
     return xmlHashCreate(1);
+}
+
+static void
+exsltSaxonFreeCompExprEntry(void *payload,
+                            const xmlChar *name ATTRIBUTE_UNUSED) {
+    xmlXPathFreeCompExpr((xmlXPathCompExprPtr) payload);
 }
 
 /**
@@ -46,8 +52,9 @@ exsltSaxonInit (xsltTransformContextPtr ctxt ATTRIBUTE_UNUSED,
 static void
 exsltSaxonShutdown (xsltTransformContextPtr ctxt ATTRIBUTE_UNUSED,
 		    const xmlChar *URI ATTRIBUTE_UNUSED,
-		    xmlHashTablePtr data) {
-    xmlHashFree(data, (xmlHashDeallocator) xmlXPathFreeCompExpr);
+		    void *vdata) {
+    xmlHashTablePtr data = (xmlHashTablePtr) vdata;
+    xmlHashFree(data, exsltSaxonFreeCompExprEntry);
 }
 
 
@@ -293,8 +300,8 @@ exsltSaxonLineNumberFunction(xmlXPathParserContextPtr ctxt, int nargs) {
 void
 exsltSaxonRegister (void) {
      xsltRegisterExtModule (SAXON_NAMESPACE,
-			    (xsltExtInitFunction) exsltSaxonInit,
-			    (xsltExtShutdownFunction) exsltSaxonShutdown);
+			    exsltSaxonInit,
+			    exsltSaxonShutdown);
      xsltRegisterExtModuleFunction((const xmlChar *) "expression",
 				   SAXON_NAMESPACE,
 				   exsltSaxonExpressionFunction);

@@ -72,6 +72,7 @@ import tempfile
 
 PATCHES = [
     'get-file-attributes-a.patch',
+    'xslt-locale.patch',
 ]
 
 

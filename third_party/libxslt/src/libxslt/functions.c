@@ -65,8 +65,9 @@
  * Returns the callback function or NULL if not found
  */
 xmlXPathFunction
-xsltXPathFunctionLookup (xmlXPathContextPtr ctxt,
+xsltXPathFunctionLookup (void *vctxt,
 			 const xmlChar *name, const xmlChar *ns_uri) {
+    xmlXPathContextPtr ctxt = (xmlXPathContextPtr) vctxt;
     xmlXPathFunction ret;
 
     if ((ctxt == NULL) || (name == NULL) || (ns_uri == NULL))
@@ -632,7 +633,9 @@ xsltFormatNumberFunction(xmlXPathParserContextPtr ctxt, int nargs)
                 sheet->errors++;
                 ncname = NULL;
             }
-            nsUri = ns->href;
+            else {
+                nsUri = ns->href;
+            }
         }
         if (ncname != NULL) {
 	    formatValues = xsltDecimalFormatGetByQName(sheet, nsUri, ncname);
