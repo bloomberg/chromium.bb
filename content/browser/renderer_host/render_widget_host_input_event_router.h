@@ -147,7 +147,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                     blink::WebGestureEvent* event,
                                     const ui::LatencyInfo& latency);
 
-  RenderWidgetHostViewBase* FindTouchpadGestureEvent(
+  RenderWidgetTargetResult FindTouchpadGestureEventTarget(
       RenderWidgetHostViewBase* root_view,
       const blink::WebGestureEvent& event) const;
   void RouteTouchpadGestureEvent(RenderWidgetHostViewBase* root_view,

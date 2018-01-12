@@ -127,7 +127,9 @@ void RenderWidgetTargeter::QueryClient(
   } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
     DCHECK(gesture_event.source_device ==
-           blink::WebGestureDevice::kWebGestureDeviceTouchscreen);
+               blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
+           gesture_event.source_device ==
+               blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     target_client->FrameSinkIdAt(
         gfx::ToCeiledPoint(target_location.value()),
         base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
@@ -201,18 +203,15 @@ void RenderWidgetTargeter::FoundTarget(
     }
     if (mouse_event.GetType() != blink::WebInputEvent::kUndefined)
       delegate_->DispatchEventToTarget(root_view, target, mouse_event, latency);
-  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
-    delegate_->DispatchEventToTarget(
-        root_view, target, static_cast<const blink::WebMouseWheelEvent&>(event),
-        latency);
-  } else if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
-    delegate_->DispatchEventToTarget(
-        root_view, target, static_cast<const blink::WebTouchEvent&>(event),
-        latency);
-  } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
-    delegate_->DispatchEventToTarget(
-        root_view, target, static_cast<const blink::WebGestureEvent&>(event),
-        latency);
+  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
+             blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
+             blink::WebInputEvent::IsGestureEventType(event.GetType())) {
+    DCHECK(!blink::WebInputEvent::IsGestureEventType(event.GetType()) ||
+           (static_cast<const blink::WebGestureEvent&>(event).source_device ==
+                blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
+            static_cast<const blink::WebGestureEvent&>(event).source_device ==
+                blink::WebGestureDevice::kWebGestureDeviceTouchpad));
+    delegate_->DispatchEventToTarget(root_view, target, event, latency);
   } else {
     // TODO(crbug.com/796656): Handle other types of events.
     NOTREACHED();
