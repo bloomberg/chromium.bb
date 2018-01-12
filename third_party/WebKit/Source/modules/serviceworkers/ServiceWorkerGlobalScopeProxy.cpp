@@ -637,6 +637,10 @@ void ServiceWorkerGlobalScopeProxy::Detach() {
   client_ = nullptr;
 }
 
+void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
+  embedded_worker_->TerminateWorkerContext();
+}
+
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {
   DCHECK(client_);
   return *client_;
