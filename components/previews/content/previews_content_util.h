@@ -30,8 +30,10 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state);
 
 // Returns the effective PreviewsType known on a main frame basis given the
-// |previews_state| bitmask for the committed main frame. Will return NONE
-// for LoFi since it would be determined at image subresource load time.
+// |previews_state| bitmask for the committed main frame. This uses the same
+// previews precendence consideration as |DetermineCommittedClientPreviewsState|
+// in case it is called on a PreviewsState value that has not been filtered
+// through that method.
 previews::PreviewsType GetMainFramePreviewsType(
     content::PreviewsState previews_state);
 

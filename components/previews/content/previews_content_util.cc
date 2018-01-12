@@ -4,6 +4,8 @@
 
 #include "components/previews/content/previews_content_util.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "components/previews/core/previews_user_data.h"
 #include "net/url_request/url_request.h"
 
 namespace previews {
@@ -53,13 +55,27 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   bool is_https = url_request.url().SchemeIs(url::kHttpsScheme);
 
   // If a server preview is set, retain only the bits determined for the server.
-  // |previes_state| must already have been updated for server previews from the
-  // main frame response headers (so if they are set here, then they are the
-  // specify the committed preview).
+  // |previews_state| must already have been updated for server previews from
+  // the main frame response headers (so if they are set here, then they are
+  // the specify the committed preview). Note: for Server LoFi we keep the
+  // Client LoFi bit on so that it is applied to both HTTP and HTTPS images.
   if (previews_state &
       (content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON)) {
     return previews_state & (content::SERVER_LITE_PAGE_ON |
                              content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
+  }
+
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(url_request);
+  if (previews_user_data &&
+      previews_user_data->cache_control_no_transform_directive()) {
+    if (HasEnabledPreviews(previews_state)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.CacheControlNoTransform.BlockedPreview",
+          GetMainFramePreviewsType(previews_state),
+          previews::PreviewsType::LAST);
+    }
+    return content::PREVIEWS_OFF;
   }
 
   // Make priority decision among allow client preview types that can be decided
@@ -87,8 +103,12 @@ previews::PreviewsType GetMainFramePreviewsType(
     content::PreviewsState previews_state) {
   if (previews_state & content::SERVER_LITE_PAGE_ON) {
     return previews::PreviewsType::LITE_PAGE;
+  } else if (previews_state & content::SERVER_LOFI_ON) {
+    return previews::PreviewsType::LOFI;
   } else if (previews_state & content::NOSCRIPT_ON) {
     return previews::PreviewsType::NOSCRIPT;
+  } else if (previews_state & content::CLIENT_LOFI_ON) {
+    return previews::PreviewsType::LOFI;
   }
   return previews::PreviewsType::NONE;
 }
