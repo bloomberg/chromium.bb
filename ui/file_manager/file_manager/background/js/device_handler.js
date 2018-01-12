@@ -20,10 +20,13 @@ function DeviceHandler() {
       this.onDeviceChanged_.bind(this));
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
-  chrome.notifications.onClicked.addListener(
-      this.onNotificationClicked_.bind(this));
-  chrome.notifications.onButtonClicked.addListener(
-      this.onNotificationClicked_.bind(this));
+  // Avoid opening a window in DialogType.FULL_PAGE in the incognito context.
+  if (!chrome.extension.inIncognitoContext) {
+    chrome.notifications.onClicked.addListener(
+        this.onNotificationClicked_.bind(this));
+    chrome.notifications.onButtonClicked.addListener(
+        this.onNotificationClicked_.bind(this));
+  }
 }
 
 DeviceHandler.prototype = {
@@ -289,6 +292,18 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
  * @private
  */
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
+  if (event.type == 'removed')
+    delete this.mountStatus_[event.devicePath];
+  if (!chrome.extension.inIncognitoContext)
+    this.showDeviceChangeNotifications_(event);
+};
+
+/**
+ * Shows notification to user about Device changes.
+ * @param {DeviceEvent} event Device event.
+ * @private
+ */
+DeviceHandler.prototype.showDeviceChangeNotifications_ = function(event) {
   switch (event.type) {
     case 'disabled':
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.show(
@@ -298,7 +313,6 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       DeviceHandler.Notification.DEVICE_FAIL.hide(event.devicePath);
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.hide(
           event.devicePath);
-      delete this.mountStatus_[event.devicePath];
       break;
     case 'hard_unplugged':
       DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
@@ -456,6 +470,17 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
  * @private
  */
 DeviceHandler.prototype.onMount_ = function(event) {
+  if (!chrome.extension.inIncognitoContext)
+    this.openOrNotifyNewDevice_(event);
+};
+
+/**
+ * Opens the media folder in a new device automatically, or prompts to open the
+ * root folder in the Files app otherwise.
+ * @param {MountCompletedEvent} event
+ * @private
+ */
+DeviceHandler.prototype.openOrNotifyNewDevice_ = function(event) {
   // If this is remounting, which happens when resuming Chrome OS, the device
   // has already inserted to the computer. So we suppress the notification.
   var metadata = event.volumeMetadata;
@@ -535,8 +560,10 @@ DeviceHandler.prototype.onMount_ = function(event) {
 };
 
 DeviceHandler.prototype.onUnmount_ = function(event) {
-  DeviceHandler.Notification.DEVICE_NAVIGATION.hide(
-      /** @type {string} */ (event.devicePath));
+  if (!chrome.extension.inIncognitoContext) {
+    DeviceHandler.Notification.DEVICE_NAVIGATION.hide(
+        /** @type {string} */ (event.devicePath));
+  }
 };
 
 /**

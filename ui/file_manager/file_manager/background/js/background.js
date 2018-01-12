@@ -48,9 +48,11 @@ function FileBrowserBackgroundImpl() {
   this.deviceHandler_ = new DeviceHandler();
 
   // Handle device navigation requests.
-  this.deviceHandler_.addEventListener(
-      DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
-      this.handleViewEvent_.bind(this));
+  if (!chrome.extension.inIncognitoContext) {
+    this.deviceHandler_.addEventListener(
+        DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
+        this.handleViewEvent_.bind(this));
+  }
 
   /**
    * Drive sync handler.
