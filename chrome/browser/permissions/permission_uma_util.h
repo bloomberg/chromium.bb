@@ -89,29 +89,9 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptDenied[];
   static const char kPermissionsPromptDeniedGesture[];
   static const char kPermissionsPromptDeniedNoGesture[];
-  static const char kPermissionsPromptAcceptedPriorDismissCountPrefix[];
-  static const char kPermissionsPromptAcceptedPriorIgnoreCountPrefix[];
-  static const char kPermissionsPromptDeniedPriorDismissCountPrefix[];
-  static const char kPermissionsPromptDeniedPriorIgnoreCountPrefix[];
-  static const char kPermissionsPromptDismissedPriorDismissCountPrefix[];
-  static const char kPermissionsPromptDismissedPriorIgnoreCountPrefix[];
-  static const char kPermissionsPromptIgnoredPriorDismissCountPrefix[];
-  static const char kPermissionsPromptIgnoredPriorIgnoreCountPrefix[];
 
   static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin);
-  static void PermissionGranted(ContentSettingsType permission,
-                                PermissionRequestGestureType gesture_type,
-                                const GURL& requesting_origin,
-                                Profile* profile);
-  static void PermissionDenied(ContentSettingsType permission,
-                               PermissionRequestGestureType gesture_type,
-                               const GURL& requesting_origin,
-                               Profile* profile);
-  static void PermissionDismissed(ContentSettingsType permission,
-                                  PermissionRequestGestureType gesture_type,
-                                  const GURL& requesting_origin,
-                                  Profile* profile);
   static void PermissionRevoked(ContentSettingsType permission,
                                 PermissionSourceUI source_ui,
                                 const GURL& revoked_origin,
@@ -145,21 +125,6 @@ class PermissionUmaUtil {
       const content::WebContents* web_contents,
       PermissionAction permission_action);
 
-  // Records the request type and gesture type for a shown, accepted, and denied
-  // prompt. Defined separately as Android must call this method explicitly
-  // until the removal of PermissionQueueController is completed.
-  static void RecordPermissionPromptShown(
-      PermissionRequestType request_type,
-      PermissionRequestGestureType gesture_type);
-
-  static void RecordPermissionPromptAccepted(
-      PermissionRequestType request_type,
-      PermissionRequestGestureType gesture_type);
-
-  static void RecordPermissionPromptDenied(
-      PermissionRequestType request_type,
-      PermissionRequestGestureType gesture_type);
-
   static void RecordWithBatteryBucket(const std::string& histogram);
 
   // Permission Action Reporting data is only sent in official, Chrome branded
@@ -188,9 +153,6 @@ class PermissionUmaUtil {
   static void RecordPromptDecided(
       const std::vector<PermissionRequest*>& requests,
       bool accepted);
-
-  static void PermissionIgnored(const std::vector<PermissionRequest*>& requests,
-                                const content::WebContents* web_contents);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);
 };
