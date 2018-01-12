@@ -6186,26 +6186,25 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
 
 void GLES2Implementation::CreateTransferCacheEntry(
     const cc::ClientTransferCacheEntry& entry) {
-  share_group()->transfer_cache()->CreateCacheEntry(
-      helper_, mapped_memory_.get(), entry);
+  transfer_cache_.CreateCacheEntry(helper_, mapped_memory_.get(), entry);
 }
 
 bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(
     cc::TransferCacheEntryType type,
     uint32_t id) {
-  return share_group()->transfer_cache()->LockTransferCacheEntry(type, id);
+  return transfer_cache_.LockTransferCacheEntry(type, id);
 }
 
 void GLES2Implementation::UnlockTransferCacheEntries(
     const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
         entries) {
-  share_group()->transfer_cache()->UnlockTransferCacheEntries(helper_, entries);
+  transfer_cache_.UnlockTransferCacheEntries(helper_, entries);
 }
 
 void GLES2Implementation::DeleteTransferCacheEntry(
     cc::TransferCacheEntryType type,
     uint32_t id) {
-  share_group()->transfer_cache()->DeleteTransferCacheEntry(helper_, type, id);
+  transfer_cache_.DeleteTransferCacheEntry(helper_, type, id);
 }
 
 void GLES2Implementation::SetLostContextCallback(

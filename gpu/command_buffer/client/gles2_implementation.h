@@ -23,6 +23,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/client_context_state.h"
+#include "gpu/command_buffer/client/client_transfer_cache.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -828,6 +829,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       id_allocators_[static_cast<int>(IdNamespaces::kNumIdNamespaces)];
 
   std::unique_ptr<BufferTracker> buffer_tracker_;
+  ClientTransferCache transfer_cache_;
 
   base::Callback<void(const char*, int32_t)> error_message_callback_;
   base::Closure lost_context_callback_;

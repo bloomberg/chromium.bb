@@ -1275,6 +1275,10 @@ GLES2DecoderPassthroughImpl::GetImageManagerForTest() {
   return group_->image_manager();
 }
 
+ServiceTransferCache* GLES2DecoderPassthroughImpl::GetTransferCacheForTest() {
+  return nullptr;
+}
+
 bool GLES2DecoderPassthroughImpl::HasPendingQueries() const {
   return !pending_queries_.empty();
 }

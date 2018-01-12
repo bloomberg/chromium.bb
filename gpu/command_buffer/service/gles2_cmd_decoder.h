@@ -38,6 +38,7 @@ namespace gpu {
 
 class DecoderClient;
 struct Mailbox;
+class ServiceTransferCache;
 
 namespace gles2 {
 
@@ -167,6 +168,9 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
 
   // Gets the ImageManager for this context.
   virtual ImageManager* GetImageManagerForTest() = 0;
+
+  // Gets the ServiceTransferCache for this context.
+  virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
 
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.
