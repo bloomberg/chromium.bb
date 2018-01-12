@@ -108,7 +108,8 @@
     </cr-toolbar>
     <div id="devDrawer" expanded$="[[expanded_]]">
       <div id="button-strip">
-        <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
+        <paper-button hidden$="[[!canLoadUnpacked]]" id="load-unpacked"
+            on-tap="onLoadUnpackedTap_">
           $i18n{toolbarLoadUnpacked}
         </paper-button>
         <paper-button id="pack-extensions" on-tap="onPackTap_">

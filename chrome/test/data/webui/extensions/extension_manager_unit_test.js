@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-manager unit tests. Unlike
- * extension_manager_tests.js, these tests are not interacting with the real
+ * extension_manager_test.js, these tests are not interacting with the real
  * chrome.developerPrivate API. */
 cr.define('extension_manager_tests', function() {
   /** @enum {string} */
@@ -163,6 +163,12 @@ cr.define('extension_manager_tests', function() {
 
       service.profileStateChangedTarget.callListeners({inDeveloperMode: false});
       expectFalse(manager.inDevMode);
+
+      service.profileStateChangedTarget.callListeners({canLoadUnpacked: true});
+      expectTrue(manager.canLoadUnpacked);
+
+      service.profileStateChangedTarget.callListeners({canLoadUnpacked: false});
+      expectFalse(manager.canLoadUnpacked);
     });
 
     test(assert(TestNames.Uninstall), function() {
