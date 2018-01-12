@@ -906,9 +906,9 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2));
     EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(527000, 524000, 20000));
     EXPECT_TRUE(AppendData(bear2->data() + 55290, 18785));
-    CheckExpectedRanges("{ [0,1027) [1201,2736) }");
+    CheckExpectedRanges("{ [0,2736) }");
 
-    // Append initialization segment for bear1 & fill gap with [779-1197)
+    // Append initialization segment for bear1 and buffer [779-1197)
     // segment.
     EXPECT_CALL(*this, InitSegmentReceivedMock(_));
     EXPECT_TRUE(AppendData(bear1->data(), 4370));
