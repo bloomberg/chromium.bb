@@ -7,6 +7,7 @@
 #include "apps/saved_files_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace apps {
 
@@ -39,6 +40,16 @@ SavedFilesServiceFactory::~SavedFilesServiceFactory() = default;
 KeyedService* SavedFilesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new SavedFilesService(context);
+}
+
+content::BrowserContext* SavedFilesServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // Make sure that the service is created even for incognito profile. The goal
+  // is to make this service available in guest sessions, where it could be used
+  // when apps white-listed in guest sessions attempt to use chrome.fileSystem
+  // API.
+  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
+      context);
 }
 
 }  // namespace apps
