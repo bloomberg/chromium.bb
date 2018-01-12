@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, InvalidScalePref) {
   EXPECT_TRUE(IsMagnifierEnabled());
 
   // Confirms that the actual scale is set to the maximum scale.
-  EXPECT_EQ(4.0, GetFullScreenMagnifierScale());
+  EXPECT_EQ(20.0, GetFullScreenMagnifierScale());
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, MagnificationObserver) {
