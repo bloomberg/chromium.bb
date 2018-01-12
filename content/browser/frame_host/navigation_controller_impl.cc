@@ -766,6 +766,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);
+    entry->set_suggested_filename(params.suggested_filename);
   }
 
   // Set the FTN ID (only used in non-site-per-process, for tests).

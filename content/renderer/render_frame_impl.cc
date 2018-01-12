@@ -6361,6 +6361,11 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
                                   : content::Referrer();
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info.triggering_event_info;
+  params.suggested_filename =
+      info.url_request.GetSuggestedFilename().has_value()
+          ? base::Optional<std::string>(
+                info.url_request.GetSuggestedFilename()->Utf8())
+          : base::nullopt;
 
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on

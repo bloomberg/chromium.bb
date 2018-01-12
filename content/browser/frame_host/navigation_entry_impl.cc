@@ -658,6 +658,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
   copy->replaced_entry_data_ = replaced_entry_data_;
+  // ResetForCommit: suggested_filename_
 
   return copy;
 }
@@ -778,6 +779,7 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
   // loaded again in the future.
   set_intent_received_timestamp(base::TimeTicks());
 #endif
+  suggested_filename_.reset();
 }
 
 NavigationEntryImpl::TreeNode* NavigationEntryImpl::GetTreeNode(

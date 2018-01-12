@@ -195,6 +195,11 @@ class NavigationController {
     // Indicates whether or not this navigation was initiated via context menu.
     bool started_from_context_menu;
 
+    // If this event was triggered by an anchor element with a download
+    // attribute, |suggested_filename| will contain the (possibly empty) value
+    // of that attribute.
+    base::Optional<std::string> suggested_filename;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 
