@@ -1994,6 +1994,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLboolean can_use_lcd_text,
                              GLboolean use_distance_field_text,
                              GLint pixel_config);
+  void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
   void DoEndRasterCHROMIUM();
 
   void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
@@ -20436,23 +20437,17 @@ class TransferCacheDeserializeHelperImpl
   ServiceTransferCache* transfer_cache_;
 };
 
-error::Error GLES2DecoderImpl::HandleRasterCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
+void GLES2DecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
   if (!sk_surface_) {
-    LOG(ERROR) << "RasterCHROMIUM without BeginRasterCHROMIUM";
-    return error::kInvalidArguments;
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
+                       "RasterCHROMIUM without BeginRasterCHROMIUM");
+    return;
   }
   DCHECK(transfer_cache_);
 
   alignas(
       cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
-  auto& c = *static_cast<const volatile gles2::cmds::RasterCHROMIUM*>(cmd_data);
-  size_t size = c.data_size;
-  char* buffer =
-      GetSharedMemoryAs<char*>(c.list_shm_id, c.list_shm_offset, size);
-  if (!buffer)
-    return error::kOutOfBounds;
+  const char* buffer = static_cast<const char*>(list);
 
   SkCanvas* canvas = sk_surface_->getCanvas();
   SkMatrix original_ctm;
@@ -20467,8 +20462,10 @@ error::Error GLES2DecoderImpl::HandleRasterCHROMIUM(
     cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
         buffer, size, &data[0], sizeof(cc::LargestPaintOp), &skip, options);
     if (!deserialized_op) {
-      LOG(ERROR) << "RasterCHROMIUM: bad op: " << op_idx;
-      return error::kInvalidArguments;
+      std::string msg =
+          base::StringPrintf("RasterCHROMIUM: bad op: %i", op_idx);
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM", msg.c_str());
+      return;
     }
 
     deserialized_op->Raster(canvas, playback_params);
@@ -20478,8 +20475,6 @@ error::Error GLES2DecoderImpl::HandleRasterCHROMIUM(
     buffer += skip;
     op_idx++;
   }
-
-  return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoEndRasterCHROMIUM() {

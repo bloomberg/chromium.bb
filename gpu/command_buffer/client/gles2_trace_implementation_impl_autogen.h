@@ -2568,16 +2568,14 @@ void GLES2TraceImplementation::BeginRasterCHROMIUM(
                            pixel_config);
 }
 
-void GLES2TraceImplementation::RasterCHROMIUM(
-    const cc::DisplayItemList* list,
-    cc::ImageProvider* provider,
-    const gfx::Vector2d& translate,
-    const gfx::Rect& playback_rect,
-    const gfx::Vector2dF& post_translate,
-    GLfloat post_scale) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::RasterCHROMIUM");
-  gl_->RasterCHROMIUM(list, provider, translate, playback_rect, post_translate,
-                      post_scale);
+void* GLES2TraceImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MapRasterCHROMIUM");
+  return gl_->MapRasterCHROMIUM(size);
+}
+
+void GLES2TraceImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::UnmapRasterCHROMIUM");
+  gl_->UnmapRasterCHROMIUM(written_size);
 }
 
 void GLES2TraceImplementation::EndRasterCHROMIUM() {

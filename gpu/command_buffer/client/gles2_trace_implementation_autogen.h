@@ -893,12 +893,8 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLboolean can_use_lcd_text,
                          GLboolean use_distance_field_text,
                          GLint pixel_config) override;
-void RasterCHROMIUM(const cc::DisplayItemList* list,
-                    cc::ImageProvider* provider,
-                    const gfx::Vector2d& translate,
-                    const gfx::Rect& playback_rect,
-                    const gfx::Vector2dF& post_translate,
-                    GLfloat post_scale) override;
+void* MapRasterCHROMIUM(GLsizeiptr size) override;
+void UnmapRasterCHROMIUM(GLsizeiptr written_size) override;
 void EndRasterCHROMIUM() override;
 void TexStorage2DImageCHROMIUM(GLenum target,
                                GLenum internalFormat,

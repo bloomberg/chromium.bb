@@ -5333,14 +5333,14 @@ TEST_F(GLES2FormatTest, BeginRasterCHROMIUM) {
 TEST_F(GLES2FormatTest, RasterCHROMIUM) {
   cmds::RasterCHROMIUM& cmd = *GetBufferAs<cmds::RasterCHROMIUM>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<uint32_t>(11), static_cast<uint32_t>(12),
+      cmd.Set(&cmd, static_cast<GLsizeiptr>(11), static_cast<uint32_t>(12),
               static_cast<uint32_t>(13));
   EXPECT_EQ(static_cast<uint32_t>(cmds::RasterCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<uint32_t>(11), cmd.list_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.list_shm_offset);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.data_size);
+  EXPECT_EQ(static_cast<GLsizeiptr>(11), cmd.size);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.list_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.list_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

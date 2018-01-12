@@ -4643,6 +4643,14 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginRasterCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoRasterCHROMIUM(GLsizeiptr size,
+                                                           const void* list) {
+  // TODO(enne): Add CHROMIUM_raster_transport extension support to the
+  // passthrough command buffer.
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoEndRasterCHROMIUM() {
   NOTIMPLEMENTED();
   return error::kNoError;
