@@ -21,6 +21,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/result_codes.h"
 
 using content::BrowserThread;
 
@@ -111,8 +112,10 @@ ChromeBrowserMainPartsPosix::ChromeBrowserMainPartsPosix(
     : ChromeBrowserMainParts(parameters) {
 }
 
-void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
-  ChromeBrowserMainParts::PreEarlyInitialization();
+int ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
+  const int result = ChromeBrowserMainParts::PreEarlyInitialization();
+  if (result != content::RESULT_CODE_NORMAL_EXIT)
+    return result;
 
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)
@@ -120,6 +123,8 @@ void ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGCHLDHandler;
   CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {

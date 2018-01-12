@@ -53,7 +53,7 @@ AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
 AwBrowserMainParts::~AwBrowserMainParts() {
 }
 
-void AwBrowserMainParts::PreEarlyInitialization() {
+int AwBrowserMainParts::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(new AwNetworkChangeNotifierFactory());
 
   // Android WebView does not use default MessageLoop. It has its own
@@ -61,6 +61,7 @@ void AwBrowserMainParts::PreEarlyInitialization() {
   DCHECK(!main_message_loop_.get());
   main_message_loop_.reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 int AwBrowserMainParts::PreCreateThreads() {

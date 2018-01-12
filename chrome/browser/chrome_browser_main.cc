@@ -851,10 +851,11 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 // content::BrowserMainParts implementation ------------------------------------
 
-void ChromeBrowserMainParts::PreEarlyInitialization() {
+int ChromeBrowserMainParts::PreEarlyInitialization() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void ChromeBrowserMainParts::PostEarlyInitialization() {
