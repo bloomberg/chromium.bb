@@ -548,7 +548,7 @@ TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeSyncResponse) {
   base::RunLoop run_loop;
   client_.set_on_complete_callback(base::Bind(
       [](const base::Closure& quit_closure, int error) {
-        EXPECT_EQ(net::ERR_FAILED, error);
+        EXPECT_EQ(net::ERR_ABORTED, error);
         quit_closure.Run();
       },
       run_loop.QuitClosure()));
@@ -579,7 +579,7 @@ TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeAsyncResponse) {
   base::RunLoop run_loop;
   client_.set_on_complete_callback(base::Bind(
       [](const base::Closure& quit_closure, int error) {
-        EXPECT_EQ(net::ERR_FAILED, error);
+        EXPECT_EQ(net::ERR_ABORTED, error);
         quit_closure.Run();
       },
       run_loop.QuitClosure()));

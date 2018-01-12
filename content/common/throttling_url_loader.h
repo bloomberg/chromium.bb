@@ -31,7 +31,7 @@ class URLLoaderFactory;
 // ThrottlingURLLoader is a wrapper around the mojom::URLLoader[Factory]
 // interfaces. It applies a list of URLLoaderThrottle instances which could
 // defer, resume or cancel the URL loading. If the Mojo connection fails during
-// the request it is canceled with net::ERR_FAILED.
+// the request it is canceled with net::ERR_ABORTED.
 class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
  public:
   // |factory| and |client| must stay alive during the lifetime of the returned

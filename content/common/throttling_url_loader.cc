@@ -456,7 +456,7 @@ void ThrottlingURLLoader::OnClientConnectionError() {
   // browser-side navigation this error on async loads will confuse the loading
   // of cross-origin iframes.
   if (is_synchronous_ || content::IsBrowserSideNavigationEnabled())
-    CancelWithError(net::ERR_FAILED);
+    CancelWithError(net::ERR_ABORTED);
 }
 
 void ThrottlingURLLoader::CancelWithError(int error_code) {
