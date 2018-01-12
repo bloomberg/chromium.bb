@@ -25,9 +25,9 @@ namespace data_util {
 TEST(PaymentRequestDataUtilTest, GetPaymentAddressFromAutofillProfile) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   std::unique_ptr<base::DictionaryValue> address_value =
-      payments::data_util::GetPaymentAddressFromAutofillProfile(address,
-                                                                "en-US")
-          .ToDictionaryValue();
+      payments::PaymentAddressToDictionaryValue(
+          *payments::data_util::GetPaymentAddressFromAutofillProfile(address,
+                                                                     "en-US"));
   std::string json_address;
   base::JSONWriter::Write(*address_value, &json_address);
   EXPECT_EQ(
@@ -54,7 +54,7 @@ TEST(PaymentRequestDataUtilTest, GetBasicCardResponseFromAutofillCreditCard) {
   std::unique_ptr<base::DictionaryValue> response_value =
       payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
           card, base::ASCIIToUTF16("123"), address, "en-US")
-          .ToDictionaryValue();
+          ->ToDictionaryValue();
   std::string json_response;
   base::JSONWriter::Write(*response_value, &json_response);
   EXPECT_EQ(

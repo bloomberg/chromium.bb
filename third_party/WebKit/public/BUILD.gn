@@ -787,6 +787,7 @@ mojom("mojo_bindings") {
     ":android_mojo_bindings",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
+    "//components/payments/mojom",
     "//device/bluetooth/public/interfaces",
     "//device/geolocation/public/interfaces",
     "//device/screen_orientation/public/interfaces",
@@ -833,6 +834,7 @@ mojom("android_mojo_bindings") {
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
+    "//components/payments/mojom",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",

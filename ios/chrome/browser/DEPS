@@ -50,6 +50,7 @@ include_rules = [
   "+components/password_manager/core/common",
   "+components/password_manager/sync/browser",
   "+components/payments/core",
+  "+components/payments/mojom",
   "+components/physical_web/data_source",
   "+components/physical_web/webui",
   "+components/pref_registry",

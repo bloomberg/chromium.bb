@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "components/payments/mojom/payment_request_data.mojom.h"
+
 // C++ bindings for the PaymentRequest API PaymentCurrencyAmount. Conforms to
 // the following spec:
 // https://w3c.github.io/browser-payment-api/#dom-paymentcurrencyamount
@@ -18,35 +20,16 @@ class DictionaryValue;
 
 namespace payments {
 
-// Supplies monetary amounts.
-class PaymentCurrencyAmount {
- public:
-  PaymentCurrencyAmount();
-  ~PaymentCurrencyAmount();
+// Populates the properties of |amount| from |value|. Returns true if the
+// required values are present.
+bool PaymentCurrencyAmountFromDictionaryValue(
+    const base::DictionaryValue& dictionary_value,
+    mojom::PaymentCurrencyAmount* amount);
 
-  bool operator==(const PaymentCurrencyAmount& other) const;
-  bool operator!=(const PaymentCurrencyAmount& other) const;
-
-  // Populates the properties of this PaymentCurrencyAmount from |value|.
-  // Returns true if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& dictionary_value);
-
-  // Creates a base::DictionaryValue with the properties of this
-  // PaymentCurrencyAmount.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // A currency identifier. The most common identifiers are three-letter
-  // alphabetic codes as defined by ISO 4217 (for example, "USD" for US Dollars)
-  // however any string is considered valid.
-  std::string currency;
-
-  // A string containing the decimal monetary value.
-  std::string value;
-
-  // A URL that indicates the currency system that the currency identifier
-  // belongs to.
-  std::string currency_system;
-};
+// Creates a base::DictionaryValue with the properties of the given
+// PaymentCurrencyAmount.
+std::unique_ptr<base::DictionaryValue> PaymentCurrencyAmountToDictionaryValue(
+    const mojom::PaymentCurrencyAmount& amount);
 
 }  // namespace payments
 

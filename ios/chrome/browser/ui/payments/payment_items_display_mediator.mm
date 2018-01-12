@@ -60,7 +60,7 @@
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(
           _paymentRequest->GetTotal(_paymentRequest->selected_payment_method())
-              .amount.value)));
+              .amount->value)));
   return totalItem;
 }
 
@@ -77,7 +77,7 @@
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
     item.price = base::SysUTF16ToNSString(
-        currencyFormatter->Format(paymentItem.amount.value));
+        currencyFormatter->Format(paymentItem.amount->value));
 
     [lineItems addObject:item];
   }

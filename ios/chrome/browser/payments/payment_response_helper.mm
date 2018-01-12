@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/payments/core/journey_logger.h"
+#include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_shipping_option.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -74,9 +75,8 @@ void PaymentResponseHelper::AddressNormalizationCompleted() {
   response.details = stringified_details_;
 
   if (payment_request_->request_shipping()) {
-    response.shipping_address = base::MakeUnique<payments::PaymentAddress>(
-        data_util::GetPaymentAddressFromAutofillProfile(
-            shipping_address_, payment_request_->GetApplicationLocale()));
+    response.shipping_address = data_util::GetPaymentAddressFromAutofillProfile(
+        shipping_address_, payment_request_->GetApplicationLocale());
 
     PaymentShippingOption* shippingOption =
         payment_request_->selected_shipping_option();

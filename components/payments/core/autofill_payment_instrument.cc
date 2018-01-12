@@ -185,7 +185,7 @@ void AutofillPaymentInstrument::GenerateBasicCardResponse() {
   std::unique_ptr<base::DictionaryValue> response_value =
       payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
           credit_card_, cvc_, billing_address_, app_locale_)
-          .ToDictionaryValue();
+          ->ToDictionaryValue();
   std::string stringified_details;
   base::JSONWriter::Write(*response_value, &stringified_details);
   delegate_->OnInstrumentDetailsReady(method_name_, stringified_details);
