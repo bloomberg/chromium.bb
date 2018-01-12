@@ -37,7 +37,7 @@ enum IDBCursorDirection {
 [
     Exposed=(Window,Worker)
 ] interface IDBCursor {
-    [CallWith=ScriptState] readonly attribute any source;
+    readonly attribute (IDBObjectStore or IDBIndex) source;
     readonly attribute IDBCursorDirection direction;
     [CallWith=ScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;
     [CallWith=ScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;

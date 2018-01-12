@@ -430,6 +430,16 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   metrics_.RecordAndReset();
 }
 
+static IDBCursor::Source ToIDBCursorSource(IDBAny* any) {
+  if (any->GetType() == IDBAny::kIDBObjectStoreType)
+    return IDBCursor::Source::FromIDBObjectStore(any->IdbObjectStore());
+  if (any->GetType() == IDBAny::kIDBIndexType)
+    return IDBCursor::Source::FromIDBIndex(any->IdbIndex());
+
+  NOTREACHED();
+  return IDBCursor::Source();
+}
+
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
                                  std::unique_ptr<IDBKey> key,
                                  std::unique_ptr<IDBKey> primary_key,
@@ -446,12 +456,13 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
   switch (cursor_type_) {
     case IndexedDB::kCursorKeyOnly:
       cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
-                                 source_.Get(), transaction_.Get());
+                                 ToIDBCursorSource(source_.Get()),
+                                 transaction_.Get());
       break;
     case IndexedDB::kCursorKeyAndValue:
-      cursor =
-          IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
-                                     this, source_.Get(), transaction_.Get());
+      cursor = IDBCursorWithValue::Create(
+          std::move(backend), cursor_direction_, this,
+          ToIDBCursorSource(source_.Get()), transaction_.Get());
       break;
     default:
       NOTREACHED();

@@ -36,7 +36,7 @@ IDBCursorWithValue* IDBCursorWithValue::Create(
     std::unique_ptr<WebIDBCursor> backend,
     WebIDBCursorDirection direction,
     IDBRequest* request,
-    IDBAny* source,
+    const Source& source,
     IDBTransaction* transaction) {
   return new IDBCursorWithValue(std::move(backend), direction, request, source,
                                 transaction);
@@ -45,7 +45,7 @@ IDBCursorWithValue* IDBCursorWithValue::Create(
 IDBCursorWithValue::IDBCursorWithValue(std::unique_ptr<WebIDBCursor> backend,
                                        WebIDBCursorDirection direction,
                                        IDBRequest* request,
-                                       IDBAny* source,
+                                       const Source& source,
                                        IDBTransaction* transaction)
     : IDBCursor(std::move(backend), direction, request, source, transaction) {}
 
