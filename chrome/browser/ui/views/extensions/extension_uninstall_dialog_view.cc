@@ -12,8 +12,11 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -25,6 +28,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -34,6 +38,22 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
+
+ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
+                                          gfx::NativeWindow window) {
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  if (!browser_view)
+    return nullptr;
+  ToolbarActionView* reference_view =
+      browser_view->toolbar()->browser_actions()->GetViewForId(extension_id);
+  return reference_view && reference_view->visible() ? reference_view : nullptr;
+#else
+  // Anchoring is not supported when using Cocoa.
+  return nullptr;
+#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+}
 
 class ExtensionUninstallDialogDelegateView;
 
@@ -64,13 +84,15 @@ class ExtensionUninstallDialogViews
 };
 
 // The dialog's view, owned by the views framework.
-class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
+class ExtensionUninstallDialogDelegateView
+    : public views::BubbleDialogDelegateView {
  public:
   // Constructor for view component of dialog. triggering_extension may be null
   // if the uninstall dialog was manually triggered (from chrome://extensions).
   ExtensionUninstallDialogDelegateView(
       ExtensionUninstallDialogViews* dialog_view,
-      const std::string& extension_name,
+      ToolbarActionView* anchor_view,
+      const extensions::Extension* extension,
       const extensions::Extension* triggering_extension,
       const gfx::ImageSkia* image);
   ~ExtensionUninstallDialogDelegateView() override;
@@ -118,9 +140,15 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
+  ToolbarActionView* anchor_view =
+      GetExtensionAnchorView(extension()->id(), parent());
   view_ = new ExtensionUninstallDialogDelegateView(
-      this, extension()->name(), triggering_extension(), &icon());
-  constrained_window::CreateBrowserModalDialogViews(view_, parent())->Show();
+      this, anchor_view, extension(), triggering_extension(), &icon());
+  if (anchor_view) {
+    views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
+  } else {
+    constrained_window::CreateBrowserModalDialogViews(view_, parent())->Show();
+  }
 }
 
 void ExtensionUninstallDialogViews::DialogDelegateDestroyed() {
@@ -150,11 +178,13 @@ void ExtensionUninstallDialogViews::DialogCanceled() {
 
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
-    const std::string& extension_name,
+    ToolbarActionView* anchor_view,
+    const extensions::Extension* extension,
     const extensions::Extension* triggering_extension,
     const gfx::ImageSkia* image)
-    : dialog_(dialog_view),
-      extension_name_(base::UTF8ToUTF16(extension_name)),
+    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      dialog_(dialog_view),
+      extension_name_(base::UTF8ToUTF16(extension->name())),
       report_abuse_checkbox_(nullptr),
       image_(gfx::ImageSkiaOperations::CreateResizedImage(
           *image,
@@ -163,9 +193,15 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
                     extension_misc::EXTENSION_ICON_SMALL))) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  // Add margins for the icon plus the icon-title padding so that the dialog
+  // contents align with the title text.
+  set_margins(
+      margins() +
+      gfx::Insets(0, margins().left() + extension_misc::EXTENSION_ICON_SMALL, 0,
+                  0));
 
   if (triggering_extension) {
     heading_ = new views::Label(
@@ -191,6 +227,9 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     AddChildView(report_abuse_checkbox_);
   }
 
+  if (anchor_view)
+    anchor_view->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_UNINSTALL);
 }
 
@@ -203,6 +242,15 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
   // about to be freed by the Widget framework.
   if (dialog_)
     dialog_->DialogDelegateDestroyed();
+
+  // If there is still a toolbar action view its ink drop should be deactivated
+  // when the uninstall dialog goes away. This lookup is repeated as the dialog
+  // can go away during dialog's lifetime (especially when uninstalling).
+  views::View* anchor_view = GetAnchorView();
+  if (anchor_view) {
+    reinterpret_cast<ToolbarActionView*>(anchor_view)
+        ->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  }
 }
 
 base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
@@ -227,7 +275,8 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
 
 gfx::Size ExtensionUninstallDialogDelegateView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                    margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
