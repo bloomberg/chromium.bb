@@ -348,35 +348,6 @@ bool IsEndOfParagraph(const VisiblePositionInFlatTree& pos) {
       pos, kCannotCrossEditingBoundary);
 }
 
-// TODO(editing-dev): We should move |PreviousParagraphPosition()| to
-// "SelectionModifier.cpp"
-VisiblePosition PreviousParagraphPosition(const VisiblePosition& p,
-                                          LayoutUnit x) {
-  DCHECK(p.IsValid()) << p;
-  VisiblePosition pos = p;
-  do {
-    VisiblePosition n = PreviousLinePosition(pos, x);
-    if (n.IsNull() || n.DeepEquivalent() == pos.DeepEquivalent())
-      break;
-    pos = n;
-  } while (InSameParagraph(p, pos));
-  return pos;
-}
-
-// TODO(editing-dev): We should move |NextParagraphPosition()| to
-// "SelectionModifier.cpp"
-VisiblePosition NextParagraphPosition(const VisiblePosition& p, LayoutUnit x) {
-  DCHECK(p.IsValid()) << p;
-  VisiblePosition pos = p;
-  do {
-    VisiblePosition n = NextLinePosition(pos, x);
-    if (n.IsNull() || n.DeepEquivalent() == pos.DeepEquivalent())
-      break;
-    pos = n;
-  } while (InSameParagraph(p, pos));
-  return pos;
-}
-
 EphemeralRange ExpandToParagraphBoundary(const EphemeralRange& range) {
   const VisiblePosition& start = CreateVisiblePosition(range.StartPosition());
   DCHECK(start.IsNotNull()) << range.StartPosition();
