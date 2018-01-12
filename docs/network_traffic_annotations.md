@@ -297,6 +297,8 @@ directory and can be done with the following syntax.
  --build-path=[out/Default]`
 If you are running the auditor on Windows, please refer to extra instructions in
 `tools/traffic_annotation/auditor/README.md`.
+The latest executable of `traffic_annotation_auditor` for supported platforms
+can be found in `tools/traffic_annotation/bin/[platform]`.
 As this test is slow, it is not a mandatory step of the presubmit checks on
 clients, and one can run it manually. The test is done on trybots as a commit
 queue step.

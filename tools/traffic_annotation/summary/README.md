@@ -18,3 +18,5 @@ Run `traffic_annotation_auditor` to check for annotations correctness and
 automatic update. After each modification of`annotations.xml`, auditor calls
 `tools/traffic_annotation/scripts/annotations_xml_downstream_updater.py` to
 update all users of this file.
+The latest executable of `traffic_annotation_auditor` for supported platforms
+can be found in `tools/traffic_annotation/bin/[platform]`.
