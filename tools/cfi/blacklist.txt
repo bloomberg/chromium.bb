@@ -190,14 +190,13 @@ fun:*LocaleConvertCase*
 # third_party/boringssl/src/crypto/pem/pem_lib.c
 fun:*PEM_ASN1_write*
 
-src:*third_party/libsrtp/*
-src:*third_party/libvpx/*
-src:*third_party/libxml/*
-src:*third_party/pdfium/third_party/lcms/*
 src:*third_party/sqlite/*
-src:*third_party/webrtc/*
 
-src:*v8/*
+# PropertyCallbackArguments::Call methods cast function pointers
+src:*v8/src/api-arguments-inl.h
+
+# v8 callback that casts argument template parameters
+fun:*PendingPhantomCallback*Invoke*
 
 ######### Uncategorized
 
