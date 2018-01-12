@@ -472,6 +472,10 @@ const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
 // Controls whether the WebXR Device API is enabled.
 const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the orientation sensor based device is enabled.
+const base::Feature kWebXrOrientationSensorDevice{
+    "WebXROrientationSensorDevice", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enabled "work stealing" in the script runner.
 const base::Feature kWorkStealingInScriptRunner{
     "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
