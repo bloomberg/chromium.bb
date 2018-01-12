@@ -50,15 +50,16 @@ namespace blink {
 
 namespace {
 
-IDBKey* CheckKeyFromValueAndKeyPathInternal(v8::Isolate* isolate,
-                                            const ScriptValue& value,
-                                            const String& key_path) {
+std::unique_ptr<IDBKey> CheckKeyFromValueAndKeyPathInternal(
+    v8::Isolate* isolate,
+    const ScriptValue& value,
+    const String& key_path) {
   IDBKeyPath idb_key_path(key_path);
   EXPECT_TRUE(idb_key_path.IsValid());
 
   NonThrowableExceptionState exception_state;
-  return ScriptValue::To<IDBKey*>(isolate, value, exception_state,
-                                  idb_key_path);
+  return ScriptValue::To<std::unique_ptr<IDBKey>>(
+      isolate, value, exception_state, idb_key_path);
 }
 
 void CheckKeyPathNullValue(v8::Isolate* isolate,
@@ -84,9 +85,9 @@ void CheckInjection(ScriptState* script_state,
                     const String& key_path) {
   bool result = InjectKey(script_state, key, value, key_path);
   ASSERT_TRUE(result);
-  IDBKey* extracted_key = CheckKeyFromValueAndKeyPathInternal(
+  std::unique_ptr<IDBKey> extracted_key = CheckKeyFromValueAndKeyPathInternal(
       script_state->GetIsolate(), value, key_path);
-  EXPECT_TRUE(key->IsEqual(extracted_key));
+  EXPECT_TRUE(key->IsEqual(extracted_key.get()));
 }
 
 void CheckInjectionIgnored(ScriptState* script_state,
@@ -95,9 +96,9 @@ void CheckInjectionIgnored(ScriptState* script_state,
                            const String& key_path) {
   bool result = InjectKey(script_state, key, value, key_path);
   ASSERT_TRUE(result);
-  IDBKey* extracted_key = CheckKeyFromValueAndKeyPathInternal(
+  std::unique_ptr<IDBKey> extracted_key = CheckKeyFromValueAndKeyPathInternal(
       script_state->GetIsolate(), value, key_path);
-  EXPECT_FALSE(key->IsEqual(extracted_key));
+  EXPECT_FALSE(key->IsEqual(extracted_key.get()));
 }
 
 void CheckInjectionDisallowed(ScriptState* script_state,
@@ -113,18 +114,18 @@ void CheckKeyPathStringValue(v8::Isolate* isolate,
                              const ScriptValue& value,
                              const String& key_path,
                              const String& expected) {
-  IDBKey* idb_key =
+  std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
   ASSERT_EQ(IDBKey::kStringType, idb_key->GetType());
-  ASSERT_TRUE(expected == idb_key->GetString());
+  ASSERT_TRUE(expected == idb_key->String());
 }
 
 void CheckKeyPathNumberValue(v8::Isolate* isolate,
                              const ScriptValue& value,
                              const String& key_path,
                              int expected) {
-  IDBKey* idb_key =
+  std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
   ASSERT_EQ(IDBKey::kNumberType, idb_key->GetType());
@@ -178,12 +179,13 @@ std::unique_ptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
                                          double primary_key,
                                          const WebString& key_path) {
   WebData web_data(SharedBuffer::AdoptVector(wire_bytes));
-  Vector<WebBlobInfo> web_blob_info;
-  WebIDBKey web_idb_key = WebIDBKey::CreateNumber(primary_key);
-  WebIDBKeyPath web_idb_key_path(key_path);
-  WebIDBValue web_idb_value(web_data, web_blob_info, web_idb_key,
-                            web_idb_key_path);
-  return IDBValue::Create(web_idb_value, isolate);
+  WebIDBValue web_idb_value(web_data, Vector<WebBlobInfo>());
+  web_idb_value.SetInjectedPrimaryKey(WebIDBKey::CreateNumber(primary_key),
+                                      WebIDBKeyPath(key_path));
+
+  std::unique_ptr<IDBValue> idb_value = web_idb_value.ReleaseIdbValue();
+  idb_value->SetIsolate(isolate);
+  return idb_value;
 }
 
 TEST(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue) {
@@ -245,14 +247,16 @@ TEST(InjectIDBKeyTest, ImplicitValues) {
   {
     v8::Local<v8::String> string = V8String(isolate, "string");
     ScriptValue value = ScriptValue(scope.GetScriptState(), string);
-    CheckInjectionIgnored(scope.GetScriptState(), IDBKey::CreateNumber(123),
-                          value, "length");
+    std::unique_ptr<IDBKey> idb_key = IDBKey::CreateNumber(123);
+    CheckInjectionIgnored(scope.GetScriptState(), idb_key.get(), value,
+                          "length");
   }
   {
     v8::Local<v8::Array> array = v8::Array::New(isolate);
     ScriptValue value = ScriptValue(scope.GetScriptState(), array);
-    CheckInjectionIgnored(scope.GetScriptState(), IDBKey::CreateNumber(456),
-                          value, "length");
+    std::unique_ptr<IDBKey> idb_key = IDBKey::CreateNumber(456);
+    CheckInjectionIgnored(scope.GetScriptState(), idb_key.get(), value,
+                          "length");
   }
 }
 
@@ -267,10 +271,12 @@ TEST(InjectIDBKeyTest, TopLevelPropertyStringValue) {
                                         V8AtomicString(isolate, "zoo"))));
 
   ScriptValue script_object(scope.GetScriptState(), object);
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateString("myNewKey"),
-                 script_object, "bar");
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateNumber(1234),
-                 script_object, "bar");
+  std::unique_ptr<IDBKey> idb_string_key = IDBKey::CreateString("myNewKey");
+  CheckInjection(scope.GetScriptState(), idb_string_key.get(), script_object,
+                 "bar");
+  std::unique_ptr<IDBKey> idb_number_key = IDBKey::CreateNumber(1234);
+  CheckInjection(scope.GetScriptState(), idb_number_key.get(), script_object,
+                 "bar");
 
   CheckInjectionDisallowed(scope.GetScriptState(), script_object, "foo.bar");
 }
@@ -289,24 +295,29 @@ TEST(InjectIDBKeyTest, SubProperty) {
       scope.GetContext(), V8AtomicString(isolate, "foo"), sub_property)));
 
   ScriptValue script_object(scope.GetScriptState(), object);
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateString("myNewKey"),
-                 script_object, "foo.baz");
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateNumber(789),
-                 script_object, "foo.baz");
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateDate(4567),
-                 script_object, "foo.baz");
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateDate(4567),
-                 script_object, "bar");
-  CheckInjection(scope.GetScriptState(),
-                 IDBKey::CreateArray(IDBKey::KeyArray()), script_object,
+  std::unique_ptr<IDBKey> idb_string_key = IDBKey::CreateString("myNewKey");
+  CheckInjection(scope.GetScriptState(), idb_string_key.get(), script_object,
                  "foo.baz");
-  CheckInjection(scope.GetScriptState(),
-                 IDBKey::CreateArray(IDBKey::KeyArray()), script_object, "bar");
+  std::unique_ptr<IDBKey> idb_number_key = IDBKey::CreateNumber(789);
+  CheckInjection(scope.GetScriptState(), idb_number_key.get(), script_object,
+                 "foo.baz");
+  std::unique_ptr<IDBKey> idb_date_key = IDBKey::CreateDate(4567);
+  CheckInjection(scope.GetScriptState(), idb_date_key.get(), script_object,
+                 "foo.baz");
+  CheckInjection(scope.GetScriptState(), idb_date_key.get(), script_object,
+                 "bar");
+  std::unique_ptr<IDBKey> idb_array_key =
+      IDBKey::CreateArray(IDBKey::KeyArray());
+  CheckInjection(scope.GetScriptState(), idb_array_key.get(), script_object,
+                 "foo.baz");
+  CheckInjection(scope.GetScriptState(), idb_array_key.get(), script_object,
+                 "bar");
 
   CheckInjectionDisallowed(scope.GetScriptState(), script_object,
                            "foo.bar.baz");
-  CheckInjection(scope.GetScriptState(), IDBKey::CreateString("zoo"),
-                 script_object, "foo.xyz.foo");
+  std::unique_ptr<IDBKey> idb_zoo_key = IDBKey::CreateString("zoo");
+  CheckInjection(scope.GetScriptState(), idb_zoo_key.get(), script_object,
+                 "foo.xyz.foo");
 }
 
 TEST(DeserializeIDBValueTest, CurrentVersions) {

@@ -100,12 +100,12 @@ void IDBParseKeyPath(const String& key_path,
   error = kIDBKeyPathParseErrorNone;
 }
 
-IDBKeyPath::IDBKeyPath(const String& string)
+IDBKeyPath::IDBKeyPath(const class String& string)
     : type_(kStringType), string_(string) {
   DCHECK(!string_.IsNull());
 }
 
-IDBKeyPath::IDBKeyPath(const Vector<String>& array)
+IDBKeyPath::IDBKeyPath(const Vector<class String>& array)
     : type_(kArrayType), array_(array) {
 #if DCHECK_IS_ON()
   for (size_t i = 0; i < array_.size(); ++i)
@@ -139,7 +139,7 @@ IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& key_path) {
 
     case kWebIDBKeyPathTypeString:
       type_ = kStringType;
-      string_ = key_path.GetString();
+      string_ = key_path.String();
       return;
 
     case kWebIDBKeyPathTypeArray:

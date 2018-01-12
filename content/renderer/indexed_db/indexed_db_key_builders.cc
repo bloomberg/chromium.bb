@@ -11,10 +11,16 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
+using blink::WebIDBKeyView;
 using blink::kWebIDBKeyTypeArray;
 using blink::kWebIDBKeyTypeBinary;
 using blink::kWebIDBKeyTypeDate;
@@ -26,30 +32,34 @@ using blink::kWebIDBKeyTypeString;
 using blink::WebVector;
 using blink::WebString;
 
-static content::IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
+namespace {
+
+content::IndexedDBKey::KeyArray CopyKeyArray(blink::WebIDBKeyArrayView array) {
   content::IndexedDBKey::KeyArray result;
-  if (other.KeyType() == kWebIDBKeyTypeArray) {
-    const WebVector<WebIDBKey>& array = other.Array();
-    for (size_t i = 0; i < array.size(); ++i)
-      result.push_back(content::IndexedDBKeyBuilder::Build(array[i]));
-  }
+  const size_t array_size = array.size();
+  result.reserve(array_size);
+  for (size_t i = 0; i < array_size; ++i)
+    result.emplace_back(content::IndexedDBKeyBuilder::Build(array[i]));
   return result;
 }
 
-static std::vector<base::string16> CopyArray(
-    const WebVector<WebString>& array) {
-  std::vector<base::string16> copy(array.size());
-  for (size_t i = 0; i < array.size(); ++i)
-    copy[i] = array[i].Utf16();
-  return copy;
+std::vector<base::string16> CopyArray(const WebVector<WebString>& array) {
+  std::vector<base::string16> result;
+  result.reserve(array.size());
+  for (const WebString& element : array)
+    result.emplace_back(element.Utf16());
+  return result;
 }
+
+}  // anonymous namespace
 
 namespace content {
 
-IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
+// static
+IndexedDBKey IndexedDBKeyBuilder::Build(blink::WebIDBKeyView key) {
   switch (key.KeyType()) {
     case kWebIDBKeyTypeArray:
-      return IndexedDBKey(CopyKeyArray(key));
+      return IndexedDBKey(CopyKeyArray(key.ArrayView()));
     case kWebIDBKeyTypeBinary: {
       const blink::WebData data = key.Binary();
       std::string key_string;
@@ -64,7 +74,7 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
       return IndexedDBKey(key_string);
     }
     case kWebIDBKeyTypeString:
-      return IndexedDBKey(key.GetString().Utf16());
+      return IndexedDBKey(key.String().Utf16());
     case kWebIDBKeyTypeDate:
       return IndexedDBKey(key.Date(), kWebIDBKeyTypeDate);
     case kWebIDBKeyTypeNumber:
@@ -79,15 +89,16 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
   }
 }
 
+// static
 WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
   switch (key.type()) {
     case kWebIDBKeyTypeArray: {
       const IndexedDBKey::KeyArray& array = key.array();
-      blink::WebVector<WebIDBKey> web_array(array.size());
-      for (size_t i = 0; i < array.size(); ++i) {
-        web_array[i] = Build(array[i]);
-      }
-      return WebIDBKey::CreateArray(web_array);
+      WebVector<WebIDBKey> web_idb_keys;
+      web_idb_keys.reserve(array.size());
+      for (const IndexedDBKey& array_element : array)
+        web_idb_keys.emplace_back(Build(array_element));
+      return WebIDBKey::CreateArray(std::move(web_idb_keys));
     }
     case kWebIDBKeyTypeBinary:
       return WebIDBKey::CreateBinary(key.binary());
@@ -108,6 +119,7 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
   }
 }
 
+// static
 IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
     const WebIDBKeyRange& key_range) {
   return IndexedDBKeyRange(IndexedDBKeyBuilder::Build(key_range.Lower()),
@@ -115,6 +127,14 @@ IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
                            key_range.LowerOpen(), key_range.UpperOpen());
 }
 
+// static
+IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(WebIDBKeyView key) {
+  return IndexedDBKeyRange(IndexedDBKeyBuilder::Build(key),
+                           IndexedDBKeyBuilder::Build(key),
+                           false /* lower_open */, false /* upper_open */);
+}
+
+// static
 WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
     const IndexedDBKeyRange& key_range) {
   return WebIDBKeyRange(WebIDBKeyBuilder::Build(key_range.lower()),
@@ -122,11 +142,12 @@ WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
                         key_range.lower_open(), key_range.upper_open());
 }
 
+// static
 IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
     const blink::WebIDBKeyPath& key_path) {
   switch (key_path.KeyPathType()) {
     case blink::kWebIDBKeyPathTypeString:
-      return IndexedDBKeyPath(key_path.GetString().Utf16());
+      return IndexedDBKeyPath(key_path.String().Utf16());
     case blink::kWebIDBKeyPathTypeArray:
       return IndexedDBKeyPath(CopyArray(key_path.Array()));
     case blink::kWebIDBKeyPathTypeNull:
@@ -137,6 +158,7 @@ IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
   }
 }
 
+// static
 blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
     const IndexedDBKeyPath& key_path) {
   switch (key_path.type()) {

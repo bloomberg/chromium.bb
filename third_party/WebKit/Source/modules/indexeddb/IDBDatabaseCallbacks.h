@@ -37,7 +37,6 @@ namespace blink {
 
 class DOMException;
 class IDBDatabase;
-class WebIDBDatabaseCallbacks;
 struct WebIDBObservation;
 
 class MODULES_EXPORT IDBDatabaseCallbacks
@@ -55,7 +54,7 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   virtual void OnComplete(int64_t transaction_id);
   virtual void OnChanges(
       const WebIDBDatabaseCallbacks::ObservationIndexMap&,
-      const WebVector<WebIDBObservation>& observations,
+      WebVector<WebIDBObservation> observations,
       const WebIDBDatabaseCallbacks::TransactionMap& transactions);
 
   void Connect(IDBDatabase*);

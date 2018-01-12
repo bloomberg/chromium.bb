@@ -18,4 +18,17 @@ std::unique_ptr<MockWebIDBDatabase> MockWebIDBDatabase::Create() {
   return base::WrapUnique(new MockWebIDBDatabase());
 }
 
+void MockWebIDBDatabase::Put(long long transaction_id,
+                             long long object_store_id,
+                             const WebData& value,
+                             const WebVector<WebBlobInfo>& web_blob_info,
+                             WebIDBKeyView primary_key,
+                             WebIDBPutMode put_mode,
+                             WebIDBCallbacks* callbacks,
+                             const WebVector<long long>& index_ids,
+                             WebVector<WebIndexKeys> index_keys) {
+  DoPut(transaction_id, object_store_id, value, web_blob_info, primary_key,
+        put_mode, callbacks, index_ids, index_keys);
+}
+
 }  // namespace blink

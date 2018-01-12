@@ -32,34 +32,37 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
 IDBObserverChanges* IDBObserverChanges::Create(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observation_indices,
-    v8::Isolate* isolate) {
-  return new IDBObserverChanges(database, transaction, observations,
-                                observation_indices, isolate);
+    const WebVector<WebIDBObservation>& web_observations,
+    const HeapVector<Member<IDBObservation>>& observations,
+    const WebVector<int32_t>& observation_indices) {
+  DCHECK_EQ(web_observations.size(), observations.size());
+  return new IDBObserverChanges(database, transaction, web_observations,
+                                observations, observation_indices);
 }
 
 IDBObserverChanges::IDBObserverChanges(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observation_indices,
-    v8::Isolate* isolate)
+    const WebVector<WebIDBObservation>& web_observations,
+    const HeapVector<Member<IDBObservation>>& observations,
+    const WebVector<int32_t>& observation_indices)
     : database_(database), transaction_(transaction) {
-  ExtractChanges(observations, observation_indices, isolate);
+  DCHECK_EQ(web_observations.size(), observations.size());
+  ExtractChanges(web_observations, observations, observation_indices);
 }
 
 void IDBObserverChanges::ExtractChanges(
-    const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observation_indices,
-    v8::Isolate* isolate) {
+    const WebVector<WebIDBObservation>& web_observations,
+    const HeapVector<Member<IDBObservation>>& observations,
+    const WebVector<int32_t>& observation_indices) {
+  DCHECK_EQ(web_observations.size(), observations.size());
+
   // TODO(dmurph): Avoid getting and setting repeated times.
   for (const auto& idx : observation_indices) {
     records_
-        .insert(observations[idx].object_store_id,
+        .insert(web_observations[idx].object_store_id,
                 HeapVector<Member<IDBObservation>>())
-        .stored_value->value.push_back(
-            IDBObservation::Create(observations[idx], isolate));
+        .stored_value->value.emplace_back(observations[idx]);
   }
 }
 

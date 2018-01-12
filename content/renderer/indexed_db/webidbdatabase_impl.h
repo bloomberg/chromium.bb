@@ -77,14 +77,14 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
            long long object_store_id,
            const blink::WebData& value,
            const blink::WebVector<blink::WebBlobInfo>&,
-           const blink::WebIDBKey&,
+           blink::WebIDBKeyView primary_key,
            blink::WebIDBPutMode,
            blink::WebIDBCallbacks*,
            const blink::WebVector<long long>& index_ids,
-           const blink::WebVector<WebIndexKeys>&) override;
+           blink::WebVector<WebIndexKeys>) override;
   void SetIndexKeys(long long transaction_id,
                     long long object_store_id,
-                    const blink::WebIDBKey&,
+                    blink::WebIDBKeyView primary_key,
                     const blink::WebVector<long long>& index_ids,
                     const blink::WebVector<WebIndexKeys>&) override;
   void SetIndexesReady(long long transaction_id,
@@ -103,6 +103,10 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
              long long index_id,
              const blink::WebIDBKeyRange&,
              blink::WebIDBCallbacks*) override;
+  void Delete(long long transaction_id,
+              long long object_store_id,
+              blink::WebIDBKeyView primary_key,
+              blink::WebIDBCallbacks*) override;
   void DeleteRange(long long transaction_id,
                    long long object_store_id,
                    const blink::WebIDBKeyRange&,

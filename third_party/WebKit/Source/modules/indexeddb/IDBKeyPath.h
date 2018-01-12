@@ -65,7 +65,7 @@ class MODULES_EXPORT IDBKeyPath {
     return array_;
   }
 
-  const String& GetString() const {
+  const String& String() const {
     DCHECK_EQ(type_, kStringType);
     return string_;
   }
@@ -76,8 +76,8 @@ class MODULES_EXPORT IDBKeyPath {
 
  private:
   Type type_;
-  String string_;
-  Vector<String> array_;
+  class String string_;
+  Vector<class String> array_;
 };
 
 }  // namespace blink

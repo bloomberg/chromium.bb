@@ -49,14 +49,15 @@ struct NativeValueTraits<SQLValue> {
 };
 
 template <>
-struct NativeValueTraits<IDBKey*> {
-  static IDBKey* NativeValue(v8::Isolate*,
-                             v8::Local<v8::Value>,
-                             ExceptionState&);
-  MODULES_EXPORT static IDBKey* NativeValue(v8::Isolate*,
-                                            v8::Local<v8::Value>,
-                                            ExceptionState&,
-                                            const IDBKeyPath&);
+struct NativeValueTraits<std::unique_ptr<IDBKey>> {
+  static std::unique_ptr<IDBKey> NativeValue(v8::Isolate*,
+                                             v8::Local<v8::Value>,
+                                             ExceptionState&);
+  MODULES_EXPORT static std::unique_ptr<IDBKey> NativeValue(
+      v8::Isolate*,
+      v8::Local<v8::Value>,
+      ExceptionState&,
+      const IDBKeyPath&);
 };
 
 template <>

@@ -219,10 +219,11 @@ class MODULES_EXPORT IDBValueUnwrapper {
   // True if at least one of the IDBValues' data was wrapped in a Blob.
   static bool IsWrapped(const Vector<std::unique_ptr<IDBValue>>&);
 
-  // Pieces together an unwrapped IDBValue from a wrapped value and Blob data.
-  static std::unique_ptr<IDBValue> Unwrap(
-      std::unique_ptr<IDBValue> wrapped_value,
-      scoped_refptr<SharedBuffer>&& wrapper_blob_content);
+  // Unwraps an IDBValue that has wrapped Blob data.
+  //
+  // The caller should own the IDBValue (have a std::unique_ptr for it).
+  static void Unwrap(scoped_refptr<SharedBuffer>&& wrapper_blob_content,
+                     IDBValue* wrapped_value);
 
   // Parses the wrapper Blob information from a wrapped IDBValue.
   //

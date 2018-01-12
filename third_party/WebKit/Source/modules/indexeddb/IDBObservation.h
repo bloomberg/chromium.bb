@@ -24,7 +24,10 @@ class IDBObservation final : public ScriptWrappable {
 
  public:
   static WebIDBOperationType StringToOperationType(const String&);
-  static IDBObservation* Create(const WebIDBObservation&, v8::Isolate*);
+
+  // Consumes the WebIDBObservation.
+  static IDBObservation* Create(WebIDBObservation, v8::Isolate*);
+
   ~IDBObservation();
 
   void Trace(blink::Visitor*);
@@ -35,7 +38,8 @@ class IDBObservation final : public ScriptWrappable {
   const String& type() const;
 
  private:
-  IDBObservation(const WebIDBObservation&, v8::Isolate*);
+  IDBObservation(WebIDBObservation, v8::Isolate*);
+
   Member<IDBKeyRange> key_range_;
   Member<IDBAny> value_;
   const WebIDBOperationType operation_type_;
