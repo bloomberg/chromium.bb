@@ -439,6 +439,7 @@ void TypingCommand::InsertText(
   ABORT_EDITING_COMMAND_IF(!command->Apply());
 
   if (change_selection) {
+    ABORT_EDITING_COMMAND_IF(!current_selection.IsValidFor(document));
     const SelectionInDOMTree& current_selection_as_dom =
         current_selection.AsSelection();
     command->SetEndingSelection(
