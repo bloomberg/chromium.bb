@@ -36,10 +36,14 @@
           on-keys-pressed="onKeysPress_"></iron-a11y-keys>
       <div class="start">
         <paper-input id="newWord" no-label-float value="{{newWordValue_}}"
-            label="$i18n{addDictionaryWordLabel}"></paper-input>
+            label="$i18n{addDictionaryWordLabel}"
+            invalid="[[isWordInvalid_(newWordValue_)]]"
+            error-message="[[isWordInvalid_(newWordValue_,
+                '$i18nPolymer{addDictionaryWordDuplicateError}',
+                '$i18nPolymer{addDictionaryWordLengthError}')]]"></paper-input>
       </div>
       <paper-button class="secondary-button" on-tap="onAddWordTap_"
-          disabled="[[!validateWord_(newWordValue_)]]" id="addWord">
+          disabled="[[disableAddButton_(newWordValue_)]]" id="addWord">
         $i18n{addDictionaryWordButton}
       </paper-button>
     </div>
