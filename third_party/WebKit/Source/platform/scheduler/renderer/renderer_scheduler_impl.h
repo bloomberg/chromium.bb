@@ -719,20 +719,28 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   };
 
   struct AnyThread {
-    AnyThread();
+    explicit AnyThread(RendererSchedulerImpl* renderer_scheduler_impl);
     ~AnyThread();
 
     base::TimeTicks last_idle_period_end_time;
     base::TimeTicks fling_compositor_escalation_deadline;
     UserModel user_model;
-    bool awaiting_touch_start_response;
-    bool in_idle_period;
-    bool begin_main_frame_on_critical_path;
-    bool last_gesture_was_compositor_driven;
-    bool default_gesture_prevented;
-    bool have_seen_a_potentially_blocking_gesture;
-    bool waiting_for_meaningful_paint;
-    bool have_seen_input_since_navigation;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        awaiting_touch_start_response;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        in_idle_period;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        begin_main_frame_on_critical_path;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        last_gesture_was_compositor_driven;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        default_gesture_prevented;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        have_seen_a_potentially_blocking_gesture;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        waiting_for_meaningful_paint;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        have_seen_input_since_navigation;
   };
 
   struct CompositorThreadOnly {
