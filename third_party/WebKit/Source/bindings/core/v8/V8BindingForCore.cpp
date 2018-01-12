@@ -909,11 +909,12 @@ v8::Isolate* ToIsolate(LocalFrame* frame) {
 }
 
 v8::Local<v8::Value> FromJSONString(v8::Isolate* isolate,
+                                    v8::Local<v8::Context> context,
                                     const String& stringified_json,
                                     ExceptionState& exception_state) {
   v8::Local<v8::Value> parsed;
   v8::TryCatch try_catch(isolate);
-  if (!v8::JSON::Parse(isolate, V8String(isolate, stringified_json))
+  if (!v8::JSON::Parse(context, V8String(isolate, stringified_json))
            .ToLocal(&parsed)) {
     if (try_catch.HasCaught())
       exception_state.RethrowV8Exception(try_catch.Exception());
