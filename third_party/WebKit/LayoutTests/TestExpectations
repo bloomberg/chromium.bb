@@ -3552,7 +3552,3 @@ crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 # This test is flaky and times out on Windows 7 bots. It also times out on MSAN
 # bots due to taling too long to complete.
 crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Pass Timeout ]
-
-#Sheriff failures 2018-01-12
-# This test is flaky heavily on WebKit Linux Trusty bot.
-crbug.com/801533 [ Linux ] virtual/spv175/compositing/gestures/gesture-tapHighlight-form-input-text.html [ Pass Failure ]
