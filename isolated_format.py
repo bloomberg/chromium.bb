@@ -587,8 +587,8 @@ def load_isolated(content, algo):
       raise IsolatedError('Unknown key %r' % key)
 
   # Automatically fix os.path.sep if necessary. While .isolated files are always
-  # in the the native path format, someone could want to download an .isolated
-  # tree from another OS.
+  # in the native path format, someone could want to download an .isolated tree
+  # from another OS.
   wrong_path_sep = '/' if os.path.sep == '\\' else '\\'
   if 'files' in data:
     data['files'] = dict(
