@@ -1,64 +1,16 @@
+
 # Perf Try Bots
 
 [TOC]
 
-## What are perf try bots?
+## What is a perf try job?
 
 Chrome has a performance lab with dozens of device and OS configurations. You
-can run performance tests on an unsubmitted CL on these devices using the
-perf try bots.
+can run performance tests on an unsubmitted CL on these devices using Pinpoint. The specified CL will be run against tip-of-tree with and without the CL applied.
 
 ## Supported platforms
 
-The platforms available in the lab change over time. To find the currently
-available platforms, run `tools/perf/run_benchmark try --help`.
-
-Example output:
-
-```
-> tools/perf/run_benchmark try --help
-usage: Run telemetry benchmarks on trybot. You can add all the benchmark options available except the --browser option
-       [-h] [--repo_path <repo path>] [--deps_revision <deps revision>]
-       <trybot name> <benchmark name>
-
-positional arguments:
-  <trybot name>         specify which bots to run telemetry benchmarks on.  Allowed values are:
-                        Mac Builder
-                        all
-                        all-android
-                        all-linux
-                        all-mac
-                        all-win
-                        android-fyi
-                        android-nexus5
-                        android-nexus5X
-                        android-nexus6
-                        android-nexus7
-                        android-one
-                        android-webview-arm64-aosp
-                        android-webview-nexus6-aosp
-                        linux
-                        mac-10-11
-                        mac-10-12
-                        mac-10-12-mini-8gb
-                        mac-air
-                        mac-pro
-                        mac-retina
-                        staging-android-nexus5X
-                        staging-linux
-                        staging-mac-10-12
-                        staging-win
-                        win
-                        win-8
-                        win-x64
-                        winx64-10
-                        winx64-high-dpi
-                        winx64-zen
-                        winx64ati
-                        winx64intel
-                        winx64nvidia
-
-```
+The platforms available in the lab change over time. To see the currently supported platofrms, click the "configuration" dropdown on the dialog.
 
 ## Supported benchmarks
 
@@ -71,29 +23,34 @@ which test Chrome's performance at a high level, and the
 [benchmark harnesses](https://docs.google.com/spreadsheets/d/1ZdQ9OHqEjF5v8dqNjd7lGUjJnK6sgi8MiqO7eZVMgD0/edit#gid=0),
 which cover more specific areas.
 
+
 ## Starting a perf try job
 
-Use this command line:
+![Pinpoint Perf Try Button](images/pinpoint-perf-try-button.png)
 
-`tools/perf/run_benchmark try <trybot_name> <benchmark_name>`
+Visit [Pinpoint](https://pinpoint-dot-chromeperf.appspot.com) and click the perf try button in the bottom right corner of the screen.
 
-See above for how to choose a trybot and benchmark.
+You should see the following dialog popup:
 
-Run `tools/perf/run_benchmark try --help` for more information about available
-options.
+![Perf Try Dialog](images/pinpoint-perf-try-dialog.png)
 
-## Specifying additional tracing categories
 
-You can add `--extra-chrome-categories` to specify additional tracing
-categories.
+**Build Arguments**| **Description**
+--- | ---
+Bug Id | (optional) A bug ID.
+Gerrit URL | The patch you want to run the benchmark on.
+Configuration | The configuration to run the test on.
+Browser | (optional) The specific browser to use for the test.
 
-## Interpreting the results
+**Test Arguments**| **Description**
+--- | ---
+Benchmark | A telemetry benchmark, eg. system_health.common_desktop
+Story | (optional) A specific story from the benchmark to run.
+Extra Test Arguments | (optional) Extra arguments for the test, eg. --extra-chrome-categories="foo,bar"
 
-Perf trybots create a code review under the covers to hold the trybot results.
-The code review will list links to buildbot status pages for the try jobs.
-On each buildbot status page, you will see a "HTML Results" link. You can click
-it to see detailed information about the performance test results with and
-without your patch.
-
-**[Here is the documentation](https://github.com/catapult-project/catapult/blob/master/docs/metrics-results-ui.md)**
-on reading the results.
+**Values Arguments**| **Description**
+--- | ---
+Chart | (optional) Please ignore.
+TIR Label | (optional) Please ignore.
+Trace | (optional) Please ignore.
+Statistic | (optional) Please ignore.
