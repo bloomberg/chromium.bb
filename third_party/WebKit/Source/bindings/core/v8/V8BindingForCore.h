@@ -394,12 +394,13 @@ NodeFilter* ToNodeFilter(v8::Local<v8::Value>,
                          ScriptState*);
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
-template <typename VectorType>
-VectorType ToImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
-                           int start_index,
-                           ExceptionState& exception_state) {
-  using ValueType = typename VectorType::ValueType;
-  using TraitsType = NativeValueTraits<ValueType>;
+template <typename IDLType>
+typename VectorOf<typename NativeValueTraits<IDLType>::ImplType>::type
+ToImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
+                int start_index,
+                ExceptionState& exception_state) {
+  using TraitsType = NativeValueTraits<IDLType>;
+  using VectorType = typename VectorOf<typename TraitsType::ImplType>::type;
 
   int length = info.Length();
   VectorType result;
@@ -430,22 +431,6 @@ CORE_EXPORT v8::Local<v8::Object> GetEsIterator(v8::Isolate*,
 CORE_EXPORT bool HasCallableIteratorSymbol(v8::Isolate*,
                                            v8::Local<v8::Value>,
                                            ExceptionState&);
-
-// TODO(rakuco): remove the specializations below (and consequently the
-// non-IDLBase version of NativeValueTraitsBase) once we manage to convert all
-// uses of NativeValueTraits to types that derive from IDLBase or for generated
-// IDL interfaces/dictionaries/unions.
-template <>
-struct NativeValueTraits<String> {
-  static inline String NativeValue(v8::Isolate* isolate,
-                                   v8::Local<v8::Value> value,
-                                   ExceptionState& exception_state) {
-    V8StringResource<> string_value(value);
-    if (!string_value.Prepare(exception_state))
-      return String();
-    return string_value;
-  }
-};
 
 CORE_EXPORT v8::Isolate* ToIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* ToIsolate(LocalFrame*);
