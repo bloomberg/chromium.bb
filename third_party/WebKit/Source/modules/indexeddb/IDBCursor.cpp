@@ -51,7 +51,7 @@ namespace blink {
 IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
                              WebIDBCursorDirection direction,
                              IDBRequest* request,
-                             IDBAny* source,
+                             const Source& source,
                              IDBTransaction* transaction) {
   return new IDBCursor(std::move(backend), direction, request, source,
                        transaction);
@@ -60,7 +60,7 @@ IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
 IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
                      WebIDBCursorDirection direction,
                      IDBRequest* request,
-                     IDBAny* source,
+                     const Source& source,
                      IDBTransaction* transaction)
     : backend_(std::move(backend)),
       request_(request),
@@ -69,8 +69,7 @@ IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
       transaction_(transaction) {
   DCHECK(backend_);
   DCHECK(request_);
-  DCHECK(source_->GetType() == IDBAny::kIDBObjectStoreType ||
-         source_->GetType() == IDBAny::kIDBIndexType);
+  DCHECK(!source_.IsNull());
   DCHECK(transaction_);
 }
 
@@ -223,7 +222,7 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
     return;
   }
 
-  if (source_->GetType() != IDBAny::kIDBIndexType) {
+  if (!source_.IsIDBIndex()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "The cursor's source is not an index.");
     return;
@@ -417,8 +416,8 @@ ScriptValue IDBCursor::value(ScriptState* script_state) {
   return script_value;
 }
 
-ScriptValue IDBCursor::source(ScriptState* script_state) const {
-  return ScriptValue::From(script_state, source_);
+void IDBCursor::source(Source& source) const {
+  source = source_;
 }
 
 void IDBCursor::SetValueReady(std::unique_ptr<IDBKey> key,
@@ -468,15 +467,15 @@ const IDBKey* IDBCursor::IdbPrimaryKey() const {
 }
 
 IDBObjectStore* IDBCursor::EffectiveObjectStore() const {
-  if (source_->GetType() == IDBAny::kIDBObjectStoreType)
-    return source_->IdbObjectStore();
-  return source_->IdbIndex()->objectStore();
+  if (source_.IsIDBObjectStore())
+    return source_.GetAsIDBObjectStore();
+  return source_.GetAsIDBIndex()->objectStore();
 }
 
 bool IDBCursor::IsDeleted() const {
-  if (source_->GetType() == IDBAny::kIDBObjectStoreType)
-    return source_->IdbObjectStore()->IsDeleted();
-  return source_->IdbIndex()->IsDeleted();
+  if (source_.IsIDBObjectStore())
+    return source_.GetAsIDBObjectStore()->IsDeleted();
+  return source_.GetAsIDBIndex()->IsDeleted();
 }
 
 WebIDBCursorDirection IDBCursor::StringToDirection(
