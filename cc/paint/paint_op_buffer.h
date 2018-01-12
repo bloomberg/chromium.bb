@@ -855,6 +855,22 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     AnalyzeAddedOp(op);
   }
 
+  template <typename T>
+  void AnalyzeAddedOp(const T* op) {
+    static_assert(!std::is_same<T, PaintOp>::value,
+                  "AnalyzeAddedOp needs a subtype of PaintOp");
+
+    num_slow_paths_ += op->CountSlowPathsFromFlags();
+    num_slow_paths_ += op->CountSlowPaths();
+
+    has_non_aa_paint_ |= op->HasNonAAPaint();
+
+    has_discardable_images_ |= op->HasDiscardableImages();
+    has_discardable_images_ |= op->HasDiscardableImagesFromFlags();
+
+    subrecord_bytes_used_ += op->AdditionalBytesUsed();
+  }
+
   class CC_PAINT_EXPORT Iterator {
    public:
     explicit Iterator(const PaintOpBuffer* buffer)
@@ -1046,19 +1062,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void ReallocBuffer(size_t new_size);
   // Returns the allocated op.
   void* AllocatePaintOp(size_t skip);
-
-  template <typename T>
-  void AnalyzeAddedOp(const T* op) {
-    num_slow_paths_ += op->CountSlowPathsFromFlags();
-    num_slow_paths_ += op->CountSlowPaths();
-
-    has_non_aa_paint_ |= op->HasNonAAPaint();
-
-    has_discardable_images_ |= op->HasDiscardableImages();
-    has_discardable_images_ |= op->HasDiscardableImagesFromFlags();
-
-    subrecord_bytes_used_ += op->AdditionalBytesUsed();
-  }
 
   std::unique_ptr<char, base::AlignedFreeDeleter> data_;
   size_t used_ = 0;

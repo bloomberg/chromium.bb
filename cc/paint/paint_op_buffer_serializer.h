@@ -28,9 +28,15 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
     gfx::Vector2dF post_translation;
     float post_scale = 1.f;
   };
+  // Serialize the buffer with a preamble. This function wraps the buffer in a
+  // save/restore and includes any translations and/or scales as specified by
+  // the preamble.
   void Serialize(const PaintOpBuffer* buffer,
                  const std::vector<size_t>* offsets,
                  const Preamble& preamble);
+  // Serialize the buffer without a preamble. This function serializes the whole
+  // buffer without any extra ops added.
+  void Serialize(const PaintOpBuffer* buffer);
 
   bool valid() const { return valid_; }
 

@@ -196,6 +196,14 @@ TYPES(M);
 TYPES(M);
 #undef M
 
+using AnalyzeOpFunc = void (*)(PaintOpBuffer*, const PaintOp*);
+#define M(T)                                           \
+  [](PaintOpBuffer* buffer, const PaintOp* op) {       \
+    buffer->AnalyzeAddedOp(static_cast<const T*>(op)); \
+  },
+static const AnalyzeOpFunc g_analyze_op_functions[kNumOpTypes] = {TYPES(M)};
+#undef M
+
 #undef TYPES
 
 const SkRect PaintOp::kUnsetRect = {SK_ScalarInfinity, 0, 0, 0};
@@ -1959,7 +1967,7 @@ DrawImageOp::DrawImageOp(const PaintImage& image,
 bool DrawImageOp::HasDiscardableImages() const {
   // TODO(khushalsagar): Callers should not be able to change the lazy generated
   // state for a PaintImage.
-  return image.IsLazyGenerated();
+  return image && image.IsLazyGenerated();
 }
 
 DrawImageOp::~DrawImageOp() = default;
@@ -1978,7 +1986,7 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       constraint(constraint) {}
 
 bool DrawImageRectOp::HasDiscardableImages() const {
-  return image.IsLazyGenerated();
+  return image && image.IsLazyGenerated();
 }
 
 DrawImageRectOp::~DrawImageRectOp() = default;
@@ -2225,10 +2233,10 @@ sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
     const volatile void* input,
     size_t input_size,
     const PaintOp::DeserializeOptions& options) {
-  if (input_size == 0)
-    return nullptr;
-
   auto buffer = sk_make_sp<PaintOpBuffer>();
+  if (input_size == 0)
+    return buffer;
+
   size_t total_bytes_read = 0u;
   while (total_bytes_read < input_size) {
     const volatile void* next_op =
@@ -2253,7 +2261,7 @@ sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
       return nullptr;
     }
 
-    buffer->AnalyzeAddedOp(op);
+    g_analyze_op_functions[type](buffer.get(), op);
     total_bytes_read += skip;
   }
 
