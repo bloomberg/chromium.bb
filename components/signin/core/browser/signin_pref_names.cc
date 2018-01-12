@@ -59,11 +59,6 @@ const char kGoogleServicesLastAccountId[] = "google.services.last_account_id";
 // instead.
 const char kGoogleServicesLastUsername[] = "google.services.last_username";
 
-// Int64 as time from epoch of when next RefreshTokenAnnotationRequest should be
-// sent.
-const char kGoogleServicesRefreshTokenAnnotateScheduledTime[] =
-    "google.services.refresh_token_annotate_scheduled_time";
-
 // Device id scoped to single signin. This device id will be regenerated if user
 // signs out and signs back in. When refresh token is requested for this user it
 // will be annotated with this device id.

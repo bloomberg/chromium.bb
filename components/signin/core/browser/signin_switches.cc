@@ -26,10 +26,6 @@ const char kAccountConsistencyMirror[] = "mirror";
 const char kAccountConsistencyDice[] = "dice";
 #endif
 
-// Enables sending EnableRefreshTokenAnnotationRequest.
-const char kEnableRefreshTokenAnnotationRequest[] =
-    "enable-refresh-token-annotation-request";
-
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";
 

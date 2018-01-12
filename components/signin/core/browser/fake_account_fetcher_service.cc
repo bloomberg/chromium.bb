@@ -46,8 +46,3 @@ void FakeAccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
 }
-
-void FakeAccountFetcherService::SendRefreshTokenAnnotationRequest(
-    const std::string& account_id) {
-  // In tests, don't do actual network fetch.
-}

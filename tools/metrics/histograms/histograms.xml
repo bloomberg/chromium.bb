@@ -81372,6 +81372,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Signin.RefreshTokenAnnotationRequest" enum="BooleanSuccess">
+  <obsolete>
+    Removed this histogram along with the code that was logging it.
+  </obsolete>
   <owner>pavely@chromium.org</owner>
   <summary>
     Track when chrome successfully sends RefreshTokenAnnotationRequest.
