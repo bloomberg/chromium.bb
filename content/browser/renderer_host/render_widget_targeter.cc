@@ -76,6 +76,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
 
   RenderWidgetTargetResult result =
       delegate_->FindTargetSynchronously(root_view, event);
+
   RenderWidgetHostViewBase* target = result.view;
   auto* event_ptr = &event;
   if (result.should_query_view) {
@@ -92,7 +93,6 @@ void RenderWidgetTargeter::QueryClient(
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
   DCHECK(!request_in_flight_);
-  DCHECK(target_location.has_value());
   request_in_flight_ = true;
   auto* target_client =
       target->GetRenderWidgetHostImpl()->input_target_client();
@@ -113,6 +113,27 @@ void RenderWidgetTargeter::QueryClient(
                        weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
                        target->GetWeakPtr(),
                        static_cast<const blink::WebMouseWheelEvent&>(event),
+                       latency, target_location));
+  } else if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
+    auto touch_event = static_cast<const blink::WebTouchEvent&>(event);
+    DCHECK(touch_event.GetType() == blink::WebInputEvent::kTouchStart);
+    target_client->FrameSinkIdAt(
+        gfx::ToCeiledPoint(target_location.value()),
+        base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
+                       weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
+                       target->GetWeakPtr(),
+                       static_cast<const blink::WebTouchEvent&>(event), latency,
+                       target_location));
+  } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
+    auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
+    DCHECK(gesture_event.source_device ==
+           blink::WebGestureDevice::kWebGestureDeviceTouchscreen);
+    target_client->FrameSinkIdAt(
+        gfx::ToCeiledPoint(target_location.value()),
+        base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
+                       weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
+                       target->GetWeakPtr(),
+                       static_cast<const blink::WebGestureEvent&>(event),
                        latency, target_location));
   } else {
     // TODO(crbug.com/796656): Handle other types of events.
@@ -183,6 +204,14 @@ void RenderWidgetTargeter::FoundTarget(
   } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
     delegate_->DispatchEventToTarget(
         root_view, target, static_cast<const blink::WebMouseWheelEvent&>(event),
+        latency);
+  } else if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
+    delegate_->DispatchEventToTarget(
+        root_view, target, static_cast<const blink::WebTouchEvent&>(event),
+        latency);
+  } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
+    delegate_->DispatchEventToTarget(
+        root_view, target, static_cast<const blink::WebGestureEvent&>(event),
         latency);
   } else {
     // TODO(crbug.com/796656): Handle other types of events.

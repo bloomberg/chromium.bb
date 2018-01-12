@@ -2129,8 +2129,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     touch_event.touches[0].SetPositionInWidget(point_in_child.x(),
                                                point_in_child.y());
     touch_event.unique_touch_event_id = 1;
+    InputEventAckWaiter waiter(rwhv_child->GetRenderWidgetHost(),
+                               blink::WebInputEvent::kTouchStart);
     router->RouteTouchEvent(rwhv_root, &touch_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    // With async hit testing, make sure the target for the initial TouchStart
+    // is resolved before sending the rest of the stream.
+    waiter.Wait();
 
     blink::WebGestureEvent gesture_event(
         blink::WebInputEvent::kGestureTapDown,
@@ -6943,11 +6948,14 @@ uint32_t SendTouchTapWithExpectedTarget(
                          /* radius_x */ 30.0f,
                          /* radius_y */ 30.0f,
                          /* force */ 0.0f));
+  InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kTouchStart);
   root_view_aura->OnTouchEvent(&touch_event_pressed);
   if (child_render_widget_host != nullptr) {
     MainThreadFrameObserver observer(child_render_widget_host);
     observer.Wait();
   }
+  waiter.Wait();
   EXPECT_EQ(expected_target, router_touch_target);
   ui::TouchEvent touch_event_released(
       ui::ET_TOUCH_RELEASED, touch_point, ui::EventTimeForNow(),
@@ -9918,7 +9926,8 @@ class SitePerProcessGestureBrowserTest : public SitePerProcessBrowserTest {
   // be expanded to include additional events such as one or more
   // GestureScrollUpdate and GesturePinchUpdate events.
   void SendPinchBeginEndSequence(RenderWidgetHostViewAura* rwhva,
-                                 const gfx::Point& position) {
+                                 const gfx::Point& position,
+                                 RenderWidgetHost* expected_target_rwh) {
     DCHECK(rwhva);
     // Use full version of constructor with radius, angle and force since it
     // will crash in the renderer otherwise.
@@ -9929,7 +9938,10 @@ class SitePerProcessGestureBrowserTest : public SitePerProcessBrowserTest {
                            /* radius_x */ 1.0f,
                            /* radius_y */ 1.0f,
                            /* force */ 1.0f));
+    InputEventAckWaiter waiter(expected_target_rwh,
+                               blink::WebInputEvent::kTouchStart);
     rwhva->OnTouchEvent(&touch_pressed);
+    waiter.Wait();
     ui::TouchEvent touch_released(
         ui::ET_TOUCH_RELEASED, position, ui::EventTimeForNow(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
@@ -10026,7 +10038,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureBrowserTest,
   // Need child rect in main frame coords.
   gfx::Rect bounds = rwhv_child_->GetViewBounds();
   bounds.Offset(gfx::Point() - rwhva_root_->GetViewBounds().origin());
-  SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint());
+  SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint(), rwhi_child_);
 
   // Verify root-RWHI gets GSB/GPB/GPE/GSE.
   EXPECT_TRUE(root_frame_monitor.EventWasReceived());
@@ -10066,7 +10078,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureBrowserTest,
 
   gfx::Point main_frame_point(bounds.origin());
   main_frame_point += gfx::Vector2d(-5, -5);
-  SendPinchBeginEndSequence(rwhva_root_, main_frame_point);
+  SendPinchBeginEndSequence(rwhva_root_, main_frame_point, rwhi_root_);
 
   // Verify root-RWHI gets TS/TE/GTD/GSB/GPB/GPE/GSE.
   EXPECT_TRUE(root_frame_monitor.EventWasReceived());

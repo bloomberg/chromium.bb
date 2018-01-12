@@ -4481,8 +4481,12 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   guest_rect.Offset(-embedder_origin.x(), -embedder_origin.y());
 
   // Generate and send synthetic touch event.
+  content::InputEventAckWaiter waiter(
+      GetGuestWebContents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kTouchStart);
   content::SimulateTouchPressAt(GetEmbedderWebContents(),
                                 guest_rect.CenterPoint());
+  waiter.Wait();
   EXPECT_TRUE(aura_webview->HasFocus());
 }
 #endif
