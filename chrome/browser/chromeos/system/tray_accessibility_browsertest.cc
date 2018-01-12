@@ -968,7 +968,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
+// Flaky crashes on linux-chromeos-rel and linux-chromeos-dbg.
+// http://crbug.com/801700
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowNotification) {
   const base::string16 BRAILLE_CONNECTED =
       base::ASCIIToUTF16("Braille display connected.");
   const base::string16 CHROMEVOX_ENABLED =
