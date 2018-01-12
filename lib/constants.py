@@ -327,9 +327,9 @@ DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
 DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
 
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
-ANDROID_MASTER_ARC_DEV_BUILD_BRANCH = 'git_master-arc-dev'
+ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
-ANDROID_MASTER_ARC_DEV_BUILD_TARGETS = {
+ANDROID_MST_BUILD_TARGETS = {
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
@@ -1090,6 +1090,7 @@ PFQ_MASTER = 'master-chromium-pfq'
 BINHOST_PRE_CQ = 'binhost-pre-cq'
 WIFICELL_PRE_CQ = 'wificell-pre-cq'
 BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
+MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 

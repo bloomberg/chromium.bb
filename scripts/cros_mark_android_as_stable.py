@@ -344,8 +344,8 @@ def MakeBuildTargetDict(build_branch):
   Raises:
     ValueError: if the Android build branch is invalid.
   """
-  if build_branch == constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH:
-    return constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS
+  if build_branch == constants.ANDROID_MST_BUILD_BRANCH:
+    return constants.ANDROID_MST_BUILD_TARGETS
   elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
     return constants.ANDROID_NYC_BUILD_TARGETS
   else:

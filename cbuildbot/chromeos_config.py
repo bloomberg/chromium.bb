@@ -2195,6 +2195,16 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       android_gts_build_branch='git_nyc-mr2-dev',
   )
 
+  # Template for Android Master.
+  site_config.AddTemplate(
+      'mst_android_pfq',
+      site_config.templates.generic_android_pfq,
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_MST_ANDROID_PFQ,
+      android_package='android-container-master-arc-dev',
+      android_import_branch=constants.ANDROID_MST_BUILD_BRANCH,
+  )
+
   # Mixin for masters.
   site_config.AddTemplate(
       'master_android_pfq_mixin',
@@ -2209,6 +2219,20 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   # Android PFQ masters.
   # Any additions of Android PFQ masters should be reflected by a
   # change in lib/constants.py SOM_BUILDS to add Sheriff-o-Matic coverage.
+
+  # Android MST master.
+  mst_master_config = site_config.Add(
+      constants.MST_ANDROID_PFQ_MASTER,
+      site_config.templates.mst_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+  )
+
+  _mst_hwtest_boards = frozenset([])
+  _mst_no_hwtest_boards = frozenset([
+      'eve-arcnext',
+  ])
+  _mst_no_hwtest_experimental_boards = frozenset([])
+  _mst_vmtest_boards = frozenset([])
 
   # Android NYC master.
   nyc_master_config = site_config.Add(
@@ -2235,6 +2259,41 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'betty',
       'betty-arc64',
   ])
+
+  # Android MST slaves.
+  mst_master_config.AddSlaves(
+      site_config.AddForBoards(
+          'mst-android-pfq',
+          _mst_hwtest_boards,
+          board_configs,
+          site_config.templates.mst_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'mst-android-pfq',
+          _mst_no_hwtest_boards,
+          board_configs,
+          site_config.templates.mst_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'mst-android-pfq',
+          _mst_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.mst_android_pfq,
+          important=False,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+      ) +
+      site_config.AddForBoards(
+          'mst-android-pfq',
+          _mst_vmtest_boards,
+          board_configs,
+          site_config.templates.mst_android_pfq,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke'),
+                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      )
+  )
+
 
   # Android NYC slaves.
   nyc_master_config.AddSlaves(

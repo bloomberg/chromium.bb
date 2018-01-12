@@ -462,30 +462,30 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(acls['X86_INTERNAL'],
                       os.path.join(self.mock_android_dir,
                                    'googlestorage_acl_internal.txt'))
-    # Test that all MASTER_ARC_DEV targets have their ACLs set.
+    # Test that all MST targets have their ACLs set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
-        constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH).keys():
+        constants.ANDROID_MST_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
     # Test that all NYC targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
 
-  def testMakeBuildTargetDictMASTER_ARC_DEV(self):
-    """Test generation of MASTER_ARC_DEV build target dictionary.
+  def testMakeBuildTargetDictMST(self):
+    """Test generation of MST build target dictionary.
 
-    If the number of targets is correct and MASTER_ARC_DEV-specific targets are
+    If the number of targets is correct and MST-specific targets are
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
-        constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH)
+        constants.ANDROID_MST_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEquals(len(targets),
-                      len(constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS))
+                      len(constants.ANDROID_MST_BUILD_TARGETS))
     # Test that all MASTER-specific targets are in the dictionary.
-    for target in constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS:
+    for target in constants.ANDROID_MST_BUILD_TARGETS:
       self.assertEquals(targets[target],
-                        constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS[target])
+                        constants.ANDROID_MST_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictNYC(self):
     """Test generation of NYC build target dictionary.
