@@ -695,8 +695,11 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
       CreateVisiblePosition(pos.ToPositionWithAffinity());
   const VisiblePosition& start =
       StartOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
+  // InsertListCommandTest.InsertListOnEmptyHiddenElements reaches here.
+  ABORT_EDITING_COMMAND_IF(start.IsNull());
   const VisiblePosition& end =
       EndOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
+  ABORT_EDITING_COMMAND_IF(end.IsNull());
   MoveParagraph(start, end, VisiblePosition::BeforeNode(*placeholder),
                 editing_state, kPreserveSelection);
 }

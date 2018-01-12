@@ -92,4 +92,20 @@ TEST_F(InsertListCommandTest, CleanupNodeSameAsDestinationNode) {
       "<button></button>",
       GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
+
+TEST_F(InsertListCommandTest, InsertListOnEmptyHiddenElements) {
+  GetDocument().setDesignMode("on");
+  InsertStyleElement("br { visibility:hidden; }");
+  Selection().SetSelection(SetSelectionTextToBody("^<button></button>|"));
+  InsertListCommand* command = InsertListCommand::Create(
+      GetDocument(), InsertListCommand::kUnorderedList);
+
+  // Crash happens here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<button>"
+      "|<ul><li><br></li></ul>"
+      "</button>",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
 }
