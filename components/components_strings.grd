@@ -194,7 +194,6 @@
       <part file="dom_distiller_strings.grdp" />
       <part file="error_page_strings.grdp" />
       <part file="find_in_page_strings.grdp" />
-      <part file="flags_ui_strings.grdp" />
       <part file="history_strings.grdp" />
       <part file="login_dialog_strings.grdp" />
       <part file="new_or_sad_tab_strings.grdp" />

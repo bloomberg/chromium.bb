@@ -1,5 +1,5 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<html dir="ltr" lang="en">
 <head>
 <meta charset="utf-8">
 <if expr="not is_ios">
@@ -23,33 +23,47 @@
   <div class="flex-container">
     <div class="flex">
       <div class="search-container">
-        <input type="text" id="search" placeholder="$i18n{flagsSearchPlaceholder}"  tabindex="1">
+        <input type="text" id="search" placeholder="Search flags" tabindex="1">
         <button class="clear-search" title="Clear search" tabindex="2"></button>
       </div>
     </div>
     <div class="flex">
-      <button id="experiment-reset-all" type="button" tabindex="3">$i18n{resetAllButton}</button>
+      <button id="experiment-reset-all" type="button" tabindex="3">
+        Reset all to default
+      </button>
     </div>
   </div>
 </div>
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
     <div class="flex-container">
-      <div class="flex"><h2 class="section-header-title">$i18n{flagsTitle}</h2></div>
+      <div class="flex"><h2 class="section-header-title">Experiments</h2></div>
       <span id="version" class="flex">$i18n{version}</span>
     </div>
     <div class="blurb-container">
-      <span class="blurb-warning">$i18n{flagsWarningHeader}</span>
-      <span>$i18n{flagsBlurb}</span>
+      <span class="blurb-warning">
+         Warning: Experimental features ahead!
+      </span>
+      <span>
+        By enabling these features, you could lose browser data or
+        compromise your security or privacy. Enabled features apply to all
+        users of this browser.
+      </span>
 <if expr="chromeos">
       <p id="owner-warning">
-        <span>$i18n{ownerWarning}</span>
+        <span>Flags that apply system-wide can only be set by the owner: $i18n{ownerEmail}</span>
       </p>
 </if>
     </div>
     <p class="promo">
-      <span id="channel-promo-beta" hidden>$i18nRaw{channelPromoBeta}</span>
-      <span id="channel-promo-dev" hidden>$i18nRaw{channelPromoDev}</span>
+      <span id="channel-promo-beta" hidden>
+        Interested in cool new Chrome features? Try our
+        <a href="https://chrome.com/beta">beta channel</a>.
+      </span>
+      <span id="channel-promo-dev" hidden>
+        Interested in cool new Chrome features? Try our
+        <a href="https://chrome.com/dev">dev channel</a>
+      </span>
     </p>
     <ul class="tabs" role="tablist">
       <li class="selected">
@@ -137,7 +151,7 @@
               </div>
             </div>
           </div>
-          <div class="no-match hidden">$i18n{flagsNoMatches}</div>
+          <div class="no-match hidden">No matching experiments</div>
         </div>
       </li>
 <!-- Unsupported experiments are not shown on iOS -->
@@ -165,10 +179,12 @@
                     jsvalues="href: '#' + internal_name"
                     jscontent="'#' + internal_name" tabindex="7"></a>
               </div>
-              <div class="flex experiment-actions">$i18n{flagsNotSupported}</div>
+              <div class="flex experiment-actions">Not available on your platform.</div>
             </div>
           </div>
-          <div class="no-match hidden">$i18n{flagsNoMatches}</div>
+          <div class="no-match hidden">
+            No matching experiments
+          </div>
         </div>
       </li>
 </if>
@@ -179,7 +195,12 @@
         <div class="flex">
 <if expr="not is_ios">
           <button class="experiment-restart-button" type="button" tabindex="8">
-            $i18n{flagsRestartButton}
+<if expr="not is_chromeos">
+          Relaunch Now
+</if>
+<if expr="is_chromeos">
+          Restart Now
+</if>
           </button>
 </if>
         </div>
