@@ -13,7 +13,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
@@ -21,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -36,6 +34,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_download_manager.h"
@@ -288,121 +287,6 @@ class MockAutofillDriver : public TestAutofillDriver {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
 };
 
-class TestAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  explicit TestAutofillExternalDelegate(AutofillManager* autofill_manager,
-                                        AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(autofill_manager, autofill_driver),
-        on_query_seen_(false),
-        on_suggestions_returned_seen_(false),
-        is_all_server_suggestions_(false) {}
-  ~TestAutofillExternalDelegate() override {}
-
-  void OnQuery(int query_id,
-               const FormData& form,
-               const FormFieldData& field,
-               const gfx::RectF& bounds) override {
-    on_query_seen_ = true;
-    on_suggestions_returned_seen_ = false;
-  }
-
-  void OnSuggestionsReturned(int query_id,
-                             const std::vector<Suggestion>& suggestions,
-                             bool is_all_server_suggestions) override {
-    on_suggestions_returned_seen_ = true;
-    query_id_ = query_id;
-    suggestions_ = suggestions;
-    is_all_server_suggestions_ = is_all_server_suggestions;
-  }
-
-  void CheckSuggestions(int expected_page_id,
-                        size_t expected_num_suggestions,
-                        const Suggestion expected_suggestions[]) {
-    // Ensure that these results are from the most recent query.
-    EXPECT_TRUE(on_suggestions_returned_seen_);
-
-    EXPECT_EQ(expected_page_id, query_id_);
-    ASSERT_LE(expected_num_suggestions, suggestions_.size());
-    for (size_t i = 0; i < expected_num_suggestions; ++i) {
-      SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
-      EXPECT_EQ(expected_suggestions[i].value, suggestions_[i].value);
-      EXPECT_EQ(expected_suggestions[i].label, suggestions_[i].label);
-      EXPECT_EQ(expected_suggestions[i].icon, suggestions_[i].icon);
-      EXPECT_EQ(expected_suggestions[i].frontend_id,
-                suggestions_[i].frontend_id);
-    }
-    ASSERT_EQ(expected_num_suggestions, suggestions_.size());
-  }
-
-  // Wrappers around the above GetSuggestions call that take a hardcoded number
-  // of expected results so callsites are cleaner.
-  void CheckSuggestions(int expected_page_id, const Suggestion& suggestion0) {
-    std::vector<Suggestion> suggestion_vector;
-    suggestion_vector.push_back(suggestion0);
-    CheckSuggestions(expected_page_id, 1, &suggestion_vector[0]);
-  }
-  void CheckSuggestions(int expected_page_id,
-                        const Suggestion& suggestion0,
-                        const Suggestion& suggestion1) {
-    std::vector<Suggestion> suggestion_vector;
-    suggestion_vector.push_back(suggestion0);
-    suggestion_vector.push_back(suggestion1);
-    CheckSuggestions(expected_page_id, 2, &suggestion_vector[0]);
-  }
-  void CheckSuggestions(int expected_page_id,
-                        const Suggestion& suggestion0,
-                        const Suggestion& suggestion1,
-                        const Suggestion& suggestion2) {
-    std::vector<Suggestion> suggestion_vector;
-    suggestion_vector.push_back(suggestion0);
-    suggestion_vector.push_back(suggestion1);
-    suggestion_vector.push_back(suggestion2);
-    CheckSuggestions(expected_page_id, 3, &suggestion_vector[0]);
-  }
-  // Check that the autofill suggestions were sent, and that they match a page
-  // but contain no results.
-  void CheckNoSuggestions(int expected_page_id) {
-    CheckSuggestions(expected_page_id, 0, nullptr);
-  }
-  // Check that the autofill suggestions were sent, and that they match a page
-  // and contain a specific number of suggestions.
-  void CheckSuggestionCount(int expected_page_id,
-                            size_t expected_num_suggestions) {
-    // Ensure that these results are from the most recent query.
-    EXPECT_TRUE(on_suggestions_returned_seen_);
-
-    EXPECT_EQ(expected_page_id, query_id_);
-    ASSERT_EQ(expected_num_suggestions, suggestions_.size());
-  }
-
-  bool is_all_server_suggestions() const { return is_all_server_suggestions_; }
-
-  bool on_query_seen() const { return on_query_seen_; }
-
-  bool on_suggestions_returned_seen() const {
-    return on_suggestions_returned_seen_;
-  }
-
- private:
-  // Records if OnQuery has been called yet.
-  bool on_query_seen_;
-
-  // Records if OnSuggestionsReturned has been called after the most recent
-  // call to OnQuery.
-  bool on_suggestions_returned_seen_;
-
-  // Records whether the Autofill suggestions all come from Google Payments.
-  bool is_all_server_suggestions_;
-
-  // The query id of the most recent Autofill query.
-  int query_id_;
-
-  // The results returned by the most recent Autofill query.
-  std::vector<Suggestion> suggestions_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
-};
-
 }  // namespace
 
 class AutofillManagerTest : public testing::Test {
@@ -413,18 +297,20 @@ class AutofillManagerTest : public testing::Test {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data_.set_database(autofill_client_.GetDatabase());
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
-    autofill_driver_.reset(new testing::NiceMock<MockAutofillDriver>());
+    autofill_driver_ =
+        std::make_unique<testing::NiceMock<MockAutofillDriver>>();
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
-    autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_client_, &personal_data_));
+    autofill_manager_ = std::make_unique<TestAutofillManager>(
+        autofill_driver_.get(), &autofill_client_, &personal_data_);
     download_manager_ = new MockAutofillDownloadManager(
         autofill_driver_.get(), autofill_manager_.get());
     // AutofillManager takes ownership of |download_manager_|.
     autofill_manager_->set_download_manager(download_manager_);
-    external_delegate_.reset(new TestAutofillExternalDelegate(
-        autofill_manager_.get(), autofill_driver_.get()));
+    external_delegate_ = std::make_unique<TestAutofillExternalDelegate>(
+        autofill_manager_.get(), autofill_driver_.get(),
+        /*call_parent_methods=*/false);
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
     variation_params_.ClearAllVariationParams();
@@ -642,6 +528,35 @@ class AutofillManagerTest : public testing::Test {
   void DisableCreditCardAutofill() {
     scoped_feature_list_.InitAndEnableFeature(
         kAutofillCreditCardAblationExperiment);
+  }
+
+  // Wrappers around the TestAutofillExternalDelegate::GetSuggestions call that
+  // take a hardcoded number of expected results so callsites are cleaner.
+  void CheckSuggestions(int expected_page_id, const Suggestion& suggestion0) {
+    std::vector<Suggestion> suggestion_vector;
+    suggestion_vector.push_back(suggestion0);
+    external_delegate_->CheckSuggestions(expected_page_id, 1,
+                                         &suggestion_vector[0]);
+  }
+  void CheckSuggestions(int expected_page_id,
+                        const Suggestion& suggestion0,
+                        const Suggestion& suggestion1) {
+    std::vector<Suggestion> suggestion_vector;
+    suggestion_vector.push_back(suggestion0);
+    suggestion_vector.push_back(suggestion1);
+    external_delegate_->CheckSuggestions(expected_page_id, 2,
+                                         &suggestion_vector[0]);
+  }
+  void CheckSuggestions(int expected_page_id,
+                        const Suggestion& suggestion0,
+                        const Suggestion& suggestion1,
+                        const Suggestion& suggestion2) {
+    std::vector<Suggestion> suggestion_vector;
+    suggestion_vector.push_back(suggestion0);
+    suggestion_vector.push_back(suggestion1);
+    suggestion_vector.push_back(suggestion2);
+    external_delegate_->CheckSuggestions(expected_page_id, 3,
+                                         &suggestion_vector[0]);
   }
 
  protected:
@@ -897,9 +812,8 @@ TEST_F(AutofillManagerTest,
   // Check that suggestions are made for the field that has the autocomplete
   // attribute.
   GetAutofillSuggestions(form, form.fields[0]);
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("Charles", "", "", 1),
-                                       Suggestion("Elvis", "", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", "", "", 1),
+                   Suggestion("Elvis", "", "", 2));
 
   // Check that there are no suggestions for the field without the autocomplete
   // attribute.
@@ -933,14 +847,14 @@ TEST_F(AutofillManagerTest,
   EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
 
   GetAutofillSuggestions(form, form.fields[0]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "Charles Hardin Holley", "", 1),
-      Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "Charles Hardin Holley", "", 1),
+                   Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
 
   GetAutofillSuggestions(form, form.fields[1]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Holley", "Charles Hardin Holley", "", 1),
-      Suggestion("Presley", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Holley", "Charles Hardin Holley", "", 1),
+                   Suggestion("Presley", "Elvis Aaron Presley", "", 2));
 }
 
 // Test that for form with two fields with one that has an autocomplete
@@ -968,14 +882,14 @@ TEST_F(AutofillManagerTest,
   FormsSeen(forms);
 
   GetAutofillSuggestions(form, form.fields[0]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "Charles Hardin Holley", "", 1),
-      Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "Charles Hardin Holley", "", 1),
+                   Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
 
   GetAutofillSuggestions(form, form.fields[1]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Holley", "Charles Hardin Holley", "", 1),
-      Suggestion("Presley", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Holley", "Charles Hardin Holley", "", 1),
+                   Suggestion("Presley", "Elvis Aaron Presley", "", 2));
 }
 
 // Test that for a form with two fields with autocomplete attributes,
@@ -1002,14 +916,14 @@ TEST_F(AutofillManagerTest,
   FormsSeen(forms);
 
   GetAutofillSuggestions(form, form.fields[0]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "Charles Hardin Holley", "", 1),
-      Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "Charles Hardin Holley", "", 1),
+                   Suggestion("Elvis", "Elvis Aaron Presley", "", 2));
 
   GetAutofillSuggestions(form, form.fields[1]);
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Holley", "Charles Hardin Holley", "", 1),
-      Suggestion("Presley", "Elvis Aaron Presley", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Holley", "Charles Hardin Holley", "", 1),
+                   Suggestion("Presley", "Elvis Aaron Presley", "", 2));
 }
 
 // Test that we return all address profile suggestions when all form fields are
@@ -1027,9 +941,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
   // Test that we sent the right values to the external delegate. Inferred
   // labels include full first relevant field, which in this case is the
   // address line 1.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that the HttpWarning does not appear on non-payment forms.
@@ -1045,9 +959,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValueNotSecure) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we return only matching address profile suggestions when the
@@ -1064,8 +978,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
 }
 
 // Tests that we return address profile suggestions values when the section
@@ -1114,9 +1028,9 @@ TEST_F(AutofillManagerTest,
 
   // Test that we sent the right values to the external delegate. No labels,
   // with duplicate values "Grimes" merged.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Googler", "" /* no label */, "", 1),
-      Suggestion("Grimes", "" /* no label */, "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Googler", "" /* no label */, "", 1),
+                   Suggestion("Grimes", "" /* no label */, "", 2));
 }
 
 // Tests that we return address profile suggestions values when the section
@@ -1137,8 +1051,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate. No labels.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Elvis", "" /* no label */, "", 1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis", "" /* no label */, "", 1));
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -1183,9 +1097,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we return no suggestions when autofill is disabled.
@@ -1217,7 +1131,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1240,7 +1154,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1263,7 +1177,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1286,7 +1200,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_InvisibleUnicodeOnly) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1318,7 +1232,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right value to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "3123",
                  "08/17", kMasterCard,
@@ -1339,7 +1253,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
@@ -1368,12 +1282,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
 #endif
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("Buddy Holly", kMcSuggestion, kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(4)),
+                   Suggestion("Buddy Holly", kMcSuggestion, kMasterCard,
+                              autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
@@ -1389,10 +1302,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonSecureContext) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion(l10n_util::GetStringUTF8(
-                                     IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-                                 "", "", -1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion(l10n_util::GetStringUTF8(
+                                  IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
+                              "", "", -1));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
@@ -1417,7 +1330,7 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(
                      IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
@@ -1435,7 +1348,7 @@ TEST_F(AutofillManagerTest,
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(
                      IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
@@ -1459,7 +1372,7 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1516,10 +1429,10 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion(l10n_util::GetStringUTF8(
-                                     IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-                                 "", "", -1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion(l10n_util::GetStringUTF8(
+                                  IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
+                              "", "", -1));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
@@ -1544,7 +1457,7 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1569,7 +1482,7 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1602,7 +1515,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1627,16 +1540,16 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right address suggestions to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   GetAutofillSuggestions(kPageID2, form, field);
 
   // Test that we sent the credit card suggestions to the external delegate.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kPageID2,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
@@ -1661,19 +1574,19 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right suggestions to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
   GetAutofillSuggestions(kPageID2, form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kPageID2, Suggestion(l10n_util::GetStringUTF8(
-                               IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-                           "", "", -1));
+  CheckSuggestions(kPageID2,
+                   Suggestion(l10n_util::GetStringUTF8(
+                                  IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
+                              "", "", -1));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
@@ -1695,9 +1608,9 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
   // Check that address suggestions will still be available.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 TEST_F(AutofillManagerTest,
@@ -1752,9 +1665,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("Charles", "", "", 1),
-                                       Suggestion("Elvis", "", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", "", "", 1),
+                   Suggestion("Elvis", "", "", 2));
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1779,9 +1691,8 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   AutocompleteSuggestionsReturned(suggestions);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("one", "", "", 0),
-                                       Suggestion("two", "", "", 0));
+  CheckSuggestions(kDefaultPageID, Suggestion("one", "", "", 0),
+                   Suggestion("two", "", "", 0));
 }
 
 // Test that we do not return duplicate values drawn from multiple profiles when
@@ -1806,8 +1717,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right values to the external delegate.
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("Elvis", "", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", "", "", 1));
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
@@ -1828,7 +1738,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
 
   // Test that we sent the right values to the external delegate. Inferred
   // labels include the most private field of those that would be filled.
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion("18007724743", "Natty Bumppo", "", 1),  // 1800PRAIRIE
       Suggestion("23456789012", "123 Apple St.", "", 2),
@@ -1875,15 +1785,13 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
   GetAutofillSuggestions(form, phone_prefix);
 
   // Test that we sent the right prefix values to the external delegate.
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("356", "1800FLOWERS", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("356", "1800FLOWERS", "", 1));
 
   const FormFieldData& phone_suffix = form.fields[3];
   GetAutofillSuggestions(form, phone_suffix);
 
   // Test that we sent the right suffix values to the external delegate.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("9377", "1800FLOWERS", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("9377", "1800FLOWERS", "", 1));
 }
 
 // Test that we correctly fill an address form.
@@ -3997,9 +3905,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
   // Test that we sent the right values to the external delegate. Inferred
   // labels include full first relevant field, which in this case is the
   // address line 1.
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
-      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Charles", "123 Apple St.", "", 1),
+                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
 // Test that we query for Autocomplete suggestions when there are no Autofill
@@ -5039,7 +4947,7 @@ TEST_F(AutofillManagerTest,
   // Get the suggestions for already filled credit card |number_field|.
   GetAutofillSuggestions(form, number_field);
 
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
                  kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
@@ -5183,7 +5091,7 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   test::CreateTestFormField("Email", "email", "gmail", "email", &field);
   GetAutofillSuggestions(form, field);
 
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID, Suggestion("buddy@gmail.com", "123 Apple St.", "", 1),
       Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 2));
 }
@@ -5205,9 +5113,8 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("123 Apple St., unit 6", "123 Apple St.", "", 1));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("123 Apple St., unit 6", "123 Apple St.", "", 1));
 }
 
 // Verify that typing "mail" will not match any of the "@gmail.com" email
@@ -5254,9 +5161,9 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
   static const std::string kVisaSuggestion = "*3456";
 #endif
 
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
-                                 autofill_manager_->GetPackedCreditCardID(4)));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Verify that typing "lvis" will not match any of the credit card name when
@@ -5465,7 +5372,7 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Middle Name", "middlename", "S", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  external_delegate_->CheckSuggestions(
+  CheckSuggestions(
       kDefaultPageID,
       Suggestion("Shawn Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
                  1),
