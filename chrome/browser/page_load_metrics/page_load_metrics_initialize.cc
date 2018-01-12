@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -42,7 +43,8 @@
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -71,8 +73,6 @@ class PageLoadMetricsEmbedder
   std::unique_ptr<base::Timer> CreateTimer() override;
 
  private:
-  bool IsPrerendering() const;
-
   content::WebContents* const web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsEmbedder);
@@ -86,7 +86,12 @@ PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() {}
 
 void PageLoadMetricsEmbedder::RegisterObservers(
     page_load_metrics::PageLoadTracker* tracker) {
-  if (!IsPrerendering()) {
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext());
+  bool is_prerendering =
+      !!prerender_manager->GetPrerenderContents(web_contents_);
+  if (!is_prerendering) {
     tracker->AddObserver(base::MakeUnique<AbortsPageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<AMPPageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<CorePageLoadMetricsObserver>());
@@ -132,7 +137,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         no_state_prefetch_observer =
             NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(
-                web_contents_);
+                web_contents_, prerender_manager);
     if (no_state_prefetch_observer)
       tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
@@ -152,21 +157,17 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         base::MakeUnique<LocalNetworkRequestsPageLoadMetricsObserver>());
   } else {
+    UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Prerender", true);
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-        prerender_observer =
-            PrerenderPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
+        prerender_observer = PrerenderPageLoadMetricsObserver::CreateIfNeeded(
+            web_contents_, prerender_manager);
     if (prerender_observer)
       tracker->AddObserver(std::move(prerender_observer));
   }
   tracker->AddObserver(
-      base::MakeUnique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));
+      base::MakeUnique<OmniboxSuggestionUsedMetricsObserver>(is_prerendering));
   tracker->AddObserver(
       base::MakeUnique<DelayNavigationPageLoadMetricsObserver>());
-}
-
-bool PageLoadMetricsEmbedder::IsPrerendering() const {
-  return prerender::PrerenderContents::FromWebContents(web_contents_) !=
-         nullptr;
 }
 
 std::unique_ptr<base::Timer> PageLoadMetricsEmbedder::CreateTimer() {
