@@ -8,10 +8,9 @@
 #include <type_traits>
 #include "bindings/core/v8/IDLTypesBase.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "platform/bindings/V8Binding.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/TypeTraits.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -52,25 +51,8 @@ struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
 // Sequence
 template <typename T>
 struct IDLSequence final : public IDLBase {
- private:
-  using CppType = typename NativeValueTraits<T>::ImplType;
-  using MaybeMemberCppType =
-      typename std::conditional<WTF::IsGarbageCollectedType<CppType>::value,
-                                Member<CppType>,
-                                CppType>::type;
-
- public:
-  // Two kinds of types need HeapVector:
-  // 1. Oilpan types, which are wrapped by Member<>.
-  // 2. IDL unions and dictionaries, which are not Oilpan types themselves (and
-  //    are thus not wrapped by Member<>) but have a trace() method and can
-  //    contain Oilpan members. They both also happen to specialize V8TypeOf,
-  //    which we use to recognize them.
-  using ImplType = typename std::conditional<
-      std::is_same<MaybeMemberCppType, Member<CppType>>::value ||
-          std::is_class<typename V8TypeOf<CppType>::Type>::value,
-      HeapVector<MaybeMemberCppType>,
-      Vector<CppType>>::type;
+  using ImplType =
+      typename VectorOf<typename NativeValueTraits<T>::ImplType>::type;
 };
 
 // Record
@@ -81,26 +63,9 @@ struct IDLRecord final : public IDLBase {
                     std::is_same<Key, IDLUSVString>::value,
                 "IDLRecord keys must be of a WebIDL string type");
 
- private:
-  // Record keys are always strings, so we do not need to introspect them.
-  using ValueCppType = typename NativeValueTraits<Value>::ImplType;
-  using MaybeMemberValueCppType = typename std::conditional<
-      WTF::IsGarbageCollectedType<ValueCppType>::value,
-      Member<ValueCppType>,
-      ValueCppType>::type;
-
- public:
-  // Two kinds of types need HeapVector:
-  // 1. Oilpan types, which are wrapped by Member<>.
-  // 2. IDL unions and dictionaries, which are not Oilpan types themselves (and
-  //    are thus not wrapped by Member<>) but have a trace() method and can
-  //    contain Oilpan members. They both also happen to specialize V8TypeOf,
-  //    which we use to recognize them.
-  using ImplType = typename std::conditional<
-      std::is_same<MaybeMemberValueCppType, Member<ValueCppType>>::value ||
-          std::is_class<typename V8TypeOf<ValueCppType>::Type>::value,
-      HeapVector<std::pair<String, MaybeMemberValueCppType>>,
-      Vector<std::pair<String, ValueCppType>>>::type;
+  using ImplType =
+      typename VectorOfPairs<String,
+                             typename NativeValueTraits<Value>::ImplType>::type;
 };
 
 // Nullable (T?).
