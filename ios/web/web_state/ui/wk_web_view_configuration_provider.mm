@@ -80,10 +80,12 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     [configuration_ setAllowsInlineMediaPlayback:YES];
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
-    [[configuration_ userContentController]
-        addUserScript:InternalGetEarlyPageScriptForMainFrame(browser_state_)];
+    // Main frame script depends upon scripts injected into all frames, so the
+    // "AllFrames" scripts must be injected first.
     [[configuration_ userContentController]
         addUserScript:InternalGetEarlyPageScriptForAllFrames(browser_state_)];
+    [[configuration_ userContentController]
+        addUserScript:InternalGetEarlyPageScriptForMainFrame(browser_state_)];
   }
   // Prevent callers from changing the internals of configuration.
   return [configuration_ copy];

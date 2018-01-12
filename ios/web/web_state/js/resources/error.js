@@ -8,7 +8,7 @@
 
 goog.provide('__crWeb.error');
 
-goog.require('__crWeb.message');
+// Requires __crWeb.message provided by __crWeb.allFramesWebBundle.
 
 /** Beginning of anonymouse object */
 (function() {
