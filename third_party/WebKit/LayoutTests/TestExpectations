@@ -2720,7 +2720,9 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openK
 # Temporarily disabled due to conflicting NeedsManualRebaseline below
 # crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
-crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
+crbug.com/801341 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
+crbug.com/801341 [ Win ] http/tests/misc/webtiming-resolution.html [ Failure Pass ]
+
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
