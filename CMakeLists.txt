@@ -348,7 +348,7 @@ if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
 
     if (EMSCRIPTEN)
       add_preproc_definition(_POSIX_SOURCE)
-      append_link_flag_to_target("inspect" "-s TOTAL_MEMORY=134217728")
+      append_link_flag_to_target("inspect" "-s TOTAL_MEMORY=402653184")
       append_link_flag_to_target("inspect" "-s MODULARIZE=1")
       append_link_flag_to_target("inspect"
                                  "-s EXPORT_NAME=\"\'DecoderModule\'\"")
