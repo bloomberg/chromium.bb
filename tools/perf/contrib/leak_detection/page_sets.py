@@ -3,23 +3,34 @@
 # found in the LICENSE file.
 
 import py_utils
-from telemetry import story
+from telemetry import story as story_module
 from telemetry.page import page as page_module
+from telemetry.page import shared_page_state
+
+class LeakDetectionSharedState(shared_page_state.SharedDesktopPageState):
+  def ShouldStopBrowserAfterStoryRun(self, story):
+    del story # unused
+    return False  # Keep the same browser instance open across stories.
+
 
 class LeakDetectionPage(page_module.Page):
   def __init__(self, url, page_set, name=''):
     super(LeakDetectionPage, self).__init__(
-      url=url, page_set=page_set, name=name)
+      url=url, page_set=page_set, name=name,
+      shared_page_state_class=LeakDetectionSharedState)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.Navigate('about:blank')
-    action_runner.PrepareForLeakDetection()
-    action_runner.MeasureMemory()
-    action_runner.Navigate(self.url)
-    self._WaitForPageLoadToComplete(action_runner)
-    action_runner.Navigate('about:blank')
-    action_runner.PrepareForLeakDetection()
-    action_runner.MeasureMemory()
+    tabs = action_runner.tab.browser.tabs
+    new_tab = tabs.New()
+    new_tab.action_runner.Navigate('about:blank')
+    new_tab.action_runner.PrepareForLeakDetection()
+    new_tab.action_runner.MeasureMemory()
+    new_tab.action_runner.Navigate(self.url)
+    self._WaitForPageLoadToComplete(new_tab.action_runner)
+    new_tab.action_runner.Navigate('about:blank')
+    new_tab.action_runner.PrepareForLeakDetection()
+    new_tab.action_runner.MeasureMemory()
+    new_tab.Close()
 
   def _WaitForPageLoadToComplete(self, action_runner):
     py_utils.WaitFor(action_runner.tab.HasReachedQuiescence, timeout=30)
@@ -33,11 +44,11 @@ class ResourceLoadingLeakDetectionPage(LeakDetectionPage):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
 
-class LeakDetectionStorySet(story.StorySet):
+class LeakDetectionStorySet(story_module.StorySet):
   def __init__(self):
     super(LeakDetectionStorySet, self).__init__(
       archive_data_file='data/leak_detection.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story_module.PARTNER_BUCKET)
     urls_list = [
       # Alexa top websites
       'https://www.google.com',
