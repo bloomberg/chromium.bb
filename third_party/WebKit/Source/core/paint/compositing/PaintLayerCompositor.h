@@ -195,6 +195,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   bool InOverlayFullscreenVideo() const { return in_overlay_fullscreen_video_; }
 
+  bool IsRootScrollerAncestor() const;
+
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();
@@ -253,8 +255,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool IsMainFrame() const;
   VisualViewport& GetVisualViewport() const;
   GraphicsLayer* ParentForContentLayers() const;
-
-  bool IsRootScrollerAncestor() const;
 
   LayoutView& layout_view_;
 

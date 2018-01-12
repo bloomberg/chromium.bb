@@ -532,16 +532,9 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
-  CompositedLayerMapping* clm = RootLayer()->GetCompositedLayerMapping();
-  GraphicsLayer* scroll_layer =
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled() && clm
-          ? clm->ScrollingContentsLayer()
-          : scroll_layer_.get();
-
   bool is_root_scroller_ancestor = IsRootScrollerAncestor();
-
-  if (scroll_layer)
-    scroll_layer->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
+  if (scroll_layer_)
+    scroll_layer_->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
 
   // Clip a frame's overflow controls layer only if it's not an ancestor of
   // the root scroller. If it is an ancestor, then it's guaranteed to be
@@ -1181,11 +1174,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
     // Create a clipping layer if this is an iframe or settings require to clip.
     container_layer_ = GraphicsLayer::Create(this);
     scroll_layer_ = GraphicsLayer::Create(this);
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetScrollingCoordinator()) {
-      scrolling_coordinator->SetLayerIsContainerForFixedPositionLayers(
-          scroll_layer_.get(), true);
-    }
+    scroll_layer_->SetIsContainerForFixedPositionLayers(true);
 
     // In RLS mode, LayoutView scrolling contents layer gets this element ID (in
     // CompositedLayerMapping::UpdateScrollingLayers).

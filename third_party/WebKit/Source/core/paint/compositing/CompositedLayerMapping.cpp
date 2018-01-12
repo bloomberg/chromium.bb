@@ -52,7 +52,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
-#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePaintTiming.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -2640,17 +2639,22 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
       owning_layer_.GetLayoutObject().CanContainFixedPositionObjects() &&
       (!owning_layer_.IsRootLayer() ||
        RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  scrolling_coordinator->SetLayerIsContainerForFixedPositionLayers(
-      graphics_layer_.get(), is_container);
+  bool resized_by_url_bar =
+      owning_layer_.GetLayoutObject().IsLayoutView() &&
+      owning_layer_.Compositor()->IsRootScrollerAncestor();
+  graphics_layer_->SetIsContainerForFixedPositionLayers(is_container);
+  graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
   // Fixed-pos descendants inherits the space that has all CSS property applied,
   // including perspective, overflow scroll/clip. Thus we also mark every layers
   // below the main graphics layer so transforms implemented by them don't get
   // skipped.
   ApplyToGraphicsLayers(
       this,
-      [scrolling_coordinator, is_container](GraphicsLayer* layer) {
-        scrolling_coordinator->SetLayerIsContainerForFixedPositionLayers(
-            layer, is_container);
+      [is_container, resized_by_url_bar](GraphicsLayer* layer) {
+        layer->SetIsContainerForFixedPositionLayers(is_container);
+        layer->SetIsResizedByBrowserControls(resized_by_url_bar);
+        if (resized_by_url_bar)
+          layer->SetMasksToBounds(false);
       },
       kApplyToChildContainingLayers);
 }
