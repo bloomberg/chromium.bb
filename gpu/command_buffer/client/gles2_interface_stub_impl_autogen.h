@@ -1200,13 +1200,10 @@ void GLES2InterfaceStub::BeginRasterCHROMIUM(
     GLboolean /* can_use_lcd_text */,
     GLboolean /* use_distance_field_text */,
     GLint /* pixel_config */) {}
-void GLES2InterfaceStub::RasterCHROMIUM(
-    const cc::DisplayItemList* /* list */,
-    cc::ImageProvider* /* provider */,
-    const gfx::Vector2d& /* translate */,
-    const gfx::Rect& /* playback_rect */,
-    const gfx::Vector2dF& /* post_translate */,
-    GLfloat /* post_scale */) {}
+void* GLES2InterfaceStub::MapRasterCHROMIUM(GLsizeiptr /* size */) {
+  return 0;
+}
+void GLES2InterfaceStub::UnmapRasterCHROMIUM(GLsizeiptr /* written_size */) {}
 void GLES2InterfaceStub::EndRasterCHROMIUM() {}
 void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,
                                                    GLenum /* internalFormat */,

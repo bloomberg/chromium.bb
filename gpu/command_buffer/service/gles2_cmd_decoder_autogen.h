@@ -5157,6 +5157,30 @@ error::Error GLES2DecoderImpl::HandleBeginRasterCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleRasterCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::RasterCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::RasterCHROMIUM*>(cmd_data);
+  if (!features().chromium_raster_transport) {
+    return error::kUnknownCommand;
+  }
+
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  uint32_t data_size = size;
+  const void* list = GetSharedMemoryAs<const void*>(
+      c.list_shm_id, c.list_shm_offset, data_size);
+  if (size < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM", "size < 0");
+    return error::kNoError;
+  }
+  if (list == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoRasterCHROMIUM(size, list);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleEndRasterCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

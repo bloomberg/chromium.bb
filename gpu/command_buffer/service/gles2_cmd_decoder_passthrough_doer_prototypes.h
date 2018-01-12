@@ -1007,6 +1007,7 @@ error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
                                    GLboolean can_use_lcd_text,
                                    GLboolean use_distance_field_text,
                                    GLint pixel_config);
+error::Error DoRasterCHROMIUM(GLsizeiptr size, const void* list);
 error::Error DoEndRasterCHROMIUM();
 error::Error DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
                                                 GLuint entry_id,

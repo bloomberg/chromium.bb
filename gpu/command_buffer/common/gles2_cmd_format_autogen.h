@@ -16068,40 +16068,39 @@ struct RasterCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _list_shm_id,
-            uint32_t _list_shm_offset,
-            uint32_t _data_size) {
+  void Init(GLsizeiptr _size,
+            uint32_t _list_shm_id,
+            uint32_t _list_shm_offset) {
     SetHeader();
+    size = _size;
     list_shm_id = _list_shm_id;
     list_shm_offset = _list_shm_offset;
-    data_size = _data_size;
   }
 
   void* Set(void* cmd,
+            GLsizeiptr _size,
             uint32_t _list_shm_id,
-            uint32_t _list_shm_offset,
-            uint32_t _data_size) {
-    static_cast<ValueType*>(cmd)->Init(_list_shm_id, _list_shm_offset,
-                                       _data_size);
+            uint32_t _list_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_size, _list_shm_id, _list_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  int32_t size;
   uint32_t list_shm_id;
   uint32_t list_shm_offset;
-  uint32_t data_size;
 };
 
 static_assert(sizeof(RasterCHROMIUM) == 16,
               "size of RasterCHROMIUM should be 16");
 static_assert(offsetof(RasterCHROMIUM, header) == 0,
               "offset of RasterCHROMIUM header should be 0");
-static_assert(offsetof(RasterCHROMIUM, list_shm_id) == 4,
-              "offset of RasterCHROMIUM list_shm_id should be 4");
-static_assert(offsetof(RasterCHROMIUM, list_shm_offset) == 8,
-              "offset of RasterCHROMIUM list_shm_offset should be 8");
-static_assert(offsetof(RasterCHROMIUM, data_size) == 12,
-              "offset of RasterCHROMIUM data_size should be 12");
+static_assert(offsetof(RasterCHROMIUM, size) == 4,
+              "offset of RasterCHROMIUM size should be 4");
+static_assert(offsetof(RasterCHROMIUM, list_shm_id) == 8,
+              "offset of RasterCHROMIUM list_shm_id should be 8");
+static_assert(offsetof(RasterCHROMIUM, list_shm_offset) == 12,
+              "offset of RasterCHROMIUM list_shm_offset should be 12");
 
 struct EndRasterCHROMIUM {
   typedef EndRasterCHROMIUM ValueType;

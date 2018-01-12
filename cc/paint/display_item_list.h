@@ -27,9 +27,9 @@
 class SkCanvas;
 
 namespace gpu {
-namespace gles2 {
-class GLES2Implementation;
-}  // namespace gles2
+namespace raster {
+class RasterImplementationGLES;
+}  // namespace raster
 }  // namespace gpu
 
 namespace base {
@@ -176,7 +176,7 @@ class CC_PAINT_EXPORT DisplayItemList
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
-  friend gpu::gles2::GLES2Implementation;
+  friend gpu::raster::RasterImplementationGLES;
 
   ~DisplayItemList();
 

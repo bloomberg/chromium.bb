@@ -12,6 +12,9 @@
 #include "gpu/command_buffer/common/capabilities.h"
 
 namespace gpu {
+
+class ContextSupport;
+
 namespace raster {
 
 struct Capabilities;
@@ -20,6 +23,7 @@ struct Capabilities;
 class GLES2_IMPL_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
   RasterImplementationGLES(gles2::GLES2Interface* gl,
+                           ContextSupport* support,
                            const gpu::Capabilities& caps);
   ~RasterImplementationGLES() override;
 
@@ -148,6 +152,7 @@ class GLES2_IMPL_EXPORT RasterImplementationGLES : public RasterInterface {
 
  private:
   gles2::GLES2Interface* gl_;
+  ContextSupport* support_;
   bool use_texture_storage_;
   bool use_texture_storage_image_;
 

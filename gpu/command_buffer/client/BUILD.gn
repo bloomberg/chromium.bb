@@ -67,10 +67,6 @@ source_set("client_sources") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
-
-  if (!is_nacl) {
-    deps += [ "//cc/paint" ]
-  }
 }
 
 source_set("gles2_cmd_helper_sources") {

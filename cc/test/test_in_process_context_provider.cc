@@ -81,7 +81,8 @@ TestInProcessContextProvider::TestInProcessContextProvider(
   }
 
   raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      context_->GetImplementation(), capabilities_);
+      context_->GetImplementation(), context_->GetImplementation(),
+      capabilities_);
 }
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;

@@ -2006,15 +2006,6 @@ void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
       });
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleRasterCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  // TODO(enne): Add CHROMIUM_raster_transport extension support to the
-  // passthrough command buffer.
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
 bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
     GLenum target) const {
   if (!emulated_back_buffer_) {

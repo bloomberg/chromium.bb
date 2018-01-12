@@ -395,7 +395,8 @@
 #define glLockDiscardableTextureCHROMIUM \
   GLES2_GET_FUN(LockDiscardableTextureCHROMIUM)
 #define glBeginRasterCHROMIUM GLES2_GET_FUN(BeginRasterCHROMIUM)
-#define glRasterCHROMIUM GLES2_GET_FUN(RasterCHROMIUM)
+#define glMapRasterCHROMIUM GLES2_GET_FUN(MapRasterCHROMIUM)
+#define glUnmapRasterCHROMIUM GLES2_GET_FUN(UnmapRasterCHROMIUM)
 #define glEndRasterCHROMIUM GLES2_GET_FUN(EndRasterCHROMIUM)
 #define glTexStorage2DImageCHROMIUM GLES2_GET_FUN(TexStorage2DImageCHROMIUM)
 #define glSetColorSpaceMetadataCHROMIUM \

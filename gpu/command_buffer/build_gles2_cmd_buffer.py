@@ -4479,7 +4479,6 @@ _FUNCTION_INFO = {
   'PathCommandsCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
-    'immediate': False,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
@@ -4612,15 +4611,20 @@ _FUNCTION_INFO = {
     'extension_flag': 'chromium_raster_transport',
   },
   'RasterCHROMIUM': {
-    'type': 'Custom',
+    'type': 'Data',
+    'internal': True,
     'decoder_func': 'DoRasterCHROMIUM',
-    'impl_func': False,
-    'immediate': False,
     'data_transfer_methods': ['shm'],
-    'needs_size': True,
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
-    'cmd_args': 'void* list',
+  },
+  'MapRasterCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_raster_transport",
+  },
+  'UnmapRasterCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_raster_transport",
   },
   'EndRasterCHROMIUM': {
     'decoder_func': 'DoEndRasterCHROMIUM',
@@ -5914,16 +5918,8 @@ class DataHandler(TypeHandler):
     name = func.name
     if name.endswith("Immediate"):
       name = name[0:-9]
-    if name == 'BufferData' or name == 'BufferSubData':
+    if name in ['BufferData', 'BufferSubData', 'RasterCHROMIUM']:
       f.write("  uint32_t data_size = size;\n")
-    elif name == 'TexImage2D' or name == 'TexSubImage2D':
-      code = """  uint32_t data_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &data_size)) {
-    return error::kOutOfBounds;
-  }
-"""
-      f.write(code)
     else:
       f.write(
           "// uint32_t data_size = 0;  // WARNING: compute correct size.\n")
