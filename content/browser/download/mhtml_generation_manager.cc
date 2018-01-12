@@ -206,9 +206,9 @@ MHTMLGenerationManager::Job::Job(int job_id,
       is_finished_(false),
       observed_renderer_process_host_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents->ForEachFrame(base::Bind(
+  web_contents->ForEachFrame(base::BindRepeating(
       &MHTMLGenerationManager::Job::AddFrame,
-      base::Unretained(this)));  // Safe because ForEachFrame is synchronous.
+      base::Unretained(this)));  // Safe because ForEachFrame() is synchronous.
 
   // Main frame needs to be processed first.
   DCHECK(!pending_frame_tree_node_ids_.empty());

@@ -157,7 +157,7 @@ void ChromePluginServiceFilter::AuthorizeAllPlugins(
     bool load_blocked,
     const std::string& identifier) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents->ForEachFrame(base::Bind(&AuthorizeRenderer));
+  web_contents->ForEachFrame(base::BindRepeating(&AuthorizeRenderer));
   if (load_blocked) {
     web_contents->SendToAllFrames(new ChromeViewMsg_LoadBlockedPlugins(
         MSG_ROUTING_NONE, identifier));

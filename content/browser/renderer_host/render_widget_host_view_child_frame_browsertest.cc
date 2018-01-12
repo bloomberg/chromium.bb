@@ -108,11 +108,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
                            "window.screen.width")
       ->GetAsInteger(&main_frame_screen_width);
   set_expected_screen_width(main_frame_screen_width);
-  EXPECT_FALSE(main_frame_screen_width == 0);
+  EXPECT_NE(main_frame_screen_width, 0);
 
   shell()->web_contents()->ForEachFrame(
-      base::Bind(&RenderWidgetHostViewChildFrameTest::CheckScreenWidth,
-                 base::Unretained(this)));
+      base::BindRepeating(&RenderWidgetHostViewChildFrameTest::CheckScreenWidth,
+                          base::Unretained(this)));
 }
 
 // Test that auto-resize sizes in the top frame are propagated to OOPIF
@@ -184,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   set_expected_frame_sink_id(message_filter->GetOrWaitForId());
 
   shell()->web_contents()->ForEachFrame(
-      base::Bind(&RenderWidgetHostViewChildFrameTest::CheckFrameSinkId,
-                 base::Unretained(this)));
+      base::BindRepeating(&RenderWidgetHostViewChildFrameTest::CheckFrameSinkId,
+                          base::Unretained(this)));
 }
 
 // A class to filter RequireSequence and SatisfySequence messages sent from

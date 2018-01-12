@@ -299,12 +299,15 @@ void CreateFrameResourceCoordinator(
       std::move(request));
 }
 
+using FrameCallback =
+    base::RepeatingCallback<void(ResourceDispatcherHostImpl*,
+                                 const GlobalFrameRoutingId&)>;
+
 // The following functions simplify code paths where the UI thread notifies the
 // ResourceDispatcherHostImpl of information pertaining to loading behavior of
 // frame hosts.
 void NotifyRouteChangesOnIO(
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback,
+    const FrameCallback& frame_callback,
     std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
@@ -314,10 +317,8 @@ void NotifyRouteChangesOnIO(
     frame_callback.Run(rdh, routing_id);
 }
 
-void NotifyForEachFrameFromUI(
-    RenderFrameHost* root_frame_host,
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback) {
+void NotifyForEachFrameFromUI(RenderFrameHost* root_frame_host,
+                              const FrameCallback& frame_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FrameTree* frame_tree = static_cast<RenderFrameHostImpl*>(root_frame_host)
@@ -325,8 +326,7 @@ void NotifyForEachFrameFromUI(
                               ->frame_tree();
   DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
 
-  std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids(
-      new std::set<GlobalFrameRoutingId>());
+  auto routing_ids = std::make_unique<std::set<GlobalFrameRoutingId>>();
   for (FrameTreeNode* node : frame_tree->Nodes()) {
     RenderFrameHostImpl* frame_host = node->current_frame_host();
     RenderFrameHostImpl* pending_frame_host =
@@ -2204,20 +2204,21 @@ int RenderFrameHostImpl::GetEnabledBindings() const {
 void RenderFrameHostImpl::BlockRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NotifyForEachFrameFromUI(
-      this, base::Bind(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
+      this,
+      base::BindRepeating(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
 }
 
 void RenderFrameHostImpl::ResumeBlockedRequestsForFrame() {
   NotifyForEachFrameFromUI(
-      this,
-      base::Bind(&ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+      this, base::BindRepeating(
+                &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
 }
 
 void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NotifyForEachFrameFromUI(
-      this,
-      base::Bind(&ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
+      this, base::BindRepeating(
+                &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
 }
 
 void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {

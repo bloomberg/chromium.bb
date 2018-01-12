@@ -275,9 +275,9 @@ void PrintViewManagerBase::StartLocalPrintJob(
 void PrintViewManagerBase::UpdatePrintingEnabled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The Unretained() is safe because ForEachFrame() is synchronous.
-  web_contents()->ForEachFrame(
-      base::Bind(&PrintViewManagerBase::SendPrintingEnabled,
-                 base::Unretained(this), printing_enabled_.GetValue()));
+  web_contents()->ForEachFrame(base::BindRepeating(
+      &PrintViewManagerBase::SendPrintingEnabled, base::Unretained(this),
+      printing_enabled_.GetValue()));
 }
 
 void PrintViewManagerBase::NavigationStopped() {
