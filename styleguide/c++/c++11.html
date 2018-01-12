@@ -571,7 +571,7 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <code>enable_if</code>, <code>conditional</code>, <code>result_of</code><br/></td>
 <td>Allows compile-time inspection of the properties of types</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/type_traits">Standard library header &lt;type_traits&gt;</a></td>
-<td>Note that not all type traits are available on all platforms (e.g. <code>std::underlying_type</code> doesn't work in libstdc++ 4.6). Use judiciously. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
+<td><a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -645,7 +645,7 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>Arithmetic operations:<br><code>std::plus&lt;&gt;, std::minus&lt;&gt;</code> ...<br>Comparisons:<br><code>std::less&lt;&gt;, std::equal_to&lt;&gt;</code>...<br>Logical operations:<br><code>std::logical_and&lt;&gt;, std::logical_or&lt;&gt;</code>...<br>Bitwise operations:<br><code>std::bit_and&lt;&gt;, std::bit_or&lt;&gt;</code>...<br></td>
 <td>Function objects that deduce argument types.</td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/functional/less_void">std::less&lt;&gt;</a></td>
-<td>Should replace <code>base::less</code> and usage of these functors with explicit types where appropriate. Note: std::set/std::map do not yet support transparent comparators on all platforms <a href="https://crbug.com/756020">bug</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/cPoULd2NY9k">Discussion thread</a></td>
+<td>Should replace <code>base::less</code> and usage of these functors with explicit types where appropriate. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/cPoULd2NY9k">Discussion thread</a></td>
 </tr>
 
 </tbody>
