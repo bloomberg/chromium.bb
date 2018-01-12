@@ -50,6 +50,11 @@ cr.define('extensions', function() {
       kioskEnabled: Boolean,
       // </if>
 
+      canLoadUnpacked: {
+        type: Boolean,
+        value: false,
+      },
+
       /** @private */
       expanded_: {
         type: Boolean,

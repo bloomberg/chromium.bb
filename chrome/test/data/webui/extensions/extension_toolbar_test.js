@@ -44,6 +44,14 @@ cr.define('extension_toolbar_tests', function() {
       testVisible('#pack-extensions', true);
       testVisible('#update-now', true);
 
+      toolbar.set('canLoadUnpacked', false);
+      Polymer.dom.flush();
+
+      testVisible('#dev-mode', true);
+      testVisible('#load-unpacked', false);
+      testVisible('#pack-extensions', true);
+      testVisible('#update-now', true);
+
       // Test that the dev-mode toggle is disabled when a policy exists.
       toolbar.set('devModeControlledByPolicy', true);
       Polymer.dom.flush();
