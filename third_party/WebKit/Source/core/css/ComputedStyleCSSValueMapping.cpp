@@ -2805,17 +2805,17 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValuesForInlineBlockShorthand(scrollPaddingInlineShorthand(),
                                            style, layout_object, styled_node,
                                            allow_visited_style);
-    case CSSPropertyScrollSnapMargin:
-      return ValuesForSidesShorthand(scrollSnapMarginShorthand(), style,
+    case CSSPropertyScrollMargin:
+      return ValuesForSidesShorthand(scrollMarginShorthand(), style,
                                      layout_object, styled_node,
                                      allow_visited_style);
-    case CSSPropertyScrollSnapMarginBlock:
-      return ValuesForInlineBlockShorthand(scrollSnapMarginBlockShorthand(),
-                                           style, layout_object, styled_node,
+    case CSSPropertyScrollMarginBlock:
+      return ValuesForInlineBlockShorthand(scrollMarginBlockShorthand(), style,
+                                           layout_object, styled_node,
                                            allow_visited_style);
-    case CSSPropertyScrollSnapMarginInline:
-      return ValuesForInlineBlockShorthand(scrollSnapMarginInlineShorthand(),
-                                           style, layout_object, styled_node,
+    case CSSPropertyScrollMarginInline:
+      return ValuesForInlineBlockShorthand(scrollMarginInlineShorthand(), style,
+                                           layout_object, styled_node,
                                            allow_visited_style);
     // SVG properties.
     case CSSPropertyFill:

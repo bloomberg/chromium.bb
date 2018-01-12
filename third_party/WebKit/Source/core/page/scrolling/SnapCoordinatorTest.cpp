@@ -98,7 +98,7 @@ class SnapCoordinatorTest
         left: 200px;
         width: 100px;
         height: 100px;
-        scroll-snap-margin: 8px;
+        scroll-margin: 8px;
       }
       </style>
       <div id='scroller'>
@@ -335,9 +335,9 @@ TEST_P(SnapCoordinatorTest, StartAlignmentCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.left - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.left - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_x = (200 - 8) - 10;
-  // (#area.top - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.top - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_y = (200 - 8) - 10;
 
   bool must_snap = false;
@@ -372,9 +372,9 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.left - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.left - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_x = (200 - 8) - 10;
-  // (#area.top - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.top - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_y = (200 - 8) - 10;
 
   bool must_snap = false;
@@ -394,8 +394,8 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
 TEST_P(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(
-      styleAttr, "scroll-snap-align: start; scroll-snap-margin: -8px;");
+  area_element->setAttribute(styleAttr,
+                             "scroll-snap-align: start; scroll-margin: -8px;");
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
@@ -408,9 +408,9 @@ TEST_P(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.left - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.left - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_x = (200 - (-8)) - 10;
-  // (#area.top - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.top - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_y = (200 - (-8)) - 10;
 
   bool must_snap = false;
@@ -470,10 +470,10 @@ TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
   area_element->setAttribute(styleAttr,
                              R"HTML(
         scroll-snap-align: center;
-        scroll-snap-margin-top: 2px;
-        scroll-snap-margin-right: 4px;
-        scroll-snap-margin-bottom: 6px;
-        scroll-snap-margin-left: 8px;
+        scroll-margin-top: 2px;
+        scroll-margin-right: 4px;
+        scroll-margin-bottom: 6px;
+        scroll-margin-left: 8px;
       )HTML");
   Element* scroller_element = GetDocument().getElementById("scroller");
   scroller_element->setAttribute(styleAttr,
@@ -494,16 +494,16 @@ TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.left - #area.scroll-snap-margin-left +
-  //  #area.right + #area.scroll-snap-margin-right) / 2 -
+  // (#area.left - #area.scroll-margin-left +
+  //  #area.right + #area.scroll-margin-right) / 2 -
   // (#scroller.left + #scroller.scroll-padding-left +
   //  #scroller.right - #scroller.scroll-padding-right) / 2
   double snap_position_x =
       (200 - 8 + (200 + 100 + 4)) / 2 -
       (0 + 16 + float(scroller_element->clientWidth()) - 12) / 2;
 
-  // (#area.top - #area.scroll-snap-margin-top +
-  //  #area.bottom + #area.scroll-snap-margin-bottom) / 2 -
+  // (#area.top - #area.scroll-margin-top +
+  //  #area.bottom + #area.scroll-margin-bottom) / 2 -
   // (#scroller.top + #scroller.scroll-padding-top +
   //  #scroller.bottom - #scroller.scroll-padding-bottom) / 2
   double snap_position_y =
@@ -540,12 +540,12 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.right + #area.scroll-snap-margin)
+  // (#area.right + #area.scroll-margin)
   // - (#scroller.right - #scroller.scroll-padding)
   double snap_position_x =
       (200 + 100 + 8) - (scroller_element->clientWidth() - 10);
 
-  // (#area.bottom + #area.scroll-snap-margin)
+  // (#area.bottom + #area.scroll-margin)
   // - (#scroller.bottom - #scroller.scroll-padding)
   double snap_position_y =
       (200 + 100 + 8) - (scroller_element->clientHeight() - 10);
@@ -583,12 +583,12 @@ TEST_P(SnapCoordinatorTest, ScaledEndAlignmentCalculation) {
 
   // The area is scaled from center, so it pushes the area's top-left corner to
   // (50, 50).
-  // (#area.right + #area.scroll-snap-margin)
+  // (#area.right + #area.scroll-margin)
   // - (#scroller.right - #scroller.scroll-padding)
   double snap_position_x =
       (50 + 400 + 8) - (scroller_element->clientWidth() - 10);
 
-  // (#area.bottom + #area.scroll-snap-margin)
+  // (#area.bottom + #area.scroll-margin)
   // - (#scroller.bottom - #scroller.scroll-padding)
   double snap_position_y =
       (50 + 400 + 8) - (scroller_element->clientHeight() - 10);
@@ -626,12 +626,12 @@ TEST_P(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
   // Under vertical-rl writing mode, 'start' should align to the right.
-  // (#area.right + #area.scroll-snap-margin)
+  // (#area.right + #area.scroll-margin)
   // - (#scroller.right - #scroller.scroll-padding)
   double snap_position_x =
       (200 + 100 + 8) - (scroller_element->clientWidth() - 10);
 
-  // (#area.top - #area.scroll-snap-margin) - (#scroller.scroll-padding)
+  // (#area.top - #area.scroll-margin) - (#scroller.scroll-padding)
   double snap_position_y = (200 - 8) - 10;
 
   bool must_snap = false;
@@ -665,13 +665,13 @@ TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
   FloatPoint max_position = ScrollOffsetToPosition(
       scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
 
-  // (#area.right + #area.scroll-snap-margin)
+  // (#area.right + #area.scroll-margin)
   //  - (#scroller.right - #scroller.scroll-padding)
   // = (100 + 8) - (clientWidth - 10) < 0
   // As scrollPosition cannot be set to a negative number, we set it to 0.
   double snap_position_x = 0;
 
-  // (#area.bottom + #area.scroll-snap-margin)
+  // (#area.bottom + #area.scroll-margin)
   //  - (#scroller.bottom - #scroller.scroll-padding)
   // = (100 + 8) - (clientHeight - 10) < 0
   // As scrollPosition cannot be set to a negative number, we set it to 0.

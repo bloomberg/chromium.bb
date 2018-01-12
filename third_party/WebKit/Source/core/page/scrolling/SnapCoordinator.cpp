@@ -125,7 +125,7 @@ static float ClipInContainer(LayoutUnit unit, float max) {
 //    calculated snap_position can not be larger than this value.
 // area - The snap area rect relative to the snap container's boundary. Note
 //    that this rect is represented by the dotted box below, which is expanded
-//    by the scroll-snap-margin from the element's original boundary.
+//    by the scroll-margin from the element's original boundary.
 static float CalculateSnapPosition(SnapAlignment alignment,
                                    SnapAxis axis,
                                    const LayoutRect& container,
@@ -144,7 +144,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
       +  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  +
       +  \                 scroll-padding                    \  +
       +  \   . . . . . . . . . . . . . . . . . . . . . . .   \  +
-      +  \   .       .   scroll-snap-margin  .           .   \  +
+      +  \   .       .     scroll-margin     .           .   \  +
       +  \   .       .  |=================|  .           .   \  +
       +  \   .       .  |                 |  .           .   \  +
       +  \   .       .  |    snap_area    |  .           .   \  +
@@ -181,7 +181,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
       +  \   . . . . . . . . . . . . . . . . . . . . . . .   \  +
       +  \   .                                           .   \  +
       +  \   .       . . . . . . . . . . . . .           .   \  +
-      +  \   .       .   scroll-snap-margin  .           .   \  +
+      +  \   .       .      scroll-margin    .           .   \  +
       +  \   .       .  |=================|  .           .   \  +
       +  \   .       .  |    snap_area    |  .           .   \  +
       +  \* *.* * * *.* * * * * * * * * * * *.* * * * * * * * * * Center line
@@ -222,7 +222,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
       +  \   .                                           .   \  +
       +  \   .                                           .   \  +
       +  \   .       . . . . . . . . . . . . .           .   \  +
-      +  \   .       .   scroll-snap-margin  .           .   \  +
+      +  \   .       .      scroll-margin    .           .   \  +
       +  \   .       .  |=================|  .           .   \  +
       +  \   .       .  |                 |  .           .   \  +
       +  \   .       .  |    snap_area    |  .           .   \  +
@@ -324,8 +324,8 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
       MinimumValueForLength(container_style->ScrollPaddingLeft(),
                             container.Width()));
   LayoutRectOutsets area_margin(
-      area_style->ScrollSnapMarginTop(), area_style->ScrollSnapMarginRight(),
-      area_style->ScrollSnapMarginBottom(), area_style->ScrollSnapMarginLeft());
+      area_style->ScrollMarginTop(), area_style->ScrollMarginRight(),
+      area_style->ScrollMarginBottom(), area_style->ScrollMarginLeft());
   container.Contract(container_padding);
   area.Expand(area_margin);
 
