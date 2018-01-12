@@ -47,6 +47,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
   PaymentRequestDisplayManager* GetDisplayManager() override;
+  void EmbedPaymentHandlerWindow(const GURL& url) override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

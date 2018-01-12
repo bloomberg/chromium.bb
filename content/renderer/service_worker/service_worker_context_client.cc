@@ -736,12 +736,13 @@ void ServiceWorkerContextClient::OpenNewTab(
   Send(new ServiceWorkerHostMsg_OpenNewTab(GetRoutingID(), request_id, url));
 }
 
-void ServiceWorkerContextClient::OpenNewPopup(
+void ServiceWorkerContextClient::OpenPaymentHandlerWindow(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
   int request_id = context_->client_callbacks.Add(std::move(callbacks));
-  Send(new ServiceWorkerHostMsg_OpenNewPopup(GetRoutingID(), request_id, url));
+  Send(new ServiceWorkerHostMsg_OpenPaymentHandlerWindow(GetRoutingID(),
+                                                         request_id, url));
 }
 
 void ServiceWorkerContextClient::SetCachedMetadata(const blink::WebURL& url,

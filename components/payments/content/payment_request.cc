@@ -158,7 +158,7 @@ void PaymentRequest::Show() {
   }
 
   // A tab can display only one PaymentRequest UI at a time.
-  display_handle_ = display_manager_->TryShow();
+  display_handle_ = display_manager_->TryShow(delegate_.get());
   if (!display_handle_) {
     LOG(ERROR) << "A PaymentRequest UI is already showing";
     journey_logger_.SetNotShown(
@@ -189,7 +189,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
 
     DCHECK(display_handle_);
-    display_handle_->Show(delegate_.get(), this);
+    display_handle_->Show(this);
   } else {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);

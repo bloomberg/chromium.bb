@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
 #include "chrome/browser/ui/views/payments/error_message_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
+#include "chrome/browser/ui/views/payments/payment_handler_web_flow_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
@@ -168,6 +169,16 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
 
 bool PaymentRequestDialogView::IsInteractive() const {
   return !throbber_overlay_.visible();
+}
+
+void PaymentRequestDialogView::ShowPaymentHandlerScreen(const GURL& url) {
+  view_stack_->Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<PaymentHandlerWebFlowViewController>(
+              request_->spec(), request_->state(), this, GetProfile(), url),
+          &controller_map_),
+      /* animate = */ true);
+  HideProcessingSpinner();
 }
 
 void PaymentRequestDialogView::OnStartUpdating(

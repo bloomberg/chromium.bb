@@ -126,7 +126,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OpenNewTab(
       const blink::WebURL&,
       std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void OpenNewPopup(
+  void OpenPaymentHandlerWindow(
       const blink::WebURL&,
       std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void SetCachedMetadata(const blink::WebURL&,

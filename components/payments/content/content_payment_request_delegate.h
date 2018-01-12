@@ -27,6 +27,11 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
   // Returns the PaymentRequestDisplayManager associated with this
   // PaymentRequest's BrowserContext.
   virtual PaymentRequestDisplayManager* GetDisplayManager() = 0;
+
+  // Embed the content of the web page at |url| passed through
+  // PaymentRequestEvent.openWindow inside the current Payment Request UI
+  // surface.
+  virtual void EmbedPaymentHandlerWindow(const GURL& url) = 0;
 };
 
 }  // namespace payments

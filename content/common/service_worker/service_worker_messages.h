@@ -143,8 +143,8 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenNewTab,
                     int /* request_id */,
                     GURL /* url */)
 
-// Ask the browser to open a popup tab/window (renderer->browser).
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenNewPopup,
+// Ask the browser to open a Payment Handler window (renderer->browser).
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenPaymentHandlerWindow,
                     int /* request_id */,
                     GURL /* url */)
 

@@ -67,7 +67,7 @@ void ServiceWorkerGlobalScopeClient::OpenWindowForClients(
 void ServiceWorkerGlobalScopeClient::OpenWindowForPaymentHandler(
     const WebURL& url,
     std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
-  client_.OpenNewPopup(url, std::move(callbacks));
+  client_.OpenPaymentHandlerWindow(url, std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const WebURL& url,

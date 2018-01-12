@@ -644,7 +644,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnOpenNewTab(int request_id, const GURL& url);
 
   // Currently used for PaymentRequestEvent.openWindow() only.
-  void OnOpenNewPopup(int request_id, const GURL& url);
+  void OnOpenPaymentHandlerWindow(int request_id, const GURL& url);
 
   void OnOpenWindow(int request_id,
                     GURL url,
