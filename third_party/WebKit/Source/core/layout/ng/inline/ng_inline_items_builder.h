@@ -120,9 +120,11 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   };
   Vector<BidiContext> bidi_context_;
 
-  enum class CollapsibleSpace { kNone, kSpace, kNewline, kSpaceNoWrap };
+  enum class CollapsibleSpace { kNone, kSpace, kNewline };
 
   CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
+  bool auto_wrap_ = true;
+  bool last_auto_wrap_ = false;
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
   bool is_empty_inline_ = true;
