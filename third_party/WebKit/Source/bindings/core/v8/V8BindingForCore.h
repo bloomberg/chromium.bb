@@ -507,6 +507,7 @@ CORE_EXPORT bool IsValidEnum(const Vector<String>& values,
 enum DeleteResult { kDeleteSuccess, kDeleteReject, kDeleteUnknownProperty };
 
 CORE_EXPORT v8::Local<v8::Value> FromJSONString(v8::Isolate*,
+                                                v8::Local<v8::Context>,
                                                 const String& stringified_json,
                                                 ExceptionState&);
 

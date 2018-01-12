@@ -85,8 +85,9 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(
 
       // Catch syntax error. Swallows an exception (when thrown) as the
       // spec says. https://xhr.spec.whatwg.org/#response-body
-      v8::Local<v8::Value> json = FromJSONString(
-          isolate, ToCoreString(json_source.V8Value()), exception_state);
+      v8::Local<v8::Value> json =
+          FromJSONString(isolate, isolate->GetCurrentContext(),
+                         ToCoreString(json_source.V8Value()), exception_state);
       if (exception_state.HadException()) {
         exception_state.ClearException();
         V8SetReturnValue(info, v8::Null(isolate));

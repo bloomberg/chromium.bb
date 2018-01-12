@@ -574,7 +574,8 @@ v8::Local<v8::Value> ToV8(ScriptState* script_state,
       if (record->record_type == device::mojom::blink::NFCRecordType::JSON) {
         v8::Local<v8::Value> json_object;
         v8::TryCatch try_catch(isolate);
-        if (!v8::JSON::Parse(isolate, string).ToLocal(&json_object)) {
+        if (!v8::JSON::Parse(script_state->GetContext(), string)
+                 .ToLocal(&json_object)) {
           return v8::Null(isolate);
         }
 
