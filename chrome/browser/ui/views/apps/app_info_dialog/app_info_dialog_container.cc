@@ -203,6 +203,9 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
     return views::BubbleFrameView::DoesIntersectRect(target, rect);
   }
 
+  // Overridden from views::BubbleFrameView:
+  bool ExtendClientIntoTitle() const override { return true; }
+
   // Overridden from views::View:
   gfx::Insets GetInsets() const override { return gfx::Insets(); }
 

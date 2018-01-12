@@ -103,6 +103,11 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Returns the available screen bounds if the frame were to show in |rect|.
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const;
 
+  // Override and return true to allow client view to overlap into the title
+  // area when HasTitle() returns false and/or ShouldShowCloseButton() returns
+  // true. Returns false by default.
+  virtual bool ExtendClientIntoTitle() const;
+
   bool IsCloseButtonVisible() const;
   gfx::Rect GetCloseButtonMirroredBounds() const;
 
