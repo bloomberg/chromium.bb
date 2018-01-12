@@ -34,7 +34,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     const net::SSLConfig& ssl_config,
     const GURL& url)
     : ssl_config_(ssl_config),
-      pac_request_(NULL),
+      proxy_resolve_request_(NULL),
       url_(url),
       net_log_(net::NetLogWithSource::Make(
           request_context_getter->GetURLRequestContext()->net_log(),
@@ -148,7 +148,7 @@ int ProxyResolvingClientSocket::Connect(
       url_, "POST", &proxy_info_,
       base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
                           base::Unretained(this)),
-      &pac_request_, nullptr /*proxy_delegate*/, net_log_);
+      &proxy_resolve_request_, nullptr /*proxy_delegate*/, net_log_);
   if (net_error != net::ERR_IO_PENDING) {
     // Defer execution of ConnectToProxy instead of calling it
     // directly here for simplicity. From the caller's point of view,
@@ -163,9 +163,9 @@ int ProxyResolvingClientSocket::Connect(
 
 void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
-  if (pac_request_) {
-    network_session_->proxy_service()->CancelPacRequest(pac_request_);
-    pac_request_ = NULL;
+  if (proxy_resolve_request_) {
+    network_session_->proxy_service()->CancelRequest(proxy_resolve_request_);
+    proxy_resolve_request_ = NULL;
   }
   user_connect_callback_.Reset();
 }
@@ -258,7 +258,7 @@ void ProxyResolvingClientSocket::ApplySocketTag(const net::SocketTag& tag) {
 }
 
 void ProxyResolvingClientSocket::ConnectToProxy(int net_error) {
-  pac_request_ = NULL;
+  proxy_resolve_request_ = NULL;
 
   DCHECK_NE(net_error, net::ERR_IO_PENDING);
   if (net_error == net::OK) {
@@ -330,7 +330,7 @@ void ProxyResolvingClientSocket::CloseTransportSocket() {
 // reconsider a proxy it always returns ERR_IO_PENDING and posts a call to
 // ConnectToProxy with the result of the reconsideration.
 int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
-  DCHECK(!pac_request_);
+  DCHECK(!proxy_resolve_request_);
   DCHECK_NE(error, net::OK);
   DCHECK_NE(error, net::ERR_IO_PENDING);
   // A failure to resolve the hostname or any error related to establishing a
@@ -388,7 +388,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
       url_, std::string(), error, &proxy_info_,
       base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
                           base::Unretained(this)),
-      &pac_request_, NULL, net_log_);
+      &proxy_resolve_request_, NULL, net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
   } else {
