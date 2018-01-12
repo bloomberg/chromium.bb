@@ -259,6 +259,11 @@ void SearchResultTileItemView::GetAccessibleNodeData(
 }
 
 bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Return early if |item_| was deleted due to the search result list changing.
+  // see crbug.com/801142
+  if (!item_)
+    return true;
+
   if (event.key_code() == ui::VKEY_RETURN) {
     if (IsSuggestedAppTile())
       LogAppLaunch();
