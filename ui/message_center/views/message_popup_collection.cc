@@ -53,12 +53,14 @@ MessagePopupCollection::MessagePopupCollection(
     PopupAlignmentDelegate* alignment_delegate)
     : message_center_(message_center),
       tray_(tray),
-      alignment_delegate_(alignment_delegate),
-      context_menu_controller_(new MessageViewContextMenuController()) {
+      alignment_delegate_(alignment_delegate) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer);
   message_center_->AddObserver(this);
   alignment_delegate_->set_collection(this);
+#if !defined(OS_CHROMEOS)
+  context_menu_controller_.reset(new MessageViewContextMenuController());
+#endif
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
@@ -174,12 +176,9 @@ void MessagePopupCollection::UpdateWidgets() {
 #endif  // defined(OS_CHROMEOS)
     view->SetExpanded(true);
 
-    // TODO(yoshiki): Temporarily disable context menu on custom (arc)
-    // notifications. See crbug.com/750307 for detail.
-    if (notification.type() != NOTIFICATION_TYPE_CUSTOM &&
-        notification.should_show_settings_button()) {
-      view->set_context_menu_controller(context_menu_controller_.get());
-    }
+#if !defined(OS_CHROMEOS)
+    view->set_context_menu_controller(context_menu_controller_.get());
+#endif
 
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     int height_available =

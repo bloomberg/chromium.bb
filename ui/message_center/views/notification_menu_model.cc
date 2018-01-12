@@ -19,7 +19,6 @@ namespace {
 
 // Menu constants
 const int kTogglePermissionCommand = 0;
-const int kShowSettingsCommand = 1;
 
 }  // namespace
 
@@ -29,12 +28,6 @@ NotificationMenuModel::NotificationMenuModel(const Notification& notification)
   AddItem(kTogglePermissionCommand,
           l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
                                      notification.display_source()));
-
-#if defined(OS_CHROMEOS)
-  // Add settings menu item.
-  AddItem(kShowSettingsCommand,
-          l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
-#endif
 }
 
 NotificationMenuModel::~NotificationMenuModel() {}
@@ -51,16 +44,8 @@ bool NotificationMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case kTogglePermissionCommand:
-      MessageCenter::Get()->DisableNotification(notification_id_);
-      break;
-    case kShowSettingsCommand:
-      MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(command_id, kTogglePermissionCommand);
+  MessageCenter::Get()->DisableNotification(notification_id_);
 }
 
 }  // namespace message_center

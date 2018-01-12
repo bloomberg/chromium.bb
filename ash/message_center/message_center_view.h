@@ -14,7 +14,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -182,8 +181,6 @@ class ASH_EXPORT MessageCenterView
 
   // Current view mode. During animation, it is the target mode.
   Mode mode_ = Mode::NO_NOTIFICATIONS;
-
-  message_center::MessageViewContextMenuController context_menu_controller_;
 
   views::FocusManager* focus_manager_ = nullptr;
 
