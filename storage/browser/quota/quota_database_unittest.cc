@@ -30,8 +30,6 @@ using storage::QuotaDatabase;
 namespace content {
 namespace {
 
-const base::Time kZeroTime;
-
 const char kDBFileName[] = "quota_manager.db";
 
 }  // namespace

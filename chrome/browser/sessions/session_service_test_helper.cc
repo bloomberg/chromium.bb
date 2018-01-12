@@ -58,7 +58,6 @@ void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
 void SessionServiceTestHelper::ReadWindows(
     std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
     SessionID::id_type* active_window_id) {
-  Time last_time;
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   sessions::BaseSessionServiceTestHelper test_helper(
       service_->GetBaseSessionServiceForTest());

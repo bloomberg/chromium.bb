@@ -960,7 +960,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // the most relevant match for each result.
   base::TimeTicks start_time(base::TimeTicks::Now());
   MatchMap map;
-  const base::Time no_time;
   int did_not_accept_keyword_suggestion =
       keyword_results_.suggest_results.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :

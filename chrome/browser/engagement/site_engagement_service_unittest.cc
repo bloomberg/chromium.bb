@@ -1594,8 +1594,6 @@ TEST_F(SiteEngagementServiceTest, LastEngagementTime) {
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToNow) {
-  base::Time last_engagement_time;
-
   base::Time current_day = GetReferenceTime();
   clock_->SetNow(current_day);
 
@@ -1661,8 +1659,6 @@ TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToNow) {
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToRebase) {
-  base::Time last_engagement_time;
-
   base::Time current_day = GetReferenceTime();
   clock_->SetNow(current_day);
 

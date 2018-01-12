@@ -263,7 +263,6 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3],
   gfx::Image thumbnail = CreateGoogleThumbnailForTest();
   ThumbnailScore score(0.25, true, true, PretendNow());
 
-  base::Time time;
   GURL gurl;
   top_sites_->SetPageThumbnail(url_row1.url(), thumbnail, score);
   top_sites_->SetPageThumbnail(url_row2.url(), thumbnail, score);
