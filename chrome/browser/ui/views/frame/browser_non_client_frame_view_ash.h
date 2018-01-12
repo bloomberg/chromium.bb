@@ -91,8 +91,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
-                           V1BackButton);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayout);
 

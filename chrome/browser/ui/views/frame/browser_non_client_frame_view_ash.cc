@@ -63,8 +63,8 @@ constexpr SkColor kMdWebUIFrameColor =
     SkColorSetARGBMacro(0xff, 0x25, 0x4f, 0xae);
 
 bool IsV1AppBackButtonEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableV1AppBackButton);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshDisableV1AppBackButton);
 }
 
 }  // namespace
