@@ -107,9 +107,7 @@ public class NotificationPlatformBridgeIntentTest {
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         .putExtra(EXTRA_NOTIFICATION_ID, NotificationPlatformBridge.PLATFORM_ID)
                         .putExtra(NotificationConstants.EXTRA_NOTIFICATION_TAG,
-                                NotificationPlatformBridge.makePlatformTag(
-                                        "42" /* notificationId */, "https://example.com",
-                                        null /* tag */));
+                                "p#https://example.com#0" /* notificationId */);
 
         Preferences activity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
