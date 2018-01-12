@@ -106,6 +106,51 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountInfo primary_account_from_cleared_callback_;
 };
 
+class TestIdentityManagerDiagnosticsObserver
+    : IdentityManager::DiagnosticsObserver {
+ public:
+  explicit TestIdentityManagerDiagnosticsObserver(
+      IdentityManager* identity_manager)
+      : identity_manager_(identity_manager) {
+    identity_manager_->AddDiagnosticsObserver(this);
+  }
+  ~TestIdentityManagerDiagnosticsObserver() override {
+    identity_manager_->RemoveDiagnosticsObserver(this);
+  }
+
+  void set_on_access_token_requested_callback(base::OnceClosure callback) {
+    on_access_token_requested_callback_ = std::move(callback);
+  }
+
+  const std::string& token_requestor_account_id() {
+    return token_requestor_account_id_;
+  }
+  const std::string& token_requestor_consumer_id() {
+    return token_requestor_consumer_id_;
+  }
+  const OAuth2TokenService::ScopeSet& token_requestor_scopes() {
+    return token_requestor_scopes_;
+  }
+
+ private:
+  // IdentityManager::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override {
+    token_requestor_account_id_ = account_id;
+    token_requestor_consumer_id_ = consumer_id;
+    token_requestor_scopes_ = scopes;
+    std::move(on_access_token_requested_callback_).Run();
+  }
+
+  IdentityManager* identity_manager_;
+  base::OnceClosure on_access_token_requested_callback_;
+  std::string token_requestor_account_id_;
+  std::string token_requestor_consumer_id_;
+  OAuth2TokenService::ScopeSet token_requestor_scopes_;
+};
+
 }  // namespace
 
 class IdentityManagerTest : public testing::Test {
@@ -136,11 +181,17 @@ class IdentityManagerTest : public testing::Test {
         new IdentityManager(&signin_manager_, &token_service_));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
+    identity_manager_diagnostics_observer_.reset(
+        new TestIdentityManagerDiagnosticsObserver(identity_manager_.get()));
   }
 
   IdentityManager* identity_manager() { return identity_manager_.get(); }
   TestIdentityManagerObserver* identity_manager_observer() {
     return identity_manager_observer_.get();
+  }
+  TestIdentityManagerDiagnosticsObserver*
+  identity_manager_diagnostics_observer() {
+    return identity_manager_diagnostics_observer_.get();
   }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   SigninManagerForTest* signin_manager() { return &signin_manager_; }
@@ -157,6 +208,8 @@ class IdentityManagerTest : public testing::Test {
   CustomFakeProfileOAuth2TokenService token_service_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
+  std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
+      identity_manager_diagnostics_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
@@ -257,6 +310,36 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcherForPrimaryAccount) {
           "dummy_consumer", scopes, std::move(callback),
           PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
   EXPECT_TRUE(token_fetcher);
+}
+
+TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_requested_callback(run_loop.QuitClosure());
+
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  std::set<std::string> scopes{"scope"};
+  PrimaryAccountAccessTokenFetcher::TokenCallback callback =
+      base::BindOnce([](const GoogleServiceAuthError& error,
+                        const std::string& access_token) {});
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForPrimaryAccount(
+          "dummy_consumer", scopes, std::move(callback),
+          PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+
+  run_loop.Run();
+
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_requestor_account_id());
+  EXPECT_EQ(
+      "dummy_consumer",
+      identity_manager_diagnostics_observer()->token_requestor_consumer_id());
+  EXPECT_EQ(scopes,
+            identity_manager_diagnostics_observer()->token_requestor_scopes());
 }
 
 }  // namespace identity
