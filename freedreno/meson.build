@@ -64,7 +64,7 @@ pkg.generate(
   name : 'libdrm_freedreno',
   libraries : libdrm_freedreno,
   subdirs : ['.', 'libdrm', 'freedreno'],
-  version : '0.7',
+  version : meson.project_version(),
   requires_private : 'libdrm',
   description : 'Userspace interface to freedreno kernel DRM services',
 )
