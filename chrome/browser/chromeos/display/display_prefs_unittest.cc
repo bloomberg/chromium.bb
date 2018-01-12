@@ -25,6 +25,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
@@ -103,6 +104,13 @@ class DisplayPrefsTest : public NoSessionAshTestBase {
     AshTestBase::SetUp();
     // AshTestBase::SetUp() initializes local state.
     ASSERT_TRUE(local_state());
+    observer_ = std::make_unique<chromeos::DisplayConfigurationObserver>();
+    observer_->OnDisplaysInitialized();
+  }
+
+  void TearDown() override {
+    observer_.reset();
+    AshTestBase::TearDown();
   }
 
   void LoggedInAsUser() { SimulateUserLogin("user1@test.com"); }
@@ -216,6 +224,8 @@ class DisplayPrefsTest : public NoSessionAshTestBase {
   DisplayPrefs* display_prefs() { return ash::Shell::Get()->display_prefs(); }
 
  private:
+  std::unique_ptr<WindowTreeHostManager::Observer> observer_;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTest);
 };
 

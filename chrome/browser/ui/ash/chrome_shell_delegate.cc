@@ -12,7 +12,6 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_prefs.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -277,8 +277,7 @@ bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 }
 
 void ChromeShellDelegate::PreInit() {
-  // TODO(mash): port DisplayRotationDefaultHandler to mash once CrosSettings
-  // is moved to a service. http://crbug.com/678949.
+  // TODO: port to mash. http://crbug.com/678949.
   if (chromeos::GetAshConfig() == ash::Config::MASH)
     return;
 
@@ -286,6 +285,15 @@ void ChromeShellDelegate::PreInit() {
   // Setup is done in OnShellInitialized() so this needs to be constructed after
   // Shell is constructed but before OnShellInitialized() is called.
   new policy::DisplayRotationDefaultHandler();
+
+  // Set the observer now so that we can save the initial state
+  // in Shell::Init.
+  display_configuration_observer_.reset(
+      new chromeos::DisplayConfigurationObserver());
+}
+
+void ChromeShellDelegate::PreShutdown() {
+  display_configuration_observer_.reset();
 }
 
 void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {

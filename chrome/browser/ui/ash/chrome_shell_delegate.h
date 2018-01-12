@@ -14,6 +14,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace chromeos {
+class DisplayConfigurationObserver;
+}
+
 namespace keyboard {
 class KeyboardUI;
 }
@@ -30,6 +34,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
+  void PreShutdown() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
@@ -48,6 +53,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void PlatformInit();
 
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<chromeos::DisplayConfigurationObserver>
+      display_configuration_observer_;
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
 
