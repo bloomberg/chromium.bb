@@ -86,7 +86,6 @@ class SigninTracker : public SigninManagerBase::Observer,
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
  private:
   // Initializes this by adding notifications and observers.
