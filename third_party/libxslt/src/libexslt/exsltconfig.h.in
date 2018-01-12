@@ -1,5 +1,5 @@
 /*
- * exsltconfig.h: compile-time version informations for the EXSLT library
+ * exsltconfig.h: compile-time version information for the EXSLT library
  *
  * See Copyright for the status of this software.
  *

@@ -1,6 +1,12 @@
 dnl Process this file with autoconf to produce a configuration script.
-AC_PREREQ(2.59)
-AC_INIT(libxslt/xslt.c)
+AC_PREREQ(2.63)
+
+m4_define([MAJOR_VERSION], [1])
+m4_define([MINOR_VERSION], [1])
+m4_define([MICRO_VERSION], [32])
+
+AC_INIT([libxslt], [MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
+AC_CONFIG_SRCDIR([libxslt/xslt.c])
 AC_CONFIG_HEADERS(config.h)
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
@@ -9,13 +15,12 @@ dnl
 dnl libxslt is the main part of the package
 dnl libexslt is an extension
 dnl
-LIBXSLT_MAJOR_VERSION=1
-LIBXSLT_MINOR_VERSION=1
-LIBXSLT_MICRO_VERSION=29
-PACKAGE=libxslt
+LIBXSLT_MAJOR_VERSION=MAJOR_VERSION
+LIBXSLT_MINOR_VERSION=MINOR_VERSION
+LIBXSLT_MICRO_VERSION=MICRO_VERSION
 LIBEXSLT_MAJOR_VERSION=0
 LIBEXSLT_MINOR_VERSION=8
-LIBEXSLT_MICRO_VERSION=17
+LIBEXSLT_MICRO_VERSION=20
 LIBXML_REQUIRED_VERSION=2.6.27
 
 
@@ -80,9 +85,7 @@ AC_SUBST(LIBEXSLT_VERSION_INFO)
 AC_SUBST(LIBEXSLT_VERSION_NUMBER)
 AC_SUBST(LIBEXSLT_VERSION_EXTRA)
 
-VERSION=${LIBXSLT_VERSION}
-
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE([foreign])
 
 # AM_MAINTAINER_MODE
 
@@ -113,11 +116,9 @@ dnl
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_CPP
-AC_PATH_PROG(RM, rm, /bin/rm)
-AC_PATH_PROG(MV, mv, /bin/mv)
-AC_PATH_PROG(TAR, tar, /bin/tar)
 AC_PATH_PROG(XMLLINT, xmllint, /usr/bin/xmllint)
 AC_PATH_PROG(XSLTPROC, xsltproc, /usr/bin/xsltproc)
+PKG_PROG_PKG_CONFIG
 
 AC_HEADER_STDC
 
@@ -160,74 +161,8 @@ dnl
 dnl Detect supported locale
 dnl
 
-XSLT_LOCALE_XLOCALE=0
-XSLT_LOCALE_WINAPI=0
-
 AC_CHECK_HEADERS([locale.h xlocale.h])
-if test $ac_cv_header_xlocale_h = yes; then
-dnl
-dnl Check for generic locale_t declaration
-dnl
-AC_MSG_CHECKING([if xlocale program link])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif
-#ifdef HAVE_XLOCALE_H
-#include <xlocale.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef __GLIBC__
-typedef __locale_t xsltLocale;
-#else
-typedef locale_t xsltLocale;
-#endif
-#if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ <= 2
-#define newlocale __newlocale
-#define freelocale __freelocale
-#define strxfrm_l __strxfrm_l
-#define LC_COLLATE_MASK (1 << LC_COLLATE)
-#endif
-]],[[
-    xsltLocale locale;
-    const char *src[2] = { "\xc3\x84rger", "Zeppelin" };
-    char *dst[2];
-    size_t len, r;
-    int i;
-
-    locale = newlocale(LC_COLLATE_MASK, "en_US.utf8", NULL);
-    if (locale == NULL) exit(1);
-    for (i=0; i<2; ++i) {
-        len = strxfrm_l(NULL, src[i], 0, locale) + 1;
-        dst[i] = malloc(len);
-        if(dst[i] == NULL) exit(1);
-        r = strxfrm_l(dst[i], src[i], len, locale);
-        if(r >= len) exit(1);
-    }
-    if (strcmp(dst[0], dst[1]) >= 0) exit(1);
-
-    exit(0);
-    return(0);
-]])],
-  [AC_MSG_RESULT(yes); XSLT_LOCALE_XLOCALE=1],
-  [AC_MSG_RESULT(no)]
-)
-else
-  case "$host" in
-    *-*-mingw*)
-      AC_MSG_NOTICE([using winapi locale])
-      XSLT_LOCALE_WINAPI=1;;
-  esac
-fi
-
-AC_SUBST(XSLT_LOCALE_XLOCALE)
-AC_SUBST(XSLT_LOCALE_WINAPI)
+AC_CHECK_FUNCS([strxfrm_l])
 
 dnl
 dnl Math detection
@@ -505,7 +440,6 @@ dnl where is xml2-config
 dnl
 
 AC_SUBST(LIBXML_REQUIRED_VERSION)
-AC_MSG_CHECKING(for libxml libraries >= $LIBXML_REQUIRED_VERSION) 
 if test "x$LIBXML_CONFIG_PREFIX" != "x"
 then
 	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false], [${LIBXML_CONFIG_PREFIX}/bin])
@@ -546,10 +480,11 @@ then
 	CWD=`pwd`
 	if cd $LIBXML_SRC
 	then
-		SRC_DIR=`pwd`
-		XML_CONFIG=${SRC_DIR}/xml2-config
-		LIBXML_CFLAGS="-I${SRC_DIR}/include"
-		LIBXML_LIBS="-L${SRC_DIR}"
+		LIBXML_SRC=`pwd`
+		XML_CONFIG="${LIBXML_SRC}/xml2-config"
+		LIBXML_CFLAGS="-I${LIBXML_SRC}/include"
+		LIBXML_LIBS="-L${LIBXML_SRC} `$XML_CONFIG --libs`"
+                WITH_MODULES="`$XML_CONFIG --modules`"
 		cd $CWD
 	else
 		AC_MSG_ERROR([libxml source dir not found (${LIBXML_SRC}), typo?])
@@ -557,12 +492,24 @@ then
 fi
 
 dnl
+dnl Try pkg-config first if nothing is set
+dnl
+
+if test "x$LIBXML_CONFIG_PREFIX" = "x" -a "x$LIBXML_LIBS" = "x"
+then
+	PKG_CHECK_MODULES([LIBXML], [libxml-2.0 >= $LIBXML_REQUIRED_VERSION], [
+		WITH_MODULES="`$PKG_CONFIG --variable=modules libxml-2.0`"
+	], [ ])
+fi
+
+dnl
 dnl make sure xml2-config is executable,
 dnl test version and init our variables
 dnl
 
-if ${XML_CONFIG} --libs print > /dev/null 2>&1
+if test "x$LIBXML_LIBS" = "x" && ${XML_CONFIG} --libs print > /dev/null 2>&1
 then
+        AC_MSG_CHECKING(for libxml libraries >= $LIBXML_REQUIRED_VERSION)
 	XMLVERS=`$XML_CONFIG --version`
 	if test VERSION_TO_NUMBER(echo $XMLVERS) -ge VERSION_TO_NUMBER(echo $LIBXML_REQUIRED_VERSION)
 	then
@@ -570,11 +517,13 @@ then
 	else
 		AC_MSG_ERROR(Version $XMLVERS found. You need at least libxml2 $LIBXML_REQUIRED_VERSION for this version of libxslt)
 	fi
-	LIBXML_LIBS="$LIBXML_LIBS `$XML_CONFIG --libs`"
-	if test "x$LIBXML_SRC" = "x"; then
-		LIBXML_CFLAGS="$LIBXML_CFLAGS `$XML_CONFIG --cflags`"
-	fi
-else
+	LIBXML_LIBS="`$XML_CONFIG --libs`"
+	LIBXML_CFLAGS="`$XML_CONFIG --cflags`"
+        WITH_MODULES="`$XML_CONFIG --modules`"
+fi
+
+if test "x$LIBXML_LIBS" = "x"
+then
 	AC_MSG_ERROR([Could not find libxml2 anywhere, check ftp://xmlsoft.org/.])
 fi
 
@@ -602,7 +551,6 @@ fi
 
 if test "$with_plugins" = "yes" ; then
   AC_MSG_CHECKING([libxml2 module support])
-  WITH_MODULES="`$XML_CONFIG --modules`"
   if test "${WITH_MODULES}" = "1"; then
     AC_MSG_RESULT(yes)
   else

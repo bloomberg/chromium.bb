@@ -49,9 +49,9 @@ dummy:
 
 tests: dummy
 	@echo '## Running the regression test suite'
-	@(cd tests ; $(MAKE) tests)
-	@(cd xsltproc ; $(MAKE) tests)
-	@(if [ "$(PYTHON_SUBDIR)" != "" ] ; then cd python ; $(MAKE) tests ; fi)
+	@(cd tests ; $(MAKE) -s tests)
+	@(cd xsltproc ; $(MAKE) -s tests)
+	@(if [ "$(PYTHON_SUBDIR)" != "" ] ; then cd python ; $(MAKE) -s tests ; fi)
 
 valgrind:
 	@echo '## Running the regression tests under Valgrind'

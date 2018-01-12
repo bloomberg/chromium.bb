@@ -1,7 +1,7 @@
 #define IN_LIBEXSLT
 #include "libexslt/libexslt.h"
 
-#if defined(WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
+#if defined(_WIN32) && !defined (__CYGWIN__) && (!__MINGW32__)
 #include <win32config.h>
 #else
 #include "config.h"
@@ -75,7 +75,7 @@ exsltStrTokenizeFunction(xmlXPathParserContextPtr ctxt, int nargs)
         ret = xmlXPathNewNodeSet(NULL);
         if (ret != NULL) {
             for (cur = str, token = str; *cur != 0; cur += clen) {
-	        clen = xmlUTF8Size(cur);
+	        clen = xmlUTF8Strsize(cur, 1);
 		if (*delimiters == 0) {	/* empty string case */
 		    xmlChar ctmp;
 		    ctmp = *(cur+clen);
@@ -87,7 +87,7 @@ exsltStrTokenizeFunction(xmlXPathParserContextPtr ctxt, int nargs)
                     *(cur+clen) = ctmp; /* restore the changed byte */
                     token = cur + clen;
                 } else for (delimiter = delimiters; *delimiter != 0;
-				delimiter += xmlUTF8Size(delimiter)) {
+				delimiter += xmlUTF8Strsize(delimiter, 1)) {
                     if (!xmlUTF8Charcmp(cur, delimiter)) {
                         if (cur == token) {
                             /* discard empty tokens */
@@ -265,7 +265,10 @@ exsltStrEncodeUriFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     str = xmlXPathPopString(ctxt);
     str_len = xmlUTF8Strlen(str);
 
-    if (str_len == 0) {
+    if (str_len <= 0) {
+        if (str_len < 0)
+            xsltGenericError(xsltGenericErrorContext,
+                             "exsltStrEncodeUriFunction: invalid UTF-8\n");
 	xmlXPathReturnEmptyString(ctxt);
 	xmlFree(str);
 	return;
@@ -310,7 +313,10 @@ exsltStrDecodeUriFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     str = xmlXPathPopString(ctxt);
     str_len = xmlUTF8Strlen(str);
 
-    if (str_len == 0) {
+    if (str_len <= 0) {
+        if (str_len < 0)
+            xsltGenericError(xsltGenericErrorContext,
+                             "exsltStrDecodeUriFunction: invalid UTF-8\n");
 	xmlXPathReturnEmptyString(ctxt);
 	xmlFree(str);
 	return;
@@ -342,7 +348,9 @@ exsltStrDecodeUriFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 static void
 exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     int number, str_len = 0, str_size = 0;
-    xmlChar *str = NULL, *ret = NULL;
+    double floatval;
+    xmlChar *str = NULL;
+    xmlBufferPtr buf;
 
     if ((nargs < 1) || (nargs > 2)) {
 	xmlXPathSetArityError(ctxt);
@@ -354,14 +362,31 @@ exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	str_len = xmlUTF8Strlen(str);
 	str_size = xmlStrlen(str);
     }
-    if (str_len == 0) {
+
+    floatval = xmlXPathPopNumber(ctxt);
+
+    if (str_len <= 0) {
+        if (str_len < 0) {
+            xsltGenericError(xsltGenericErrorContext,
+                             "exsltStrPaddingFunction: invalid UTF-8\n");
+            xmlXPathReturnEmptyString(ctxt);
+            xmlFree(str);
+            return;
+        }
 	if (str != NULL) xmlFree(str);
 	str = xmlStrdup((const xmlChar *) " ");
 	str_len = 1;
 	str_size = 1;
     }
 
-    number = (int) xmlXPathPopNumber(ctxt);
+    if (xmlXPathIsNaN(floatval) || floatval < 0.0) {
+        number = 0;
+    } else if (floatval >= 100000.0) {
+        number = 100000;
+    }
+    else {
+        number = (int) floatval;
+    }
 
     if (number <= 0) {
 	xmlXPathReturnEmptyString(ctxt);
@@ -369,17 +394,26 @@ exsltStrPaddingFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	return;
     }
 
+    buf = xmlBufferCreateSize(number);
+    if (buf == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+	xmlFree(str);
+	return;
+    }
+    xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
+
     while (number >= str_len) {
-	ret = xmlStrncat(ret, str, str_size);
+        xmlBufferAdd(buf, str, str_size);
 	number -= str_len;
     }
     if (number > 0) {
 	str_size = xmlUTF8Strsize(str, number);
-	ret = xmlStrncat(ret, str, str_size);
+        xmlBufferAdd(buf, str, str_size);
     }
 
-    xmlXPathReturnString(ctxt, ret);
+    xmlXPathReturnString(ctxt, xmlBufferDetach(buf));
 
+    xmlBufferFree(buf);
     if (str != NULL)
 	xmlFree(str);
 }
@@ -411,6 +445,16 @@ exsltStrAlignFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 
     str_l = xmlUTF8Strlen (str);
     padding_l = xmlUTF8Strlen (padding);
+
+    if (str_l < 0 || padding_l < 0) {
+        xsltGenericError(xsltGenericErrorContext,
+                         "exsltStrAlignFunction: invalid UTF-8\n");
+        xmlXPathReturnEmptyString(ctxt);
+        xmlFree(str);
+        xmlFree(padding);
+        xmlFree(alignment);
+        return;
+    }
 
     if (str_l == padding_l) {
 	xmlXPathReturnString (ctxt, str);
@@ -462,7 +506,7 @@ exsltStrAlignFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 static void
 exsltStrConcatFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     xmlXPathObjectPtr obj;
-    xmlChar *ret = NULL;
+    xmlBufferPtr buf;
     int i;
 
     if (nargs  != 1) {
@@ -478,22 +522,32 @@ exsltStrConcatFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     obj = valuePop (ctxt);
 
     if (xmlXPathNodeSetIsEmpty(obj->nodesetval)) {
+        xmlXPathFreeObject(obj);
 	xmlXPathReturnEmptyString(ctxt);
 	return;
     }
+
+    buf = xmlBufferCreate();
+    if (buf == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        xmlXPathFreeObject(obj);
+	return;
+    }
+    xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 
     for (i = 0; i < obj->nodesetval->nodeNr; i++) {
 	xmlChar *tmp;
 	tmp = xmlXPathCastNodeToString(obj->nodesetval->nodeTab[i]);
 
-	ret = xmlStrcat (ret, tmp);
+        xmlBufferCat(buf, tmp);
 
 	xmlFree(tmp);
     }
 
     xmlXPathFreeObject (obj);
 
-    xmlXPathReturnString(ctxt, ret);
+    xmlXPathReturnString(ctxt, xmlBufferDetach(buf));
+    xmlBufferFree(buf);
 }
 
 /**
@@ -669,6 +723,7 @@ exsltStrReplaceFunction (xmlXPathParserContextPtr ctxt, int nargs) {
         xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
         goto fail_buffer;
     }
+    xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
     src = string;
     start = string;
 
@@ -696,7 +751,7 @@ exsltStrReplaceFunction (xmlXPathParserContextPtr ctxt, int nargs) {
                 start = src;
             }
 
-            src += xmlUTF8Size(src);
+            src += xmlUTF8Strsize(src, 1);
         }
         else {
             if ((start < src &&

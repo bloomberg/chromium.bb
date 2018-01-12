@@ -26,7 +26,7 @@ def runtests(xsl_dir, xml_dir="."):
         if not path.isfile(xml_path):
             continue
 
-        args = [ xsltproc, xsl_path, xml_path ]
+        args = [ xsltproc, "--maxdepth", "200", xsl_path, xml_path ]
         p = Popen(args, stdout=PIPE, stderr=PIPE)
         out_path = path.join(xml_dir, name + ".out")
         err_path = path.join(xml_dir, name + ".err")

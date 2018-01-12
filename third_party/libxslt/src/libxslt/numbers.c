@@ -65,38 +65,10 @@ static xsltFormatToken default_token;
 /*
  * **** Start temp insert ****
  *
- * The following two routines (xsltUTF8Size and xsltUTF8Charcmp)
- * will be replaced with calls to the corresponding libxml routines
- * at a later date (when other inter-library dependencies require it)
+ * The following routine xsltUTF8Charcmp will be replaced with calls to
+ * the corresponding libxml routine at a later date (when other
+ * inter-library dependencies require it).
  */
-
-/**
- * xsltUTF8Size:
- * @utf: pointer to the UTF8 character
- *
- * returns the numbers of bytes in the character, -1 on format error
- */
-static int
-xsltUTF8Size(xmlChar *utf) {
-    xmlChar mask;
-    int len;
-
-    if (utf == NULL)
-        return -1;
-    if (*utf < 0x80)
-        return 1;
-    /* check valid UTF8 character */
-    if (!(*utf & 0x40))
-        return -1;
-    /* determine number of bytes in char */
-    len = 2;
-    for (mask=0x20; mask != 0; mask>>=1) {
-        if (!(*utf & mask))
-            return len;
-        len++;
-    }
-    return -1;
-}
 
 /**
  * xsltUTF8Charcmp
@@ -108,13 +80,16 @@ xsltUTF8Size(xmlChar *utf) {
  */
 static int
 xsltUTF8Charcmp(xmlChar *utf1, xmlChar *utf2) {
+    int len = xmlUTF8Strsize(utf1, 1);
 
+    if (len < 1)
+        return -1;
     if (utf1 == NULL ) {
         if (utf2 == NULL)
             return 0;
         return -1;
     }
-    return xmlStrncmp(utf1, utf2, xsltUTF8Size(utf1));
+    return xmlStrncmp(utf1, utf2, len);
 }
 
 /***** Stop temp insert *****/
@@ -222,7 +197,7 @@ xsltNumberFormatDecimal(xmlBufferPtr buffer,
     }
     if (i < 0)
         xsltGenericError(xsltGenericErrorContext,
-		"xsltNumberFormatDecimal: Internal buffer size exceeded");
+		"xsltNumberFormatDecimal: Internal buffer size exceeded\n");
     xmlBufferCat(buffer, pointer);
 }
 
@@ -741,7 +716,7 @@ xsltNumberFormatGetValue(xmlXPathContextPtr context,
 /**
  * xsltNumberFormat:
  * @ctxt: the XSLT transformation context
- * @data: the formatting informations
+ * @data: the formatting information
  * @node: the data to format
  *
  * Convert one number.
@@ -899,7 +874,7 @@ xsltFormatNumberPreSuffix(xsltDecimalFormatPtr self, xmlChar **format, xsltForma
 	    }
 	}
 
-	if ((len=xsltUTF8Size(*format)) < 1)
+	if ((len=xmlUTF8Strsize(*format, 1)) < 1)
 	    return -1;
 	count += len;
 	*format += len;
@@ -911,7 +886,7 @@ xsltFormatNumberPreSuffix(xsltDecimalFormatPtr self, xmlChar **format, xsltForma
  * @self: the decimal format
  * @format: the format requested
  * @number: the value to format
- * @result: the place to ouput the result
+ * @result: the place to output the result
  *
  * format-number() uses the JDK 1.1 DecimalFormat class:
  *
@@ -1081,7 +1056,7 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
 	} else
 	    break; /* while */
 
-	if ((len=xsltUTF8Size(the_format)) < 1) {
+	if ((len=xmlUTF8Strsize(the_format, 1)) < 1) {
 	    found_error = 1;
 	    goto OUTPUT_NUMBER;
 	}
@@ -1093,7 +1068,11 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
     if ( (*the_format != 0) &&
          (xsltUTF8Charcmp(the_format, self->decimalPoint) == 0) ) {
         format_info.add_decimal = TRUE;
-	the_format += xsltUTF8Size(the_format);	/* Skip over the decimal */
+        if ((len = xmlUTF8Strsize(the_format, 1)) < 1) {
+            found_error = 1;
+            goto OUTPUT_NUMBER;
+        }
+	the_format += len;	/* Skip over the decimal */
     }
 
     while (*the_format != 0) {
@@ -1112,7 +1091,7 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
 		goto OUTPUT_NUMBER;
 	    }
 	    delayed_multiplier = 100;
-	    if ((len = xsltUTF8Size(the_format)) < 1) {
+	    if ((len = xmlUTF8Strsize(the_format, 1)) < 1) {
 	        found_error = 1;
 		goto OUTPUT_NUMBER;
 	    }
@@ -1124,7 +1103,7 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
 		goto OUTPUT_NUMBER;
 	    }
 	    delayed_multiplier = 1000;
-	    if  ((len = xsltUTF8Size(the_format)) < 1) {
+	    if  ((len = xmlUTF8Strsize(the_format, 1)) < 1) {
 	        found_error = 1;
 		goto OUTPUT_NUMBER;
 	    }
@@ -1133,7 +1112,7 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
 	} else if (xsltUTF8Charcmp(the_format, self->grouping) != 0) {
 	    break; /* while */
 	}
-	if ((len = xsltUTF8Size(the_format)) < 1) {
+	if ((len = xmlUTF8Strsize(the_format, 1)) < 1) {
 	    found_error = 1;
 	    goto OUTPUT_NUMBER;
 	}
@@ -1210,7 +1189,7 @@ xsltFormatNumberConversion(xsltDecimalFormatPtr self,
 		    delayed_multiplier = 0;
 		else
 		    break; /* while */
-		if ((len = xsltUTF8Size(the_format)) < 1) {
+		if ((len = xmlUTF8Strsize(the_format, 1)) < 1) {
 		    found_error = 1;
 		    goto OUTPUT_NUMBER;
 		}
@@ -1276,12 +1255,12 @@ OUTPUT_NUMBER:
 
     /* Ready to output our number.  First see if "default sign" is required */
     if (default_sign != 0)
-	xmlBufferAdd(buffer, self->minusSign, xsltUTF8Size(self->minusSign));
+	xmlBufferAdd(buffer, self->minusSign, xmlUTF8Strsize(self->minusSign, 1));
 
     /* Put the prefix into the buffer */
     for (j = 0; j < prefix_length; j++) {
 	if ((pchar = *prefix++) == SYMBOL_QUOTE) {
-	    len = xsltUTF8Size(prefix);
+	    len = xmlUTF8Strsize(prefix, 1);
 	    xmlBufferAdd(buffer, prefix, len);
 	    prefix += len;
 	    j += len - 1;	/* length of symbol less length of quote */
@@ -1318,20 +1297,20 @@ OUTPUT_NUMBER:
     /* Add leading zero, if required */
     if ((floor(number) == 0) &&
 	(format_info.integer_digits + format_info.frac_digits == 0)) {
-        xmlBufferAdd(buffer, self->zeroDigit, xsltUTF8Size(self->zeroDigit));
+        xmlBufferAdd(buffer, self->zeroDigit, xmlUTF8Strsize(self->zeroDigit, 1));
     }
 
     /* Next the fractional part, if required */
     if (format_info.frac_digits + format_info.frac_hash == 0) {
         if (format_info.add_decimal)
 	    xmlBufferAdd(buffer, self->decimalPoint,
-			 xsltUTF8Size(self->decimalPoint));
+			 xmlUTF8Strsize(self->decimalPoint, 1));
     }
     else {
       number -= floor(number);
 	if ((number != 0) || (format_info.frac_digits != 0)) {
 	    xmlBufferAdd(buffer, self->decimalPoint,
-			 xsltUTF8Size(self->decimalPoint));
+			 xmlUTF8Strsize(self->decimalPoint, 1));
 	    number = floor(scale * number + 0.5);
 	    for (j = format_info.frac_hash; j > 0; j--) {
 		if (fmod(number, 10.0) >= 1.0)
@@ -1346,7 +1325,7 @@ OUTPUT_NUMBER:
     /* Put the suffix into the buffer */
     for (j = 0; j < suffix_length; j++) {
 	if ((pchar = *suffix++) == SYMBOL_QUOTE) {
-            len = xsltUTF8Size(suffix);
+            len = xmlUTF8Strsize(suffix, 1);
 	    xmlBufferAdd(buffer, suffix, len);
 	    suffix += len;
 	    j += len - 1;	/* length of symbol less length of escape */

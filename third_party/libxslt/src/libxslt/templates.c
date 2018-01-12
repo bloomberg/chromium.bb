@@ -308,12 +308,12 @@ xsltAttrTemplateValueProcessNode(xsltTransformContextPtr ctxt,
 	        xsltTransformError(ctxt, NULL, inst,
 			"xsltAttrTemplateValueProcessNode: unmatched '{'\n");
 		ret = xmlStrncat(ret, str, cur - str);
-		return(ret);
+		goto exit;
 	    }
 	    str++;
 	    expr = xmlStrndup(str, cur - str);
 	    if (expr == NULL)
-		return(ret);
+		goto exit;
 	    else if (*expr == '{') {
 		ret = xmlStrcat(ret, expr);
 		xmlFree(expr);
@@ -361,6 +361,7 @@ xsltAttrTemplateValueProcessNode(xsltTransformContextPtr ctxt,
 	ret = xmlStrncat(ret, str, cur - str);
     }
 
+exit:
     if (nsList != NULL)
 	xmlFree(nsList);
 
