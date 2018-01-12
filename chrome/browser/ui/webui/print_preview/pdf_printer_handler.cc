@@ -204,9 +204,7 @@ void PdfPrinterHandler::StartPrint(
                         : nullptr;
   const GURL& initiator_url =
       initiator ? initiator->GetLastCommittedURL() : GURL::EmptyGURL();
-  bool title_is_url = url_formatter::FormatUrl(initiator_url) == job_title;
-  base::FilePath path = title_is_url ? GetFileNameForURL(initiator_url)
-                                     : GetFileNameForPrintJobTitle(job_title);
+  base::FilePath path = GetFileName(initiator_url, job_title);
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
@@ -278,6 +276,14 @@ base::FilePath PdfPrinterHandler::GetFileNameForURL(const GURL& url) {
   if (name.AsUTF8Unsafe() == url.host())
     return name.AddExtension(kPdfExtension);
   return name.ReplaceExtension(kPdfExtension);
+}
+
+// static
+base::FilePath PdfPrinterHandler::GetFileName(const GURL& url,
+                                              const base::string16& job_title) {
+  bool title_is_url = url_formatter::FormatUrl(url) == job_title;
+  return title_is_url ? GetFileNameForURL(url)
+                      : GetFileNameForPrintJobTitle(job_title);
 }
 
 void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
