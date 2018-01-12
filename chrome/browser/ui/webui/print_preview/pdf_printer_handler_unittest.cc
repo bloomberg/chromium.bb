@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_formatter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -61,6 +62,33 @@ TEST_F(PdfPrinterHandlerTest, GetFileNameForPrintJobURL) {
     SCOPED_TRACE(data.input);
     base::FilePath path =
         PdfPrinterHandler::GetFileNameForURL(GURL(data.input));
+    EXPECT_EQ(data.expected_output, path.value());
+  }
+}
+
+TEST_F(PdfPrinterHandlerTest, GetFileName) {
+  static const struct {
+    const char* url;
+    const char* job_title;
+    const base::FilePath::CharType* expected_output;
+  } kTestData[] = {
+      {"http://example.com", "Example Website", FPL("Example Website.pdf")},
+      {"http://example.com/foo.html", "Website", FPL("Website.pdf")},
+      {"http://example.com/foo.html", "Print Me.html",
+       FPL("Print Me.html.pdf")},
+      {"http://mail.google.com/mail/u/0/#inbox/hash",
+       "Baz.com Mail - This is email. What does it mean.",
+       FPL("Baz.com Mail - This is email. What does it mean_.pdf")},
+      {"data:text/html,foo", "data:text/html,foo", FPL("dataurl.pdf")},
+      {"data:text/html,<title>someone@example.com", "someone@example.com",
+       FPL("someone@example.com.pdf")},
+  };
+
+  for (const auto& data : kTestData) {
+    SCOPED_TRACE(std::string(data.url) + " | " + data.job_title);
+    GURL url(data.url);
+    base::string16 job_title = base::ASCIIToUTF16(data.job_title);
+    base::FilePath path = PdfPrinterHandler::GetFileName(url, job_title);
     EXPECT_EQ(data.expected_output, path.value());
   }
 }
