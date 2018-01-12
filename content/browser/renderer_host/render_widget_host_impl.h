@@ -549,6 +549,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // request to create a new RenderWidget.
   void SetInitialRenderSizeParams(const ResizeParams& resize_params);
 
+  // The RenderWidget was resized and whether the focused node should be
+  // scrolled into view.
+  void WasResized(bool scroll_focused_node_into_view);
+
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if
   // a new renderer is created.

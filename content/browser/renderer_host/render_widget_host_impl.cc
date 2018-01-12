@@ -814,6 +814,10 @@ void RenderWidgetHostImpl::SetInitialRenderSizeParams(
 }
 
 void RenderWidgetHostImpl::WasResized() {
+  WasResized(false);
+}
+
+void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
@@ -824,6 +828,7 @@ void RenderWidgetHostImpl::WasResized() {
   std::unique_ptr<ResizeParams> params(new ResizeParams);
   if (!GetResizeParams(params.get()))
     return;
+  params->scroll_focused_node_into_view = scroll_focused_node_into_view;
 
   bool width_changed =
       !old_resize_params_ ||
