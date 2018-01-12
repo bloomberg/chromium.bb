@@ -477,12 +477,6 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
   ServiceWorkerContext* public_context() { return wrapper(); }
 
-  void AssociateRendererProcessToPattern(const GURL& pattern) {
-    wrapper_->process_manager()->AddProcessReferenceToPattern(
-        pattern,
-        shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
-  }
-
  private:
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 };
@@ -670,8 +664,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     // Make the registration findable via storage functions.
     wrapper()->context()->storage()->NotifyInstallingRegistration(
         registration_.get());
-
-    AssociateRendererProcessToPattern(pattern);
   }
 
   void TimeoutWorkerOnIOThread() {

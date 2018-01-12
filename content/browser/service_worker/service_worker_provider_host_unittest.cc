@@ -122,10 +122,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         mojo::edk::ProcessErrorCallback());
   }
 
-  bool PatternHasProcessToRun(const GURL& pattern) const {
-    return context_->process_manager()->PatternHasProcessToRun(pattern);
-  }
-
   ServiceWorkerRemoteProviderEndpoint PrepareServiceWorkerProviderHost(
       const GURL& document_url) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
@@ -282,56 +278,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
 };
-
-TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
-  ServiceWorkerProviderHost* provider_host1 =
-      CreateProviderHost(GURL("https://www.example.com/example1.html"));
-  ServiceWorkerProviderHost* provider_host2 =
-      CreateProviderHost(GURL("https://www.example.com/example2.html"));
-
-  // Matching registrations have already been set by SetDocumentUrl.
-  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-
-  // Different matching registrations have already been added.
-  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
-
-  // Adding the same registration twice has no effect.
-  provider_host1->AddMatchingRegistration(registration1_.get());
-  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-
-  // Removing a matching registration will decrease the process refs for its
-  // pattern.
-  provider_host1->RemoveMatchingRegistration(registration1_.get());
-  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-  provider_host2->RemoveMatchingRegistration(registration1_.get());
-  ASSERT_FALSE(PatternHasProcessToRun(registration1_->pattern()));
-
-  // Matching registration will be removed when moving out of scope
-  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));   // host1,2
-  ASSERT_FALSE(PatternHasProcessToRun(registration3_->pattern()));  // no host
-  provider_host1->SetDocumentUrl(GURL("https://other.example.com/"));
-  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));  // host2
-  ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));  // host1
-  provider_host2->SetDocumentUrl(GURL("https://other.example.com/"));
-  ASSERT_FALSE(PatternHasProcessToRun(registration2_->pattern()));  // no host
-  ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));   // host1,2
-}
-
-TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
-  ServiceWorkerProviderHost* provider_host1 =
-      CreateProviderHost(GURL("https://www.example.com/example1.html"));
-
-  // Associating the registration will also increase the process refs for
-  // the registration's pattern.
-  provider_host1->AssociateRegistration(registration1_.get(),
-                                        false /* notify_controllerchange */);
-  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-
-  // Disassociating the registration shouldn't affect the process refs for
-  // the registration's pattern.
-  provider_host1->DisassociateRegistration();
-  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-}
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   ServiceWorkerProviderHost* provider_host1 =
