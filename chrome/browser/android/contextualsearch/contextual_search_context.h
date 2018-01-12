@@ -81,6 +81,11 @@ struct ContextualSearchContext {
   // characters).
   int GetEndOffset() const;
 
+  // Detects the language of the context using CLD from the translate utility.
+  base::android::ScopedJavaLocalRef<jstring> DetectLanguage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // Gets a WeakPtr to this instance.
   base::WeakPtr<ContextualSearchContext> GetWeakPtr();
 

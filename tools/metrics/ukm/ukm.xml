@@ -379,10 +379,36 @@ be describing additional metrics about the same event.
       and punctuation.
     </summary>
   </metric>
+  <metric name="IsEntityEligible">
+    <summary>
+      Emits a 1 or 0 to indicate whether the IsEntity boolean ever had a chance
+      of being true or not.  When we're dealing with languages other than ones
+      where our simple entity-detection can work this signal is false.
+    </summary>
+  </metric>
+  <metric name="IsHttp">
+    <summary>
+      Emits a 1 or 0 to indicate whether the base page is HTTP (insecure).
+    </summary>
+  </metric>
+  <metric name="IsLanguageMismatch">
+    <summary>
+      Emits a 1 or 0 to indicate whether the language of the base page is a
+      mismatch from the list of languages the user knows, so they might want
+      translation.
+    </summary>
+  </metric>
   <metric name="IsLongWord">
     <summary>
       Emits a 1 or 0 to indicate whether the word tapped was considered long (at
       least 10 chars in length).
+    </summary>
+  </metric>
+  <metric name="IsSecondTapOverride">
+    <summary>
+      Emits a 1 or 0 to indicate whether the tap was an override of normal tap
+      suppression because it was considered a second tap on a word after the
+      first tap was suppressed.
     </summary>
   </metric>
   <metric name="IsShortWord">
