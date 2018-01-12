@@ -197,6 +197,10 @@ ScreenLayoutObserver::~ScreenLayoutObserver() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
+void ScreenLayoutObserver::SetDisplayChangedFromSettingsUI(int64_t display_id) {
+  displays_changed_from_settings_ui_.insert(display_id);
+}
+
 void ScreenLayoutObserver::UpdateDisplayInfo(
     ScreenLayoutObserver::DisplayInfoMap* old_info) {
   if (old_info)
@@ -276,14 +280,23 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       return false;
     }
 
-    if (iter.second.configured_ui_scale() !=
-        old_iter->second.configured_ui_scale()) {
-      *out_message = l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE);
-      *out_additional_message = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          GetDisplayName(iter.first), GetDisplaySize(iter.first));
-      return true;
+    const auto ignore_display_iter =
+        displays_changed_from_settings_ui_.find(iter.first);
+    if (ignore_display_iter != displays_changed_from_settings_ui_.end()) {
+      // Consume this state so that later changes are not affected.
+      displays_changed_from_settings_ui_.erase(ignore_display_iter);
+    } else {
+      if ((iter.second.configured_ui_scale() !=
+           old_iter->second.configured_ui_scale()) ||
+          (GetDisplayManager()->IsInUnifiedMode() &&
+           iter.second.size_in_pixel() != old_iter->second.size_in_pixel())) {
+        *out_message = l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE);
+        *out_additional_message = l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+            GetDisplayName(iter.first), GetDisplaySize(iter.first));
+        return true;
+      }
     }
     // Don't show rotation change notification if
     // a) no rotation change
