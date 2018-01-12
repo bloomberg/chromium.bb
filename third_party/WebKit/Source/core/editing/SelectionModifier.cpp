@@ -57,6 +57,36 @@ VisiblePosition RightBoundaryOfLine(const VisiblePosition& c,
                                           : LogicalStartOfLine(c);
 }
 
+VisiblePosition PreviousParagraphPosition(
+    const VisiblePosition& passed_position,
+    LayoutUnit x_point) {
+  DCHECK(passed_position.IsValid()) << passed_position;
+  VisiblePosition position = passed_position;
+  do {
+    const VisiblePosition& new_position =
+        PreviousLinePosition(position, x_point);
+    if (new_position.IsNull() ||
+        new_position.DeepEquivalent() == position.DeepEquivalent())
+      break;
+    position = new_position;
+  } while (InSameParagraph(passed_position, position));
+  return position;
+}
+
+VisiblePosition NextParagraphPosition(const VisiblePosition& passed_position,
+                                      LayoutUnit x_point) {
+  DCHECK(passed_position.IsValid()) << passed_position;
+  VisiblePosition position = passed_position;
+  do {
+    const VisiblePosition& new_position = NextLinePosition(position, x_point);
+    if (new_position.IsNull() ||
+        new_position.DeepEquivalent() == position.DeepEquivalent())
+      break;
+    position = new_position;
+  } while (InSameParagraph(passed_position, position));
+  return position;
+}
+
 }  // namespace
 
 LayoutUnit NoXPosForVerticalArrowNavigation() {
