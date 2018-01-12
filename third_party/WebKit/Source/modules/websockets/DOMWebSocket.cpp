@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
-#include "bindings/modules/v8/string_or_string_sequence.h"
+#include "bindings/core/v8/string_or_string_sequence.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

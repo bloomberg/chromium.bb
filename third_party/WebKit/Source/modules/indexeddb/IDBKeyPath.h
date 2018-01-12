@@ -26,7 +26,7 @@
 #ifndef IDBKeyPath_h
 #define IDBKeyPath_h
 
-#include "bindings/modules/v8/string_or_string_sequence.h"
+#include "bindings/core/v8/string_or_string_sequence.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"

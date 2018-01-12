@@ -37,7 +37,6 @@
 [
     ImplementedAs=ElementAnimation
 ] partial interface Element {
-    // TODO(dstockwell): The argument types do not match the spec.
-    [CallWith=ScriptState, Measure, RaisesException] Animation animate((sequence<Dictionary> or Dictionary)? effect, optional (unrestricted double or KeyframeAnimationOptions) options);
+    [CallWith=ScriptState, Measure, RaisesException] Animation animate(object? keyframes, optional (unrestricted double or KeyframeAnimationOptions) options);
     [RuntimeEnabled=WebAnimationsAPI] sequence<Animation> getAnimations();
 };

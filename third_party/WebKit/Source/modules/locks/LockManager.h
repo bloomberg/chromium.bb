@@ -5,7 +5,7 @@
 #ifndef LockManager_h
 #define LockManager_h
 
-#include "bindings/modules/v8/string_or_string_sequence.h"
+#include "bindings/core/v8/string_or_string_sequence.h"
 #include "modules/ModulesExport.h"
 #include "modules/locks/Lock.h"
 #include "modules/locks/LockOptions.h"

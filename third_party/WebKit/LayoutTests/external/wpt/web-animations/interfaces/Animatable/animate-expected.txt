@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 121 tests; 75 PASS, 46 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 121 tests; 109 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -8,43 +8,43 @@ PASS Element.animate() creates an Animation object with a KeyframeEffect whose A
 PASS Element.animate() accepts empty keyframe lists (input: [])
 PASS Element.animate() accepts empty keyframe lists (input: null)
 PASS Element.animate() accepts empty keyframe lists (input: undefined)
-FAIL Element.animate() accepts a one property two value property-indexed keyframes specification assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
+PASS Element.animate() accepts a one property two value property-indexed keyframes specification
 FAIL Element.animate() accepts a one shorthand property two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,margin,offset" but got "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
-FAIL Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification assert_equals: number of frames expected 2 but got 4
-FAIL Element.animate() accepts a two property two value property-indexed keyframes specification assert_equals: number of frames expected 2 but got 4
-FAIL Element.animate() accepts a two property property-indexed keyframes specification with different numbers of values assert_equals: number of frames expected 3 but got 5
-FAIL Element.animate() accepts a property-indexed keyframes specification with an invalid value assert_equals: number of frames expected 5 but got 10
-FAIL Element.animate() accepts a one property two value property-indexed keyframes specification that needs to stringify its values assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
+FAIL Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,margin,marginTop,offset" but got "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
+PASS Element.animate() accepts a two property two value property-indexed keyframes specification
+PASS Element.animate() accepts a two property property-indexed keyframes specification with different numbers of values
+PASS Element.animate() accepts a property-indexed keyframes specification with an invalid value
+PASS Element.animate() accepts a one property two value property-indexed keyframes specification that needs to stringify its values
+PASS Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference
 FAIL Element.animate() accepts a property-indexed keyframes specification with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,margin,offset" but got "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
-FAIL Element.animate() accepts a one property one value property-indexed keyframes specification assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 1
-FAIL Element.animate() accepts a one property one non-array value property-indexed keyframes specification assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 1
-FAIL Element.animate() accepts a one property two value property-indexed keyframes specification where the first value is invalid assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a one property two value property-indexed keyframes specification where the second value is invalid assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with a single offset assert_equals: value for 'offset' on ComputedKeyframe #1 expected (object) null but got (number) 0.5
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is too short Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is too long Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an empty array of offsets assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with an embedded null value Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with a trailing null value Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with leading and trailing null values Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with adjacent null values Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with all null values (and too many at that) Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe with a single null offset assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array Failed to execute 'animate' on 'Element': Non numeric offset provided
-FAIL Element.animate() accepts a property-indexed keyframe without any specified easing assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with a single easing assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with an array of easings Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
-FAIL Element.animate() accepts a property-indexed keyframe with an array of easings that is too short Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
-FAIL Element.animate() accepts a property-indexed keyframe with a single-element array of easings assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with an empty array of easings Failed to execute 'animate' on 'Element': Easing may not be the empty string
-FAIL Element.animate() accepts a property-indexed keyframe with an array of easings that is too long Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
-FAIL Element.animate() accepts a property-indexed keyframe with a single composite operation assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
-FAIL Element.animate() accepts a property-indexed keyframe with a composite array assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,left,offset" but got "computedOffset,easing,left,offset"
-FAIL Element.animate() accepts a property-indexed keyframe with a composite array that is too short assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,left,offset" but got "computedOffset,easing,left,offset"
-FAIL Element.animate() accepts a property-indexed keyframe with a composite array that is too long assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,left,offset" but got "computedOffset,easing,left,offset"
-FAIL Element.animate() accepts a property-indexed keyframe with a single-element composite array assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) 0
+PASS Element.animate() accepts a one property one value property-indexed keyframes specification
+PASS Element.animate() accepts a one property one non-array value property-indexed keyframes specification
+PASS Element.animate() accepts a one property two value property-indexed keyframes specification where the first value is invalid
+PASS Element.animate() accepts a one property two value property-indexed keyframes specification where the second value is invalid
+PASS Element.animate() accepts a property-indexed keyframe with a single offset
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets that is too short
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets that is too long
+PASS Element.animate() accepts a property-indexed keyframe with an empty array of offsets
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets with an embedded null value
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets with a trailing null value
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets with leading and trailing null values
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets with adjacent null values
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets with all null values (and too many at that)
+PASS Element.animate() accepts a property-indexed keyframe with a single null offset
+PASS Element.animate() accepts a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array
+PASS Element.animate() accepts a property-indexed keyframe without any specified easing
+PASS Element.animate() accepts a property-indexed keyframe with a single easing
+PASS Element.animate() accepts a property-indexed keyframe with an array of easings
+PASS Element.animate() accepts a property-indexed keyframe with an array of easings that is too short
+PASS Element.animate() accepts a property-indexed keyframe with a single-element array of easings
+PASS Element.animate() accepts a property-indexed keyframe with an empty array of easings
+PASS Element.animate() accepts a property-indexed keyframe with an array of easings that is too long
+PASS Element.animate() accepts a property-indexed keyframe with a single composite operation
+FAIL Element.animate() accepts a property-indexed keyframe with a composite array Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
+PASS Element.animate() accepts a property-indexed keyframe with a composite array that is too short
+FAIL Element.animate() accepts a property-indexed keyframe with a composite array that is too long Failed to execute 'animate' on 'Element': Invalid composite value: 'accumulate'
+PASS Element.animate() accepts a property-indexed keyframe with a single-element composite array
 PASS Element.animate() accepts a one property one keyframe sequence
 PASS Element.animate() accepts a one property two keyframe sequence
 PASS Element.animate() accepts a two property two keyframe sequence
@@ -79,12 +79,8 @@ PASS Element.animate() does not accept property-indexed keyframe with an invalid
 PASS Element.animate() does not accept empty property-indexed keyframe with an invalid easing
 PASS Element.animate() does not accept empty property-indexed keyframe with an invalid easings array
 PASS Element.animate() does not accept a keyframe sequence with an invalid easing value
-FAIL Element.animate() does not accept property-indexed keyframes with an invalid composite value assert_throws: function "() => {
-      div.animate(subtest.input, 2000);
-    }" did not throw
-FAIL Element.animate() does not accept property-indexed keyframes with an invalid composite value as one of the array values assert_throws: function "() => {
-      div.animate(subtest.input, 2000);
-    }" did not throw
+PASS Element.animate() does not accept property-indexed keyframes with an invalid composite value
+PASS Element.animate() does not accept property-indexed keyframes with an invalid composite value as one of the array values
 FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "() => {
       div.animate(subtest.input, 2000);
     }" did not throw

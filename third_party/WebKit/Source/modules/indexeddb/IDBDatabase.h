@@ -30,7 +30,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/modules/v8/string_or_string_sequence.h"
+#include "bindings/core/v8/string_or_string_sequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"
