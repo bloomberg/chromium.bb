@@ -30,18 +30,32 @@ favicon_base::FaviconImageResult GetDummyFaviconResult() {
   return result;
 }
 
-void VerifyFetchedFavicon(int* count, const gfx::Image& favicon) {
+void VerifyFetchedFaviconAndCount(int* count, const gfx::Image& favicon) {
   DCHECK(count);
   EXPECT_FALSE(favicon.IsEmpty());
   ++(*count);
 }
 
-void Fail(const gfx::Image& favicon) {
-  FAIL() << "The favicon should have been provided synchronously by the cache, "
-            "and this asynchronous callback should never have been called.";
+void VerifyFetchedFavicon(const gfx::Image& favicon) {
+  EXPECT_FALSE(favicon.IsEmpty());
 }
 
-void NoOp(const gfx::Image& favicon) {}
+void Fail(const gfx::Image& favicon) {
+  FAIL() << "This asynchronous callback should never have been called.";
+}
+
+class TestFaviconCache : public FaviconCache {
+ public:
+  explicit TestFaviconCache(favicon::FaviconService* favicon_service)
+      : FaviconCache(favicon_service, nullptr /* history_service */) {}
+  ~TestFaviconCache() override {}
+
+  base::TimeTicks GetTimeNow() override { return fake_time_now_; }
+  void SetTimeNow(base::TimeTicks now) { fake_time_now_ = now; }
+
+ private:
+  base::TimeTicks fake_time_now_;
+};
 
 }  // namespace
 
@@ -50,8 +64,7 @@ class FaviconCacheTest : public testing::Test {
   const GURL kUrlA = GURL("http://www.a.com/");
   const GURL kUrlB = GURL("http://www.b.com/");
 
-  FaviconCacheTest()
-      : cache_(&favicon_service_, nullptr /* history_service */) {}
+  FaviconCacheTest() : cache_(&favicon_service_) {}
 
   testing::NiceMock<favicon::MockFaviconService> favicon_service_;
 
@@ -80,7 +93,7 @@ class FaviconCacheTest : public testing::Test {
   favicon_base::FaviconImageCallback favicon_service_a_site_response_;
   favicon_base::FaviconImageCallback favicon_service_b_site_response_;
 
-  FaviconCache cache_;
+  TestFaviconCache cache_;
 };
 
 TEST_F(FaviconCacheTest, Basic) {
@@ -88,7 +101,7 @@ TEST_F(FaviconCacheTest, Basic) {
 
   int response_count = 0;
   gfx::Image result = cache_.GetFaviconForPageUrl(
-      kUrlA, base::BindOnce(&VerifyFetchedFavicon, &response_count));
+      kUrlA, base::BindOnce(&VerifyFetchedFaviconAndCount, &response_count));
 
   // Expect the synchronous result to be empty.
   EXPECT_TRUE(result.IsEmpty());
@@ -110,7 +123,7 @@ TEST_F(FaviconCacheTest, MultipleRequestsAreCoalesced) {
   int response_count = 0;
   for (int i = 0; i < 10; ++i) {
     cache_.GetFaviconForPageUrl(
-        kUrlA, base::BindOnce(&VerifyFetchedFavicon, &response_count));
+        kUrlA, base::BindOnce(&VerifyFetchedFaviconAndCount, &response_count));
   }
 
   favicon_service_a_site_response_.Run(GetDummyFaviconResult());
@@ -125,9 +138,11 @@ TEST_F(FaviconCacheTest, SeparateOriginsAreCachedSeparately) {
   int b_site_response_count = 0;
 
   gfx::Image a_site_return = cache_.GetFaviconForPageUrl(
-      kUrlA, base::BindOnce(&VerifyFetchedFavicon, &a_site_response_count));
+      kUrlA,
+      base::BindOnce(&VerifyFetchedFaviconAndCount, &a_site_response_count));
   gfx::Image b_site_return = cache_.GetFaviconForPageUrl(
-      kUrlB, base::BindOnce(&VerifyFetchedFavicon, &b_site_response_count));
+      kUrlB,
+      base::BindOnce(&VerifyFetchedFaviconAndCount, &b_site_response_count));
 
   EXPECT_TRUE(a_site_return.IsEmpty());
   EXPECT_TRUE(b_site_return.IsEmpty());
@@ -140,7 +155,8 @@ TEST_F(FaviconCacheTest, SeparateOriginsAreCachedSeparately) {
   EXPECT_EQ(1, b_site_response_count);
 
   a_site_return = cache_.GetFaviconForPageUrl(
-      kUrlA, base::BindOnce(&VerifyFetchedFavicon, &a_site_response_count));
+      kUrlA,
+      base::BindOnce(&VerifyFetchedFaviconAndCount, &a_site_response_count));
   b_site_return = cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail));
 
   EXPECT_TRUE(a_site_return.IsEmpty());
@@ -164,9 +180,11 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
   ExpectFaviconServiceCalls(3, 2);
 
   EXPECT_TRUE(
-      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&NoOp)).IsEmpty());
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
   EXPECT_TRUE(
-      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&NoOp)).IsEmpty());
+      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
 
   favicon_service_a_site_response_.Run(GetDummyFaviconResult());
   favicon_service_b_site_response_.Run(GetDummyFaviconResult());
@@ -182,7 +200,8 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
                        false /* expired */, a_rows, {} /* favicon_urls */);
 
   EXPECT_TRUE(
-      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&NoOp)).IsEmpty());
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
   EXPECT_FALSE(
       cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail)).IsEmpty());
 
@@ -195,7 +214,78 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
                        {} /* favicon_urls */);
 
   EXPECT_TRUE(
-      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&NoOp)).IsEmpty());
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
   EXPECT_TRUE(
-      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&NoOp)).IsEmpty());
+      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
+}
+
+TEST_F(FaviconCacheTest, CacheNullFavicons) {
+  ExpectFaviconServiceCalls(1, 0);
+
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+  favicon_service_a_site_response_.Run(favicon_base::FaviconImageResult());
+
+  // The mock FaviconService's EXPECT_CALL verifies that we do not make another
+  // call to FaviconService.
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+}
+
+TEST_F(FaviconCacheTest, ExpireNullFaviconsByHistory) {
+  ExpectFaviconServiceCalls(2, 0);
+
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+  favicon_service_a_site_response_.Run(favicon_base::FaviconImageResult());
+
+  cache_.OnURLVisited(nullptr /* history_service */, ui::PAGE_TRANSITION_LINK,
+                      history::URLRow(kUrlA), history::RedirectList(),
+                      base::Time::Now());
+
+  // Now the empty favicon should have been expired and we expect our second
+  // call to the mock underlying FaviconService.
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
+          .IsEmpty());
+  favicon_service_a_site_response_.Run(GetDummyFaviconResult());
+  EXPECT_FALSE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+}
+
+TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
+  ExpectFaviconServiceCalls(2, 1);
+
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail)).IsEmpty());
+
+  base::TimeDelta max_duration = base::TimeDelta::FromSeconds(
+      FaviconCache::kEmptyFaviconCacheLifetimeInSeconds);
+
+  // Set the time to epoch and respond with the first empty favicon.
+  cache_.SetTimeNow(base::TimeTicks());
+  favicon_service_a_site_response_.Run(favicon_base::FaviconImageResult());
+
+  // Increment the time to half the duration of the expiry time and respond
+  // with the second empty favicon.
+  cache_.SetTimeNow(base::TimeTicks() + max_duration / 2);
+  favicon_service_b_site_response_.Run(favicon_base::FaviconImageResult());
+
+  // Now increment the time so the the first, but not the second, cached empty
+  // favicon is expired.
+  cache_.SetTimeNow(base::TimeTicks() + max_duration);
+
+  // Request the two favicons again.
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
+  EXPECT_TRUE(
+      cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail)).IsEmpty());
+
+  // Our call to |ExpectFaviconServiceCalls(expected A calls, expected B calls)|
+  // above should verify that we re-request the icon for kUrlA only (because
+  // the empty result has been aged out).
 }
