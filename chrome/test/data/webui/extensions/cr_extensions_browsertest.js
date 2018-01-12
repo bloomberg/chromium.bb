@@ -122,6 +122,10 @@ TEST_F('CrExtensionsToolbarTest', 'Layout', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.Layout);
 });
 
+TEST_F('CrExtensionsToolbarTest', 'DevModeToggle', function() {
+  this.runMochaTest(extension_toolbar_tests.TestNames.DevModeToggle);
+});
+
 TEST_F('CrExtensionsToolbarTest', 'ClickHandlers', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.ClickHandlers);
 });

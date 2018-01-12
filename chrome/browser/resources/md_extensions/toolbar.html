@@ -101,7 +101,8 @@
             icon-aria-label="$i18n{controlledSettingPolicy}">
         </cr-tooltip-icon>
         <cr-toggle id="dev-mode" on-change="onDevModeToggleChange_"
-            disabled="[[devModeControlledByPolicy]]"
+            disabled="[[shouldDisableDevMode_(
+                devModeControlledByPolicy, isSupervised)]]"
             checked="[[inDevMode]]" aria-labelledby="devModeLabel">
         </cr-toggle>
       </div>

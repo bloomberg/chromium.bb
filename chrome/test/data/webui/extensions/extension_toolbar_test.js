@@ -8,6 +8,7 @@ cr.define('extension_toolbar_tests', function() {
   var TestNames = {
     Layout: 'layout',
     ClickHandlers: 'click handlers',
+    DevModeToggle: 'dev mode toggle',
   };
 
   var suiteName = 'ExtensionToolbarTest';
@@ -51,11 +52,25 @@ cr.define('extension_toolbar_tests', function() {
       testVisible('#load-unpacked', false);
       testVisible('#pack-extensions', true);
       testVisible('#update-now', true);
+    });
+
+    test(assert(TestNames.DevModeToggle), function() {
+      const toggle = toolbar.$$('#dev-mode');
+      assertFalse(toggle.disabled);
 
       // Test that the dev-mode toggle is disabled when a policy exists.
       toolbar.set('devModeControlledByPolicy', true);
       Polymer.dom.flush();
-      assertEquals(toolbar.$$('#dev-mode').disabled, true);
+      assertTrue(toggle.disabled);
+
+      toolbar.set('devModeControlledByPolicy', false);
+      Polymer.dom.flush();
+      assertFalse(toggle.disabled);
+
+      // Test that the dev-mode toggle is disabled when the user is supervised.
+      toolbar.set('isSupervised', true);
+      Polymer.dom.flush();
+      assertTrue(toggle.disabled);
     });
 
     test(assert(TestNames.ClickHandlers), function() {

@@ -49,6 +49,10 @@ cr.define('extension_sidebar_tests', function() {
       testVisible('#sections-shortcuts', true);
       testVisible('#more-extensions', true);
 
+      sidebar.isSupervised = true;
+      Polymer.dom.flush();
+      testVisible('#more-extensions', false);
+
       var currentPage;
       extensions.navigation.addListener(newPage => {
         currentPage = newPage;

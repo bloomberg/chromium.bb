@@ -64,6 +64,12 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      /** @private */
+      isSupervised_: {
+        type: Boolean,
+        value: false,
+      },
+
       incognitoAvailable_: {
         type: Boolean,
         value: false,
@@ -168,6 +174,7 @@ cr.define('extensions', function() {
       let service = extensions.Service.getInstance();
 
       let onProfileStateChanged = profileInfo => {
+        this.isSupervised_ = profileInfo.isSupervised;
         this.incognitoAvailable_ = profileInfo.isIncognitoAvailable;
         this.devModeControlledByPolicy =
             profileInfo.isDeveloperModeControlledByPolicy;

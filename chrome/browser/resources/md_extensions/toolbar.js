@@ -39,10 +39,9 @@ cr.define('extensions', function() {
         observer: 'onInDevModeChanged_',
       },
 
-      devModeControlledByPolicy: {
-        type: Boolean,
-        value: false,
-      },
+      devModeControlledByPolicy: Boolean,
+
+      isSupervised: Boolean,
 
       isGuest: Boolean,
 
@@ -50,10 +49,7 @@ cr.define('extensions', function() {
       kioskEnabled: Boolean,
       // </if>
 
-      canLoadUnpacked: {
-        type: Boolean,
-        value: false,
-      },
+      canLoadUnpacked: Boolean,
 
       /** @private */
       expanded_: {
@@ -73,6 +69,14 @@ cr.define('extensions', function() {
       this.$.devDrawer.addEventListener('transitionend', () => {
         this.delegate.setProfileInDevMode(this.$['dev-mode'].checked);
       });
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    shouldDisableDevMode_: function() {
+      return this.devModeControlledByPolicy || this.isSupervised;
     },
 
     /** @private */
