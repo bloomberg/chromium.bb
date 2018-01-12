@@ -401,6 +401,29 @@ TEST_F(NGInlineItemsBuilderTest, Empty) {
   EXPECT_EQ("{}", GetCollapsed(builder.GetOffsetMappingBuilder()));
 }
 
+class CollapsibleSpaceTest : public NGInlineItemsBuilderTest,
+                             public ::testing::WithParamInterface<UChar> {};
+
+INSTANTIATE_TEST_CASE_P(NGInlineItemsBuilderTest,
+                        CollapsibleSpaceTest,
+                        ::testing::Values(kSpaceCharacter,
+                                          kTabulationCharacter,
+                                          kNewlineCharacter));
+
+TEST_P(CollapsibleSpaceTest, CollapsedSpaceAfterNoWrap) {
+  UChar space = GetParam();
+  Vector<NGInlineItem> items;
+  NGInlineItemsBuilderForOffsetMapping builder(&items);
+  scoped_refptr<ComputedStyle> nowrap_style(ComputedStyle::Create());
+  nowrap_style->SetWhiteSpace(EWhiteSpace::kNowrap);
+  builder.Append(String("nowrap") + space, nowrap_style.get());
+  builder.Append(" wrap", style_.get());
+  EXPECT_EQ(String("nowrap "
+                   u"\u200B"
+                   "wrap"),
+            builder.ToString());
+}
+
 TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
