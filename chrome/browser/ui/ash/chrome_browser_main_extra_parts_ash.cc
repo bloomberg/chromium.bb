@@ -21,8 +21,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
+#include "chrome/browser/ui/ash/auto_connect_notifier.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
+#include "chromeos/network/network_handler.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -256,6 +259,15 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     // Initialize TabScrubber after the Ash Shell has been initialized.
     TabScrubber::GetInstance();
   }
+
+  if (chromeos::NetworkHandler::IsInitialized() &&
+      chromeos::NetworkHandler::Get()->auto_connect_handler()) {
+    auto_connect_notifier_ = std::make_unique<AutoConnectNotifier>(
+        ProfileManager::GetActiveUserProfile(),
+        chromeos::NetworkHandler::Get()->network_connection_handler(),
+        chromeos::NetworkHandler::Get()->network_state_handler(),
+        chromeos::NetworkHandler::Get()->auto_connect_handler());
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -290,6 +302,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   media_client_.reset();
   login_screen_client_.reset();
   ime_controller_client_.reset();
+  auto_connect_notifier_.reset();
   cast_config_client_media_router_.reset();
   accessibility_controller_client_.reset();
 

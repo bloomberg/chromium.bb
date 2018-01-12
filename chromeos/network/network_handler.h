@@ -69,6 +69,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   // Do not use these accessors within this module; all dependencies should be
   // explicit so that classes can be constructed explicitly in tests without
   // NetworkHandler.
+  AutoConnectHandler* auto_connect_handler();
   NetworkStateHandler* network_state_handler();
   NetworkDeviceHandler* network_device_handler();
   NetworkProfileHandler* network_profile_handler();

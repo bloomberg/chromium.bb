@@ -129,6 +129,10 @@ NetworkStateHandler* NetworkHandler::network_state_handler() {
   return network_state_handler_.get();
 }
 
+AutoConnectHandler* NetworkHandler::auto_connect_handler() {
+  return auto_connect_handler_.get();
+}
+
 NetworkDeviceHandler* NetworkHandler::network_device_handler() {
   return network_device_handler_.get();
 }
