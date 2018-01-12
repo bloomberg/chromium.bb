@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/message_center/message_center_bubble.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -490,7 +490,7 @@ base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
 }
 
 bool WebNotificationTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
 }
 
 void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {

@@ -12,7 +12,6 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -511,7 +510,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
+    if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
       return false;
   }
   return true;
@@ -833,8 +832,10 @@ void HandleToggleHighContrast() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
-      A11Y_NOTIFICATION_SHOW);
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetSpokenFeedbackEnabled(!controller->IsSpokenFeedbackEnabled(),
+                                       A11Y_NOTIFICATION_SHOW);
 }
 
 void HandleVolumeDown(mojom::VolumeController* volume_controller,
