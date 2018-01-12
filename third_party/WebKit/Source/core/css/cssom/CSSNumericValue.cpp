@@ -227,8 +227,8 @@ CSSNumericValue* CSSNumericValue::FromNumberish(const CSSNumberish& value) {
   return value.GetAsCSSNumericValue();
 }
 
-CSSNumericValue* CSSNumericValue::to(const String& unit_string,
-                                     ExceptionState& exception_state) {
+CSSUnitValue* CSSNumericValue::to(const String& unit_string,
+                                  ExceptionState& exception_state) {
   CSSPrimitiveValue::UnitType target_unit = UnitFromName(unit_string);
   if (!IsValidUnit(target_unit)) {
     exception_state.ThrowDOMException(kSyntaxError,
@@ -236,7 +236,7 @@ CSSNumericValue* CSSNumericValue::to(const String& unit_string,
     return nullptr;
   }
 
-  CSSNumericValue* result = to(target_unit);
+  CSSUnitValue* result = to(target_unit);
   if (!result) {
     exception_state.ThrowTypeError("Cannot convert to " + unit_string);
     return nullptr;
