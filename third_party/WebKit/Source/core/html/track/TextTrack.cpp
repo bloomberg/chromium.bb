@@ -215,9 +215,7 @@ TextTrackCueList* TextTrack::activeCues() {
 void TextTrack::addCue(TextTrackCue* cue) {
   DCHECK(cue);
 
-  // TODO(93143): Add spec-compliant behavior for negative time values.
-  if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()) ||
-      cue->startTime() < 0 || cue->endTime() < 0)
+  if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()))
     return;
 
   // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-addcue

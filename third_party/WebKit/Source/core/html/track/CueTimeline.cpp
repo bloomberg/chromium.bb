@@ -141,9 +141,10 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
   // whenever ... the media element's readyState is changed back to
   // kHaveNothing.
   if (media_element.getReadyState() != HTMLMediaElement::kHaveNothing &&
-      media_element.GetWebMediaPlayer())
+      media_element.GetWebMediaPlayer()) {
     current_cues =
         cue_tree_.AllOverlaps(cue_tree_.CreateInterval(movie_time, movie_time));
+  }
 
   CueList previous_cues;
   CueList missed_cues;
