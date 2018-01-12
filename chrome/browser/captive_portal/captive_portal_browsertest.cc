@@ -2867,6 +2867,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
   info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  info.unverified_cert = info.cert;
   URLRequestTimeoutOnDemandJob::FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
 
