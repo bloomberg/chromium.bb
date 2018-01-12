@@ -12,4 +12,8 @@
 // function instead.
 extern const base::Feature kSafeAreaCompatibleToolbar;
 
+// Feature to choose whether to use the Adaptive Toolbar or the standard
+// toolbar.
+extern const base::Feature kAdaptiveToolbar;
+
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_PRIVATE_BASE_FEATURE_H_

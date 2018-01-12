@@ -56,6 +56,7 @@ source_set("ui_util") {
   deps = [
     "//base",
     "//base:i18n",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/toolbar:feature",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
