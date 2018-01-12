@@ -102,6 +102,10 @@ unsigned int TransferBuffer::GetSize() const {
 }
 
 unsigned int TransferBuffer::GetFreeSize() const {
+  return HaveBuffer() ? ring_buffer_->GetLargestFreeSizeNoWaiting() : 0;
+}
+
+unsigned int TransferBuffer::GetFragmentedFreeSize() const {
   return HaveBuffer() ? ring_buffer_->GetTotalFreeSizeNoWaiting() : 0;
 }
 

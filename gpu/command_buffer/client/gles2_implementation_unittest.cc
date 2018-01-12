@@ -151,6 +151,7 @@ class MockTransferBuffer : public TransferBufferInterface {
   void FreePendingToken(void* p, unsigned int /* token */) override;
   unsigned int GetSize() const override;
   unsigned int GetFreeSize() const override;
+  unsigned int GetFragmentedFreeSize() const override;
   void ShrinkLastBlock(unsigned int new_size) override;
 
   size_t MaxTransferBufferSize() {
@@ -333,6 +334,10 @@ unsigned int MockTransferBuffer::GetSize() const {
 }
 
 unsigned int MockTransferBuffer::GetFreeSize() const {
+  return 0;
+}
+
+unsigned int MockTransferBuffer::GetFragmentedFreeSize() const {
   return 0;
 }
 
