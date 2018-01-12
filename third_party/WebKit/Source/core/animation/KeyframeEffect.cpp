@@ -30,7 +30,6 @@
 
 #include "core/animation/KeyframeEffect.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "core/animation/AnimationEffectTiming.h"
@@ -53,9 +52,9 @@ KeyframeEffect* KeyframeEffect::Create(
 }
 
 KeyframeEffect* KeyframeEffect::Create(
-    ExecutionContext* execution_context,
+    ScriptState* script_state,
     Element* element,
-    const DictionarySequenceOrDictionary& effect_input,
+    const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
@@ -78,27 +77,26 @@ KeyframeEffect* KeyframeEffect::Create(
   }
 
   return Create(element,
-                EffectInput::Convert(element, effect_input, composite,
-                                     execution_context, exception_state),
+                EffectInput::Convert(element, keyframes, composite,
+                                     script_state, exception_state),
                 timing);
 }
 
-KeyframeEffect* KeyframeEffect::Create(
-    ExecutionContext* execution_context,
-    Element* element,
-    const DictionarySequenceOrDictionary& effect_input,
-    ExceptionState& exception_state) {
+KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
+                                       Element* element,
+                                       const ScriptValue& keyframes,
+                                       ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
         WebFeature::kAnimationConstructorKeyframeListEffectNoTiming);
   }
-  return Create(element,
-                EffectInput::Convert(element, effect_input,
-                                     EffectModel::kCompositeReplace,
-                                     execution_context, exception_state),
-                Timing());
+  return Create(
+      element,
+      EffectInput::Convert(element, keyframes, EffectModel::kCompositeReplace,
+                           script_state, exception_state),
+      Timing());
 }
 
 KeyframeEffect::KeyframeEffect(Element* target,
