@@ -117,19 +117,6 @@ void WebTaskRunner::PostTask(const base::Location& location,
   PostDelayedTask(location, std::move(task), base::TimeDelta());
 }
 
-TaskHandle WebTaskRunner::PostCancellableTask(const base::Location& location,
-                                              base::OnceClosure task) {
-  return blink::PostCancellableTask(*this, location, std::move(task));
-}
-
-TaskHandle WebTaskRunner::PostDelayedCancellableTask(
-    const base::Location& location,
-    base::OnceClosure task,
-    TimeDelta delay) {
-  return blink::PostDelayedCancellableTask(*this, location, std::move(task),
-                                           delay);
-}
-
 WebTaskRunner::~WebTaskRunner() = default;
 
 // Use a custom function for base::Bind instead of WTF::Bind to

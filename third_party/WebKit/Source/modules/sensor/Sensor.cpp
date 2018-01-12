@@ -210,17 +210,14 @@ void Sensor::OnSensorReadingChanged() {
     // Invoke JS callbacks in a different callchain to obviate
     // possible modifications of SensorProxy::observers_ container
     // while it is being iterated through.
-    pending_reading_notification_ =
-        GetExecutionContext()
-            ->GetTaskRunner(TaskType::kSensor)
-            ->PostCancellableTask(FROM_HERE, std::move(sensor_reading_changed));
+    pending_reading_notification_ = PostCancellableTask(
+        *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
+        std::move(sensor_reading_changed));
   } else {
-    pending_reading_notification_ =
-        GetExecutionContext()
-            ->GetTaskRunner(TaskType::kSensor)
-            ->PostDelayedCancellableTask(
-                FROM_HERE, std::move(sensor_reading_changed),
-                WTF::TimeDelta::FromSecondsD(waitingTime));
+    pending_reading_notification_ = PostDelayedCancellableTask(
+        *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
+        std::move(sensor_reading_changed),
+        WTF::TimeDelta::FromSecondsD(waitingTime));
   }
 }
 
@@ -242,11 +239,9 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
   if (!GetExecutionContext())
     return;
 
-  pending_activated_notification_ =
-      GetExecutionContext()
-          ->GetTaskRunner(TaskType::kSensor)
-          ->PostCancellableTask(FROM_HERE, WTF::Bind(&Sensor::NotifyActivated,
-                                                     WrapWeakPersistent(this)));
+  pending_activated_notification_ = PostCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
+      WTF::Bind(&Sensor::NotifyActivated, WrapWeakPersistent(this)));
 }
 
 void Sensor::Activate() {
@@ -320,12 +315,10 @@ void Sensor::HandleError(ExceptionCode code,
 
   auto error =
       DOMException::Create(code, sanitized_message, unsanitized_message);
-  pending_error_notification_ =
-      GetExecutionContext()
-          ->GetTaskRunner(TaskType::kSensor)
-          ->PostCancellableTask(FROM_HERE, WTF::Bind(&Sensor::NotifyError,
-                                                     WrapWeakPersistent(this),
-                                                     WrapPersistent(error)));
+  pending_error_notification_ = PostCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
+      WTF::Bind(&Sensor::NotifyError, WrapWeakPersistent(this),
+                WrapPersistent(error)));
 }
 
 void Sensor::NotifyReading() {
@@ -342,12 +335,9 @@ void Sensor::NotifyActivated() {
     // If reading has already arrived, send initial 'reading' notification
     // right away.
     DCHECK(!pending_reading_notification_.IsActive());
-    pending_reading_notification_ =
-        GetExecutionContext()
-            ->GetTaskRunner(TaskType::kSensor)
-            ->PostCancellableTask(
-                FROM_HERE,
-                WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this)));
+    pending_reading_notification_ = PostCancellableTask(
+        *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
+        WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this)));
   }
 
   DispatchEvent(Event::Create(EventTypeNames::activate));

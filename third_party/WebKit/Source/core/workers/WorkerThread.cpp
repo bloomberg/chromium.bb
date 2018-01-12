@@ -340,14 +340,11 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
 
 void WorkerThread::ScheduleToTerminateScriptExecution() {
   DCHECK(!forcible_termination_task_handle_.IsActive());
-  forcible_termination_task_handle_ =
-      parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
-          ->PostDelayedCancellableTask(
-              FROM_HERE,
-              WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
-                        WTF::Unretained(this),
-                        ExitCode::kAsyncForciblyTerminated),
-              forcible_termination_delay_);
+  forcible_termination_task_handle_ = PostDelayedCancellableTask(
+      *parent_frame_task_runners_->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
+                WTF::Unretained(this), ExitCode::kAsyncForciblyTerminated),
+      forcible_termination_delay_);
 }
 
 bool WorkerThread::ShouldTerminateScriptExecution(const MutexLocker& lock) {

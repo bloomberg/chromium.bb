@@ -3927,11 +3927,10 @@ void Document::DidRemoveAllPendingBodyStylesheets() {
 void Document::DidLoadAllScriptBlockingResources() {
   // Use wrapWeakPersistent because the task should not keep this Document alive
   // just for executing scripts.
-  execute_scripts_waiting_for_resources_task_handle_ =
-      GetTaskRunner(TaskType::kNetworking)
-          ->PostCancellableTask(
-              FROM_HERE, WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
-                                   WrapWeakPersistent(this)));
+  execute_scripts_waiting_for_resources_task_handle_ = PostCancellableTask(
+      *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
+      WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
+                WrapWeakPersistent(this)));
 
   if (IsHTMLDocument() && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body
@@ -4895,12 +4894,10 @@ void Document::SendSensitiveInputVisibility() {
   if (sensitive_input_visibility_task_.IsActive())
     return;
 
-  sensitive_input_visibility_task_ =
-      GetTaskRunner(TaskType::kUnspecedLoading)
-          ->PostCancellableTask(
-              FROM_HERE,
-              WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
-                        WrapWeakPersistent(this)));
+  sensitive_input_visibility_task_ = PostCancellableTask(
+      *GetTaskRunner(TaskType::kUnspecedLoading), FROM_HERE,
+      WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
+                WrapWeakPersistent(this)));
 }
 
 void Document::SendSensitiveInputVisibilityInternal() {
@@ -7179,11 +7176,10 @@ void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
     return;
   }
   logged_field_edit_ = true;
-  sensitive_input_edited_task_ =
-      GetTaskRunner(TaskType::kUserInteraction)
-          ->PostCancellableTask(
-              FROM_HERE, WTF::Bind(&Document::SendDidEditFieldInInsecureContext,
-                                   WrapWeakPersistent(this)));
+  sensitive_input_edited_task_ = PostCancellableTask(
+      *GetTaskRunner(TaskType::kUserInteraction), FROM_HERE,
+      WTF::Bind(&Document::SendDidEditFieldInInsecureContext,
+                WrapWeakPersistent(this)));
 }
 
 CoreProbeSink* Document::GetProbeSink() {

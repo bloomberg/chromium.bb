@@ -28,11 +28,10 @@ void PlatformEventController::StartUpdating() {
     return;
 
   if (HasLastData() && !update_callback_handle_.IsActive()) {
-    update_callback_handle_ =
-        document_->GetTaskRunner(TaskType::kUnspecedTimer)
-            ->PostCancellableTask(
-                FROM_HERE, WTF::Bind(&PlatformEventController::UpdateCallback,
-                                     WrapWeakPersistent(this)));
+    update_callback_handle_ = PostCancellableTask(
+        *document_->GetTaskRunner(TaskType::kUnspecedTimer), FROM_HERE,
+        WTF::Bind(&PlatformEventController::UpdateCallback,
+                  WrapWeakPersistent(this)));
   }
 
   RegisterWithDispatcher();

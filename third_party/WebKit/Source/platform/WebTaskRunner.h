@@ -81,14 +81,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // For same-thread posting. Must be called from the associated WebThread.
   void PostTask(const base::Location&, base::OnceClosure);
 
-  // DEPRECATED: Use namespace-level functions below.
-  WARN_UNUSED_RESULT TaskHandle PostCancellableTask(const base::Location&,
-                                                    base::OnceClosure);
-  WARN_UNUSED_RESULT TaskHandle
-  PostDelayedCancellableTask(const base::Location&,
-                             base::OnceClosure,
-                             TimeDelta delay);
-
  protected:
   friend ThreadSafeRefCounted<WebTaskRunner>;
   WebTaskRunner() = default;
