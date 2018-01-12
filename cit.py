@@ -12,13 +12,14 @@ This tool does a two things:
 * Acts as an alias to infra.git/cipd/<executable>
 """
 
-# TODO(hinoka): Use cipd/glyco instead of git/gclient.
+# TODO(hinoka,iannucci): Pre-pack infra tools in cipd package with vpython spec.
 
 import argparse
 import sys
 import os
-import subprocess
 import re
+
+import subprocess2 as subprocess
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +38,7 @@ def need_to_update(branch):
   try:
     cmd = [sys.executable, GCLIENT, 'revinfo']
     subprocess.check_call(
-        cmd, cwd=os.path.join(TARGET_DIR), stdout=subprocess.PIPE)
+        cmd, cwd=os.path.join(TARGET_DIR), stdout=subprocess.VOID)
   except subprocess.CalledProcessError:
     return True  # Gclient failed, definitely need to update.
   except OSError:
@@ -50,7 +51,7 @@ def need_to_update(branch):
 
   subprocess.check_call(
       ['git', 'fetch', 'origin'], cwd=INFRA_DIR,
-      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      stdout=subprocess.VOID, stderr=subprocess.STDOUT)
   origin_rev = get_git_rev(INFRA_DIR, 'origin/%s' % (branch,))
   return origin_rev != local_rev
 
@@ -67,11 +68,11 @@ def ensure_infra(branch):
     subprocess.check_call(
         [sys.executable, os.path.join(SCRIPT_DIR, 'fetch.py'), 'infra'],
         cwd=TARGET_DIR,
-        stdout=subprocess.PIPE)
+        stdout=subprocess.VOID)
   subprocess.check_call(
       [sys.executable, GCLIENT, 'sync', '--revision', 'origin/%s' % (branch,)],
       cwd=TARGET_DIR,
-      stdout=subprocess.PIPE)
+      stdout=subprocess.VOID)
   sys.stderr.write(' done.\n')
   sys.stderr.flush()
 
