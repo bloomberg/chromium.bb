@@ -32,6 +32,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -143,6 +144,7 @@ class SuggestionsServiceTest : public testing::Test,
             base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         signin_client_(&pref_service_),
         signin_manager_(&signin_client_, &account_tracker_),
+        identity_manager_(&signin_manager_, &token_service_),
         request_context_(
             new net::TestURLRequestContextGetter(task_runner_.get())),
         mock_thumbnail_manager_(nullptr),
@@ -181,8 +183,8 @@ class SuggestionsServiceTest : public testing::Test,
     mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new StrictMock<MockBlacklistStore>();
     suggestions_service_ = std::make_unique<SuggestionsServiceImpl>(
-        &signin_manager_, &token_service_, &mock_sync_service_,
-        request_context_.get(), base::WrapUnique(test_suggestions_store_),
+        &identity_manager_, &mock_sync_service_, request_context_.get(),
+        base::WrapUnique(test_suggestions_store_),
         base::WrapUnique(mock_thumbnail_manager_),
         base::WrapUnique(mock_blacklist_store_),
         task_runner_->GetMockTickClock());
@@ -250,6 +252,7 @@ class SuggestionsServiceTest : public testing::Test,
   FakeSigninManagerBase signin_manager_;
   net::TestURLFetcherFactory factory_;
   FakeProfileOAuth2TokenService token_service_;
+  identity::IdentityManager identity_manager_;
   MockSyncService mock_sync_service_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   // Owned by the SuggestionsService.
