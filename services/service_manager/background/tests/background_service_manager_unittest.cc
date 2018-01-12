@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "services/service_manager/background/tests/test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -48,8 +48,8 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #define MAYBE_Basic Basic
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   BackgroundServiceManager background_service_manager(nullptr, nullptr);
-  base::MessageLoop message_loop;
   mojom::ServicePtr service;
   ServiceContext service_context(std::make_unique<ServiceImpl>(),
                                  mojo::MakeRequest(&service));

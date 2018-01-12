@@ -23,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/catalog/catalog.h"
@@ -42,10 +41,6 @@
 #include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
-namespace base {
-class TaskRunner;
-}
-
 namespace service_manager {
 namespace {
 
@@ -53,18 +48,15 @@ namespace {
 // Used to ensure we only init once.
 class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
  public:
-  ServiceProcessLauncherFactoryImpl(base::TaskRunner* launch_process_runner,
-                                    ServiceProcessLauncherDelegate* delegate)
-      : launch_process_runner_(launch_process_runner), delegate_(delegate) {}
+  ServiceProcessLauncherFactoryImpl(ServiceProcessLauncherDelegate* delegate)
+      : delegate_(delegate) {}
 
  private:
    std::unique_ptr<ServiceProcessLauncher> Create(
       const base::FilePath& service_path) override {
-     return std::make_unique<ServiceProcessLauncher>(launch_process_runner_,
-                                                     delegate_, service_path);
+     return std::make_unique<ServiceProcessLauncher>(delegate_, service_path);
   }
 
-  base::TaskRunner* launch_process_runner_;
   ServiceProcessLauncherDelegate* delegate_;
 };
 #endif  // !defined(OS_IOS)
@@ -84,9 +76,6 @@ Context::Context(
     : main_entry_time_(base::Time::Now()) {
   TRACE_EVENT0("service_manager", "Context::Context");
 
-  blocking_pool_ = new base::SequencedWorkerPool(
-      kThreadPoolMaxThreads, "blocking_pool", base::TaskPriority::USER_VISIBLE);
-
   std::unique_ptr<ServiceProcessLauncherFactory>
       service_process_launcher_factory;
 
@@ -95,14 +84,14 @@ Context::Context(
 #if !defined(OS_IOS)
   service_process_launcher_factory =
       std::make_unique<ServiceProcessLauncherFactoryImpl>(
-          blocking_pool_.get(), service_process_launcher_delegate);
+          service_process_launcher_delegate);
 #endif
   service_manager_.reset(
       new ServiceManager(std::move(service_process_launcher_factory),
                          std::move(catalog_contents), nullptr));
 }
 
-Context::~Context() { blocking_pool_->Shutdown(); }
+Context::~Context() = default;
 
 void Context::RunCommandLineApplication() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

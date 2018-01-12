@@ -8,21 +8,17 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 
 namespace base {
-class SequencedWorkerPool;
 class Value;
 }
 
 namespace service_manager {
 
 class ServiceManager;
-
-constexpr size_t kThreadPoolMaxThreads = 3;
 
 // The "global" context for the service manager's main process.
 class Context {
@@ -39,8 +35,6 @@ class Context {
  private:
   // Runs the app specified by |name|.
   void Run(const std::string& name);
-
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   std::unique_ptr<ServiceManager> service_manager_;
   base::Time main_entry_time_;
