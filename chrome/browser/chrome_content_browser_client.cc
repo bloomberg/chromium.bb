@@ -1494,13 +1494,6 @@ bool ChromeContentBrowserClient::IsFileAccessAllowed(
 namespace {
 
 bool IsAutoReloadEnabled() {
-  // Fetch the field trial, even though we don't use it. Calling FindFullName()
-  // causes the field-trial mechanism to report which group we're in, which
-  // might reflect a hard disable or hard enable via flag, both of which have
-  // their own field trial groups. This lets us know what percentage of users
-  // manually enable or disable auto-reload.
-  std::string group = base::FieldTrialList::FindFullName(
-      "AutoReloadExperiment");
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload))
@@ -1511,9 +1504,6 @@ bool IsAutoReloadEnabled() {
 }
 
 bool IsAutoReloadVisibleOnlyEnabled() {
-  // See the block comment in IsAutoReloadEnabled().
-  std::string group = base::FieldTrialList::FindFullName(
-      "AutoReloadVisibleOnlyExperiment");
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(
@@ -1753,12 +1743,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
     {
-      // Enable showing a saved copy if this session is in the field trial
-      // or the user explicitly enabled it.  Note that as far as the
-      // renderer is concerned, the feature is enabled if-and-only-if
-      // one of the kEnableShowSavedCopy* switches is on the command
-      // line; the yes/no/default behavior is only at the browser
-      // command line level.
+      // Enable showing a saved copy if the user explicitly enabled it.
+      // Note that as far as the renderer is concerned, the feature is
+      // enabled if-and-only-if one of the kEnableShowSavedCopy* switches
+      // is on the command line; the yes/no/default behavior is only at
+      // the browser command line level.
 
       // Command line switches override
       const std::string& show_saved_copy_value =
@@ -1772,22 +1761,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
               error_page::switches::kDisableShowSavedCopy) {
         command_line->AppendSwitchASCII(error_page::switches::kShowSavedCopy,
                                         show_saved_copy_value);
-      } else {
-        std::string group =
-            base::FieldTrialList::FindFullName("LoadStaleCacheExperiment");
-
-        if (group == "Primary") {
-          command_line->AppendSwitchASCII(
-              error_page::switches::kShowSavedCopy,
-              error_page::switches::kEnableShowSavedCopyPrimary);
-        } else if (group == "Secondary") {
-          command_line->AppendSwitchASCII(
-              error_page::switches::kShowSavedCopy,
-              error_page::switches::kEnableShowSavedCopySecondary);
-        }
       }
     }
-
     MaybeAppendBlinkSettingsSwitchForFieldTrial(
         browser_command_line, command_line);
 
