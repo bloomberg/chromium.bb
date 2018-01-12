@@ -86,7 +86,9 @@
       </extensions-item-list>
       <template id="details-view" is="cr-lazy-render">
         <extensions-detail-view delegate="[[delegate]]" slot="view"
-            in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]">
+            in-dev-mode="[[inDevMode]]"
+            incognito-available="[[incognitoAvailable_]]"
+            data="[[detailViewItem_]]">
         </extensions-detail-view>
       </template>
       <template id="keyboard-shortcuts" is="cr-lazy-render">
