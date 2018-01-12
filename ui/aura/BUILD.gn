@@ -331,6 +331,7 @@ executable("demo") {
     "//skia",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display",
