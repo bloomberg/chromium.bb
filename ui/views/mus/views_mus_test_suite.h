@@ -12,8 +12,6 @@
 
 namespace views {
 
-class ServiceManagerConnection;
-
 class ViewsMusTestSuite : public ViewsTestSuite {
  public:
   ViewsMusTestSuite(int argc, char** argv);
@@ -22,13 +20,10 @@ class ViewsMusTestSuite : public ViewsTestSuite {
  private:
   // ViewsTestSuite:
   void Initialize() override;
-  void Shutdown() override;
   void InitializeEnv() override;
   void DestroyEnv() override;
 
   std::unique_ptr<aura::Env> env_;
-
-  std::unique_ptr<ServiceManagerConnection> service_manager_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsMusTestSuite);
 };

@@ -65,69 +65,6 @@ class DefaultService : public service_manager::Service {
   DISALLOW_COPY_AND_ASSIGN(DefaultService);
 };
 
-class PlatformTestHelperMus : public PlatformTestHelper {
- public:
-  PlatformTestHelperMus(service_manager::Connector* connector,
-                        const service_manager::Identity& identity) {
-    // It is necessary to recreate the MusClient for each test,
-    // since a new MessageLoop is created for each test.
-    mus_client_ = test::MusClientTestApi::Create(connector, identity);
-    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
-        &PlatformTestHelperMus::CreateNativeWidget, base::Unretained(this)));
-  }
-  ~PlatformTestHelperMus() override {}
-
-  // PlatformTestHelper:
-  void OnTestHelperCreated(ViewsTestHelper* helper) override {
-    static_cast<ViewsTestHelperAura*>(helper)->EnableMusWithWindowTreeClient(
-        mus_client_->window_tree_client());
-  }
-  void SimulateNativeDestroy(Widget* widget) override {
-    aura::WindowTreeHostMus* window_tree_host =
-        static_cast<aura::WindowTreeHostMus*>(
-            widget->GetNativeView()->GetHost());
-    static_cast<aura::WindowTreeClientDelegate*>(mus_client_.get())
-        ->OnEmbedRootDestroyed(window_tree_host);
-  }
-
-  void InitializeContextFactory(
-      ui::ContextFactory** context_factory,
-      ui::ContextFactoryPrivate** context_factory_private) override {
-    *context_factory = &context_factory_;
-    *context_factory_private = nullptr;
-  }
-
- private:
-  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
-                                   internal::NativeWidgetDelegate* delegate) {
-    NativeWidget* native_widget =
-        mus_client_->CreateNativeWidget(init_params, delegate);
-    if (!native_widget)
-      return nullptr;
-
-    // Disable sending KeyEvents to IME as tests aren't set up to wait for an
-    // ack (and tests run concurrently).
-    aura::WindowTreeHostMus* window_tree_host_mus =
-        static_cast<aura::WindowTreeHostMus*>(
-            static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
-    aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
-    return native_widget;
-  }
-
-  std::unique_ptr<MusClient> mus_client_;
-  ui::FakeContextFactory context_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
-};
-
-std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
-    const service_manager::Identity& identity,
-    const base::Callback<service_manager::Connector*(void)>& callback) {
-  return std::make_unique<PlatformTestHelperMus>(callback.Run(), identity);
-}
-
-}  // namespace
-
 class ServiceManagerConnection {
  public:
   ServiceManagerConnection()
@@ -150,16 +87,6 @@ class ServiceManagerConnection {
         FROM_HERE, base::Bind(&ServiceManagerConnection::SetUpConnections,
                               base::Unretained(this), &wait));
     wait.Wait();
-
-    // WindowManagerConnection cannot be created from here yet, although the
-    // connector and identity are available at this point. This is because
-    // WindowManagerConnection needs a ViewsDelegate and a MessageLoop to have
-    // been installed first. So delay the creation until the necessary
-    // dependencies have been met.
-    PlatformTestHelper::set_factory(
-        base::Bind(&CreatePlatformTestHelper, service_manager_identity_,
-                   base::Bind(&ServiceManagerConnection::GetConnector,
-                              base::Unretained(this))));
   }
 
   ~ServiceManagerConnection() {
@@ -169,6 +96,11 @@ class ServiceManagerConnection {
         FROM_HERE, base::Bind(&ServiceManagerConnection::TearDownConnections,
                               base::Unretained(this), &wait));
     wait.Wait();
+  }
+
+  std::unique_ptr<MusClient> CreateMusClient() {
+    return test::MusClientTestApi::Create(GetConnector(),
+                                          service_manager_identity_);
   }
 
  private:
@@ -236,6 +168,65 @@ class ServiceManagerConnection {
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerConnection);
 };
 
+class PlatformTestHelperMus : public PlatformTestHelper {
+ public:
+  PlatformTestHelperMus() {
+    mus_client_ = service_manager_connection_.CreateMusClient();
+    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
+        &PlatformTestHelperMus::CreateNativeWidget, base::Unretained(this)));
+  }
+  ~PlatformTestHelperMus() override {}
+
+  // PlatformTestHelper:
+  void OnTestHelperCreated(ViewsTestHelper* helper) override {
+    static_cast<ViewsTestHelperAura*>(helper)->EnableMusWithWindowTreeClient(
+        mus_client_->window_tree_client());
+  }
+  void SimulateNativeDestroy(Widget* widget) override {
+    aura::WindowTreeHostMus* window_tree_host =
+        static_cast<aura::WindowTreeHostMus*>(
+            widget->GetNativeView()->GetHost());
+    static_cast<aura::WindowTreeClientDelegate*>(mus_client_.get())
+        ->OnEmbedRootDestroyed(window_tree_host);
+  }
+
+  void InitializeContextFactory(
+      ui::ContextFactory** context_factory,
+      ui::ContextFactoryPrivate** context_factory_private) override {
+    *context_factory = &context_factory_;
+    *context_factory_private = nullptr;
+  }
+
+ private:
+  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
+                                   internal::NativeWidgetDelegate* delegate) {
+    NativeWidget* native_widget =
+        mus_client_->CreateNativeWidget(init_params, delegate);
+    if (!native_widget)
+      return nullptr;
+
+    // Disable sending KeyEvents to IME as tests aren't set up to wait for an
+    // ack (and tests run concurrently).
+    aura::WindowTreeHostMus* window_tree_host_mus =
+        static_cast<aura::WindowTreeHostMus*>(
+            static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
+    aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
+    return native_widget;
+  }
+
+  ServiceManagerConnection service_manager_connection_;
+  std::unique_ptr<MusClient> mus_client_;
+  ui::FakeContextFactory context_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
+};
+
+std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper() {
+  return std::make_unique<PlatformTestHelperMus>();
+}
+
+}  // namespace
+
 ViewsMusTestSuite::ViewsMusTestSuite(int argc, char** argv)
     : ViewsTestSuite(argc, argv) {}
 
@@ -253,12 +244,8 @@ void ViewsMusTestSuite::Initialize() {
       switches::kMus, switches::kMusHostVizValue);
 
   ViewsTestSuite::Initialize();
-  service_manager_connections_ = std::make_unique<ServiceManagerConnection>();
-}
 
-void ViewsMusTestSuite::Shutdown() {
-  service_manager_connections_.reset();
-  ViewsTestSuite::Shutdown();
+  PlatformTestHelper::set_factory(base::Bind(&CreatePlatformTestHelper));
 }
 
 void ViewsMusTestSuite::InitializeEnv() {

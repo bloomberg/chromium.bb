@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/events/event.h"
@@ -61,7 +61,8 @@ class PointerWatcherEventRouterTest : public testing::Test {
 };
 
 TEST_F(PointerWatcherEventRouterTest, EventTypes) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   ScopedViewsTestHelper helper;
   TestPointerWatcher pointer_watcher1, pointer_watcher2;
   PointerWatcherEventRouter* pointer_watcher_event_router =
@@ -114,7 +115,8 @@ TEST_F(PointerWatcherEventRouterTest, EventTypes) {
 }
 
 TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   ScopedViewsTestHelper helper;
   ASSERT_TRUE(MusClient::Get());
   PointerWatcherEventRouter* pointer_watcher_event_router =
@@ -187,7 +189,8 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
 }
 
 TEST_F(PointerWatcherEventRouterTest, PointerWatcherMove) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   ScopedViewsTestHelper helper;
   ASSERT_TRUE(MusClient::Get());
   PointerWatcherEventRouter* pointer_watcher_event_router =
