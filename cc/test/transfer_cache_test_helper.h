@@ -31,18 +31,17 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
       const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries);
   void DeleteEntryDirect(TransferCacheEntryType type, uint32_t id);
 
- private:
-  using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
-
   // Deserialization helpers.
   ServiceTransferCacheEntry* GetEntryInternal(TransferCacheEntryType type,
                                               uint32_t id) override;
 
   // Serialization helpers.
+  using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
   bool LockEntryInternal(TransferCacheEntryType type, uint32_t id) override;
   void CreateEntryInternal(const ClientTransferCacheEntry& entry) override;
   void FlushEntriesInternal(const std::vector<EntryKey>& entries) override;
 
+ private:
   // Helper functions.
   void EnforceLimits();
 

@@ -67,6 +67,11 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
 ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry() = default;
 ServiceImageTransferCacheEntry::~ServiceImageTransferCacheEntry() = default;
 
+ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry(
+    ServiceImageTransferCacheEntry&& other) = default;
+ServiceImageTransferCacheEntry& ServiceImageTransferCacheEntry::operator=(
+    ServiceImageTransferCacheEntry&& other) = default;
+
 size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
 }

@@ -65,6 +65,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(PaintCanvas::SrcRectConstraint constraint) {
     Write(static_cast<uint8_t>(constraint));
   }
+  void Write(SkFilterQuality filter_quality) {
+    Write(static_cast<uint8_t>(filter_quality));
+  }
   void Write(bool data) { Write(static_cast<uint8_t>(data)); }
 
   // Aligns the memory to the given alignment.

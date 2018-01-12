@@ -77,6 +77,15 @@ class CC_PAINT_EXPORT PaintOpReader {
     Read(&value);
     *constraint = static_cast<PaintCanvas::SrcRectConstraint>(value);
   }
+  void Read(SkFilterQuality* quality) {
+    uint8_t value = 0u;
+    Read(&value);
+    if (value > static_cast<uint8_t>(kLast_SkFilterQuality)) {
+      SetInvalid();
+      return;
+    }
+    *quality = static_cast<SkFilterQuality>(value);
+  }
   void Read(bool* data) {
     uint8_t value = 0u;
     Read(&value);

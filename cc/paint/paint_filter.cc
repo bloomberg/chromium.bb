@@ -145,8 +145,8 @@ bool PaintFilter::operator==(const PaintFilter& other) const {
       return *static_cast<const DisplacementMapEffectPaintFilter*>(this) ==
              static_cast<const DisplacementMapEffectPaintFilter&>(other);
     case Type::kImage:
-      return *static_cast<const ImageFilterPaintFilter*>(this) ==
-             static_cast<const ImageFilterPaintFilter&>(other);
+      return *static_cast<const ImagePaintFilter*>(this) ==
+             static_cast<const ImagePaintFilter&>(other);
     case Type::kPaintRecord:
       return *static_cast<const RecordPaintFilter*>(this) ==
              static_cast<const RecordPaintFilter&>(other);
