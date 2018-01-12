@@ -29,7 +29,11 @@ version_info::Channel GetCurrentChannel() {
 }
 
 void SetCurrentChannel(version_info::Channel channel) {
-  g_current_channel = channel;
+  // In certain unit tests, SetCurrentChannel can be called within the same
+  // process (where e.g. utility processes run as a separate thread). Don't
+  // write if the value is the same to avoid TSAN failures.
+  if (channel != g_current_channel)
+    g_current_channel = channel;
 }
 
 ScopedCurrentChannel::ScopedCurrentChannel(version_info::Channel channel)
