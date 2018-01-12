@@ -25,7 +25,6 @@
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_error_observer_chromeos.h"
-#include "ash/display/display_prefs.h"
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -372,7 +371,6 @@ bool Shell::ShouldUseIMEService() {
 
 // static
 void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  DisplayPrefs::RegisterLocalStatePrefs(registry);
   PaletteTray::RegisterLocalStatePrefs(registry);
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
@@ -661,7 +659,6 @@ Shell::~Shell() {
   user_metrics_recorder_->OnShellShuttingDown();
 
   shell_delegate_->PreShutdown();
-  display_prefs_.reset();
 
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
@@ -909,12 +906,12 @@ void Shell::Init(ui::ContextFactory* context_factory,
         base::WrapUnique(native_cursor_manager_));
   }
 
-  // Construct DisplayPrefs here so that display_prefs()->StoreDisplayPrefs()
-  // can safely be called. DisplayPrefs will be loaded once |local_state_|
-  // is available and store requests will be queued in the meanwhile.
-  display_prefs_ = std::make_unique<DisplayPrefs>();
-
-  // TODO(stevenjb): Move DisplayConfigurationObserver to Ash also.
+  // TODO(stevenjb): ChromeShellDelegate::PreInit currently handles
+  // DisplayPreference initialization, required for InitializeDisplayManager.
+  // Before we can move that code into ash/display where it belongs, we need to
+  // wait for |lcoal_state_| to be set in OnLocalStatePrefServiceInitialized
+  // before initializing DisplayPreferences (and therefore DisplayManager).
+  // http://crbug.com/678949.
   shell_delegate_->PreInit();
 
   InitializeDisplayManager();
