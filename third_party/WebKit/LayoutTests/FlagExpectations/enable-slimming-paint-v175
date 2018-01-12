@@ -89,8 +89,6 @@ crbug.com/771643 css3/filters/effect-reference-on-transparent-element.html [ Fai
 crbug.com/771643 css3/filters/effect-reference-tile.html [ Pass Failure Crash ]
 crbug.com/771643 css3/filters/empty-element-with-filter.html [ Failure ]
 crbug.com/771643 css3/filters/filterRegions.html [ Failure ]
-crbug.com/771643 editing/selection/drag-select-1.html [ Crash ]
-crbug.com/771643 editing/selection/extend-after-mouse-selection.html [ Crash ]
 crbug.com/771643 editing/selection/selection-linebreaks-rtl-writing-modes.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
