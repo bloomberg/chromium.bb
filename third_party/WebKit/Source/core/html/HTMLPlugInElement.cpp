@@ -209,7 +209,12 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
     context.previous_in_flow = layout_object;
 }
 
-void HTMLPlugInElement::IntrinsicDimensionsChanged() {}
+void HTMLPlugInElement::IntrinsicDimensionsChanged() {
+  if (auto* layout_object = GetLayoutObject()) {
+    layout_object->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kUnknown);
+  }
+}
 
 void HTMLPlugInElement::UpdatePlugin() {
   UpdatePluginInternal();
