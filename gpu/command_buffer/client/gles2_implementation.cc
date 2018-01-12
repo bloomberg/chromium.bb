@@ -537,7 +537,7 @@ bool GLES2Implementation::OnMemoryDump(
 
   if (args.level_of_detail != MemoryDumpLevelOfDetail::BACKGROUND) {
     dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
-                    transfer_buffer_->GetFreeSize());
+                    transfer_buffer_->GetFragmentedFreeSize());
     auto shared_memory_guid =
         transfer_buffer_->shared_memory_handle().GetGUID();
     const int kImportance = 2;
