@@ -13,6 +13,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -607,6 +609,9 @@ bool V4GetHashProtocolManager::ParseHashResponse(
     FullHashInfo full_hash_info(match.threat().hash(), list_id,
                                 positive_expiry);
     ParseMetadata(match, &full_hash_info.metadata);
+    TRACE_EVENT2("safe_browsing", "V4GetHashProtocolManager::ParseHashResponse",
+                 "threat_type", full_hash_info.list_id.threat_type(),
+                 "metadata", full_hash_info.metadata.ToTracedValue());
     full_hash_infos->push_back(full_hash_info);
   }
   return true;
