@@ -123,7 +123,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
-  void OnSurfaceSubtreeDamaged(const SurfaceId& surface_id) override;
 
   void OnClientConnectionLost(const FrameSinkId& frame_sink_id);
 
