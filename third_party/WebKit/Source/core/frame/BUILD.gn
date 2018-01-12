@@ -90,6 +90,8 @@ blink_core_sources("frame") {
     "PageScaleConstraintsSet.h",
     "PausableScriptExecutor.cpp",
     "PausableScriptExecutor.h",
+    "PausableTask.cpp",
+    "PausableTask.h",
     "PausableTimer.cpp",
     "PausableTimer.h",
     "PerformanceMonitor.cpp",

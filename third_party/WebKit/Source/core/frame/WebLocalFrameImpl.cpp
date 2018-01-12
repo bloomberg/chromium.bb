@@ -139,6 +139,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/PausableScriptExecutor.h"
+#include "core/frame/PausableTask.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/ScreenOrientationController.h"
@@ -760,6 +761,13 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
   PausableScriptExecutor::CreateAndRun(GetFrame(), ToIsolate(GetFrame()),
                                        context, function, receiver, argc, argv,
                                        callback);
+}
+
+void WebLocalFrameImpl::PostPausableTask(PausableTaskCallback callback) {
+  DCHECK(GetFrame());
+  Document* document = GetFrame()->GetDocument();
+  DCHECK(document);
+  PausableTask::Post(document, std::move(callback));
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
