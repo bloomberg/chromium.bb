@@ -498,13 +498,13 @@ def ConstructViceroyBuildDetailsURL(build_id):
   Returns:
     The fully formed URL.
   """
-  _LINK = ('https://viceroy.corp.google.com/'
+  _link = ('https://viceroy.corp.google.com/'
            'chromeos/build_details?build_id=%(build_id)s')
-  return _LINK % {'build_id': build_id}
+  return _link % {'build_id': build_id}
 
 
-def ConstructViceroySuiteDetailsURL(job_id=None, build_id=None):
-  """Return the dashboard (viceroy) URL of suite details for job or build.
+def ConstructGoldenEyeSuiteDetailsURL(job_id=None, build_id=None):
+  """Return the dashboard (goldeneye) URL of suite details for job or build.
 
   Args:
     job_id: AFE job id.
@@ -515,11 +515,11 @@ def ConstructViceroySuiteDetailsURL(job_id=None, build_id=None):
   """
   if job_id is None and build_id is None:
     return None
-  _LINK = 'https://viceroy.corp.google.com/chromeos/suite_details?'
+  _link = 'http://cros-goldeneye/healthmonitoring/suiteDetails?'
   if job_id:
-    return _LINK + 'job_id=%d' % int(job_id)
+    return _link + 'suiteId=%d' % int(job_id)
   else:
-    return _LINK + 'build_id=%d' % int(build_id)
+    return _link + 'id=%d' % int(build_id)
 
 
 def ConstructGoldenEyeBuildDetailsURL(build_id):
@@ -531,9 +531,9 @@ def ConstructGoldenEyeBuildDetailsURL(build_id):
   Returns:
     The fully formed URL.
   """
-  _LINK = ('http://go/goldeneye/'
+  _link = ('http://go/goldeneye/'
            'chromeos/healthmonitoring/buildDetails?id=%(build_id)s')
-  return _LINK % {'build_id': build_id}
+  return _link % {'build_id': build_id}
 
 
 def ConstructAnnotatorURL(build_id):
@@ -545,6 +545,6 @@ def ConstructAnnotatorURL(build_id):
   Returns:
     The fully formed URL.
   """
-  _LINK = ('https://chromiumos-build-annotator.googleplex.com/'
+  _link = ('https://chromiumos-build-annotator.googleplex.com/'
            'build_annotations/edit_annotations/master-paladin/%(build_id)s/?')
-  return _LINK % {'build_id': build_id}
+  return _link % {'build_id': build_id}

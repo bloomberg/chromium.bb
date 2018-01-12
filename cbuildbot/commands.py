@@ -823,7 +823,7 @@ def RunHWTestSuite(
     if job_id:
       if wait_for_results:
         pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
-      suite_details_link = tree_status.ConstructViceroySuiteDetailsURL(
+      suite_details_link = tree_status.ConstructGoldenEyeSuiteDetailsURL(
           job_id=job_id)
       logging.PrintBuildbotLink('Suite details', suite_details_link)
       if wait_for_results:
