@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
@@ -402,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   Browser* focused_window = CreateBrowser(browser()->profile());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
 
-  ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
+  ManagePasswordAutoSignInView::set_auto_signin_toast_timeout(0);
   SetupAutoSignin(std::move(local_credentials));
   EXPECT_TRUE(IsBubbleShowing());
 
