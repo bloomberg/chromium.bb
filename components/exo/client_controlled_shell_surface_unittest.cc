@@ -58,7 +58,11 @@ TEST_F(ClientControlledShellSurfaceTest, SetPinned) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
   std::unique_ptr<Surface> surface(new Surface);
+  surface->Attach(buffer.get());
+  surface->Commit();
+
   auto shell_surface(
       exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
 
@@ -389,11 +393,18 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithTransform) {
 }
 
 TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
   std::unique_ptr<Surface> surface(new Surface);
+
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   shell_surface->SetMaximized();
+  surface->Attach(buffer.get());
   surface->Commit();
+
   views::Widget* widget = shell_surface->GetWidget();
   aura::Window* window = widget->GetNativeWindow();
 

@@ -38,6 +38,12 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
 // static
 void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
     std::unique_ptr<LayerTreeFrameSinkHolder> holder) {
+  if (holder->last_frame_size_in_pixels_.IsEmpty()) {
+    // Delete sink holder immediately if no frame has been submitted.
+    DCHECK(holder->last_frame_resources_.empty());
+    return;
+  }
+
   // Submit an empty frame to ensure that pending release callbacks will be
   // processed in a finite amount of time.
   viz::CompositorFrame frame;
@@ -48,8 +54,8 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
   frame.metadata.begin_frame_ack.has_damage = true;
   frame.metadata.device_scale_factor = holder->last_frame_device_scale_factor_;
   std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Rect(),
-               gfx::Transform());
+  pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
+               gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   holder->last_frame_resources_.clear();
   holder->frame_sink_->SubmitCompositorFrame(std::move(frame));
