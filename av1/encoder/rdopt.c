@@ -2037,10 +2037,13 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
     dist *= 16;
   }
 
+#ifdef DEBUG_DIST_8X8
   if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8) {
     assert(args->rd_stats.sse == sse);
     assert(args->rd_stats.dist == dist);
   }
+#endif  // DEBUG_DIST_8X8
+
   args->rd_stats.sse = sse;
   args->rd_stats.dist = dist;
 
@@ -3890,8 +3893,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
                               BLOCK_8X8, 8, 8, 8, 8, qindex) *
                  16;
+
+#ifdef DEBUG_DIST_8X8
       if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
         assert(sum_rd_stats.sse == dist_8x8);
+#endif  // DEBUG_DIST_8X8
+
       sum_rd_stats.sse = dist_8x8;
 
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
@@ -3943,8 +3950,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, pred8, 8, BLOCK_8X8, 8,
                               8, 8, 8, qindex) *
                  16;
+
+#ifdef DEBUG_DIST_8X8
       if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
         assert(sum_rd_stats.dist == dist_8x8);
+#endif  // DEBUG_DIST_8X8
+
       sum_rd_stats.dist = dist_8x8;
       tmp_rd = RDCOST(x->rdmult, sum_rd_stats.rate, sum_rd_stats.dist);
     }
