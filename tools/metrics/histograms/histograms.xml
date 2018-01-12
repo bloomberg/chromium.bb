@@ -34180,6 +34180,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Media.EME.LibraryCdmAvailable"
+    enum="BooleanAvailable">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether the CDM is available for the key system or not. In normal cases,
+    this is reported once per render process if the EME API is used. In rare
+    cases it could be reported more than once if the CDM is not available and
+    then is component updated.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.MojoCdm.ConnectionError"
     enum="BooleanConnectionError">
   <owner>media-dev@chromium.org</owner>
@@ -104083,6 +104094,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Media.EME.KeyAdded"/>
   <affected-histogram name="Media.EME.KeyError"/>
   <affected-histogram name="Media.EME.KeyStatusSystemCode"/>
+  <affected-histogram name="Media.EME.LibraryCdmAvailable"/>
   <affected-histogram name="Media.EME.SystemCode"/>
   <affected-histogram name="Media.EME.TimeTo"/>
 </histogram_suffixes>
