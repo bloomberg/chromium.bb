@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PRERENDER_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PRERENDER_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "components/ukm/ukm_source.h"
@@ -28,7 +30,8 @@ class PrerenderPageLoadMetricsObserver
  public:
   // Returns a PrerenderPageLoadMetricsObserver, or nullptr if it is not needed.
   static std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-  CreateIfNeeded(content::WebContents* web_contents);
+  CreateIfNeeded(content::WebContents* web_contents,
+                 prerender::PrerenderManager* manager);
 
   // Public for testing. Normally one should use CreateIfNeeded. Both the
   // manager and the web_contents must outlive this observer.

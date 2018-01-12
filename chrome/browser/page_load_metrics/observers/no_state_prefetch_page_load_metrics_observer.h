@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_NO_STATE_PREFETCH_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_NO_STATE_PREFETCH_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "components/ukm/ukm_source.h"
@@ -37,7 +39,8 @@ class NoStatePrefetchPageLoadMetricsObserver
   // needed. Note: can return nullptr at startup, which is believed to be
   // happening rarely.
   static std::unique_ptr<NoStatePrefetchPageLoadMetricsObserver> CreateIfNeeded(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      prerender::PrerenderManager* manager);
 
   explicit NoStatePrefetchPageLoadMetricsObserver(
       prerender::PrerenderManager* manager);

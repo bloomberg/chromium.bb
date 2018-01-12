@@ -173,17 +173,15 @@ prerender::PrerenderManager* GetPrerenderManager(
 void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
                                          int64_t bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // PrerenderContents::FromWebContents handles the NULL case.
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
-
-  if (prerender_contents)
-    prerender_contents->AddNetworkBytes(bytes);
-
   prerender::PrerenderManager* prerender_manager =
       GetPrerenderManager(web_contents);
-  if (prerender_manager)
+  if (prerender_manager) {
     prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
+    prerender::PrerenderContents* prerender_contents =
+        prerender_manager->GetPrerenderContents(web_contents);
+    if (prerender_contents)
+      prerender_contents->AddNetworkBytes(bytes);
+  }
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
