@@ -207,14 +207,23 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
 
     // LocalSurfaceIds should be monotonically increasing. This ID is used
     // to determine the freshness of a surface at aggregation time.
+    const LocalSurfaceId& current_local_surface_id =
+        current_surface_id_.local_surface_id();
+    // Neither sequence numbers of the LocalSurfaceId can decrease and at least
+    // one must increase.
     bool monotonically_increasing_id =
-        local_surface_id.parent_sequence_number() >
-        current_surface_id_.local_surface_id().parent_sequence_number();
+        (local_surface_id.parent_sequence_number() >=
+             current_local_surface_id.parent_sequence_number() &&
+         local_surface_id.child_sequence_number() >=
+             current_local_surface_id.child_sequence_number()) &&
+        (local_surface_id.parent_sequence_number() >
+             current_local_surface_id.parent_sequence_number() ||
+         local_surface_id.child_sequence_number() >
+             current_local_surface_id.child_sequence_number());
 
     if (!surface_info.is_valid() || !monotonically_increasing_id) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
                            TRACE_EVENT_SCOPE_THREAD);
-      EvictCurrentSurface();
       std::vector<ReturnedResource> resources =
           TransferableResource::ReturnResources(frame.resource_list);
       ReturnResources(resources);
@@ -223,7 +232,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
         DidPresentCompositorFrame(frame.metadata.presentation_token,
                                   base::TimeTicks(), base::TimeDelta(), 0);
       }
-      return true;
+      return false;
     }
 
     current_surface = CreateSurface(surface_info);

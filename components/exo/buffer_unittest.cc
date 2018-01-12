@@ -168,29 +168,27 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
       buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
   ASSERT_TRUE(rv);
 
+  // Submit frame with resource.
+  {
+    viz::CompositorFrame frame;
+    frame.metadata.begin_frame_ack.source_id =
+        viz::BeginFrameArgs::kManualSourceId;
+    frame.metadata.begin_frame_ack.sequence_number =
+        viz::BeginFrameArgs::kStartingFrameNumber;
+    frame.metadata.begin_frame_ack.has_damage = true;
+    frame.metadata.device_scale_factor = 1;
+    std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+    pass->SetNew(1, gfx::Rect(buffer_size), gfx::Rect(buffer_size),
+                 gfx::Transform());
+    frame.render_pass_list.push_back(std::move(pass));
+    frame.resource_list.push_back(resource);
+    frame_sink_holder->SubmitCompositorFrame(std::move(frame));
+  }
+
   buffer->OnDetach();
   ASSERT_EQ(release_call_count, 0);
 
-  // Get a weak reference to frame sink holder.
-  auto weak_frame_sink_holder = frame_sink_holder->GetWeakPtr();
-
-  // Destroy surface tree host. Weak reference should be valid until all
-  // resources have been reclaimed.
   surface_tree_host.reset();
-  ASSERT_EQ(release_call_count, 0);
-  ASSERT_TRUE(weak_frame_sink_holder);
-
-  // Release buffer.
-  viz::ReturnedResource returned_resource;
-  returned_resource.id = resource.id;
-  returned_resource.sync_token = resource.mailbox_holder.sync_token;
-  returned_resource.lost = false;
-  std::vector<viz::ReturnedResource> resources = {returned_resource};
-  weak_frame_sink_holder->ReclaimResources(resources);
-
-  RunAllPendingInMessageLoop();
-
-  // Release() should have been called exactly once.
   ASSERT_EQ(release_call_count, 1);
 }
 
@@ -228,7 +226,8 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.device_scale_factor = 1;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-    pass->SetNew(1, gfx::Rect(buffer_size), gfx::Rect(), gfx::Transform());
+    pass->SetNew(1, gfx::Rect(buffer_size), gfx::Rect(buffer_size),
+                 gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     frame.resource_list.push_back(resource);
     frame_sink_holder->SubmitCompositorFrame(std::move(frame));
@@ -259,7 +258,8 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame.metadata.begin_frame_ack.has_damage = true;
     frame.metadata.device_scale_factor = 1;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-    pass->SetNew(1, gfx::Rect(buffer_size), gfx::Rect(), gfx::Transform());
+    pass->SetNew(1, gfx::Rect(buffer_size), gfx::Rect(buffer_size),
+                 gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     frame_sink_holder->SubmitCompositorFrame(std::move(frame));
   }

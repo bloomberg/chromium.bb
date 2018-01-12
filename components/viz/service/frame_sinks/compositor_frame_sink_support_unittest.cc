@@ -479,6 +479,38 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
+// Verifies that only monotonically increasing LocalSurfaceIds are accepted.
+TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
+                                  "kAnotherArbitraryFrameSinkId");
+  MockCompositorFrameSinkClient mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+      kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id1(6, 1, kArbitraryToken);
+  LocalSurfaceId local_surface_id2(6, 2, kArbitraryToken);
+  LocalSurfaceId local_surface_id3(7, 2, kArbitraryToken);
+  LocalSurfaceId local_surface_id4(5, 3, kArbitraryToken);
+  LocalSurfaceId local_surface_id5(8, 1, kArbitraryToken);
+  LocalSurfaceId local_surface_id6(9, 3, kArbitraryToken);
+  EXPECT_TRUE(support->SubmitCompositorFrame(local_surface_id1,
+                                             MakeDefaultCompositorFrame()));
+  EXPECT_TRUE(support->SubmitCompositorFrame(local_surface_id2,
+                                             MakeDefaultCompositorFrame()));
+  EXPECT_TRUE(support->SubmitCompositorFrame(local_surface_id3,
+                                             MakeDefaultCompositorFrame()));
+  EXPECT_FALSE(support->SubmitCompositorFrame(local_surface_id4,
+                                              MakeDefaultCompositorFrame()));
+  EXPECT_FALSE(support->SubmitCompositorFrame(local_surface_id5,
+                                              MakeDefaultCompositorFrame()));
+  EXPECT_TRUE(support->SubmitCompositorFrame(local_surface_id6,
+                                             MakeDefaultCompositorFrame()));
+
+  support->EvictCurrentSurface();
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
+}
+
 // Tests doing an EvictCurrentSurface before shutting down the factory.
 TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
@@ -623,7 +655,7 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
   auto frame =
       CompositorFrameBuilder().AddRenderPass(gfx::Rect(), gfx::Rect()).Build();
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
   EXPECT_FALSE(GetSurfaceForId(id));
 }
@@ -636,7 +668,7 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
                    .AddDefaultRenderPass()
                    .SetDeviceScaleFactor(0.f)
                    .Build();
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
   EXPECT_FALSE(GetSurfaceForId(id));
 }
