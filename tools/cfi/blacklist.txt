@@ -13,7 +13,7 @@ fun:*ThreadSpecific*
 src:*third_party/mesa*
 
 # LLVM's allocator
-src:*third_party/swiftshader/third_party/llvm-subzero/include/llvm/Support/Allocator.h*
+src:*llvm/Support/Allocator.h
 
 # Deliberate bad cast to derived class to hide functions.
 type:*BlockIUnknownMethods*
