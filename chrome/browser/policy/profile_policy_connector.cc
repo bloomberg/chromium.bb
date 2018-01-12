@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -55,7 +55,7 @@ void ProfilePolicyConnector::Init(
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
 #else
   DCHECK_EQ(nullptr, user);
-  BrowserPolicyConnector* connector =
+  ChromeBrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
 #endif
 

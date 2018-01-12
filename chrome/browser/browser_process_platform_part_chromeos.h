@@ -31,7 +31,6 @@ class TimeZoneResolverManager;
 }
 
 namespace policy {
-class BrowserPolicyConnector;
 class BrowserPolicyConnectorChromeOS;
 }
 
@@ -106,8 +105,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
-  std::unique_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
-      override;
+  std::unique_ptr<policy::ChromeBrowserPolicyConnector>
+  CreateBrowserPolicyConnector() override;
   void RegisterInProcessServices(
       content::ContentBrowserClient::StaticServiceMap* services) override;
 

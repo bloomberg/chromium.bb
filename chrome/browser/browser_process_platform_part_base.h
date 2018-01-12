@@ -15,7 +15,7 @@ class CommandLine;
 }
 
 namespace policy {
-class BrowserPolicyConnector;
+class ChromeBrowserPolicyConnector;
 }
 
 // A base class for platform-specific BrowserProcessPlatformPart
@@ -39,7 +39,7 @@ class BrowserProcessPlatformPartBase {
   // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
   virtual void PreMainMessageLoopRun();
 
-  virtual std::unique_ptr<policy::BrowserPolicyConnector>
+  virtual std::unique_ptr<policy::ChromeBrowserPolicyConnector>
   CreateBrowserPolicyConnector();
 
   // Called from ChromeContentBrowserClient::RegisterInProcessServices
