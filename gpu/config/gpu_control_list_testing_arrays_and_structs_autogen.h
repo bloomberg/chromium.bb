@@ -93,6 +93,7 @@ const GpuControlList::More kMoreForEntry9 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry10[1] = {
@@ -110,6 +111,7 @@ const GpuControlList::More kMoreForEntry10 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry11[1] = {
@@ -127,6 +129,7 @@ const GpuControlList::More kMoreForEntry11 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry12[1] = {
@@ -236,6 +239,7 @@ const GpuControlList::More kMoreForEntry23 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry24[3] = {
@@ -401,6 +405,7 @@ const GpuControlList::More kMoreForEntry40 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry41[1] = {
@@ -470,6 +475,7 @@ const GpuControlList::More kMoreForEntry48 = {
     true,       // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry49[1] = {
@@ -547,10 +553,47 @@ const GpuControlList::More kMoreForEntry57 = {
     false,      // direct_rendering
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gpu_count
+    0,          // test_group
 };
 
 const int kFeatureListForEntry58[1] = {
     TEST_FEATURE_0,
+};
+
+const int kFeatureListForEntry59[1] = {
+    TEST_FEATURE_0,
+};
+
+const GpuControlList::More kMoreForEntry59 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    true,       // direct_rendering
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gpu_count
+    1,          // test_group
+};
+
+const int kFeatureListForEntry60[1] = {
+    TEST_FEATURE_1,
+};
+
+const GpuControlList::More kMoreForEntry60 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    true,       // direct_rendering
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gpu_count
+    2,          // test_group
 };
 
 }  // namespace gpu

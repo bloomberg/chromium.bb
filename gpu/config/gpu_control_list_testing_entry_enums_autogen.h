@@ -71,6 +71,8 @@ enum GpuControlListTestingEntryEnum {
   kGpuControlListTest_DisabledExtensionTest_1 = 55,
   kGpuControlListEntryTest_DirectRendering = 56,
   kGpuControlListTest_LinuxKernelVersion = 57,
+  kGpuControlListTest_TestGroup_0 = 58,
+  kGpuControlListTest_TestGroup_1 = 59,
 };
 }  // namespace gpu
 

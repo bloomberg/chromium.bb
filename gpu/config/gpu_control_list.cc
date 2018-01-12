@@ -430,6 +430,13 @@ bool GpuControlList::Entry::Contains(OsType target_os_type,
   return true;
 }
 
+bool GpuControlList::Entry::AppliesToTestGroup(
+    uint32_t target_test_group) const {
+  if (conditions.more)
+    return conditions.more->test_group == target_test_group;
+  return target_test_group == 0u;
+}
+
 bool GpuControlList::Conditions::NeedsMoreInfo(const GPUInfo& gpu_info) const {
   // We only check for missing info that might be collected with a gl context.
   // If certain info is missing due to some error, say, we fail to collect
@@ -505,6 +512,13 @@ GpuControlList::~GpuControlList() = default;
 std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
                                                const std::string& os_version,
                                                const GPUInfo& gpu_info) {
+  return MakeDecision(os, os_version, gpu_info, 0);
+}
+
+std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
+                                               const std::string& os_version,
+                                               const GPUInfo& gpu_info,
+                                               uint32_t target_test_group) {
   active_entries_.clear();
   std::set<int> features;
 
@@ -530,6 +544,8 @@ std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
   for (size_t ii = 0; ii < entry_count_; ++ii) {
     const Entry& entry = entries_[ii];
     DCHECK_NE(0u, entry.id);
+    if (!entry.AppliesToTestGroup(target_test_group))
+      continue;
     if (entry.Contains(os, processed_os_version, gpu_info)) {
       bool needs_more_info_main = entry.NeedsMoreInfo(gpu_info, false);
       bool needs_more_info_exception = entry.NeedsMoreInfo(gpu_info, true);

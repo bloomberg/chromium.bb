@@ -717,6 +717,22 @@
       "features": [
         "test_feature_0"
       ]
+    },
+    {
+      "id": 59,
+      "description": "GpuControlListTest.TestGroup.0",
+      "test_group": 1,
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 60,
+      "description": "GpuControlListTest.TestGroup.1",
+      "test_group": 2,
+      "features": [
+        "test_feature_1"
+      ]
     }
   ]
 }
