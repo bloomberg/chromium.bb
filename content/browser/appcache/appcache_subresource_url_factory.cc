@@ -12,13 +12,13 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -40,7 +40,7 @@ class SubresourceLoader : public mojom::URLLoader,
                     int32_t routing_id,
                     int32_t request_id,
                     uint32_t options,
-                    const ResourceRequest& request,
+                    const network::ResourceRequest& request,
                     mojom::URLLoaderClientPtr client,
                     const net::MutableNetworkTrafficAnnotationTag& annotation,
                     base::WeakPtr<AppCacheHost> appcache_host,
@@ -276,7 +276,7 @@ class SubresourceLoader : public mojom::URLLoader,
   mojo::Binding<mojom::URLLoader> remote_binding_;
   mojom::URLLoaderClientPtr remote_client_;
 
-  ResourceRequest request_;
+  network::ResourceRequest request_;
   int32_t routing_id_;
   int32_t request_id_;
   uint32_t options_;
@@ -344,7 +344,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

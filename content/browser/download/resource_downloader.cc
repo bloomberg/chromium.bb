@@ -83,7 +83,7 @@ class RequestHandle : public DownloadRequestHandleInterface {
 std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<DownloadUrlParameters> params,
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -105,7 +105,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
 std::unique_ptr<ResourceDownloader>
 ResourceDownloader::InterceptNavigationResponse(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
@@ -123,7 +123,7 @@ ResourceDownloader::InterceptNavigationResponse(
 
 ResourceDownloader::ResourceDownloader(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& site_url,
     const GURL& tab_url,

@@ -19,9 +19,12 @@ namespace url {
 class Origin;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 
-struct ResourceRequest;
 struct SyncLoadResponse;
 
 // This class owns the context necessary to perform an asynchronous request
@@ -32,7 +35,7 @@ class SyncLoadContext : public RequestPeer {
   // called on. |event| will be signalled when the request is complete and
   // |response| will be populated with the response data.
   static void StartAsyncWithWaitableEvent(
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -41,7 +44,7 @@ class SyncLoadContext : public RequestPeer {
       SyncLoadResponse* response,
       base::WaitableEvent* event);
 
-  SyncLoadContext(ResourceRequest* request,
+  SyncLoadContext(network::ResourceRequest* request,
                   mojom::URLLoaderFactoryPtrInfo url_loader_factory,
                   SyncLoadResponse* response,
                   base::WaitableEvent* event);

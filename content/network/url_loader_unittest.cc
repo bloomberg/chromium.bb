@@ -25,7 +25,6 @@
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -47,6 +46,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -56,10 +56,10 @@ namespace content {
 
 namespace {
 
-static ResourceRequest CreateResourceRequest(const char* method,
-                                             ResourceType type,
-                                             const GURL& url) {
-  ResourceRequest request;
+static network::ResourceRequest CreateResourceRequest(const char* method,
+                                                      ResourceType type,
+                                                      const GURL& url) {
+  network::ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
   request.site_for_cookies = url;  // bypass third-party cookie blocking
@@ -322,7 +322,7 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     mojom::URLLoaderPtr loader;
 
-    ResourceRequest request = CreateResourceRequest(
+    network::ResourceRequest request = CreateResourceRequest(
         !request_body_ ? "GET" : "POST", resource_type_, url);
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_with_response_)
@@ -687,7 +687,7 @@ TEST_F(URLLoaderTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
 
 TEST_F(URLLoaderTest, DestroyContextWithLiveRequest) {
   GURL url = test_server()->GetURL("/hung-after-headers");
-  ResourceRequest request =
+  network::ResourceRequest request =
       CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
   mojom::URLLoaderPtr loader;
@@ -846,7 +846,7 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       }));
   ASSERT_TRUE(server.Start());
 
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL("/hello.html"));
 
   mojom::URLLoaderPtr loader;
@@ -887,7 +887,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
@@ -944,7 +944,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
@@ -990,7 +990,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
@@ -1030,7 +1030,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  ResourceRequest request = CreateResourceRequest(
+  network::ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;

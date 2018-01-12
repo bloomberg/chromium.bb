@@ -79,8 +79,8 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   // Issues a request for kHstsPath on localhost, and expects it to enable HSTS
   // for the domain.
   void IssueRequestThatSetsHsts() {
-    std::unique_ptr<ResourceRequest> request =
-        std::make_unique<ResourceRequest>();
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
     request->url = ssl_server_.GetURL("localhost", kHstsPath);
 
     SimpleURLLoaderTestHelper loader_helper;
@@ -105,8 +105,8 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
     GURL::Replacements replacements;
     replacements.SetSchemeStr("http");
     url = url.ReplaceComponents(replacements);
-    std::unique_ptr<ResourceRequest> request =
-        std::make_unique<ResourceRequest>();
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
     request->url = url;
 
     std::unique_ptr<SimpleURLLoader> loader = SimpleURLLoader::Create(

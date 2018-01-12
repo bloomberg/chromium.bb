@@ -28,7 +28,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
     request_id_ = dispatcher_->StartAsync(
-        std::make_unique<ResourceRequest>(), 0, nullptr, url::Origin(),
+        std::make_unique<network::ResourceRequest>(), 0, nullptr, url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
@@ -50,7 +50,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {

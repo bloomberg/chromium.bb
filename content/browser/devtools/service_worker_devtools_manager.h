@@ -19,13 +19,13 @@
 #include "url/gurl.h"
 
 namespace network {
+struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 }
 
 namespace content {
 
 class BrowserContext;
-struct ResourceRequest;
 struct ResourceResponseHead;
 class ServiceWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
@@ -75,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void NavigationPreloadRequestSent(int worker_process_id,
                                     int worker_route_id,
                                     const std::string& request_id,
-                                    const ResourceRequest& request);
+                                    const network::ResourceRequest& request);
   void NavigationPreloadResponseReceived(int worker_process_id,
                                          int worker_route_id,
                                          const std::string& request_id,

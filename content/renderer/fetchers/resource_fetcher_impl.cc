@@ -64,7 +64,7 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
     Cancel();
   }
 
-  void Start(const ResourceRequest& request,
+  void Start(const network::ResourceRequest& request,
              mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -321,7 +321,7 @@ void ResourceFetcherImpl::Start(
                  frame->GetTaskRunner(blink::TaskType::kNetworking));
 
   // No need to hold on to the request; reset it now.
-  request_ = ResourceRequest();
+  request_ = network::ResourceRequest();
 }
 
 void ResourceFetcherImpl::SetTimeout(const base::TimeDelta& timeout) {

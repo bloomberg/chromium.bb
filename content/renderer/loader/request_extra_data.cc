@@ -5,8 +5,8 @@
 #include "content/renderer/loader/request_extra_data.h"
 
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
+#include "services/network/public/cpp/resource_request.h"
 
 using blink::WebString;
 
@@ -30,7 +30,8 @@ RequestExtraData::RequestExtraData()
 RequestExtraData::~RequestExtraData() {
 }
 
-void RequestExtraData::CopyToResourceRequest(ResourceRequest* request) const {
+void RequestExtraData::CopyToResourceRequest(
+    network::ResourceRequest* request) const {
   request->is_prerendering =
       visibility_state_ == blink::mojom::PageVisibilityState::kPrerender;
   request->render_frame_id = render_frame_id_;

@@ -77,8 +77,8 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest,
                        DiskCacheLocation) {
   // Run a request that caches the response, to give the network service time to
   // create a cache directory.
-  std::unique_ptr<content::ResourceRequest> request =
-      std::make_unique<content::ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
   request->url = embedded_test_server()->GetURL("/cachetime");
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<content::SimpleURLLoader> simple_loader =
@@ -105,8 +105,8 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
-  std::unique_ptr<content::ResourceRequest> request =
-      std::make_unique<content::ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
   request->url = https_server.GetURL("/echoheader?accept-encoding");
 // On OSX, test certs aren't currently hooked up correctly when using the
 // network service.
@@ -160,8 +160,8 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
 
   // Run a request that caches the response, to give the network service time to
   // create a cache directory.
-  std::unique_ptr<content::ResourceRequest> request =
-      std::make_unique<content::ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
   request->url = embedded_test_server()->GetURL("/cachetime");
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<content::SimpleURLLoader> simple_loader =

@@ -16,7 +16,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_request.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
@@ -24,6 +23,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
@@ -324,7 +324,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
 
   const GURL expected_url("https://example.com/expected");
   mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request;
-  auto request = std::make_unique<ResourceRequest>();
+  auto request = std::make_unique<network::ResourceRequest>();
   request->url = expected_url;
   mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
   fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
@@ -362,7 +362,7 @@ TEST_F(ServiceWorkerContextClientTest,
   mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
   mojom::ServiceWorkerFetchResponseCallbackRequest fetch_callback_request =
       mojo::MakeRequest(&fetch_callback_ptr);
-  auto request = std::make_unique<ResourceRequest>();
+  auto request = std::make_unique<network::ResourceRequest>();
   request->url = expected_url;
   context_client->DispatchOrQueueFetchEvent(
       *request, nullptr /* preload_handle */, std::move(fetch_callback_ptr),
@@ -409,7 +409,7 @@ TEST_F(ServiceWorkerContextClientTest,
   {
     mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<ResourceRequest>();
+    auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url;
     pipes.controller->DispatchFetchEvent(
         *request, std::move(fetch_callback_ptr),
@@ -457,7 +457,7 @@ TEST_F(ServiceWorkerContextClientTest,
   {
     mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_1 = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<ResourceRequest>();
+    auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url_1;
     pipes.controller->DispatchFetchEvent(
         *request, std::move(fetch_callback_ptr),
@@ -472,7 +472,7 @@ TEST_F(ServiceWorkerContextClientTest,
   {
     mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_2 = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<ResourceRequest>();
+    auto request = std::make_unique<network::ResourceRequest>();
     request->url = expected_url_2;
     pipes.event_dispatcher->DispatchFetchEvent(
         *request, nullptr /* preload_handle */, std::move(fetch_callback_ptr),

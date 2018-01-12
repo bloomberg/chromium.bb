@@ -23,7 +23,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
@@ -36,6 +35,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/data_element.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 
 namespace content {
@@ -175,8 +175,9 @@ class BodyHandler;
 class SimpleURLLoaderImpl : public SimpleURLLoader,
                             public mojom::URLLoaderClient {
  public:
-  SimpleURLLoaderImpl(std::unique_ptr<ResourceRequest> resource_request,
-                      const net::NetworkTrafficAnnotationTag& annotation_tag);
+  SimpleURLLoaderImpl(
+      std::unique_ptr<network::ResourceRequest> resource_request,
+      const net::NetworkTrafficAnnotationTag& annotation_tag);
   ~SimpleURLLoaderImpl() override;
 
   // SimpleURLLoader implementation.
@@ -311,7 +312,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   // Populated in the constructor, and cleared once no longer needed, when no
   // more retries are possible.
-  std::unique_ptr<ResourceRequest> resource_request_;
+  std::unique_ptr<network::ResourceRequest> resource_request_;
   const net::NetworkTrafficAnnotationTag annotation_tag_;
   // Cloned from the input URLLoaderFactory if it may be needed to follow
   // redirects.
@@ -874,7 +875,7 @@ class SaveToFileBodyHandler : public BodyHandler {
 };
 
 SimpleURLLoaderImpl::SimpleURLLoaderImpl(
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     const net::NetworkTrafficAnnotationTag& annotation_tag)
     : resource_request_(std::move(resource_request)),
       annotation_tag_(annotation_tag),
@@ -1319,7 +1320,7 @@ void SimpleURLLoaderImpl::MaybeComplete() {
 }  // namespace
 
 std::unique_ptr<SimpleURLLoader> SimpleURLLoader::Create(
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     const net::NetworkTrafficAnnotationTag& annotation_tag) {
   DCHECK(resource_request);
   return std::make_unique<SimpleURLLoaderImpl>(std::move(resource_request),

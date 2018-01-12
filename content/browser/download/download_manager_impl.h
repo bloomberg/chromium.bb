@@ -148,7 +148,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Continue a navigation that ends up to be a download after it reaches the
   // OnResponseStarted() step. It has to be called on the UI thread.
   void InterceptNavigation(
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<ResourceResponse> response,
@@ -223,7 +223,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   void InterceptNavigationOnChecksComplete(
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<ResourceResponse> response,
@@ -237,7 +237,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   static void CreateDownloadHandlerForNavigation(
       base::WeakPtr<DownloadManagerImpl> download_manager,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<ResourceResponse> response,

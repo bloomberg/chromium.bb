@@ -48,7 +48,7 @@ mojom::NetworkRequestStatus ConvertInterruptReasonToMojoNetworkRequestStatus(
 }  // namespace
 
 DownloadResponseHandler::DownloadResponseHandler(
-    ResourceRequest* resource_request,
+    network::ResourceRequest* resource_request,
     Delegate* delegate,
     std::unique_ptr<DownloadSaveInfo> save_info,
     bool is_parallel_request,

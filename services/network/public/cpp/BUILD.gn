@@ -20,6 +20,8 @@ static_library("cpp") {
     "network_param_ipc_traits.h",
     "proxy_resolving_client_socket.cc",
     "proxy_resolving_client_socket.h",
+    "resource_request.cc",
+    "resource_request.h",
     "resource_request_body.cc",
     "resource_request_body.h",
     "url_loader_completion_status.cc",

@@ -71,7 +71,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   // TestDispatcher implementation:
 
   void StartSync(
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -82,7 +82,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   }
 
   int StartAsync(
-      std::unique_ptr<ResourceRequest> request,
+      std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const url::Origin& frame_origin,
@@ -141,7 +141,7 @@ class FakeURLLoaderFactory final : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {

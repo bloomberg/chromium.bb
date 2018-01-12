@@ -32,14 +32,15 @@ class ServiceWorkerScriptURLLoaderFactory : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& resource_request,
+                            const network::ResourceRequest& resource_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(mojom::URLLoaderFactoryRequest request) override;
 
  private:
-  bool ShouldHandleScriptRequest(const ResourceRequest& resource_request);
+  bool ShouldHandleScriptRequest(
+      const network::ResourceRequest& resource_request);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;

@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/common/utils.h"
-#include "content/public/common/resource_request.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace safe_browsing {
 
@@ -36,7 +36,7 @@ void RendererURLLoaderThrottle::DetachFromCurrentSequence() {
 }
 
 void RendererURLLoaderThrottle::WillStartRequest(
-    content::ResourceRequest* request,
+    network::ResourceRequest* request,
     bool* defer) {
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);

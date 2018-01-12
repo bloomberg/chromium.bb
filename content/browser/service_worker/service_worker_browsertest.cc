@@ -875,7 +875,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
         CreateResponseReceiver(done, blob_context_.get(), result);
     if (ServiceWorkerUtils::IsServicificationEnabled()) {
-      auto request = std::make_unique<ResourceRequest>();
+      auto request = std::make_unique<network::ResourceRequest>();
       request->url = url;
       request->method = "GET";
       request->resource_type = resource_type;

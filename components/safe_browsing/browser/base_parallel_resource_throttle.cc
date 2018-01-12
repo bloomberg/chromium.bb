@@ -10,11 +10,11 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace safe_browsing {
 
@@ -107,7 +107,7 @@ void BaseParallelResourceThrottle::WillStartRequest(bool* defer) {
     return;
   }
 
-  content::ResourceRequest resource_request;
+  network::ResourceRequest resource_request;
 
   net::HttpRequestHeaders full_headers;
   resource_request.headers = request_->GetFullRequestHeaders(&full_headers)

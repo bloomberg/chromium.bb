@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_
-#define CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_H_
 
 #include <stdint.h>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "content/common/content_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -21,9 +20,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace content {
+namespace network {
 
-struct CONTENT_EXPORT ResourceRequest {
+struct ResourceRequest {
   ResourceRequest();
   ResourceRequest(const ResourceRequest& request);
   ~ResourceRequest();
@@ -97,8 +96,8 @@ struct CONTENT_EXPORT ResourceRequest {
   bool is_external_request = false;
 
   // A policy to decide if CORS-preflight fetch should be performed.
-  network::mojom::CORSPreflightPolicy cors_preflight_policy =
-      network::mojom::CORSPreflightPolicy::kConsiderPreflight;
+  mojom::CORSPreflightPolicy cors_preflight_policy =
+      mojom::CORSPreflightPolicy::kConsiderPreflight;
 
   // Indicates which frame (or worker context) the request is being loaded into.
   // -1 corresponds to kInvalidServiceWorkerProviderId.
@@ -118,12 +117,12 @@ struct CONTENT_EXPORT ResourceRequest {
   int service_worker_mode = 0;
 
   // The request mode passed to the ServiceWorker.
-  network::mojom::FetchRequestMode fetch_request_mode =
-      network::mojom::FetchRequestMode::kSameOrigin;
+  mojom::FetchRequestMode fetch_request_mode =
+      mojom::FetchRequestMode::kSameOrigin;
 
   // The credentials mode passed to the ServiceWorker.
-  network::mojom::FetchCredentialsMode fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kOmit;
+  mojom::FetchCredentialsMode fetch_credentials_mode =
+      mojom::FetchCredentialsMode::kOmit;
 
   // The redirect mode used in Fetch API.
   // Note: this is an enum of type content::FetchRedirectMode.
@@ -142,11 +141,11 @@ struct CONTENT_EXPORT ResourceRequest {
   int fetch_request_context_type = 0;
 
   // The frame type passed to the ServiceWorker.
-  network::mojom::RequestContextFrameType fetch_frame_type =
-      network::mojom::RequestContextFrameType::kAuxiliary;
+  mojom::RequestContextFrameType fetch_frame_type =
+      mojom::RequestContextFrameType::kAuxiliary;
 
   // Optional resource request body (may be null).
-  scoped_refptr<network::ResourceRequestBody> request_body;
+  scoped_refptr<ResourceRequestBody> request_body;
 
   // If true, then the response body will be downloaded to a file and the path
   // to that file will be provided in ResponseInfo::download_file_path.
@@ -219,6 +218,6 @@ struct CONTENT_EXPORT ResourceRequest {
   bool download_to_network_cache_only = false;
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_H_

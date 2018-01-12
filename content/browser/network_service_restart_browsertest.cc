@@ -36,7 +36,7 @@ int LoadBasicRequestOnIOThread(
     URLLoaderFactoryGetter* url_loader_factory_getter,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto request = std::make_unique<ResourceRequest>();
+  auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
 
   SimpleURLLoaderTestHelper simple_loader_helper;

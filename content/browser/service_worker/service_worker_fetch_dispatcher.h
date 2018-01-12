@@ -55,12 +55,13 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                               scoped_refptr<ServiceWorkerVersion>)>;
 
   // S13nServiceWorker
-  ServiceWorkerFetchDispatcher(std::unique_ptr<ResourceRequest> request,
-                               scoped_refptr<ServiceWorkerVersion> version,
-                               const base::Optional<base::TimeDelta>& timeout,
-                               const net::NetLogWithSource& net_log,
-                               base::OnceClosure prepare_callback,
-                               FetchCallback fetch_callback);
+  ServiceWorkerFetchDispatcher(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<ServiceWorkerVersion> version,
+      const base::Optional<base::TimeDelta>& timeout,
+      const net::NetLogWithSource& net_log,
+      base::OnceClosure prepare_callback,
+      FetchCallback fetch_callback);
   // Non-S13nServiceWorker
   ServiceWorkerFetchDispatcher(
       std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -80,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // S13nServiceWorker
   // Same as above but for S13N.
   bool MaybeStartNavigationPreloadWithURLLoader(
-      const ResourceRequest& original_request,
+      const network::ResourceRequest& original_request,
       URLLoaderFactoryGetter* url_loader_factory_getter,
       base::OnceClosure on_response);
 
@@ -123,7 +124,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   ServiceWorkerMetrics::EventType GetEventType() const;
 
   // S13nServiceWorker
-  std::unique_ptr<ResourceRequest> request_;
+  std::unique_ptr<network::ResourceRequest> request_;
   // Non-S13nServiceWorker
   std::unique_ptr<ServiceWorkerFetchRequest> legacy_request_;
 

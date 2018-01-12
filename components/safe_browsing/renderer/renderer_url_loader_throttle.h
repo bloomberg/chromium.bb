@@ -32,7 +32,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
  private:
   // content::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
-  void WillStartRequest(content::ResourceRequest* request,
+  void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            const content::ResourceResponseHead& response_head,

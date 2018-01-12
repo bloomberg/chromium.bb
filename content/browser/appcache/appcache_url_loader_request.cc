@@ -11,7 +11,7 @@ namespace content {
 
 // static
 std::unique_ptr<AppCacheURLLoaderRequest> AppCacheURLLoaderRequest::Create(
-    const ResourceRequest& request) {
+    const network::ResourceRequest& request) {
   return std::unique_ptr<AppCacheURLLoaderRequest>(
       new AppCacheURLLoaderRequest(request));
 }
@@ -62,7 +62,7 @@ std::string AppCacheURLLoaderRequest::GetResponseHeaderByName(
   return header;
 }
 
-ResourceRequest* AppCacheURLLoaderRequest::GetResourceRequest() {
+network::ResourceRequest* AppCacheURLLoaderRequest::GetResourceRequest() {
   return &request_;
 }
 
@@ -87,7 +87,7 @@ void AppCacheURLLoaderRequest::UpdateWithRedirectInfo(
 }
 
 AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
-    const ResourceRequest& request)
+    const network::ResourceRequest& request)
     : request_(request), weak_factory_(this) {}
 
 }  // namespace content

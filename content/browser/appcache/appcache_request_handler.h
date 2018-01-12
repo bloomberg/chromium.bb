@@ -82,7 +82,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // MaybeLoadResource and MaybeLoadFallbackForResponse.
   // Eventually one of the Deliver*Response() methods is called and the
   // LoaderCallback is invoked.
-  void MaybeCreateLoader(const ResourceRequest& resource_request,
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
   // MaybeCreateLoaderForResponse always returns synchronously.
@@ -99,8 +99,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // MaybeLoadResource, MaybeLoadFallbackForResponse, and
   // MaybeLoadFallbackForRedirect. Eventually one of the Deliver*Response()
   // methods is called and the LoaderCallback is invoked.
-  void MaybeCreateSubresourceLoader(const ResourceRequest& resource_request,
-                                    LoaderCallback callback);
+  void MaybeCreateSubresourceLoader(
+      const network::ResourceRequest& resource_request,
+      LoaderCallback callback);
   void MaybeFallbackForSubresourceResponse(const ResourceResponseHead& response,
                                            LoaderCallback callback);
   void MaybeFallbackForSubresourceRedirect(
@@ -111,7 +112,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   static std::unique_ptr<AppCacheRequestHandler>
   InitializeForNavigationNetworkService(
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       AppCacheNavigationHandleCore* appcache_handle_core,
       URLLoaderFactoryGetter* url_loader_factory_getter);
 

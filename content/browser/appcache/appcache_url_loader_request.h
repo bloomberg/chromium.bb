@@ -7,9 +7,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_request.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   // Factory function to create an instance of the AppCacheResourceRequest
   // class.
   static std::unique_ptr<AppCacheURLLoaderRequest> Create(
-      const ResourceRequest& request);
+      const network::ResourceRequest& request);
 
   ~AppCacheURLLoaderRequest() override;
 
@@ -36,11 +36,13 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   int GetResponseCode() const override;
   std::string GetResponseHeaderByName(const std::string& name) const override;
 
-  ResourceRequest* GetResourceRequest() override;
+  network::ResourceRequest* GetResourceRequest() override;
   AppCacheURLLoaderRequest* AsURLLoaderRequest() override;
 
   void UpdateWithRedirectInfo(const net::RedirectInfo& redirect_info);
-  void set_request(const ResourceRequest& request) { request_ = request; }
+  void set_request(const network::ResourceRequest& request) {
+    request_ = request;
+  }
   void set_response(const ResourceResponseHead& response) {
     response_ = response;
   }
@@ -48,10 +50,10 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   base::WeakPtr<AppCacheURLLoaderRequest> GetWeakPtr();
 
  protected:
-  explicit AppCacheURLLoaderRequest(const ResourceRequest& request);
+  explicit AppCacheURLLoaderRequest(const network::ResourceRequest& request);
 
  private:
-  ResourceRequest request_;
+  network::ResourceRequest request_;
   ResourceResponseHead response_;
   base::WeakPtrFactory<AppCacheURLLoaderRequest> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);

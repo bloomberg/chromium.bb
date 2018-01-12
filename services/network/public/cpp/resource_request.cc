@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/resource_request.h"
+#include "services/network/public/cpp/resource_request.h"
 
-namespace content {
+namespace network {
 
 ResourceRequest::ResourceRequest() {}
 ResourceRequest::ResourceRequest(const ResourceRequest& request) = default;
 ResourceRequest::~ResourceRequest() {}
 
-}  // namespace content
+}  // namespace network

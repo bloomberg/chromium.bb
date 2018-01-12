@@ -31,7 +31,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
@@ -55,6 +54,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
@@ -631,7 +631,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // TODO(horo): Check credentials flag is unset when credentials mode is omit.
   //             Check credentials flag is set when credentials mode is include.
 
-  std::unique_ptr<ResourceRequest> resource_request(new ResourceRequest);
+  std::unique_ptr<network::ResourceRequest> resource_request(
+      new network::ResourceRequest);
 
   resource_request->method = method;
   resource_request->url = url_;

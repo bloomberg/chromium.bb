@@ -34,9 +34,10 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
 
   // Calls |callback| with a non-null StartLoaderCallback if this handler
   // can handle the request, calls it with null callback otherwise.
-  virtual void MaybeCreateLoader(const ResourceRequest& resource_request,
-                                 ResourceContext* resource_context,
-                                 LoaderCallback callback) = 0;
+  virtual void MaybeCreateLoader(
+      const network::ResourceRequest& resource_request,
+      ResourceContext* resource_context,
+      LoaderCallback callback) = 0;
 
   // Returns a SubresourceLoaderParams if any to be used for subsequent URL
   // requests going forward. Subclasses who want to set-up custom loader for

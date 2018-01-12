@@ -256,7 +256,7 @@ void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
 // static
 std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForNavigationNetworkService(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     AppCacheNavigationHandleCore* appcache_handle_core,
     URLLoaderFactoryGetter* url_loader_factory_getter) {
   std::unique_ptr<AppCacheRequestHandler> handler =
@@ -581,7 +581,7 @@ void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
 }
 
 void AppCacheRequestHandler::MaybeCreateLoader(
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
   loader_callback_ =
@@ -643,7 +643,7 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
 }
 
 void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     LoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());

@@ -162,7 +162,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
@@ -279,7 +279,7 @@ class Helper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int embedded_worker_id,
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
@@ -528,7 +528,7 @@ class ServiceWorkerURLLoaderJobTest
   // Returns whether ServiceWorkerURLLoaderJob handled the request. If
   // kHandledRequest was returned, the request is ongoing and the caller can use
   // functions like client_.RunUntilComplete() to wait for completion.
-  JobResult StartRequest(std::unique_ptr<ResourceRequest> request) {
+  JobResult StartRequest(std::unique_ptr<network::ResourceRequest> request) {
     // Start a ServiceWorkerURLLoaderJob. It should return a
     // StartLoaderCallback.
     StartLoaderCallback callback;
@@ -568,9 +568,9 @@ class ServiceWorkerURLLoaderJobTest
               info.did_service_worker_navigation_preload);
   }
 
-  std::unique_ptr<ResourceRequest> CreateRequest() {
-    std::unique_ptr<ResourceRequest> request =
-        std::make_unique<ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> CreateRequest() {
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
     request->url = GURL("https://www.example.com/");
     request->method = "GET";
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
@@ -643,7 +643,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, RequestBody) {
   // Create a request with a body.
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
   request_body->AppendBytes(kData.c_str(), kData.length());
-  std::unique_ptr<ResourceRequest> request = CreateRequest();
+  std::unique_ptr<network::ResourceRequest> request = CreateRequest();
   request->method = "POST";
   request->request_body = request_body;
 
@@ -900,7 +900,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, EarlyResponse) {
 // when there is no active service worker for the URL, or it must be skipped,
 // etc.
 TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
-  ResourceRequest request;
+  network::ResourceRequest request;
   request.url = GURL("https://www.example.com/");
   request.method = "GET";
   request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;

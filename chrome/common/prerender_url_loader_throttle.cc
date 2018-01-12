@@ -7,10 +7,10 @@
 #include "build/build_config.h"
 #include "chrome/common/prerender_util.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace prerender {
 
@@ -74,7 +74,7 @@ void PrerenderURLLoaderThrottle::DetachFromCurrentSequence() {
 }
 
 void PrerenderURLLoaderThrottle::WillStartRequest(
-    content::ResourceRequest* request,
+    network::ResourceRequest* request,
     bool* defer) {
   resource_type_ = static_cast<content::ResourceType>(request->resource_type);
   // Abort any prerenders that spawn requests that use unsupported HTTP

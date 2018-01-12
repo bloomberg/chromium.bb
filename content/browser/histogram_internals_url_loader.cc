@@ -11,7 +11,7 @@
 
 namespace content {
 
-void StartHistogramInternalsURLLoader(const ResourceRequest& request,
+void StartHistogramInternalsURLLoader(const network::ResourceRequest& request,
                                       mojom::URLLoaderClientPtr client) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));

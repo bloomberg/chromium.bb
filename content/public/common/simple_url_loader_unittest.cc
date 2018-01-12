@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/network_service.mojom.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -45,6 +44,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -93,7 +93,7 @@ class SimpleLoaderTestHelper {
   enum class DownloadType { TO_STRING, TO_FILE, TO_TEMP_FILE };
 
   explicit SimpleLoaderTestHelper(
-      std::unique_ptr<ResourceRequest> resource_request,
+      std::unique_ptr<network::ResourceRequest> resource_request,
       DownloadType download_type)
       : download_type_(download_type),
         simple_url_loader_(
@@ -446,7 +446,7 @@ class SimpleURLLoaderTest
   ~SimpleURLLoaderTest() override {}
 
   std::unique_ptr<SimpleLoaderTestHelper> CreateHelper(
-      std::unique_ptr<ResourceRequest> resource_request) {
+      std::unique_ptr<network::ResourceRequest> resource_request) {
     EXPECT_TRUE(resource_request);
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
                                                     GetParam());
@@ -455,8 +455,8 @@ class SimpleURLLoaderTest
   std::unique_ptr<SimpleLoaderTestHelper> CreateHelperForURL(
       const GURL& url,
       const char* method = "GET") {
-    std::unique_ptr<ResourceRequest> resource_request =
-        std::make_unique<ResourceRequest>();
+    std::unique_ptr<network::ResourceRequest> resource_request =
+        std::make_unique<network::ResourceRequest>();
     resource_request->url = url;
     resource_request->method = method;
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
@@ -465,8 +465,8 @@ class SimpleURLLoaderTest
 };
 
 TEST_P(SimpleURLLoaderTest, BasicRequest) {
-  std::unique_ptr<ResourceRequest> resource_request =
-      std::make_unique<ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
   // Use a more interesting request than "/echo", just to verify more than the
   // request URL is hooked up.
   resource_request->url = test_server_.GetURL("/echoheader?foo");
@@ -646,8 +646,8 @@ TEST_P(SimpleURLLoaderTest, DisconnectedURLLoader) {
   network_context_.reset();
   base::RunLoop().RunUntilIdle();
 
-  std::unique_ptr<ResourceRequest> resource_request =
-      std::make_unique<ResourceRequest>();
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
   resource_request->url = test_server_.GetURL("/echoheader?foo");
   resource_request->headers.SetHeader("foo", "Expected Response");
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -1419,7 +1419,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
@@ -2126,8 +2126,8 @@ class SimpleURLLoaderFileTest : public SimpleURLLoaderTestBase,
   ~SimpleURLLoaderFileTest() override {}
 
   std::unique_ptr<SimpleLoaderTestHelper> CreateHelperForURL(const GURL& url) {
-    std::unique_ptr<ResourceRequest> resource_request =
-        std::make_unique<ResourceRequest>();
+    std::unique_ptr<network::ResourceRequest> resource_request =
+        std::make_unique<network::ResourceRequest>();
     resource_request->url = url;
     return std::make_unique<SimpleLoaderTestHelper>(
         std::move(resource_request),

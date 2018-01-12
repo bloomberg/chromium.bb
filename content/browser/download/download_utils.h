@@ -16,10 +16,13 @@ namespace net {
 class URLRequest;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 
 class DownloadUrlParameters;
-struct ResourceRequest;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
@@ -30,8 +33,8 @@ DownloadInterruptReason CONTENT_EXPORT HandleRequestCompletionStatus(
     net::CertStatus cert_status, DownloadInterruptReason abort_reason);
 
 // Create a ResourceRequest from |params|.
-std::unique_ptr<ResourceRequest> CONTENT_EXPORT CreateResourceRequest(
-    DownloadUrlParameters* params);
+std::unique_ptr<network::ResourceRequest> CONTENT_EXPORT
+CreateResourceRequest(DownloadUrlParameters* params);
 
 // Create a URLRequest from |params|.
 std::unique_ptr<net::URLRequest> CONTENT_EXPORT CreateURLRequestOnIOThread(

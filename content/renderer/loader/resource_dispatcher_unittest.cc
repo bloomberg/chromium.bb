@@ -22,7 +22,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -34,6 +33,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,7 +68,7 @@ class ResourceDispatcherTest : public testing::Test,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      const ResourceRequest& url_request,
+      const network::ResourceRequest& url_request,
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& annotation) override {
     loader_and_clients_.emplace_back(std::move(request), std::move(client));
@@ -86,8 +86,9 @@ class ResourceDispatcherTest : public testing::Test,
     client->OnReceiveResponse(head, {}, {});
   }
 
-  std::unique_ptr<ResourceRequest> CreateResourceRequest() {
-    std::unique_ptr<ResourceRequest> request(new ResourceRequest());
+  std::unique_ptr<network::ResourceRequest> CreateResourceRequest() {
+    std::unique_ptr<network::ResourceRequest> request(
+        new network::ResourceRequest());
 
     request->method = "GET";
     request->url = GURL(kTestPageUrl);
@@ -106,7 +107,7 @@ class ResourceDispatcherTest : public testing::Test,
 
   ResourceDispatcher* dispatcher() { return dispatcher_.get(); }
 
-  int StartAsync(std::unique_ptr<ResourceRequest> request,
+  int StartAsync(std::unique_ptr<network::ResourceRequest> request,
                  network::ResourceRequestBody* request_body,
                  TestRequestPeer::Context* peer_context) {
     std::unique_ptr<TestRequestPeer> peer(
@@ -202,7 +203,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 };
 
 TEST_F(ResourceDispatcherTest, DelegateTest) {
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   TestRequestPeer::Context peer_context;
   StartAsync(std::move(request), nullptr, &peer_context);
 
@@ -248,7 +249,7 @@ TEST_F(ResourceDispatcherTest, DelegateTest) {
 }
 
 TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   TestRequestPeer::Context peer_context;
   StartAsync(std::move(request), nullptr, &peer_context);
   peer_context.cancel_on_receive_response = true;
@@ -304,7 +305,7 @@ TEST_F(ResourceDispatcherTest, SerializedPostData) {
 class TimeConversionTest : public ResourceDispatcherTest {
  public:
   void PerformTest(const ResourceResponseHead& response_head) {
-    std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+    std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
     TestRequestPeer::Context peer_context;
     StartAsync(std::move(request), nullptr, &peer_context);
 

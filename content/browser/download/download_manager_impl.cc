@@ -177,7 +177,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     std::unique_ptr<DownloadUrlParameters> params,
-    std::unique_ptr<ResourceRequest> request,
+    std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     uint32_t download_id,
@@ -786,7 +786,7 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 }
 
 void DownloadManagerImpl::InterceptNavigation(
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
@@ -1019,7 +1019,7 @@ void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
 
 void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
@@ -1043,7 +1043,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
 void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     base::WeakPtr<DownloadManagerImpl> download_manager,
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
@@ -1070,8 +1070,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
-        params.get());
+    std::unique_ptr<network::ResourceRequest> request =
+        CreateResourceRequest(params.get());
     StoragePartitionImpl* storage_partition =
         GetStoragePartition(browser_context_, params->render_process_host_id(),
                             params->render_frame_host_routing_id());

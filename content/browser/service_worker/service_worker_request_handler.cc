@@ -134,7 +134,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
 // static
 std::unique_ptr<URLLoaderRequestHandler>
 ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     storage::BlobStorageContext* blob_storage_context,
@@ -261,7 +261,7 @@ ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
 }
 
 void ServiceWorkerRequestHandler::MaybeCreateLoader(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
   NOTREACHED();

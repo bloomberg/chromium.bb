@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//content/public/common/url_loader.mojom"
-public_headers = [ "//content/public/common/resource_request.h" ]
+public_headers = [ "//services/network/public/cpp/resource_request.h" ]
 traits_headers = [
   "//content/common/resource_messages.h",
   "//content/common/url_request_struct_traits.h",
@@ -15,6 +15,6 @@ deps = [
   "//ui/base",
 ]
 type_mappings = [
-  "content.mojom.URLRequest=content::ResourceRequest",
+  "content.mojom.URLRequest=network::ResourceRequest",
   "content.mojom.RequestPriority=net::RequestPriority",
 ]

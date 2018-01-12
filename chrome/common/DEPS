@@ -45,6 +45,7 @@ include_rules = [
   "+ppapi/thunk",
   "+rlz/features/features.h",
   "+sandbox/linux/services/credentials.h",
+  "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+third_party/boringssl/src/include",
   "+third_party/WebKit/public/platform/web_client_hints_types.mojom.h",

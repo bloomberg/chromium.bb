@@ -70,7 +70,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& url_request,
+                            const network::ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
@@ -213,7 +213,8 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
 
  private:
   // URLLoaderThrottle implementation.
-  void WillStartRequest(ResourceRequest* request, bool* defer) override {
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
     will_start_request_called_++;
     if (will_start_request_callback_)
       will_start_request_callback_.Run(delegate_, defer);
@@ -274,7 +275,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
     uint32_t options = 0;
     if (sync)
       options |= mojom::kURLLoadOptionSynchronous;
-    ResourceRequest request;
+    network::ResourceRequest request;
     request.url = request_url;
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory_.factory_ptr().get(), std::move(throttles_), 0, 0, options,

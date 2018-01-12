@@ -43,7 +43,7 @@ class BlobURLLoaderFactory
   // range headers are used.
   static void CreateLoaderAndStart(
       mojom::URLLoaderRequest url_loader_request,
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       mojom::URLLoaderClientPtr client,
       std::unique_ptr<storage::BlobDataHandle> blob_handle);
 
@@ -52,7 +52,7 @@ class BlobURLLoaderFactory
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const ResourceRequest& request,
+                            const network::ResourceRequest& request,
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;

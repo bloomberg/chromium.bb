@@ -78,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
   // URLLoaderRequestHandler overrides:
-  void MaybeCreateLoader(const ResourceRequest& request,
+  void MaybeCreateLoader(const network::ResourceRequest& request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
   // Returns params with the ControllerServiceWorkerPtr if we have found

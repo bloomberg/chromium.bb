@@ -42,7 +42,7 @@ class CONTENT_EXPORT FileURLLoaderObserver
 // filesytem links (e.g. Windows shortcuts) or support directory listing.
 // A directory path will always yield a FILE_NOT_FOUND network error.
 CONTENT_EXPORT void CreateFileURLLoader(
-    const ResourceRequest& request,
+    const network::ResourceRequest& request,
     mojom::URLLoaderRequest loader,
     mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer);

@@ -36,12 +36,12 @@ namespace {
 class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
  public:
   explicit TestURLLoaderRequestHandler(
-      base::Optional<ResourceRequest>* most_recent_resource_request)
+      base::Optional<network::ResourceRequest>* most_recent_resource_request)
       : most_recent_resource_request_(most_recent_resource_request),
         context_(NetworkContext::CreateForTesting()) {}
   ~TestURLLoaderRequestHandler() override {}
 
-  void MaybeCreateLoader(const ResourceRequest& resource_request,
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override {
     std::move(callback).Run(
@@ -49,7 +49,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                    base::Unretained(this), resource_request));
   }
 
-  void StartLoader(ResourceRequest resource_request,
+  void StartLoader(network::ResourceRequest resource_request,
                    mojom::URLLoaderRequest request,
                    mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
@@ -68,7 +68,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
   }
 
  private:
-  base::Optional<ResourceRequest>* most_recent_resource_request_;  // NOT OWNED.
+  base::Optional<network::ResourceRequest>*
+      most_recent_resource_request_;  // NOT OWNED.
   std::unique_ptr<NetworkContext> context_;
 };
 
@@ -192,7 +193,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::EmbeddedTestServer http_test_server_;
-  base::Optional<ResourceRequest> most_recent_resource_request_;
+  base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };
 
 TEST_F(NavigationURLLoaderNetworkServiceTest, Redirect301Tests) {

@@ -52,7 +52,7 @@ class URLLoaderInterceptor {
     int32_t routing_id;
     int32_t request_id;
     uint32_t options;
-    ResourceRequest url_request;
+    network::ResourceRequest url_request;
     mojom::URLLoaderClientPtr client;
     net::MutableNetworkTrafficAnnotationTag traffic_annotation;
   };

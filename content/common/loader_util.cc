@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -15,6 +14,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/cpp/resource_request.h"
 
 namespace content {
 
@@ -138,7 +138,7 @@ void AttachAcceptHeader(ResourceType type, net::URLRequest* request) {
   request->SetExtraRequestHeaderByName(kAcceptHeader, accept_value, false);
 }
 
-int BuildLoadFlagsForRequest(const ResourceRequest& request) {
+int BuildLoadFlagsForRequest(const network::ResourceRequest& request) {
   int load_flags = request.load_flags;
 
   // Although EV status is irrelevant to sub-frames and sub-resources, we have

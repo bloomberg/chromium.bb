@@ -139,7 +139,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
@@ -176,7 +176,7 @@ void ServiceWorkerSubresourceLoader::DeleteSoon() {
 }
 
 void ServiceWorkerSubresourceLoader::StartRequest(
-    const ResourceRequest& resource_request) {
+    const network::ResourceRequest& resource_request) {
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
 
@@ -184,7 +184,8 @@ void ServiceWorkerSubresourceLoader::StartRequest(
       static_cast<ResourceType>(resource_request.resource_type)));
 
   DCHECK(!inflight_fetch_request_);
-  inflight_fetch_request_ = std::make_unique<ResourceRequest>(resource_request);
+  inflight_fetch_request_ =
+      std::make_unique<network::ResourceRequest>(resource_request);
   controller_connector_->AddObserver(this);
   fetch_request_restarted_ = false;
 
@@ -512,7 +513,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   // This loader destructs itself, as we want to transparently switch to the

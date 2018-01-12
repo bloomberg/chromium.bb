@@ -31,7 +31,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,

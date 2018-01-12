@@ -2428,7 +2428,7 @@ int LoadBasicRequest(mojom::NetworkContext* network_context,
   // at this point.
   EXPECT_FALSE(url_loader_factory.encountered_error());
 
-  auto request = std::make_unique<ResourceRequest>();
+  auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->render_frame_id = render_frame_id;
 

@@ -17,7 +17,6 @@
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_worker_modes.h"
 #include "ipc/ipc_message_macros.h"
@@ -25,6 +24,7 @@
 #include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_param_ipc_traits.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -153,7 +153,7 @@ IPC_STRUCT_TRAITS_BEGIN(net::MutableNetworkTrafficAnnotationTag)
   IPC_STRUCT_TRAITS_MEMBER(unique_id_hash_code)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequest)
+IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(site_for_cookies)

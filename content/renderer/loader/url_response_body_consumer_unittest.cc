@@ -11,13 +11,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,7 +99,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
                               int32_t routing_id,
                               int32_t request_id,
                               uint32_t options,
-                              const ResourceRequest& url_request,
+                              const network::ResourceRequest& url_request,
                               mojom::URLLoaderClientPtr client,
                               const net::MutableNetworkTrafficAnnotationTag&
                                   traffic_annotation) override {
@@ -119,8 +119,9 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<ResourceRequest> CreateResourceRequest() {
-    std::unique_ptr<ResourceRequest> request(new ResourceRequest);
+  std::unique_ptr<network::ResourceRequest> CreateResourceRequest() {
+    std::unique_ptr<network::ResourceRequest> request(
+        new network::ResourceRequest);
 
     request->method = "GET";
     request->url = GURL("http://www.example.com/");
@@ -145,7 +146,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
   }
 
   // Returns the request id.
-  int SetUpRequestPeer(std::unique_ptr<ResourceRequest> request,
+  int SetUpRequestPeer(std::unique_ptr<network::ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
         std::move(request), 0, nullptr, url::Origin(),
@@ -169,7 +170,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
 
 TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
   TestRequestPeer::Context context;
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   int request_id = SetUpRequestPeer(std::move(request), &context);
   mojo::DataPipe data_pipe(CreateDataPipeOptions());
 
@@ -194,7 +195,7 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
 
 TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
   TestRequestPeer::Context context;
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   int request_id = SetUpRequestPeer(std::move(request), &context);
   mojo::DataPipe data_pipe(CreateDataPipeOptions());
 
@@ -229,7 +230,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
 TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
   TestRequestPeer::Context context;
   context.release_data_asynchronously = true;
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   int request_id = SetUpRequestPeer(std::move(request), &context);
   mojo::DataPipe data_pipe(CreateDataPipeOptions());
 
@@ -261,7 +262,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
 
 TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
   TestRequestPeer::Context context;
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   int request_id = SetUpRequestPeer(std::move(request), &context);
   mojo::DataPipe data_pipe(CreateDataPipeOptions());
 
@@ -286,7 +287,7 @@ TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
   constexpr auto kMaxNumConsumedBytesInTask =
       URLResponseBodyConsumer::kMaxNumConsumedBytesInTask;
   TestRequestPeer::Context context;
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   int request_id = SetUpRequestPeer(std::move(request), &context);
   auto options = CreateDataPipeOptions();
   options.capacity_num_bytes = 2 * kMaxNumConsumedBytesInTask;

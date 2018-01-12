@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest, NetworkContext) {
       ->GetNetworkContext()
       ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory), 0);
 
-  ResourceRequest request;
+  network::ResourceRequest request;
   TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/set-header?foo: bar");
   request.method = "GET";
