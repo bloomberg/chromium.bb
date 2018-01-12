@@ -575,10 +575,9 @@ typedef struct encode_txb_args {
   aom_writer *w;
 } ENCODE_TXB_ARGS;
 
-static void av1_write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
-                                      aom_writer *w, int plane, int block,
-                                      int blk_row, int blk_col,
-                                      TX_SIZE tx_size) {
+static void write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
+                                  aom_writer *w, int plane, int block,
+                                  int blk_row, int blk_col, TX_SIZE tx_size) {
   MACROBLOCKD *xd = &x->e_mbd;
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   uint16_t eob = x->mbmi_ext->eobs[plane][block];
@@ -621,8 +620,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
 
       for (blk_row = row; blk_row < unit_height; blk_row += stepr) {
         for (blk_col = col; blk_col < unit_width; blk_col += stepc) {
-          av1_write_coeffs_txb_wrap(cm, x, w, plane, block, blk_row, blk_col,
-                                    tx_size);
+          write_coeffs_txb_wrap(cm, x, w, plane, block, blk_row, blk_col,
+                                tx_size);
           block += step;
         }
       }
