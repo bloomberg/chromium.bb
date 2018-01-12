@@ -42,7 +42,19 @@ OSErr HandleGURLEvent(const AppleEvent* event,
   if (status != noErr)
     return status;
 
-  return AESendMessage(event_copy, reply, kAENoReply, kNoTimeOut);
+  status = AESendMessage(event_copy, reply, kAENoReply, kNoTimeOut);
+  if (status != noErr)
+    return status;
+
+  // Activate the running instance
+  base::mac::ScopedAEDesc<> activate_event;
+  status = AECreateAppleEvent(kAEMiscStandards, kAEActivate, other_process_pid,
+                              kAutoGenerateReturnID, kAnyTransactionID,
+                              activate_event.OutPointer());
+  if (status != noErr)
+    return status;
+
+  return AESendMessage(activate_event, reply, kAENoReply, kNoTimeOut);
 }
 
 }  //  namespace
