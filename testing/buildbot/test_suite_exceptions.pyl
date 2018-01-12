@@ -3182,12 +3182,18 @@
   'site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
-      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
-      'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       # chromium.sandbox
       'Linux Tests SANDBOX',
     ],
+    'modifications': {
+      # chromium.linux
+      'Linux Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+        ],
+      },
+    },
   },
   'sizes': {
     'remove_from': [
@@ -3822,7 +3828,6 @@
       'Chromium Mac 10.11',
       'Out of Process Profiling Mac',
       # chromium.linux
-      'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       # chromium.mac
       'Mac10.9 Tests',
@@ -3876,6 +3881,11 @@
           ],
           'shards': 6,
         },
+      },
+      'Linux Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+        ],
       },
       # chromium.sandbox
       'Linux Tests SANDBOX': {
