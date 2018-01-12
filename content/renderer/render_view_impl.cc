@@ -2079,6 +2079,9 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   bottom_controls_height_ = params.bottom_controls_height;
 
   RenderWidget::OnResize(params);
+
+  if (params.scroll_focused_node_into_view)
+    webview()->ScrollFocusedEditableElementIntoView();
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {

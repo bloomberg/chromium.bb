@@ -32,6 +32,10 @@ struct CONTENT_EXPORT ResizeParams {
   // URL-bar (always false on platforms where URL-bar hiding isn't supported).
   bool browser_controls_shrink_blink_size;
 
+  // Whether or not the focused node should be scrolled into view after the
+  // resize.
+  bool scroll_focused_node_into_view;
+
   // The height of the top controls (always 0 on platforms where URL-bar hiding
   // isn't supported).
   float top_controls_height;
