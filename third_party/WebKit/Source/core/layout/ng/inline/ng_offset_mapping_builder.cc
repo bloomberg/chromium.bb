@@ -69,6 +69,27 @@ NGOffsetMappingBuilder::NGOffsetMappingBuilder() {
   mapping_.push_back(0);
 }
 
+NGOffsetMappingBuilder::SourceNodeScope::SourceNodeScope(
+    NGOffsetMappingBuilder* builder,
+    const LayoutObject* node)
+    : auto_reset_(&builder->current_source_node_, node) {
+#if DCHECK_IS_ON()
+  builder_ = builder;
+  if (!node)
+    return;
+  // We allow at most one scope with non-null node at any time.
+  DCHECK(!builder->has_nonnull_node_scope_);
+  builder->has_nonnull_node_scope_ = true;
+#endif
+}
+
+NGOffsetMappingBuilder::SourceNodeScope::~SourceNodeScope() {
+#if DCHECK_IS_ON()
+  if (builder_->current_source_node_)
+    builder_->has_nonnull_node_scope_ = false;
+#endif
+}
+
 void NGOffsetMappingBuilder::AppendIdentityMapping(unsigned length) {
   DCHECK_GT(length, 0u);
   DCHECK(!mapping_.IsEmpty());
@@ -77,6 +98,8 @@ void NGOffsetMappingBuilder::AppendIdentityMapping(unsigned length) {
     mapping_.push_back(next);
   }
   annotation_.resize(annotation_.size() + length);
+  std::fill(annotation_.end() - length, annotation_.end(),
+            current_source_node_);
 }
 
 void NGOffsetMappingBuilder::AppendCollapsedMapping(unsigned length) {
@@ -86,6 +109,8 @@ void NGOffsetMappingBuilder::AppendCollapsedMapping(unsigned length) {
   for (unsigned i = 0; i < length; ++i)
     mapping_.push_back(back);
   annotation_.resize(annotation_.size() + length);
+  std::fill(annotation_.end() - length, annotation_.end(),
+            current_source_node_);
 }
 
 void NGOffsetMappingBuilder::CollapseTrailingSpace(unsigned skip_length) {
@@ -100,25 +125,6 @@ void NGOffsetMappingBuilder::CollapseTrailingSpace(unsigned skip_length) {
       ++skipped_count;
     --mapping_[i];
   }
-}
-
-void NGOffsetMappingBuilder::Annotate(const LayoutObject* layout_object) {
-  std::fill(annotation_.begin(), annotation_.end(), layout_object);
-}
-
-void NGOffsetMappingBuilder::AnnotateRange(unsigned start,
-                                           unsigned end,
-                                           const LayoutObject* layout_object) {
-  DCHECK_LE(start, end);
-  DCHECK_LE(end, annotation_.size());
-  std::fill(annotation_.begin() + start, annotation_.begin() + end,
-            layout_object);
-}
-
-void NGOffsetMappingBuilder::AnnotateSuffix(unsigned length,
-                                            const LayoutObject* layout_object) {
-  DCHECK_LE(length, annotation_.size());
-  AnnotateRange(annotation_.size() - length, annotation_.size(), layout_object);
 }
 
 void NGOffsetMappingBuilder::Concatenate(const NGOffsetMappingBuilder& other) {
@@ -148,7 +154,8 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
   NGOffsetMapping::RangeMap ranges;
 
   // Information of current owner node
-  unsigned inline_start = 0;
+  const Node* nonnull_owner = nullptr;
+  unsigned processed_length = 0;
   unsigned unit_range_start = 0;
   unsigned remaining_text_offset = 0;
 
@@ -199,9 +206,13 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
     unsigned unit_end = type_and_end.second;
     // Create unit only for non-generated content.
     if (node) {
+      if (node != nonnull_owner) {
+        nonnull_owner = node;
+        processed_length = 0;
+      }
+
       if (!unit_start ||
           node != GetAssociatedNode(annotation_[unit_start - 1])) {
-        inline_start = unit_start;
         unit_range_start = units.size();
         // We get a non-zero |remaining_text_offset| only when |current_node| is
         // a text node that has blockified ::first-letter style, and we are at
@@ -210,15 +221,27 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
       }
 
       NGOffsetMappingUnitType type = type_and_end.first;
-      unsigned dom_start = unit_start - inline_start + remaining_text_offset;
-      unsigned dom_end = unit_end - inline_start + remaining_text_offset;
+      unsigned dom_start = processed_length + remaining_text_offset;
+      unsigned dom_end = unit_end - unit_start + dom_start;
       unsigned text_content_start = mapping_[unit_start];
       unsigned text_content_end = mapping_[unit_end];
       units.emplace_back(type, *node, dom_start, dom_end, text_content_start,
                          text_content_end);
 
+      processed_length += dom_end - dom_start;
+
       if (GetAssociatedNode(annotation_[unit_end]) != node) {
-        ranges.insert(node, std::make_pair(unit_range_start, units.size()));
+        auto iter = ranges.find(node);
+        if (iter != ranges.end()) {
+          // We are here if characters of |node| were appended inconsecutively,
+          // separated by generated characters. An example is BiDi-overridden
+          // text node with 'white-space: pre' style, where generated BiDi-
+          // control characters are inserted around '\n' characters.
+          DCHECK_EQ(iter->value.second, unit_range_start);
+          iter->value.second = units.size();
+        } else {
+          ranges.insert(node, std::make_pair(unit_range_start, units.size()));
+        }
       }
     }
     unit_start = unit_end;

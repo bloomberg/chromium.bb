@@ -150,6 +150,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     return;
   text_.ReserveCapacity(string.length());
 
+  typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                       layout_object);
+
   EWhiteSpace whitespace = style->WhiteSpace();
   if (!ComputedStyle::CollapseWhiteSpace(whitespace))
     AppendWithoutWhiteSpaceCollapsing(string, style, layout_object);
@@ -158,8 +161,6 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   else
     AppendWithWhiteSpaceCollapsing(string, 0, string.length(), style,
                                    layout_object);
-
-  mapping_builder_.AnnotateSuffix(string.length(), layout_object);
 }
 
 template <typename OffsetMappingBuilder>
@@ -177,6 +178,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   // https://drafts.csswg.org/css-text-3/#collapse
   if (last_collapsible_space_ == CollapsibleSpace::kSpaceNoWrap &&
       IsCollapsibleSpace(string[start]) && style->AutoWrap()) {
+    typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                         nullptr);
     AppendBreakOpportunity(style, nullptr);
     last_collapsible_space_ = CollapsibleSpace::kSpace;
   }
@@ -300,6 +303,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   // At the forced break, add bidi controls to pop all contexts.
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-embedding-breaks
   if (!bidi_context_.IsEmpty()) {
+    typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                         nullptr);
     for (auto it = bidi_context_.rbegin(); it != bidi_context_.rend(); ++it)
       AppendOpaque(NGInlineItem::kBidiControl, it->exit);
   }
@@ -308,6 +313,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 
   // Then re-add bidi controls to restore the bidi context.
   if (!bidi_context_.IsEmpty()) {
+    typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                         nullptr);
     for (const auto& bidi : bidi_context_)
       AppendOpaque(NGInlineItem::kBidiControl, bidi.enter);
   }
@@ -355,9 +362,10 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
     const ComputedStyle* style,
     LayoutObject* layout_object) {
+  typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                       layout_object);
   Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter, style,
          layout_object);
-  mapping_builder_.AnnotateSuffix(1, layout_object);
 }
 
 template <typename OffsetMappingBuilder>
