@@ -2043,7 +2043,6 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
 
 bool LayoutTableSection::GroupShouldRepeat() const {
   DCHECK(Table()->Header() == this || Table()->Footer() == this);
-  LOG(ERROR) << "PaginationBreakability=" << GetPaginationBreakability();
   if (GetPaginationBreakability() == kAllowAnyBreaks)
     return false;
 
