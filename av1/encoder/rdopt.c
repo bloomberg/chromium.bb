@@ -2232,7 +2232,6 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   const int is_inter = is_inter_block(mbmi);
 
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
-  if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, tx_size)) return 1;
   if (!is_inter && x->use_default_intra_tx_type &&
       tx_type != get_default_tx_type(0, xd, tx_size))
     return 1;

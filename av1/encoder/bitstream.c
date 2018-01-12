@@ -1049,46 +1049,43 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
 #endif
 
-  if (!FIXED_TX_TYPE) {
-    const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-    const BLOCK_SIZE bsize = mbmi->sb_type;
-    if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
-            1 &&
-        ((!cm->seg.enabled && cm->base_qindex > 0) ||
-         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-        !mbmi->skip &&
-        !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      const TxSetType tx_set_type = get_ext_tx_set_type(
-          tx_size, bsize, is_inter, cm->reduced_tx_set_used);
-      const int eset =
-          get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
-      // eset == 0 should correspond to a set with only DCT_DCT and there
-      // is no need to send the tx_type
-      assert(eset > 0);
-      assert(av1_ext_tx_used[tx_set_type][tx_type]);
-      if (is_inter) {
-        aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
-                         ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
-                         av1_num_ext_tx_set[tx_set_type]);
-      } else {
+  const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+      ((!cm->seg.enabled && cm->base_qindex > 0) ||
+       (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+      !mbmi->skip &&
+      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+    const TxSetType tx_set_type =
+        get_ext_tx_set_type(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+    const int eset =
+        get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+    // eset == 0 should correspond to a set with only DCT_DCT and there
+    // is no need to send the tx_type
+    assert(eset > 0);
+    assert(av1_ext_tx_used[tx_set_type][tx_type]);
+    if (is_inter) {
+      aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
+                       ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+                       av1_num_ext_tx_set[tx_set_type]);
+    } else {
 #if CONFIG_FILTER_INTRA
-        PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra)
-          intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode];
-        else
-          intra_dir = mbmi->mode;
-        aom_write_symbol(
-            w, av1_ext_tx_ind[tx_set_type][tx_type],
-            ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][intra_dir],
-            av1_num_ext_tx_set[tx_set_type]);
+      PREDICTION_MODE intra_dir;
+      if (mbmi->filter_intra_mode_info.use_filter_intra)
+        intra_dir =
+            fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode];
+      else
+        intra_dir = mbmi->mode;
+      aom_write_symbol(
+          w, av1_ext_tx_ind[tx_set_type][tx_type],
+          ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][intra_dir],
+          av1_num_ext_tx_set[tx_set_type]);
 #else
-        aom_write_symbol(
-            w, av1_ext_tx_ind[tx_set_type][tx_type],
-            ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
-            av1_num_ext_tx_set[tx_set_type]);
+      aom_write_symbol(
+          w, av1_ext_tx_ind[tx_set_type][tx_type],
+          ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+          av1_num_ext_tx_set[tx_set_type]);
 #endif
-      }
     }
   }
 }

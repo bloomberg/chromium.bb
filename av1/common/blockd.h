@@ -886,12 +886,6 @@ static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
 }
 #endif
 
-#if CONFIG_DCT_ONLY
-#define FIXED_TX_TYPE 1
-#else
-#define FIXED_TX_TYPE 0
-#endif
-
 // Converts block_index for given transform size to index of the block in raster
 // order.
 static INLINE int av1_block_index_to_raster_order(TX_SIZE tx_size,
@@ -975,10 +969,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   // within this function.
   if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
     return DCT_DCT;
-
-#if FIXED_TX_TYPE
-  return get_default_tx_type(plane_type, xd, tx_size);
-#endif  // FIXED_TX_TYPE
 
 #if CONFIG_DAALA_TX_DST32
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32)
