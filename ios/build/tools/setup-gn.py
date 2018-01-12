@@ -24,6 +24,11 @@ SUPPORTED_TARGETS = ('iphoneos', 'iphonesimulator')
 SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official', 'Coverage')
 
 
+def IsRunningOnABot():
+  '''Returns True if the script thinks it is running on a bot.'''
+  return any(key for key in os.environ.keys() if 'BUILDBOT_' in key)
+
+
 class ConfigParserWithStringInterpolation(ConfigParser.SafeConfigParser):
 
   '''A .ini file parser that supports strings and environment variables.'''
@@ -291,6 +296,10 @@ def GenerateGnBuildRules(gn_path, root_dir, out_dir, settings):
 
 
 def Main(args):
+  if IsRunningOnABot():
+    sys.stdout.write('Running on a bot, skipped.\n')
+    return
+
   default_root = os.path.normpath(os.path.join(
       os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
 
