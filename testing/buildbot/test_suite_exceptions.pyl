@@ -3182,8 +3182,6 @@
   'site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
-      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
-      'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       # chromium.sandbox
       'Linux Tests SANDBOX',
