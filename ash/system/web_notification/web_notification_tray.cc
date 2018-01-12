@@ -367,7 +367,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings,
     // horizontal (i.e. bottom) shelves, anchor to the system tray.
     TrayBackgroundView* anchor_tray = this;
     if (shelf()->IsHorizontalAlignment())
-      anchor_tray = system_tray_;
+      anchor_tray = shelf()->GetSystemTrayAnchor();
 
     message_center_bubble_.reset(new WebNotificationBubbleWrapper(
         this, anchor_tray, message_center_bubble, show_by_click));
@@ -453,7 +453,7 @@ void WebNotificationTray::UpdateAfterShelfAlignmentChange() {
 void WebNotificationTray::AnchorUpdated() {
   if (message_center_bubble()) {
     UpdateClippingWindowBounds();
-    system_tray_->UpdateClippingWindowBounds();
+    shelf()->GetSystemTrayAnchor()->UpdateClippingWindowBounds();
     message_center_bubble()->bubble_view()->UpdateBubble();
     // Should check |message_center_bubble_| again here. Since UpdateBubble
     // above set the bounds of the bubble which will stop the current

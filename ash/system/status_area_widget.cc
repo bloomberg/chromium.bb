@@ -145,6 +145,12 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
   }
 }
 
+TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
+  if (overview_button_tray_->visible())
+    return overview_button_tray_;
+  return system_tray_;
+}
+
 bool StatusAreaWidget::ShouldShowShelf() const {
   // The system tray bubble may or may not want to force the shelf to be
   // visible.
