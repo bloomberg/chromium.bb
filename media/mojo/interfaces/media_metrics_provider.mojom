@@ -26,6 +26,12 @@ interface MediaMetricsProvider {
   // the provider is destructed.
   OnError(PipelineStatus status);
 
+  // Setters for various one-time lazily generated metrics or properties.
+  SetIsEME();
+  SetTimeToMetadata(mojo.common.mojom.TimeDelta elapsed);
+  SetTimeToFirstFrame(mojo.common.mojom.TimeDelta elapsed);
+  SetTimeToPlayReady(mojo.common.mojom.TimeDelta elapsed);
+
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.
   AcquireWatchTimeRecorder(PlaybackProperties properties,

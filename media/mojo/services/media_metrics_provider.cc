@@ -34,8 +34,17 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   ukm::builders::Media_WebMediaPlayerState builder(source_id);
   builder.SetPlayerID(player_id_);
   builder.SetIsTopFrame(is_top_frame_);
+  builder.SetIsEME(is_eme_);
   builder.SetIsMSE(is_mse_);
   builder.SetFinalPipelineStatus(pipeline_status_);
+
+  if (time_to_metadata_ != kNoTimestamp)
+    builder.SetTimeToMetadata(time_to_metadata_.InMilliseconds());
+  if (time_to_first_frame_ != kNoTimestamp)
+    builder.SetTimeToFirstFrame(time_to_first_frame_.InMilliseconds());
+  if (time_to_play_ready_ != kNoTimestamp)
+    builder.SetTimeToPlayReady(time_to_play_ready_.InMilliseconds());
+
   builder.Record(ukm_recorder);
 }
 
@@ -63,6 +72,29 @@ void MediaMetricsProvider::Initialize(bool is_mse,
 void MediaMetricsProvider::OnError(PipelineStatus status) {
   DCHECK(initialized_);
   pipeline_status_ = status;
+}
+
+void MediaMetricsProvider::SetIsEME() {
+  // This may be called before Initialize().
+  is_eme_ = true;
+}
+
+void MediaMetricsProvider::SetTimeToMetadata(base::TimeDelta elapsed) {
+  DCHECK(initialized_);
+  DCHECK_EQ(time_to_metadata_, kNoTimestamp);
+  time_to_metadata_ = elapsed;
+}
+
+void MediaMetricsProvider::SetTimeToFirstFrame(base::TimeDelta elapsed) {
+  DCHECK(initialized_);
+  DCHECK_EQ(time_to_first_frame_, kNoTimestamp);
+  time_to_first_frame_ = elapsed;
+}
+
+void MediaMetricsProvider::SetTimeToPlayReady(base::TimeDelta elapsed) {
+  DCHECK(initialized_);
+  DCHECK_EQ(time_to_play_ready_, kNoTimestamp);
+  time_to_play_ready_ = elapsed;
 }
 
 void MediaMetricsProvider::AcquireWatchTimeRecorder(
