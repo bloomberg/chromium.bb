@@ -56,8 +56,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
     return *worker_backing_thread_;
   }
   void ClearWorkerBackingThread() override;
-
   InstalledScriptsManager* GetInstalledScriptsManager() override;
+  void TerminateForTesting() override;
 
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(

@@ -111,9 +111,17 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void ImportModuleScript(const KURL& script_url,
                           network::mojom::FetchCredentialsMode);
 
-  // Closes the global scope and terminates the underlying thread. Called on the
-  // main thread.
+  // Posts a task to the worker thread to close the global scope and terminate
+  // the underlying thread. This task may be blocked by JavaScript execution on
+  // the worker thread, so this function also forcibly terminates JavaScript
+  // execution after a certain grace period.
   void Terminate();
+
+  // Terminates the worker thread. Subclasses of WorkerThread can override this
+  // to do cleanup. The default behavior is to call Terminate() and
+  // synchronously call EnsureScriptExecutionTerminates() to ensure the thread
+  // is quickly terminated. Called on the main thread.
+  virtual void TerminateForTesting();
 
   // Called on the main thread for the leak detector. Forcibly terminates the
   // script execution and waits by *blocking* the calling thread until the

@@ -173,6 +173,13 @@ void WorkerThread::Terminate() {
                                  CrossThreadUnretained(this)));
 }
 
+void WorkerThread::TerminateForTesting() {
+  // Schedule a regular async worker thread termination task, and forcibly
+  // terminate the V8 script execution to ensure the task runs.
+  Terminate();
+  EnsureScriptExecutionTerminates(ExitCode::kSyncForciblyTerminated);
+}
+
 void WorkerThread::TerminateAllWorkersForTesting() {
   DCHECK(IsMainThread());
 
@@ -181,10 +188,7 @@ void WorkerThread::TerminateAllWorkersForTesting() {
   HashSet<WorkerThread*> threads = WorkerThreads();
 
   for (WorkerThread* thread : threads) {
-    // Schedule a regular async worker thread termination task, and forcibly
-    // terminate the V8 script execution to ensure the task runs.
-    thread->Terminate();
-    thread->EnsureScriptExecutionTerminates(ExitCode::kSyncForciblyTerminated);
+    thread->TerminateForTesting();
   }
 
   for (WorkerThread* thread : threads)
