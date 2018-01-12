@@ -4361,6 +4361,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                          referrer:[self currentReferrer]
                        transition:ui::PAGE_TRANSITION_SERVER_REDIRECT
            sameDocumentNavigation:NO];
+  [_navigationStates contextForNavigation:navigation]->SetUrl(webViewURL);
 }
 
 - (void)webView:(WKWebView*)webView

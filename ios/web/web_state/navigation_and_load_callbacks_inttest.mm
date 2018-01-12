@@ -13,6 +13,8 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider.h"
+#import "ios/web/public/test/http_server/html_response_provider_impl.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
@@ -909,6 +911,35 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   ExecuteBlockAndWaitForLoad(action, ^{
     navigation_manager()->GoForward();
   });
+}
+
+// Tests server redirect navigation.
+TEST_F(NavigationAndLoadCallbacksTest, RedirectNavigation) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, HtmlResponseProviderImpl::Response> responses;
+  const GURL redirect_url = HttpServer::MakeUrl("http://chromium2.test");
+  responses[url] = HtmlResponseProviderImpl::GetRedirectResponse(
+      redirect_url, net::HTTP_MOVED_PERMANENTLY);
+  responses[redirect_url] = HtmlResponseProviderImpl::GetSimpleResponse("here");
+  std::unique_ptr<web::DataResponseProvider> provider(
+      new HtmlResponseProvider(responses));
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load url which replies with redirect.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  // Second ShouldAllowRequest call is for redirect_url.
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(
+          VerifyNewPageFinishedContext(web_state(), redirect_url, &context));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  LoadUrl(url);
 }
 
 }  // namespace web
