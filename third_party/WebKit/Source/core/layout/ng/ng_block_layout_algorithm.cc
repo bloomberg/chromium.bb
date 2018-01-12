@@ -611,9 +611,10 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   adjoining_margin_strut.Append(child_data.margins.block_start,
                                 child_style.HasMarginBeforeQuirk());
 
-  LayoutUnit child_bfc_offset_estimate =
+  LayoutUnit initial_child_bfc_offset_estimate =
       child_data.bfc_offset_estimate.block_offset +
       adjoining_margin_strut.Sum();
+  LayoutUnit child_bfc_offset_estimate = initial_child_bfc_offset_estimate;
 
   NGLayoutOpportunity opportunity;
   scoped_refptr<NGLayoutResult> layout_result;
@@ -673,12 +674,17 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       fragment, child_bfc_offset, ContainerBfcOffset(),
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
-  if (ConstraintSpace().HasBlockFragmentation() &&
-      BreakBeforeChild(child, *layout_result, logical_offset.block_offset))
-    return true;
-  EBreakBetween break_after = JoinFragmentainerBreakValues(
-      layout_result->FinalBreakAfter(), child.Style().BreakAfter());
-  container_builder_.SetPreviousBreakAfter(break_after);
+  if (ConstraintSpace().HasBlockFragmentation()) {
+    bool is_pushed_by_floats =
+        layout_result->IsPushedByFloats() ||
+        child_bfc_offset.block_offset > initial_child_bfc_offset_estimate;
+    if (BreakBeforeChild(child, *layout_result, logical_offset.block_offset,
+                         is_pushed_by_floats))
+      return true;
+    EBreakBetween break_after = JoinFragmentainerBreakValues(
+        layout_result->FinalBreakAfter(), child.Style().BreakAfter());
+    container_builder_.SetPreviousBreakAfter(break_after);
+  }
 
   intrinsic_block_size_ =
       std::max(intrinsic_block_size_,
@@ -1003,12 +1009,14 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   NGLogicalOffset logical_offset =
       CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
 
-  if (ConstraintSpace().HasBlockFragmentation() &&
-      BreakBeforeChild(child, *layout_result, logical_offset.block_offset))
-    return true;
-  EBreakBetween break_after = JoinFragmentainerBreakValues(
-      layout_result->FinalBreakAfter(), child.Style().BreakAfter());
-  container_builder_.SetPreviousBreakAfter(break_after);
+  if (ConstraintSpace().HasBlockFragmentation()) {
+    if (BreakBeforeChild(child, *layout_result, logical_offset.block_offset,
+                         layout_result->IsPushedByFloats()))
+      return true;
+    EBreakBetween break_after = JoinFragmentainerBreakValues(
+        layout_result->FinalBreakAfter(), child.Style().BreakAfter());
+    container_builder_.SetPreviousBreakAfter(break_after);
+  }
 
   // Only modify intrinsic_block_size_ if the fragment is non-empty block.
   //
@@ -1272,10 +1280,11 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
-    LayoutUnit block_offset) {
+    LayoutUnit block_offset,
+    bool is_pushed_by_floats) {
   DCHECK(ConstraintSpace().HasBlockFragmentation());
-  BreakType break_type =
-      BreakTypeBeforeChild(child, layout_result, block_offset);
+  BreakType break_type = BreakTypeBeforeChild(
+      child, layout_result, block_offset, is_pushed_by_floats);
   if (break_type == NoBreak)
     return false;
 
@@ -1361,6 +1370,15 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     }
   }
 
+  if (!has_processed_first_child_ && !is_pushed_by_floats) {
+    // We're breaking before the first piece of in-flow content inside this
+    // block, even if it's not a valid class C break point [1] in this case. We
+    // really don't want to break here, if we can find something better.
+    //
+    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+    container_builder_.SetHasLastResortBreak();
+  }
+
   // The remaining part of the fragmentainer (the unusable space for child
   // content, due to the break) should still be occupied by this container.
   // TODO(mstensho): Figure out if we really need to <0 here. It doesn't seem
@@ -1389,7 +1407,8 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
 NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
-    LayoutUnit block_offset) const {
+    LayoutUnit block_offset,
+    bool is_pushed_by_floats) const {
   if (!container_builder_.BfcOffset().has_value())
     return NoBreak;
 
@@ -1431,18 +1450,22 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     return NoBreak;
   if (token && token->IsBlockType() &&
       ToNGBlockBreakToken(token)->HasLastResortBreak()) {
-    // If this isn't the first piece of child content, we're at a valid class A
-    // (block) or B (line) break point [1], and we may break between this child
-    // and the preceding one.
-    if (has_processed_first_child_)
-      return SoftBreak;
-    // TODO(crbug.com/796077): Detect class C break points [1] here. If we're
-    // not at the block content start edge, we may break here, even if it's a
-    // first in-flow child (this situation typically occurs if there are floats
-    // at the beginning of a container, so that the first piece of in-flow
-    // content needs to be pushed down).
+    // We've already found a place to break inside the child, but it wasn't an
+    // optimal one, because it would violate some rules for breaking. Consider
+    // breaking before this child instead, but only do so if it's at a valid
+    // break point. It's a valid break point if we're between siblings, or if
+    // it's a first child at a class C break point [1] (if it got pushed down by
+    // floats). The break we've already found has been marked as a last-resort
+    // break, but moving that last-resort break to an earlier (but equally bad)
+    // last-resort break would just waste fragmentainer space and slow down
+    // content progression.
     //
     // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+    if (has_processed_first_child_ || is_pushed_by_floats) {
+      // This is a valid break point, and we can resolve the last-resort
+      // situation.
+      return SoftBreak;
+    }
   }
   // TODO(mstensho): There are other break-inside values to consider here.
   if (child.Style().BreakInside() != EBreakInside::kAvoid)
@@ -1641,8 +1664,10 @@ bool NGBlockLayoutAlgorithm::MaybeUpdateFragmentBfcOffset(
 
   NGBfcOffset bfc_offset(ConstraintSpace().BfcOffset().line_offset,
                          bfc_block_offset);
-  AdjustToClearance(ConstraintSpace().ClearanceOffset(), &bfc_offset);
+  if (AdjustToClearance(ConstraintSpace().ClearanceOffset(), &bfc_offset))
+    container_builder_.SetIsPushedByFloats();
   container_builder_.SetBfcOffset(bfc_offset);
+
   return true;
 }
 

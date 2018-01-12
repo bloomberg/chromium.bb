@@ -641,6 +641,10 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     if (block_size > opportunity.rect.BlockSize())
       continue;
 
+    if (opportunity.rect.BlockStartOffset() >
+        ConstraintSpace().BfcOffset().block_offset)
+      container_builder_.SetIsPushedByFloats();
+
     LayoutUnit line_height =
         container_builder_.Metrics().LineHeight().ClampNegativeToZero();
 

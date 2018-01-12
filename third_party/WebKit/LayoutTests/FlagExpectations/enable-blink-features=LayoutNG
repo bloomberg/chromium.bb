@@ -6411,7 +6411,6 @@ crbug.com/591099 fragmentation/change-fragmentainer-height-block-float-2.html [ 
 crbug.com/591099 fragmentation/change-fragmentainer-height-block-float.html [ Failure ]
 crbug.com/591099 fragmentation/change-fragmentainer-height-inline-float.html [ Failure ]
 crbug.com/591099 fragmentation/change-fragmentainer-height-line-float.html [ Failure ]
-crbug.com/591099 fragmentation/class-c-break-after-clearance.html [ Failure ]
 crbug.com/591099 fragmentation/column-fill-auto-child.html [ Failure ]
 crbug.com/591099 fragmentation/float-after-forced-break.html [ Failure ]
 crbug.com/591099 fragmentation/float-margin-top.html [ Failure ]
