@@ -739,6 +739,20 @@ Document::~Document() {
   InstanceCounters::DecrementCounter(InstanceCounters::kDocumentCounter);
 }
 
+Range* Document::CreateRangeAdjustedToTreeScope(const TreeScope& tree_scope,
+                                                const Position& position) {
+  DCHECK(position.IsNotNull());
+  // Note: Since |Position::ComputeContainerNode()| returns |nullptr| if
+  // |position| is |BeforeAnchor| or |AfterAnchor|.
+  Node* const anchor_node = position.AnchorNode();
+  if (anchor_node->GetTreeScope() == tree_scope)
+    return Range::Create(tree_scope.GetDocument(), position, position);
+  Node* const shadow_host = tree_scope.AncestorInThisScope(anchor_node);
+  return Range::Create(tree_scope.GetDocument(),
+                       Position::BeforeNode(*shadow_host),
+                       Position::BeforeNode(*shadow_host));
+}
+
 SelectorQueryCache& Document::GetSelectorQueryCache() {
   if (!selector_query_cache_)
     selector_query_cache_ = std::make_unique<SelectorQueryCache>();
@@ -1569,7 +1583,7 @@ Range* Document::caretRangeFromPoint(int x, int y) {
 
   Position range_compliant_position =
       position_with_affinity.GetPosition().ParentAnchoredEquivalent();
-  return Range::CreateAdjustedToTreeScope(*this, range_compliant_position);
+  return CreateRangeAdjustedToTreeScope(*this, range_compliant_position);
 }
 
 Element* Document::scrollingElement() {
