@@ -100,8 +100,10 @@ class MacPort(base.Port):
         return '/usr/sbin/httpd'
 
     def path_to_apache_config_file(self):
-        config_file_name = 'apache2-httpd-' + self._apache_version() + '.conf'
-        return self._filesystem.join(self.apache_config_directory(), config_file_name)
+        config_file_basename = 'apache2-httpd-' + self._apache_version()
+        if self._version == 'mac10.13':
+            config_file_basename += '-php7'
+        return self._filesystem.join(self.apache_config_directory(), config_file_basename + '.conf')
 
     def _path_to_driver(self, target=None):
         return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
