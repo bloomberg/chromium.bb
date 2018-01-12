@@ -50,7 +50,7 @@ ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
   // default request context or override).
   if (!pending_requests_.empty()) {
     PendingRequest req = pending_requests_.front();
-    proxy_service_->CancelPacRequest(req.pac_req);
+    proxy_service_->CancelRequest(req.request);
   }
 
   for (PendingRequestList::iterator it = pending_requests_.begin();
@@ -82,7 +82,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   PendingRequest& req = pending_requests_.front();
 
   // Verify the request wasn't started yet.
-  DCHECK(nullptr == req.pac_req);
+  DCHECK(nullptr == req.request);
 
   if (context_getter_.get()) {
     proxy_service_ = context_getter_->GetURLRequestContext()->proxy_service();
@@ -94,7 +94,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
       req.url, std::string(), &proxy_info_,
       base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                  base::Unretained(this)),
-      &req.pac_req, nullptr, net::NetLogWithSource());
+      &req.request, nullptr, net::NetLogWithSource());
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)

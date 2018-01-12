@@ -369,7 +369,7 @@ class HttpStreamFactoryImpl::JobController
   bool can_start_alternative_proxy_job_;
 
   State next_state_;
-  ProxyService::PacRequest* pac_request_;
+  ProxyService::Request* proxy_resolve_request_;
   CompletionCallback io_callback_;
   const HttpRequestInfo request_info_;
   ProxyInfo proxy_info_;

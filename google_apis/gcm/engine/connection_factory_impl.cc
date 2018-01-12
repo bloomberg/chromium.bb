@@ -62,7 +62,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       http_network_session_(http_network_session),
       net_log_(
           net::NetLogWithSource::Make(net_log, net::NetLogSourceType::SOCKET)),
-      pac_request_(NULL),
+      proxy_resolve_request_(NULL),
       connecting_(false),
       waiting_for_backoff_(false),
       waiting_for_network_online_(false),
@@ -78,9 +78,10 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
   CloseSocket();
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  if (pac_request_) {
-    gcm_network_session_->proxy_service()->CancelPacRequest(pac_request_);
-    pac_request_ = NULL;
+  if (proxy_resolve_request_) {
+    gcm_network_session_->proxy_service()->CancelRequest(
+        proxy_resolve_request_);
+    proxy_resolve_request_ = NULL;
   }
 }
 
@@ -326,14 +327,10 @@ void ConnectionFactoryImpl::StartConnection() {
   recorder_->RecordConnectionInitiated(current_endpoint.host());
   UpdateFromHttpNetworkSession();
   int status = gcm_network_session_->proxy_service()->ResolveProxy(
-      current_endpoint,
-      std::string(),
-      &proxy_info_,
+      current_endpoint, std::string(), &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
-      &pac_request_,
-      NULL,
-      net_log_);
+      &proxy_resolve_request_, NULL, net_log_);
   if (status != net::ERR_IO_PENDING)
     OnProxyResolveDone(status);
 }
@@ -447,7 +444,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
 // HttpStreamFactoryImpl::Job::DoResolveProxyComplete. This should be
 // refactored into some common place.
 void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
-  pac_request_ = NULL;
+  proxy_resolve_request_ = NULL;
   DVLOG(1) << "Proxy resolution status: " << status;
 
   DCHECK_NE(status, net::ERR_IO_PENDING);
@@ -497,7 +494,7 @@ void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
 // a proxy it always returns ERR_IO_PENDING and posts a call to
 // OnProxyResolveDone with the result of the reconsideration.
 int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
-  DCHECK(!pac_request_);
+  DCHECK(!proxy_resolve_request_);
   DCHECK_NE(error, net::OK);
   DCHECK_NE(error, net::ERR_IO_PENDING);
   // A failure to resolve the hostname or any error related to establishing a
@@ -553,7 +550,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
       GetCurrentEndpoint(), std::string(), error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
-      &pac_request_, NULL, net_log_);
+      &proxy_resolve_request_, NULL, net_log_);
   if (status == net::OK || status == net::ERR_IO_PENDING) {
     CloseSocket();
   } else {
