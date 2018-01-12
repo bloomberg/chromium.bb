@@ -22,6 +22,9 @@ class IntentPickerView : public BubbleIconView {
   explicit IntentPickerView(Browser* browser);
   ~IntentPickerView() override;
 
+  // BubbleIconView:
+  void SetVisible(bool visible) override;
+
  protected:
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
