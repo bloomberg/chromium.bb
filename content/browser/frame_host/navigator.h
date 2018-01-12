@@ -23,13 +23,16 @@ namespace base {
 class TimeTicks;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace content {
 
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
-class ResourceRequestBody;
 struct CommonNavigationParams;
 
 // Implementations of this interface are responsible for performing navigations
@@ -116,7 +119,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       bool uses_post,
-      const scoped_refptr<ResourceRequestBody>& body,
+      const scoped_refptr<network::ResourceRequestBody>& body,
       const std::string& extra_headers,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
@@ -139,7 +142,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       const std::string& method,
-      scoped_refptr<ResourceRequestBody> post_body,
+      scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers) {}
 
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If

@@ -18,8 +18,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request_body.h"
 #include "ipc/ipc_message.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -65,7 +65,7 @@ struct CONTENT_EXPORT OpenURLParams {
   bool uses_post;
 
   // The post data when the navigation uses POST.
-  scoped_refptr<ResourceRequestBody> post_data;
+  scoped_refptr<network::ResourceRequestBody> post_data;
 
   // Extra headers to add to the request for this page.  Headers are
   // represented as "<name>: <value>" and separated by \r\n.  The entire string

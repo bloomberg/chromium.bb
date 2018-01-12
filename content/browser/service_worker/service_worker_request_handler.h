@@ -29,6 +29,10 @@ class URLRequest;
 class URLRequestInterceptor;
 }
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace storage {
 class BlobStorageContext;
 }
@@ -36,7 +40,6 @@ class BlobStorageContext;
 namespace content {
 
 class ResourceContext;
-class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
@@ -61,7 +64,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
-      scoped_refptr<ResourceRequestBody> body,
+      scoped_refptr<network::ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
   // S13nServiceWorker:
@@ -78,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
-      scoped_refptr<ResourceRequestBody> body,
+      scoped_refptr<network::ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
   // Attaches a newly created handler if the given |request| needs to
@@ -102,7 +105,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<network::ResourceRequestBody> body);
 
   // Returns the handler attached to |request|. This may return NULL
   // if no handler is attached.

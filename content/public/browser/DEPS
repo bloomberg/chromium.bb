@@ -3,6 +3,7 @@ include_rules = [
   "+device/geolocation/public/cpp",
   "+device/usb/public/interfaces",
   "+services/device/public/interfaces",
+  "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/resource_coordinator/public",
 ]

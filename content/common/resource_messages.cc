@@ -281,7 +281,7 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
+void ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Write(
     base::Pickle* m,
     const param_type& p) {
   WriteParam(m, p.get() != nullptr);
@@ -292,7 +292,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
+bool ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
@@ -310,14 +310,14 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
   bool contains_sensitive_info;
   if (!ReadParam(m, iter, &contains_sensitive_info))
     return false;
-  *r = new content::ResourceRequestBody;
+  *r = new network::ResourceRequestBody;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
   (*r)->set_contains_sensitive_info(contains_sensitive_info);
   return true;
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Log(
+void ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Log(
     const param_type& p,
     std::string* l) {
   l->append("<ResourceRequestBody>");

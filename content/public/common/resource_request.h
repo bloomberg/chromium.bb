@@ -11,10 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_request_body.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/cors.mojom.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
@@ -146,7 +146,7 @@ struct CONTENT_EXPORT ResourceRequest {
       network::mojom::RequestContextFrameType::kAuxiliary;
 
   // Optional resource request body (may be null).
-  scoped_refptr<ResourceRequestBody> request_body;
+  scoped_refptr<network::ResourceRequestBody> request_body;
 
   // If true, then the response body will be downloaded to a file and the path
   // to that file will be provided in ResponseInfo::download_file_path.

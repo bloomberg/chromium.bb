@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request_body.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -157,8 +157,9 @@ class NavigationEntry {
   // 1) is not persisted in session restore.
   // 2) is shallow copied with the static copy Create method above.
   // 3) may be nullptr so check before use.
-  virtual void SetPostData(const scoped_refptr<ResourceRequestBody>& data) = 0;
-  virtual scoped_refptr<ResourceRequestBody> GetPostData() const = 0;
+  virtual void SetPostData(
+      const scoped_refptr<network::ResourceRequestBody>& data) = 0;
+  virtual scoped_refptr<network::ResourceRequestBody> GetPostData() const = 0;
 
   // The favicon data and tracking information. See content::FaviconStatus.
   virtual const FaviconStatus& GetFavicon() const = 0;

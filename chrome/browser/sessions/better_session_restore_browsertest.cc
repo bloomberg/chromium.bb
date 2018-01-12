@@ -213,9 +213,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
                         params->url_request.request_body->elements();
                     DCHECK_EQ(elements->size(), 1u);
                     auto& element = (*elements)[0];
-                    DCHECK_EQ(
-                        element.type(),
-                        content::ResourceRequestBody::Element::TYPE_BYTES);
+                    DCHECK_EQ(element.type(), network::DataElement::TYPE_BYTES);
                     last_upload_bytes_ =
                         std::string(element.bytes(), element.length());
                   }

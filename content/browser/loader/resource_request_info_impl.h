@@ -20,10 +20,10 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "net/base/load_states.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace content {
 class DetachableResourceHandler;
@@ -72,7 +72,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool report_raw_headers,
       bool is_async,
       PreviewsState previews_state,
-      const scoped_refptr<ResourceRequestBody> body,
+      const scoped_refptr<network::ResourceRequestBody> body,
       bool initiated_in_secure_context,
       const base::Optional<std::string>& suggested_filename);
   ~ResourceRequestInfoImpl() override;
@@ -179,7 +179,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     do_not_prompt_for_login_ = do_not_prompt;
   }
 
-  const scoped_refptr<ResourceRequestBody>& body() const { return body_; }
+  const scoped_refptr<network::ResourceRequestBody>& body() const {
+    return body_;
+  }
   void ResetBody();
 
   bool initiated_in_secure_context() const {
@@ -250,7 +252,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_async_;
   bool canceled_by_devtools_;
   PreviewsState previews_state_;
-  scoped_refptr<ResourceRequestBody> body_;
+  scoped_refptr<network::ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
   base::Optional<std::string> suggested_filename_;

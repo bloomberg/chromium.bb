@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
-#include "content/public/common/resource_request_body.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace content {
 namespace {
@@ -83,12 +83,12 @@ PageState PageState::CreateForTesting(
   if (optional_body_data || optional_body_file_path) {
     if (optional_body_data) {
       std::string body_data(optional_body_data);
-      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body = new network::ResourceRequestBody();
       state.top.http_body.request_body->AppendBytes(body_data.data(),
                                                     body_data.size());
     }
     if (optional_body_file_path) {
-      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body = new network::ResourceRequestBody();
       state.top.http_body.request_body->AppendFileRange(
           *optional_body_file_path,
           0, std::numeric_limits<uint64_t>::max(),

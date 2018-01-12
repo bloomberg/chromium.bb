@@ -32,7 +32,6 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"

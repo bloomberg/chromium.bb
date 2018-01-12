@@ -90,7 +90,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_body.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -112,6 +111,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -1896,7 +1896,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
   // Resolve elements from request_body and prepare upload data.
-  ResourceRequestBody* body = info.common_params.post_data.get();
+  network::ResourceRequestBody* body = info.common_params.post_data.get();
   BlobHandles blob_handles;
   if (body) {
     if (!GetBodyBlobDataHandles(body, resource_context, &blob_handles)) {

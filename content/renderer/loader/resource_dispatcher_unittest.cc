@@ -23,7 +23,6 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -108,7 +107,7 @@ class ResourceDispatcherTest : public testing::Test,
   ResourceDispatcher* dispatcher() { return dispatcher_.get(); }
 
   int StartAsync(std::unique_ptr<ResourceRequest> request,
-                 ResourceRequestBody* request_body,
+                 network::ResourceRequestBody* request_body,
                  TestRequestPeer::Context* peer_context) {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));

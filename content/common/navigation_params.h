@@ -21,9 +21,9 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -55,24 +55,25 @@ struct CONTENT_EXPORT SourceLocation {
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
   CommonNavigationParams();
-  CommonNavigationParams(const GURL& url,
-                         const Referrer& referrer,
-                         ui::PageTransition transition,
-                         FrameMsg_Navigate_Type::Value navigation_type,
-                         bool allow_download,
-                         bool should_replace_current_entry,
-                         base::TimeTicks ui_timestamp,
-                         FrameMsg_UILoadMetricsReportType::Value report_type,
-                         const GURL& base_url_for_data_url,
-                         const GURL& history_url_for_data_url,
-                         PreviewsState previews_state,
-                         const base::TimeTicks& navigation_start,
-                         std::string method,
-                         const scoped_refptr<ResourceRequestBody>& post_data,
-                         base::Optional<SourceLocation> source_location,
-                         CSPDisposition should_check_main_world_csp,
-                         bool started_from_context_menu,
-                         bool has_user_gesture);
+  CommonNavigationParams(
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition,
+      FrameMsg_Navigate_Type::Value navigation_type,
+      bool allow_download,
+      bool should_replace_current_entry,
+      base::TimeTicks ui_timestamp,
+      FrameMsg_UILoadMetricsReportType::Value report_type,
+      const GURL& base_url_for_data_url,
+      const GURL& history_url_for_data_url,
+      PreviewsState previews_state,
+      const base::TimeTicks& navigation_start,
+      std::string method,
+      const scoped_refptr<network::ResourceRequestBody>& post_data,
+      base::Optional<SourceLocation> source_location,
+      CSPDisposition should_check_main_world_csp,
+      bool started_from_context_menu,
+      bool has_user_gesture);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -132,7 +133,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   std::string method;
 
   // Body of HTTP POST request.
-  scoped_refptr<ResourceRequestBody> post_data;
+  scoped_refptr<network::ResourceRequestBody> post_data;
 
   // PlzNavigate
   // Information about the Javascript source for this navigation. Used for

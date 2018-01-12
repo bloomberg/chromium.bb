@@ -24,7 +24,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/test/mock_resource_context.h"
@@ -33,6 +32,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
@@ -70,7 +70,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               type,
               REQUEST_CONTEXT_TYPE_HYPERLINK,
               network::mojom::RequestContextFrameType::kTopLevel,
-              scoped_refptr<ResourceRequestBody>())),
+              scoped_refptr<network::ResourceRequestBody>())),
           job_(nullptr) {}
 
     ServiceWorkerURLRequestJob* MaybeCreateJob() {

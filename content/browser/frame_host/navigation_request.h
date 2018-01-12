@@ -22,6 +22,10 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace content {
 
 class FrameNavigationEntry;
@@ -30,7 +34,6 @@ class NavigationControllerImpl;
 class NavigationHandleImpl;
 class NavigationURLLoader;
 class NavigationData;
-class ResourceRequestBody;
 class SiteInstanceImpl;
 class StreamHandle;
 struct SubresourceLoaderParams;
@@ -86,7 +89,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       PreviewsState previews_state,
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
-      const scoped_refptr<ResourceRequestBody>& post_body,
+      const scoped_refptr<network::ResourceRequestBody>& post_body,
       const base::TimeTicks& navigation_start,
       NavigationControllerImpl* controller);
 

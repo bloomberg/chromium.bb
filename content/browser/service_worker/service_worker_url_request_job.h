@@ -43,6 +43,10 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
+namespace network {
+class ResourceRequestBody;
+}
+
 namespace storage {
 class BlobDataHandle;
 class BlobStorageContext;
@@ -51,7 +55,6 @@ class BlobStorageContext;
 namespace content {
 
 class ResourceContext;
-class ResourceRequestBody;
 class ServiceWorkerBlobReader;
 class ServiceWorkerDataPipeReader;
 class ServiceWorkerVersion;
@@ -85,7 +88,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       ResourceType resource_type,
       RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body,
+      scoped_refptr<network::ResourceRequestBody> body,
       ServiceWorkerFetchType fetch_type,
       const base::Optional<base::TimeDelta>& timeout,
       Delegate* delegate);
@@ -320,7 +323,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   bool fall_back_required_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.
-  scoped_refptr<ResourceRequestBody> body_;
+  scoped_refptr<network::ResourceRequestBody> body_;
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
   scoped_refptr<storage::BlobHandle> request_body_blob_handle_;
   ServiceWorkerFetchType fetch_type_;

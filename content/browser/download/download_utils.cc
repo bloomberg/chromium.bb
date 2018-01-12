@@ -180,7 +180,7 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
 
   bool has_upload_data = false;
   if (!params->post_body().empty()) {
-    request->request_body = ResourceRequestBody::CreateFromBytes(
+    request->request_body = network::ResourceRequestBody::CreateFromBytes(
         params->post_body().data(), params->post_body().size());
     has_upload_data = true;
   }
@@ -192,7 +192,7 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
     // plan on how to display the UI for that.
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
-    request->request_body = new ResourceRequestBody();
+    request->request_body = new network::ResourceRequestBody();
     request->request_body->set_identifier(params->post_id());
     has_upload_data = true;
   }

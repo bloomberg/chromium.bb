@@ -29,10 +29,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -796,40 +796,40 @@ bool ChildProcessSecurityPolicyImpl::CanReadAllFiles(
 bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
     int child_id,
     const storage::FileSystemContext* file_system_context,
-    const scoped_refptr<ResourceRequestBody>& body) {
+    const scoped_refptr<network::ResourceRequestBody>& body) {
   if (!body)
     return true;
 
-  for (const ResourceRequestBody::Element& element : *body->elements()) {
+  for (const network::DataElement& element : *body->elements()) {
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case network::DataElement::TYPE_FILE:
         if (!CanReadFile(child_id, element.path()))
           return false;
         break;
 
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case network::DataElement::TYPE_FILE_FILESYSTEM:
         if (!CanReadFileSystemFile(child_id, file_system_context->CrackURL(
                                                  element.filesystem_url())))
           return false;
         break;
 
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
         // TYPE_DISK_CACHE_ENTRY can't be sent via IPC according to
         // content/common/resource_messages.cc
         NOTREACHED();
         return false;
 
-      case ResourceRequestBody::Element::TYPE_BYTES:
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
+      case network::DataElement::TYPE_BYTES:
+      case network::DataElement::TYPE_BYTES_DESCRIPTION:
         // Data is self-contained within |body| - no need to check access.
         break;
 
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case network::DataElement::TYPE_BLOB:
         // No need to validate - the unguessability of the uuid of the blob is a
         // sufficient defense against access from an unrelated renderer.
         break;
 
-      case ResourceRequestBody::Element::TYPE_UNKNOWN:
+      case network::DataElement::TYPE_UNKNOWN:
       default:
         // Fail safe - deny access.
         NOTREACHED();
@@ -841,7 +841,7 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
 
 bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
     SiteInstance* site_instance,
-    const scoped_refptr<ResourceRequestBody>& body) {
+    const scoped_refptr<network::ResourceRequestBody>& body) {
   DCHECK(site_instance);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

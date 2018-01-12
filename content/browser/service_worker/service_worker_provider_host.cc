@@ -39,9 +39,9 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/resource_request_body.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
@@ -474,7 +474,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    scoped_refptr<ResourceRequestBody> body,
+    scoped_refptr<network::ResourceRequestBody> body,
     bool skip_service_worker) {
   // |skip_service_worker| is meant to apply to requests that could be handled
   // by a service worker, as opposed to requests for the service worker script

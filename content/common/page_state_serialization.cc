@@ -15,10 +15,10 @@
 #include "content/common/page_state.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/common/referrer_struct_traits.h"
-#include "content/public/common/resource_request_body.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/common/time_struct_traits.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -47,14 +47,14 @@ float g_device_scale_factor_for_testing = 0.0;
 //-----------------------------------------------------------------------------
 
 void AppendDataToRequestBody(
-    const scoped_refptr<ResourceRequestBody>& request_body,
+    const scoped_refptr<network::ResourceRequestBody>& request_body,
     const char* data,
     int data_length) {
   request_body->AppendBytes(data, data_length);
 }
 
 void AppendFileRangeToRequestBody(
-    const scoped_refptr<ResourceRequestBody>& request_body,
+    const scoped_refptr<network::ResourceRequestBody>& request_body,
     const base::Optional<base::string16>& file_path,
     int file_start,
     int file_length,
@@ -67,7 +67,7 @@ void AppendFileRangeToRequestBody(
 }
 
 void AppendURLRangeToRequestBody(
-    const scoped_refptr<ResourceRequestBody>& request_body,
+    const scoped_refptr<network::ResourceRequestBody>& request_body,
     const GURL& url,
     int file_start,
     int file_length,
@@ -78,7 +78,7 @@ void AppendURLRangeToRequestBody(
 }
 
 void AppendBlobToRequestBody(
-    const scoped_refptr<ResourceRequestBody>& request_body,
+    const scoped_refptr<network::ResourceRequestBody>& request_body,
     const std::string& uuid) {
   request_body->AppendBlob(uuid);
 }
@@ -86,10 +86,10 @@ void AppendBlobToRequestBody(
 //----------------------------------------------------------------------------
 
 void AppendReferencedFilesFromHttpBody(
-    const std::vector<ResourceRequestBody::Element>& elements,
+    const std::vector<network::DataElement>& elements,
     std::vector<base::Optional<base::string16>>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type() == ResourceRequestBody::Element::TYPE_FILE)
+    if (elements[i].type() == network::DataElement::TYPE_FILE)
       referenced_files->emplace_back(elements[i].path().AsUTF16Unsafe());
   }
 }
@@ -426,36 +426,36 @@ void ReadStringVector(SerializeObject* obj,
     (*result)[i] = ReadString(obj);
 }
 
-void WriteResourceRequestBody(const ResourceRequestBody& request_body,
+void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
                               SerializeObject* obj) {
   WriteAndValidateVectorSize(*request_body.elements(), obj);
   for (const auto& element : *request_body.elements()) {
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES:
+      case network::DataElement::TYPE_BYTES:
         WriteInteger(blink::WebHTTPBody::Element::kTypeData, obj);
         WriteData(element.bytes(), static_cast<int>(element.length()), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_FILE:
+      case network::DataElement::TYPE_FILE:
         WriteInteger(blink::WebHTTPBody::Element::kTypeFile, obj);
         WriteString(element.path().AsUTF16Unsafe(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+      case network::DataElement::TYPE_FILE_FILESYSTEM:
         WriteInteger(blink::WebHTTPBody::Element::kTypeFileSystemURL, obj);
         WriteGURL(element.filesystem_url(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case network::DataElement::TYPE_BLOB:
         WriteInteger(blink::WebHTTPBody::Element::kTypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
-      case ResourceRequestBody::Element::TYPE_RAW_FILE:
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case network::DataElement::TYPE_RAW_FILE:
+      case network::DataElement::TYPE_BYTES_DESCRIPTION:
+      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
       default:
         NOTREACHED();
         continue;
@@ -466,7 +466,7 @@ void WriteResourceRequestBody(const ResourceRequestBody& request_body,
 
 void ReadResourceRequestBody(
     SerializeObject* obj,
-    const scoped_refptr<ResourceRequestBody>& request_body) {
+    const scoped_refptr<network::ResourceRequestBody>& request_body) {
   int num_elements = ReadInteger(obj);
   for (int i = 0; i < num_elements; ++i) {
     int type = ReadInteger(obj);
@@ -511,7 +511,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
   if (!ReadBoolean(obj))
     return;
 
-  http_body->request_body = new ResourceRequestBody();
+  http_body->request_body = new network::ResourceRequestBody();
   ReadResourceRequestBody(obj, http_body->request_body);
 
   if (obj->version >= 12)
@@ -717,39 +717,39 @@ void WritePageState(const ExplodedPageState& state, SerializeObject* obj) {
 //-----------------------------------------------------------------------------
 // "Modern" read/write functions start here. These are probably what you want.
 
-void WriteResourceRequestBody(const ResourceRequestBody& request_body,
+void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
                               mojom::RequestBody* mojo_body) {
   for (const auto& element : *request_body.elements()) {
     mojom::ElementPtr data_element = mojom::Element::New();
     switch (element.type()) {
-      case ResourceRequestBody::Element::TYPE_BYTES: {
+      case network::DataElement::TYPE_BYTES: {
         data_element->set_bytes(std::vector<unsigned char>(
             reinterpret_cast<const char*>(element.bytes()),
             element.bytes() + element.length()));
         break;
       }
-      case ResourceRequestBody::Element::TYPE_FILE: {
+      case network::DataElement::TYPE_FILE: {
         mojom::FilePtr file = mojom::File::New(
             element.path().AsUTF16Unsafe(), element.offset(), element.length(),
             element.expected_modification_time());
         data_element->set_file(std::move(file));
         break;
       }
-      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM: {
+      case network::DataElement::TYPE_FILE_FILESYSTEM: {
         mojom::FileSystemFilePtr file_system = mojom::FileSystemFile::New(
             element.filesystem_url(), element.offset(), element.length(),
             element.expected_modification_time());
         data_element->set_file_system_file(std::move(file_system));
         break;
       }
-      case ResourceRequestBody::Element::TYPE_BLOB:
+      case network::DataElement::TYPE_BLOB:
         data_element->set_blob_uuid(element.blob_uuid());
         break;
-      case ResourceRequestBody::Element::TYPE_RAW_FILE:
-      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
-      case ResourceRequestBody::Element::TYPE_DATA_PIPE:
-      case ResourceRequestBody::Element::TYPE_UNKNOWN:
+      case network::DataElement::TYPE_RAW_FILE:
+      case network::DataElement::TYPE_BYTES_DESCRIPTION:
+      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
+      case network::DataElement::TYPE_DATA_PIPE:
+      case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         continue;
     }
@@ -760,7 +760,7 @@ void WriteResourceRequestBody(const ResourceRequestBody& request_body,
 
 void ReadResourceRequestBody(
     mojom::RequestBody* mojo_body,
-    const scoped_refptr<ResourceRequestBody>& request_body) {
+    const scoped_refptr<network::ResourceRequestBody>& request_body) {
   for (const auto& element : mojo_body->elements) {
     mojom::Element::Tag tag = element->which();
     switch (tag) {
@@ -807,7 +807,8 @@ void ReadHttpBody(mojom::HttpBody* mojo_body, ExplodedHttpBody* http_body) {
   http_body->contains_passwords = mojo_body->contains_passwords;
   http_body->http_content_type = mojo_body->http_content_type;
   if (mojo_body->request_body) {
-    http_body->request_body = base::MakeRefCounted<ResourceRequestBody>();
+    http_body->request_body =
+        base::MakeRefCounted<network::ResourceRequestBody>();
     ReadResourceRequestBody(mojo_body->request_body.get(),
                             http_body->request_body);
   }
@@ -1085,9 +1086,11 @@ bool DecodePageStateWithDeviceScaleFactorForTesting(
   return rv;
 }
 
-scoped_refptr<ResourceRequestBody> DecodeResourceRequestBody(const char* data,
-                                                             size_t size) {
-  scoped_refptr<ResourceRequestBody> result = new ResourceRequestBody();
+scoped_refptr<network::ResourceRequestBody> DecodeResourceRequestBody(
+    const char* data,
+    size_t size) {
+  scoped_refptr<network::ResourceRequestBody> result =
+      new network::ResourceRequestBody();
   SerializeObject obj(data, static_cast<int>(size));
   ReadResourceRequestBody(&obj, result);
   // Please see the EncodeResourceRequestBody() function below for information
@@ -1098,7 +1101,7 @@ scoped_refptr<ResourceRequestBody> DecodeResourceRequestBody(const char* data,
 }
 
 std::string EncodeResourceRequestBody(
-    const ResourceRequestBody& resource_request_body) {
+    const network::ResourceRequestBody& resource_request_body) {
   SerializeObject obj;
   obj.version = 25;
   WriteResourceRequestBody(resource_request_body, &obj);

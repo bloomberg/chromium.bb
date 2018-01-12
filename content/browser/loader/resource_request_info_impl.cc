@@ -153,7 +153,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool report_raw_headers,
     bool is_async,
     PreviewsState previews_state,
-    const scoped_refptr<ResourceRequestBody> body,
+    const scoped_refptr<network::ResourceRequestBody> body,
     bool initiated_in_secure_context,
     const base::Optional<std::string>& suggested_filename)
     : detachable_handler_(nullptr),

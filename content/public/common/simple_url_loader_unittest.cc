@@ -1154,7 +1154,7 @@ class MockURLLoader : public mojom::URLLoader {
                 mojom::URLLoaderRequest url_loader_request,
                 mojom::URLLoaderClientPtr client,
                 std::vector<TestLoaderEvent> test_events,
-                scoped_refptr<content::ResourceRequestBody> request_body)
+                scoped_refptr<network::ResourceRequestBody> request_body)
       : scoped_task_environment_(scoped_task_environment),
         binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),

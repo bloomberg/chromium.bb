@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -20,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -269,7 +269,7 @@ void ResourceFetcherImpl::SetMethod(const std::string& method) {
 void ResourceFetcherImpl::SetBody(const std::string& body) {
   DCHECK(!client_);
   request_.request_body =
-      ResourceRequestBody::CreateFromBytes(body.data(), body.size());
+      network::ResourceRequestBody::CreateFromBytes(body.data(), body.size());
 }
 
 void ResourceFetcherImpl::SetHeader(const std::string& header,

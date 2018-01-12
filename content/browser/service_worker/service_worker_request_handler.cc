@@ -24,13 +24,13 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
@@ -83,7 +83,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
-    scoped_refptr<ResourceRequestBody> body,
+    scoped_refptr<network::ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   CHECK(IsBrowserSideNavigationEnabled());
 
@@ -143,7 +143,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
-    scoped_refptr<ResourceRequestBody> body,
+    scoped_refptr<network::ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(navigation_handle_core);
@@ -201,7 +201,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<network::ResourceRequestBody> body) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   if (!request->url().SchemeIsHTTPOrHTTPS() &&
