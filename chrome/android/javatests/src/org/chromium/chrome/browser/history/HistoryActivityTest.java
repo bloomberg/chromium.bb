@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -352,7 +353,8 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure(message = "https://crbug.com/752520")
+    //@RetryOnFailure(message = "https://crbug.com/752520")
+    @DisabledTest(message = "https://crbug.com/776251")
     public void testSupervisedUser() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         final SelectableItemView<HistoryItem> item = getItemView(2);
