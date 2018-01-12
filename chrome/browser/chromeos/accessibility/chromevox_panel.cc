@@ -37,7 +37,8 @@ const char kFocusURLFragment[] = "focus";
 
 }  // namespace
 
-class ChromeVoxPanelWebContentsObserver : public content::WebContentsObserver {
+class ChromeVoxPanel::ChromeVoxPanelWebContentsObserver
+    : public content::WebContentsObserver {
  public:
   ChromeVoxPanelWebContentsObserver(content::WebContents* web_contents,
                                     ChromeVoxPanel* panel)
@@ -111,9 +112,11 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
   SetShadowElevation(widget_->GetNativeWindow(), wm::ShadowElevation::MEDIUM);
 
   display::Screen::GetScreen()->AddObserver(this);
+  ash::Shell::Get()->AddShellObserver(this);
 }
 
 ChromeVoxPanel::~ChromeVoxPanel() {
+  ash::Shell::Get()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -125,17 +128,43 @@ void ChromeVoxPanel::Close() {
   widget_->Close();
 }
 
-void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
-  widget_->Show();
-  UpdatePanelHeight();
-}
-
 void ChromeVoxPanel::UpdatePanelHeight() {
   SendPanelHeightToAsh(kPanelHeight);
 }
 
 void ChromeVoxPanel::ResetPanelHeight() {
   SendPanelHeightToAsh(0);
+}
+
+const views::Widget* ChromeVoxPanel::GetWidget() const {
+  return widget_;
+}
+
+views::Widget* ChromeVoxPanel::GetWidget() {
+  return widget_;
+}
+
+void ChromeVoxPanel::DeleteDelegate() {
+  delete this;
+}
+
+views::View* ChromeVoxPanel::GetContentsView() {
+  return web_view_;
+}
+
+void ChromeVoxPanel::OnDisplayMetricsChanged(const display::Display& display,
+                                             uint32_t changed_metrics) {
+  UpdateWidgetBounds();
+}
+
+void ChromeVoxPanel::OnFullscreenStateChanged(bool is_fullscreen,
+                                              aura::Window* root_window) {
+  UpdateWidgetBounds();
+}
+
+void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
+  widget_->Show();
+  UpdatePanelHeight();
 }
 
 void ChromeVoxPanel::EnterFullscreen() {
@@ -160,27 +189,6 @@ void ChromeVoxPanel::Focus() {
   widget_->widget_delegate()->set_can_activate(true);
   widget_->Activate();
   web_view_->RequestFocus();
-}
-
-const views::Widget* ChromeVoxPanel::GetWidget() const {
-  return widget_;
-}
-
-views::Widget* ChromeVoxPanel::GetWidget() {
-  return widget_;
-}
-
-void ChromeVoxPanel::DeleteDelegate() {
-  delete this;
-}
-
-views::View* ChromeVoxPanel::GetContentsView() {
-  return web_view_;
-}
-
-void ChromeVoxPanel::OnDisplayMetricsChanged(const display::Display& display,
-                                             uint32_t changed_metrics) {
-  UpdateWidgetBounds();
 }
 
 void ChromeVoxPanel::UpdateWidgetBounds() {
