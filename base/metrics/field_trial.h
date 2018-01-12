@@ -320,15 +320,13 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   bool GetActiveGroup(ActiveGroup* active_group) const;
 
   // Returns the trial name and selected group name for this field trial via
-  // the output parameter |field_trial_state|, but only if the trial has not
-  // been disabled. In that case, true is returned and |field_trial_state| is
-  // filled in; otherwise, the result is false and |field_trial_state| is left
-  // untouched.
-  bool GetState(State* field_trial_state);
-
-  // Does the same thing as above, but is deadlock-free if the caller is holding
-  // a lock.
-  bool GetStateWhileLocked(State* field_trial_state);
+  // the output parameter |field_trial_state| for all the studies when
+  // |bool include_expired| is true. In case when |bool include_expired| is
+  // false, if the trial has not been disabled true is returned and
+  // |field_trial_state| is filled in; otherwise, the result is false and
+  // |field_trial_state| is left untouched.
+  // This function is deadlock-free if the caller is holding a lock.
+  bool GetStateWhileLocked(State* field_trial_state, bool include_expired);
 
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
@@ -506,11 +504,11 @@ class BASE_EXPORT FieldTrialList {
   // resurrection in another process. This allows randomization to be done in
   // one process, and secondary processes can be synchronized on the result.
   // The resulting string contains the name and group name pairs of all
-  // registered FieldTrials which have not been disabled, with "/" used
-  // to separate all names and to terminate the string. All activated trials
-  // have their name prefixed with "*". This string is parsed by
-  // |CreateTrialsFromString()|.
-  static void AllStatesToString(std::string* output);
+  // registered FieldTrials including disabled based on |include_expired|,
+  // with "/" used to separate all names and to terminate the string. All
+  // activated trials have their name prefixed with "*". This string is parsed
+  // by |CreateTrialsFromString()|.
+  static void AllStatesToString(std::string* output, bool include_expired);
 
   // Fills in the supplied vector |active_groups| (which must be empty when
   // called) with a snapshot of all registered FieldTrials for which the group
