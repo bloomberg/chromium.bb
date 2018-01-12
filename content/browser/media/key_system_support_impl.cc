@@ -7,9 +7,11 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
+#include "media/base/key_systems.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if DCHECK_IS_ON()
@@ -20,9 +22,9 @@
 
 namespace content {
 
-#if DCHECK_IS_ON()
 namespace {
 
+#if DCHECK_IS_ON()
 // TODO(crbug.com/772160) Remove this when pepper CDM support removed.
 bool IsPepperPluginRegistered(const std::string& plugin_name) {
   std::vector<WebPluginInfo> plugins;
@@ -34,9 +36,16 @@ bool IsPepperPluginRegistered(const std::string& plugin_name) {
   }
   return false;
 }
+#endif  // DCHECK_IS_ON()
+
+void SendCdmAvailableUMA(const std::string& key_system, bool available) {
+  base::UmaHistogramBoolean("Media.EME." +
+                                media::GetKeySystemNameForUMA(key_system) +
+                                ".LibraryCdmAvailable",
+                            available);
+}
 
 }  // namespace
-#endif  // DCHECK_IS_ON()
 
 // static
 void KeySystemSupportImpl::Create(
@@ -72,6 +81,7 @@ void KeySystemSupportImpl::IsKeySystemSupported(
   DVLOG(3) << __func__;
   std::unique_ptr<CdmInfo> cdm = GetCdmInfoForKeySystem(key_system);
   if (!cdm) {
+    SendCdmAvailableUMA(key_system, false);
     std::move(callback).Run(false, {}, false);
     return;
   }
@@ -81,8 +91,7 @@ void KeySystemSupportImpl::IsKeySystemSupported(
       << "Pepper plugin for " << key_system << " should also be registered.";
 #endif
 
-  // TODO(jrummell): Add UMA to replace "Plugin.AvailabilityStatus.WidevineCdm"
-  // which will go away when the Pepper plugin code is removed.
+  SendCdmAvailableUMA(key_system, true);
   std::move(callback).Run(true, cdm->supported_video_codecs,
                           cdm->supports_persistent_license);
 }
