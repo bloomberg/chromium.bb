@@ -343,7 +343,9 @@
         </template>
         <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
           <div id="options-section">
-            <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
+            <template is="dom-if"
+              if="[[shouldShowIncognitoOption_(
+                  data.incognitoAccess.isEnabled, incognitoAvailable)]]">
               <extensions-toggle-row id="allow-incognito" class="three-line"
                   checked="[[data.incognitoAccess.isActive]]"
                   on-change="onAllowIncognitoChange_">

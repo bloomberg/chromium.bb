@@ -64,6 +64,11 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      incognitoAvailable_: {
+        type: Boolean,
+        value: false,
+      },
+
       filter: {
         type: String,
         value: '',
@@ -163,6 +168,7 @@ cr.define('extensions', function() {
       let service = extensions.Service.getInstance();
 
       let onProfileStateChanged = profileInfo => {
+        this.incognitoAvailable_ = profileInfo.isIncognitoAvailable;
         this.devModeControlledByPolicy =
             profileInfo.isDeveloperModeControlledByPolicy;
         this.inDevMode = profileInfo.inDeveloperMode;

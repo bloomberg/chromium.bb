@@ -28,6 +28,9 @@ cr.define('extensions', function() {
 
       /** Whether the user has enabled the UI's developer mode. */
       inDevMode: Boolean,
+
+      /** Whether "allow in incognito" option should be shown. */
+      incognitoAvailable: Boolean,
     },
 
     observers: [
@@ -146,6 +149,14 @@ cr.define('extensions', function() {
       return this.data.incognitoAccess.isEnabled ||
           this.data.fileAccess.isEnabled || this.data.runOnAllUrls.isEnabled ||
           this.data.errorCollection.isEnabled;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    shouldShowIncognitoOption_: function() {
+      return this.data.incognitoAccess.isEnabled && this.incognitoAvailable;
     },
 
     /** @private */
