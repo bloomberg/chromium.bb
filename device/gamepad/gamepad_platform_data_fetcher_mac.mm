@@ -9,10 +9,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
 #import <Foundation/Foundation.h>
@@ -21,6 +17,15 @@
 namespace device {
 
 namespace {
+
+// http://www.usb.org/developers/hidpage
+const uint32_t kGenericDesktopUsagePage = 0x01;
+const uint32_t kJoystickUsageNumber = 0x04;
+const uint32_t kGameUsageNumber = 0x05;
+const uint32_t kMultiAxisUsageNumber = 0x08;
+
+const int kVendorSteelSeries = 0x1038;
+const int kProductNimbus = 0x1420;
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
                                      UChar* dest,
@@ -41,40 +46,10 @@ NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {
                                    nil];
 }
 
-float NormalizeAxis(CFIndex value, CFIndex min, CFIndex max) {
-  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
-}
-
-float NormalizeUInt8Axis(uint8_t value, uint8_t min, uint8_t max) {
-  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
-}
-
-float NormalizeUInt16Axis(uint16_t value, uint16_t min, uint16_t max) {
-  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
-}
-
-float NormalizeUInt32Axis(uint32_t value, uint32_t min, uint32_t max) {
-  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
-}
-
-// http://www.usb.org/developers/hidpage
-const uint32_t kGenericDesktopUsagePage = 0x01;
-const uint32_t kGameControlsUsagePage = 0x05;
-const uint32_t kButtonUsagePage = 0x09;
-const uint32_t kJoystickUsageNumber = 0x04;
-const uint32_t kGameUsageNumber = 0x05;
-const uint32_t kMultiAxisUsageNumber = 0x08;
-const uint32_t kAxisMinimumUsageNumber = 0x30;
-
-const int kVendorSteelSeries = 0x1038;
-const int kProductNimbus = 0x1420;
-
 }  // namespace
 
 GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
-    : enabled_(true), paused_(false) {
-  memset(associated_, 0, sizeof(associated_));
-}
+    : enabled_(true), paused_(false) {}
 
 GamepadSource GamepadPlatformDataFetcherMac::source() {
   return Factory::static_source();
@@ -132,6 +107,10 @@ void GamepadPlatformDataFetcherMac::PauseHint(bool pause) {
 
 GamepadPlatformDataFetcherMac::~GamepadPlatformDataFetcherMac() {
   UnregisterFromNotifications();
+  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
+    if (devices_[slot] != nullptr)
+      devices_[slot]->Shutdown();
+  }
 }
 
 GamepadPlatformDataFetcherMac*
@@ -160,116 +139,10 @@ void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
   InstanceFromContext(context)->ValueChanged(ref);
 }
 
-bool GamepadPlatformDataFetcherMac::CheckCollection(IOHIDElementRef element) {
-  // Check that a parent collection of this element matches one of the usage
-  // numbers that we are looking for.
-  while ((element = IOHIDElementGetParent(element)) != NULL) {
-    uint32_t usage_page = IOHIDElementGetUsagePage(element);
-    uint32_t usage = IOHIDElementGetUsage(element);
-    if (usage_page == kGenericDesktopUsagePage) {
-      if (usage == kJoystickUsageNumber || usage == kGameUsageNumber ||
-          usage == kMultiAxisUsageNumber) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
-                                                      PadState* state,
-                                                      size_t slot) {
-  Gamepad& pad = state->data;
-  AssociatedData& associated = associated_[slot];
-
-  pad.axes_length = 0;
-  pad.buttons_length = 0;
-  pad.timestamp = 0;
-  memset(pad.axes, 0, sizeof(pad.axes));
-  memset(pad.buttons, 0, sizeof(pad.buttons));
-
-  bool mapped_all_axes = true;
-
-  for (id elem in elements) {
-    IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
-    if (!CheckCollection(element))
-      continue;
-
-    uint32_t usage_page = IOHIDElementGetUsagePage(element);
-    uint32_t usage = IOHIDElementGetUsage(element);
-    if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Button &&
-        usage_page == kButtonUsagePage) {
-      uint32_t button_index = usage - 1;
-      if (button_index < Gamepad::kButtonsLengthCap) {
-        associated.button_elements[button_index] = element;
-        pad.buttons_length = std::max(pad.buttons_length, button_index + 1);
-      }
-    } else if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc) {
-      uint32_t axis_index = usage - kAxisMinimumUsageNumber;
-      if (axis_index < Gamepad::kAxesLengthCap) {
-        associated.axis_elements[axis_index] = element;
-        pad.axes_length = std::max(pad.axes_length, axis_index + 1);
-      } else {
-        mapped_all_axes = false;
-      }
-    }
-  }
-
-  if (!mapped_all_axes) {
-    // For axes who's usage puts them outside the standard axesLengthCap range.
-    uint32_t next_index = 0;
-    for (id elem in elements) {
-      IOHIDElementRef element = reinterpret_cast<IOHIDElementRef>(elem);
-      if (!CheckCollection(element))
-        continue;
-
-      uint32_t usage_page = IOHIDElementGetUsagePage(element);
-      uint32_t usage = IOHIDElementGetUsage(element);
-      if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc &&
-          usage - kAxisMinimumUsageNumber >= Gamepad::kAxesLengthCap &&
-          usage_page <= kGameControlsUsagePage) {
-        for (; next_index < Gamepad::kAxesLengthCap; ++next_index) {
-          if (associated.axis_elements[next_index] == NULL)
-            break;
-        }
-        if (next_index < Gamepad::kAxesLengthCap) {
-          associated.axis_elements[next_index] = element;
-          pad.axes_length = std::max(pad.axes_length, next_index + 1);
-        }
-      }
-
-      if (next_index >= Gamepad::kAxesLengthCap)
-        break;
-    }
-  }
-
-  for (uint32_t axis_index = 0; axis_index < pad.axes_length; ++axis_index) {
-    IOHIDElementRef element = associated.axis_elements[axis_index];
-    if (element != NULL) {
-      CFIndex axis_min = IOHIDElementGetLogicalMin(element);
-      CFIndex axis_max = IOHIDElementGetLogicalMax(element);
-
-      // Some HID axes report a logical range of -1 to 0 signed, which must be
-      // interpreted as 0 to -1 unsigned for correct normalization behavior.
-      if (axis_min == -1 && axis_max == 0) {
-        axis_max = -1;
-        axis_min = 0;
-      }
-
-      associated.axis_minimums[axis_index] = axis_min;
-      associated.axis_maximums[axis_index] = axis_max;
-      associated.axis_report_sizes[axis_index] =
-          IOHIDElementGetReportSize(element);
-    }
-  }
-
-  return (pad.axes_length > 0 || pad.buttons_length > 0);
-}
-
 size_t GamepadPlatformDataFetcherMac::GetEmptySlot() {
   // Find a free slot for this device.
   for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (associated_[slot].device_ref == nullptr)
+    if (devices_[slot] == nullptr)
       return slot;
   }
   return Gamepads::kItemsLengthCap;
@@ -279,10 +152,18 @@ size_t GamepadPlatformDataFetcherMac::GetSlotForDevice(IOHIDDeviceRef device) {
   for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     // If we already have this device, and it's already connected, don't do
     // anything now.
-    if (associated_[slot].device_ref == device)
+    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
       return Gamepads::kItemsLengthCap;
   }
   return GetEmptySlot();
+}
+
+size_t GamepadPlatformDataFetcherMac::GetSlotForLocation(int location_id) {
+  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
+    if (devices_[slot] && devices_[slot]->GetLocationId() == location_id)
+      return slot;
+  }
+  return Gamepads::kItemsLengthCap;
 }
 
 void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
@@ -321,9 +202,6 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   if (vendor_int == kVendorSteelSeries && product_int == kProductNimbus)
     return;
 
-  // Clear some state that may have been left behind by previous gamepads
-  memset(&associated_[slot], 0, sizeof(AssociatedData));
-
   PadState* state = GetPadState(location_int);
   if (!state)
     return;  // No available slot for this device
@@ -349,14 +227,17 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
     state->data.mapping[0] = 0;
   }
 
-  base::ScopedCFTypeRef<CFArrayRef> elements(
-      IOHIDDeviceCopyMatchingElements(device, NULL, kIOHIDOptionsTypeNone));
-
-  if (!AddButtonsAndAxes(CFToNSCast(elements), state, slot))
+  devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device);
+  if (!devices_[slot]->AddButtonsAndAxes(&state->data)) {
+    devices_[slot]->Shutdown();
+    devices_[slot] = nullptr;
     return;
+  }
 
-  associated_[slot].location_id = location_int;
-  associated_[slot].device_ref = device;
+  state->data.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
+  state->data.vibration_actuator.not_null =
+      devices_[slot]->SupportsForceFeedback();
+
   state->data.connected = true;
 }
 
@@ -367,12 +248,12 @@ void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
   // Find the index for this device.
   size_t slot;
   for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (associated_[slot].device_ref == device)
+    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
       break;
   }
   if (slot < Gamepads::kItemsLengthCap) {
-    associated_[slot].location_id = 0;
-    associated_[slot].device_ref = nullptr;
+    devices_[slot]->Shutdown();
+    devices_[slot] = nullptr;
   }
 }
 
@@ -386,64 +267,17 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   // Find device slot.
   size_t slot;
   for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (associated_[slot].device_ref == device)
+    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
       break;
   }
   if (slot == Gamepads::kItemsLengthCap)
     return;
 
-  PadState* state = GetPadState(associated_[slot].location_id);
+  PadState* state = GetPadState(devices_[slot]->GetLocationId());
   if (!state)
     return;
 
-  Gamepad& pad = state->data;
-  AssociatedData& associated = associated_[slot];
-
-  uint32_t value_length = IOHIDValueGetLength(value);
-  if (value_length > 4) {
-    // Workaround for bizarre issue with PS3 controllers that try to return
-    // massive (30+ byte) values and crash IOHIDValueGetIntegerValue
-    return;
-  }
-
-  // Find and fill in the associated button event, if any.
-  for (size_t i = 0; i < pad.buttons_length; ++i) {
-    if (associated.button_elements[i] == element) {
-      pad.buttons[i].pressed = IOHIDValueGetIntegerValue(value);
-      pad.buttons[i].value = pad.buttons[i].pressed ? 1.f : 0.f;
-      pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
-      return;
-    }
-  }
-
-  // Find and fill in the associated axis event, if any.
-  for (size_t i = 0; i < pad.axes_length; ++i) {
-    if (associated.axis_elements[i] == element) {
-      CFIndex axis_min = associated.axis_minimums[i];
-      CFIndex axis_max = associated.axis_maximums[i];
-      CFIndex axis_value = IOHIDValueGetIntegerValue(value);
-
-      if (axis_min > axis_max) {
-        // We'll need to interpret this axis as unsigned during normalization.
-        switch (associated.axis_report_sizes[i]) {
-          case 8:
-            pad.axes[i] = NormalizeUInt8Axis(axis_value, axis_min, axis_max);
-            break;
-          case 16:
-            pad.axes[i] = NormalizeUInt16Axis(axis_value, axis_min, axis_max);
-            break;
-          case 32:
-            pad.axes[i] = NormalizeUInt32Axis(axis_value, axis_min, axis_max);
-            break;
-        }
-      } else {
-        pad.axes[i] = NormalizeAxis(axis_value, axis_min, axis_max);
-      }
-
-      pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
-      return;
-    }
-  }
+  devices_[slot]->UpdateGamepadForValue(value, &state->data);
 }
 
 void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
@@ -452,10 +286,37 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
 
   // Loop through and GetPadState to indicate the devices are still connected.
   for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (associated_[slot].device_ref != nullptr) {
-      GetPadState(associated_[slot].location_id);
-    }
+    if (devices_[slot] != nullptr)
+      GetPadState(devices_[slot]->GetLocationId());
   }
+}
+
+void GamepadPlatformDataFetcherMac::PlayEffect(
+    int source_id,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  size_t slot = GetSlotForLocation(source_id);
+  if (slot == Gamepads::kItemsLengthCap) {
+    // No connected gamepad with this location.
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback));
+}
+
+void GamepadPlatformDataFetcherMac::ResetVibration(
+    int source_id,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  size_t slot = GetSlotForLocation(source_id);
+  if (slot == Gamepads::kItemsLengthCap) {
+    // No connected gamepad with this location.
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+  devices_[slot]->ResetVibration(std::move(callback));
 }
 
 }  // namespace device
