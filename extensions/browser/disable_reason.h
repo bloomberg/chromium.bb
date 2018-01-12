@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_DISABLE_REASON_H_
-#define EXTENSIONS_COMMON_DISABLE_REASON_H_
+#ifndef EXTENSIONS_BROWSER_DISABLE_REASON_H_
+#define EXTENSIONS_BROWSER_DISABLE_REASON_H_
 
 #include <limits>
 
@@ -51,4 +51,4 @@ static_assert(DISABLE_REASON_LAST - 1 <= std::numeric_limits<int>::max(),
 }  // namespace disable_reason
 }  // namespace extensions
 
-#endif  // EXTENSIONS_COMMON_DISABLE_REASON_H_
+#endif  // EXTENSIONS_BROWSER_DISABLE_REASON_H_

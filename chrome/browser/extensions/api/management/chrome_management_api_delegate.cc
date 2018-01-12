@@ -32,10 +32,10 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
