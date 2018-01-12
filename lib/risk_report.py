@@ -38,6 +38,9 @@ def CLRiskText(build_id):
     logging.exception('Timed out reaching CL-Scanner.')
     return '(timeout reaching CL-Scanner)'
 
+  if not risks:
+    return ''
+
   top_risky = _TopRisky(risks)
   return 'CL-Scanner risks: ' + _PrettyPrintCLRisks(top_risky)
 
@@ -54,7 +57,7 @@ def _GetCLRisks(build_id):
   """
   response = requests.get(CL_SCANNER_API % build_id)
   response.raise_for_status()
-  return response.json()
+  return response.json().get('cls')
 
 
 def _TopRisky(risks):
