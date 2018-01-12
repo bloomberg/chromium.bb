@@ -82,14 +82,15 @@ void SkipWaitingWorkerOnIO(
 
 void DidStartWorker(
     scoped_refptr<ServiceWorkerVersion> version,
-    ServiceWorkerContext::StartActiveWorkerCallback info_callback) {
+    ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+    base::OnceClosure error_callback,
+    ServiceWorkerStatusCode start_worker_status) {
+  if (start_worker_status != SERVICE_WORKER_OK) {
+    std::move(error_callback).Run();
+    return;
+  }
   EmbeddedWorkerInstance* instance = version->embedded_worker();
   std::move(info_callback).Run(instance->process_id(), instance->thread_id());
-}
-
-void DidFailStartWorker(base::OnceClosure error_callback,
-                        ServiceWorkerStatusCode code) {
-  std::move(error_callback).Run();
 }
 
 void FoundReadyRegistrationForStartActiveWorker(
@@ -108,8 +109,7 @@ void FoundReadyRegistrationForStartActiveWorker(
     active_version->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
         base::BindOnce(&DidStartWorker, active_version,
-                       std::move(info_callback)),
-        base::BindOnce(&DidFailStartWorker, std::move(failure_callback)));
+                       std::move(info_callback), std::move(failure_callback)));
   } else {
     std::move(failure_callback).Run();
   }

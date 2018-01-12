@@ -238,10 +238,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       const url::Origin& source_origin,
       const std::vector<MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
-      const ServiceWorkerDispatcherHost::StatusCallback& callback) {
+      ServiceWorkerDispatcherHost::StatusCallback callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
         std::move(worker), message, source_origin, sent_message_ports,
-        sender_provider_host, callback);
+        sender_provider_host, std::move(callback));
   }
 
   ServiceWorkerRemoteProviderEndpoint PrepareServiceWorkerProviderHost(
@@ -433,7 +433,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   DispatchExtendableMessageEvent(
       version_, base::string16(),
       url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
-      base::Bind(&SaveStatusCallback, &called, &status));
+      base::BindOnce(&SaveStatusCallback, &called, &status));
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -463,7 +463,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   DispatchExtendableMessageEvent(
       version_, base::string16(),
       url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
-      base::Bind(&SaveStatusCallback, &called, &status));
+      base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);

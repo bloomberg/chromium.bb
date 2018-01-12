@@ -45,14 +45,14 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // background fetch was aborted by the user or another external event.
   void DispatchBackgroundFetchAbortEvent(
       const BackgroundFetchRegistrationId& registration_id,
-      base::Closure finished_closure);
+      base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchclick` event, which indicates that the user
   // interface displayed for an active background fetch was activated.
   void DispatchBackgroundFetchClickEvent(
       const BackgroundFetchRegistrationId& registration_id,
       mojom::BackgroundFetchState state,
-      base::Closure finished_closure);
+      base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchfail` event, which indicates that a
   // background fetch has finished with one or more failed fetches. The request-
@@ -60,14 +60,14 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   void DispatchBackgroundFetchFailEvent(
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      base::Closure finished_closure);
+      base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetched` event, which indicates that a background
   // fetch has successfully completed. The request-response pairs are included.
   void DispatchBackgroundFetchedEvent(
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
-      base::Closure finished_closure);
+      base::OnceClosure finished_closure);
 
  private:
   using ServiceWorkerLoadedCallback =
@@ -82,7 +82,7 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   void LoadServiceWorkerRegistrationForDispatch(
       const BackgroundFetchRegistrationId& registration_id,
       ServiceWorkerMetrics::EventType event,
-      base::Closure finished_closure,
+      base::OnceClosure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback);
 
   // Verifies that the |registration| has successfully been loaded, then starts
@@ -91,7 +91,7 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // |loaded_callback| on success.
   static void StartActiveWorkerForDispatch(
       ServiceWorkerMetrics::EventType event,
-      base::Closure finished_closure,
+      base::OnceClosure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback,
       ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
@@ -99,13 +99,14 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // Dispatches the actual event after the Service Worker has been started.
   static void DispatchEvent(
       ServiceWorkerMetrics::EventType event,
-      base::Closure finished_closure,
+      base::OnceClosure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback,
-      scoped_refptr<ServiceWorkerVersion> service_worker_version);
+      scoped_refptr<ServiceWorkerVersion> service_worker_version,
+      ServiceWorkerStatusCode start_worker_status);
 
   // Called when an event of type |event| has finished dispatching.
   static void DidDispatchEvent(ServiceWorkerMetrics::EventType event,
-                               base::Closure finished_closure,
+                               base::OnceClosure finished_closure,
                                DispatchPhase dispatch_phase,
                                ServiceWorkerStatusCode service_worker_status);
 

@@ -306,13 +306,10 @@ void DidFindRegistrationOnIO(
   ServiceWorkerVersion* active_version =
       service_worker_registration->active_version();
   DCHECK(active_version);
-
-  auto done_callback = base::AdaptCallbackForRepeating(base::BindOnce(
-      std::move(callback), base::WrapRefCounted(active_version)));
-
   active_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-      base::BindOnce(done_callback, service_worker_status), done_callback);
+      base::BindOnce(std::move(callback),
+                     base::WrapRefCounted(active_version)));
 }
 
 void FindRegistrationOnIO(
@@ -323,7 +320,7 @@ void FindRegistrationOnIO(
 
   service_worker_context->FindReadyRegistrationForIdOnly(
       registration_id,
-      base::Bind(&DidFindRegistrationOnIO, base::Passed(std::move(callback))));
+      base::BindOnce(&DidFindRegistrationOnIO, std::move(callback)));
 }
 
 void StartServiceWorkerForDispatch(BrowserContext* browser_context,

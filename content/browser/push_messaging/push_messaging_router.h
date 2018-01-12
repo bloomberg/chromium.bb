@@ -10,7 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
@@ -60,14 +59,15 @@ class PushMessagingRouter {
       ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
 
-  // Delivers a push message with |data| to a specific |service_worker|. Must be
-  // called on the IO thread, with the the worker running.
+  // Delivers a push message with |data| to a specific |service_worker|.
+  // Must be called on the IO thread.
   static void DeliverMessageToWorker(
       const scoped_refptr<ServiceWorkerVersion>& service_worker,
       const scoped_refptr<ServiceWorkerRegistration>&
           service_worker_registration,
       const PushEventPayload& payload,
-      const DeliverMessageCallback& deliver_message_callback);
+      const DeliverMessageCallback& deliver_message_callback,
+      ServiceWorkerStatusCode start_worker_status);
 
   // Gets called asynchronously after the Service Worker has dispatched the push
   // event. Must be called on the IO thread.

@@ -263,14 +263,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Starts an update now.
   void StartUpdate();
 
-  // Starts the worker if it isn't already running, and calls |task| when the
-  // worker is running, or |error_callback| if starting the worker failed.
-  // If the worker is already running, |task| is executed synchronously (before
-  // this method returns).
-  // |purpose| is used for UMA.
+  // Starts the worker if it isn't already running. Calls |callback| with
+  // SERVICE_WORKER_OK when the worker started up successfully or if it is
+  // already running. Otherwise, calls |callback| with an error code.
+  // If the worker is already running, |callback| is executed synchronously
+  // (before this method returns). |purpose| is used for UMA.
   void RunAfterStartWorker(ServiceWorkerMetrics::EventType purpose,
-                           base::OnceClosure task,
-                           StatusCallback error_callback);
+                           StatusCallback callback);
 
   // Call this while the worker is running before dispatching an event to the
   // worker. This informs ServiceWorkerVersion about the event in progress. The
