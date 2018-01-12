@@ -49,6 +49,7 @@ class TextInputControllerBindings
   void UnmarkAndUnselectText();
   void DoCommand(const std::string& text);
   void SetMarkedText(const std::string& text, int start, int length);
+  void SetMarkedTextFromExistingText(int start, int length);
   bool HasMarkedText();
   std::vector<int> MarkedRange();
   std::vector<int> SelectedRange();
@@ -101,6 +102,8 @@ TextInputControllerBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                  &TextInputControllerBindings::UnmarkAndUnselectText)
       .SetMethod("doCommand", &TextInputControllerBindings::DoCommand)
       .SetMethod("setMarkedText", &TextInputControllerBindings::SetMarkedText)
+      .SetMethod("setMarkedTextFromExistingText",
+                 &TextInputControllerBindings::SetMarkedTextFromExistingText)
       .SetMethod("hasMarkedText", &TextInputControllerBindings::HasMarkedText)
       .SetMethod("markedRange", &TextInputControllerBindings::MarkedRange)
       .SetMethod("selectedRange", &TextInputControllerBindings::SelectedRange)
@@ -136,6 +139,12 @@ void TextInputControllerBindings::SetMarkedText(const std::string& text,
                                                 int length) {
   if (controller_)
     controller_->SetMarkedText(text, start, length);
+}
+
+void TextInputControllerBindings::SetMarkedTextFromExistingText(int start,
+                                                                int end) {
+  if (controller_)
+    controller_->SetMarkedTextFromExistingText(start, end);
 }
 
 bool TextInputControllerBindings::HasMarkedText() {
@@ -202,10 +211,9 @@ void TextInputController::UnmarkAndUnselectText() {
 
 void TextInputController::DoCommand(const std::string& text) {
   if (view()->MainFrame()) {
-    if (!view()->MainFrame()->ToWebLocalFrame()) {
-      CHECK(false) << "This function cannot be called if the main frame is not"
-                      "a local frame.";
-    }
+    CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                     "called if the main frame "
+                                                     "is not a local frame.";
     view()->MainFrame()->ToWebLocalFrame()->ExecuteCommand(
         blink::WebString::FromUTF8(text));
   }
@@ -242,14 +250,25 @@ void TextInputController::SetMarkedText(const std::string& text,
   }
 }
 
+void TextInputController::SetMarkedTextFromExistingText(int start, int end) {
+  if (!view()->MainFrame())
+    return;
+
+  CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                   "called if the main frame "
+                                                   "is not a local frame.";
+
+  view()->MainFrame()->ToWebLocalFrame()->SetCompositionFromExistingText(
+      start, end, std::vector<blink::WebImeTextSpan>());
+}
+
 bool TextInputController::HasMarkedText() {
   if (!view()->MainFrame())
     return false;
 
-  if (!view()->MainFrame()->ToWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not"
-                    "a local frame.";
-  }
+  CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                   "called if the main frame "
+                                                   "is not a local frame.";
 
   return view()->MainFrame()->ToWebLocalFrame()->HasMarkedText();
 }
@@ -258,10 +277,9 @@ std::vector<int> TextInputController::MarkedRange() {
   if (!view()->MainFrame())
     return std::vector<int>();
 
-  if (!view()->MainFrame()->ToWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not"
-                    "a local frame.";
-  }
+  CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                   "called if the main frame "
+                                                   "is not a local frame.";
 
   blink::WebRange range = view()->MainFrame()->ToWebLocalFrame()->MarkedRange();
   std::vector<int> int_array(2);
@@ -275,10 +293,9 @@ std::vector<int> TextInputController::SelectedRange() {
   if (!view()->MainFrame())
     return std::vector<int>();
 
-  if (!view()->MainFrame()->ToWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not"
-                    "a local frame.";
-  }
+  CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                   "called if the main frame "
+                                                   "is not a local frame.";
 
   blink::WebRange range =
       view()->MainFrame()->ToWebLocalFrame()->SelectionRange();
