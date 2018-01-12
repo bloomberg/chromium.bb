@@ -105,7 +105,11 @@ int RunClean(const std::vector<std::string>& args) {
   if (!args_contents.empty()) {
     if (base::WriteFile(gn_args_file, args_contents.data(),
                         static_cast<int>(args_contents.size())) == -1) {
-      Err(Location(), std::string("Failed to write args.gn.")).PrintToStdout();
+      // Print the previous contents of args.gn since otherwise it is lost for
+      // good which can be quite frustrating.
+      Err(Location(),
+          "Failed to write args.gn. Old contents was:\n\n" + args_contents)
+          .PrintToStdout();
       return 1;
     }
   }
