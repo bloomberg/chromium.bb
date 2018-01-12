@@ -57,7 +57,7 @@ class CORE_EXPORT ImageResourceContent final
 
   static ImageResourceContent* Fetch(FetchParameters&, ResourceFetcher*);
 
-  // Returns the nullImage() if the image is not available yet.
+  // Returns the NullImage() if the image is not available yet.
   blink::Image* GetImage();
   bool HasImage() const { return image_.get(); }
 
@@ -126,12 +126,12 @@ class CORE_EXPORT ImageResourceContent final
 
   // The following public methods should be called from ImageResource only.
 
-  // updateImage() is the single control point of image content modification
+  // UpdateImage() is the single control point of image content modification
   // from ImageResource that all image updates should call.
   // We clear and/or update images in this single method
   // (controlled by UpdateImageOption) rather than providing separate methods,
   // in order to centralize state changes and
-  // not to expose the state inbetween to ImageResource.
+  // not to expose the state in between to ImageResource.
   enum UpdateImageOption {
     // Updates the image (including placeholder and decode error handling
     // and notifying observers) if needed.
