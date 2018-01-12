@@ -175,8 +175,10 @@ void ViewportStyleResolver::AddViewportRule(StyleRuleViewport& viewport_rule,
   // We cannot use mergeAndOverrideOnConflict() here because it doesn't
   // respect the !important declaration (but addRespectingCascade() does).
   for (unsigned i = 0; i < property_count; ++i) {
+    CSSPropertyValueSet::PropertyReference property =
+        property_set.PropertyAt(i);
     property_set_->AddRespectingCascade(
-        property_set.PropertyAt(i).ToCSSPropertyValue());
+        CSSPropertyValue(property.PropertyMetadata(), property.Value()));
   }
 }
 
