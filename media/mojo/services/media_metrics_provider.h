@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "media/base/pipeline_status.h"
+#include "media/base/timestamp_constants.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "url/origin.h"
@@ -33,6 +34,10 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
                   bool is_top_frame,
                   const url::Origin& untrusted_top_origin) override;
   void OnError(PipelineStatus status) override;
+  void SetIsEME() override;
+  void SetTimeToMetadata(base::TimeDelta elapsed) override;
+  void SetTimeToFirstFrame(base::TimeDelta elapsed) override;
+  void SetTimeToPlayReady(base::TimeDelta elapsed) override;
   void AcquireWatchTimeRecorder(
       mojom::PlaybackPropertiesPtr properties,
       mojom::WatchTimeRecorderRequest request) override;
@@ -43,13 +48,19 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // to coordinate multiply logged events with a singly logged metric.
   const uint64_t player_id_;
 
+  // These values are not always sent but have known defaults.
   PipelineStatus pipeline_status_ = PIPELINE_OK;
+  bool is_eme_ = false;
 
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
   bool is_mse_;
   bool is_top_frame_;
   url::Origin untrusted_top_origin_;
+
+  base::TimeDelta time_to_metadata_ = kNoTimestamp;
+  base::TimeDelta time_to_first_frame_ = kNoTimestamp;
+  base::TimeDelta time_to_play_ready_ = kNoTimestamp;
 
   VideoDecodePerfHistory* const perf_history_;
 

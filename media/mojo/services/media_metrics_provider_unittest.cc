@@ -69,15 +69,28 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
       EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
       EXPECT_UKM(UkmEntry::kIsTopFrameName, true);
+      EXPECT_UKM(UkmEntry::kIsEMEName, false);
       EXPECT_UKM(UkmEntry::kIsMSEName, true);
       EXPECT_UKM(UkmEntry::kFinalPipelineStatusName, PIPELINE_OK);
+
+      EXPECT_NO_UKM(UkmEntry::kTimeToMetadataName);
+      EXPECT_NO_UKM(UkmEntry::kTimeToFirstFrameName);
+      EXPECT_NO_UKM(UkmEntry::kTimeToPlayReadyName);
     }
   }
 
-  // Now try one with different values.
+  // Now try one with different values and optional parameters set.
   const std::string kTestOrigin2 = "https://test2.google.com/";
+  const base::TimeDelta kMetadataTime = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kFirstFrameTime = base::TimeDelta::FromSeconds(2);
+  const base::TimeDelta kPlayReadyTime = base::TimeDelta::FromSeconds(3);
+
   ResetMetricRecorders();
   Initialize(false, false, kTestOrigin2);
+  provider_->SetIsEME();
+  provider_->SetTimeToMetadata(kMetadataTime);
+  provider_->SetTimeToFirstFrame(kFirstFrameTime);
+  provider_->SetTimeToPlayReady(kPlayReadyTime);
   provider_->OnError(PIPELINE_ERROR_DECODE);
   provider_.reset();
   base::RunLoop().RunUntilIdle();
@@ -90,8 +103,14 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin2));
       EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
       EXPECT_UKM(UkmEntry::kIsTopFrameName, false);
+      EXPECT_UKM(UkmEntry::kIsEMEName, true);
       EXPECT_UKM(UkmEntry::kIsMSEName, false);
       EXPECT_UKM(UkmEntry::kFinalPipelineStatusName, PIPELINE_ERROR_DECODE);
+      EXPECT_UKM(UkmEntry::kTimeToMetadataName, kMetadataTime.InMilliseconds());
+      EXPECT_UKM(UkmEntry::kTimeToFirstFrameName,
+                 kFirstFrameTime.InMilliseconds());
+      EXPECT_UKM(UkmEntry::kTimeToPlayReadyName,
+                 kPlayReadyTime.InMilliseconds());
     }
   }
 }

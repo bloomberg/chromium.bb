@@ -64,7 +64,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
                                                 public cc::VideoFrameProvider {
  public:
   // Used to report back the time when the new frame has been processed.
-  using OnNewProcessedFrameCB = base::Callback<void(base::TimeTicks)>;
+  using OnNewProcessedFrameCB = base::OnceCallback<void(base::TimeTicks)>;
 
   // |task_runner| is the task runner on which this class will live,
   // though it may be constructed on any thread.
@@ -121,7 +121,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Sets the callback to be run when the new frame has been processed. The
   // callback is only run once and then reset.
   // Must be called on the compositor thread.
-  virtual void SetOnNewProcessedFrameCallback(const OnNewProcessedFrameCB& cb);
+  virtual void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb);
 
   void set_tick_clock_for_testing(base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

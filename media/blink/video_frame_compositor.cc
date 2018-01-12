@@ -232,9 +232,9 @@ void VideoFrameCompositor::UpdateCurrentFrameIfStale() {
 }
 
 void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
-    const OnNewProcessedFrameCB& cb) {
+    OnNewProcessedFrameCB cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  new_processed_frame_cb_ = cb;
+  new_processed_frame_cb_ = std::move(cb);
 }
 
 bool VideoFrameCompositor::ProcessNewFrame(
@@ -254,7 +254,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
   SetCurrentFrame(frame);
 
   if (!new_processed_frame_cb_.is_null())
-    base::ResetAndReturn(&new_processed_frame_cb_).Run(base::TimeTicks::Now());
+    std::move(new_processed_frame_cb_).Run(base::TimeTicks::Now());
 
   return true;
 }

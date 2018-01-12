@@ -880,6 +880,13 @@ be describing additional metrics about the same event.
       other values indicate the playback ended in an error.
     </summary>
   </metric>
+  <metric name="IsEME">
+    <summary>
+      Boolean value indicating if this event is for an EME playback. Note: EME
+      can be attached anytime during the lifecycle of a WebMediaPlayerImpl, but
+      once attached can't be removed.
+    </summary>
+  </metric>
   <metric name="IsMSE">
     <summary>
       Boolean value indicating if this event is for an MSE playback. If false it
@@ -898,6 +905,24 @@ be describing additional metrics about the same event.
     <summary>
       ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
       with Media.BasicPlayback events to understand a playback more deeply.
+    </summary>
+  </metric>
+  <metric name="TimeToFirstFrame">
+    <summary>
+      Time in milliseconds from when WebMediaPlayerImpl starts loading until the
+      first video frame has been shown.
+    </summary>
+  </metric>
+  <metric name="TimeToMetadata">
+    <summary>
+      Time in milliseconds from when WebMediaPlayerImpl starts loading until
+      metadata is known.
+    </summary>
+  </metric>
+  <metric name="TimeToPlayReady">
+    <summary>
+      Time in milliseconds from when WebMediaPlayerImpl starts loading until it
+      has buffered enough to start playback.
     </summary>
   </metric>
 </event>

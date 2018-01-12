@@ -245,8 +245,8 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
       : VideoFrameCompositor(task_runner, nullptr) {}
   ~MockVideoFrameCompositor() = default;
 
-  MOCK_METHOD1(SetOnNewProcessedFrameCallback,
-               void(const OnNewProcessedFrameCB& cb));
+  // MOCK_METHOD doesn't like OnceCallback.
+  void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
   MOCK_METHOD1(EnableSubmission, void(const viz::FrameSinkId&));
 };
