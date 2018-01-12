@@ -122,7 +122,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info) {}
+      blink::WebTriggeringEventInfo triggering_event_info,
+      const base::Optional<std::string>& suggested_filename) {}
 
   // The RenderFrameHostImpl wants to transfer the request to a new renderer.
   // |redirect_chain| contains any redirect URLs (excluding |url|) that happened

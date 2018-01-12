@@ -74,7 +74,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info) override;
+      blink::WebTriggeringEventInfo triggering_event_info,
+      const base::Optional<std::string>& suggested_filename) override;
   void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
                           const GURL& url,
                           SiteInstance* source_site_instance,

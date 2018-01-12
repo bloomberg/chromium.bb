@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
@@ -244,6 +245,11 @@ struct NavigateParams {
   // the SiteInstance that will be used for the resulting frame in the case of
   // an about:blank or a data url navigation.
   scoped_refptr<content::SiteInstance> source_site_instance;
+
+  // If this event was triggered by an anchor element with a download
+  // attribute, |suggested_filename| will contain the (possibly empty) value of
+  // that attribute.
+  base::Optional<std::string> suggested_filename;
 
  private:
   NavigateParams();

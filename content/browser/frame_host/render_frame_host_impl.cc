@@ -1429,7 +1429,7 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
       this, validated_url, params.uses_post, params.resource_request_body,
       params.extra_headers, params.referrer, params.disposition,
       params.should_replace_current_entry, params.user_gesture,
-      params.triggering_event_info);
+      params.triggering_event_info, params.suggested_filename);
 }
 
 void RenderFrameHostImpl::CancelInitialHistoryLoad() {
