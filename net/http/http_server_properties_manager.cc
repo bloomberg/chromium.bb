@@ -783,7 +783,6 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
   alternative_service_info->set_alternative_service(alternative_service);
 
   // Expiration is optional, defaults to one day.
-  base::Time expiration;
   if (!dict.HasKey(kExpirationKey)) {
     alternative_service_info->set_expiration(base::Time::Now() +
                                              base::TimeDelta::FromDays(1));
