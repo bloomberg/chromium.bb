@@ -71,12 +71,14 @@ Polymer({
         cloudPrintError: '',
         privetExtensionError: '',
         invalidSettings: false,
+        cancelled: false,
       },
     },
   },
 
   observers: [
     'updateRecentDestinations_(destination_, destination_.capabilities)',
+    'onPreviewCancelled_(state_.cancelled)',
   ],
 
   /**
@@ -213,7 +215,7 @@ Polymer({
    * @param {?string} savedSettingsStr The sticky settings from native layer
    * @private
    */
-  updateFromStickySettings_(savedSettingsStr) {
+  updateFromStickySettings_: function(savedSettingsStr) {
     if (!savedSettingsStr)
       return;
     let savedSettings;
@@ -239,5 +241,13 @@ Polymer({
      ['scaling', 'scaling'], ['fitToPage', 'isFitToPageEnabled'],
      ['cssBackground', 'isCssBackgroundEnabled'],
     ].forEach(keys => updateIfDefined(keys[0], keys[1]));
+  },
+
+  /** @private */
+  onPreviewCancelled_: function() {
+    if (!this.state_.cancelled)
+      return;
+    this.detached();
+    this.nativeLayer_.dialogClose(true);
   },
 });
