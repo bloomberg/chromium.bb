@@ -5,6 +5,10 @@ cr.define('extensions', function() {
   const Sidebar = Polymer({
     is: 'extensions-sidebar',
 
+    properties: {
+      isSupervised: Boolean,
+    },
+
     hostAttributes: {
       role: 'navigation',
     },
@@ -28,6 +32,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onMoreExtensionsTap_: function() {
+      assert(!this.isSupervised);
       chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
     },
   });
