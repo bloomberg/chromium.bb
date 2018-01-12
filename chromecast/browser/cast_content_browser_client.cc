@@ -29,6 +29,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
@@ -46,6 +47,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -497,12 +500,14 @@ void CastContentBrowserClient::SelectClientCertificate(
   // on the UI thread.
   //
   // TODO(davidben): Stop using child ID to identify an app.
+  std::string session_id =
+      CastNavigationUIData::GetSessionIdForWebContents(web_contents);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
-          base::Unretained(this), requesting_url,
+          base::Unretained(this), requesting_url, session_id,
           web_contents->GetMainFrame()->GetProcess()->GetID(),
           base::SequencedTaskRunnerHandle::Get(),
           base::Bind(
@@ -512,6 +517,7 @@ void CastContentBrowserClient::SelectClientCertificate(
 
 void CastContentBrowserClient::SelectClientCertificateOnIOThread(
     GURL requesting_url,
+    const std::string& session_id,
     int render_process_id,
     scoped_refptr<base::SequencedTaskRunner> original_runner,
     const base::Callback<void(scoped_refptr<net::X509Certificate>,
@@ -520,8 +526,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CastNetworkDelegate* network_delegate =
       url_request_context_factory_->app_network_delegate();
-  if (network_delegate->IsWhitelisted(requesting_url, render_process_id,
-                                      false)) {
+  if (network_delegate->IsWhitelisted(requesting_url, session_id,
+                                      render_process_id, false)) {
     original_runner->PostTask(
         FROM_HERE, base::Bind(continue_callback, DeviceCert(), DeviceKey()));
     return;
@@ -636,6 +642,19 @@ void CastContentBrowserClient::GetAdditionalWebUISchemes(
 content::DevToolsManagerDelegate*
 CastContentBrowserClient::GetDevToolsManagerDelegate() {
   return new CastDevToolsManagerDelegate();
+}
+
+std::unique_ptr<content::NavigationUIData>
+CastContentBrowserClient::GetNavigationUIData(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(navigation_handle);
+
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  DCHECK(web_contents);
+
+  std::string session_id =
+      CastNavigationUIData::GetSessionIdForWebContents(web_contents);
+  return std::make_unique<CastNavigationUIData>(session_id);
 }
 
 scoped_refptr<net::X509Certificate> CastContentBrowserClient::DeviceCert() {

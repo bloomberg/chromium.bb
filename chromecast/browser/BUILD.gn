@@ -30,6 +30,8 @@ cast_source_set("browser") {
     "cast_http_user_agent_settings.h",
     "cast_media_blocker.cc",
     "cast_media_blocker.h",
+    "cast_navigation_ui_data.cc",
+    "cast_navigation_ui_data.h",
     "cast_net_log.cc",
     "cast_net_log.h",
     "cast_network_delegate.cc",

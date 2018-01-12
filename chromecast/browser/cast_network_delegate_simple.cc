@@ -20,7 +20,9 @@ class CastNetworkDelegateSimple : public CastNetworkDelegate {
  private:
   // CastNetworkDelegate implementation:
   void Initialize() override {}
-  bool IsWhitelisted(const GURL& gurl, int render_process_id,
+  bool IsWhitelisted(const GURL& gurl,
+                     const std::string& session_id,
+                     int render_process_id,
                      bool for_device_auth) const override {
     return false;
   }

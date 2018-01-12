@@ -174,6 +174,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
+      content::NavigationHandle* navigation_handle) override;
 
  protected:
   CastContentBrowserClient();
@@ -192,6 +194,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   void SelectClientCertificateOnIOThread(
       GURL requesting_url,
+      const std::string& session_id,
       int render_process_id,
       scoped_refptr<base::SequencedTaskRunner> original_runner,
       const base::Callback<void(scoped_refptr<net::X509Certificate>,
