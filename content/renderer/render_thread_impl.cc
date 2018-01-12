@@ -611,7 +611,7 @@ void RenderThreadImpl::SetRendererBlinkPlatformImplForTesting(
 
 // static
 scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetMainTaskRunner() {
+RenderThreadImpl::DeprecatedGetMainTaskRunner() {
   return g_main_task_runner.Get();
 }
 
@@ -729,7 +729,7 @@ void RenderThreadImpl::Init(
   registry->AddInterface(
       base::BindRepeating(&AppCacheDispatcher::Bind,
                           base::Unretained(appcache_dispatcher())),
-      GetMainTaskRunner());
+      GetRendererScheduler()->IPCTaskRunner());
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
   main_thread_cache_storage_dispatcher_.reset(

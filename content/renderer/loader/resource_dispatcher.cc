@@ -157,10 +157,11 @@ void ResourceDispatcher::OnReceivedResponse(
 
   if (!IsResourceTypeFrame(request_info->resource_type)) {
     NotifySubresourceStarted(
-        RenderThreadImpl::GetMainTaskRunner(), request_info->render_frame_id,
-        request_info->response_url, request_info->response_referrer,
-        request_info->response_method, request_info->resource_type,
-        response_head.socket_address.host(), response_head.cert_status);
+        RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+        request_info->render_frame_id, request_info->response_url,
+        request_info->response_referrer, request_info->response_method,
+        request_info->resource_type, response_head.socket_address.host(),
+        response_head.cert_status);
   }
 
   ResourceResponseInfo renderer_response_info;
@@ -372,28 +373,28 @@ void ResourceDispatcher::StartSync(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
-    mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
-    url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+  mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
+  url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    // Prepare the configured throttles for use on a separate thread.
-    for (const auto& throttle : throttles)
-      throttle->DetachFromCurrentSequence();
+  // Prepare the configured throttles for use on a separate thread.
+  for (const auto& throttle : throttles)
+    throttle->DetachFromCurrentSequence();
 
-    // A task is posted to a separate thread to execute the request so that
-    // this thread may block on a waitable event. It is safe to pass raw
-    // pointers to |sync_load_response| and |event| as this stack frame will
-    // survive until the request is complete.
-    base::CreateSingleThreadTaskRunnerWithTraits({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
-                       std::move(request), routing_id, frame_origin,
-                       traffic_annotation, std::move(url_loader_factory_copy),
-                       std::move(throttles), base::Unretained(response),
-                       base::Unretained(&event)));
+  // A task is posted to a separate thread to execute the request so that
+  // this thread may block on a waitable event. It is safe to pass raw
+  // pointers to |sync_load_response| and |event| as this stack frame will
+  // survive until the request is complete.
+  base::CreateSingleThreadTaskRunnerWithTraits({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
+                     std::move(request), routing_id, frame_origin,
+                     traffic_annotation, std::move(url_loader_factory_copy),
+                     std::move(throttles), base::Unretained(response),
+                     base::Unretained(&event)));
 
-    event.Wait();
+  event.Wait();
 }
 
 int ResourceDispatcher::StartAsync(
