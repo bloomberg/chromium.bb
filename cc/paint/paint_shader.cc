@@ -455,7 +455,12 @@ bool PaintShader::operator==(const PaintShader& other) const {
       // TODO(enne): add comparison of images once those are serialized.
       break;
     case Type::kPaintRecord:
-      // TODO(enne): add comparison of records once those are serialized.
+      // If we have a record but not other.record, or vice versa, then shaders
+      // aren't the same.
+      if (!record_ != !other.record_)
+        return false;
+      if (record_ && *record_ != *other.record_)
+        return false;
       if (!PaintOp::AreSkRectsEqual(tile_, other.tile_))
         return false;
       break;
