@@ -47,10 +47,17 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   ServiceImageTransferCacheEntry();
   ~ServiceImageTransferCacheEntry() final;
 
+  ServiceImageTransferCacheEntry(ServiceImageTransferCacheEntry&& other);
+  ServiceImageTransferCacheEntry& operator=(
+      ServiceImageTransferCacheEntry&& other);
+
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
 
+  void set_image_for_testing(sk_sp<SkImage> image) {
+    image_ = std::move(image);
+  }
   const sk_sp<SkImage>& image() { return image_; }
 
  private:

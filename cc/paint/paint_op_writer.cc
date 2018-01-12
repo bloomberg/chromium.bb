@@ -448,7 +448,14 @@ void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const ImagePaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  DrawImage draw_image(
+      filter.image(),
+      SkIRect::MakeWH(filter.image().width(), filter.image().height()),
+      filter.filter_quality(), SkMatrix::I());
+  Write(draw_image);
+  Write(filter.src_rect());
+  Write(filter.dst_rect());
+  Write(filter.filter_quality());
 }
 
 void PaintOpWriter::Write(const RecordPaintFilter& filter) {

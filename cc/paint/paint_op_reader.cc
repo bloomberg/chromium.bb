@@ -811,7 +811,29 @@ void PaintOpReader::ReadDisplacementMapEffectPaintFilter(
 void PaintOpReader::ReadImagePaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  if (crop_rect) {
+    SetInvalid();
+    return;
+  }
+
+  PaintImage image;
+  Read(&image);
+  if (!image) {
+    SetInvalid();
+    return;
+  }
+
+  SkRect src_rect;
+  Read(&src_rect);
+  SkRect dst_rect;
+  Read(&dst_rect);
+  SkFilterQuality quality;
+  Read(&quality);
+
+  if (!valid_)
+    return;
+  filter->reset(
+      new ImagePaintFilter(std::move(image), src_rect, dst_rect, quality));
 }
 
 void PaintOpReader::ReadRecordPaintFilter(
