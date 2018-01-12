@@ -37,6 +37,11 @@ namespace content {
 //
 // Note that the PlatformNotificationService is expected to handle
 // distinguishing identical generated ids from different browser contexts.
+//
+// Also note that several functions in NotificationPlatformBridge class
+// rely on the format of the notification generated here.
+// Code: chrome/android/java/src/org/chromium/chrome/browser/notifications/
+// NotificationPlatformBridge.java
 class CONTENT_EXPORT NotificationIdGenerator {
  public:
   NotificationIdGenerator() = default;

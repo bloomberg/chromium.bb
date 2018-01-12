@@ -788,10 +788,10 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // without going through the database.
   const message_center::Notification& notification = notifications[1];
 
-  // p: is the prefix for persistent notifications. See
+  // p# is the prefix for persistent notifications. See
   //  content/browser/notifications/notification_id_generator.{h,cc} for details
   ASSERT_TRUE(
-      base::StartsWith(notification.id(), "p:", base::CompareCase::SENSITIVE));
+      base::StartsWith(notification.id(), "p#", base::CompareCase::SENSITIVE));
 
   display_service_tester_->RemoveNotification(
       NotificationHandler::Type::WEB_PERSISTENT, notification.id(),
