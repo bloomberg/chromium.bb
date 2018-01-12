@@ -254,6 +254,8 @@ def write_string_value(string, name_tag, data_file):
 def write_boolean_value(value, name_tag, data_file):
   data_file.write('%s,  // %s\n' % (str(value).lower(), name_tag))
 
+def write_integer_value(value, name_tag, data_file):
+  data_file.write('%s,  // %s\n' % (str(value), name_tag))
 
 def write_machine_model_info(entry_id, is_exception, exception_id,
                              machine_model_name, machine_model_version,
@@ -360,6 +362,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   gl_reset_notification_strategy = None
   direct_rendering = True
   gpu_count = None
+  test_group = 0
   machine_model_name = None
   machine_model_version = None
   exception_count = 0
@@ -430,6 +433,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       direct_rendering = False
     elif key == 'gpu_count':
       gpu_count = entry[key]
+    elif key == 'test_group':
+      assert entry[key] > 0
+      test_group = entry[key]
     elif key == 'machine_model_name':
       machine_model_name = entry[key]
     elif key == 'machine_model_version':
@@ -468,11 +474,11 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
       gl_reset_notification_strategy != None or (not direct_rendering) or
-      gpu_count != None):
+      gpu_count != None or test_group != 0):
     write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, data_file, data_helper_file)
+                          gpu_count, test_group, data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // more conditions\n')
 
@@ -480,7 +486,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
 def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, data_file, data_helper_file):
+                          gpu_count, test_group, data_file, data_helper_file):
   # write more data
   var_name = 'kMoreForEntry' + str(entry_id)
   if is_exception:
@@ -496,6 +502,7 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                          gl_reset_notification_strategy)
   write_boolean_value(direct_rendering, 'direct_rendering', data_helper_file)
   write_version(gpu_count, 'gpu_count', data_helper_file)
+  write_integer_value(test_group, 'test_group', data_helper_file)
   data_helper_file.write('};\n\n')
   # reference more data in entry
   data_file.write('&%s,  // more data\n' % var_name)
