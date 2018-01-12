@@ -711,6 +711,8 @@ void MediaControlsImpl::MaybeShow() {
     MakeOpaque();
   if (download_iph_manager_)
     download_iph_manager_->SetControlsVisibility(true);
+  if (loading_panel_)
+    loading_panel_->OnControlsShown();
 }
 
 void MediaControlsImpl::Hide() {
@@ -725,6 +727,8 @@ void MediaControlsImpl::Hide() {
     overlay_play_button_->SetIsWanted(false);
   if (download_iph_manager_)
     download_iph_manager_->SetControlsVisibility(false);
+  if (loading_panel_)
+    loading_panel_->OnControlsHidden();
 }
 
 bool MediaControlsImpl::IsVisible() const {
