@@ -194,7 +194,7 @@
               "os": "Mac-10.10.5"
             }
           ],
-          "shards": 4
+          "shards": 6
         }
       }
     ]
@@ -219,7 +219,7 @@
               "os": "Mac-10.11.6"
             }
           ],
-          "shards": 4
+          "shards": 6
         }
       }
     ]
@@ -247,7 +247,7 @@
               "os": "Mac-10.11.6"
             }
           ],
-          "shards": 4
+          "shards": 6
         }
       }
     ]
@@ -274,7 +274,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         }
       }
     ]
@@ -300,7 +300,7 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "shards": 4
+          "shards": 6
         }
       }
     ]
@@ -334,7 +334,7 @@
               "os": "Windows-10-14393"
             }
           ],
-          "shards": 5
+          "shards": 6
         }
       }
     ]
@@ -358,7 +358,7 @@
               "os": "Windows-7-SP1"
             }
           ],
-          "shards": 2
+          "shards": 6
         }
       }
     ]

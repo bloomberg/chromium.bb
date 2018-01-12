@@ -349,7 +349,7 @@
   'chromium_browser_tests': {
     'browser_tests': {
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
     },
     'components_browsertests': {},
@@ -622,61 +622,8 @@
     'app_shell_unittests': {},
     'browser_tests': {
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
-    },
-    # TODO(dpranke): browser_side_navigation is the default now; we should
-    # either not run these at all, or flip them to renderer_side_navigation.
-    'browser_side_navigation_browser_tests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'swarming': {
-        'shards': 5,
-      },
-      'test': 'browser_tests',
-    },
-    'browser_side_navigation_components_browsertests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'components_browsertests',
-    },
-    'browser_side_navigation_components_unittests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'components_unittests',
-    },
-    'browser_side_navigation_content_browsertests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'content_browsertests',
-    },
-    'browser_side_navigation_content_unittests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'content_unittests',
-    },
-    'browser_side_navigation_extensions_browsertests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'extensions_browsertests',
-    },
-    'browser_side_navigation_interactive_ui_tests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'interactive_ui_tests',
-    },
-    'browser_side_navigation_unit_tests': {
-      'args': [
-        '--enable-browser-side-navigation',
-      ],
-      'test': 'unit_tests',
     },
     'chrome_app_unittests': {},
     'chromedriver_unittests': {},
@@ -710,7 +657,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter'
       ],
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
       'test': 'browser_tests',
     },
@@ -1036,7 +983,7 @@
       ],
       'swarming': {
         'hard_timeout': 1800,
-        'shards': 5,
+        'shards': 10,
       },
     },
     'mash_unittests': {},
@@ -1117,7 +1064,7 @@
       ],
       'swarming': {
         'hard_timeout': 1500,
-        'shards': 5,
+        'shards': 10,
       },
       'test': 'browser_tests',
     },
@@ -1444,7 +1391,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter',
       ],
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
       'test': 'browser_tests',
     },
@@ -1548,7 +1495,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter',
       ],
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
     },
     'components_browsertests': {
@@ -1647,7 +1594,7 @@
         '--enable-surface-synchronization',
       ],
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
       'test': 'browser_tests',
     },
@@ -1666,7 +1613,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter'
       ],
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
       'test': 'browser_tests',
     },
@@ -1780,7 +1727,7 @@
     'battor_agent_unittests': {},
     'browser_tests': {
       'swarming': {
-        'shards': 5,
+        'shards': 10,
       },
     },
     'sbox_integration_tests': {
