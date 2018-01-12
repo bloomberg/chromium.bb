@@ -16,24 +16,10 @@ const char kResetAllFlags[] = "resetAllFlags";
 const char kRestartBrowser[] = "restartBrowser";
 
 // Other values.
-const char kChannelPromoBeta[] = "channelPromoBeta";
-const char kChannelPromoDev[] = "channelPromoDev";
-const char kDisable[] = "disable";
-const char kEnable[] = "enable";
-const char kFlagsBlurb[] = "flagsBlurb";
-const char kFlagsTitle[] = "flagsTitle";
-const char kFlagsNoExperimentsAvailable[] = "flagsNoExperimentsAvailable";
-const char kFlagsNoMatches[] = "flagsNoMatches";
-const char kFlagsNotSupported[] = "flagsNotSupported";
 const char kFlagsRestartButton[] = "flagsRestartButton";
 const char kFlagsRestartNotice[] = "flagsRestartNotice";
-const char kFlagsSearchPlaceholder[] = "flagsSearchPlaceholder";
-const char kFlagsSupportedTitle[] = "flagsSupportedTitle";
-const char kFlagsUnsupportedTitle[] = "flagsUnsupportedTitle";
-const char kFlagsWarningHeader[] = "flagsWarningHeader";
 const char kNeedsRestart[] = "needsRestart";
-const char kOwnerWarning[] = "ownerWarning";
-const char kResetAllButton[] = "resetAllButton";
+const char kOwnerEmail[] = "ownerEmail";
 const char kReturnExperimentalFeatures[] = "returnExperimentalFeatures";
 const char kShowBetaChannelPromotion[] = "showBetaChannelPromotion";
 const char kShowDevChannelPromotion[] = "showDevChannelPromotion";
