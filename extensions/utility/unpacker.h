@@ -6,6 +6,7 @@
 #define EXTENSIONS_UTILITY_UNPACKER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -85,6 +86,10 @@ class Unpacker {
   // Decodes the image at the given path and puts it in our list of decoded
   // images.
   bool AddDecodedImage(const base::FilePath& path);
+
+  // Verifies original image paths from extension. Returns true iff all paths
+  // are valid. Sets an error if at least one path is invalid.
+  bool VerifyOriginalImagePaths(const std::set<base::FilePath>& image_paths);
 
   // Parses the catalog at the given path and puts it in our list of parsed
   // catalogs.

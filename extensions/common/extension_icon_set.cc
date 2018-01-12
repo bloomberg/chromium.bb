@@ -4,40 +4,9 @@
 
 #include "extensions/common/extension_icon_set.h"
 
-#include <vector>
-
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-
-namespace {
-
-// Normalize relative path that does not reference to parent directory. Removes
-// ".". Returns false if path can not be normalized, i.e. it references parent
-// or empty after normalization.
-bool NormalizeRelativePath(const base::FilePath& path, base::FilePath* result) {
-  DCHECK(result);
-
-  if (path.ReferencesParent())
-    return false;
-
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  base::FilePath rv;
-  for (const auto& path_component : components) {
-    if (path_component != base::FilePath::kCurrentDirectory)
-      rv = rv.Append(path_component);
-  }
-
-  if (rv.empty())
-    return false;
-
-  *result = std::move(rv);
-  return true;
-}
-
-}  // namespace
 
 ExtensionIconSet::ExtensionIconSet() {}
 
@@ -106,11 +75,6 @@ int ExtensionIconSet::GetIconSizeFromPath(base::StringPiece path) const {
 
 void ExtensionIconSet::GetPaths(std::set<base::FilePath>* paths) const {
   CHECK(paths);
-  for (const auto& iter : map()) {
-    base::FilePath normalized_path;
-    if (NormalizeRelativePath(base::FilePath::FromUTF8Unsafe(iter.second),
-                              &normalized_path)) {
-      paths->emplace(std::move(normalized_path));
-    }
-  }
+  for (const auto& iter : map())
+    paths->insert(base::FilePath::FromUTF8Unsafe(iter.second));
 }

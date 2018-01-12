@@ -90,31 +90,4 @@ TEST(ExtensionIconSetTest, FindSize) {
             icons.GetIconSizeFromPath("foo"));
 }
 
-TEST(ExtensionIconSetTest, CollapsesSameRelativePaths) {
-  ExtensionIconSet icons;
-  icons.Add(extension_misc::EXTENSION_ICON_BITTY, "foo/icon.jpg");
-  icons.Add(extension_misc::EXTENSION_ICON_SMALL, "./foo/icon.jpg");
-  icons.Add(extension_misc::EXTENSION_ICON_LARGE, "./bar/../foo/icon.jpg");
-
-  std::set<base::FilePath> paths;
-  icons.GetPaths(&paths);
-
-  const std::set<base::FilePath> expected_paths = {
-      base::FilePath::FromUTF8Unsafe("foo").AppendASCII("icon.jpg")};
-  EXPECT_EQ(expected_paths, paths);
-}
-
-TEST(ExtensionIconSetTest, IgnoresIncorrectRelativePaths) {
-  ExtensionIconSet icons;
-  icons.Add(extension_misc::EXTENSION_ICON_BITTY, "foo/../../icon.jpg");
-  icons.Add(extension_misc::EXTENSION_ICON_SMALL, "../icon.jpg");
-  icons.Add(extension_misc::EXTENSION_ICON_LARGE, "./foo/icons/../..");
-  icons.Add(extension_misc::EXTENSION_ICON_GIGANTOR, "./foo/../..");
-
-  std::set<base::FilePath> paths;
-  icons.GetPaths(&paths);
-
-  EXPECT_TRUE(paths.empty());
-}
-
 }  // namespace
