@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/common/disable_reason.h"
+#include "extensions/browser/disable_reason.h"
 #include "net/base/escape.h"
 
 namespace extensions {

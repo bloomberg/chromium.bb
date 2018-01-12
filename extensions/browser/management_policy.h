@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "extensions/common/disable_reason.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {

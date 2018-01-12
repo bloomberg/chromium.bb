@@ -95,6 +95,7 @@ source_set("browser_sources") {
     "deferred_start_render_host_observer.h",
     "device_local_account_util.cc",
     "device_local_account_util.h",
+    "disable_reason.h",
     "error_map.cc",
     "error_map.h",
     "event_listener_map.cc",

@@ -12,7 +12,7 @@
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "extensions/common/disable_reason.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
