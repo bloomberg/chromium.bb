@@ -666,7 +666,7 @@ Document::Document(const DocumentInit& initializer,
       logged_field_edit_(false),
       engagement_level_(mojom::blink::EngagementLevel::NONE),
       secure_context_state_(SecureContextState::kUnknown),
-      ukm_source_id_(ukm::kInvalidSourceId),
+      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
       needs_to_record_ukm_outlive_time_(false) {
   if (frame_) {
     DCHECK(frame_->GetPage());
@@ -3757,7 +3757,9 @@ void Document::SetURL(const KURL& url) {
   UpdateBaseURL();
   GetContextFeatures().UrlDidChange(this);
 
-  if (ukm_recorder_)
+  // TODO(crbug/795354): Move handling of URL recording out of the renderer.
+  // URL must only be recorded from the main frame.
+  if (ukm_recorder_ && IsInMainFrame())
     ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
 }
 
@@ -6006,21 +6008,20 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {
-  // UKM must only be recorded using the main frame.
-  DCHECK(IsInMainFrame());
-
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
   ukm_recorder_ =
       ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
-  ukm_source_id_ = ukm_recorder_->GetNewSourceID();
-  ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
+
+  // TODO(crbug/795354): Move handling of URL recording out of the renderer.
+  // URL must only be recorded from the main frame.
+  if (IsInMainFrame())
+    ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
   return ukm_recorder_.get();
 }
 
 int64_t Document::UkmSourceID() const {
-  DCHECK(ukm_recorder_);
   return ukm_source_id_;
 }
 
