@@ -23,7 +23,7 @@ project(
   ['c'],
   version : '2.4.89',
   license : 'MIT',
-  meson_version : '>= 0.42',
+  meson_version : '>= 0.43',
   default_options : ['buildtype=debugoptimized', 'c_std=gnu99'],
 )
 
