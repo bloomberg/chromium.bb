@@ -2310,6 +2310,28 @@ be describing additional metrics about the same event.
       The ID of the activity that happened while a page was open.
     </summary>
   </metric>
+  <metric name="IsActive">
+    <summary>
+      Boolean value representing whether this tab is selected in its containing
+      browser.
+    </summary>
+  </metric>
+  <metric name="IsBrowserFocused">
+    <summary>
+      Boolean value representing whether the containing browser is in focus.
+    </summary>
+  </metric>
+  <metric name="IsBrowserVisible">
+    <summary>
+      Boolean value representing whether the containing browser is visible.
+    </summary>
+  </metric>
+  <metric name="IsTopmostBrowser">
+    <summary>
+      Boolean value representing whether the containing browser is the topmost
+      one on the screen.
+    </summary>
+  </metric>
 </event>
 
 <event name="TabManager.TabMetrics">
