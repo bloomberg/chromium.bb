@@ -47,7 +47,7 @@ class CORE_EXPORT StyleSheet : public ScriptWrappable {
   virtual StyleSheet* parentStyleSheet() const { return nullptr; }
   virtual String href() const = 0;
   virtual String title() const = 0;
-  virtual MediaList* media() const { return nullptr; }
+  virtual MediaList* media() { return nullptr; }
   virtual String type() const = 0;
 
   virtual CSSRule* ownerRule() const { return nullptr; }

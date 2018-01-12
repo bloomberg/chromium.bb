@@ -67,7 +67,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   CSSStyleSheet* parentStyleSheet() const override;
   Node* ownerNode() const override { return owner_node_; }
-  MediaList* media() const override;
+  MediaList* media() override;
   String href() const override;
   String title() const override { return title_; }
   bool disabled() const override { return is_disabled_; }
@@ -179,7 +179,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<CSSRule> owner_rule_;
 
   TextPosition start_position_;
-  mutable Member<MediaList> media_cssom_wrapper_;
+  Member<MediaList> media_cssom_wrapper_;
   mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
   mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
   DISALLOW_COPY_AND_ASSIGN(CSSStyleSheet);
