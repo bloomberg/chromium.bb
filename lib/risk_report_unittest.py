@@ -21,6 +21,12 @@ class RiskReportTest(cros_test_lib.MockTestCase):
     self.conn = self.PatchObject(
         risk_report, '_GetCLRisks', lambda _id: self.risks)
 
+  def testMissing(self):
+    self.risks = {}
+    self.assertEqual(
+        risk_report.CLRiskText(42),
+        '')
+
   def testSingle(self):
     self.risks = {1: 0.0}
     self.assertEqual(
