@@ -106889,16 +106889,56 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="NQE.PeakKbps"/>
-  <affected-histogram name="NQE.RTT.Percentile0"/>
-  <affected-histogram name="NQE.RTT.Percentile10"/>
-  <affected-histogram name="NQE.RTT.Percentile100"/>
-  <affected-histogram name="NQE.RTT.Percentile50"/>
-  <affected-histogram name="NQE.RTT.Percentile90"/>
-  <affected-histogram name="NQE.TransportRTT.Percentile0"/>
-  <affected-histogram name="NQE.TransportRTT.Percentile10"/>
-  <affected-histogram name="NQE.TransportRTT.Percentile100"/>
-  <affected-histogram name="NQE.TransportRTT.Percentile50"/>
-  <affected-histogram name="NQE.TransportRTT.Percentile90"/>
+  <affected-histogram name="NQE.RTT.Percentile0">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.RTT.Percentile10">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.RTT.Percentile100">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.RTT.Percentile50">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.RTT.Percentile90">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.TransportRTT.Percentile0">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.TransportRTT.Percentile10">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.TransportRTT.Percentile100">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.TransportRTT.Percentile50">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.TransportRTT.Percentile90">
+    <obsolete>
+      Deprecated 01/2018.
+    </obsolete>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.ObservationSources" separator=".">

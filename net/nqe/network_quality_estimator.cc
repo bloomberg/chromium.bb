@@ -51,22 +51,6 @@ class HostResolver;
 
 namespace {
 
-// Returns the histogram that should be used to record the given statistic.
-// |max_limit| is the maximum value that can be stored in the histogram.
-base::HistogramBase* GetHistogram(const std::string& statistic_name,
-                                  NetworkChangeNotifier::ConnectionType type,
-                                  int32_t max_limit) {
-  const base::LinearHistogram::Sample kLowerLimit = 1;
-  DCHECK_GT(max_limit, kLowerLimit);
-  const size_t kBucketCount = 50;
-
-  return base::Histogram::FactoryGet(
-      "NQE." + statistic_name +
-          NetworkQualityEstimatorParams::GetNameForConnectionType(type),
-      kLowerLimit, max_limit, kBucketCount,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-}
-
 NetworkQualityObservationSource ProtocolSourceToObservationSource(
     SocketPerformanceWatcherFactory::Protocol protocol) {
   switch (protocol) {
@@ -659,8 +643,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  RecordMetricsOnConnectionTypeChanged();
-
   // Write the estimates of the previous network to the cache.
   network_quality_store_->Add(
       current_network_id_, nqe::internal::CachedNetworkQuality(
@@ -798,51 +780,6 @@ void NetworkQualityEstimator::UpdateSignalStrength() {
   max_signal_strength_since_connection_change_ =
       std::max(max_signal_strength_since_connection_change_.value_or(INT32_MIN),
                current_network_id_.signal_strength);
-}
-
-void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeDelta rtt;
-  if (GetRecentHttpRTT(base::TimeTicks(), &rtt)) {
-    // Add the 50th percentile value.
-    base::HistogramBase* rtt_percentile =
-        GetHistogram("RTT.Percentile50.", current_network_id_.type, 10 * 1000);
-    rtt_percentile->Add(rtt.InMilliseconds());
-
-    // Add the remaining percentile values.
-    static const int kPercentiles[] = {0, 10, 90, 100};
-    for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
-      rtt = GetRTTEstimateInternal(
-          base::TimeTicks(), base::Optional<Statistic>(),
-          nqe::internal::ObservationCategory::kHttp, kPercentiles[i], nullptr);
-
-      rtt_percentile = GetHistogram(
-          "RTT.Percentile" + base::IntToString(kPercentiles[i]) + ".",
-          current_network_id_.type, 10 * 1000);  // 10 seconds
-      rtt_percentile->Add(rtt.InMilliseconds());
-    }
-  }
-
-  if (GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr)) {
-    // Add the 50th percentile value.
-    base::HistogramBase* transport_rtt_percentile = GetHistogram(
-        "TransportRTT.Percentile50.", current_network_id_.type, 10 * 1000);
-    transport_rtt_percentile->Add(rtt.InMilliseconds());
-
-    // Add the remaining percentile values.
-    static const int kPercentiles[] = {0, 10, 90, 100};
-    for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
-      rtt =
-          GetRTTEstimateInternal(base::TimeTicks(), base::Optional<Statistic>(),
-                                 nqe::internal::ObservationCategory::kTransport,
-                                 kPercentiles[i], nullptr);
-
-      transport_rtt_percentile = GetHistogram(
-          "TransportRTT.Percentile" + base::IntToString(kPercentiles[i]) + ".",
-          current_network_id_.type, 10 * 1000);  // 10 seconds
-      transport_rtt_percentile->Add(rtt.InMilliseconds());
-    }
-  }
 }
 
 void NetworkQualityEstimator::RecordNetworkIDAvailability() const {
