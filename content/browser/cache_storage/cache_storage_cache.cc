@@ -762,6 +762,12 @@ CacheStorageCache::CacheStorageCache(
   DCHECK(quota_manager_proxy_.get());
   DCHECK(cache_padding_key_.get());
 
+  if (cache_size_ != CacheStorage::kSizeUnknown &&
+      cache_padding_ != CacheStorage::kSizeUnknown) {
+    // The size of this cache has already been reported to the QuotaManager.
+    last_reported_size_ = cache_size_ + cache_padding_;
+  }
+
   quota_manager_proxy_->NotifyOriginInUse(origin_);
 }
 
