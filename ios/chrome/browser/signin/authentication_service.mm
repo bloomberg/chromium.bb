@@ -21,11 +21,10 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/signin/browser_state_data_remover.h"
+#import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/signin_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -54,7 +53,7 @@ enum LoginMethodAndSyncState {
 
 // A fake account id used in the list of last signed in accounts when migrating
 // an email for which the corresponding account was removed.
-const char* kFakeAccountIdForRemovedAccount = "0000000000000";
+constexpr char kFakeAccountIdForRemovedAccount[] = "0000000000000";
 
 // Returns the account id associated with |identity|.
 std::string ChromeIdentityToAccountID(AccountTrackerService* account_tracker,
@@ -66,26 +65,20 @@ std::string ChromeIdentityToAccountID(AccountTrackerService* account_tracker,
 }  // namespace
 
 AuthenticationService::AuthenticationService(
-    ios::ChromeBrowserState* browser_state,
     PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
     SyncSetupService* sync_setup_service,
     AccountTrackerService* account_tracker,
     SigninManager* signin_manager,
     browser_sync::ProfileSyncService* sync_service)
-    : browser_state_(browser_state),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       sync_service_(sync_service),
-      have_accounts_changed_(false),
-      is_in_foreground_(false),
-      is_reloading_credentials_(false),
       identity_service_observer_(this),
       weak_pointer_factory_(this) {
-  DCHECK(browser_state_);
   DCHECK(pref_service_);
   DCHECK(sync_setup_service_);
   DCHECK(account_tracker_);
@@ -94,7 +87,9 @@ AuthenticationService::AuthenticationService(
   token_service_->AddObserver(this);
 }
 
-AuthenticationService::~AuthenticationService() {}
+AuthenticationService::~AuthenticationService() {
+  DCHECK(!delegate_);
+}
 
 // static
 void AuthenticationService::RegisterPrefs(
@@ -107,7 +102,13 @@ void AuthenticationService::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kSigninLastAccountsMigrated, false);
 }
 
-void AuthenticationService::Initialize() {
+void AuthenticationService::Initialize(
+    std::unique_ptr<AuthenticationServiceDelegate> delegate) {
+  CHECK(delegate);
+  CHECK(!initialized());
+  delegate_ = std::move(delegate);
+  initialized_ = true;
+
   MigrateAccountsStoredInPrefsIfNeeded();
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
@@ -152,6 +153,8 @@ void AuthenticationService::Shutdown() {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center removeObserver:foreground_observer_];
   [center removeObserver:background_observer_];
+
+  delegate_.reset();
 }
 
 void AuthenticationService::OnApplicationEnterForeground() {
@@ -379,7 +382,7 @@ void AuthenticationService::SignOut(
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
   if (is_managed) {
-    BrowserStateDataRemover::ClearData(browser_state_, completion);
+    delegate_->ClearBrowsingData(completion);
   } else if (completion) {
     completion();
   }

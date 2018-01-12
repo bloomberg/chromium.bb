@@ -17,6 +17,7 @@ source_set("signin") {
     "account_tracker_service_factory.h",
     "authentication_service.h",
     "authentication_service.mm",
+    "authentication_service_delegate.h",
     "authentication_service_factory.h",
     "authentication_service_factory.mm",
     "browser_state_data_remover.h",
@@ -89,6 +90,8 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "authentication_service_delegate_fake.h",
+    "authentication_service_delegate_fake.mm",
     "authentication_service_fake.h",
     "authentication_service_fake.mm",
     "fake_oauth2_token_service_builder.h",

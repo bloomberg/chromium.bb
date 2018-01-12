@@ -24,6 +24,7 @@ class ChromeBrowserState;
 }
 
 class AuthenticationService;
+class AuthenticationServiceDelegate;
 
 // Singleton that owns all |AuthenticationServices| and associates them with
 // browser states. Listens for the |BrowserState|'s destruction notification and
@@ -32,9 +33,14 @@ class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static AuthenticationService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
-  static AuthenticationService* GetForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
   static AuthenticationServiceFactory* GetInstance();
+
+  // Force the instantiation of AuthenticationService and initialize it with
+  // the given delegate. Must be called before GetForBrowserState (not doing
+  // so is a security issue and the app will terminate).
+  static void CreateAndInitializeForBrowserState(
+      ios::ChromeBrowserState* browser_state,
+      std::unique_ptr<AuthenticationServiceDelegate> delegate);
 
  private:
   friend struct base::DefaultSingletonTraits<AuthenticationServiceFactory>;
@@ -47,6 +53,9 @@ class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
+
+  // KeyedServiceBaseFactory implementation.
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticationServiceFactory);
 };

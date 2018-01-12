@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
 #include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
@@ -178,7 +179,7 @@ class AuthenticationServiceTest : public PlatformTest,
       authentication_service_->Shutdown();
     }
     authentication_service_ = std::make_unique<AuthenticationService>(
-        browser_state_.get(), browser_state_->GetPrefs(),
+        browser_state_->GetPrefs(),
         OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get()),
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
         ios::AccountTrackerServiceFactory::GetForBrowserState(
@@ -186,7 +187,8 @@ class AuthenticationServiceTest : public PlatformTest,
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get()),
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(
             browser_state_.get()));
-    authentication_service_->Initialize();
+    authentication_service_->Initialize(
+        std::make_unique<AuthenticationServiceDelegateFake>());
   }
 
   void StoreAccountsInPrefs() {
