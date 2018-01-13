@@ -157,7 +157,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
   def testApplyCallable(self):
     # Callable that adds a configurable amount.
     def append(x):
-        return lambda base: base + ' ' + x
+      return lambda base: base + ' ' + x
 
     site_config = config_lib.SiteConfig()
 
@@ -550,7 +550,9 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     # Try to fetch a non-existent template.
     with self.assertRaises(AttributeError):
+      # pylint: disable=pointless-statement
       self.site_config.templates.no_such_template
+      # pylint: enable=pointless-statement
 
   def testAddForBoards(self):
     per_board = {
