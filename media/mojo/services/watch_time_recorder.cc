@@ -25,20 +25,22 @@ constexpr base::TimeDelta kMinimumElapsedWatchTime =
 // List of known AudioDecoder implementations; recorded to UKM, always add new
 // values to the end and do not reorder or delete values from this list.
 enum class AudioDecoderName : int {
-  kUnknown = 0,  // Decoder name string is not recognized or n/a.
-  kFFmpeg = 1,   // FFmpegAudioDecoder
-  kMojo = 2,     // MojoAudioDecoder
+  kUnknown = 0,     // Decoder name string is not recognized or n/a.
+  kFFmpeg = 1,      // FFmpegAudioDecoder
+  kMojo = 2,        // MojoAudioDecoder
+  kDecrypting = 3,  // DecryptingAudioDecoder
 };
 
 // List of known VideoDecoder implementations; recorded to UKM, always add new
 // values to the end and do not reorder or delete values from this list.
 enum class VideoDecoderName : int {
-  kUnknown = 0,  // Decoder name string is not recognized or n/a.
-  kGpu = 1,      // GpuVideoDecoder
-  kFFmpeg = 2,   // FFmpegVideoDecoder
-  kVpx = 3,      // VpxVideoDecoder
-  kAom = 4,      // AomVideoDecoder
-  kMojo = 5,     // MojoVideoDecoder
+  kUnknown = 0,     // Decoder name string is not recognized or n/a.
+  kGpu = 1,         // GpuVideoDecoder
+  kFFmpeg = 2,      // FFmpegVideoDecoder
+  kVpx = 3,         // VpxVideoDecoder
+  kAom = 4,         // AomVideoDecoder
+  kMojo = 5,        // MojoVideoDecoder
+  kDecrypting = 6,  // DecryptingVideoDecoder
 };
 
 static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
@@ -49,6 +51,8 @@ static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
       return AudioDecoderName::kFFmpeg;
     case 0xdaceafdb:
       return AudioDecoderName::kMojo;
+    case 0xd39a2eda:
+      return AudioDecoderName::kDecrypting;
     default:
       DLOG_IF(WARNING, !name.empty())
           << "Unknown decoder name encountered; metrics need updating: "
@@ -71,6 +75,8 @@ static VideoDecoderName ConvertVideoDecoderNameToEnum(const std::string& name) {
       return VideoDecoderName::kVpx;
     case 0xcff23b85:
       return VideoDecoderName::kAom;
+    case 0xb52d52f5:
+      return VideoDecoderName::kDecrypting;
     default:
       DLOG_IF(WARNING, !name.empty())
           << "Unknown decoder name encountered; metrics need updating: "
