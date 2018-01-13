@@ -20,6 +20,7 @@ class Size;
 namespace display {
 class ManagedDisplayInfo;
 class ManagedDisplayMode;
+using DisplayInfoList = std::vector<ManagedDisplayInfo>;
 
 // Creates the display mode list for internal display
 // based on |native_mode|.
@@ -96,6 +97,42 @@ DISPLAY_MANAGER_EXPORT display::ManagedDisplayInfo CreateDisplayInfo(
 
 // Get the display id after the output index (8 bits) is masked out.
 DISPLAY_MANAGER_EXPORT int64_t GetDisplayIdWithoutOutputIndex(int64_t id);
+
+// Defines parameters needed to set mixed mirror mode.
+struct DISPLAY_MANAGER_EXPORT MixedMirrorModeParams {
+  MixedMirrorModeParams(int64_t src_id, const DisplayIdList& dst_ids);
+  MixedMirrorModeParams(const MixedMirrorModeParams& mixed_params);
+  ~MixedMirrorModeParams();
+
+  int64_t source_id;  // Id of the mirroring source display
+
+  DisplayIdList destination_ids;  // Ids of the mirroring destination displays.
+};
+
+// Defines mirror modes used to change the display mode.
+enum class MirrorMode {
+  kOff = 0,
+  kNormal,
+  kMixed,
+};
+
+// Defines the error types of mixed mirror mode parameters.
+enum class MixedMirrorModeParamsErrors {
+  kSuccess = 0,
+  kErrorSingleDisplay,
+  kErrorSourceIdNotFound,
+  kErrorDestinationIdsEmpty,
+  kErrorDestinationIdNotFound,
+  kErrorDuplicateId,
+};
+
+// Verifies whether the mixed mirror mode parameters are valid.
+// |connected_display_ids| is the id list for all connected displays. Returns
+// error type for the parameters.
+DISPLAY_MANAGER_EXPORT MixedMirrorModeParamsErrors
+ValidateParamsForMixedMirrorMode(
+    const DisplayIdList& connected_display_ids,
+    const MixedMirrorModeParams& mixed_mode_params);
 
 }  // namespace display
 

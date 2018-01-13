@@ -222,6 +222,7 @@ extern const char kDisplayPowerState[];
 extern const char kDisplayProperties[];
 extern const char kDisplayTouchAssociations[];
 extern const char kExternalDisplayMirrorInfo[];
+extern const char kDisplayMixedMirrorModeParams[];
 extern const char kSecondaryDisplays[];
 extern const char kDisplayRotationLock[];
 extern const char kNoteTakingAppId[];

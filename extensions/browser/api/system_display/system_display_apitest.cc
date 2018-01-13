@@ -142,6 +142,10 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return base::ContainsKey(overscan_adjusted_, id);
   }
 
+  const api::system_display::MirrorMode& mirror_mode() const {
+    return mirror_mode_;
+  }
+
   void SetTouchCalibrationWillSucceed(bool success) {
     native_touch_calibration_success_ = success;
   }
@@ -157,6 +161,12 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), native_touch_calibration_success_));
+    return true;
+  }
+
+  bool SetMirrorMode(const api::system_display::MirrorModeInfo& info,
+                     std::string* error) override {
+    mirror_mode_ = info.mode;
     return true;
   }
 
@@ -191,6 +201,9 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   std::set<std::string> overscan_adjusted_;
 
   bool native_touch_calibration_success_ = false;
+
+  api::system_display::MirrorMode mirror_mode_ =
+      api::system_display::MIRROR_MODE_OFF;
 
   DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
@@ -476,6 +489,58 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibration) {
   bool callback_result;
   ASSERT_TRUE(result->GetAsBoolean(&callback_result));
   ASSERT_TRUE(callback_result);
+}
+
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetMirrorMode) {
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(kTestManifestKiosk));
+  scoped_refptr<Extension> test_extension(
+      api_test_utils::CreateExtension(test_extension_value.get()));
+  {
+    auto set_mirror_mode_function =
+        base::MakeRefCounted<SystemDisplaySetMirrorModeFunction>();
+
+    set_mirror_mode_function->set_has_callback(true);
+    set_mirror_mode_function->set_extension(test_extension.get());
+
+    ASSERT_TRUE(api_test_utils::RunFunction(set_mirror_mode_function.get(),
+                                            "[{\n"
+                                            "  \"mode\": \"normal\"\n"
+                                            "}]",
+                                            browser_context()));
+    EXPECT_EQ(api::system_display::MIRROR_MODE_NORMAL,
+              provider_->mirror_mode());
+  }
+  {
+    auto set_mirror_mode_function =
+        base::MakeRefCounted<SystemDisplaySetMirrorModeFunction>();
+
+    set_mirror_mode_function->set_has_callback(true);
+    set_mirror_mode_function->set_extension(test_extension.get());
+    ASSERT_TRUE(
+        api_test_utils::RunFunction(set_mirror_mode_function.get(),
+                                    "[{\n"
+                                    "  \"mode\": \"mixed\",\n"
+                                    "  \"mirroringSourceId\": \"10\",\n"
+                                    "  \"mirroringDestinationIds\": [\"11\"]\n"
+                                    "}]",
+                                    browser_context()));
+    EXPECT_EQ(api::system_display::MIRROR_MODE_MIXED, provider_->mirror_mode());
+  }
+  {
+    auto set_mirror_mode_function =
+        base::MakeRefCounted<SystemDisplaySetMirrorModeFunction>();
+
+    set_mirror_mode_function->set_has_callback(true);
+    set_mirror_mode_function->set_extension(test_extension.get());
+
+    ASSERT_TRUE(api_test_utils::RunFunction(set_mirror_mode_function.get(),
+                                            "[{\n"
+                                            "  \"mode\": \"off\"\n"
+                                            "}]",
+                                            browser_context()));
+    EXPECT_EQ(api::system_display::MIRROR_MODE_OFF, provider_->mirror_mode());
+  }
 }
 
 #endif  // !defined(OS_CHROMEOS)

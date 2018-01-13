@@ -263,6 +263,13 @@ void MirrorWindowController::UpdateWindow(
       }
     }
   }
+
+  if (mirroring_host_info_map_.empty() && reflector_) {
+    // Close the mirror window if all displays are disconnected.
+    aura::Env::GetInstance()->context_factory_private()->RemoveReflector(
+        reflector_.get());
+    reflector_.reset();
+  }
 }
 
 void MirrorWindowController::UpdateWindow() {

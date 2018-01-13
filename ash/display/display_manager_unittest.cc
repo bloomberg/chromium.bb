@@ -159,7 +159,9 @@ class DisplayManagerTest : public AshTestBase,
   }
 
   void SetSoftwareMirrorMode(bool active) {
-    display_manager()->SetMirrorMode(active);
+    display_manager()->SetMirrorMode(
+        active ? display::MirrorMode::kNormal : display::MirrorMode::kOff,
+        base::nullopt);
     RunAllPendingInMessageLoop();
   }
 
@@ -2346,7 +2348,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   EXPECT_EQ("300x400", hosts[0]->window()->bounds().size().ToString());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
-  display_manager()->SetMirrorMode(false);
+  SetSoftwareMirrorMode(false);
   EXPECT_TRUE(display_observer.changed_and_reset());
   EXPECT_TRUE(test_api.GetHosts().empty());
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
@@ -2354,7 +2356,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
 
   // Make sure the mirror window has the pixel size of the
   // source display.
-  display_manager()->SetMirrorMode(true);
+  SetSoftwareMirrorMode(true);
   EXPECT_TRUE(display_observer.changed_and_reset());
 
   UpdateDisplay("300x400@0.5,400x500");
@@ -2388,14 +2390,14 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
 
 TEST_F(DisplayManagerTest, RotateInSoftwareMirroring) {
   UpdateDisplay("600x400,500x300");
-  display_manager()->SetMirrorMode(true);
+  SetSoftwareMirrorMode(true);
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display_manager()->SetDisplayRotation(
       primary_id, display::Display::ROTATE_180,
       display::Display::ROTATION_SOURCE_ACTIVE);
-  display_manager()->SetMirrorMode(false);
+  SetSoftwareMirrorMode(false);
 }
 
 // TODO(weidongg/774795) Remove test when multi mirroring is enabled by default.
@@ -2578,10 +2580,10 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   // 300 * 500 / 200  + 400 = 1150.
   EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
 
-  display_manager()->SetMirrorMode(true);
+  SetSoftwareMirrorMode(true);
   EXPECT_EQ(gfx::Size(400, 500), screen->GetPrimaryDisplay().size());
 
-  display_manager()->SetMirrorMode(false);
+  SetSoftwareMirrorMode(false);
   EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
 
   // Switch to single desktop.
@@ -2658,7 +2660,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
 
   // Exit software mirroring and enter unified desktop mode after mirror mode is
   // turned off.
-  display_manager()->SetMirrorMode(false);
+  SetSoftwareMirrorMode(false);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 }
@@ -4249,6 +4251,158 @@ TEST_F(DisplayManagerTest, MirrorModeRestore) {
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
+}
+
+TEST_F(DisplayManagerTest, MixedMirrorModeBasics) {
+  UpdateDisplay("300x400,400x500,500x600");
+  display::DisplayIdList id_list = display_manager()->GetCurrentDisplayIdList();
+
+  // Turn on mixed mirror mode. (Mirror from the first display to the second
+  // display)
+  display::DisplayIdList dst_ids;
+  dst_ids.emplace_back(id_list[1]);
+  base::Optional<display::MixedMirrorModeParams> mixed_params(
+      base::in_place, id_list[0], dst_ids);
+  display_manager()->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+  display::DisplayIdList destination_ids =
+      display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(id_list[1], destination_ids[0]);
+  EXPECT_TRUE(display_manager()->mixed_mirror_mode_params());
+
+  // Turn off mirror mode.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  EXPECT_FALSE(display_manager()->mixed_mirror_mode_params());
+}
+
+TEST_F(DisplayManagerTest, MixedMirrorModeToMirrorMode) {
+  UpdateDisplay("300x400,400x500,500x600");
+  display::DisplayIdList id_list = display_manager()->GetCurrentDisplayIdList();
+
+  // Turn on mixed mirror mode. (Mirror from the first display to the second
+  // display)
+  display::DisplayIdList dst_ids;
+  dst_ids.emplace_back(id_list[1]);
+  base::Optional<display::MixedMirrorModeParams> mixed_params(
+      base::in_place, id_list[0], dst_ids);
+  display_manager()->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+  display::DisplayIdList destination_ids =
+      display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(id_list[1], destination_ids[0]);
+  EXPECT_TRUE(display_manager()->mixed_mirror_mode_params());
+
+  // Overwrite mixed mirror mode with default mirror mode (Mirror all
+  // displays).
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+  EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+  destination_ids = display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(2U, destination_ids.size());
+  EXPECT_EQ(id_list[1], destination_ids[0]);
+  EXPECT_EQ(id_list[2], destination_ids[1]);
+  EXPECT_FALSE(display_manager()->mixed_mirror_mode_params());
+}
+
+TEST_F(DisplayManagerTest, MirrorModeToMixedMirrorMode) {
+  UpdateDisplay("300x400,400x500,500x600");
+  display::DisplayIdList id_list = display_manager()->GetCurrentDisplayIdList();
+
+  // Turn on mirror mode.
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+  EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+  display::DisplayIdList destination_ids =
+      display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(2U, destination_ids.size());
+  EXPECT_EQ(id_list[1], destination_ids[0]);
+  EXPECT_EQ(id_list[2], destination_ids[1]);
+  EXPECT_FALSE(display_manager()->mixed_mirror_mode_params());
+
+  // Overwrite default mirror mode with mixed mirror mode. (Mirror from the
+  // first display to the second display)
+  display::DisplayIdList dst_ids;
+  dst_ids.emplace_back(id_list[1]);
+  base::Optional<display::MixedMirrorModeParams> mixed_params(
+      base::in_place, id_list[0], dst_ids);
+  display_manager()->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+  destination_ids = display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(id_list[1], destination_ids[0]);
+  EXPECT_TRUE(display_manager()->mixed_mirror_mode_params());
+}
+
+TEST_F(DisplayManagerTest, MixedMirrorModeRestore) {
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  constexpr int64_t first_display_id = 210000001;
+  constexpr int64_t second_display_id = 220000002;
+  display::ManagedDisplayInfo first_mirror_info =
+      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 500, 500));
+  display::ManagedDisplayInfo second_mirror_info =
+      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 500, 500));
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+
+  // Connect the first and second displays.
+  display_info_list.push_back(display::CreateDisplayInfo(
+      internal_display_id, gfx::Rect(0, 0, 100, 100)));
+  display_info_list.push_back(first_mirror_info);
+  display_info_list.push_back(second_mirror_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // Turn on mixed mirror mode. (Mirror from the internal display to the
+  // first display)
+  display::DisplayIdList dst_ids;
+  dst_ids.emplace_back(first_display_id);
+  base::Optional<display::MixedMirrorModeParams> mixed_params(
+      base::in_place, internal_display_id, dst_ids);
+  display_manager()->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(internal_display_id, display_manager()->mirroring_source_id());
+  display::DisplayIdList destination_ids =
+      display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(first_display_id, destination_ids[0]);
+
+  // Remove the second display. Mirroring is not changed.
+  display_info_list.erase(display_info_list.end() - 1);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(internal_display_id, display_manager()->mirroring_source_id());
+  destination_ids = display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(first_display_id, destination_ids[0]);
+
+  // Add the second display. Mirroring is not changed.
+  display_info_list.push_back(second_mirror_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(internal_display_id, display_manager()->mirroring_source_id());
+  destination_ids = display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(first_display_id, destination_ids[0]);
+
+  // Remove the first display. Mirroring ends.
+  display_info_list.erase(display_info_list.end() - 2);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+
+  // Add the first display. Mirroring is restored.
+  display_info_list.push_back(first_mirror_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(internal_display_id, display_manager()->mirroring_source_id());
+  destination_ids = display_manager()->GetMirroringDestinationDisplayIdList();
+  EXPECT_EQ(1U, destination_ids.size());
+  EXPECT_EQ(first_display_id, destination_ids[0]);
 }
 
 }  // namespace ash
