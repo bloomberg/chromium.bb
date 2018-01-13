@@ -2033,9 +2033,8 @@ int main(int argc, const char **argv_) {
            was selected. */
         switch (stream->config.cfg.g_profile) {
           case 0:
-            if ((input.bit_depth == 8 || input.bit_depth == 10) &&
-                (input.fmt == AOM_IMG_FMT_I444 ||
-                 input.fmt == AOM_IMG_FMT_I44416)) {
+            if (input.bit_depth < 12 && (input.fmt == AOM_IMG_FMT_I444 ||
+                                         input.fmt == AOM_IMG_FMT_I44416)) {
               stream->config.cfg.g_profile = 1;
               profile_updated = 1;
             } else if (input.bit_depth == 12 || input.fmt == AOM_IMG_FMT_I422 ||
@@ -2049,6 +2048,23 @@ int main(int argc, const char **argv_) {
                 input.fmt == AOM_IMG_FMT_I42216) {
               stream->config.cfg.g_profile = 2;
               profile_updated = 1;
+            } else if (input.bit_depth < 12 &&
+                       (input.fmt == AOM_IMG_FMT_I420 ||
+                        input.fmt == AOM_IMG_FMT_I42016)) {
+              stream->config.cfg.g_profile = 0;
+              profile_updated = 1;
+            }
+            break;
+          case 2:
+            if (input.bit_depth < 12 && (input.fmt == AOM_IMG_FMT_I444 ||
+                                         input.fmt == AOM_IMG_FMT_I44416)) {
+              stream->config.cfg.g_profile = 1;
+              profile_updated = 1;
+            } else if (input.bit_depth < 12 &&
+                       (input.fmt == AOM_IMG_FMT_I420 ||
+                        input.fmt == AOM_IMG_FMT_I42016)) {
+              stream->config.cfg.g_profile = 0;
+              profile_updated = 1;
             }
             break;
           default: break;
@@ -2060,25 +2076,22 @@ int main(int argc, const char **argv_) {
           (unsigned int)stream->config.cfg.g_bit_depth) {
         stream->config.cfg.g_bit_depth = stream->config.cfg.g_input_bit_depth;
       }
-      if (stream->config.cfg.g_bit_depth > 8) {
+      if (stream->config.cfg.g_bit_depth > 10) {
         switch (stream->config.cfg.g_profile) {
           case 0:
-            stream->config.cfg.g_profile = 2;
-            profile_updated = 1;
-            break;
           case 1:
-            stream->config.cfg.g_profile = 3;
+            stream->config.cfg.g_profile = 2;
             profile_updated = 1;
             break;
           default: break;
         }
       }
-      if (stream->config.cfg.g_profile > 1) {
+      if (stream->config.cfg.g_bit_depth > 8) {
         stream->config.use_16bit_internal = 1;
       }
       if (profile_updated && !global.quiet) {
         fprintf(stderr,
-                "Warning: automatically upgrading to profile %d to "
+                "Warning: automatically updating to profile %d to "
                 "match input format.\n",
                 stream->config.cfg.g_profile);
       }
