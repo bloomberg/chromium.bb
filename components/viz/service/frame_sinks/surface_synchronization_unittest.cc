@@ -37,10 +37,12 @@ std::vector<SurfaceId> empty_surface_ids() {
   return std::vector<SurfaceId>();
 }
 
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t parent_id) {
-  return SurfaceId(
-      frame_sink_id,
-      LocalSurfaceId(parent_id, base::UnguessableToken::Deserialize(0, 1u)));
+SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id,
+                        uint32_t parent_sequence_number,
+                        uint32_t child_sequence_number = 1u) {
+  return SurfaceId(frame_sink_id,
+                   LocalSurfaceId(parent_sequence_number, child_sequence_number,
+                                  base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 CompositorFrame MakeCompositorFrame(
@@ -1908,6 +1910,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 2);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
                                          MakeDefaultCompositorFrame());
@@ -1980,6 +1983,32 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   // surface that is newer than the primary.
   EXPECT_EQ(GetSurfaceForId(child_id1),
             GetLatestInFlightSurface(child_id1, child_id1));
+
+  // Submit a child CompositorFrame to a new SurfaceId and verify that
+  // GetLatestInFlightSurface returns the right surface.
+  EXPECT_TRUE(child_support1().SubmitCompositorFrame(
+      child_id3.local_surface_id(), MakeDefaultCompositorFrame()));
+
+  // Verify that there is a temporary reference for child_id3.
+  EXPECT_TRUE(HasTemporaryReference(child_id3));
+
+  // GetLatestInFlightSurface will not return child_id3's surface because it
+  // does not yet have an owner.
+  EXPECT_EQ(GetSurfaceForId(child_id2),
+            GetLatestInFlightSurface(child_id3, child_id1));
+  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
+
+  // Now that the owner of |child_id3| is known, GetLatestInFlightSurface will
+  // return it as a possible fallback.
+  frame_sink_manager().surface_manager()->AssignTemporaryReference(
+      child_id3, parent_id.frame_sink_id());
+  EXPECT_EQ(GetSurfaceForId(child_id3),
+            GetLatestInFlightSurface(child_id3, child_id1));
+
+  // If the primary surface is old, then we shouldn't return an in-flight
+  // surface that is newer than the primary.
+  EXPECT_EQ(GetSurfaceForId(child_id2),
+            GetLatestInFlightSurface(child_id2, child_id1));
 }
 
 // This test verifies that GetLatestInFlightSurface will return nullptr
