@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,7 +135,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
     std::unique_ptr<ClientSocketHandle> transport_socket(
         new ClientSocketHandle);
     scoped_refptr<MockTransportSocketParams> params;
-    transport_socket->Init("a", params, MEDIUM,
+    transport_socket->Init("a", params, MEDIUM, SocketTag(),
                            ClientSocketPool::RespectLimits::ENABLED,
                            CompletionCallback(), &pool_, net_log_.bound());
     return transport_socket;

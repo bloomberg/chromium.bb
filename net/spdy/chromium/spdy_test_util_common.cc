@@ -22,6 +22,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/chromium/buffered_spdy_framer.h"
@@ -492,7 +493,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode(), 0, /* expect_spdy = */ false);
   int rv = connection->Init(
-      key.host_port_pair().ToString(), ssl_params, MEDIUM,
+      key.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);

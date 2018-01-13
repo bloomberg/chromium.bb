@@ -85,8 +85,9 @@ TEST(SocketTagTest, Apply) {
   old_traffic = GetTaggedBytes(tag_val2);
   SocketTag tag2(getuid(), tag_val2);
   tag2.Apply(s);
-  const char kRequest1[] = "GET /";
-  ASSERT_EQ(send(s, kRequest1, strlen(kRequest1), 0), (int)strlen(kRequest1));
+  const char kRequest1[] = "GET / HTTP/1.0";
+  ASSERT_EQ(send(s, kRequest1, strlen(kRequest1), 0),
+            static_cast<int>(strlen(kRequest1)));
   EXPECT_GT(GetTaggedBytes(tag_val2), old_traffic);
 
   // Verify socket can be retagged with a new value and the current process's
@@ -94,7 +95,8 @@ TEST(SocketTagTest, Apply) {
   old_traffic = GetTaggedBytes(tag_val1);
   tag1.Apply(s);
   const char kRequest2[] = "\n\n";
-  ASSERT_EQ(send(s, kRequest2, strlen(kRequest2), 0), (int)strlen(kRequest2));
+  ASSERT_EQ(send(s, kRequest2, strlen(kRequest2), 0),
+            static_cast<int>(strlen(kRequest2)));
   EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
 
   ASSERT_EQ(close(s), 0);

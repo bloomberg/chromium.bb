@@ -1260,6 +1260,10 @@ bool MockSSLClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
   return true;
 }
 
+void MockSSLClientSocket::ApplySocketTag(const SocketTag& tag) {
+  return transport_->socket()->ApplySocketTag(tag);
+}
+
 void MockSSLClientSocket::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   DCHECK(cert_request_info);
@@ -1600,12 +1604,17 @@ void ClientSocketPoolTest::ReleaseAllConnections(KeepAlive keep_alive) {
 MockTransportClientSocketPool::MockConnectJob::MockConnectJob(
     std::unique_ptr<StreamSocket> socket,
     ClientSocketHandle* handle,
+    const SocketTag& socket_tag,
     const CompletionCallback& callback)
-    : socket_(std::move(socket)), handle_(handle), user_callback_(callback) {}
+    : socket_(std::move(socket)),
+      handle_(handle),
+      socket_tag_(socket_tag),
+      user_callback_(callback) {}
 
 MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() = default;
 
 int MockTransportClientSocketPool::MockConnectJob::Connect() {
+  socket_->ApplySocketTag(socket_tag_);
   int rv = socket_->Connect(base::Bind(&MockConnectJob::OnConnect,
                                        base::Unretained(this)));
   if (rv != ERR_IO_PENDING) {
@@ -1679,6 +1688,7 @@ int MockTransportClientSocketPool::RequestSocket(
     const std::string& group_name,
     const void* socket_params,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     RespectLimits respect_limits,
     ClientSocketHandle* handle,
     const CompletionCallback& callback,
@@ -1687,7 +1697,8 @@ int MockTransportClientSocketPool::RequestSocket(
   std::unique_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), NULL, net_log.net_log(), NetLogSource());
-  MockConnectJob* job = new MockConnectJob(std::move(socket), handle, callback);
+  MockConnectJob* job =
+      new MockConnectJob(std::move(socket), handle, socket_tag, callback);
   job_list_.push_back(base::WrapUnique(job));
   handle->set_pool_id(1);
   return job->Connect();
@@ -1734,13 +1745,14 @@ MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() = default;
 int MockSOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                              const void* socket_params,
                                              RequestPriority priority,
+                                             const SocketTag& socket_tag,
                                              RespectLimits respect_limits,
                                              ClientSocketHandle* handle,
                                              const CompletionCallback& callback,
                                              const NetLogWithSource& net_log) {
   return transport_pool_->RequestSocket(group_name, socket_params, priority,
-                                        respect_limits, handle, callback,
-                                        net_log);
+                                        socket_tag, respect_limits, handle,
+                                        callback, net_log);
 }
 
 void MockSOCKSClientSocketPool::SetPriority(const std::string& group_name,
@@ -1883,9 +1895,28 @@ int WrappedStreamSocket::SetSendBufferSize(int32_t size) {
   return transport_->SetSendBufferSize(size);
 }
 
+int MockTaggingStreamSocket::Connect(const CompletionCallback& callback) {
+  connected_ = true;
+  return WrappedStreamSocket::Connect(callback);
+}
+
 void MockTaggingStreamSocket::ApplySocketTag(const SocketTag& tag) {
+  tagged_before_connected_ &= !connected_ || tag == tag_;
   tag_ = tag;
   transport_->ApplySocketTag(tag);
+}
+
+std::unique_ptr<StreamSocket>
+MockTaggingClientSocketFactory::CreateTransportClientSocket(
+    const AddressList& addresses,
+    std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    NetLog* net_log,
+    const NetLogSource& source) {
+  std::unique_ptr<MockTaggingStreamSocket> socket(new MockTaggingStreamSocket(
+      MockClientSocketFactory::CreateTransportClientSocket(
+          addresses, std::move(socket_performance_watcher), net_log, source)));
+  socket_ = socket.get();
+  return std::move(socket);
 }
 
 const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };

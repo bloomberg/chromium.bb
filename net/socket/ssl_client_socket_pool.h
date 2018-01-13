@@ -98,6 +98,7 @@ class SSLConnectJob : public ConnectJob {
   // job.
   SSLConnectJob(const std::string& group_name,
                 RequestPriority priority,
+                const SocketTag& socket_tag,
                 ClientSocketPool::RespectLimits respect_limits,
                 const scoped_refptr<SSLSocketParams>& params,
                 const base::TimeDelta& timeout_duration,
@@ -217,6 +218,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   int RequestSocket(const std::string& group_name,
                     const void* connect_params,
                     RequestPriority priority,
+                    const SocketTag& socket_tag,
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,

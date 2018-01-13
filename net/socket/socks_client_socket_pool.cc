@@ -43,6 +43,7 @@ static const int kSOCKSConnectJobTimeoutInSeconds = 30;
 SOCKSConnectJob::SOCKSConnectJob(
     const std::string& group_name,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
     const base::TimeDelta& timeout_duration,
@@ -54,6 +55,7 @@ SOCKSConnectJob::SOCKSConnectJob(
           group_name,
           timeout_duration,
           priority,
+          socket_tag,
           respect_limits,
           delegate,
           NetLogWithSource::Make(net_log, NetLogSourceType::SOCKS_CONNECT_JOB)),
@@ -126,7 +128,7 @@ int SOCKSConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(
-      group_name(), socks_params_->transport_params(), priority(),
+      group_name(), socks_params_->transport_params(), priority(), socket_tag(),
       respect_limits(), callback_, transport_pool_, net_log());
 }
 
@@ -180,9 +182,9 @@ SOCKSClientSocketPool::SOCKSConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return std::unique_ptr<ConnectJob>(new SOCKSConnectJob(
-      group_name, request.priority(), request.respect_limits(),
-      request.params(), ConnectionTimeout(), transport_pool_, host_resolver_,
-      delegate, net_log_));
+      group_name, request.priority(), request.socket_tag(),
+      request.respect_limits(), request.params(), ConnectionTimeout(),
+      transport_pool_, host_resolver_, delegate, net_log_));
 }
 
 base::TimeDelta
@@ -216,6 +218,7 @@ SOCKSClientSocketPool::~SOCKSClientSocketPool() = default;
 int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                          const void* socket_params,
                                          RequestPriority priority,
+                                         const SocketTag& socket_tag,
                                          RespectLimits respect_limits,
                                          ClientSocketHandle* handle,
                                          const CompletionCallback& callback,
@@ -224,7 +227,8 @@ int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
       static_cast<const scoped_refptr<SOCKSSocketParams>*>(socket_params);
 
   return base_.RequestSocket(group_name, *casted_socket_params, priority,
-                             respect_limits, handle, callback, net_log);
+                             socket_tag, respect_limits, handle, callback,
+                             net_log);
 }
 
 void SOCKSClientSocketPool::RequestSockets(

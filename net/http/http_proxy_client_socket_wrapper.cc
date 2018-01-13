@@ -33,6 +33,7 @@ namespace net {
 HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     const std::string& group_name,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
@@ -52,6 +53,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     : next_state_(STATE_NONE),
       group_name_(group_name),
       priority_(priority),
+      initial_socket_tag_(socket_tag),
       respect_limits_(respect_limits),
       connect_timeout_duration_(connect_timeout_duration),
       proxy_negotiation_timeout_duration_(proxy_negotiation_timeout_duration),
@@ -290,22 +292,16 @@ int64_t HttpProxyClientSocketWrapper::GetTotalReceivedBytes() const {
 }
 
 void HttpProxyClientSocketWrapper::ApplySocketTag(const SocketTag& tag) {
-  // TODO(pauljensen): Once SocketTag is plumbed through the socket pools
-  // this method can be implemented. Implementation details:
-  //  1. HttpProxyClientSocketWrapper will need to cache the tag because
-  //     transport_socket_ may not be set yet. The cached tag should be
-  //     cached in either transport_params_ or ssl_params_ so that it is
-  //     applied to future underlying sockets.
-  //  2. If transport_socket_ is set, the tag should be applied to it.
-  //  3. Tests may be easiest to write in
-  //     http_proxy_client_socket_pool_unittest.cc which has infrastructure
-  //     for testing non-QUIC proxies. Note that retagging is only possible
-  //     when proxying over HTTP/1.
-  //  4. Proxy auth isn't supported in Cronet, while socket tagging is only
-  //     presently supported in Cronet, so rather than implement auth restart
-  //     in this class, it may be easier to disallow auth restart when socket
-  //     tagging is used.
-  CHECK(tag == SocketTag());
+  // HttpProxyClientSocketPool only tags once connected, when transport_socket_
+  // is set. Socket tagging is not supported with tunneling. Socket tagging is
+  // also not supported with proxy auth so ApplySocketTag() won't be called with
+  // a specific (non-default) tag when transport_socket_ is cleared by
+  // RestartWithAuth().
+  if (tunnel_ || !transport_socket_) {
+    CHECK(tag == SocketTag());
+  } else {
+    transport_socket_->ApplySocketTag(tag);
+  }
 }
 
 int HttpProxyClientSocketWrapper::Read(IOBuffer* buf,
@@ -445,7 +441,8 @@ int HttpProxyClientSocketWrapper::DoTransportConnect() {
   next_state_ = STATE_TCP_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(
-      group_name_, transport_params_, priority_, respect_limits_,
+      group_name_, transport_params_, priority_, initial_socket_tag_,
+      respect_limits_,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
       transport_pool_, net_log_);
@@ -484,7 +481,7 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(
-      group_name_, ssl_params_, priority_, respect_limits_,
+      group_name_, ssl_params_, priority_, initial_socket_tag_, respect_limits_,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
       ssl_pool_, net_log_);
