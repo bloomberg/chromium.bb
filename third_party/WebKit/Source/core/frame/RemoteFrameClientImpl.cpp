@@ -102,6 +102,13 @@ void RemoteFrameClientImpl::FrameFocused() const {
     web_frame_->Client()->FrameFocused();
 }
 
+String RemoteFrameClientImpl::GetDevToolsFrameToken() const {
+  if (web_frame_->Client()) {
+    return web_frame_->Client()->GetDevToolsFrameToken();
+  }
+  return g_empty_string;
+}
+
 void RemoteFrameClientImpl::Navigate(const ResourceRequest& request,
                                      bool should_replace_current_entry) {
   if (web_frame_->Client()) {

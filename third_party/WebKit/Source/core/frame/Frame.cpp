@@ -261,6 +261,10 @@ void Frame::UpdateInertIfPossible() {
   }
 }
 
+String Frame::GetDevToolsFrameToken() const {
+  return client_->GetDevToolsFrameToken();
+}
+
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,

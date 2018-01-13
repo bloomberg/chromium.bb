@@ -371,8 +371,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DidBlockFramebust(const KURL&) {}
 
-  virtual String GetInstrumentationToken() = 0;
-
   // Called when the corresponding frame should be scrolled in a remote parent
   // frame.
   virtual void ScrollRectToVisibleInParentFrame(
