@@ -35,7 +35,7 @@ static INLINE int quantize_coeff_nuq(
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
   int q = 0;
   int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-  if (tmp >= zbin) {
+  if (tmp >= AOMMAX(zbin, cuml_bins_ptr[0])) {
     tmp -= cuml_bins_ptr[0];
     q = NUQ_KNOTS + (((((tmp * quant) >> 16) + tmp) * quant_shift) >> 16);
 
@@ -60,8 +60,10 @@ static INLINE int quantize_coeff_bigtx_nuq(
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
   int q = 0;
   int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-  if (tmp >= zbin_val) {
-    tmp -= ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
+  const int cuml_bins_ptr_val =
+      ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
+  if (tmp >= AOMMAX(zbin_val, cuml_bins_ptr_val)) {
+    tmp -= cuml_bins_ptr_val;
     q = NUQ_KNOTS +
         (((((tmp * quant) >> 16) + tmp) * quant_shift) >> (16 - logsizeby16));
     *dqcoeff_ptr =
@@ -975,7 +977,7 @@ static INLINE int highbd_quantize_coeff_nuq(
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
   int q = 0;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
-  if (tmp >= zbin) {
+  if (tmp >= AOMMAX(zbin, cuml_bins_ptr[0])) {
     tmp -= cuml_bins_ptr[0];
     q = NUQ_KNOTS + (int)(((((tmp * quant) >> 16) + tmp) * quant_shift) >> 16);
     *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val, 0);
@@ -1045,8 +1047,10 @@ static INLINE int highbd_quantize_coeff_bigtx_nuq(
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
   int q = 0;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
-  if (tmp >= zbin_val) {
-    tmp -= ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
+  const int cuml_bins_ptr_val =
+      ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
+  if (tmp >= AOMMAX(zbin_val, cuml_bins_ptr_val)) {
+    tmp -= cuml_bins_ptr_val;
     q = NUQ_KNOTS + (int)(((((tmp * quant) >> 16) + tmp) * quant_shift) >>
                           (16 - logsizeby16));
     *dqcoeff_ptr =
