@@ -2474,11 +2474,11 @@ TEST_F(DownloadProtectionServiceTest,
 TEST_F(DownloadProtectionServiceTest,
        VerifyReferrerChainWithEmptyNavigationHistory) {
   // Setup a web_contents with "http://example.com" as its last committed url.
-  content::WebContents* web_contents =
+  std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile_.get(),
-                                                        nullptr);
+                                                        nullptr));
   content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents);
+      content::WebContentsTester::For(web_contents.get());
   web_contents_tester->SetLastCommittedURL(GURL("http://example.com"));
 
   NiceMockDownloadItem item;
@@ -2487,7 +2487,7 @@ TEST_F(DownloadProtectionServiceTest,
       "http://example.com/",                                        // referrer
       FILE_PATH_LITERAL("a.tmp"),                                   // tmp_path
       FILE_PATH_LITERAL("a.exe"));  // final_path
-  ON_CALL(item, GetWebContents()).WillByDefault(Return(web_contents));
+  ON_CALL(item, GetWebContents()).WillByDefault(Return(web_contents.get()));
 
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
       download_service_->IdentifyReferrerChain(item);

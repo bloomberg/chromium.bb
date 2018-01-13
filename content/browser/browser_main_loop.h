@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "media/media_features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/ui_features.h"
@@ -108,6 +109,10 @@ class StartupTaskRunner;
 class SwapMetricsDriver;
 class TracingControllerImpl;
 struct MainFunctionParams;
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+class WebRTCInternals;
+#endif
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
@@ -370,6 +375,10 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 #if defined(USE_OZONE)
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
+#endif
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  std::unique_ptr<WebRTCInternals> webrtc_internals_;
 #endif
 
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
