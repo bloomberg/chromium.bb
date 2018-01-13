@@ -22,6 +22,19 @@ struct BLINK_COMMON_EXPORT
     return input.blobs;
   }
 
+  static uint64_t stack_trace_id(blink::CloneableMessage& input) {
+    return input.stack_trace_id;
+  }
+
+  static int64_t stack_trace_debugger_id_first(blink::CloneableMessage& input) {
+    return input.stack_trace_debugger_id_first;
+  }
+
+  static int64_t stack_trace_debugger_id_second(
+      blink::CloneableMessage& input) {
+    return input.stack_trace_debugger_id_second;
+  }
+
   static bool Read(blink::mojom::CloneableMessage::DataView data,
                    blink::CloneableMessage* out);
 };

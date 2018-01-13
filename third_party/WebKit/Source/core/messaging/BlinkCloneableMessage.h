@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 
@@ -23,6 +24,7 @@ struct CORE_EXPORT BlinkCloneableMessage {
   BlinkCloneableMessage& operator=(BlinkCloneableMessage&&);
 
   scoped_refptr<blink::SerializedScriptValue> message;
+  v8_inspector::V8StackTraceId sender_stack_trace_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkCloneableMessage);

@@ -108,7 +108,7 @@ void ThreadDebugger::AsyncTaskFinished(void* task) {
 }
 
 v8_inspector::V8StackTraceId ThreadDebugger::StoreCurrentStackTrace(
-    const String& description) {
+    const StringView& description) {
   return v8_inspector_->storeCurrentStackTrace(
       ToV8InspectorStringView(description));
 }

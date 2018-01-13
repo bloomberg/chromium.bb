@@ -24,6 +24,20 @@ struct StructTraits<blink::mojom::blink::CloneableMessage::DataView,
   static Vector<blink::mojom::blink::SerializedBlobPtr> blobs(
       blink::BlinkCloneableMessage& input);
 
+  static uint64_t stack_trace_id(blink::BlinkCloneableMessage& input) {
+    return static_cast<uint64_t>(input.sender_stack_trace_id.id);
+  }
+
+  static int64_t stack_trace_debugger_id_first(
+      blink::BlinkCloneableMessage& input) {
+    return input.sender_stack_trace_id.debugger_id.first;
+  }
+
+  static int64_t stack_trace_debugger_id_second(
+      blink::BlinkCloneableMessage& input) {
+    return input.sender_stack_trace_id.debugger_id.second;
+  }
+
   static bool Read(blink::mojom::blink::CloneableMessage::DataView,
                    blink::BlinkCloneableMessage* out);
 };

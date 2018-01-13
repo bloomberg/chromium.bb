@@ -53,7 +53,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                                unsigned promise_rejection_id);
 
   v8_inspector::V8StackTraceId StoreCurrentStackTrace(
-      const String& description);
+      const StringView& description);
   void ExternalAsyncTaskStarted(const v8_inspector::V8StackTraceId& parent);
   void ExternalAsyncTaskFinished(const v8_inspector::V8StackTraceId& parent);
 

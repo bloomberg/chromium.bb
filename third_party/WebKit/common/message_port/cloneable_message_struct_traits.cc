@@ -24,6 +24,9 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   }
 
   out->encoded_message = out->owned_encoded_message;
+  out->stack_trace_id = data.stack_trace_id();
+  out->stack_trace_debugger_id_first = data.stack_trace_debugger_id_first();
+  out->stack_trace_debugger_id_second = data.stack_trace_debugger_id_second();
   return true;
 }
 
