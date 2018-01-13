@@ -293,8 +293,10 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider,
           flags_, local_matrix_ ? &*local_matrix_ : nullptr);
       break;
     case Type::kImage:
-      cached_shader_ = image_.GetSkImage()->makeShader(
-          tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
+      if (image_) {
+        cached_shader_ = image_.GetSkImage()->makeShader(
+            tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
+      }
       break;
     case Type::kPaintRecord: {
       // Create a recording at the desired scale if this record has images which
@@ -385,7 +387,9 @@ bool PaintShader::IsValid() const {
       return colors_.size() >= 2 &&
              (positions_.empty() || positions_.size() == colors_.size());
     case Type::kImage:
-      return !!image_;
+      // We may not be able to decode the image, in which case it would be
+      // false, but that would still make a valid shader.
+      return true;
     case Type::kPaintRecord:
       return !!record_;
     case Type::kShaderCount:

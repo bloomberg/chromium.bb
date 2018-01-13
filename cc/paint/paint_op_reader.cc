@@ -358,7 +358,7 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   ReadSimple(&ref.end_point_);
   ReadSimple(&ref.start_degrees_);
   ReadSimple(&ref.end_degrees_);
-  // TODO(vmpstr): Read PaintImage image_. http://crbug.com/737629
+  Read(&ref.image_);
   bool has_record = false;
   ReadSimple(&has_record);
   if (has_record)
@@ -395,15 +395,6 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   ReadData(positions_size * sizeof(SkScalar), ref.positions_.data());
 
   // We don't write the cached shader, so don't attempt to read it either.
-
-  // TODO(vmpstr): add serialization of this shader type.  For the moment
-  // pretend that this shader doesn't exist and that the serialization is
-  // successful.  Valid ops pre-serialization should not cause deserialization
-  // failures.
-  if (shader_type == PaintShader::Type::kImage) {
-    *shader = nullptr;
-    return;
-  }
 
   if (!(*shader)->IsValid()) {
     SetInvalid();

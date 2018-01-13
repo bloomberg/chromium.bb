@@ -61,7 +61,19 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
   }
 
   const auto& decoded_image = decoded_draw_image.decoded_image();
-  DCHECK(decoded_image.image() || decoded_image.transfer_cache_entry_id());
+  // If this image is backed by a transfer cache entry id, then it's suitable
+  // for serialization. We don't need to do anything here, because the image
+  // provider (accessed via PaintOpWriter) will get the decode and serialize the
+  // transfer cache id.
+  // Note that if we replace this with the decoded paint image, the
+  // serialization will fail, because a transfer cache backed image cannot on
+  // its own construct an SkImage which is needed to create an underlying
+  // SkShader.
+  if (decoded_image.transfer_cache_entry_id()) {
+    DCHECK(!decoded_image.image());
+    return;
+  }
+  DCHECK(decoded_image.image());
 
   bool need_scale = !decoded_image.is_scale_adjustment_identity();
   if (need_scale) {
