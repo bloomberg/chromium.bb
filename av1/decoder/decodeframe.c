@@ -488,44 +488,52 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;
-      for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
-        const struct macroblockd_plane *const pd = &xd->plane[plane];
-        if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                                 pd->subsampling_y))
-          continue;
-        const BLOCK_SIZE bsizec =
-            scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
-        const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-        const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-        int row, col;
 
-        const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
-        int mu_blocks_wide =
-            block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-        int mu_blocks_high =
-            block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+      const struct macroblockd_plane *const y_pd = &xd->plane[0];
+      const int max_blocks_wide = max_block_wide(xd, bsize, 0);
+      const int max_blocks_high = max_block_high(xd, bsize, 0);
+      int row, col;
 
-        mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
-        mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
+      const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, y_pd);
+      int mu_blocks_wide =
+          block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+      int mu_blocks_high =
+          block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
 
-        TX_SIZE max_tx_size = get_vartx_max_txsize(
-            xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
-        const int bh_var_tx = tx_size_high_unit[max_tx_size];
-        const int bw_var_tx = tx_size_wide_unit[max_tx_size];
-        int block = 0;
-        int step =
-            tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
+      mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
+      mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
-        for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
-          for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+      for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+        for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+          for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+            const struct macroblockd_plane *const pd = &xd->plane[plane];
+            if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                                     pd->subsampling_y))
+              continue;
+            const BLOCK_SIZE bsizec =
+                scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
+            const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
+
+            TX_SIZE max_tx_size = get_vartx_max_txsize(
+                xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+            const int bh_var_tx = tx_size_high_unit[max_tx_size];
+            const int bw_var_tx = tx_size_wide_unit[max_tx_size];
+            int block = 0;
+            int step =
+                tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
+
             int blk_row, blk_col;
-            const int unit_height =
-                AOMMIN(mu_blocks_high + row, max_blocks_high);
-            const int unit_width =
-                AOMMIN(mu_blocks_wide + col, max_blocks_wide);
-            for (blk_row = row; blk_row < unit_height; blk_row += bh_var_tx) {
-              for (blk_col = col; blk_col < unit_width; blk_col += bw_var_tx) {
+            const int unit_height = ROUND_POWER_OF_TWO(
+                AOMMIN(mu_blocks_high + row, max_blocks_high),
+                pd->subsampling_y);
+            const int unit_width = ROUND_POWER_OF_TWO(
+                AOMMIN(mu_blocks_wide + col, max_blocks_wide),
+                pd->subsampling_x);
+
+            for (blk_row = row >> pd->subsampling_y; blk_row < unit_height;
+                 blk_row += bh_var_tx) {
+              for (blk_col = col >> pd->subsampling_x; blk_col < unit_width;
+                   blk_col += bw_var_tx) {
                 decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize,
                                       blk_row, blk_col, block, max_tx_size,
                                       &eobtotal, mi_row, mi_col);

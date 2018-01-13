@@ -1876,10 +1876,14 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
   const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
 
-  const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
-  const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
-  for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
-    for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
+  const int unit_height =
+      AOMMIN(mu_blocks_high + (row >> pd->subsampling_y), num_4x4_h);
+  const int unit_width =
+      AOMMIN(mu_blocks_wide + (col >> pd->subsampling_x), num_4x4_w);
+  for (blk_row = row >> pd->subsampling_y; blk_row < unit_height;
+       blk_row += bkh) {
+    for (blk_col = col >> pd->subsampling_x; blk_col < unit_width;
+         blk_col += bkw) {
       pack_txb_tokens(w,
 #if CONFIG_LV_MAP
                       cm, x,
@@ -1953,20 +1957,10 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     if (!is_inter_block(mbmi))
       av1_write_coeffs_mb(cm, x, mi_row, mi_col, w, mbmi->sb_type);
 
-    for (plane = 0; plane < num_planes && is_inter_block(mbmi); ++plane) {
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-      if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type, pd->subsampling_x,
-                               pd->subsampling_y)) {
-#if !CONFIG_LV_MAP
-        (*tok)++;
-#endif  // !CONFIG_LV_MAP
-        continue;
-      }
-      const BLOCK_SIZE bsize = mbmi->sb_type;
-      const BLOCK_SIZE bsizec =
-          scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
-
+    if (is_inter_block(mbmi)) {
+      int block[MAX_MB_PLANE] = { 0 };
+      const struct macroblockd_plane *const y_pd = &xd->plane[0];
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, y_pd);
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int num_4x4_h =
@@ -1975,7 +1969,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       TOKEN_STATS token_stats;
       init_token_stats(&token_stats);
 
-      const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+      const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, y_pd);
       int mu_blocks_wide =
           block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
       int mu_blocks_high =
@@ -1984,12 +1978,19 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       mu_blocks_wide = AOMMIN(num_4x4_w, mu_blocks_wide);
       mu_blocks_high = AOMMIN(num_4x4_h, mu_blocks_high);
 
-      if (is_inter_block(mbmi)) {
-        int block = 0;
-        for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
-          for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
+      for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
+        for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
+          for (plane = 0; plane < num_planes && is_inter_block(mbmi); ++plane) {
+            const struct macroblockd_plane *const pd = &xd->plane[plane];
+            if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
+                                     pd->subsampling_x, pd->subsampling_y)) {
+#if !CONFIG_LV_MAP
+              (*tok)++;
+#endif  // !CONFIG_LV_MAP
+              continue;
+            }
             write_inter_txb_coeff(cm, x, mbmi, w, tok, tok_end, &token_stats,
-                                  row, col, &block, plane);
+                                  row, col, &block[plane], plane);
           }
         }
 #if CONFIG_RD_DEBUG
@@ -1999,33 +2000,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
           assert(0);
         }
 #endif  // CONFIG_RD_DEBUG
-      } else {
-#if !CONFIG_LV_MAP
-        const TX_SIZE tx = av1_get_tx_size(plane, xd);
-        const int bkw = tx_size_wide_unit[tx];
-        const int bkh = tx_size_high_unit[tx];
-        int blk_row, blk_col;
-
-        for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
-          for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
-            const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
-            const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
-
-            for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
-              for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
-                pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx,
-                               &token_stats);
-              }
-            }
-          }
-        }
-#endif  // CONFIG_LV_MAP
       }
-
-#if !CONFIG_LV_MAP
-      assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-      (*tok)++;
-#endif
     }
   }
 }
