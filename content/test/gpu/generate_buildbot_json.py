@@ -142,6 +142,7 @@ WATERFALL = {
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
+      'use_gpu_trigger_script': True,
     },
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
@@ -274,6 +275,7 @@ FYI_WATERFALL = {
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
+      'use_gpu_trigger_script': True,
     },
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
@@ -299,6 +301,7 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'type': Types.DEQP,
+      'use_gpu_trigger_script': True,
     },
     'Win7 Experimental Release (NVIDIA)': {
       'swarming_dimensions': [
@@ -815,6 +818,7 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'type': Types.OPTIONAL,
+      'use_gpu_trigger_script': True,
     },
     'Optional Mac Release (Intel)': {
       'swarming_dimensions': [
@@ -2521,6 +2525,17 @@ def remove_tester_configs_from_result(result):
     # Don't print the disabled_tester_configs in the JSON.
     result.pop('disabled_tester_configs')
 
+def add_common_test_properties(test, tester_config):
+  if tester_config.get('use_gpu_trigger_script'):
+    test['trigger_script'] = {
+      'script': '//content/test/gpu/trigger_gpu_test.py',
+      'args': [
+        '--gpu-trigger-configs',
+        json.dumps(tester_config['swarming_dimensions'] +
+                   tester_config.get('alternate_swarming_dimensions', []))
+      ],
+    }
+
 def generate_gtest(waterfall, tester_name, tester_config, test, test_config):
   if not should_run_on_tester(
       waterfall, tester_name, tester_config, test_config):
@@ -2590,6 +2605,7 @@ def generate_gtest(waterfall, tester_name, tester_config, test, test_config):
   # on the chromium.gpu.fyi waterfall. Still, there is no harm in
   # specifying it everywhere.
   result['use_xvfb'] = False
+  add_common_test_properties(result, tester_config)
   return result
 
 def generate_gtests(waterfall, tester_name, tester_config, test_dictionary):
@@ -2661,6 +2677,7 @@ def generate_isolated_test(waterfall, tester_name, tester_config, test,
     result['non_precommit_args'] = test_config['non_precommit_args']
   if 'precommit_args' in test_config:
     result['precommit_args'] = test_config['precommit_args']
+  add_common_test_properties(result, tester_config)
   return result
 
 def generate_telemetry_test(waterfall, tester_name, tester_config,

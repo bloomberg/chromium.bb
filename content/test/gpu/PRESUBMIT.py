@@ -8,55 +8,25 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
-def _GetPathsToPrepend(input_api):
-  current_dir = input_api.PresubmitLocalPath()
-  chromium_src_dir = input_api.os_path.join(current_dir, '..', '..', '..')
-  return [
-    input_api.os_path.join(current_dir, 'gpu_tests'),
-    input_api.os_path.join(chromium_src_dir, 'tools', 'perf'),
-    input_api.os_path.join(chromium_src_dir,
-        'third_party', 'catapult', 'telemetry'),
-    input_api.os_path.join(chromium_src_dir,
-        'third_party', 'catapult', 'common', 'py_utils'),
+def CommonChecks(input_api, output_api):
+  commands = [
+    input_api.Command(
+      name='run_content_test_gpu_unittests', cmd=[
+        input_api.python_executable, 'run_unittests.py', 'gpu_tests'],
+      kwargs={}, message=output_api.PresubmitError),
+
+    input_api.Command(
+      name='trigger_gpu_test_unittest', cmd=[
+        input_api.python_executable, 'trigger_gpu_test_unittest.py'],
+      kwargs={}, message=output_api.PresubmitError),
   ]
-
-def _GpuUnittestsArePassingCheck(input_api, output_api):
-  if not input_api.AffectedFiles():
-    return []
-
-  cmd = [
-    input_api.os_path.join(input_api.PresubmitLocalPath(), 'run_unittests.py'),
-    'gpu_tests',
-  ]
-  if input_api.platform == 'win32':
-    cmd = [input_api.python_executable] + cmd
-
-  if input_api.is_committing:
-    message_type = output_api.PresubmitError
-  else:
-    message_type = output_api.PresubmitPromptWarning
-
-  cmd_name = 'run_content_test_gpu_unittests',
-  test_cmd = input_api.Command(
-    name=cmd_name,
-    cmd=cmd,
-    kwargs={},
-    message=message_type,
-  )
-
-  if input_api.verbose:
-    print 'Running', cmd_name
-  return input_api.RunTests([test_cmd])
+  return input_api.RunTests(commands)
 
 def CheckChangeOnUpload(input_api, output_api):
-  results = []
-  results.extend(_GpuUnittestsArePassingCheck(input_api, output_api))
-  return results
+  return CommonChecks(input_api, output_api)
 
 def CheckChangeOnCommit(input_api, output_api):
-  results = []
-  results.extend(_GpuUnittestsArePassingCheck(input_api, output_api))
-  return results
+  return CommonChecks(input_api, output_api)
 
 def PostUploadHook(cl, change, output_api):
   """git cl upload will call this hook after the issue is created/modified.
