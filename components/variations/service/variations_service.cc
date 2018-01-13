@@ -753,7 +753,7 @@ void VariationsService::PerformSimulationWithVersion(
 
 void VariationsService::RecordSuccessfulFetch() {
   field_trial_creator_.RecordLastFetchTime();
-  safe_seed_manager_.RecordSuccessfulFetch();
+  safe_seed_manager_.RecordSuccessfulFetch(field_trial_creator_.seed_store());
 }
 
 void VariationsService::GetClientFilterableStateForVersionCalledForTesting() {
@@ -779,7 +779,8 @@ bool VariationsService::SetupFieldTrials(
   return field_trial_creator_.SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures,
       unforceable_field_trials, CreateLowEntropyProvider(),
-      std::move(feature_list), variation_ids, platform_field_trials);
+      std::move(feature_list), variation_ids, platform_field_trials,
+      &safe_seed_manager_);
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {

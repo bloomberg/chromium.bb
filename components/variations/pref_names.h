@@ -19,6 +19,12 @@ extern const char kVariationsLastFetchTime[];
 extern const char kVariationsPermanentConsistencyCountry[];
 extern const char kVariationsPermutedEntropyCache[];
 extern const char kVariationsRestrictParameter[];
+extern const char kVariationsSafeCompressedSeed[];
+extern const char kVariationsSafeSeedDate[];
+extern const char kVariationsSafeSeedLocale[];
+extern const char kVariationsSafeSeedPermanentConsistencyCountry[];
+extern const char kVariationsSafeSeedSessionConsistencyCountry[];
+extern const char kVariationsSafeSeedSignature[];
 extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedSignature[];
 

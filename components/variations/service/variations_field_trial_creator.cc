@@ -24,6 +24,7 @@
 #include "components/variations/platform_field_trials.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
+#include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service_client.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_seed_processor.h"
@@ -162,7 +163,8 @@ std::string VariationsFieldTrialCreator::GetLatestCountry() const {
 bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
         low_entropy_provider,
-    base::FeatureList* feature_list) {
+    base::FeatureList* feature_list,
+    SafeSeedManager* safe_seed_manager) {
   TRACE_EVENT0("startup", "VariationsFieldTrialCreator::CreateTrialsFromSeed");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!create_trials_from_seed_called_);
@@ -172,7 +174,9 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   create_trials_from_seed_called_ = true;
 
   VariationsSeed seed;
-  if (!LoadSeed(&seed))
+  std::string seed_data;
+  std::string base64_seed_signature;
+  if (!LoadSeed(&seed, &seed_data, &base64_seed_signature))
     return false;
 
   const int64_t last_fetch_time_internal =
@@ -198,7 +202,7 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   if (!current_version.IsValid())
     return false;
 
-  std::unique_ptr<ClientFilterableState> client_state =
+  std::unique_ptr<ClientFilterableState> client_filterable_state =
       GetClientFilterableStateForVersion(current_version);
 
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
@@ -206,10 +210,15 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   // to pass UIStringOverrider itself to VariationSeedProcessor as variations
   // components should not depends on //ui/base.
   VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed, *client_state,
+      seed, *client_filterable_state,
       base::Bind(&UIStringOverrider::OverrideUIString,
                  base::Unretained(&ui_string_overrider_)),
       low_entropy_provider.get(), feature_list);
+
+  // Store into the |safe_seed_manager| the combined server and client data used
+  // to create the field trials.
+  safe_seed_manager->SetActiveSeedState(seed_data, base64_seed_signature,
+                                        std::move(client_filterable_state));
 
   const base::Time now = base::Time::Now();
 
@@ -352,8 +361,10 @@ void VariationsFieldTrialCreator::RecordLastFetchTime() {
                           base::Time::Now().ToInternalValue());
 }
 
-bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed) {
-  return seed_store_.LoadSeed(seed);
+bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
+                                           std::string* seed_data,
+                                           std::string* base64_signature) {
+  return seed_store_.LoadSeed(seed, seed_data, base64_signature);
 }
 
 void VariationsFieldTrialCreator::OverrideVariationsPlatform(
@@ -371,7 +382,8 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
         low_entropy_provider,
     std::unique_ptr<base::FeatureList> feature_list,
     std::vector<std::string>* variation_ids,
-    PlatformFieldTrials* platform_field_trials) {
+    PlatformFieldTrials* platform_field_trials,
+    SafeSeedManager* safe_seed_manager) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
@@ -419,8 +431,8 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   }
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 
-  bool has_seed =
-      CreateTrialsFromSeed(std::move(low_entropy_provider), feature_list.get());
+  bool has_seed = CreateTrialsFromSeed(std::move(low_entropy_provider),
+                                       feature_list.get(), safe_seed_manager);
 
   platform_field_trials->SetupFeatureControllingFieldTrials(has_seed,
                                                             feature_list.get());
