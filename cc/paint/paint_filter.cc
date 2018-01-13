@@ -407,8 +407,10 @@ MatrixConvolutionPaintFilter::MatrixConvolutionPaintFilter(
       tile_mode_(tile_mode),
       convolve_alpha_(convolve_alpha),
       input_(std::move(input)) {
-  auto len = sk_64_mul(kernel_size_.width(), kernel_size_.height());
-  for (int i = 0; i < len; ++i)
+  auto len = static_cast<size_t>(
+      sk_64_mul(kernel_size_.width(), kernel_size_.height()));
+  kernel_->reserve(len);
+  for (size_t i = 0; i < len; ++i)
     kernel_->push_back(kernel[i]);
 
   cached_sk_filter_ = SkMatrixConvolutionImageFilter::Make(
