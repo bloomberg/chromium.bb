@@ -224,6 +224,10 @@
 #include "content/browser/media/cdm_registry_impl.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WEBRTC)
+#include "content/browser/webrtc/webrtc_internals.h"
+#endif
+
 #if defined(USE_X11)
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
@@ -1574,6 +1578,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #elif defined(OS_MACOSX)
   device_monitor_mac_.reset(
       new media::DeviceMonitorMac(audio_manager_->GetTaskRunner()));
+#endif
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  webrtc_internals_.reset(WebRTCInternals::CreateSingletonInstance());
 #endif
 
   // RDH needs the IO thread to be created
