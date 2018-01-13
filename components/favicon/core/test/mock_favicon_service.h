@@ -55,11 +55,12 @@ class MockFaviconService : public FaviconService {
                    const GURL& page_url,
                    const favicon_base::FaviconImageCallback& callback,
                    base::CancelableTaskTracker* tracker));
-  MOCK_METHOD5(GetRawFaviconForPageURL,
+  MOCK_METHOD6(GetRawFaviconForPageURL,
                base::CancelableTaskTracker::TaskId(
                    const GURL& page_url,
                    const favicon_base::IconTypeSet& icon_types,
                    int desired_size_in_pixel,
+                   bool fallback_to_host,
                    const favicon_base::FaviconRawBitmapCallback& callback,
                    base::CancelableTaskTracker* tracker));
   MOCK_METHOD5(GetLargestRawFaviconForPageURL,

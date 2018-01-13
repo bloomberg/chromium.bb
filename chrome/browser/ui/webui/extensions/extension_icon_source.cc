@@ -222,6 +222,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
       AppLaunchInfo::GetFullLaunchURL(GetData(request_id)->extension.get());
   favicon_service->GetRawFaviconForPageURL(
       favicon_url, {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
+      /*fallback_to_host=*/false,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
                  base::Unretained(this), request_id),
       &cancelable_task_tracker_);

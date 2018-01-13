@@ -114,13 +114,21 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
       base::Bind(&OnLocalFaviconAvailable,
                  ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
 
+  // |j_page_url| is an origin, and it may not have had a favicon associated
+  // with it. A trickier case is when |j_page_url| only has domain-scoped
+  // cookies, but visitors are redirected to HTTPS on visiting. Then
+  // |j_page_url| defaults to a HTTP scheme, but the favicon will be associated
+  // with the HTTPS URL and hence won't be found if we include the scheme in the
+  // lookup. Set |fallback_to_host|=true so the favicon database will fall back
+  // to matching only the hostname to have the best chance of finding a favicon.
+  const bool fallback_to_host = true;
   favicon_service->GetRawFaviconForPageURL(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
       {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
        favicon_base::IconType::kTouchPrecomposedIcon,
        favicon_base::IconType::kWebManifestIcon},
-      static_cast<int>(j_desired_size_in_pixel), callback_runner,
-      cancelable_task_tracker_.get());
+      static_cast<int>(j_desired_size_in_pixel), fallback_to_host,
+      callback_runner, cancelable_task_tracker_.get());
 
   return true;
 }

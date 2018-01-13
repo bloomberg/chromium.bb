@@ -784,6 +784,35 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
   return result;
 }
 
+base::Optional<GURL> ThumbnailDatabase::FindFirstPageURLForHost(
+    const GURL& url,
+    const favicon_base::IconTypeSet& required_icon_types) {
+  if (url.host().empty())
+    return base::nullopt;
+
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE,
+                             "SELECT icon_mapping.page_url, favicons.icon_type "
+                             "FROM icon_mapping "
+                             "INNER JOIN favicons "
+                             "ON icon_mapping.icon_id = favicons.id "
+                             "WHERE icon_mapping.page_url LIKE ? "
+                             "ORDER BY favicons.icon_type DESC"));
+
+  // Bind the host with a prefix of "://" and suffix of "/" to ensure the entire
+  // host name is matched.
+  statement.BindString(0, base::StringPrintf("%%://%s/%%", url.host().c_str()));
+
+  while (statement.Step()) {
+    favicon_base::IconType icon_type =
+        ThumbnailDatabase::FromPersistedIconType(statement.ColumnInt(1));
+
+    if (required_icon_types.count(icon_type) != 0)
+      return base::make_optional(GURL(statement.ColumnString(0)));
+  }
+  return base::nullopt;
+}
+
 IconMappingID ThumbnailDatabase::AddIconMapping(
     const GURL& page_url,
     favicon_base::FaviconID icon_id) {
