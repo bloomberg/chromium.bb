@@ -29,6 +29,7 @@ from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+from pylib.output import remote_output_manager
 from pylib.utils import instrumentation_tracing
 from pylib.utils import shared_preference_utils
 
@@ -270,13 +271,29 @@ class LocalDeviceInstrumentationTestRun(
 
       steps = [bind_crash_handler(s, device) for s in steps]
 
-      if self._env.concurrent_adb:
-        reraiser_thread.RunAsync(steps)
-      else:
-        for step in steps:
-          step()
-      if self._test_instance.store_tombstones:
-        tombstones.ClearAllTombstones(device)
+      try:
+        if self._env.concurrent_adb:
+          reraiser_thread.RunAsync(steps)
+        else:
+          for step in steps:
+            step()
+        if self._test_instance.store_tombstones:
+          tombstones.ClearAllTombstones(device)
+      except device_errors.CommandFailedError:
+        # A bugreport can be large and take a while to generate, so only capture
+        # one if we're using a remote manager.
+        if isinstance(
+            self._env.output_manager,
+            remote_output_manager.RemoteOutputManager):
+          logging.error(
+              'Error when setting up device for tests. Taking a bugreport for '
+              'investigation. This may take a while...')
+          report_name = '%s.bugreport' % device.serial
+          with self._env.output_manager.ArchivedTempfile(
+              report_name, 'bug_reports') as report_file:
+            device.TakeBugReport(report_file.name)
+          logging.error('Bug report saved to %s', report_file.Link())
+        raise
 
     self._env.parallel_devices.pMap(
         individual_device_set_up,
