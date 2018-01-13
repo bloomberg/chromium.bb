@@ -7,6 +7,7 @@ typemaps = [
   "//mojo/common/values.typemap",
   "//third_party/WebKit/Source/core/messaging/BlinkCloneableMessage.typemap",
   "//third_party/WebKit/Source/core/messaging/BlinkTransferableMessage.typemap",
+  "//third_party/WebKit/Source/platform/mojo/BigBuffer.typemap",
   "//third_party/WebKit/Source/platform/mojo/File.typemap",
   "//third_party/WebKit/Source/platform/mojo/Geometry.typemap",
   "//third_party/WebKit/Source/platform/mojo/KURL.typemap",

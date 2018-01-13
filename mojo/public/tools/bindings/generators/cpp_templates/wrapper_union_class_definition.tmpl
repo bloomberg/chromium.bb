@@ -66,3 +66,9 @@ size_t {{union.name}}::Hash(size_t seed) const {
   }
 }
 {%- endif %}
+
+bool {{union.name}}::Validate(
+    const void* data,
+    mojo::internal::ValidationContext* validation_context) {
+  return Data_::Validate(data, validation_context, false);
+}

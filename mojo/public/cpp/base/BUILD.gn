@@ -1,0 +1,59 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+component("base") {
+  output_name = "mojo_base_lib"
+
+  sources = [
+    "big_buffer.cc",
+    "big_buffer.h",
+    "mojo_base_export.h",
+  ]
+
+  defines = [ "MOJO_BASE_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
+  ]
+}
+
+# Normally typemap traits sources should be build directly into mojom targets
+# via the typemap file. This target is for typemapped mojo_base types whose
+# traits are shared between chromium and blink variants.
+component("shared_typemap_traits") {
+  output_name = "mojo_base_shared_typemap_traits"
+
+  sources = [
+    "big_buffer_struct_traits.cc",
+    "big_buffer_struct_traits.h",
+  ]
+
+  defines = [ "MOJO_BASE_TRAITS_IMPLEMENTATION" ]
+
+  public_deps = [
+    ":base",
+    "//mojo/public/mojom/base:base_shared",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "big_buffer_unittest.cc",
+  ]
+
+  public_deps = [
+    ":base",
+    ":shared_typemap_traits",
+    "//base",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/mojom/base",
+    "//testing/gtest",
+  ]
+}
