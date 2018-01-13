@@ -104,8 +104,6 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
   }
 
  protected:
-  using UkmMetricMap = std::map<const char*, int64_t>;
-
   UkmEntryChecker ukm_entry_checker_;
   const GURL url1_ = GURL("https://example1.com/");
   const GURL url2_ = GURL("https://example2.com/");

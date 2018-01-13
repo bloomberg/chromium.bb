@@ -2369,7 +2369,7 @@ be describing additional metrics about the same event.
   <metric name="ContentType">
     <summary>
       Enumeration for the MIME type of the page. Values are enumerated in
-      metrics::TabEvent::ContentType.
+      metrics::TabMetricsEvent::ContentType.
     </summary>
   </metric>
   <metric name="DefaultProtocolHandler">
@@ -2410,6 +2410,30 @@ be describing additional metrics about the same event.
   <metric name="MouseEventCount">
     <summary>
       Number of mouse events that were sent to the page.
+    </summary>
+  </metric>
+  <metric name="NavigationEntryCount">
+    <summary>
+      Number of navigation entries in the tab's NavigationController.
+      Corresponds to the size of the tab's back/forward list.
+    </summary>
+  </metric>
+  <metric name="PageTransitionCoreType">
+    <summary>
+      Type of the page transition for this navigation. Uses the core values from
+      ui::PageTransition.
+    </summary>
+  </metric>
+  <metric name="PageTransitionFromAddressBar">
+    <summary>
+      True if the page transition came from interacting with the address bar,
+      such as by typing a URL or performing a search.
+    </summary>
+  </metric>
+  <metric name="PageTransitionIsRedirect">
+    <summary>
+      True if the page transition type is a redirect, in which case the
+      PageTransition type may not be accurate.
     </summary>
   </metric>
   <metric name="SequenceId">
