@@ -25,7 +25,7 @@ namespace {
 // If we have more than this many colors, abort deserialization.
 const size_t kMaxShaderColorsSupported = 10000;
 const size_t kMaxMergeFilterCount = 10000;
-const long kMaxKernelSize = 1000;
+const size_t kMaxKernelSize = 1000;
 const size_t kMaxRegionSize = 1000;
 
 struct TypefacesCatalog {
@@ -755,13 +755,14 @@ void PaintOpReader::ReadMatrixConvolutionPaintFilter(
   ReadSimple(&kernel_size);
   if (!valid_)
     return;
-  auto size = sk_64_mul(kernel_size.width(), kernel_size.height());
+  auto size =
+      static_cast<size_t>(sk_64_mul(kernel_size.width(), kernel_size.height()));
   if (size > kMaxKernelSize) {
     SetInvalid();
     return;
   }
   std::vector<SkScalar> kernel(size);
-  for (long i = 0; i < size; ++i)
+  for (size_t i = 0; i < size; ++i)
     ReadSimple(&kernel[i]);
   ReadSimple(&gain);
   ReadSimple(&bias);

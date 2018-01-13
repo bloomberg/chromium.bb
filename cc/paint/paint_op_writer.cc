@@ -434,9 +434,9 @@ void PaintOpWriter::Write(const ArithmeticPaintFilter& filter) {
 
 void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
   WriteSimple(filter.kernel_size());
-  auto size =
-      sk_64_mul(filter.kernel_size().width(), filter.kernel_size().height());
-  for (long i = 0; i < size; ++i)
+  auto size = static_cast<size_t>(
+      sk_64_mul(filter.kernel_size().width(), filter.kernel_size().height()));
+  for (size_t i = 0; i < size; ++i)
     WriteSimple(filter.kernel_at(i));
   WriteSimple(filter.gain());
   WriteSimple(filter.bias());
