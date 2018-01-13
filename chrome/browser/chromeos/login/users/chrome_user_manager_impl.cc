@@ -1024,8 +1024,8 @@ void ChromeUserManagerImpl::NotifyOnLogin() {
 
 void ChromeUserManagerImpl::RemoveNonCryptohomeData(
     const AccountId& account_id) {
-  ChromeUserManager::RemoveNonCryptohomeData(account_id);
-
+  // Wallpaper removal depends on user preference, so it must happen before
+  // |known_user::RemovePrefs|. See https://crbug.com/778077.
   WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
   ExternalPrintersFactory::Get()->RemoveForUserId(account_id);
@@ -1035,6 +1035,8 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   multi_profile_user_controller_->RemoveCachedValues(account_id.GetUserEmail());
 
   EasyUnlockService::ResetLocalStateForUser(account_id);
+
+  ChromeUserManager::RemoveNonCryptohomeData(account_id);
 }
 
 void ChromeUserManagerImpl::
