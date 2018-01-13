@@ -1572,6 +1572,24 @@
             ]
         }
     ],
+    "IDBTombstoneSweeper": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "TombstoneMetrics",
+                    "enable_features": [
+                        "IDBTombstoneStatistics"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSurfaceClearYosemite": [
         {
             "platforms": [
