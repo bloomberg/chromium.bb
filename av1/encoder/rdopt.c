@@ -726,10 +726,10 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
   return d;
 }
 
-static int64_t av1_dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
-                                 int src_stride, const int16_t *diff,
-                                 int diff_stride, int bsw, int bsh,
-                                 int visible_w, int visible_h, int qindex) {
+static int64_t dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
+                             int src_stride, const int16_t *diff,
+                             int diff_stride, int bsw, int bsh, int visible_w,
+                             int visible_h, int qindex) {
   int64_t d = 0;
   int i, j;
   const MACROBLOCKD *xd = &x->e_mbd;
@@ -961,7 +961,7 @@ static void get_horver_correlation(const int16_t *diff, int stride, int w,
   }
 }
 
-int dct_vs_idtx(const int16_t *diff, int stride, int w, int h) {
+static int dct_vs_idtx(const int16_t *diff, int stride, int w, int h) {
   double hcorr, vcorr;
   int prune_bitmask = 0;
   get_horver_correlation(diff, stride, w, h, &hcorr, &vcorr);
@@ -1614,8 +1614,8 @@ static int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
 
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8)
-    return av1_dist_8x8_diff(x, src, src_stride, diff, diff_stride, txb_width,
-                             txb_height, visible_cols, visible_rows, x->qindex);
+    return dist_8x8_diff(x, src, src_stride, diff, diff_stride, txb_width,
+                         txb_height, visible_cols, visible_rows, x->qindex);
   else
 #endif
     return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols,
@@ -2003,8 +2003,8 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int diff_stride = block_size_wide[bsize];
   const int16_t *diff = p->src_diff;
-  sse = av1_dist_8x8_diff(x, src, src_stride, diff, diff_stride, bw, bh,
-                          visible_w, visible_h, qindex);
+  sse = dist_8x8_diff(x, src, src_stride, diff, diff_stride, bw, bh, visible_w,
+                      visible_h, qindex);
   sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
   sse *= 16;
 
@@ -7130,7 +7130,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return 0;
 }
 
-int64_t interpolation_filter_search(
+static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     int mi_row, int mi_col, const BUFFER_SET *const tmp_dst,
     BUFFER_SET *const orig_dst,
