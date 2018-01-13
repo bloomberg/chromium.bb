@@ -63,7 +63,7 @@ const base::Feature kProtectSyncCredential = {
 // Disallow autofilling of the sync credential only for transactional reauth
 // pages.
 const base::Feature kProtectSyncCredentialOnReauth = {
-    "protect-sync-credential-on-reauth", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ProtectSyncCredentialOnReauth", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the ability to export passwords from Chrome's settings page.
 const base::Feature kPasswordExport = {"PasswordExport",
