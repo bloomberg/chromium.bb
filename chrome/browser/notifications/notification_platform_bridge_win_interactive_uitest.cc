@@ -11,6 +11,7 @@
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/mock_itoastnotification.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +21,18 @@
 namespace mswr = Microsoft::WRL;
 namespace winui = ABI::Windows::UI;
 namespace winxml = ABI::Windows::Data::Xml;
+
+namespace {
+
+base::string16 GetToastString(const base::string16& notification_id,
+                              const base::string16& profile_id,
+                              bool incognito) {
+  return base::StringPrintf(
+      LR"(<toast launch="0|%ls|%d|https://foo.com/|%ls"></toast>)",
+      profile_id.c_str(), incognito, notification_id.c_str());
+}
+
+}  // namespace
 
 class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
  public:
@@ -52,6 +65,14 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
     quit_task.Run();
   }
 
+  void DisplayedNotifications(
+      const base::RepeatingClosure& quit_task,
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization) {
+    displayed_notifications_ = *displayed_notifications;
+    quit_task.Run();
+  }
+
  protected:
   bool ValidateNotificationValues(NotificationCommon::Operation operation,
                                   NotificationHandler::Type notification_type,
@@ -77,104 +98,9 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
   base::Optional<base::string16> last_reply_;
   base::Optional<bool> last_by_user_;
 
+  std::set<std::string> displayed_notifications_;
+
   bool delegate_called_ = false;
-};
-
-class MockIToastNotification : public winui::Notifications::IToastNotification {
- public:
-  explicit MockIToastNotification(const base::string16& xml) : xml_(xml) {}
-  ~MockIToastNotification() = default;
-
-  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
-                                           void** ppvObject) override {
-    return E_NOTIMPL;
-  }
-  ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
-  ULONG STDMETHODCALLTYPE Release() override { return 0; }
-  HRESULT STDMETHODCALLTYPE GetIids(ULONG* iidCount, IID** iids) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING* className) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel* trustLevel) override {
-    return E_NOTIMPL;
-  }
-
-  HRESULT STDMETHODCALLTYPE
-  get_Content(winxml::Dom::IXmlDocument** value) override {
-    mswr::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocumentIO> xml_document_io;
-    base::win::ScopedHString id = base::win::ScopedHString::Create(
-        RuntimeClass_Windows_Data_Xml_Dom_XmlDocument);
-    HRESULT hr = Windows::Foundation::ActivateInstance(
-        id.get(), xml_document_io.GetAddressOf());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Unable to instantiate XMLDocumentIO " << hr;
-      return hr;
-    }
-
-    base::win::ScopedHString xml = base::win::ScopedHString::Create(xml_);
-    hr = xml_document_io->LoadXml(xml.get());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Unable to load XML " << hr;
-      return hr;
-    }
-
-    Microsoft::WRL::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocument>
-        xml_document;
-    hr = xml_document_io.CopyTo(xml_document.GetAddressOf());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Unable to copy to XMLDoc " << hr;
-      return hr;
-    }
-
-    *value = xml_document.Detach();
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE put_ExpirationTime(
-      __FIReference_1_Windows__CFoundation__CDateTime* value) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE get_ExpirationTime(
-      __FIReference_1_Windows__CFoundation__CDateTime** value) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE add_Dismissed(
-      __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_Windows__CUI__CNotifications__CToastDismissedEventArgs*
-          handler,
-      EventRegistrationToken* cookie) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE
-  remove_Dismissed(EventRegistrationToken cookie) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE add_Activated(
-      __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_IInspectable*
-          handler,
-      EventRegistrationToken* cookie) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE
-  remove_Activated(EventRegistrationToken cookie) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE add_Failed(
-      __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_Windows__CUI__CNotifications__CToastFailedEventArgs*
-          handler,
-      EventRegistrationToken* token) override {
-    return E_NOTIMPL;
-  }
-  HRESULT STDMETHODCALLTYPE
-  remove_Failed(EventRegistrationToken token) override {
-    return E_NOTIMPL;
-  }
-
- private:
-  base::string16 xml_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockIToastNotification);
 };
 
 class MockIToastActivatedEventArgs
@@ -259,4 +185,108 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
   EXPECT_EQ(action_index, last_action_index_);
   EXPECT_EQ(base::nullopt, last_reply_);
   EXPECT_EQ(base::nullopt, last_by_user_);
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
+  // This test requires WinRT core functions, which are not available in
+  // older versions of Windows.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  NotificationPlatformBridgeWin* bridge =
+      reinterpret_cast<NotificationPlatformBridgeWin*>(
+          g_browser_process->notification_platform_bridge());
+
+  std::vector<winui::Notifications::IToastNotification*> notifications;
+  bridge->SetDisplayedNotificationsForTesting(&notifications);
+
+  // Validate that empty list of notifications show 0 results.
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "Default" /* profile_id */, false /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(0U, displayed_notifications_.size());
+  }
+
+  // Add four items (two in each profile, one for each being incognito and one
+  // for each that is not).
+  bool incognito = true;
+  MockIToastNotification item1(GetToastString(L"P1i", L"P1", incognito));
+  notifications.push_back(&item1);
+  MockIToastNotification item2(GetToastString(L"P1reg", L"P1", !incognito));
+  notifications.push_back(&item2);
+  MockIToastNotification item3(GetToastString(L"P2i", L"P2", incognito));
+  notifications.push_back(&item3);
+  MockIToastNotification item4(GetToastString(L"P2reg", L"P2", !incognito));
+  notifications.push_back(&item4);
+
+  // Query for profile P1 in incognito (should return 1 item).
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "P1" /* profile_id */, true /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, displayed_notifications_.size());
+    EXPECT_EQ(1U, displayed_notifications_.count("P1i"));
+  }
+
+  // Query for profile P1 not in incognito (should return 1 item).
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "P1" /* profile_id */, false /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, displayed_notifications_.size());
+    EXPECT_EQ(1U, displayed_notifications_.count("P1reg"));
+  }
+
+  // Query for profile P2 in incognito (should return 1 item).
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "P2" /* profile_id */, true /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, displayed_notifications_.size());
+    EXPECT_EQ(1U, displayed_notifications_.count("P2i"));
+  }
+
+  // Query for profile P2 not in incognito (should return 1 item).
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "P2" /* profile_id */, false /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, displayed_notifications_.size());
+    EXPECT_EQ(1U, displayed_notifications_.count("P2reg"));
+  }
+
+  // Query for non-existing profile (should return 0 items).
+  {
+    base::RunLoop run_loop;
+    bridge->GetDisplayed(
+        "NotFound" /* profile_id */, false /* incognito */,
+        base::BindRepeating(
+            &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(0U, displayed_notifications_.size());
+  }
+
+  bridge->SetDisplayedNotificationsForTesting(nullptr);
 }
