@@ -606,11 +606,6 @@ std::vector<std::string> GpuControlList::GetDisabledExtensions() {
 }
 
 void GpuControlList::GetReasons(base::ListValue* problem_list,
-                                const std::string& tag) const {
-  GetReasons(problem_list, tag, active_entries_);
-}
-
-void GpuControlList::GetReasons(base::ListValue* problem_list,
                                 const std::string& tag,
                                 const std::vector<uint32_t>& entries) const {
   DCHECK(problem_list);
@@ -667,6 +662,17 @@ GpuControlList::OsType GpuControlList::GetOsType() {
 void GpuControlList::AddSupportedFeature(
     const std::string& feature_name, int feature_id) {
   feature_map_[feature_id] = feature_name;
+}
+
+// static
+bool GpuControlList::AreEntryIndicesValid(
+    const std::vector<uint32_t>& entry_indices,
+    size_t total_entries) {
+  for (auto index : entry_indices) {
+    if (index >= total_entries)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace gpu

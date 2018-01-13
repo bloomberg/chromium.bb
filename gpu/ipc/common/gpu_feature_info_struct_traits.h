@@ -5,6 +5,8 @@
 #ifndef GPU_IPC_COMMON_GPU_FEATURE_INFO_STRUCT_TRAITS_H_
 #define GPU_IPC_COMMON_GPU_FEATURE_INFO_STRUCT_TRAITS_H_
 
+#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
 
 namespace mojo {
@@ -69,8 +71,14 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
     return data.ReadEnabledGpuDriverBugWorkarounds(
                &out->enabled_gpu_driver_bug_workarounds) &&
            data.ReadDisabledExtensions(&out->disabled_extensions) &&
+           data.ReadAppliedGpuBlacklistEntries(
+               &out->applied_gpu_blacklist_entries) &&
+           gpu::GpuBlacklist::AreEntryIndicesValid(
+               out->applied_gpu_blacklist_entries) &&
            data.ReadAppliedGpuDriverBugListEntries(
-               &out->applied_gpu_driver_bug_list_entries);
+               &out->applied_gpu_driver_bug_list_entries) &&
+           gpu::GpuDriverBugList::AreEntryIndicesValid(
+               out->applied_gpu_driver_bug_list_entries);
   }
 
   static std::vector<gpu::GpuFeatureStatus> status_values(
@@ -87,6 +95,11 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static const std::string& disabled_extensions(
       const gpu::GpuFeatureInfo& info) {
     return info.disabled_extensions;
+  }
+
+  static const std::vector<uint32_t>& applied_gpu_blacklist_entries(
+      const gpu::GpuFeatureInfo& info) {
+    return info.applied_gpu_blacklist_entries;
   }
 
   static const std::vector<uint32_t>& applied_gpu_driver_bug_list_entries(

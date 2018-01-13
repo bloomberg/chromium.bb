@@ -97,9 +97,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // startup time in UI thread before the IO restriction is turned on.
   void Initialize();
 
-  void InitializeForTesting(const gpu::GpuControlListData& gpu_blacklist_data,
-                            const gpu::GPUInfo& gpu_info);
-
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);

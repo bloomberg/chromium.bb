@@ -30,6 +30,11 @@ struct GpuFeatureInfo {
   // GL extensions disabled by GpuDriverBugWorkarounds, separated by ' '.
   string disabled_extensions;
 
+  // The array contains a list of gpu blacklist entry indices that apply in the
+  // current platform. The entries are defined in
+  // gpu/config/software_rendering_list.json.
+  array<uint32> applied_gpu_blacklist_entries;
+
   // The array constains a list of gpu driver bug list entry indices that apply
   // in the current platform. The entries are defined in
   // gpu/config/gpu_driver_bug_list.json.
