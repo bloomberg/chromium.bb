@@ -2021,6 +2021,12 @@
   <message name="IDS_SETTINGS_ON_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
     <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
   </message>
+  <message name="IDS_SETTINGS_INVALID_URL" desc="Error message explaining that the URL being entered is invalid.">
+    Invalid URL
+  </message>
+  <message name="IDS_SETTINGS_URL_TOOL_LONG" desc="Error message asking that the user enter a shorter URL.">
+    Please enter a shorter URL
+  </message>
 
   <!-- Languages Page -->
   <if expr="chromeos">
