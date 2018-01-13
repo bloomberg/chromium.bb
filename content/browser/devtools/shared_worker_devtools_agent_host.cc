@@ -22,6 +22,7 @@ SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     SharedWorkerHost* worker_host,
     const base::UnguessableToken& devtools_worker_token)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
+      state_(WORKER_NOT_READY),
       worker_host_(worker_host),
       devtools_worker_token_(devtools_worker_token),
       instance_(new SharedWorkerInstance(*worker_host->instance())) {
@@ -68,8 +69,8 @@ void SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(GetId()));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->SetRenderer(GetProcess(), nullptr);
-  if (!waiting_ready_for_reattach_ && EnsureAgent())
-    session->AttachToAgent(agent_ptr_);
+  if (state_ == WORKER_READY)
+    session->AttachToAgent(EnsureAgent());
 }
 
 void SharedWorkerDevToolsAgentHost::DetachSession(int session_id) {
@@ -96,14 +97,11 @@ bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
+  DCHECK_EQ(WORKER_NOT_READY, state_);
   DCHECK(worker_host_);
-  if (!waiting_ready_for_reattach_)
-    return;
-  waiting_ready_for_reattach_ = false;
-  if (!EnsureAgent())
-    return;
+  state_ = WORKER_READY;
   for (DevToolsSession* session : sessions()) {
-    session->ReattachToAgent(agent_ptr_);
+    session->ReattachToAgent(EnsureAgent());
     for (const auto& pair : session->waiting_messages()) {
       int call_id = pair.first;
       const DevToolsSession::Message& message = pair.second;
@@ -113,18 +111,20 @@ void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
   }
 }
 
-bool SharedWorkerDevToolsAgentHost::WorkerRestarted(
+void SharedWorkerDevToolsAgentHost::WorkerRestarted(
     SharedWorkerHost* worker_host) {
+  DCHECK_EQ(WORKER_TERMINATED, state_);
   DCHECK(!worker_host_);
+  state_ = WORKER_NOT_READY;
   worker_host_ = worker_host;
   for (DevToolsSession* session : sessions())
     session->SetRenderer(GetProcess(), nullptr);
-  waiting_ready_for_reattach_ = IsAttached();
-  return waiting_ready_for_reattach_;
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
+  DCHECK_NE(WORKER_TERMINATED, state_);
   DCHECK(worker_host_);
+  state_ = WORKER_TERMINATED;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   for (DevToolsSession* session : sessions())
@@ -138,12 +138,13 @@ RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcess() {
                       : nullptr;
 }
 
-bool SharedWorkerDevToolsAgentHost::EnsureAgent() {
-  if (!worker_host_)
-    return false;
+const blink::mojom::DevToolsAgentAssociatedPtr&
+SharedWorkerDevToolsAgentHost::EnsureAgent() {
+  DCHECK_EQ(WORKER_READY, state_);
+  DCHECK(worker_host_);
   if (!agent_ptr_)
     worker_host_->GetDevToolsAgent(mojo::MakeRequest(&agent_ptr_));
-  return true;
+  return agent_ptr_;
 }
 
 }  // namespace content

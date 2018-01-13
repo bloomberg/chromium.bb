@@ -28,6 +28,7 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
 
   void AddAllAgentHosts(
       std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>* result);
+  void AgentHostDestroyed(SharedWorkerDevToolsAgentHost* agent_host);
 
   void WorkerCreated(SharedWorkerHost* worker_host,
                      bool* pause_on_start,
@@ -37,14 +38,9 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
 
  private:
   friend struct base::DefaultSingletonTraits<SharedWorkerDevToolsManager>;
-  friend class SharedWorkerDevToolsAgentHost;
-  friend class SharedWorkerDevToolsManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SharedWorkerDevToolsManagerTest, BasicTest);
-  FRIEND_TEST_ALL_PREFIXES(SharedWorkerDevToolsManagerTest, AttachTest);
 
   SharedWorkerDevToolsManager();
   ~SharedWorkerDevToolsManager();
-  void AgentHostDestroyed(SharedWorkerDevToolsAgentHost* agent_host);
 
   // We retatin agent hosts as long as the shared worker is alive.
   std::map<SharedWorkerHost*, scoped_refptr<SharedWorkerDevToolsAgentHost>>

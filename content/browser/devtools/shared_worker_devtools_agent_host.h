@@ -41,8 +41,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   bool Matches(SharedWorkerHost* worker_host);
   void WorkerReadyForInspection();
-  // Returns whether the worker should be paused for reattach.
-  bool WorkerRestarted(SharedWorkerHost* worker_host);
+  void WorkerRestarted(SharedWorkerHost* worker_host);
   void WorkerDestroyed();
 
   const base::UnguessableToken& devtools_worker_token() const {
@@ -50,17 +49,20 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   }
 
  private:
-  friend class SharedWorkerDevToolsManagerTest;
-
   ~SharedWorkerDevToolsAgentHost() override;
   RenderProcessHost* GetProcess();
-  bool EnsureAgent();
+  const blink::mojom::DevToolsAgentAssociatedPtr& EnsureAgent();
 
+  enum WorkerState {
+    WORKER_NOT_READY,
+    WORKER_READY,
+    WORKER_TERMINATED,
+  };
+  WorkerState state_;
   SharedWorkerHost* worker_host_;
   blink::mojom::DevToolsAgentAssociatedPtr agent_ptr_;
   base::UnguessableToken devtools_worker_token_;
   std::unique_ptr<SharedWorkerInstance> instance_;
-  bool waiting_ready_for_reattach_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgentHost);
 };

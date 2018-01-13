@@ -69,11 +69,13 @@ void ServiceWorkerDevToolsManager::WorkerCreated(
                                            url, scope, is_installed_version,
                                            *devtools_worker_token);
     live_hosts_[worker_id] = host;
-    for (auto& observer : observer_list_)
-      observer.WorkerCreated(host.get());
-    if (debug_service_worker_on_start_)
-      host->PauseForDebugOnStart();
-    *pause_on_start = host->IsPausedForDebugOnStart();
+    *pause_on_start = debug_service_worker_on_start_;
+    for (auto& observer : observer_list_) {
+      bool should_pause_on_start = false;
+      observer.WorkerCreated(host.get(), &should_pause_on_start);
+      if (should_pause_on_start)
+        *pause_on_start = true;
+    }
     return;
   }
 
@@ -81,8 +83,8 @@ void ServiceWorkerDevToolsManager::WorkerCreated(
   terminated_hosts_.erase(it);
   live_hosts_[worker_id] = agent_host;
   agent_host->WorkerRestarted(worker_process_id, worker_route_id);
-  *devtools_worker_token = agent_host->devtools_worker_token();
   *pause_on_start = agent_host->IsAttached();
+  *devtools_worker_token = agent_host->devtools_worker_token();
 }
 
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
@@ -95,11 +97,8 @@ void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
     return;
   scoped_refptr<ServiceWorkerDevToolsAgentHost> host = it->second;
   host->WorkerReadyForInspection();
-  for (auto& observer : observer_list_)
-    observer.WorkerReadyForInspection(host.get());
-
-  // Then bring up UI for the ones not picked by other clients.
-  if (host->IsPausedForDebugOnStart() && !host->IsAttached())
+  // Bring up UI for the ones not picked by other clients.
+  if (debug_service_worker_on_start_ && !host->IsAttached())
     host->Inspect();
 }
 

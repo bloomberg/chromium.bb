@@ -533,7 +533,8 @@ void WebDevToolsAgentImpl::Reattach(int session_id, const String& saved_state) {
   String state = saved_state;
   InspectorSession* session = InitializeSession(session_id, &state);
   session->Restore();
-  if (worker_client_)
+  // TODO(dgozman): use the optional instead of checking for empty.
+  if (worker_client_ && !state.IsEmpty())
     worker_client_->ResumeStartup();
 }
 

@@ -56,11 +56,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  void PauseForDebugOnStart();
-  bool IsPausedForDebugOnStart();
-  bool IsReadyForInspection();
-  void WorkerReadyForInspection();
   void WorkerRestarted(int worker_process_id, int worker_route_id);
+  void WorkerReadyForInspection();
   void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
@@ -81,21 +78,17 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   bool Matches(const ServiceWorkerContextCore* context, int64_t version_id);
 
  private:
-  enum WorkerState {
-    WORKER_UNINSPECTED,
-    WORKER_INSPECTED,
-    WORKER_TERMINATED,
-    WORKER_PAUSED_FOR_DEBUG_ON_START,
-    WORKER_READY_FOR_DEBUG_ON_START,
-    WORKER_PAUSED_FOR_REATTACH,
-  };
-
   ~ServiceWorkerDevToolsAgentHost() override;
 
   void AttachToWorker();
   void DetachFromWorker();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
+  enum WorkerState {
+    WORKER_NOT_READY,
+    WORKER_READY,
+    WORKER_TERMINATED,
+  };
   WorkerState state_;
   base::UnguessableToken devtools_worker_token_;
   int worker_process_id_;
