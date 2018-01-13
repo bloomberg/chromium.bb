@@ -2289,8 +2289,7 @@
       "id": 215,
       "description": "Fake no-op GPU driver bug workaround for testing",
       "cr_bugs": [682912],
-      "vendor_id": "0xbad9",
-      "device_id": ["0xbad9"],
+      "test_group": 1,
       "features": [
         "use_gpu_driver_workaround_for_testing"
       ]

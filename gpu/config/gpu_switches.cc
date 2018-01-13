@@ -90,4 +90,12 @@ const char kGpuVendorID[] = "gpu-vendor-id";
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 
+// Select a different set of GPU blacklist entries with the specificed
+// test_group ID.
+const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
+
+// Select a different set of GPU driver bug list entries with the specificed
+// test_group ID.
+const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
+
 }  // namespace switches
