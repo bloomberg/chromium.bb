@@ -1317,7 +1317,7 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
         state.GetStyleImage(CSSPropertyShapeOutside, value));
 
   scoped_refptr<BasicShape> shape;
-  CSSBoxType css_box = kBoxMissing;
+  CSSBoxType css_box = CSSBoxType::kMissing;
   const CSSValueList& value_list = ToCSSValueList(value);
   for (unsigned i = 0; i < value_list.length(); ++i) {
     const CSSValue& value = value_list.Item(i);
@@ -1331,7 +1331,7 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
   if (shape)
     return ShapeValue::CreateShapeValue(std::move(shape), css_box);
 
-  DCHECK_NE(css_box, kBoxMissing);
+  DCHECK_NE(css_box, CSSBoxType::kMissing);
   return ShapeValue::CreateBoxShapeValue(css_box);
 }
 
