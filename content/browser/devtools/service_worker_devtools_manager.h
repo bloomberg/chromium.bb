@@ -35,9 +35,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
  public:
   class Observer {
    public:
-    virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) {}
-    virtual void WorkerReadyForInspection(
-        ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
+                               bool* should_pause_on_start) {}
     virtual void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}

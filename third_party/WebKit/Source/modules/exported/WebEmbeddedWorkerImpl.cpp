@@ -208,7 +208,6 @@ void WebEmbeddedWorkerImpl::ReattachDevTools(int session_id,
   WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
     devtools_agent->Reattach(session_id, saved_state);
-  ResumeStartup();
 }
 
 void WebEmbeddedWorkerImpl::DetachDevTools(int session_id) {
