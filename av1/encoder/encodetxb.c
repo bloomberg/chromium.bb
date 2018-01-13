@@ -1977,7 +1977,7 @@ int hash_based_trellis_mode(TxbInfo *txb_info,
                                txb_costs, txb_eob_costs, p, block, fast_mode);
 }
 
-int av1_optimize_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
+int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
                      TXB_CTX *txb_ctx, int fast_mode) {
   const AV1_COMMON *cm = &cpi->common;

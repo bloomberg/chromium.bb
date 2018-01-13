@@ -421,7 +421,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 }
 #endif  // !CONFIG_LV_MAP
 
-int av1_optimize_b(const AV1_COMP *const cpi, MACROBLOCK *mb, int plane,
+int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
                    int blk_row, int blk_col, int block, BLOCK_SIZE plane_bsize,
                    TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                    const ENTROPY_CONTEXT *l, int fast_mode) {
@@ -741,7 +741,7 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
                                          encode_block_pass1, &args);
 }
 
-void av1_encode_sb(const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                    int mi_row, int mi_col, RUN_TYPE dry_run) {
   (void)dry_run;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -918,7 +918,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_CFL
 }
 
-void av1_encode_intra_block_plane(const AV1_COMP *const cpi, MACROBLOCK *x,
+void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
                                   int enable_optimize_b, int mi_row,
                                   int mi_col) {
