@@ -20,59 +20,8 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
 }
 
 void GpuDataManagerImpl::BlacklistWebGLForTesting() {
-  // Manually generate the following data instead of going through
-  // gpu/config/process_json.py because this is just one simple instance.
-  static const int kFeatureListForEntry0[1] = {
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL};
-  static const gpu::GpuControlList::Entry kEntry = {
-      1,  // id
-      "ExtensionWebstoreGetWebGLStatusTest.Blocked",
-      arraysize(kFeatureListForEntry0),  // features size
-      kFeatureListForEntry0,             // features
-      0,                                 // DisabledExtensions size
-      nullptr,                           // DisabledExtensions
-      0,                                 // CrBugs size
-      nullptr,                           // CrBugs
-      {
-          gpu::GpuControlList::kOsAny,  // os_type
-          {gpu::GpuControlList::kUnknown,
-           gpu::GpuControlList::kVersionStyleNumerical, nullptr,
-           nullptr},                                   // os_version
-          0x00,                                        // vendor_id
-          0,                                           // DeviceIDs size
-          nullptr,                                     // DeviceIDs
-          gpu::GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
-          gpu::GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
-          nullptr,                                     // driver info
-          nullptr,                                     // GL strings
-          nullptr,                                     // machine model info
-          nullptr,                                     // more conditions
-      },
-      0,        // exceptions count
-      nullptr,  // exceptions
-  };
-  static const gpu::GpuControlListData kData(1, &kEntry);
-
-  gpu::GPUInfo gpu_info;
-
   base::AutoLock auto_lock(lock_);
-  private_->InitializeForTesting(kData, gpu_info);
-
-  gpu::GpuFeatureInfo gpu_feature_info;
-  for (int ii = 0; ii < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
-    if (ii == static_cast<int>(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
-      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusBlacklisted;
-    else
-      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
-  }
-  private_->UpdateGpuFeatureInfo(gpu_feature_info);
-}
-
-void GpuDataManagerImpl::InitializeForTesting(
-    const gpu::GpuControlListData& gpu_blacklist_data,
-    const gpu::GPUInfo& gpu_info) {
-  base::AutoLock auto_lock(lock_);
-  private_->InitializeForTesting(gpu_blacklist_data, gpu_info);
+  private_->BlacklistWebGLForTesting();
 }
 
 gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {

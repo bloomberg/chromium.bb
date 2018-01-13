@@ -19,6 +19,8 @@ class GPU_EXPORT GpuBlacklist : public GpuControlList {
   static std::unique_ptr<GpuBlacklist> Create();
   static std::unique_ptr<GpuBlacklist> Create(const GpuControlListData& data);
 
+  static bool AreEntryIndicesValid(const std::vector<uint32_t>& entry_indices);
+
  private:
   explicit GpuBlacklist(const GpuControlListData& data);
 

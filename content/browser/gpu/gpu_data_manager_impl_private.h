@@ -23,7 +23,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "gpu/config/gpu_blacklist.h"
 
 namespace base {
 class CommandLine;
@@ -40,8 +39,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
  public:
   static GpuDataManagerImplPrivate* Create(GpuDataManagerImpl* owner);
 
-  void InitializeForTesting(const gpu::GpuControlListData& gpu_blacklist_data,
-                            const gpu::GPUInfo& gpu_info);
+  void BlacklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
@@ -151,14 +149,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
-  void InitializeImpl(const gpu::GpuControlListData& gpu_blacklist_data,
-                      const gpu::GPUInfo& gpu_info);
-
   void RunPostInitTasks();
-
-  void UpdateGpuInfoHelper();
-
-  void UpdateBlacklistedFeatures(const std::set<int>& features);
 
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
@@ -177,14 +168,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool complete_gpu_info_already_requested_;
 
-  std::set<int> blacklisted_features_;
-
   // Eventually |blacklisted_features_| should be folded in to this.
   gpu::GpuFeatureInfo gpu_feature_info_;
 
   gpu::GPUInfo gpu_info_;
-
-  std::unique_ptr<gpu::GpuBlacklist> gpu_blacklist_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
@@ -222,6 +209,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // If one tries to call a member before initialization then it is defered
   // until Initialize() is completed.
   std::vector<base::Closure> post_init_tasks_;
+
+#if defined(OS_ANDROID)
+  bool blacklist_accelerated_video_decode_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

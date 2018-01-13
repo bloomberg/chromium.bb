@@ -103,4 +103,11 @@ void GpuDriverBugList::AppendAllWorkarounds(
 #undef GPU_OP
 }
 
+// static
+bool GpuDriverBugList::AreEntryIndicesValid(
+    const std::vector<uint32_t>& entry_indices) {
+  return GpuControlList::AreEntryIndicesValid(entry_indices,
+                                              kGpuDriverBugListEntryCount);
+}
+
 }  // namespace gpu
