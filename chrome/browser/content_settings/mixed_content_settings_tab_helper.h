@@ -34,6 +34,8 @@ class MixedContentSettingsTabHelper
 
   explicit MixedContentSettingsTabHelper(content::WebContents* tab);
 
+  // content::WebContentsObserver
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
