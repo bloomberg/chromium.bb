@@ -6,6 +6,9 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.webkit.JavascriptInterface;
@@ -497,6 +500,7 @@ public class PostMessageTest {
         private AppWebMessagePort[] mChannel;
         private final Object mLock = new Object();
         private String mMessage = "";
+        private Looper mLastLooper;
         private int mCount;
         private int mWaitCount;
 
@@ -518,6 +522,7 @@ public class PostMessageTest {
         public void setMessage(String message) {
             synchronized (mLock) {
                 mMessage += message;
+                mLastLooper = Looper.myLooper();
                 if (++mCount < mWaitCount) return;
                 mReady = true;
                 mLock.notify();
@@ -530,6 +535,10 @@ public class PostMessageTest {
 
         public String getMessage() {
             return mMessage;
+        }
+
+        public Looper getLastLooper() {
+            return mLastLooper;
         }
 
         public void waitForMessage() throws InterruptedException {
@@ -592,22 +601,11 @@ public class PostMessageTest {
             + "   </script>"
             + "</body></html>";
 
-    // Call on non-UI thread.
-    private void waitUntilPortReady(final AppWebMessagePort port) throws Throwable {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return port.isReady();
-            }
-        });
-    }
-
     private static final String HELLO = "HELLO";
 
-    // Message channels are created on UI thread in a pending state. They are
-    // initialized at a later stage. Verify that a message port that is initialized
-    // can be transferred to JS and full communication can happen on it.
-    // Do this by sending a message to JS and let it echo'ing the message with
+    // Message channels are created on UI thread. Verify that a message port
+    // can be transferred to JS and full communication can happen on it. Do
+    // this by sending a message to JS and letting it echo the message with
     // some text prepended to it.
     @Test
     @SmallTest
@@ -618,8 +616,6 @@ public class PostMessageTest {
         final AppWebMessagePort[] channel =
                 ThreadUtils.runOnUiThreadBlocking(() -> mAwContents.createMessageChannel());
 
-        waitUntilPortReady(channel[0]);
-        waitUntilPortReady(channel[1]);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             channel[0].setMessageCallback(
                     (message, sentPorts) -> channelContainer.setMessage(message), null);
@@ -923,5 +919,65 @@ public class PostMessageTest {
         });
         channelContainer.waitForMessage();
         Assert.assertEquals("12", channelContainer.getMessage());
+    }
+
+    // Make sure messages are dispatched on the correct looper.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testMessageOnCorrectLooper() throws Throwable {
+        final ChannelContainer channelContainer1 = new ChannelContainer(1);
+        final ChannelContainer channelContainer2 = new ChannelContainer(1);
+        final HandlerThread thread = new HandlerThread("test-thread");
+        thread.start();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AppWebMessagePort[] channel = mAwContents.createMessageChannel();
+            channelContainer1.set(channel);
+            channelContainer2.set(channel);
+            channel[0].setMessageCallback(
+                    (message, sentPorts) -> channelContainer1.setMessage(message), null);
+            channel[1].setMessageCallback((message, sentPorts)
+                                                  -> channelContainer2.setMessage(message),
+                    new Handler(thread.getLooper()));
+            channel[0].postMessage("foo", null);
+            channel[1].postMessage("bar", null);
+        });
+        channelContainer1.waitForMessage();
+        channelContainer2.waitForMessage();
+        Assert.assertEquals("bar", channelContainer1.getMessage());
+        Assert.assertEquals(Looper.getMainLooper(), channelContainer1.getLastLooper());
+        Assert.assertEquals("foo", channelContainer2.getMessage());
+        Assert.assertEquals(thread.getLooper(), channelContainer2.getLastLooper());
+    }
+
+    // Make sure it is possible to change the message handler.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testChangeMessageHandler() throws Throwable {
+        final ChannelContainer channelContainer = new ChannelContainer(1);
+        final HandlerThread thread = new HandlerThread("test-thread");
+        thread.start();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AppWebMessagePort[] channel = mAwContents.createMessageChannel();
+            channelContainer.set(channel);
+            channel[0].setMessageCallback((message, sentPorts)
+                                                  -> channelContainer.setMessage(message),
+                    new Handler(thread.getLooper()));
+            channel[1].postMessage("foo", null);
+        });
+        channelContainer.waitForMessage();
+        Assert.assertEquals("foo", channelContainer.getMessage());
+        Assert.assertEquals(thread.getLooper(), channelContainer.getLastLooper());
+        final ChannelContainer channelContainer2 = new ChannelContainer(1);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AppWebMessagePort[] channel = channelContainer.get();
+            channel[0].setMessageCallback(
+                    (message, sentPorts) -> channelContainer2.setMessage(message), null);
+            channel[1].postMessage("bar", null);
+        });
+        channelContainer2.waitForMessage();
+        Assert.assertEquals("bar", channelContainer2.getMessage());
+        Assert.assertEquals(Looper.getMainLooper(), channelContainer2.getLastLooper());
     }
 }
