@@ -1012,7 +1012,7 @@ shared_library("chrome_sync_shell") {
     libs =
         [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
   }
-  if (use_lld) {
+  if (chromium_linker_supported && use_lld) {
     configs += [ "//build/config/android:lld_pack_relocations" ]
   }
 }
