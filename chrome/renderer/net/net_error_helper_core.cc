@@ -651,7 +651,8 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   delegate_->SetIsShowingDownloadButton(
       committed_error_page_info_->download_button_in_page);
 
-  delegate_->EnablePageHelperFunctions();
+  delegate_->EnablePageHelperFunctions(
+      static_cast<net::Error>(committed_error_page_info_->error.reason()));
 
   if (committed_error_page_info_->needs_load_navigation_corrections) {
     // If there is another pending error page load, |fix_url| should have been
