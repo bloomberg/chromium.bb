@@ -340,12 +340,6 @@ class EBuild(object):
        'rev_subdirs'))
 
   @classmethod
-  def _Print(cls, message):
-    """Verbose print function."""
-    if cls.VERBOSE:
-      logging.info(message)
-
-  @classmethod
   def _RunCommand(cls, command, **kwargs):
     kwargs.setdefault('capture_output', True)
     return cros_build_lib.RunCommand(
@@ -909,11 +903,12 @@ class EBuild(object):
     # If there has been any change in the tests list, choose to uprev.
     if (not test_dirs_changed and not unstable_ebuild_changed and
         not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
-      self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
-                  'been modified, no files/, nor has the -9999 ebuild.')
+      logging.info('Skipping uprev of ebuild %s, none of the rev_subdirs have '
+                   'been modified, no files/, nor has the -9999 ebuild.' %
+                   self.pkgname)
       return
 
-    self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
+    logging.info('Creating new stable ebuild %s' % new_stable_ebuild_path)
     if not os.path.exists(self._unstable_ebuild_path):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
@@ -926,11 +921,11 @@ class EBuild(object):
       os.unlink(new_stable_ebuild_path)
       return None
     else:
-      self._Print('Adding new stable ebuild to git')
+      logging.info('Adding new stable ebuild to git')
       self._RunGit(self.overlay, ['add', new_stable_ebuild_path])
 
       if self.is_stable:
-        self._Print('Removing old ebuild from git')
+        logging.info('Removing old ebuild from git')
         self._RunGit(self.overlay, ['rm', '-f', old_ebuild_path])
 
       return '%s-%s' % (self.package, new_version)
