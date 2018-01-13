@@ -54,7 +54,7 @@ bool IsRangeListSorted(
   for (const auto& range_ptr : ranges) {
     if (prev != kNoDecodeTimestamp() && prev >= range_ptr->GetStartTimestamp())
       return false;
-    prev = range_ptr->GetEndTimestamp();
+    prev = range_ptr->GetBufferedEndTimestamp();
   }
   return true;
 }
@@ -66,7 +66,7 @@ bool IsRangeListSorted(
   for (const auto& range_ptr : ranges) {
     if (prev != kNoTimestamp && prev >= range_ptr->GetStartTimestamp())
       return false;
-    prev = range_ptr->GetEndTimestamp();
+    prev = range_ptr->GetBufferedEndTimestamp();
   }
   return true;
 }
@@ -538,6 +538,9 @@ void SourceBufferStream<RangeClass>::Remove(base::TimeDelta start,
       Seek(seek_buffer_timestamp_);
     }
   }
+
+  DCHECK(OnlySelectedRangeIsSeeked());
+  DCHECK(IsRangeListSorted(ranges_));
 }
 
 template <typename RangeClass>
@@ -704,7 +707,6 @@ void SourceBufferStream<RangeClass>::RemoveInternal(
   DVLOG(3) << __func__ << " " << GetStreamTypeName()
            << ": after remove ranges_=" << RangesToString<RangeClass>(ranges_);
 
-  DCHECK(IsRangeListSorted(ranges_));
   DCHECK(OnlySelectedRangeIsSeeked());
 }
 
