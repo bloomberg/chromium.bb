@@ -12,6 +12,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/test/gtest_util.h"
@@ -267,7 +268,7 @@ void SequencedSocketDataTest::Initialize(MockRead* reads,
 
   EXPECT_EQ(OK,
             connection_.Init(
-                endpoint_.ToString(), tcp_params_, LOWEST,
+                endpoint_.ToString(), tcp_params_, LOWEST, SocketTag(),
                 ClientSocketPool::RespectLimits::ENABLED, CompletionCallback(),
                 reinterpret_cast<TransportClientSocketPool*>(&socket_pool_),
                 NetLogWithSource()));

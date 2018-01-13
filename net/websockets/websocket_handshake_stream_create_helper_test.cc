@@ -17,6 +17,7 @@
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
@@ -49,7 +50,7 @@ class MockClientSocketHandleFactory {
     socket_factory_maker_.SetExpectations(expect_written, return_to_read);
     std::unique_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
     socket_handle->Init("a", scoped_refptr<MockTransportSocketParams>(), MEDIUM,
-                        ClientSocketPool::RespectLimits::ENABLED,
+                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                         CompletionCallback(), &pool_, NetLogWithSource());
     return socket_handle;
   }

@@ -50,6 +50,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
@@ -388,6 +389,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
   int RequestSocket(const std::string& group_name,
                     const void* socket_params,
                     RequestPriority priority,
+                    const SocketTag& socket_tag,
                     ClientSocketPool::RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
@@ -2067,7 +2069,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
                             ssl_config, PRIVACY_MODE_DISABLED, 0, false));
     std::string group_name = "ssl/" + host_port_pair.ToString();
     int rv = connection->Init(
-        group_name, ssl_params, MEDIUM,
+        group_name, ssl_params, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
         session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
         NetLogWithSource());

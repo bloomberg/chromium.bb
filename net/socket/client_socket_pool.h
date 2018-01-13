@@ -104,6 +104,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual int RequestSocket(const std::string& group_name,
                             const void* params,
                             RequestPriority priority,
+                            const SocketTag& socket_tag,
                             RespectLimits respect_limits,
                             ClientSocketHandle* handle,
                             const CompletionCallback& callback,

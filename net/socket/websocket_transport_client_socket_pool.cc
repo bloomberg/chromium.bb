@@ -45,6 +45,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     : ConnectJob(group_name,
                  timeout_duration,
                  priority,
+                 SocketTag(),
                  respect_limits,
                  delegate,
                  NetLogWithSource::Make(
@@ -324,6 +325,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
     const std::string& group_name,
     const void* params,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     RespectLimits respect_limits,
     ClientSocketHandle* handle,
     const CompletionCallback& callback,
@@ -338,6 +340,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   CHECK(handle);
 
   request_net_log.BeginEvent(NetLogEventType::SOCKET_POOL);
+
+  DCHECK(socket_tag == SocketTag());
 
   if (ReachedMaxSocketsLimit() &&
       respect_limits == ClientSocketPool::RespectLimits::ENABLED) {
@@ -666,11 +670,12 @@ void WebSocketTransportClientSocketPool::ActivateStalledRequest() {
     stalled_request_queue_.pop_front();
     stalled_request_map_.erase(request.handle);
 
-    int rv = RequestSocket("ignored", &request.params, request.priority,
-                           // Stalled requests can't have |respect_limits|
-                           // DISABLED.
-                           RespectLimits::ENABLED, request.handle,
-                           request.callback, request.net_log);
+    int rv =
+        RequestSocket("ignored", &request.params, request.priority, SocketTag(),
+                      // Stalled requests can't have |respect_limits|
+                      // DISABLED.
+                      RespectLimits::ENABLED, request.handle, request.callback,
+                      request.net_log);
 
     // ActivateStalledRequest() never returns synchronously, so it is never
     // called re-entrantly.

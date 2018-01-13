@@ -740,6 +740,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
+  void ApplySocketTag(const SocketTag& tag) override;
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
@@ -888,9 +889,9 @@ class ClientSocketPoolTest {
     TestSocketRequest* request(
         new TestSocketRequest(&request_order_, &completion_count_));
     requests_.push_back(base::WrapUnique(request));
-    int rv = request->handle()->Init(group_name, socket_params, priority,
-                                     respect_limits, request->callback(),
-                                     socket_pool, NetLogWithSource());
+    int rv = request->handle()->Init(
+        group_name, socket_params, priority, SocketTag(), respect_limits,
+        request->callback(), socket_pool, NetLogWithSource());
     if (rv != ERR_IO_PENDING)
       request_order_.push_back(request);
     return rv;
@@ -944,6 +945,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
    public:
     MockConnectJob(std::unique_ptr<StreamSocket> socket,
                    ClientSocketHandle* handle,
+                   const SocketTag& socket_tag,
                    const CompletionCallback& callback);
     ~MockConnectJob();
 
@@ -955,6 +957,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
 
     std::unique_ptr<StreamSocket> socket_;
     ClientSocketHandle* handle_;
+    const SocketTag socket_tag_;
     CompletionCallback user_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(MockConnectJob);
@@ -976,6 +979,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   int RequestSocket(const std::string& group_name,
                     const void* socket_params,
                     RequestPriority priority,
+                    const SocketTag& socket_tag,
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
@@ -1011,6 +1015,7 @@ class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {
   int RequestSocket(const std::string& group_name,
                     const void* socket_params,
                     RequestPriority priority,
+                    const SocketTag& socket_tag,
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
@@ -1100,12 +1105,45 @@ class MockTaggingStreamSocket : public WrappedStreamSocket {
       : WrappedStreamSocket(std::move(transport)) {}
   ~MockTaggingStreamSocket() override {}
 
+  // StreamSocket implementation.
+  int Connect(const CompletionCallback& callback) override;
   void ApplySocketTag(const SocketTag& tag) override;
 
-  SocketTag tag() { return tag_; }
+  // Returns false if socket's tag was changed after the socket was connected,
+  // otherwise returns true.
+  bool tagged_before_connected() const { return tagged_before_connected_; }
+
+  // Returns last tag applied to socket.
+  SocketTag tag() const { return tag_; }
 
  private:
+  bool connected_ = false;
+  bool tagged_before_connected_ = true;
   SocketTag tag_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTaggingStreamSocket);
+};
+
+// Extend MockClientSocketFactory to return MockTaggingStreamSockets and
+// keep track of last socket produced for test inspection.
+class MockTaggingClientSocketFactory : public MockClientSocketFactory {
+ public:
+  MockTaggingClientSocketFactory() = default;
+
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
+      const AddressList& addresses,
+      std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetLog* net_log,
+      const NetLogSource& source) override;
+
+  // Returns a pointer to last socket produced by this factory.
+  // NOTE: Socket must still exist, or pointer will be to freed memory.
+  MockTaggingStreamSocket* GetLastProducedSocket() { return socket_; }
+
+ private:
+  MockTaggingStreamSocket* socket_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTaggingClientSocketFactory);
 };
 
 // Constants for a successful SOCKS v5 handshake.

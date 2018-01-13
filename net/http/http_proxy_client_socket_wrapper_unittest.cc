@@ -21,6 +21,7 @@
 #include "net/quic/core/quic_versions.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -266,6 +267,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
 
   client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
       /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
+      /*socket_tag=*/SocketTag(),
       /*respect_limits=*/ClientSocketPool::RespectLimits::DISABLED,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),

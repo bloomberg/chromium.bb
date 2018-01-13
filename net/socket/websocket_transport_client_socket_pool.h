@@ -155,6 +155,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   int RequestSocket(const std::string& group_name,
                     const void* resolve_info,
                     RequestPriority priority,
+                    const SocketTag& socket_tag,
                     RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,

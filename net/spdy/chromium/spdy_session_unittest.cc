@@ -30,6 +30,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
@@ -1519,7 +1520,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
       transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
       key_.privacy_mode(), 0, false);
   int rv = connection->Init(
-      key_.host_port_pair().ToString(), ssl_params, MEDIUM,
+      key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       http_session_->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       log_.bound());
@@ -1627,7 +1628,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
       transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
       key_.privacy_mode(), 0, false);
   int rv = connection->Init(
-      key_.host_port_pair().ToString(), ssl_params, MEDIUM,
+      key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       http_session_->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       log_.bound());
@@ -3458,10 +3459,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
       host_port2, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(), pool, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
+                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                        callback2.callback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3537,10 +3539,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
       host_port3, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   auto connection3 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback3.callback(), pool, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
+                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                        callback3.callback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3616,10 +3619,11 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
       host_port2, false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(), pool, NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
+                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                        callback2.callback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY

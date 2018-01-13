@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_request_headers.h"
+#include "net/socket/socket_tag.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -56,6 +57,9 @@ struct NET_EXPORT HttpRequestInfo {
   // If present, the host of the referrer whose TokenBindingID should be
   // included in a referred TokenBinding.
   std::string token_binding_referrer;
+
+  // Tag applied to all sockets used to service request.
+  SocketTag socket_tag;
 };
 
 }  // namespace net

@@ -51,12 +51,14 @@ void SetSocketMotivation(StreamSocket* socket,
 ConnectJob::ConnectJob(const std::string& group_name,
                        base::TimeDelta timeout_duration,
                        RequestPriority priority,
+                       const SocketTag& socket_tag,
                        ClientSocketPool::RespectLimits respect_limits,
                        Delegate* delegate,
                        const NetLogWithSource& net_log)
     : group_name_(group_name),
       timeout_duration_(timeout_duration),
       priority_(priority),
+      socket_tag_(socket_tag),
       respect_limits_(respect_limits),
       delegate_(delegate),
       net_log_(net_log),
@@ -146,6 +148,7 @@ ClientSocketPoolBaseHelper::Request::Request(
     ClientSocketHandle* handle,
     const CompletionCallback& callback,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     Flags flags,
     const NetLogWithSource& net_log)
@@ -154,7 +157,8 @@ ClientSocketPoolBaseHelper::Request::Request(
       priority_(priority),
       respect_limits_(respect_limits),
       flags_(flags),
-      net_log_(net_log) {
+      net_log_(net_log),
+      socket_tag_(socket_tag) {
   if (respect_limits_ == ClientSocketPool::RespectLimits::DISABLED)
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
 }
@@ -292,6 +296,9 @@ int ClientSocketPoolBaseHelper::RequestSocket(
   int rv = RequestSocketInternal(group_name, *request,
                                  HttpRequestInfo::NORMAL_MOTIVATION);
   if (rv != ERR_IO_PENDING) {
+    if (rv == OK) {
+      request->handle()->socket()->ApplySocketTag(request->socket_tag());
+    }
     request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
                                                 rv);
     CHECK(!request->handle()->is_initialized());
@@ -965,7 +972,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
                     connect_timing, request->handle(), base::TimeDelta(), group,
                     request->net_log());
       request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
-      InvokeUserCallbackLater(request->handle(), request->callback(), result);
+      InvokeUserCallbackLater(request->handle(), request->callback(), result,
+                              request->socket_tag());
     } else {
       AddIdleSocket(std::move(socket), group);
       OnAvailableSocketSlot(group_name, group);
@@ -988,7 +996,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       }
       request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
                                                   result);
-      InvokeUserCallbackLater(request->handle(), request->callback(), result);
+      InvokeUserCallbackLater(request->handle(), request->callback(), result,
+                              request->socket_tag());
     } else {
       RemoveConnectJob(job, group);
     }
@@ -1052,7 +1061,8 @@ void ClientSocketPoolBaseHelper::ProcessPendingRequest(
 
     request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
                                                 rv);
-    InvokeUserCallbackLater(request->handle(), request->callback(), rv);
+    InvokeUserCallbackLater(request->handle(), request->callback(), rv,
+                            request->socket_tag());
   }
 }
 
@@ -1130,7 +1140,8 @@ void ClientSocketPoolBaseHelper::CancelAllRequestsWithError(int error) {
       std::unique_ptr<Request> request = group->PopNextPendingRequest();
       if (!request)
         break;
-      InvokeUserCallbackLater(request->handle(), request->callback(), error);
+      InvokeUserCallbackLater(request->handle(), request->callback(), error,
+                              request->socket_tag());
     }
 
     // Delete group if no longer needed.
@@ -1197,9 +1208,15 @@ bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInHigherLayeredPool() {
 }
 
 void ClientSocketPoolBaseHelper::InvokeUserCallbackLater(
-    ClientSocketHandle* handle, const CompletionCallback& callback, int rv) {
+    ClientSocketHandle* handle,
+    const CompletionCallback& callback,
+    int rv,
+    const SocketTag& socket_tag) {
   CHECK(!base::ContainsKey(pending_callback_map_, handle));
   pending_callback_map_[handle] = CallbackResultPair(callback, rv);
+  if (rv == OK) {
+    handle->socket()->ApplySocketTag(socket_tag);
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ClientSocketPoolBaseHelper::InvokeUserCallback,
                             weak_factory_.GetWeakPtr(), handle));
