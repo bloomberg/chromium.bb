@@ -41,6 +41,7 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
   // Overridden from ui::ListModelObserver:
   void ListItemsRemoved(size_t start, size_t count) override;

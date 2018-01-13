@@ -69,6 +69,7 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  const char* GetClassName() const override;
 
   // AppListPage overrides:
   void OnWillBeShown() override;
