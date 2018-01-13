@@ -108,17 +108,17 @@ SyncCredentialsFilter::GetAutofillForSyncCredentialsState() {
       return DISALLOW_SYNC_CREDENTIALS;
     }
 
-    // Only 'protect-sync-credential-on-reauth' feature is kept disabled. This
+    // Only 'ProtectSyncCredentialOnReauth' feature is kept disabled. This
     // is "illegal", emit a warning and do not ever fill the sync credential.
     LOG(WARNING) << "This is illegal! Feature "
-                    "'protect-sync-credential-on-reauth' cannot be kept "
+                    "'ProtectSyncCredentialOnReauth' cannot be kept "
                     "disabled if 'protect-sync-credential' feature is enabled. "
                     "We shall not ever fill the sync credential is such cases.";
     return DISALLOW_SYNC_CREDENTIALS;
   }
 
   if (protect_sync_credential_on_reauth_enabled) {
-    // Only 'protect-sync-credential-on-reauth' feature is kept enabled, fill
+    // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill
     // the sync credential everywhere but on reauth.
     return DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
   }

@@ -2623,7 +2623,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"protect-sync-credential", flag_descriptions::kProtectSyncCredentialName,
      flag_descriptions::kProtectSyncCredentialDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kProtectSyncCredential)},
-    {"protect-sync-credential-on-reauth",
+    {"ProtectSyncCredentialOnReauth",
      flag_descriptions::kProtectSyncCredentialOnReauthName,
      flag_descriptions::kProtectSyncCredentialOnReauthDescription, kOsAll,
      FEATURE_VALUE_TYPE(

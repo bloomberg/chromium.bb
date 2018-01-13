@@ -192,7 +192,7 @@ TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
 }
 
 TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
-  // Only 'protect-sync-credential-on-reauth' feature is kept enabled, fill the
+  // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill the
   // sync credential everywhere but on reauth.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
