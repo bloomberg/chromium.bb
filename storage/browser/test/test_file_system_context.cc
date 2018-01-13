@@ -4,9 +4,9 @@
 
 #include "storage/browser/test/test_file_system_context.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -21,7 +21,7 @@ storage::FileSystemContext* CreateFileSystemContextForTesting(
     storage::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
   std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_providers;
-  additional_providers.push_back(base::MakeUnique<TestFileSystemBackend>(
+  additional_providers.push_back(std::make_unique<TestFileSystemBackend>(
       base::ThreadTaskRunnerHandle::Get().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
       base::ThreadTaskRunnerHandle::Get().get(),

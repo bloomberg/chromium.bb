@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
@@ -61,7 +60,7 @@ class BlobFlattenerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    context_ = base::MakeUnique<BlobStorageContext>();
+    context_ = std::make_unique<BlobStorageContext>();
   }
 
   void TearDown() override {
@@ -200,7 +199,7 @@ TEST_F(BlobFlattenerTest, BlobWithSlices) {
   // * pending data,
 
   context_ =
-      base::MakeUnique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
+      std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits();
 
   std::unique_ptr<BlobDataHandle> data_blob;

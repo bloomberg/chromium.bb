@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_memory_controller.h"
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 
 #include "base/bind.h"
@@ -631,7 +632,7 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
 base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveFileQuota(
     std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_file_items,
     const FileQuotaRequestCallback& done_callback) {
-  pending_file_quota_tasks_.push_back(base::MakeUnique<FileQuotaAllocationTask>(
+  pending_file_quota_tasks_.push_back(std::make_unique<FileQuotaAllocationTask>(
       this, disk_space_function_, std::move(unreserved_file_items),
       done_callback));
   pending_file_quota_tasks_.back()->set_my_list_position(
@@ -758,7 +759,7 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::AppendMemoryTask(
 
   pending_memory_quota_total_size_ += total_bytes_needed;
   pending_memory_quota_tasks_.push_back(
-      base::MakeUnique<MemoryQuotaAllocationTask>(
+      std::make_unique<MemoryQuotaAllocationTask>(
           this, total_bytes_needed, std::move(unreserved_memory_items),
           std::move(done_callback)));
   pending_memory_quota_tasks_.back()->set_my_list_position(
@@ -1011,7 +1012,7 @@ void BlobMemoryController::GrantMemoryAllocations(
 
   for (auto& item : *items) {
     item->set_state(ShareableBlobDataItem::QUOTA_GRANTED);
-    item->set_memory_allocation(base::MakeUnique<MemoryAllocation>(
+    item->set_memory_allocation(std::make_unique<MemoryAllocation>(
         weak_factory_.GetWeakPtr(), item->item_id(),
         base::checked_cast<size_t>(item->item()->length())));
   }

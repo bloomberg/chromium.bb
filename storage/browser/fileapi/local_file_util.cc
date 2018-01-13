@@ -145,7 +145,7 @@ LocalFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
       base::File::FILE_OK) {
     return base::WrapUnique(new EmptyFileEnumerator);
   }
-  return base::MakeUnique<LocalFileEnumerator>(
+  return std::make_unique<LocalFileEnumerator>(
       file_path, root_url.path(),
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
 }

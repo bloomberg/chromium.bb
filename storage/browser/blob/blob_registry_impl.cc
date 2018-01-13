@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_registry_impl.h"
 
+#include <memory>
+
 #include "base/barrier_closure.h"
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
@@ -512,7 +514,7 @@ void BlobRegistryImpl::Register(
     }
   }
 
-  blobs_under_construction_[uuid] = base::MakeUnique<BlobUnderConstruction>(
+  blobs_under_construction_[uuid] = std::make_unique<BlobUnderConstruction>(
       this, uuid, content_type, content_disposition, std::move(elements),
       bindings_.GetBadMessageCallback());
 

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "url/gurl.h"
 
@@ -50,7 +49,7 @@ BlobEntry* BlobStorageRegistry::CreateEntry(
     const std::string& content_disposition) {
   DCHECK(blob_map_.find(uuid) == blob_map_.end());
   std::unique_ptr<BlobEntry> entry =
-      base::MakeUnique<BlobEntry>(content_type, content_disposition);
+      std::make_unique<BlobEntry>(content_type, content_disposition);
   BlobEntry* entry_ptr = entry.get();
   blob_map_[uuid] = std::move(entry);
   return entry_ptr;

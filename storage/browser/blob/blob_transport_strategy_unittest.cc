@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_transport_strategy.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -80,7 +82,7 @@ class BlobTransportStrategyTest : public testing::Test {
       const std::string& bytes,
       base::Optional<base::Time> time) {
     blink::mojom::BytesProviderPtr result;
-    auto provider = base::MakeUnique<MockBytesProvider>(
+    auto provider = std::make_unique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,
         &stream_request_count_, &file_request_count_, time);
     bytes_provider_runner_->PostTask(

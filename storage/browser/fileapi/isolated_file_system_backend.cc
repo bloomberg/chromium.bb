@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
@@ -105,7 +104,7 @@ FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
     FileSystemContext* context,
     base::File::Error* error_code) const {
   return FileSystemOperation::Create(
-      url, context, base::MakeUnique<FileSystemOperationContext>(context));
+      url, context, std::make_unique<FileSystemOperationContext>(context));
 }
 
 bool IsolatedFileSystemBackend::SupportsStreaming(

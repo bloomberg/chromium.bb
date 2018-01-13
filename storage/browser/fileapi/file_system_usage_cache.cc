@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -235,7 +235,7 @@ base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
 
   // Because there are no null entries in cache_files_, the [] inserted a blank
   // pointer, so let's populate the cache.
-  entry = base::MakeUnique<base::File>(file_path, base::File::FLAG_OPEN_ALWAYS |
+  entry = std::make_unique<base::File>(file_path, base::File::FLAG_OPEN_ALWAYS |
                                                       base::File::FLAG_READ |
                                                       base::File::FLAG_WRITE);
 
