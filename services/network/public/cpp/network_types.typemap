@@ -1,0 +1,15 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//services/network/public/interfaces/network_types.mojom"
+public_deps = [
+  "//net",
+]
+public_headers = [ "//net/nqe/effective_connection_type.h" ]
+traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
+deps = [
+  "//services/network/public/cpp:typemap_dependencies",
+]
+type_mappings =
+    [ "network.mojom.EffectiveConnectionType=net::EffectiveConnectionType" ]

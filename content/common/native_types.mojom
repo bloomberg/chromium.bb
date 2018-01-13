@@ -39,11 +39,6 @@ struct WebPreferences;
 [Native]
 enum NetworkConnectionType;
 
-// TODO(rockot): This should most likely be defined by network service mojom,
-// but the network service doesn't exist yet.
-[Native]
-enum EffectiveConnectionType;
-
 [Native]
 enum WebPopupType;
 

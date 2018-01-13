@@ -7,4 +7,5 @@ typemaps = [
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/cookie_manager.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
+  "//services/network/public/cpp/network_types.typemap",
 ]
