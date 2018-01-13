@@ -2808,63 +2808,63 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_SeparateStreams) {
   CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [320,420) }");
   CheckExpectedRangesForMediaSource("{ [0,23) [320,400) }");
 
-  // Audio block: 520 -> 590
-  // Video block: 500 -> 570
-  // Buffered Range: 520 -> 570  (jagged start and end across SourceBuffers)
+  // Audio block: 620 -> 690
+  // Video block: 600 -> 670
+  // Buffered Range: 620 -> 670  (jagged start and end across SourceBuffers)
   ASSERT_TRUE(AppendCluster(
-      audio_id, GenerateSingleStreamCluster(520, 590, kAudioTrackNum, 70)));
+      audio_id, GenerateSingleStreamCluster(620, 690, kAudioTrackNum, 70)));
   ASSERT_TRUE(AppendCluster(
-      video_id, GenerateSingleStreamCluster(500, 570, kVideoTrackNum, 70)));
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,23) [300,400) [520,590) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [320,420) [500,570) }");
-  CheckExpectedRangesForMediaSource("{ [0,23) [320,400) [520,570) }");
+      video_id, GenerateSingleStreamCluster(600, 670, kVideoTrackNum, 70)));
+  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,23) [300,400) [620,690) }");
+  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [320,420) [600,670) }");
+  CheckExpectedRangesForMediaSource("{ [0,23) [320,400) [620,670) }");
 
-  // Audio block: 720 -> 750
-  // Video block: 700 -> 770
-  // Buffered Range: 720 -> 750  (complete overlap of audio)
+  // Audio block: 920 -> 950
+  // Video block: 900 -> 970
+  // Buffered Range: 920 -> 950  (complete overlap of audio)
   ASSERT_TRUE(AppendCluster(
-      audio_id, GenerateSingleStreamCluster(720, 750, kAudioTrackNum, 30)));
+      audio_id, GenerateSingleStreamCluster(920, 950, kAudioTrackNum, 30)));
   ASSERT_TRUE(AppendCluster(
-      video_id, GenerateSingleStreamCluster(700, 770, kVideoTrackNum, 70)));
+      video_id, GenerateSingleStreamCluster(900, 970, kVideoTrackNum, 70)));
   CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [520,590) [720,750) }");
+                      "{ [0,23) [300,400) [620,690) [920,950) }");
   CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [320,420) [500,570) [700,770) }");
-  CheckExpectedRangesForMediaSource("{ [0,23) [320,400) [520,570) [720,750) }");
+                      "{ [0,33) [320,420) [600,670) [900,970) }");
+  CheckExpectedRangesForMediaSource("{ [0,23) [320,400) [620,670) [920,950) }");
 
-  // Audio block: 900 -> 970
-  // Video block: 920 -> 950
-  // Buffered Range: 920 -> 950  (complete overlap of video)
+  // Audio block: 1200 -> 1270
+  // Video block: 1220 -> 1250
+  // Buffered Range: 1220 -> 1250  (complete overlap of video)
   ASSERT_TRUE(AppendCluster(
-      audio_id, GenerateSingleStreamCluster(900, 970, kAudioTrackNum, 70)));
+      audio_id, GenerateSingleStreamCluster(1200, 1270, kAudioTrackNum, 70)));
   ASSERT_TRUE(AppendCluster(
-      video_id, GenerateSingleStreamCluster(920, 950, kVideoTrackNum, 30)));
+      video_id, GenerateSingleStreamCluster(1220, 1250, kVideoTrackNum, 30)));
   CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [520,590) [720,750) [900,970) }");
+                      "{ [0,23) [300,400) [620,690) [920,950) [1200,1270) }");
   CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [320,420) [500,570) [700,770) [920,950) }");
+                      "{ [0,33) [320,420) [600,670) [900,970) [1220,1250) }");
   CheckExpectedRangesForMediaSource(
-      "{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
+      "{ [0,23) [320,400) [620,670) [920,950) [1220,1250) }");
 
-  // Audio buffered ranges are trimmed from 970 to 950 due to splicing the
+  // Audio buffered ranges are trimmed from 1270 to 1250 due to splicing the
   // previously buffered audio frame
-  // - existing frame trimmed from [900, 970) to [900,930),
-  // - newly appended audio from [930, 950).
-  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(930000, 900000, 40000));
+  // - existing frame trimmed from [1200, 1270) to [1200,1230),
+  // - newly appended audio from [1230, 1250).
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(1230000, 1200000, 40000));
   ASSERT_TRUE(AppendCluster(
-      audio_id, GenerateSingleStreamCluster(930, 950, kAudioTrackNum, 20)));
+      audio_id, GenerateSingleStreamCluster(1230, 1250, kAudioTrackNum, 20)));
   CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [520,590) [720,750) [900,950) }");
+                      "{ [0,23) [300,400) [620,690) [920,950) [1200,1250) }");
 
   // Video buffer range is unchanged by next append. The time and duration of
   // the new key frame line up with previous range boundaries.
   ASSERT_TRUE(AppendCluster(
-      video_id, GenerateSingleStreamCluster(930, 950, kVideoTrackNum, 20)));
+      video_id, GenerateSingleStreamCluster(1230, 1250, kVideoTrackNum, 20)));
   CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [320,420) [500,570) [700,770) [920,950) }");
+                      "{ [0,33) [320,420) [600,670) [900,970) [1220,1250) }");
 
   CheckExpectedRangesForMediaSource(
-      "{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
+      "{ [0,23) [320,400) [620,670) [920,950) [1220,1250) }");
 }
 
 TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
@@ -2894,63 +2894,63 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
   CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [300,420) }");
   CheckExpectedRanges("{ [0,23) [300,400) }");
 
-  // Audio block: 520 -> 590
-  // Video block: 500 -> 570
-  // Naive Buffered Range: 520 -> 570  (front overlap) **
+  // Audio block: 620 -> 690
+  // Video block: 600 -> 670
+  // Naive Buffered Range: 620 -> 670  (front overlap) **
   // **Except these are in the same cluster, with same segment start time of
-  // 500, so the added buffered range is 500 -> 570
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "520D70K"),
-                     MuxedStreamInfo(kVideoTrackNum, "500D70K"));
+  // 500, so the added buffered range is 600 -> 670
+  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "620D70K"),
+                     MuxedStreamInfo(kVideoTrackNum, "600D70K"));
 
-  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,23) [300,400) [500,590) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [300,420) [500,570) }");
-  CheckExpectedRanges("{ [0,23) [300,400) [500,570) }");
+  CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,23) [300,400) [600,690) }");
+  CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,33) [300,420) [600,670) }");
+  CheckExpectedRanges("{ [0,23) [300,400) [600,670) }");
 
-  // Audio block: 720 -> 750
-  // Video block: 700 -> 770
-  // Naive Buffered Range: 720 -> 750  (complete overlap, audio) **
-  // **Except these are in the same cluster, with same segment start time of
-  // 700, so the added buffered range is 700 -> 750
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "720D30K"),
-                     MuxedStreamInfo(kVideoTrackNum, "700D70K"));
-
-  CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [500,590) [700,750) }");
-  CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [300,420) [500,570) [700,770) }");
-  CheckExpectedRanges("{ [0,23) [300,400) [500,570) [700,750) }");
-
-  // Audio block: 900 -> 970
-  // Video block: 920 -> 950
-  // Naive Buffered Range: 920 -> 950  (complete overlap, video) **
+  // Audio block: 920 -> 950
+  // Video block: 900 -> 970
+  // Naive Buffered Range: 920 -> 950  (complete overlap, audio) **
   // **Except these are in the same cluster, with same segment start time of
   // 900, so the added buffered range is 900 -> 950
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "900D70K"),
-                     MuxedStreamInfo(kVideoTrackNum, "920D30K"));
+  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "920D30K"),
+                     MuxedStreamInfo(kVideoTrackNum, "900D70K"));
 
   CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [500,590) [700,750) [900,970) }");
+                      "{ [0,23) [300,400) [600,690) [900,950) }");
   CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [300,420) [500,570) [700,770) [900,950) }");
-  CheckExpectedRanges("{ [0,23) [300,400) [500,570) [700,750) [900,950) }");
+                      "{ [0,33) [300,420) [600,670) [900,970) }");
+  CheckExpectedRanges("{ [0,23) [300,400) [600,670) [900,950) }");
+
+  // Audio block: 1200 -> 1270
+  // Video block: 1220 -> 1250
+  // Naive Buffered Range: 1220 -> 1250  (complete overlap, video) **
+  // **Except these are in the same cluster, with same segment start time of
+  // 1200, so the added buffered range is 1200 -> 1250
+  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "1200D70K"),
+                     MuxedStreamInfo(kVideoTrackNum, "1220D30K"));
+
+  CheckExpectedRanges(DemuxerStream::AUDIO,
+                      "{ [0,23) [300,400) [600,690) [900,950) [1200,1270) }");
+  CheckExpectedRanges(DemuxerStream::VIDEO,
+                      "{ [0,33) [300,420) [600,670) [900,970) [1200,1250) }");
+  CheckExpectedRanges("{ [0,23) [300,400) [600,670) [900,950) [1200,1250) }");
 
   // Appending within existing buffered range.
-  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(930000, 900000, 40000));
-  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "930D20K"),
-                     MuxedStreamInfo(kVideoTrackNum, "930D20K"));
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(1230000, 1200000, 40000));
+  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "1230D20K"),
+                     MuxedStreamInfo(kVideoTrackNum, "1230D20K"));
   // Video buffer range is unchanged. The time and duration of the new key frame
   // line up with previous range boundaries.
   CheckExpectedRanges(DemuxerStream::VIDEO,
-                      "{ [0,33) [300,420) [500,570) [700,770) [900,950) }");
+                      "{ [0,33) [300,420) [600,670) [900,970) [1200,1250) }");
 
-  // Audio buffered ranges are trimmed from 970 to 950 due to splicing the
+  // Audio buffered ranges are trimmed from 1270 to 1250 due to splicing the
   // previously buffered audio frame.
-  // - existing frame trimmed from [900, 970) to [900, 930),
-  // - newly appended audio from [930, 950).
+  // - existing frame trimmed from [1200, 1270) to [1200, 1230),
+  // - newly appended audio from [1230, 1250).
   CheckExpectedRanges(DemuxerStream::AUDIO,
-                      "{ [0,23) [300,400) [500,590) [700,750) [900,950) }");
+                      "{ [0,23) [300,400) [600,690) [900,950) [1200,1250) }");
 
-  CheckExpectedRanges("{ [0,23) [300,400) [500,570) [700,750) [900,950) }");
+  CheckExpectedRanges("{ [0,23) [300,400) [600,670) [900,950) [1200,1250) }");
 }
 
 TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {

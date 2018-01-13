@@ -1391,15 +1391,13 @@ TEST_P(FrameProcessorTest,
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
   CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1140) }");
 
-  // TODO(wolenetz): Here, [1060,1140) should demux continuously without read
-  // stall in the middle. See https://crbug.com/791095.
-  // Note that this particular gap remains due to a combination of deep
-  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
-  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
-  // logic. This part still needs to be fixed.
+  // [1060,1140) should demux continuously without read stall in the middle.
   SeekStream(video_.get(), Milliseconds(1060));
-  CheckReadsThenReadStalls(video_.get(), "1060 1000 1050 1010 1040 1020 1030");
-  SeekStream(video_.get(), Milliseconds(1070));
+  CheckReadsThenReadStalls(
+      video_.get(),
+      "1060 1000 1050 1010 1040 1020 1030 1130 1070 1120 1080 1110 1090 1100");
+  // Verify that seek and read of the second GOP is correct.
+  SeekStream(video_.get(), Milliseconds(1130));
   CheckReadsThenReadStalls(video_.get(), "1130 1070 1120 1080 1110 1090 1100");
 }
 
@@ -1502,13 +1500,9 @@ TEST_P(FrameProcessorTest,
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
   CheckExpectedRangesByTimestamp(video_.get(), "{ [120,165) }");
-  // TODO(wolenetz): Here, [120,165) should demux continuously without read
-  // stall in the middle. See https://crbug.com/791095.
-  // Note that this particular gap remains due to a combination of deep
-  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
-  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
-  // logic. This part still needs to be fixed.
-  CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
+  // [120,165) should demux continuously without read stall in the middle.
+  CheckReadsThenReadStalls(video_.get(), "120 100 130 110 145 125 155 135");
+  // Verify that seek and read of the second GOP is correct.
   SeekStream(video_.get(), Milliseconds(145));
   CheckReadsThenReadStalls(video_.get(), "145 125 155 135");
 }
@@ -1548,21 +1542,10 @@ TEST_P(FrameProcessorTest,
   EXPECT_TRUE(ProcessFrames("", "155|80K 145|90"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
-  // Note that this buffered range discontinuity is due to unclarified MSE spec
-  // around handling this kind of SAP Type 2 sequence. In particular, though we
-  // don't "grow" the [155,165) range start time earlier based on new
-  // nonkeyframes with PTS < the keyframe at 155ms, we do help prevent
-  // discontinuity from being introduced on this kind of overlap.
-  // TODO(wolenetz): Fix MergeWithAdjacentRangeIfNecessary() to understand that,
-  // though the next buffered GOP keyframe after 130 is at 155, it is continuous
-  // with overlapping append's adjusted group start time of 140.001ms. See
-  // https://crbug.com/791095.
-  // Note that this particular gap remains due to a combination of deep
-  // SAP-Type-2 (last appended frame in first GOP was a non-keyframe with
-  // timestamp < the GOP's keyframe) and SBS::PotentialNextAppendTimestamp()
-  // logic. This part still needs to be fixed.
-  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,140) [140,165) }");
-  CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,165) }");
+  // [120,165) should demux continuously without read stall in the middle.
+  CheckReadsThenReadStalls(video_.get(), "120 100 130 110 155 145");
+  // Verify seek and read of the second GOP is correct.
   SeekStream(video_.get(), Milliseconds(155));
   CheckReadsThenReadStalls(video_.get(), "155 145");
 }
