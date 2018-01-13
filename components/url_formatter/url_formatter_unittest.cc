@@ -429,6 +429,74 @@ const IDNTestCase idn_cases[] = {
      L"345.com",
      false},
 
+    // Test additional confusable LGC characters (most of them without
+    // decomposition into base + diacritc mark). The corresponding ASCII
+    // domain names are in the test top domain list.
+    // ϼκαωχ.com
+    {"xn--mxar4bh6w.com", L"\x03fc\x03ba\x03b1\x03c9\x03c7.com", false},
+    // þħĸŧƅ.com
+    {"xn--vda6f3b2kpf.com", L"\x00fe\x0127\x0138\x0167\x0185.com", false},
+    // þhktb.com
+    {"xn--hktb-9ra.com", L"\x00fehktb.com", false},
+    // pħktb.com
+    {"xn--pktb-5xa.com", L"p\x0127ktb.com", false},
+    // phĸtb.com
+    {"xn--phtb-m0a.com", L"ph\x0138tb.com", false},
+    // phkŧb.com
+    {"xn--phkb-d7a.com", L"phk\x0167" L"b.com", false},
+    // phktƅ.com
+    {"xn--phkt-ocb.com", L"phkt\x0185.com", false},
+    // ҏнкть.com
+    {"xn--j1afq4bxw.com", L"\x048f\x043d\x043a\x0442\x044c.com", false},
+    // ҏћкть.com
+    {"xn--j1aq4a7cvo.com", L"\x048f\x045b\x043a\x0442\x044c.com", false},
+    // ҏңкть.com
+    {"xn--j1aq4azund.com", L"\x048f\x04a3\x043a\x0442\x044c.com", false},
+    // ҏҥкть.com
+    {"xn--j1aq4azuxd.com", L"\x048f\x04a5\x043a\x0442\x044c.com", false},
+    // ҏӈкть.com
+    {"xn--j1aq4azuyj.com", L"\x048f\x04c8\x043a\x0442\x044c.com", false},
+    // ҏԧкть.com
+    {"xn--j1aq4azu9z.com", L"\x048f\x0527\x043a\x0442\x044c.com", false},
+    // ҏԩкть.com
+    {"xn--j1aq4azuq0a.com", L"\x048f\x0529\x043a\x0442\x044c.com", false},
+    // ҏнқть.com
+    {"xn--m1ak4azu6b.com", L"\x048f\x043d\x049b\x0442\x044c.com", false},
+    // ҏнҝть.com
+    {"xn--m1ak4azunc.com", L"\x048f\x043d\x049d\x0442\x044c.com", false},
+    // ҏнҟть.com
+    {"xn--m1ak4azuxc.com", L"\x048f\x043d\x049f\x0442\x044c.com", false},
+    // ҏнҡть.com
+    {"xn--m1ak4azu7c.com", L"\x048f\x043d\x04a1\x0442\x044c.com", false},
+    // ҏнӄть.com
+    {"xn--m1ak4azu8i.com", L"\x048f\x043d\x04c4\x0442\x044c.com", false},
+    // ҏнԟть.com
+    {"xn--m1ak4azuzy.com", L"\x048f\x043d\x051f\x0442\x044c.com", false},
+    // ҏнԟҭь.com
+    {"xn--m1a4a4nnery.com", L"\x048f\x043d\x051f\x04ad\x044c.com", false},
+    // ҏнԟҭҍ.com
+    {"xn--m1a4ne5jry.com", L"\x048f\x043d\x051f\x04ad\x048d.com", false},
+    // ҏнԟҭв.com
+    {"xn--b1av9v8dry.com", L"\x048f\x043d\x051f\x04ad\x0432.com", false},
+    // шмпґ.com
+    {"xn--l1agz80a.com", L"\x0448\x043c\x043f\x0491.com", false},
+    // щмпґ.com
+    {"xn--l1ag2a0y.com", L"\x0449\x043c\x043f\x0491.com", false},
+    // щӎпґ.com
+    {"xn--o1at1tsi.com", L"\x0449\x04ce\x043f\x0491.com", false},
+    // ґғ.com
+    {"xn--03ae.com", L"\x0491\x0493.com", false},
+    // ҫұҳҽ.com
+    {"xn--r4amg4b.com", L"\x04ab\x04b1\x04b3\x04bd.com", false},
+    // ҫұӽҽ.com
+    {"xn--r4am0b8r.com", L"\x04ab\x04b1\x04fd\x04bd.com", false},
+    // ҫұӿҽ.com
+    {"xn--r4am0b3s.com", L"\x04ab\x04b1\x04ff\x04bd.com", false},
+    // ҫұӿҿ.com
+    {"xn--r4am6b4p.com", L"\x04ab\x04b1\x04ff\x04bf.com", false},
+    // ӏԃԍ.com
+    {"xn--s5a8h4a.com", L"\x04cf\x0503\x050d.com", false},
+
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
     {"xn--wder-qqa.com",
