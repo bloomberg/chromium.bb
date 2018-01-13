@@ -145,10 +145,9 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
 
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitchASCII(switches::kGpuDriverBugListTestGroup, "1");
+    // See gpu/config/gpu_driver_bug_list.json, test_group 1, entry 215.
     GPUInfo gpu_info;
-    // See gpu/config/gpu_driver_bug_list.json, entry 215.
-    gpu_info.gpu.vendor_id = 0xbad9;
-    gpu_info.gpu.device_id = 0xbad9;
     GpuFeatureInfo gpu_feature_info =
         ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_TRUE(gpu_feature_info.IsWorkaroundEnabled(
@@ -157,13 +156,12 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
 
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitchASCII(switches::kGpuDriverBugListTestGroup, "1");
     command_line.AppendSwitchASCII(GpuDriverBugWorkaroundTypeToString(
                                        USE_GPU_DRIVER_WORKAROUND_FOR_TESTING),
                                    "0");
+    // See gpu/config/gpu_driver_bug_list.json, test_group 1, entry 215.
     GPUInfo gpu_info;
-    // See gpu/config/gpu_driver_bug_list.json, entry 215.
-    gpu_info.gpu.vendor_id = 0xbad9;
-    gpu_info.gpu.device_id = 0xbad9;
     GpuFeatureInfo gpu_feature_info =
         ComputeGpuFeatureInfo(gpu_info, false, false, false, &command_line);
     EXPECT_FALSE(gpu_feature_info.IsWorkaroundEnabled(

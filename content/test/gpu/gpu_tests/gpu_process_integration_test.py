@@ -252,31 +252,22 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       'use_gpu_driver_workaround_for_testing', None)
 
   def _GpuProcess_readback_webgl_gpu_process(self, test_path):
-    # This test was designed to only run on desktop Linux.
-    options = self.__class__._original_finder_options.browser_options
-    is_platform_android = options.browser_type.startswith('android')
-    if sys.platform.startswith('linux') and not is_platform_android:
-      # Hit id 110 from kSoftwareRenderingListEntries.
-      self.RestartBrowserIfNecessaryWithArgs([
-        '--gpu-testing-vendor-id=0x10de',
-        '--gpu-testing-device-id=0x0de1',
-        '--gpu-testing-gl-vendor=VMware',
-        '--gpu-testing-gl-renderer=Gallium 0.4 ' \
-        'on llvmpipe (LLVM 3.4, 256 bits)',
-        '--gpu-testing-gl-version="3.0 Mesa 11.2"'])
-      self._Navigate(test_path)
-      feature_status_list = self.tab.EvaluateJavaScript(
-          'browserBridge.gpuInfo.featureStatus.featureStatus')
-      result = True
-      for name, status in feature_status_list.items():
-        if name == 'webgl':
-          result = result and status == 'enabled_readback'
-        elif name == 'webgl2':
-          result = result and status == 'unavailable_off'
-        else:
-          pass
-      if not result:
-        self.fail('WebGL readback setup failed: %s' % feature_status_list)
+    # Hit test group 1 with entry 152 from kSoftwareRenderingListEntries.
+    self.RestartBrowserIfNecessaryWithArgs([
+      '--gpu-blacklist-test-group=1'])
+    self._Navigate(test_path)
+    feature_status_list = self.tab.EvaluateJavaScript(
+        'browserBridge.gpuInfo.featureStatus.featureStatus')
+    result = True
+    for name, status in feature_status_list.items():
+      if name == 'webgl':
+        result = result and status == 'enabled_readback'
+      elif name == 'webgl2':
+        result = result and status == 'unavailable_off'
+      else:
+        pass
+    if not result:
+      self.fail('WebGL readback setup failed: %s' % feature_status_list)
 
   def _GpuProcess_driver_bug_workarounds_upon_gl_renderer(self, test_path):
     is_platform_android = self._RunningOnAndroid()
@@ -326,25 +317,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._VerifyGpuProcessPresent()
     recorded_workarounds, recorded_disabled_gl_extensions = (
       self._CompareAndCaptureDriverBugWorkarounds())
-    # Add the testing workaround to the recorded workarounds.
-    recorded_workarounds.append('use_gpu_driver_workaround_for_testing')
     # Relaunch the browser with OS-specific command line arguments.
-    browser_args = ['--use_gpu_driver_workaround_for_testing',
-                    '--disable-gpu-driver-bug-workarounds']
-    # Inject some info to make sure the flags above are effective.
-    if sys.platform == 'darwin':
-      # Hit id 33 from kGpuDriverBugListEntries.
-      browser_args.extend(['--gpu-testing-gl-vendor=Imagination'])
-    else:
-      # Hit id 5 from kGpuDriverBugListEntries.
-      browser_args.extend(['--gpu-testing-vendor-id=0x10de',
-                           '--gpu-testing-device-id=0x0001'])
-      # no multi gpu on Android.
-      if not self._RunningOnAndroid():
-        browser_args.extend(['--gpu-testing-secondary-vendor-ids=',
-                             '--gpu-testing-secondary-device-ids='])
+    # Trigger test group 1 with entry 215, where only
+    # use_gpu_driver_workaround_for_testing is enabled.
+    browser_args = ['--gpu-driver-bug-list-test-group=1']
     for workaround in recorded_workarounds:
       browser_args.append('--' + workaround)
+    # Add the testing workaround to the recorded workarounds.
+    recorded_workarounds.append('use_gpu_driver_workaround_for_testing')
     browser_args.append('--disable-gl-extensions=' +
                         recorded_disabled_gl_extensions)
     self.RestartBrowserIfNecessaryWithArgs(browser_args)
@@ -439,12 +419,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _GpuProcess_disabling_workarounds_works(self, test_path):
     # Hit exception from id 215 from kGpuDriverBugListEntries.
     self.RestartBrowserIfNecessaryWithArgs([
-      '--gpu-testing-vendor-id=0xbad9',
-      '--gpu-testing-device-id=0xbad9',
-      '--gpu-testing-secondary-vendor-ids=',
-      '--gpu-testing-secondary-device-ids=',
-      '--gpu-testing-gl-vendor=FakeVendor',
-      '--gpu-testing-gl-renderer=FakeRenderer',
+      '--gpu-driver-bug-list-test-group=1',
       '--use_gpu_driver_workaround_for_testing=0'])
     self._Navigate(test_path)
     workarounds, _ = (

@@ -1561,6 +1561,17 @@
         "accelerated_2d_canvas",
         "gpu_rasterization"
       ]
+    },
+    {
+      "id": 152,
+      "description": "Test entry where all features except WebGL blacklisted",
+      "test_group": 1,
+      "features": [
+        "all",
+        {"exceptions": [
+          "accelerated_webgl"
+        ]}
+      ]
     }
   ]
 }

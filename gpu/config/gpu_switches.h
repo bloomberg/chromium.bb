@@ -35,6 +35,8 @@ GPU_EXPORT extern const char kGpuTestingGLRenderer[];
 GPU_EXPORT extern const char kGpuTestingGLVersion[];
 GPU_EXPORT extern const char kGpuVendorID[];
 GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
+GPU_EXPORT extern const char kGpuBlacklistTestGroup[];
+GPU_EXPORT extern const char kGpuDriverBugListTestGroup[];
 
 }  // namespace switches
 

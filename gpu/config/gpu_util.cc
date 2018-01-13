@@ -355,8 +355,15 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     std::unique_ptr<GpuBlacklist> list(GpuBlacklist::Create());
     if (log_gpu_control_list_decisions)
       list->EnableControlListLogging("gpu_blacklist");
-    blacklisted_features =
-        list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
+    unsigned target_test_group = 0u;
+    if (command_line->HasSwitch(switches::kGpuBlacklistTestGroup)) {
+      std::string test_group_string =
+          command_line->GetSwitchValueASCII(switches::kGpuBlacklistTestGroup);
+      if (!base::StringToUint(test_group_string, &target_test_group))
+        target_test_group = 0u;
+    }
+    blacklisted_features = list->MakeDecision(
+        GpuControlList::kOsAny, std::string(), gpu_info, target_test_group);
   }
 
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
@@ -401,8 +408,15 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   std::vector<std::string> driver_bug_disabled_extensions;
   if (!disable_gpu_driver_bug_workarounds) {
     std::unique_ptr<gpu::GpuDriverBugList> list(GpuDriverBugList::Create());
-    enabled_driver_bug_workarounds =
-        list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
+    unsigned target_test_group = 0u;
+    if (command_line->HasSwitch(switches::kGpuDriverBugListTestGroup)) {
+      std::string test_group_string = command_line->GetSwitchValueASCII(
+          switches::kGpuDriverBugListTestGroup);
+      if (!base::StringToUint(test_group_string, &target_test_group))
+        target_test_group = 0u;
+    }
+    enabled_driver_bug_workarounds = list->MakeDecision(
+        GpuControlList::kOsAny, std::string(), gpu_info, target_test_group);
     gpu_feature_info.applied_gpu_driver_bug_list_entries =
         list->GetActiveEntries();
 
