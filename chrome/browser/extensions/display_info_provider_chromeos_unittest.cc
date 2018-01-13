@@ -547,7 +547,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   EXPECT_TRUE(result[0].mirroring_source_id.empty());
   EXPECT_TRUE(result[1].mirroring_source_id.empty());
 
-  GetDisplayManager()->SetMirrorMode(true);
+  GetDisplayManager()->SetMirrorMode(display::MirrorMode::kNormal,
+                                     base::nullopt);
   ASSERT_TRUE(GetDisplayManager()->IsInMirrorMode());
 
   result = GetAllDisplaysInfo();
@@ -557,7 +558,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   EXPECT_EQ(base::Int64ToString(display_id_primary),
             result[0].mirroring_source_id);
 
-  GetDisplayManager()->SetMirrorMode(false);
+  GetDisplayManager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
   ASSERT_FALSE(GetDisplayManager()->IsInMirrorMode());
 
   result = GetAllDisplaysInfo();
@@ -1663,6 +1664,156 @@ TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   EXPECT_TRUE(*result[0].is_tablet_mode);
   EXPECT_FALSE(result[1].has_accelerometer_support);
   EXPECT_FALSE(result[1].is_tablet_mode);
+}
+
+TEST_F(DisplayInfoProviderChromeosTest, SetMIXEDMode) {
+  {
+    // Mirroring source id not specified error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeSourceIdNotSpecifiedError,
+              error);
+  }
+
+  {
+    // Mirroring destination ids not specified error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(new std::string("1000000"));
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(
+        DisplayInfoProviderChromeOS::kMirrorModeDestinationIdsNotSpecifiedError,
+        error);
+  }
+
+  {
+    // Mirroring source id in bad format error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(new std::string("bad_format_id"));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeSourceIdBadFormatError,
+              error);
+  }
+
+  {
+    // Mirroring destination id in bad format error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(new std::string("1000000"));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    info.mirroring_destination_ids->emplace_back("bad_format_id");
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(
+        DisplayInfoProviderChromeOS::kMirrorModeDestinationIdBadFormatError,
+        error);
+  }
+
+  {
+    // Single display error.
+    EXPECT_EQ(1U, display_manager()->num_connected_displays());
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(new std::string("1000000"));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeSingleDisplayError,
+              error);
+  }
+
+  // Add more displays.
+  UpdateDisplay("200x200,600x600,700x700");
+  display::DisplayIdList id_list = display_manager()->GetCurrentDisplayIdList();
+  EXPECT_EQ(3U, id_list.size());
+
+  {
+    // Mirroring source id not found error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(new std::string("1000000"));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeSourceIdNotFoundError,
+              error);
+  }
+
+  {
+    // Mirroring destination ids empty error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(
+        new std::string(base::Int64ToString(id_list[0])));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeDestinationIdsEmptyError,
+              error);
+  }
+
+  {
+    // Mirroring destination ids not found error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(
+        new std::string(base::Int64ToString(id_list[0])));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    info.mirroring_destination_ids->emplace_back(
+        base::Int64ToString(display::kInvalidDisplayId));
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(
+        DisplayInfoProviderChromeOS::kMirrorModeDestinationIdNotFoundError,
+        error);
+  }
+
+  {
+    // Duplicate display id error.
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(
+        new std::string(base::Int64ToString(id_list[0])));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    info.mirroring_destination_ids->emplace_back(
+        base::Int64ToString(id_list[0]));
+    std::string error;
+    EXPECT_FALSE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_EQ(DisplayInfoProviderChromeOS::kMirrorModeDuplicateIdError, error);
+  }
+
+  {
+    // Turn on mixed mirror mode (mirroring from the first display to the second
+    // one).
+    api::system_display::MirrorModeInfo info;
+    info.mode = api::system_display::MIRROR_MODE_MIXED;
+    info.mirroring_source_id.reset(
+        new std::string(base::Int64ToString(id_list[0])));
+    info.mirroring_destination_ids.reset(new std::vector<std::string>());
+    info.mirroring_destination_ids->emplace_back(
+        base::Int64ToString(id_list[1]));
+    std::string error;
+    EXPECT_TRUE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_TRUE(error.empty());
+    EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+    EXPECT_EQ(id_list[0], display_manager()->mirroring_source_id());
+    const display::Displays software_mirroring_display_list =
+        display_manager()->software_mirroring_display_list();
+    EXPECT_EQ(1U, software_mirroring_display_list.size());
+    EXPECT_EQ(id_list[1], software_mirroring_display_list[0].id());
+
+    // Turn off mixed mirror mode.
+    info.mode = api::system_display::MIRROR_MODE_OFF;
+    EXPECT_TRUE(DisplayInfoProvider::Get()->SetMirrorMode(info, &error));
+    EXPECT_TRUE(error.empty());
+    EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  }
 }
 
 }  // namespace

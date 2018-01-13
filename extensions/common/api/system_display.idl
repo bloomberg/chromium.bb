@@ -192,6 +192,7 @@ namespace system.display {
     // other properties may not apply. This is has no effect if not provided.
     boolean? isUnified;
 
+    // Depracated. Please use SetMirrorMode() instead.
     // Chrome OS only. If set and not empty, enables mirroring for this display.
     // Otherwise disables mirroring for this display. This value should indicate
     // the id of the source display to mirror, which must not be the same as the
@@ -239,11 +240,38 @@ namespace system.display {
     boolean? singleUnified;
   };
 
+  // Mirror mode, i.e. different ways of how a display is mirrored to other
+  // displays.
+  enum MirrorMode {
+    // Use the default mode (extended or unified desktop).
+    off,
+
+    // The default source display will be mirrored to all other displays.
+    normal,
+
+    // The specified source display will be mirrored to the provided
+    // destination displays. All other connected displays will be extended.
+    mixed
+  };
+
+  dictionary MirrorModeInfo {
+    // The mirror mode that should be set.
+    MirrorMode mode;
+
+    // The id of the mirroring source display. This is only valid for 'mixed'.
+    DOMString? mirroringSourceId;
+
+    // The ids of the mirroring destination displays. This is only valid for
+    // 'mixed'.
+    DOMString[]? mirroringDestinationIds;
+  };
+
   callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
   callback DisplayLayoutCallback = void (DisplayLayout[] layouts);
   callback SetDisplayUnitInfoCallback = void();
   callback SetDisplayLayoutCallback = void();
   callback NativeTouchCalibrationCallback = void(boolean success);
+  callback SetMirrorModeCallback = void();
 
   interface Functions {
     // Requests the information for all attached display devices.
@@ -351,6 +379,18 @@ namespace system.display {
     // display.
     // |id|: The display's unique identifier.
     static void clearTouchCalibration(DOMString id);
+
+    // Sets the display mode to the specified mirror mode. Each call resets the
+    // state from previous calls. Calling setDisplayProperties() will fail for
+    // the mirroring destination displays.
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    // |info|: The information of the mirror mode that should be applied to the
+    //     display mode.
+    // |callback|: Empty function called when the function finishes. To find out
+    //     whether the function succeeded, $(ref:runtime.lastError) should be
+    //     queried.
+    static void setMirrorMode(MirrorModeInfo info,
+                              optional SetMirrorModeCallback callback);
   };
 
   interface Events {

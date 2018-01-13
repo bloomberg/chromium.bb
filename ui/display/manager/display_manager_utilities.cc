@@ -5,6 +5,7 @@
 #include "ui/display/manager/display_manager_utilities.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -279,6 +280,43 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 int64_t GetDisplayIdWithoutOutputIndex(int64_t id) {
   constexpr uint64_t kMask = ~static_cast<uint64_t>(0xFF);
   return static_cast<int64_t>(kMask & id);
+}
+
+MixedMirrorModeParams::MixedMirrorModeParams(int64_t src_id,
+                                             const DisplayIdList& dst_ids)
+    : source_id(src_id), destination_ids(dst_ids) {}
+
+MixedMirrorModeParams::MixedMirrorModeParams(
+    const MixedMirrorModeParams& mixed_params) = default;
+
+MixedMirrorModeParams::~MixedMirrorModeParams() = default;
+
+MixedMirrorModeParamsErrors ValidateParamsForMixedMirrorMode(
+    const DisplayIdList& connected_display_ids,
+    const MixedMirrorModeParams& mixed_params) {
+  if (connected_display_ids.size() <= 1)
+    return MixedMirrorModeParamsErrors::kErrorSingleDisplay;
+
+  std::set<int64_t> all_display_ids;
+  for (auto& id : connected_display_ids)
+    all_display_ids.insert(id);
+  if (!all_display_ids.count(mixed_params.source_id))
+    return MixedMirrorModeParamsErrors::kErrorSourceIdNotFound;
+
+  // This set is used to check duplicate id.
+  std::set<int64_t> specified_display_ids;
+  specified_display_ids.insert(mixed_params.source_id);
+
+  if (mixed_params.destination_ids.empty())
+    return MixedMirrorModeParamsErrors::kErrorDestinationIdsEmpty;
+
+  for (auto& id : mixed_params.destination_ids) {
+    if (!all_display_ids.count(id))
+      return MixedMirrorModeParamsErrors::kErrorDestinationIdNotFound;
+    if (!specified_display_ids.insert(id).second)
+      return MixedMirrorModeParamsErrors::kErrorDuplicateId;
+  }
+  return MixedMirrorModeParamsErrors::kSuccess;
 }
 
 }  // namespace display

@@ -267,6 +267,12 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
       break;
     }
     case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR: {
+      if (configurator_->mirroring_controller_->IsSoftwareMirroringEnforced()) {
+        LOG(WARNING) << "Ignoring request to enter hardware mirror mode "
+                        "because software mirroring is enforced";
+        return false;
+      }
+
       bool can_set_mirror_mode =
           configurator_->is_multi_mirroring_enabled_
               ? (states.size() > 1 &&

@@ -138,6 +138,8 @@ class TestMirroringController
     return software_mirroring_enabled_;
   }
 
+  bool IsSoftwareMirroringEnforced() const override { return false; }
+
  private:
   bool software_mirroring_enabled_;
 

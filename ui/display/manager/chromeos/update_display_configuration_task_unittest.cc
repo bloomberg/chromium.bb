@@ -33,6 +33,7 @@ class TestSoftwareMirroringController
   // DisplayConfigurator::SoftwareMirroringController:
   void SetSoftwareMirroring(bool enabled) override { is_enabled_ = enabled; }
   bool SoftwareMirroringEnabled() const override { return is_enabled_; }
+  bool IsSoftwareMirroringEnforced() const override { return false; }
 
  private:
   bool is_enabled_;

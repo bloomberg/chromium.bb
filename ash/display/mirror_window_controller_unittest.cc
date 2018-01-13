@@ -82,7 +82,7 @@ TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorBasic) {
   test_window_delegate.set_window_component(HTTOP);
 
   UpdateDisplay("400x400,400x400");
-  display_manager()->SetMirrorMode(true);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   RunAllPendingInMessageLoop();
   aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -135,7 +135,7 @@ TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorRotate) {
   test_window_delegate.set_window_component(HTTOP);
 
   UpdateDisplay("400x400,400x400");
-  display_manager()->SetMirrorMode(true);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   RunAllPendingInMessageLoop();
   aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
@@ -195,7 +195,7 @@ TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorLocations) {
 
   // Test with device scale factor.
   UpdateDisplay("400x600*2,400x600");
-  display_manager()->SetMirrorMode(true);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   RunAllPendingInMessageLoop();
 
   aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
@@ -256,7 +256,7 @@ TEST_F(MirrorWindowControllerTestDisableMultiMirroring,
             cursor_test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("400x400*2/r,400x400");
-  display_manager()->SetMirrorMode(true);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   RunAllPendingInMessageLoop();
 
   // Entering mirror mode should have centered the cursor on the primary display
@@ -300,7 +300,7 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
           .SetFirstDisplayAsInternalDisplay();
   EXPECT_EQ(internal_id, internal_display_id);
 
-  display_manager()->SetMirrorMode(true);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());

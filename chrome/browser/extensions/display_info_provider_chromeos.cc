@@ -24,6 +24,7 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/chromeos/touch_device_manager.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/unified_desktop_utils.h"
 #include "ui/gfx/geometry/point.h"
@@ -32,6 +33,7 @@
 namespace extensions {
 
 namespace system_display = api::system_display;
+using MirrorParamsErrors = display::MixedMirrorModeParamsErrors;
 
 namespace {
 
@@ -510,6 +512,45 @@ const char DisplayInfoProviderChromeOS::kNativeTouchCalibrationActiveError[] =
 // static
 const char DisplayInfoProviderChromeOS::kNoExternalTouchDevicePresent[] =
     "No external touch device present.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeSourceIdNotSpecifiedError[] =
+    "Mirroring source id must be specified for mixed mirror mode.";
+
+// static
+const char
+    DisplayInfoProviderChromeOS::kMirrorModeDestinationIdsNotSpecifiedError[] =
+        "Mirroring destination id must be specified for mixed mirror mode.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeSourceIdBadFormatError[] =
+    "Mirroring source id is in incorrect format.";
+
+// static
+const char
+    DisplayInfoProviderChromeOS::kMirrorModeDestinationIdBadFormatError[] =
+        "Mirroring destination id is in incorrect format.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeSingleDisplayError[] =
+    "Mirror mode cannot be enabled for a single display.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeSourceIdNotFoundError[] =
+    "Mirroring source id cannot be found.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeDestinationIdsEmptyError[] =
+    "At least one mirroring destination id must be specified.";
+
+// static
+const char
+    DisplayInfoProviderChromeOS::kMirrorModeDestinationIdNotFoundError[] =
+        "Mirroring destination id cannot be found.";
+
+// static
+const char DisplayInfoProviderChromeOS::kMirrorModeDuplicateIdError[] =
+    "Duplicate display id was found.";
 
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS() {}
 
@@ -1017,6 +1058,81 @@ bool DisplayInfoProviderChromeOS::IsNativeTouchCalibrationActive(
     *error = kNativeTouchCalibrationActiveError;
     return true;
   }
+  return false;
+}
+
+bool DisplayInfoProviderChromeOS::SetMirrorMode(
+    const api::system_display::MirrorModeInfo& info,
+    std::string* out_error) {
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+
+  if (info.mode == api::system_display::MIRROR_MODE_OFF) {
+    display_manager->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+    return true;
+  }
+
+  if (info.mode == api::system_display::MIRROR_MODE_NORMAL) {
+    display_manager->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+    return true;
+  }
+
+  DCHECK(info.mode == api::system_display::MIRROR_MODE_MIXED);
+  if (!info.mirroring_source_id) {
+    *out_error =
+        DisplayInfoProviderChromeOS::kMirrorModeSourceIdNotSpecifiedError;
+    return false;
+  }
+
+  if (!info.mirroring_destination_ids) {
+    *out_error =
+        DisplayInfoProviderChromeOS::kMirrorModeDestinationIdsNotSpecifiedError;
+    return false;
+  }
+
+  int64_t source_id;
+  if (!base::StringToInt64(*(info.mirroring_source_id), &source_id)) {
+    *out_error = DisplayInfoProviderChromeOS::kMirrorModeSourceIdBadFormatError;
+    return false;
+  }
+
+  display::DisplayIdList destination_ids;
+  for (auto& id : *(info.mirroring_destination_ids)) {
+    int64_t destination_id;
+    if (!base::StringToInt64(id, &destination_id)) {
+      *out_error =
+          DisplayInfoProviderChromeOS::kMirrorModeDestinationIdBadFormatError;
+      return false;
+    }
+    destination_ids.emplace_back(destination_id);
+  }
+
+  base::Optional<display::MixedMirrorModeParams> mixed_params(
+      base::in_place, source_id, destination_ids);
+  const MirrorParamsErrors error_type =
+      display::ValidateParamsForMixedMirrorMode(
+          display_manager->GetCurrentDisplayIdList(), *mixed_params);
+  switch (error_type) {
+    case MirrorParamsErrors::kErrorSingleDisplay:
+      *out_error = kMirrorModeSingleDisplayError;
+      return false;
+    case MirrorParamsErrors::kErrorSourceIdNotFound:
+      *out_error = kMirrorModeSourceIdNotFoundError;
+      return false;
+    case MirrorParamsErrors::kErrorDestinationIdsEmpty:
+      *out_error = kMirrorModeDestinationIdsEmptyError;
+      return false;
+    case MirrorParamsErrors::kErrorDestinationIdNotFound:
+      *out_error = kMirrorModeDestinationIdNotFoundError;
+      return false;
+    case MirrorParamsErrors::kErrorDuplicateId:
+      *out_error = kMirrorModeDuplicateIdError;
+      return false;
+    case MirrorParamsErrors::kSuccess:
+      display_manager->SetMirrorMode(display::MirrorMode::kMixed, mixed_params);
+      return true;
+  }
+  NOTREACHED();
   return false;
 }
 
