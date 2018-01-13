@@ -124,7 +124,6 @@ class PostMessageTimer final
         location_(std::move(location)),
         user_gesture_token_(user_gesture_token),
         disposal_allowed_(true) {
-    probe::AsyncTaskScheduled(window.document(), "postMessage", this);
   }
 
   MessageEvent* Event() const { return event_; }
@@ -622,6 +621,7 @@ void LocalDOMWindow::SchedulePostMessage(
                            UserGestureIndicator::CurrentToken());
   timer->StartOneShot(TimeDelta(), FROM_HERE);
   timer->PauseIfNeeded();
+  probe::AsyncTaskScheduled(document(), "postMessage", timer);
   post_message_timers_.insert(timer);
 }
 

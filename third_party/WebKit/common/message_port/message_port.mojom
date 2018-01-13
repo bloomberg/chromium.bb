@@ -18,6 +18,13 @@ struct CloneableMessage {
   array<uint8> encoded_message;
   // Blob handles for any blobs being sent in this message.
   array<SerializedBlob> blobs;
+  // Stack trace captured by sender.
+  // For more details see v8_inspector::V8StackTraceId.
+  // TODO(kozyatinskiy): move this to separate headers as soon as we get
+  // separate inspector folder.
+  uint64 stack_trace_id;
+  int64 stack_trace_debugger_id_first;
+  int64 stack_trace_debugger_id_second;
 };
 
 // This struct combines the cloneable part of a message with the parts of the
