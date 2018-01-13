@@ -358,6 +358,8 @@ void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
     return;
   }
 
+  known_user::RemovePrefs(account_id);
+
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
 }
