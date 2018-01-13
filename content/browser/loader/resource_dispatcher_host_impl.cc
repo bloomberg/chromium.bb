@@ -916,9 +916,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/91398
-  char url_buf[128];
-  base::strlcpy(url_buf, request_data.url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
+  DEBUG_ALIAS_FOR_GURL(url_buf, request_data.url);
 
   // If the request that's coming in is being transferred from another process,
   // we want to reuse and resume the old loader rather than start a new one.

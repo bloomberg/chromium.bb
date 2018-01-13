@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/debug/alias.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -486,5 +487,11 @@ URL_EXPORT bool operator==(const GURL& x, const base::StringPiece& spec);
 URL_EXPORT bool operator==(const base::StringPiece& spec, const GURL& x);
 URL_EXPORT bool operator!=(const GURL& x, const base::StringPiece& spec);
 URL_EXPORT bool operator!=(const base::StringPiece& spec, const GURL& x);
+
+// DEBUG_ALIAS_FOR_GURL(var_name, url) copies |url| into a new stack-allocated
+// variable named |<var_name>|.  This helps ensure that the value of |url| gets
+// preserved in crash dumps.
+#define DEBUG_ALIAS_FOR_GURL(var_name, url) \
+  DEBUG_ALIAS_FOR_CSTR(var_name, url.possibly_invalid_spec().c_str(), 128)
 
 #endif  // URL_GURL_H_

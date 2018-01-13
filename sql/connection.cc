@@ -249,10 +249,7 @@ void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
 
   std::string debug_info = GetDiagnosticInfo(extended_error, stmt);
   if (!debug_info.empty() && RegisterIntentToUpload()) {
-    char debug_buf[2000];
-    base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
-    base::debug::Alias(&debug_buf);
-
+    DEBUG_ALIAS_FOR_CSTR(debug_buf, debug_info.c_str(), 2000);
     base::debug::DumpWithoutCrashing();
   }
 }

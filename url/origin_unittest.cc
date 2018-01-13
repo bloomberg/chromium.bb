@@ -503,8 +503,6 @@ TEST(OriginTest, DebugAlias) {
   url::Origin origin1 = url::Origin::Create(GURL("https://foo.com/bar"));
   DEBUG_ALIAS_FOR_ORIGIN(origin1_debug_alias, origin1);
   EXPECT_STREQ("https://foo.com", origin1_debug_alias);
-  static_assert(std::is_same<char[128], decltype(origin1_debug_alias)>::value,
-                "Verification that origin1_debug_alias has expected type");
 }
 
 }  // namespace

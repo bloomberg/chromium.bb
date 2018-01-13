@@ -140,11 +140,9 @@ void URLRequestContext::AssertNoURLRequests() const {
   if (num_requests != 0) {
     // We're leaking URLRequests :( Dump the URL of the first one and record how
     // many we leaked so we have an idea of how bad it is.
-    char url_buf[128];
     const URLRequest* request = *url_requests_->begin();
-    base::strlcpy(url_buf, request->url().spec().c_str(), arraysize(url_buf));
     int load_flags = request->load_flags();
-    base::debug::Alias(url_buf);
+    DEBUG_ALIAS_FOR_GURL(url_buf, request->url());
     base::debug::Alias(&num_requests);
     base::debug::Alias(&load_flags);
     CHECK(false) << "Leaked " << num_requests << " URLRequest(s). First URL: "

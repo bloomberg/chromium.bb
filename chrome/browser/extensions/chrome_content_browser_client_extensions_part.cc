@@ -617,14 +617,8 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     // TODO(alexmos): Temporary instrumentation to find any regressions for
     // this blocking.  Remove after verifying that this is not breaking any
     // legitimate use cases.
-    char site_url_copy[256];
-    base::strlcpy(site_url_copy, site_url.spec().c_str(),
-                  arraysize(site_url_copy));
-    base::debug::Alias(&site_url_copy);
-    char to_origin_copy[256];
-    base::strlcpy(to_origin_copy, to_origin.Serialize().c_str(),
-                  arraysize(to_origin_copy));
-    base::debug::Alias(&to_origin_copy);
+    DEBUG_ALIAS_FOR_GURL(site_url_copy, site_url);
+    DEBUG_ALIAS_FOR_ORIGIN(to_origin_copy, to_origin);
     base::debug::DumpWithoutCrashing();
 
     *result = false;

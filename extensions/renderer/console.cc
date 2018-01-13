@@ -29,10 +29,7 @@ namespace {
 
 // Writes |message| to stack to show up in minidump, then crashes.
 void CheckWithMinidump(const std::string& message) {
-  char minidump[1024];
-  base::debug::Alias(&minidump);
-  base::snprintf(
-      minidump, arraysize(minidump), "e::console: %s", message.c_str());
+  DEBUG_ALIAS_FOR_CSTR(minidump, message.c_str(), 1024);
   CHECK(false) << message;
 }
 

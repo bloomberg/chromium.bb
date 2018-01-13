@@ -886,4 +886,10 @@ TEST(GURLTest, EqualsIgnoringRef) {
   }
 }
 
+TEST(GURLTest, DebugAlias) {
+  GURL url("https://foo.com/bar");
+  DEBUG_ALIAS_FOR_GURL(url_debug_alias, url);
+  EXPECT_STREQ("https://foo.com/bar", url_debug_alias);
+}
+
 }  // namespace url

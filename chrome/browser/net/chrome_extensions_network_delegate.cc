@@ -238,10 +238,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
         // TODO(alexmos): Temporary instrumentation to find any regressions for
         // this blocking.  Remove after verifying that this is not breaking any
         // legitimate use cases.
-        char origin_copy[256];
-        base::strlcpy(origin_copy, origin.Serialize().c_str(),
-                      arraysize(origin_copy));
-        base::debug::Alias(&origin_copy);
+        DEBUG_ALIAS_FOR_ORIGIN(origin_copy, origin);
         base::debug::Alias(&from_guest);
         base::debug::DumpWithoutCrashing();
         return net::ERR_ABORTED;
