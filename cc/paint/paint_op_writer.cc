@@ -217,7 +217,7 @@ void PaintOpWriter::Write(const PaintShader* shader) {
   WriteSimple(shader->end_point_);
   WriteSimple(shader->start_degrees_);
   WriteSimple(shader->end_degrees_);
-  // TODO(vmpstr): Write PaintImage image_. http://crbug.com/737629
+  Write(shader->image_);
   if (shader->record_) {
     Write(true);
     Write(shader->record_.get());
@@ -586,6 +586,20 @@ void PaintOpWriter::Write(const PaintRecord* record) {
   DCHECK_LE(serializer.written(), remaining_bytes_);
   memory_ += serializer.written();
   remaining_bytes_ -= serializer.written();
+}
+
+void PaintOpWriter::Write(const PaintImage& image) {
+  if (!image) {
+    Write(kInvalidImageTransferCacheEntryId);
+    return;
+  }
+  // Note that the filter quality doesn't matter here, since it's not
+  // serialized. It's only used to determine the decoded draw image that we will
+  // get. However, since we're requesting a full-sized image decode, the filter
+  // quality is essentially ignored.
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       kLow_SkFilterQuality, SkMatrix::I());
+  Write(draw_image);
 }
 
 }  // namespace cc
