@@ -10,6 +10,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/callback.h"
 #include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -63,6 +64,7 @@ enum class PaintOpType : uint8_t {
   ClipRect,
   ClipRRect,
   Concat,
+  CustomData,
   DrawColor,
   DrawDRRect,
   DrawImage,
@@ -90,9 +92,19 @@ enum class PaintOpType : uint8_t {
 CC_PAINT_EXPORT std::string PaintOpTypeToString(PaintOpType type);
 
 struct CC_PAINT_EXPORT PlaybackParams {
-  PlaybackParams(ImageProvider* image_provider, const SkMatrix& original_ctm);
+  using CustomDataRasterCallback =
+      base::RepeatingCallback<void(SkCanvas* canvas, uint32_t id)>;
+
+  explicit PlaybackParams(ImageProvider* image_provider);
+  PlaybackParams(
+      ImageProvider* image_provider,
+      const SkMatrix& original_ctm,
+      CustomDataRasterCallback custom_callback = CustomDataRasterCallback());
+  ~PlaybackParams();
+
   ImageProvider* image_provider;
   const SkMatrix original_ctm;
+  CustomDataRasterCallback custom_callback;
 };
 
 class CC_PAINT_EXPORT PaintOp {
@@ -358,6 +370,21 @@ class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+};
+
+class CC_PAINT_EXPORT CustomDataOp final : public PaintOp {
+ public:
+  static constexpr PaintOpType kType = PaintOpType::CustomData;
+  explicit CustomDataOp(uint32_t id) : PaintOp(kType), id(id) {}
+  static void Raster(const CustomDataOp* op,
+                     SkCanvas* canvas,
+                     const PlaybackParams& params);
+  bool IsValid() const { return true; }
+  static bool AreEqual(const PaintOp* left, const PaintOp* right);
+  HAS_SERIALIZATION_FUNCTIONS();
+
+  // Stores user defined id as a placeholder op.
+  uint32_t id;
 };
 
 class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
@@ -809,8 +836,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void Reset();
 
   // Replays the paint op buffer into the canvas.
-  void Playback(SkCanvas* canvas,
-                ImageProvider* image_provider = nullptr) const;
+  void Playback(SkCanvas* canvas) const;
+  void Playback(SkCanvas* canvas, const PlaybackParams& params) const;
 
   static sk_sp<PaintOpBuffer> MakeFromMemory(
       const volatile void* input,
@@ -1056,7 +1083,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // contains indices in an increasing order and only the indices specified in
   // the vector will be replayed.
   void Playback(SkCanvas* canvas,
-                ImageProvider* image_provider,
+                const PlaybackParams& params,
                 const std::vector<size_t>* indices) const;
 
   void ReallocBuffer(size_t new_size);

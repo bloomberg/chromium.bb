@@ -53,7 +53,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
     return;
 
   std::vector<size_t> offsets = rtree_.Search(canvas_playback_rect);
-  paint_op_buffer_.Playback(canvas, image_provider, &offsets);
+  paint_op_buffer_.Playback(canvas, PlaybackParams(image_provider), &offsets);
 }
 
 void DisplayItemList::GrowCurrentBeginItemVisualRect(

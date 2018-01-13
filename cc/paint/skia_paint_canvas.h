@@ -121,6 +121,11 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   using PaintCanvas::drawImage;
   using PaintCanvas::drawPicture;
 
+  // Same as the above drawPicture() except using the given playback
+  // parameters.
+  void drawPicture(sk_sp<const PaintRecord> record,
+                   const PlaybackParams& params);
+
  private:
   void WrapCanvasInColorSpaceXformCanvas(
       sk_sp<SkColorSpace> target_color_space);

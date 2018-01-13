@@ -276,4 +276,9 @@ void SkiaPaintCanvas::Annotate(AnnotationType type,
   }
 }
 
+void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record,
+                                  const PlaybackParams& params) {
+  record->Playback(canvas_, params);
+}
+
 }  // namespace cc

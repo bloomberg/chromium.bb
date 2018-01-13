@@ -64,6 +64,7 @@ class MockCanvas : public SkNoDrawCanvas {
                void(const SkRect&, SkScalar, SkScalar, bool, const SkPaint&));
   MOCK_METHOD1(didConcat, void(const SkMatrix&));
   MOCK_METHOD2(onDrawOval, void(const SkRect&, const SkPaint&));
+  MOCK_METHOD2(onCustomCallback, void(SkCanvas*, uint32_t));
 };
 
 }  // namespace cc

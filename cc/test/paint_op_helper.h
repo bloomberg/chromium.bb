@@ -60,6 +60,12 @@ class PaintOpHelper {
             << ")";
         break;
       }
+      case PaintOpType::CustomData: {
+        const auto* op = static_cast<const CustomDataOp*>(base_op);
+        str << "CustomDataOp(id=" << PaintOpHelper::SkiaTypeToString(op->id)
+            << ")";
+        break;
+      }
       case PaintOpType::DrawColor: {
         const auto* op = static_cast<const DrawColorOp*>(base_op);
         str << "DrawColorOp(color="

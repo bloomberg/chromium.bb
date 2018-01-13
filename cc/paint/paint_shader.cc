@@ -20,7 +20,7 @@ sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
   SkCanvas* canvas = recorder.beginRecording(bounds);
   if (matrix)
     canvas->setMatrix(*matrix);
-  record->Playback(canvas, image_provider);
+  record->Playback(canvas, PlaybackParams(image_provider));
   return recorder.finishRecordingAsPicture();
 }
 
