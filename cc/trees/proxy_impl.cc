@@ -262,10 +262,7 @@ NOINLINE void ProxyImpl::DumpForBeginMainFrameHang() {
   host_impl_->tile_manager()->ActivationStateAsValueInto(state.get());
   state->EndDictionary();
 
-  char stack_string[50000] = "";
-  base::debug::Alias(&stack_string);
-  strncpy(stack_string, state->ToString().c_str(), arraysize(stack_string) - 1);
-
+  DEBUG_ALIAS_FOR_CSTR(stack_string, state->ToString().c_str(), 50000);
   base::debug::DumpWithoutCrashing();
 }
 
