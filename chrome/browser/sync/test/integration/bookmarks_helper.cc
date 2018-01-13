@@ -679,6 +679,7 @@ void CheckHasNoFavicon(int profile, const GURL& page_url) {
   favicon_base::FaviconRawBitmapResult bitmap_result;
   favicon_service->GetRawFaviconForPageURL(
       page_url, {favicon_base::IconType::kFavicon}, 0,
+      /*fallback_to_host=*/false,
       base::Bind(&OnGotFaviconData, run_loop.QuitClosure(), &bitmap_result),
       &task_tracker);
   run_loop.Run();

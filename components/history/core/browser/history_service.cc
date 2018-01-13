@@ -526,6 +526,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     const GURL& page_url,
     const favicon_base::IconTypeSet& icon_types,
     const std::vector<int>& desired_sizes,
+    bool fallback_to_host,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFaviconsForURL");
@@ -536,7 +537,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
   return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconsForURL, history_backend_, page_url,
-                 icon_types, desired_sizes, results),
+                 icon_types, desired_sizes, fallback_to_host, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 

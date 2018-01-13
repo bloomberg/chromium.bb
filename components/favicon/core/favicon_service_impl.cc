@@ -118,6 +118,7 @@ FaviconServiceImpl::GetFaviconImageForPageURL(
   return GetFaviconForPageURLImpl(
       page_url, {favicon_base::IconType::kFavicon},
       GetPixelSizesForFaviconScales(gfx::kFaviconSize),
+      /*fallback_to_host=*/false,
       base::Bind(&FaviconServiceImpl::RunFaviconImageCallbackWithBitmapResults,
                  base::Unretained(this), callback, gfx::kFaviconSize),
       tracker);
@@ -127,13 +128,14 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetRawFaviconForPageURL(
     const GURL& page_url,
     const favicon_base::IconTypeSet& icon_types,
     int desired_size_in_pixel,
+    bool fallback_to_host,
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "FaviconServiceImpl::GetRawFaviconForPageURL");
   std::vector<int> desired_sizes_in_pixel;
   desired_sizes_in_pixel.push_back(desired_size_in_pixel);
   return GetFaviconForPageURLImpl(
-      page_url, icon_types, desired_sizes_in_pixel,
+      page_url, icon_types, desired_sizes_in_pixel, fallback_to_host,
       base::Bind(
           &FaviconServiceImpl::RunFaviconRawBitmapCallbackWithBitmapResults,
           base::Unretained(this), callback, desired_size_in_pixel),
@@ -170,7 +172,7 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageURL(
   TRACE_EVENT0("browser", "FaviconServiceImpl::GetFaviconForPageURL");
   return GetFaviconForPageURLImpl(
       page_url, icon_types, GetPixelSizesForFaviconScales(desired_size_in_dip),
-      callback, tracker);
+      /*fallback_to_host=*/false, callback, tracker);
 }
 
 base::CancelableTaskTracker::TaskId
@@ -278,6 +280,7 @@ FaviconServiceImpl::GetFaviconForPageURLImpl(
     const GURL& page_url,
     const favicon_base::IconTypeSet& icon_types,
     const std::vector<int>& desired_sizes_in_pixel,
+    bool fallback_to_host,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   if (favicon_client_ && favicon_client_->IsNativeApplicationURL(page_url)) {
@@ -285,7 +288,8 @@ FaviconServiceImpl::GetFaviconForPageURLImpl(
         page_url, desired_sizes_in_pixel, callback, tracker);
   }
   return history_service_->GetFaviconsForURL(
-      page_url, icon_types, desired_sizes_in_pixel, callback, tracker);
+      page_url, icon_types, desired_sizes_in_pixel, fallback_to_host, callback,
+      tracker);
 }
 
 void FaviconServiceImpl::RunFaviconImageCallbackWithBitmapResults(
