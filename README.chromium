@@ -280,5 +280,9 @@ D. Local Modifications
 8. Reduce size of SmallIntFormatter implementation
 
   - patches/simplify_smallintformatter.patch
-  Reduce the size of the binary by about 16 kiB on Android,
-  without noticeable performance change.
+    upstream bug: https://ssl.icu-project.org/trac/ticket/12390
+
+9. Fix an integer overflow in Islamic calendar
+
+  - patches/islamcal.patch
+    upstream bug: https://ssl.icu-project.org/trac/ticket/13538
