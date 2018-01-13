@@ -30,6 +30,9 @@ script-blocking-first-paint: false
 speed-index-metric: false
 time-to-first-byte: true
 total-byte-weight: true
+unminified-css: false
+unminified-javascript: false
+unused-css-rules: false
 user-timings: true
 uses-long-cache-ttl: false
 uses-optimized-images: false
