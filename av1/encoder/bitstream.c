@@ -977,8 +977,6 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                     const MODE_INFO *const mi, int mi_row,
                                     int mi_col, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
@@ -986,15 +984,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (mbmi->mode == DC_PRED) {
     const int n = pmi->palette_size[0];
-    int palette_y_mode_ctx = 0;
-    if (above_mi) {
-      palette_y_mode_ctx +=
-          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
-    if (left_mi) {
-      palette_y_mode_ctx +=
-          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
+    const int palette_y_mode_ctx = av1_get_palette_mode_ctx(xd);
     aom_write_symbol(
         w, n > 0,
         xd->tile_ctx->palette_y_mode_cdf[bsize_ctx][palette_y_mode_ctx], 2);

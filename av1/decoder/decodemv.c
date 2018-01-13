@@ -786,27 +786,16 @@ static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
 
 static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                    int mi_row, int mi_col, aom_reader *r) {
-  MODE_INFO *const mi = xd->mi[0];
-  MB_MODE_INFO *const mbmi = &mi->mbmi;
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
 
   if (mbmi->mode == DC_PRED) {
-    int palette_y_mode_ctx = 0;
-    if (above_mi) {
-      palette_y_mode_ctx +=
-          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
-    if (left_mi) {
-      palette_y_mode_ctx +=
-          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
+    const int palette_mode_ctx = av1_get_palette_mode_ctx(xd);
     const int modev = aom_read_symbol(
-        r, xd->tile_ctx->palette_y_mode_cdf[bsize_ctx][palette_y_mode_ctx], 2,
+        r, xd->tile_ctx->palette_y_mode_cdf[bsize_ctx][palette_mode_ctx], 2,
         ACCT_STR);
     if (modev) {
       pmi->palette_size[0] =

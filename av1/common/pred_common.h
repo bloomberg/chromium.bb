@@ -188,6 +188,15 @@ static INLINE int av1_get_palette_bsize_ctx(BLOCK_SIZE bsize) {
   return num_pels_log2_lookup[bsize] - num_pels_log2_lookup[BLOCK_4X4];
 }
 
+static INLINE int av1_get_palette_mode_ctx(const MACROBLOCKD *xd) {
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  int ctx = 0;
+  if (above_mi) ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+  if (left_mi) ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+  return ctx;
+}
+
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
 int av1_get_reference_mode_context(const AV1_COMMON *cm, const MACROBLOCKD *xd);
