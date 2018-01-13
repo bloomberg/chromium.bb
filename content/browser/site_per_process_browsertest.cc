@@ -6560,7 +6560,7 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
     rwhv_root_ = rwhv_root;
   }
 
-  void RunTest(gfx::Point pos) {
+  void RunTest(gfx::Point pos, RenderWidgetHostViewBase* expected_target) {
     content::DOMMessageQueue msg_queue;
     std::string reply;
 
@@ -6568,7 +6568,10 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
         web_contents()->GetRenderWidgetHostView());
     set_rwhv_root(rwhv_root);
 
+    InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
+                               blink::WebInputEvent::kMouseWheel);
     SendMouseWheel(pos);
+    waiter.Wait();
 
     // Expect both wheel and scroll handlers to fire.
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
@@ -6630,7 +6633,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   gfx::Rect bounds = child_rwhv->GetViewBounds();
   gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
 
-  RunTest(pos);
+  RunTest(pos, child_rwhv);
 }
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
@@ -6647,7 +6650,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
 
   gfx::Point pos(10, 10);
 
-  RunTest(pos);
+  RunTest(pos, rfhi->GetRenderWidgetHost()->GetView());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
