@@ -470,7 +470,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
       registry_.CreateEntry(uuid, content_type, content_disposition);
   entry->set_size(network::DataElement::kUnknownSize);
   entry->set_status(BlobStatus::PENDING_CONSTRUCTION);
-  entry->set_building_state(base::MakeUnique<BlobEntry::BuildingState>(
+  entry->set_building_state(std::make_unique<BlobEntry::BuildingState>(
       false, TransportAllowedCallback(), 0));
   return CreateHandle(uuid, entry);
 }
@@ -548,7 +548,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
   }
 
   auto previous_building_state = std::move(entry->building_state_);
-  entry->set_building_state(base::MakeUnique<BlobEntry::BuildingState>(
+  entry->set_building_state(std::make_unique<BlobEntry::BuildingState>(
       !flattener.pending_transport_items.empty(), transport_allowed_callback,
       num_building_dependent_blobs));
   BlobEntry::BuildingState* building_state = entry->building_state_.get();

@@ -4,10 +4,11 @@
 
 #include "storage/browser/fileapi/external_mount_points.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 namespace {
@@ -104,7 +105,7 @@ bool ExternalMountPoints::RegisterFileSystem(
     return false;
 
   instance_map_[mount_name] =
-      base::MakeUnique<Instance>(type, path, mount_option);
+      std::make_unique<Instance>(type, path, mount_option);
   if (!path.empty() && IsOverlappingMountPathForbidden(type))
     path_to_name_map_.insert(std::make_pair(path, mount_name));
   return true;

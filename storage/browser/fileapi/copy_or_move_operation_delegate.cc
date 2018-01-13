@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -806,7 +805,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
            ->GetFileSystemBackend(src_url.type())
            ->HasInplaceCopyImplementation(src_url.type()) ||
        operation_type_ == OPERATION_MOVE)) {
-    impl = base::MakeUnique<CopyOrMoveOnSameFileSystemImpl>(
+    impl = std::make_unique<CopyOrMoveOnSameFileSystemImpl>(
         operation_runner(), operation_type_, src_url, dest_url, option_,
         base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
                    weak_factory_.GetWeakPtr(), src_url));
@@ -832,7 +831,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
       std::unique_ptr<FileStreamWriter> writer =
           file_system_context()->CreateFileStreamWriter(dest_url, 0);
       if (reader && writer) {
-        impl = base::MakeUnique<StreamCopyOrMoveImpl>(
+        impl = std::make_unique<StreamCopyOrMoveImpl>(
             operation_runner(), file_system_context(), operation_type_, src_url,
             dest_url, option_, std::move(reader), std::move(writer),
             base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
@@ -841,7 +840,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
     }
 
     if (!impl) {
-      impl = base::MakeUnique<SnapshotCopyOrMoveImpl>(
+      impl = std::make_unique<SnapshotCopyOrMoveImpl>(
           operation_runner(), operation_type_, src_url, dest_url, option_,
           validator_factory,
           base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,

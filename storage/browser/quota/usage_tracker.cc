@@ -7,10 +7,10 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
 #include "storage/browser/quota/storage_monitor.h"
 
@@ -40,7 +40,7 @@ UsageTracker::UsageTracker(const QuotaClientList& clients,
     : type_(type), storage_monitor_(storage_monitor), weak_factory_(this) {
   for (auto* client : clients) {
     if (client->DoesSupport(type)) {
-      client_tracker_map_[client->id()] = base::MakeUnique<ClientUsageTracker>(
+      client_tracker_map_[client->id()] = std::make_unique<ClientUsageTracker>(
           this, client, type, special_storage_policy, storage_monitor_);
     }
   }

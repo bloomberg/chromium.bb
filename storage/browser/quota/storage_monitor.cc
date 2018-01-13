@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -257,7 +257,7 @@ void StorageTypeObservers::AddObserver(
   if (!host_observers) {
     // Because there are no null entries in host_observers_map_, the [] inserted
     // a blank pointer, so let's populate it.
-    host_observers = base::MakeUnique<HostStorageObservers>(quota_manager_);
+    host_observers = std::make_unique<HostStorageObservers>(quota_manager_);
   }
 
   host_observers->AddObserver(observer, params);
@@ -320,7 +320,7 @@ void StorageMonitor::AddObserver(
   auto& type_observers =
       storage_type_observers_map_[params.filter.storage_type];
   if (!type_observers)
-    type_observers = base::MakeUnique<StorageTypeObservers>(quota_manager_);
+    type_observers = std::make_unique<StorageTypeObservers>(quota_manager_);
 
   type_observers->AddObserver(observer, params);
 }

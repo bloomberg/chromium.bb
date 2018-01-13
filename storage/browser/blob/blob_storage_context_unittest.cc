@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -117,7 +116,7 @@ class BlobStorageContextTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    context_ = base::MakeUnique<BlobStorageContext>();
+    context_ = std::make_unique<BlobStorageContext>();
   }
 
   void TearDown() override {
@@ -530,7 +529,7 @@ TEST_F(BlobStorageContextTest, BuildDiskCacheBlob) {
 TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
   const std::string kId1("id1");
   context_ =
-      base::MakeUnique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
+      std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits();
 
   BlobDataBuilder builder(kId1);
@@ -796,7 +795,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   const std::string kId("id");
 
   context_ =
-      base::MakeUnique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
+      std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
 
   SetTestMemoryLimits();
   std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
