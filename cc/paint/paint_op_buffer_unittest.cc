@@ -76,12 +76,12 @@ class PaintOpSerializationTestUtils {
 };
 
 class TestOptionsProvider : public ImageProvider,
-                            public TransferCacheDeserializeHelper {
+                            public TransferCacheTestHelper {
  public:
   TestOptionsProvider() {
     serialize_options_.canvas = &canvas_;
     serialize_options_.image_provider = this;
-    serialize_options_.transfer_cache = &transfer_cache_helper_;
+    serialize_options_.transfer_cache = this;
     deserialize_options_.transfer_cache = this;
   }
   ~TestOptionsProvider() override = default;
@@ -99,9 +99,7 @@ class TestOptionsProvider : public ImageProvider,
     return deserialize_options_;
   }
   ImageProvider* image_provider() { return this; }
-  TransferCacheTestHelper* transfer_cache_helper() {
-    return &transfer_cache_helper_;
-  }
+  TransferCacheTestHelper* transfer_cache_helper() { return this; }
 
  private:
   ScopedDecodedDrawImage GetDecodedDrawImage(
@@ -122,7 +120,7 @@ class TestOptionsProvider : public ImageProvider,
   ServiceTransferCacheEntry* GetEntryInternal(TransferCacheEntryType entry_type,
                                               uint32_t entry_id) override {
     if (entry_type != TransferCacheEntryType::kImage)
-      return transfer_cache_helper_.GetEntryInternal(entry_type, entry_id);
+      return TransferCacheTestHelper::GetEntryInternal(entry_type, entry_id);
     auto it = entry_map_.find(entry_id);
     CHECK(it != entry_map_.end());
     return &it->second;
@@ -134,7 +132,6 @@ class TestOptionsProvider : public ImageProvider,
   testing::StrictMock<MockCanvas> canvas_;
   PaintOp::SerializeOptions serialize_options_;
   PaintOp::DeserializeOptions deserialize_options_;
-  TransferCacheTestHelper transfer_cache_helper_;
 };
 
 TEST(PaintOpBufferTest, Empty) {

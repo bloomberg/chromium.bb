@@ -819,11 +819,6 @@ void PaintOpReader::ReadDisplacementMapEffectPaintFilter(
 void PaintOpReader::ReadImagePaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  if (crop_rect) {
-    SetInvalid();
-    return;
-  }
-
   PaintImage image;
   Read(&image);
   if (!image) {

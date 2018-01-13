@@ -31,6 +31,7 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
       const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries);
   void DeleteEntryDirect(TransferCacheEntryType type, uint32_t id);
 
+ protected:
   // Deserialization helpers.
   ServiceTransferCacheEntry* GetEntryInternal(TransferCacheEntryType type,
                                               uint32_t id) override;
