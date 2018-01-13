@@ -198,6 +198,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual void SetIsInert(bool) = 0;
   void UpdateInertIfPossible();
 
+  String GetDevToolsFrameToken() const;
+
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 

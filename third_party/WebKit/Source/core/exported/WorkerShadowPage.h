@@ -45,7 +45,7 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
     // Called when Initialize() is completed.
     virtual void OnShadowPageInitialized() = 0;
 
-    virtual const WebString& GetInstrumentationToken() = 0;
+    virtual const WebString& GetDevToolsFrameToken() = 0;
   };
 
   explicit WorkerShadowPage(Client*);
@@ -67,7 +67,7 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   // frame and its widget.
   void DidFinishDocumentLoad() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
-  WebString GetInstrumentationToken() override;
+  WebString GetDevToolsFrameToken() override;
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }

@@ -33,6 +33,7 @@
 namespace blink {
 
 class DocumentLoader;
+class Frame;
 class LocalFrame;
 class InspectedFrames;
 
@@ -46,7 +47,7 @@ class CORE_EXPORT IdentifiersFactory {
 
   // Returns embedder-provided frame token that is consistent across processes
   // and can be used for request / call attribution to the context frame.
-  static String FrameId(LocalFrame*);
+  static String FrameId(Frame*);
   static LocalFrame* FrameById(InspectedFrames*, const String&);
 
   static String LoaderId(DocumentLoader*);
