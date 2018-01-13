@@ -21,6 +21,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/rappor/test_rappor_service.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -283,4 +284,71 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
         content_settings::POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM, 1);
 
   histograms.ExpectTotalCount("ContentSettings.Popups", 5);
+}
+
+class ContentSettingBubbleModelMixedScriptOopifTest
+    : public ContentSettingBubbleModelMixedScriptTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    content::IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentSettingBubbleModelMixedScriptTest::
+        SetUpInProcessBrowserTestFixture();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
+
+// Tests that a MIXEDSCRIPT type ContentSettingBubbleModel sends appropriate
+// IPCs to allow the renderer to load unsafe scripts inside out-of-processs
+// iframes.
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
+                       MixedContentInCrossSiteIframe) {
+  // Create a URL for the mixed content document and append it as a query
+  // string to the main URL. This approach is taken because the test servers
+  // run on random ports each time and it is not possible to use a static
+  // URL in the HTML for the main frame. The main document will use JS to
+  // navigate the iframe to the URL specified in the query string, which is
+  // determined at runtime and is known to be correct.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/content_setting_bubble/mixed_script.html"));
+  GURL main_url(https_server_->GetURL(
+      "/content_setting_bubble/mixed_script_in_cross_site_iframe.html?" +
+      foo_url.spec()));
+
+  // Load a page with mixed content and verify that mixed content didn't get
+  // executed.
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+
+  std::string title;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      ChildFrameAt(web_contents->GetMainFrame(), 0),
+      "domAutomationController.send(document.title)", &title));
+  EXPECT_EQ("", title);
+
+  // Emulate link clicking on the mixed script bubble.
+  content::TestNavigationObserver observer(web_contents);
+  std::unique_ptr<ContentSettingBubbleModel> model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          browser()->content_setting_bubble_model_delegate(), web_contents,
+          browser()->profile(), CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+  model->OnCustomLinkClicked();
+
+  // Wait for reload and verify that mixed content is allowed.
+  observer.Wait();
+  EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+
+  // Ensure that the script actually executed by checking the title of the
+  // document in the subframe.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      ChildFrameAt(web_contents->GetMainFrame(), 0),
+      "domAutomationController.send(document.title)", &title));
+  EXPECT_EQ("mixed_script_ran_successfully", title);
 }

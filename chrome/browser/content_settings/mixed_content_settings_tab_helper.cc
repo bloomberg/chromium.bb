@@ -4,10 +4,12 @@
 
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 
+#include "chrome/common/content_settings_renderer.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -41,6 +43,16 @@ void MixedContentSettingsTabHelper::AllowRunningOfInsecureContent() {
          insecure_content_site_instance_ == web_contents()->GetSiteInstance());
   insecure_content_site_instance_ = web_contents()->GetSiteInstance();
   is_running_insecure_content_allowed_ = true;
+}
+
+void MixedContentSettingsTabHelper::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (!is_running_insecure_content_allowed_)
+    return;
+
+  chrome::mojom::ContentSettingsRendererAssociatedPtr renderer;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
+  renderer->SetAllowRunningInsecureContent();
 }
 
 void MixedContentSettingsTabHelper::DidFinishNavigation(
