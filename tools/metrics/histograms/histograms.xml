@@ -94234,8 +94234,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The result of verifying the variations seed signature, recorded when the
-    variations seed is stored to Local State after being retrieved from the
-    server.
+    variations seed is loaded from Local State.
   </summary>
 </histogram>
 
@@ -94275,6 +94274,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Whether or not the VariationsService fell back to Safe Mode, due to either
     too many crashes or too many failures to fetch a new seed. Recorded during
     Chrome startup, when the VariationsService is created.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.StoreSafeSeed.Result"
+    enum="VariationsSeedStoreResult">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Records the result of storing a safe variations seed (and all associated
+    metadata) to the seed store.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.StoreSafeSeed.SignatureValidity"
+    enum="VariationSeedSignature">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    The result of verifying the safe variations seed's signature, recorded when
+    the safe seed is stored to Local State.
   </summary>
 </histogram>
 
@@ -94541,7 +94558,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The result of verifying the variations seed signature, recorded when the
-    variations seed is loaded from Local State.
+    variations seed is stored to Local State after being retrieved from the
+    server.
   </summary>
 </histogram>
 

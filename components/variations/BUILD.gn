@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -152,5 +154,17 @@ source_set("unit_tests") {
     "//components/variations/field_trial_config:unit_tests",
     "//testing/gtest",
     "//third_party/zlib/google:compression_utils",
+  ]
+}
+
+# Convenience testing target
+test("variations_unittests") {
+  sources = [
+    "//components/test/run_all_unittests.cc",
+  ]
+  deps = [
+    ":unit_tests",
+    "//components/test:test_support",
+    "//components/variations/service:unit_tests",
   ]
 }

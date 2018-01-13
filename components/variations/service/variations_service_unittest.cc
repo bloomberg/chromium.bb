@@ -997,4 +997,7 @@ TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
   EXPECT_FALSE(service.insecurely_fetched_seed());
 }
 
+// TODO(isherman): Add an integration test for saving and loading a safe seed,
+// once the loading functionality is implemented on the seed store.
+
 }  // namespace variations

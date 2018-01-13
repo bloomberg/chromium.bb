@@ -36,6 +36,7 @@ static_library("service") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "safe_seed_manager_unittest.cc",
     "ui_string_overrider_unittest.cc",
     "variations_field_trial_creator_unittest.cc",
     "variations_service_unittest.cc",
