@@ -14,11 +14,5 @@
 
 #include "aom_dsp/txfm_common.h"
 
-static INLINE tran_high_t saturate_int16(tran_high_t value) {
-  tran_high_t result;
-  result = value > INT16_MAX ? INT16_MAX : value;
-  return result < INT16_MIN ? INT16_MIN : result;
-}
-
 void aom_fdct32(const tran_high_t *input, tran_high_t *output, int round);
 #endif  // AOM_DSP_FWD_TXFM_H_
