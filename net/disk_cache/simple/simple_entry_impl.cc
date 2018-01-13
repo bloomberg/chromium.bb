@@ -216,7 +216,7 @@ SimpleEntryImpl::SimpleEntryImpl(
                 "arrays should be the same size");
   static_assert(arraysize(data_size_) == arraysize(crc_check_state_),
                 "arrays should be the same size");
-  MakeUninitialized();
+  ResetEntry();
   net_log_.BeginEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY,
                       CreateNetLogSimpleEntryConstructionCallback(this));
 }
@@ -628,8 +628,10 @@ void SimpleEntryImpl::PostClientCallback(const CompletionCallback& callback,
       base::Bind(&InvokeCallbackIfBackendIsAlive, backend_, callback, result));
 }
 
-void SimpleEntryImpl::MakeUninitialized() {
-  state_ = STATE_UNINITIALIZED;
+void SimpleEntryImpl::ResetEntry() {
+  // If we're doomed, we can't really do anything else with the entry, since
+  // we no longer own the name and are disconnected from the active entry table.
+  state_ = doomed_ ? STATE_FAILURE : STATE_UNINITIALIZED;
   std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
@@ -1248,7 +1250,7 @@ void SimpleEntryImpl::CreationOperationComplete(
 
     net_log_.AddEventWithNetErrorCode(end_event_type, net::ERR_FAILED);
     PostClientCallback(completion_callback, net::ERR_FAILED);
-    MakeUninitialized();
+    ResetEntry();
     return;
   }
 
@@ -1475,7 +1477,7 @@ void SimpleEntryImpl::CloseOperationComplete() {
          STATE_UNINITIALIZED == state_);
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_END);
   AdjustOpenEntryCountBy(cache_type_, -1);
-  MakeUninitialized();
+  ResetEntry();
   RunNextOperationIfNeeded();
 }
 
