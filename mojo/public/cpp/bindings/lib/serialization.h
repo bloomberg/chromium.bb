@@ -7,10 +7,13 @@
 
 #include <string.h>
 
+#include <type_traits>
+
 #include "base/numerics/safe_math.h"
 #include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/handle_interface_serialization.h"
 #include "mojo/public/cpp/bindings/lib/map_serialization.h"
@@ -26,21 +29,55 @@
 namespace mojo {
 namespace internal {
 
+template <typename MojomType, typename EnableType = void>
+struct MojomSerializationImplTraits;
+
+template <typename MojomType>
+struct MojomSerializationImplTraits<
+    MojomType,
+    typename std::enable_if<
+        BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value>::type> {
+  template <typename MaybeConstUserType, typename WriterType>
+  static void Serialize(MaybeConstUserType& input,
+                        Buffer* buffer,
+                        WriterType* writer,
+                        SerializationContext* context) {
+    mojo::internal::Serialize<MojomType>(input, buffer, writer, context);
+  }
+};
+
+template <typename MojomType>
+struct MojomSerializationImplTraits<
+    MojomType,
+    typename std::enable_if<
+        BelongsTo<MojomType, MojomTypeCategory::UNION>::value>::type> {
+  template <typename MaybeConstUserType, typename WriterType>
+  static void Serialize(MaybeConstUserType& input,
+                        Buffer* buffer,
+                        WriterType* writer,
+                        SerializationContext* context) {
+    mojo::internal::Serialize<MojomType>(input, buffer, writer,
+                                         false /* inline */, context);
+  }
+};
+
 template <typename MojomType, typename UserType>
-mojo::Message StructSerializeAsMessageImpl(UserType* input) {
+mojo::Message SerializeAsMessageImpl(UserType* input) {
   SerializationContext context;
   mojo::Message message(0, 0, 0, 0, nullptr);
   typename MojomTypeTraits<MojomType>::Data::BufferWriter writer;
-  Serialize<MojomType>(*input, message.payload_buffer(), &writer, &context);
+  MojomSerializationImplTraits<MojomType>::Serialize(
+      *input, message.payload_buffer(), &writer, &context);
   message.AttachHandlesFromSerializationContext(&context);
   return message;
 }
 
 template <typename MojomType, typename DataArrayType, typename UserType>
-DataArrayType StructSerializeImpl(UserType* input) {
-  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
+DataArrayType SerializeImpl(UserType* input) {
+  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value ||
+                    BelongsTo<MojomType, MojomTypeCategory::UNION>::value,
                 "Unexpected type.");
-  Message message = StructSerializeAsMessageImpl<MojomType>(input);
+  Message message = SerializeAsMessageImpl<MojomType>(input);
   uint32_t size = message.payload_num_bytes();
   DataArrayType result(size);
   if (size)
@@ -49,13 +86,13 @@ DataArrayType StructSerializeImpl(UserType* input) {
 }
 
 template <typename MojomType, typename UserType>
-bool StructDeserializeImpl(const void* data,
-                           size_t data_num_bytes,
-                           std::vector<mojo::ScopedHandle> handles,
-                           UserType* output,
-                           bool (*validate_func)(const void*,
-                                                 ValidationContext*)) {
-  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
+bool DeserializeImpl(const void* data,
+                     size_t data_num_bytes,
+                     std::vector<mojo::ScopedHandle> handles,
+                     UserType* output,
+                     bool (*validate_func)(const void*, ValidationContext*)) {
+  static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value ||
+                    BelongsTo<MojomType, MojomTypeCategory::UNION>::value,
                 "Unexpected type.");
   using DataType = typename MojomTypeTraits<MojomType>::Data;
 

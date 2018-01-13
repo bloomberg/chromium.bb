@@ -13,6 +13,7 @@ static_library("test_utils") {
 
   deps = [
     "//mojo/public/c/test_support",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//testing/gtest",
   ]

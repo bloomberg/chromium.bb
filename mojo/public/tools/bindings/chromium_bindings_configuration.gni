@@ -24,6 +24,7 @@ _typemap_imports = [
   "//media/capture/mojo/typemaps.gni",
   "//media/mojo/interfaces/typemaps.gni",
   "//mojo/common/typemaps.gni",
+  "//mojo/public/cpp/base/typemaps.gni",
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",
   "//net/interfaces/typemaps.gni",
   "//sandbox/mac/mojom/typemaps.gni",
@@ -64,12 +65,10 @@ foreach(typemap_import, _typemap_imports) {
 
 typemaps = []
 foreach(typemap, _typemaps) {
-  typemaps += [
-    {
-      filename = typemap
-      config = read_file(typemap, "scope")
-    },
-  ]
+  typemaps += [ {
+        filename = typemap
+        config = read_file(typemap, "scope")
+      } ]
 }
 
 component_macro_suffix = ""

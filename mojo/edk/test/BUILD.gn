@@ -96,6 +96,7 @@ static_library("test_support_impl") {
 # TODO(vtl): These don't really belong here. (They should be converted to
 # apptests, but even apart from that these targets belong somewhere else.)
 
+# TODO(https://crbug.com/799242): Merge the unit tests into one binary.
 group("public_tests") {
   testonly = true
   deps = [
@@ -117,6 +118,7 @@ test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",
     "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/base:tests",
     "//mojo/public/cpp/bindings/tests",
   ]
 }
