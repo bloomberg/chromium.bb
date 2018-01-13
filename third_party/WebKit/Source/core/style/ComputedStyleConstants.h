@@ -238,12 +238,12 @@ enum class ContentDistributionType : unsigned {
 // platforms (such as Windows).
 static const float kMaximumAllowedFontSize = 10000.0f;
 
-enum CSSBoxType {
-  kBoxMissing = 0,
-  kMarginBox,
-  kBorderBox,
-  kPaddingBox,
-  kContentBox
+enum class CSSBoxType : unsigned {
+  kMissing,
+  kMargin,
+  kBorder,
+  kPadding,
+  kContent
 };
 
 enum TextEmphasisPosition {
