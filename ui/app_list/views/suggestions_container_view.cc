@@ -99,6 +99,10 @@ views::View* SuggestionsContainerView::GetFirstResultView() {
 
 void SuggestionsContainerView::SetFirstResultSelected(bool selected) {}
 
+const char* SuggestionsContainerView::GetClassName() const {
+  return "SuggestionsContainerView";
+}
+
 void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   DCHECK(search_result_tile_views_.empty());
   views::GridLayout* tiles_layout_manager =

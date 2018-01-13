@@ -152,6 +152,10 @@ bool AppsContainerView::OnKeyPressed(const ui::KeyEvent& event) {
     return app_list_folder_view_->OnKeyPressed(event);
 }
 
+const char* AppsContainerView::GetClassName() const {
+  return "AppsContainerView";
+}
+
 void AppsContainerView::OnWillBeShown() {
   apps_grid_view()->ClearAnySelectedView();
   app_list_folder_view()->items_grid_view()->ClearAnySelectedView();

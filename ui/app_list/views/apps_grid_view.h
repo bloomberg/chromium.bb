@@ -149,6 +149,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
       std::set<ui::Clipboard::FormatType>* format_types) override;
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  const char* GetClassName() const override;
 
   // Updates the visibility of app list items according to |app_list_state| and
   // |is_in_drag|.

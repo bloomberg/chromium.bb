@@ -41,6 +41,7 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  const char* GetClassName() const override;
 
   const std::vector<SearchResultTileItemView*>& tile_views_for_test() const {
     return tile_views_;

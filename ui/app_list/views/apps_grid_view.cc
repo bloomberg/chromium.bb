@@ -898,6 +898,10 @@ int AppsGridView::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
+const char* AppsGridView::GetClassName() const {
+  return "AppsGridView";
+}
+
 void AppsGridView::Layout() {
   if (bounds_animator_.IsAnimating())
     bounds_animator_.Cancel();

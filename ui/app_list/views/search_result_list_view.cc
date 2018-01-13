@@ -153,6 +153,10 @@ gfx::Size SearchResultListView::CalculatePreferredSize() const {
   return results_container_->GetPreferredSize();
 }
 
+const char* SearchResultListView::GetClassName() const {
+  return "SearchResultListView";
+}
+
 int SearchResultListView::GetHeightForWidth(int w) const {
   return results_container_->GetHeightForWidth(w);
 }
