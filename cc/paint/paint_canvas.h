@@ -162,6 +162,9 @@ class CC_PAINT_EXPORT PaintCanvas {
                         const SkRect& rect,
                         sk_sp<SkData> data) = 0;
 
+  // Subclasses can override to handle custom data.
+  virtual void recordCustomData(uint32_t id) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
 };

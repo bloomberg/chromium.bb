@@ -93,7 +93,7 @@ TEST(PaintShaderTest, DecodePaintRecord) {
 
   MockImageProvider image_provider;
   SaveCountingCanvas canvas;
-  buffer.Playback(&canvas, &image_provider);
+  buffer.Playback(&canvas, PlaybackParams(&image_provider));
 
   EXPECT_EQ(canvas.draw_rect_, SkRect::MakeWH(100, 100));
   SkShader* shader = canvas.paint_.getShader();

@@ -691,7 +691,7 @@ class PaintOpBufferOffsetsTest : public ::testing::Test {
   }
 
   void Playback(SkCanvas* canvas, const std::vector<size_t>& offsets) {
-    buffer_.Playback(canvas, nullptr, &offsets);
+    buffer_.Playback(canvas, PlaybackParams(nullptr), &offsets);
   }
 
  protected:
@@ -1054,6 +1054,8 @@ std::vector<SkIRect> test_irects = {
     SkIRect::MakeXYWH(1, 2, 3, 4),   SkIRect::MakeXYWH(0, 0, 0, 0),
     make_largest_skirect(),          SkIRect::MakeXYWH(0, 0, 10, 10),
     SkIRect::MakeXYWH(-1, -1, 0, 0), SkIRect::MakeXYWH(-100, -101, -102, -103)};
+
+std::vector<uint32_t> test_ids = {0, 1, 56, 0xFFFFFFFF, 0xFFFFFFFE, 0x10001};
 
 std::vector<SkMatrix> test_matrices = {
     SkMatrix::I(),
@@ -1458,6 +1460,12 @@ void PushConcatOps(PaintOpBuffer* buffer) {
   ValidateOps<ConcatOp>(buffer);
 }
 
+void PushCustomDataOps(PaintOpBuffer* buffer) {
+  for (size_t i = 0; i < test_ids.size(); ++i)
+    buffer->push<CustomDataOp>(test_ids[i]);
+  ValidateOps<CustomDataOp>(buffer);
+}
+
 void PushDrawColorOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_colors.size(); ++i) {
     buffer->push<DrawColorOp>(test_colors[i], static_cast<SkBlendMode>(i));
@@ -1655,6 +1663,9 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
         break;
       case PaintOpType::Concat:
         PushConcatOps(&buffer_);
+        break;
+      case PaintOpType::CustomData:
+        PushCustomDataOps(&buffer_);
         break;
       case PaintOpType::DrawColor:
         PushDrawColorOps(&buffer_);
@@ -2728,7 +2739,7 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnDrawRectWithColor(_)).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
-  buffer.Playback(&canvas, &image_provider);
+  buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
 TEST(PaintOpBufferTest, SkipsOpsWithFailedDecodes) {
@@ -2748,7 +2759,7 @@ TEST(PaintOpBufferTest, SkipsOpsWithFailedDecodes) {
   testing::StrictMock<MockCanvas> canvas;
   testing::Sequence s;
   EXPECT_CALL(canvas, OnDrawPaintWithColor(_)).InSequence(s);
-  buffer.Playback(&canvas, &image_provider);
+  buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
 MATCHER(NonLazyImage, "") {
@@ -2840,7 +2851,7 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   EXPECT_CALL(canvas, onDrawOval(SkRect::MakeWH(10, 10),
                                  MatchesShader(flags, scale_adjustment[2])));
 
-  buffer.Playback(&canvas, &image_provider);
+  buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
 TEST(PaintOpBufferTest, FilterSerialization) {
@@ -2973,6 +2984,57 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
   EXPECT_TRUE(rect_op->flags == flags);
   EXPECT_TRUE(*rect_op->flags.getShader() == *flags.getShader());
   EXPECT_TRUE(!!rect_op->flags.getShader()->GetSkShader());
+}
+
+TEST(PaintOpBufferTest, CustomData) {
+  // Basic tests: size, move, comparison.
+  {
+    PaintOpBuffer buffer;
+    EXPECT_EQ(buffer.size(), 0u);
+    EXPECT_EQ(buffer.bytes_used(), sizeof(PaintOpBuffer));
+    buffer.push<CustomDataOp>(1234u);
+    EXPECT_EQ(buffer.size(), 1u);
+    EXPECT_GT(buffer.bytes_used(),
+              sizeof(PaintOpBuffer) + sizeof(CustomDataOp));
+
+    PaintOpBuffer new_buffer = std::move(buffer);
+    EXPECT_EQ(buffer.size(), 0u);
+    EXPECT_EQ(new_buffer.size(), 1u);
+    EXPECT_EQ(new_buffer.GetFirstOp()->GetType(), PaintOpType::CustomData);
+
+    PaintOpBuffer buffer2;
+    buffer2.push<CustomDataOp>(1234u);
+    EXPECT_TRUE(*new_buffer.GetFirstOp() == *buffer2.GetFirstOp());
+  }
+
+  // Push and verify.
+  {
+    PaintOpBuffer buffer;
+    buffer.push<SaveOp>();
+    buffer.push<CustomDataOp>(0xFFFFFFFF);
+    buffer.push<RestoreOp>();
+    EXPECT_EQ(buffer.size(), 3u);
+
+    PaintOpBuffer::Iterator iter(&buffer);
+    ASSERT_EQ(iter->GetType(), PaintOpType::Save);
+    ++iter;
+    ASSERT_EQ(iter->GetType(), PaintOpType::CustomData);
+    ++iter;
+    ASSERT_EQ(iter->GetType(), PaintOpType::Restore);
+    ++iter;
+  }
+
+  // Playback.
+  {
+    PaintOpBuffer buffer;
+    buffer.push<CustomDataOp>(9999u);
+    testing::StrictMock<MockCanvas> canvas;
+    EXPECT_CALL(canvas, onCustomCallback(&canvas, 9999)).Times(1);
+    buffer.Playback(&canvas, PlaybackParams(nullptr, SkMatrix::I(),
+                                            base::BindRepeating(
+                                                &MockCanvas::onCustomCallback,
+                                                base::Unretained(&canvas))));
+  }
 }
 
 }  // namespace cc

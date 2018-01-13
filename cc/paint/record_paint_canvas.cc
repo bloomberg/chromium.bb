@@ -310,6 +310,10 @@ void RecordPaintCanvas::Annotate(AnnotationType type,
   list_->push<AnnotateOp>(type, rect, data);
 }
 
+void RecordPaintCanvas::recordCustomData(uint32_t id) {
+  list_->push<CustomDataOp>(id);
+}
+
 const SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() const {
   return const_cast<RecordPaintCanvas*>(this)->GetCanvas();
 }
