@@ -142,8 +142,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   enum State {
     // The state immediately after construction, but before |synchronous_entry_|
-    // has been assigned. This is the state at construction, and is the only
-    // legal state to destruct an entry in.
+    // has been assigned. This is the state at construction, and is one of the
+    // two states (along with failure) one can destruct an entry in.
     STATE_UNINITIALIZED,
 
     // This entry is available for regular IO.
@@ -175,8 +175,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // not expect).
   void PostClientCallback(const CompletionCallback& callback, int result);
 
-  // Sets entry to STATE_UNINITIALIZED.
-  void MakeUninitialized();
+  // Clears entry state enough to prepare it for re-use. This will generally
+  // put it back into STATE_UNINITIALIZED, except if the entry is doomed and
+  // therefore disconnected from ownership of corresponding filename, in which
+  // case it will be put into STATE_FAILURE.
+  void ResetEntry();
 
   // Return this entry to a user of the API in |out_entry|. Increments the user
   // count.

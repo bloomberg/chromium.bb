@@ -2801,6 +2801,92 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   entry->Doom();  // Should not crash.
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheCreateAfterDiskLayerDoom) {
+  // Code coverage for what happens when a queued create runs after failure
+  // was noticed at SimpleSynchronousEntry layer.
+  SetSimpleCacheMode();
+  // Disable optimistic ops so we can block on CreateEntry and start
+  // WriteData off with an empty op queue.
+  SetCacheType(net::APP_CACHE);
+  InitCache();
+
+  const char key[] = "the key";
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  ASSERT_TRUE(entry != nullptr);
+
+  // Make an empty _1 file, to cause a stream 2 write to fail.
+  base::FilePath entry_file1_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 1));
+  base::File entry_file1(entry_file1_path,
+                         base::File::FLAG_WRITE | base::File::FLAG_CREATE);
+  ASSERT_TRUE(entry_file1.IsValid());
+
+  entry->WriteData(2, 0, buffer1.get(), kSize1, net::CompletionCallback(),
+                   /* truncate= */ true);
+  entry->Close();
+
+  // At this point we have put WriteData & Close on the queue, and WriteData
+  // started, but we haven't given the event loop control so the failure
+  // hasn't been reported and handled here, so the entry is still active
+  // for the key. Queue up another create for same key, and run through the
+  // events.
+  disk_cache::Entry* entry2 = nullptr;
+  ASSERT_EQ(net::ERR_FAILED, CreateEntry(key, &entry2));
+  ASSERT_TRUE(entry2 == nullptr);
+
+  EXPECT_EQ(0, cache_->GetEntryCount());
+
+  // Should be able to create properly next time, though.
+  disk_cache::Entry* entry3 = nullptr;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry3));
+  ASSERT_TRUE(entry3 != nullptr);
+  entry3->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheQueuedOpenOnDoomedEntry) {
+  // This tests the following sequence of ops:
+  // A = Create(K);
+  // Close(A);
+  // B = Open(K);
+  // Doom(K);
+  // Close(B);
+  //
+  // ... where the execution of the Open sits on the queue all the way till
+  // Doom. Currently this fails the open.
+
+  SetSimpleCacheMode();
+  // Disable optimistic ops so we can block on CreateEntry and start
+  // WriteData off with an empty op queue.
+  SetCacheType(net::APP_CACHE);
+  InitCache();
+
+  const char key[] = "the key";
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));  // event loop!
+  ASSERT_TRUE(entry != nullptr);
+
+  entry->Close();
+
+  disk_cache::Entry* entry2 = nullptr;
+  // Done via cache_ -> no event loop.
+  net::TestCompletionCallback cb;
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(key, &entry2, cb.callback()));
+
+  cache_->DoomEntry(key, base::Bind([](int) {}));
+  // Now event loop.
+  EXPECT_EQ(net::ERR_FAILED, cb.WaitForResult());
+  ASSERT_TRUE(entry2 == nullptr);
+
+  EXPECT_EQ(0, cache_->GetEntryCount());
+}
+
 bool TruncatePath(const base::FilePath& file_path, int64_t length) {
   base::File file(file_path, base::File::FLAG_WRITE | base::File::FLAG_OPEN);
   if (!file.IsValid())
