@@ -4048,6 +4048,7 @@ test("unit_tests") {
       "urlmon.lib",
       "winmm.lib",
     ]
+
     if (!is_chrome_branded) {
       sources -= [ "../browser/google/google_update_win_unittest.cc" ]
     }

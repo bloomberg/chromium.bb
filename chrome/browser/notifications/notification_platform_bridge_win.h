@@ -42,6 +42,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   friend class NotificationPlatformBridgeWinImpl;
   friend class NotificationPlatformBridgeWinTest;
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinTest, EncodeDecode);
+  FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, GetDisplayed);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
 
   // Simulates a click/dismiss event. Only for use in testing.
@@ -52,8 +53,14 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       ABI::Windows::UI::Notifications::IToastActivatedEventArgs* args,
       const base::Optional<bool>& by_user);
 
+  // Initializes the displayed notification vector. Only for use in testing.
+  void SetDisplayedNotificationsForTesting(
+      std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
+          notifications);
+
   // Takes an |encoded| string as input and decodes it, returning the values in
-  // the out parameters. Returns true if successful, but false otherwise.
+  // the out parameters. |encoded| and |notifiation_id| must be provided. Other
+  // pointers can be nullptr. Returns true if successful, but false otherwise.
   static bool DecodeTemplateId(const std::string& encoded,
                                NotificationHandler::Type* notification_type,
                                std::string* notification_id,

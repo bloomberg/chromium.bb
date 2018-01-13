@@ -104,6 +104,13 @@ TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
   EXPECT_EQ(decoded_incognito, incognito);
   EXPECT_EQ(decoded_origin_url, origin_url);
 
+  // Actual data, but only notification_id is requested.
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
+      encoded, nullptr /* notification_type */, &decoded_notification_id,
+      nullptr /* profile_id */, nullptr /* incognito */,
+      nullptr /* origin_url */));
+  EXPECT_EQ(decoded_notification_id, notification_id);
+
   // Throw in a few extra separators (becomes part of the notification id).
   std::string extra = "|Extra|Data|";
   encoded += extra;
