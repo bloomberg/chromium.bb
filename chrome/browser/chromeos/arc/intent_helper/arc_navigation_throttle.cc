@@ -239,7 +239,7 @@ bool ArcNavigationThrottle::FoundPreferredOrVerifiedArcApp(
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     ui_displayed_ = false;
-    // TODO(djacobo): Investigate whether or not to track this via UMA.
+    RecordUma(CloseReason::ERROR, Platform::CHROME);
     return cancel_navigation;
   }
 
@@ -273,6 +273,7 @@ bool ArcNavigationThrottle::FoundPreferredOrVerifiedArcApp(
         handle->GetWebContents()->GetBrowserContext());
     if (!intent_helper_bridge) {
       LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
+      RecordUma(CloseReason::ERROR, Platform::CHROME);
       return cancel_navigation;
     }
     std::vector<ArcIntentHelperBridge::ActivityName> activities;
