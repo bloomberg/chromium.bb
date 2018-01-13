@@ -447,10 +447,16 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
     // rootLayer may be across some transformed layer boundary, for example, in
     // the PaintLayerCompositor overlapMap, where clipRects are needed in view
     // space.
-    ApplyClipRects(context, layout_object,
-                   LayoutPoint(layout_object.LocalToAncestorPoint(
-                       FloatPoint(), &context.root_layer->GetLayoutObject())),
-                   clip_rects);
+    LayoutPoint offset(layout_object.LocalToAncestorPoint(
+        FloatPoint(), &context.root_layer->GetLayoutObject()));
+    if (context.respect_overflow_clip == kIgnoreOverflowClipAndScroll &&
+        context.root_layer->ScrollsOverflow() &&
+        layer_.ScrollsWithRespectTo(context.root_layer)) {
+      offset.Move(LayoutSize(
+          context.root_layer->GetScrollableArea()->GetScrollOffset()));
+    }
+
+    ApplyClipRects(context, layout_object, offset, clip_rects);
   }
 }
 
@@ -632,12 +638,6 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
       &context.root_layer->GetLayoutObject() == layout_view &&
       output != LayoutRect(LayoutRect::InfiniteIntRect()))
     output.Move(LayoutSize(layout_view->GetFrameView()->GetScrollOffset()));
-
-  if (context.respect_overflow_clip == kIgnoreOverflowClipAndScroll &&
-      context.root_layer->ScrollsOverflow()) {
-    output.Move(
-        LayoutSize(context.root_layer->GetScrollableArea()->GetScrollOffset()));
-  }
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,
