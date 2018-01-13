@@ -101,6 +101,9 @@ class TabActivityWatcher::WebContentsData
 
     // Reset the per-page data.
     tab_metrics_.page_metrics = {};
+
+    // Update navigation info.
+    tab_metrics_.page_transition = navigation_handle->GetPageTransition();
   }
   void DidStopLoading() override {
     // Log metrics for the tab when it stops loading instead of immediately

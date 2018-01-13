@@ -33,10 +33,6 @@ using content::WebContentsTester;
 using metrics::TabMetricsEvent;
 using ukm::builders::TabManager_TabMetrics;
 
-// A UKM entry consists of named metrics with int64_t values. Use a map to
-// specify expected metrics to test against an actual entry for tests.
-using UkmMetricMap = std::map<const char*, int64_t>;
-
 namespace resource_coordinator {
 namespace {
 
@@ -61,6 +57,7 @@ const UkmMetricMap kBasicMetricValues({
     {TabManager_TabMetrics::kSiteEngagementScoreName, 0},
     {TabManager_TabMetrics::kTouchEventCountName, 0},
     {TabManager_TabMetrics::kWasRecentlyAudibleName, 0},
+    {TabManager_TabMetrics::kDefaultProtocolHandlerName, base::nullopt},
 });
 
 blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
@@ -364,6 +361,122 @@ TEST_F(TabActivityWatcherTest, HideWindow) {
   // Showing the window does not.
   test_contents->WasShown();
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
+
+  tab_strip_model->CloseAllTabs();
+}
+
+// Tests navigation-related metrics.
+TEST_F(TabActivityWatcherTest, Navigations) {
+  Browser::CreateParams params(profile(), true);
+  auto browser = CreateBrowserWithTestWindowForParams(&params);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  // Set up first tab.
+  AddWebContentsAndNavigate(tab_strip_model, GURL(kTestUrls[0]));
+  tab_strip_model->ActivateTabAt(0, false);
+
+  // Expected metrics for tab event.
+  UkmMetricMap expected_metrics(kBasicMetricValues);
+
+  // Load background contents and verify UKM entry.
+  content::WebContents* test_contents = AddWebContentsAndNavigate(
+      tab_strip_model, GURL(kTestUrls[1]),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      base::nullopt;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
+      true;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] =
+      false;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 1;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[1], expected_metrics);
+  }
+
+  // Navigate background tab (not all transition types make sense in the
+  // background, but this is simpler than juggling two tabs to trigger logging).
+  Navigate(test_contents, kTestUrls[2], ui::PAGE_TRANSITION_LINK);
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      ui::PAGE_TRANSITION_LINK;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
+      false;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] =
+      false;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[2], expected_metrics);
+  }
+
+  Navigate(test_contents, kTestUrls[0],
+           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                     ui::PAGE_TRANSITION_SERVER_REDIRECT));
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      ui::PAGE_TRANSITION_LINK;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
+      false;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] = true;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[0], expected_metrics);
+  }
+
+  Navigate(test_contents, kTestUrls[0], ui::PAGE_TRANSITION_RELOAD);
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      ui::PAGE_TRANSITION_RELOAD;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
+      false;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] =
+      false;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[0], expected_metrics);
+  }
+
+  Navigate(test_contents, kTestUrls[1], ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  // FromAddressBar and IsRedirect should still be false, no need to update
+  // their values in |expected_metrics|.
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[1], expected_metrics);
+  }
+
+  Navigate(test_contents, kTestUrls[1], ui::PAGE_TRANSITION_FORM_SUBMIT);
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      ui::PAGE_TRANSITION_FORM_SUBMIT;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[1], expected_metrics);
+  }
+
+  // Test non-reportable core type.
+  Navigate(test_contents, kTestUrls[0],
+           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_KEYWORD |
+                                     ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  WebContentsTester::For(test_contents)->TestSetIsLoading(false);
+  expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
+      base::nullopt;
+  expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
+      true;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[0], expected_metrics);
+  }
 
   tab_strip_model->CloseAllTabs();
 }

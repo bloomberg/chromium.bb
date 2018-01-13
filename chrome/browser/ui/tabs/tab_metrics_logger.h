@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 class WebContents;
@@ -30,6 +31,9 @@ class TabMetricsLogger {
   // The state of a tab.
   struct TabMetrics {
     content::WebContents* web_contents = nullptr;
+
+    // Source of the last committed navigation.
+    ui::PageTransition page_transition = ui::PAGE_TRANSITION_FIRST;
 
     // Per-page metrics of the state of the WebContents. Tracked since the
     // tab's last top-level navigation.
