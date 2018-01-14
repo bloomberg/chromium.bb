@@ -391,9 +391,10 @@ CGFloat PageInfoBubbleDecoration::GetWidthForText(CGFloat width) {
 
   // Middle-elide the label to fit |width_left|.  This leaves the
   // prefix and the trailing country code in place.
-  NSString* elided_label = base::SysUTF16ToNSString(gfx::ElideText(
-      base::SysNSStringToUTF16(full_label_),
-      gfx::FontList(gfx::Font(GetFont())), width_left, gfx::ELIDE_MIDDLE));
+  NSString* elided_label = base::SysUTF16ToNSString(
+      gfx::ElideText(base::SysNSStringToUTF16(full_label_),
+                     gfx::FontList(gfx::Font(GetFont())), width_left,
+                     gfx::ELIDE_MIDDLE, gfx::Typesetter::BROWSER));
 
   // Use the elided label.
   SetLabel(elided_label);
