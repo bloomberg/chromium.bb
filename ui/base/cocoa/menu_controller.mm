@@ -89,7 +89,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
                          toWidth:(int)width {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   return gfx::ElideText(title, gfx::FontList(gfx::Font(nsfont)), width,
-                        gfx::ELIDE_TAIL);
+                        gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
 }
 
 - (id)init {

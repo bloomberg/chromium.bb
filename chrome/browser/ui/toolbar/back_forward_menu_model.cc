@@ -97,8 +97,8 @@ base::string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
   base::string16 menu_text(entry->GetTitleForDisplay());
-  menu_text =
-      gfx::ElideText(menu_text, gfx::FontList(), kMaxWidth, gfx::ELIDE_TAIL);
+  menu_text = gfx::ElideText(menu_text, gfx::FontList(), kMaxWidth,
+                             gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
 
 #if !defined(OS_MACOSX)
   for (size_t i = menu_text.find('&'); i != base::string16::npos;
