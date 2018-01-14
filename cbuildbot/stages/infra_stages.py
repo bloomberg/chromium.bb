@@ -24,6 +24,10 @@ _GO_PACKAGES = {
         'lucifer_run_job',
         'lucifer_watcher',
     ),
+    'tast-cmd': (
+        'remote_test_runner',
+        'tast',
+    ),
 }
 _CRED_FILE = ('/creds/service_accounts/'
               'service-account-chromeos-cipd-uploader.json')
