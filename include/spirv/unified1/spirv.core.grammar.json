@@ -26,8 +26,8 @@
   ],
   "magic_number" : "0x07230203",
   "major_version" : 1,
-  "minor_version" : 3,
-  "revision" : 1,
+  "minor_version" : 2,
+  "revision" : 3,
   "instructions" : [
     {
       "opname" : "OpNop",
