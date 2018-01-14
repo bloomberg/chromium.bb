@@ -120,11 +120,11 @@ PasswordProtectionService::~PasswordProtectionService() {
 }
 
 bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() || net::IsLocalhost(url))
     return false;
 
   const std::string hostname = url.HostNoBrackets();
-  return !net::IsLocalhost(hostname) && !net::IsHostnameNonUnique(hostname) &&
+  return !net::IsHostnameNonUnique(hostname) &&
          hostname.find('.') != std::string::npos;
 }
 

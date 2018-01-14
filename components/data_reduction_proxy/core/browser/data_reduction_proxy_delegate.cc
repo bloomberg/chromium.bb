@@ -70,7 +70,7 @@ void OnResolveProxyHandler(
   DCHECK(proxy_config.is_valid() || !data_saver_proxy_used);
 
   if (data_reduction_proxy_config.enabled_by_user_and_reachable() &&
-      url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url.host_piece()) &&
+      url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url) &&
       !params::IsIncludedInHoldbackFieldTrial()) {
     UMA_HISTOGRAM_BOOLEAN(
         "DataReductionProxy.ConfigService.HTTPRequests",

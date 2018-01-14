@@ -741,7 +741,7 @@ bool TypedUrlSyncableService::ShouldIgnoreUrl(const GURL& url) {
     return true;
 
   // Ignore localhost URLs.
-  if (net::IsLocalhost(url.host()))
+  if (net::IsLocalhost(url))
     return true;
 
   // Ignore username and password, sonce history backend will remove user name

@@ -184,9 +184,9 @@ void PaymentManifestDownloader::InitiateDownload(
 }
 
 bool PaymentManifestDownloader::IsValidManifestUrl(const GURL& url) {
-  return url.is_valid() && (url.SchemeIs(url::kHttpsScheme) ||
-                            (url.SchemeIs(url::kHttpScheme) &&
-                             net::IsLocalhost(url.HostNoBracketsPiece())));
+  return url.is_valid() &&
+         (url.SchemeIs(url::kHttpsScheme) ||
+          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
 }
 
 }  // namespace payments

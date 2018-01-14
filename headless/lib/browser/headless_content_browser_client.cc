@@ -302,7 +302,7 @@ void HeadlessContentBrowserClient::AllowCertificateError(
     // was for localhost, then the error was not fatal.
     bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
         ::switches::kAllowInsecureLocalhost);
-    if (allow_localhost && net::IsLocalhost(request_url.host())) {
+    if (allow_localhost && net::IsLocalhost(request_url)) {
       callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
       return;
     }

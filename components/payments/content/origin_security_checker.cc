@@ -22,8 +22,7 @@ bool OriginSecurityChecker::IsSchemeCryptographic(const GURL& url) {
 
 // static
 bool OriginSecurityChecker::IsOriginLocalhostOrFile(const GURL& url) {
-  return url.is_valid() &&
-         (net::IsLocalhost(url.HostNoBracketsPiece()) || url.SchemeIsFile());
+  return url.is_valid() && (net::IsLocalhost(url) || url.SchemeIsFile());
 }
 
 }  // namespace payments

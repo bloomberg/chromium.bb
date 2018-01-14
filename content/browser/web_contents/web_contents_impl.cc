@@ -6020,7 +6020,7 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
     return;
 
   content::NavigationEntry* entry = GetController().GetLastCommittedEntry();
-  if (!entry || !net::IsLocalhost(entry->GetURL().host()))
+  if (!entry || !net::IsLocalhost(entry->GetURL()))
     return;
 
   content::SSLStatus ssl_status = entry->GetSSL();

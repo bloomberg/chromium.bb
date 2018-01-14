@@ -346,7 +346,11 @@ bool IsHostnameNonUnique(const std::string& hostname) {
       registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-bool IsLocalhost(base::StringPiece host) {
+bool IsLocalhost(const GURL& url) {
+  return HostStringIsLocalhost(url.HostNoBracketsPiece());
+}
+
+bool HostStringIsLocalhost(base::StringPiece host) {
   if (IsLocalHostname(host, nullptr))
     return true;
 
