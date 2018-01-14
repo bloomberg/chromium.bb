@@ -45,8 +45,8 @@ ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder(
   // |installed_programs_| and the callback won't be invoked if this instance is
   // destroyed.
   installed_programs_.Initialize(
-      base::Bind(&ThirdPartyMetricsRecorder::OnInstalledProgramsInitialized,
-                 base::Unretained(this), module_database));
+      base::BindOnce(&ThirdPartyMetricsRecorder::OnInstalledProgramsInitialized,
+                     base::Unretained(this), module_database));
 }
 
 ThirdPartyMetricsRecorder::~ThirdPartyMetricsRecorder() = default;
@@ -80,9 +80,9 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
 
   // The uninstallable metric is only recorded for third party metrics.
   if (IsThirdPartyModule(module_data)) {
-    std::vector<base::string16> program_names;
-    bool uninstallable = installed_programs_.GetInstalledProgramNames(
-        module_key.module_path, &program_names);
+    std::vector<InstalledPrograms::ProgramInfo> programs;
+    bool uninstallable = installed_programs_.GetInstalledPrograms(
+        module_key.module_path, &programs);
     UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.Uninstallable", uninstallable);
   }
 }
