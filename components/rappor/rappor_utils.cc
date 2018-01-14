@@ -21,7 +21,7 @@ void SampleString(RapporService* rappor_service,
 
 std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl) {
   if (gurl.SchemeIsHTTPOrHTTPS()) {
-    if (net::IsLocalhost(gurl.host()))
+    if (net::IsLocalhost(gurl))
       return "localhost";
     if (gurl.HostIsIPAddress())
       return "ip_address";

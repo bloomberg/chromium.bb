@@ -70,7 +70,7 @@ bool IsContentSecure(content::WebContents* web_contents) {
 
   // Whitelist localhost. Check the VisibleURL to match what the
   // SecurityStateTabHelper looks at.
-  if (net::IsLocalhost(web_contents->GetVisibleURL().HostNoBracketsPiece()))
+  if (net::IsLocalhost(web_contents->GetVisibleURL()))
     return true;
 
   security_state::SecurityInfo security_info;

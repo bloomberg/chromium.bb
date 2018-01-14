@@ -102,10 +102,10 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
     // We only disable back-off throttling on an entry that we have
     // just constructed.  This is to allow unit tests to explicitly override
     // the entry for localhost URLs.
-    std::string host = url.host();
-    if (net::IsLocalhost(host)) {
-      if (!logged_for_localhost_disabled_ && net::IsLocalhost(host)) {
+    if (net::IsLocalhost(url)) {
+      if (!logged_for_localhost_disabled_) {
         logged_for_localhost_disabled_ = true;
+        std::string host = url.host();
         net_log_.AddEvent(net::NetLogEventType::THROTTLING_DISABLED_FOR_HOST,
                           net::NetLog::StringCallback("host", &host));
       }

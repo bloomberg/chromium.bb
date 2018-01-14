@@ -34,7 +34,7 @@ bool IsOriginSecure(const GURL& url) {
   if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
     return true;
 
-  if (net::IsLocalhost(url.HostNoBracketsPiece()))
+  if (net::IsLocalhost(url))
     return true;
 
   return false;

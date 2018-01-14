@@ -341,8 +341,7 @@ bool IsSchemeCryptographic(const GURL& url) {
 }
 
 bool IsOriginLocalhostOrFile(const GURL& url) {
-  return url.is_valid() &&
-         (net::IsLocalhost(url.HostNoBracketsPiece()) || url.SchemeIsFile());
+  return url.is_valid() && (net::IsLocalhost(url) || url.SchemeIsFile());
 }
 
 bool IsSslCertificateValid(SecurityLevel security_level) {

@@ -64,9 +64,9 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
     }
 
     GURL url(item);
-    if (!url.is_valid() || !(url.SchemeIs(url::kHttpsScheme) ||
-                             (url.SchemeIs(url::kHttpScheme) &&
-                              net::IsLocalhost(url.HostNoBracketsPiece())))) {
+    if (!url.is_valid() ||
+        !(url.SchemeIs(url::kHttpsScheme) ||
+          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)))) {
       LOG(ERROR) << "\"" << item << "\" entry in \"" << kDefaultApplications
                  << "\" is not a valid URL with HTTPS scheme and is not a "
                     "valid localhost URL with HTTP scheme.";
@@ -138,8 +138,7 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
     GURL url(item);
     if (!url.is_valid() ||
         !(url.SchemeIs(url::kHttpsScheme) ||
-          (url.SchemeIs(url::kHttpScheme) &&
-           net::IsLocalhost(url.HostNoBracketsPiece()))) ||
+          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url))) ||
         url.path() != "/" || url.has_query() || url.has_ref() ||
         url.has_username() || url.has_password()) {
       LOG(ERROR) << "\"" << item << "\" entry in \"" << kSupportedOrigins

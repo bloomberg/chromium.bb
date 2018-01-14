@@ -127,7 +127,7 @@ bool GetIPAndPort(
   // itself as it might be an IP address if it is a local network request, which
   // is what we care about.
   if (!ip_exists && extra_request_info.url.is_valid()) {
-    if (net::IsLocalhost(extra_request_info.url.HostNoBrackets())) {
+    if (net::IsLocalhost(extra_request_info.url)) {
       *resource_ip = net::IPAddress::IPv4Localhost();
       ip_exists = true;
     } else {
@@ -137,7 +137,7 @@ bool GetIPAndPort(
     *resource_port = extra_request_info.url.EffectiveIntPort();
   }
 
-  if (net::IsLocalhost(resource_ip->ToString())) {
+  if (net::HostStringIsLocalhost(resource_ip->ToString())) {
     *resource_ip = net::IPAddress::IPv4Localhost();
     ip_exists = true;
   }
@@ -329,11 +329,11 @@ LocalNetworkRequestsPageLoadMetricsObserver::OnCommit(
     return STOP_OBSERVING;
   }
 
-  // |IsLocalhost| assumes (and doesn't verify) that any IPv6 address passed
-  // to it does not have square brackets around it, but |HostPortPair::host|
-  // retains the brackets, so we need to separately check for IPv6 localhost
-  // here.
-  if (net::IsLocalhost(address.host()) ||
+  // |HostStringIsLocalhost| assumes (and doesn't verify) that any IPv6 host
+  // passed to it does not have square brackets around it, but
+  // |HostPortPair::host| retains the brackets, so we need to separately check
+  // for IPv6 localhost here.
+  if (net::HostStringIsLocalhost(address.host()) ||
       page_ip_address_ == net::IPAddress::IPv6Localhost()) {
     page_domain_type_ = internal::DOMAIN_TYPE_LOCALHOST;
   } else if (page_ip_address_.IsReserved()) {

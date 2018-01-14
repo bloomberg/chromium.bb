@@ -79,9 +79,9 @@ scoped_refptr<URLRequestThrottlerEntryInterface>
     // We only disable back-off throttling on an entry that we have
     // just constructed.  This is to allow unit tests to explicitly override
     // the entry for localhost URLs.
-    std::string host = url.host();
-    if (IsLocalhost(host)) {
-      if (!logged_for_localhost_disabled_ && IsLocalhost(host)) {
+    if (IsLocalhost(url)) {
+      if (!logged_for_localhost_disabled_ && IsLocalhost(url)) {
+        std::string host = url.host();
         logged_for_localhost_disabled_ = true;
         net_log_.AddEvent(NetLogEventType::THROTTLING_DISABLED_FOR_HOST,
                           NetLog::StringCallback("host", &host));

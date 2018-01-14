@@ -1020,7 +1020,7 @@ bool TypedURLSyncBridge::ShouldIgnoreUrl(const GURL& url) {
     return true;
 
   // Ignore localhost URLs.
-  if (net::IsLocalhost(url.host_piece()))
+  if (net::IsLocalhost(url))
     return true;
 
   // Ignore username and password, since history backend will remove user name
