@@ -3446,10 +3446,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
   }
 
-#if CONFIG_INTRABC
-  cpi->intrabc_used |= td->intrabc_used_this_tile;
-#endif  // CONFIG_INTRABC
-
   cpi->tok_count[tile_row][tile_col] =
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
   assert(cpi->tok_count[tile_row][tile_col] <=
@@ -3463,9 +3459,14 @@ static void encode_tiles(AV1_COMP *cpi) {
 
   av1_init_tile_data(cpi);
 
-  for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row)
-    for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col)
+  for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
+    for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
+#if CONFIG_INTRABC
+      cpi->intrabc_used |= cpi->td.intrabc_used_this_tile;
+#endif  // CONFIG_INTRABC
+    }
+  }
 }
 
 #if CONFIG_FP_MB_STATS

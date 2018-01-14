@@ -179,7 +179,9 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
   for (i = 0; i < num_workers; i++) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
-
+#if CONFIG_INTRABC
+    cpi->intrabc_used |= thread_data->td->intrabc_used_this_tile;
+#endif  // CONFIG_INTRABC
     // Accumulate counters.
     if (i < cpi->num_workers - 1) {
       av1_accumulate_frame_counts(&cm->counts, thread_data->td->counts);
