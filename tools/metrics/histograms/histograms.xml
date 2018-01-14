@@ -90220,6 +90220,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ThirdPartyModules.InstalledPrograms.DataSize" units="KB">
+  <obsolete>
+    Deprecated 12/2017.
+  </obsolete>
   <owner>pmonette@chromium.org</owner>
   <summary>
     Records the size of the in-memory representation of the installed
