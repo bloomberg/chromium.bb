@@ -44,7 +44,7 @@ TEST(AomLeb128, EncodeTest) {
   ASSERT_EQ(bytes_written, 3u);
   uint32_t encoded_value = 0;
   for (size_t i = 0; i < bytes_written; ++i) {
-    const int shift = (bytes_written - 1 - i) * 8;
+    const int shift = (int)(bytes_written - 1 - i) * 8;
     encoded_value |= write_buffer[i] << shift;
   }
   ASSERT_EQ(expected_value, encoded_value);
@@ -76,7 +76,7 @@ TEST(AomLeb128, FixedSizeEncodeTest) {
   ASSERT_EQ(kWriteBufferSize, bytes_written);
   uint32_t encoded_value = 0;
   for (size_t i = 0; i < bytes_written; ++i) {
-    const int shift = (bytes_written - 1 - i) * 8;
+    const int shift = (int)(bytes_written - 1 - i) * 8;
     encoded_value |= write_buffer[i] << shift;
   }
   ASSERT_EQ(expected_value, encoded_value);
