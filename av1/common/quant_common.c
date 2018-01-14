@@ -40,85 +40,85 @@ static const qprofile_type nuq[QUANT_PROFILES][2] = {
   // dq_type = 1
   {
       // Y/intra, dq_type 1, low quality
-      { 66, 12 },  // dc
-      { 66, 12 },  // ac
+      { 64, 4 },  // dc
+      { 64, 6 },  // ac
   },
   {
       // Y/intra, dq_type 1, high quality
-      { 66, 6 },  // dc
-      { 66, 6 },  // ac
+      { 64, 2 },  // dc
+      { 64, 3 },  // ac
   },
   {
       // UV/intra, dq_type 1, low quality
-      { 66, 12 },  // dc
-      { 66, 12 },  // ac
+      { 64, 4 },  // dc
+      { 64, 6 },  // ac
   },
   {
       // UV/intra, dq_type 1, high quality
-      { 66, 6 },  // dc
-      { 66, 6 },  // ac
+      { 64, 2 },  // dc
+      { 64, 3 },  // ac
   },
   {
       // Y/inter, dq_type 1, low quality
-      { 66, 12 },  // dc
-      { 66, 12 },  // ac
+      { 64, 4 },  // dc
+      { 64, 6 },  // ac
   },
   {
       // Y/inter, dq_type 1, high quality
-      { 66, 6 },  // dc
-      { 66, 6 },  // ac
+      { 64, 3 },  // dc
+      { 64, 4 },  // ac
   },
   {
       // UV/inter, dq_type 1, low quality
-      { 66, 12 },  // dc
-      { 66, 12 },  // ac
+      { 64, 4 },  // dc
+      { 64, 6 },  // ac
   },
   {
       // UV/inter, dq_type 1, high quality
-      { 66, 6 },  // dc
-      { 66, 6 },  // ac
+      { 64, 3 },  // dc
+      { 64, 4 },  // ac
   },
 
   // dq_type = 2
   {
       // Y/intra, dq_type 2, low quality
       { 72, 12 },  // dc
-      { 72, 12 },  // ac
+      { 72, 14 },  // ac
   },
   {
       // Y/intra, dq_type 2, high quality
       { 72, 6 },  // dc
-      { 72, 6 },  // ac
+      { 72, 8 },  // ac
   },
   {
       // UV/intra, dq_type 2, low quality
-      { 72, 12 },  // dc
-      { 72, 12 },  // ac
+      { 72, 14 },  // dc
+      { 72, 16 },  // ac
   },
   {
       // UV/intra, dq_type 2, high quality
-      { 72, 6 },  // dc
-      { 72, 6 },  // ac
+      { 72, 8 },   // dc
+      { 72, 10 },  // ac
   },
   {
       // Y/inter, dq_type 2, low quality
-      { 72, 12 },  // dc
-      { 72, 12 },  // ac
+      { 72, 16 },  // dc
+      { 72, 18 },  // ac
   },
   {
       // Y/inter, dq_type 2, high quality
-      { 72, 6 },  // dc
-      { 72, 6 },  // ac
-  },
-  {
-      // UV/inter, dq_type 2, low quality
-      { 72, 12 },  // dc
+      { 72, 10 },  // dc
       { 72, 12 },  // ac
   },
   {
+      // UV/inter, dq_type 2, low quality
+      { 72, 18 },  // dc
+      { 72, 20 },  // ac
+  },
+  {
       // UV/inter, dq_type 2, high quality
-      { 72, 6 },  // dc
-      { 72, 6 },  // ac
+      { 72, 12 },  // dc
+      { 72, 14 },  // ac
   },
 
   // dq_type = 3

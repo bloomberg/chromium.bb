@@ -4103,7 +4103,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_NEW_QUANT
   switch (cpi->sf.optimize_coefficients) {
     case NO_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET3; break;
-    case FINAL_PASS_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET2; break;
+    case FINAL_PASS_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET3; break;
     case FULL_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET1; break;
   }
 #endif  // CONFIG_NEW_QUANT
