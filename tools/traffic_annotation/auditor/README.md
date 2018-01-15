@@ -1,6 +1,8 @@
 # Network Traffic Annotation Auditor
 This executable runs the clang tool for extraction of Network Traffic
 Annotations from chromium source code and collects and summarizes its outputs.
+Please see `docs/network_traffic_annotations.md` for an introduction to network
+traffic annotations.
 
 ## Usage
 `traffic_annotation_auditor [OPTION]... [path_filter]...`

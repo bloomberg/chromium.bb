@@ -4,6 +4,8 @@ The traffic annotation checkers ensure that every operation in the
 code base that talks to the network is properly annotated in the
 source code, so that we can produce reports of what Chromium talks to
 over the network and why.
+Please see `docs/network_traffic_annotations.md` for an introduction to network
+traffic annotations.
 
 To run the checkers, you need a populated build directory, and then
 you do:
