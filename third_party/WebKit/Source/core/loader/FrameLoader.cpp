@@ -220,6 +220,9 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   ResourceRequest request =
       document_loader_->GetHistoryItem()->GenerateResourceRequest(cache_mode);
 
+  // Set requestor origin to be the current URL's origin.
+  request.SetRequestorOrigin(SecurityOrigin::Create(request.Url()));
+
   // ClientRedirectPolicy is an indication that this load was triggered by some
   // direct interaction with the page. If this reload is not a client redirect,
   // we should reuse the referrer from the original load of the current
