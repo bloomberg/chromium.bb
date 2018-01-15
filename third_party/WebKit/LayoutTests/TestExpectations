@@ -3332,8 +3332,6 @@ crbug.com/771540 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answe
 # Timeout due to events not firing
 crbug.com/781935 fast/mediastream/MediaStreamTrack-observer-iterate-no-crash.html [ Timeout ]
 crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
-# Temp disable for WebRTC roll
-crbug.com/801642 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Failure ]
 
 # Slight anti-aliased texture changes due to Skia change
 crbug.com/801562 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsManualRebaseline ]

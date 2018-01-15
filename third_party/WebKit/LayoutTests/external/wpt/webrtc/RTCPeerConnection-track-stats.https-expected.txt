@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
 FAIL addTrack() without setLocalDescription() yields track stats assert_true: Has stats for track expected true got false
-FAIL addTrack() without setLocalDescription() yields media stream stats assert_true: Has stats for stream expected true got false
+PASS addTrack() without setLocalDescription() yields media stream stats
 PASS addTrack() with setLocalDescription() yields track stats
-FAIL addTrack() with setLocalDescription() yields media stream stats assert_true: Has stats for stream expected true got false
-FAIL addTrack(): Media stream stats references track stats assert_true: Has stats for track and stream expected true got false
+PASS addTrack() with setLocalDescription() yields media stream stats
+PASS addTrack(): Media stream stats references track stats
 PASS Legacy addStream(): Media stream stats references track stats
 PASS O/A exchange yields outbound RTP stream stats for sending track
 PASS O/A exchange yields inbound RTP stream stats for receiving track
