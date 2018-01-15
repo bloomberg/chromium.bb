@@ -51,46 +51,70 @@ behavior._ This can interfere with the test runner. To disable this dialog, run:
 adb shell settings put global package_verifier_enable 0
 ```
 
-### Emulator Setup
+### Using Emulators
 
-#### Option 1
+#### Building for emulation
 
-Use an emulator (i.e. Android Virtual Device, AVD): Enabling Intel's
-Virtualizaton support provides the fastest, most reliable emulator configuration
-available (i.e. x86 emulator with GPU acceleration and KVM support). Remember to
-build with `target_cpu = "x86"` for x86. Otherwise installing the APKs will fail
-with `INSTALL_FAILED_NO_MATCHING_ABIS`.
+The fast Android emulators use the X86 instruction set, so anything run on such
+an emulator has to be built for X86. Add
+```
+target_cpu = "x86"
+```
+to your args.gn file. You may want use different out directories for your X86
+and ARM builds.
 
-1.  Enable Intel Virtualization support in the BIOS.
+#### Setting up your workstation
 
-2.  Install emulator deps:
+The Android emulators support VM acceleration. This, however, needs to be
+enabled on your workstation, as described in
+https://developer.android.com/studio/run/emulator-acceleration.html#accel-vm.
 
-    ```shell
-    build/android/install_emulator_deps.py --api-level=23
-    ```
+#### Creating and running emulators from Android Studio
 
-    This script will download Android SDK and place it a directory called
-    android\_tools in the same parent directory as your chromium checkout. It
-    will also download the system-images for the emulators (i.e. arm and x86).
-    Note that this is a different SDK download than the Android SDK in the
-    chromium source checkout (i.e. `src/third_party/android_emulator_sdk`).
+The easiest way to create and run an emulator is to use Android Studio's
+Virtual Device Manager. See
+https://developer.android.com/studio/run/managing-avds.html.
 
-3.  Run the avd.py script. To start up _num_ emulators use -n. For non-x86 use
-    --abi.
+Creating emulators in Android Studio will modify the current SDK. If you are
+using the project's SDK then this can cause problems the next time you sync
+the project, so it is normally better to use a different SDK root when
+creating emulators. You can set this up either by creating the Android Studio
+project using generate_gradle.py's --sdk or --sdk-path options or by
+changing the SDK location within AndroidStudio's settings.
 
-    ```shell
-    build/android/avd.py --api-level=23
-    ```
+#### Starting an emulator from the command line
 
-    This script will attempt to use GPU emulation, so you must be running the
-    emulators in an environment with hardware rendering available. See `avd.py
-    --help` for more details.
+Once you have created an emulator (using Android Studio or otherwise) you can
+start it from the command line using the
+[emulator](https://developer.android.com/studio/run/emulator-commandline.html)
+command:
 
-#### Option 2
+```
+{$ANDROID_SDK_ROOT}/tools/emulator @emulatorName
+```
 
-Alternatively, you can create and run your own emulator using the tools provided
-by the Android SDK. When doing so, be sure to enable GPU emulation in hardware
-settings, since Chromium requires it to render.
+where emulatorName is the name of the emulator you want to start (e.g.
+Nexus_5X_API_27). The command
+
+```
+{$ANDROID_SDK_ROOT}/tools/emulator -list-avds
+```
+
+will list the available emulators.
+
+#### Creating an emulator from the command line
+
+New emulators can be created from the command line using the
+[avdmanager](https://developer.android.com/studio/command-line/avdmanager.html)
+command. This, however, does not provide any way of creating new device types,
+and provides far fewer options than the Android Studio UI for creating new
+emulators.
+
+The device types are configured through a devices.xml file. The devices.xml
+file for standard device types are within Android Studio's install, and that
+for any additional devices you define are in $ANDROID_EMULATOR_HOME (defaulting
+to ~/.android/). The contents of devices.xml is, however, undocumented (and
+presumably subject to change), so this is best modified using Android Studio.
 
 ## Building Tests
 

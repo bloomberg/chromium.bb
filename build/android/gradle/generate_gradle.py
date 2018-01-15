@@ -746,6 +746,23 @@ def main():
                       action='store_true',
                       help='Generate a project that is compatible with '
                            'Android Studio 3.1 Canary.')
+  sdk_group = parser.add_mutually_exclusive_group()
+  sdk_group.add_argument('--sdk',
+                         choices=['AndroidStudioCurrent',
+                                  'AndroidStudioDefault',
+                                  'ChromiumSdkRoot'],
+                         default='ChromiumSdkRoot',
+                         help="Set the project's SDK root. This can be set to "
+                              "Android Studio's current SDK root, the default "
+                              "Android Studio SDK root, or Chromium's SDK "
+                              "root. The default is Chromium's SDK root, but "
+                              "using this means that updates and additions to "
+                              "the SDK (e.g. installing emulators), will "
+                              "modify this root, hence possibly causing "
+                              "conflicts on the next repository sync.")
+  sdk_group.add_argument('--sdk-path',
+                         help='An explict path for the SDK root, setting this '
+                              'is an alternative to setting the --sdk option')
   args = parser.parse_args()
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
@@ -846,9 +863,15 @@ def main():
   _WriteFile(os.path.join(generator.project_dir, 'settings.gradle'),
              _GenerateSettingsGradle(project_entries, add_all_module))
 
-  sdk_path = _RebasePath(build_vars['android_sdk_root'])
-  _WriteFile(os.path.join(generator.project_dir, 'local.properties'),
-             _GenerateLocalProperties(sdk_path))
+  if args.sdk != "AndroidStudioCurrent":
+    if args.sdk_path:
+      sdk_path = _RebasePath(args.sdk_path)
+    elif args.sdk == "AndroidStudioDefault":
+      sdk_path = os.path.expanduser('~/Android/Sdk')
+    else:
+      sdk_path = _RebasePath(build_vars['android_sdk_root'])
+    _WriteFile(os.path.join(generator.project_dir, 'local.properties'),
+               _GenerateLocalProperties(sdk_path))
 
   if generated_inputs:
     logging.warning('Building generated source files...')
