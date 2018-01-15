@@ -36,10 +36,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   class NET_EXPORT_PRIVATE JobController;
   class NET_EXPORT_PRIVATE JobFactory;
   class NET_EXPORT_PRIVATE Request;
-  // RequestStream may only be called if |for_websockets| is false.
-  // RequestWebSocketHandshakeStream may only be called if |for_websockets|
-  // is true.
-  HttpStreamFactoryImpl(HttpNetworkSession* session, bool for_websockets);
+  HttpStreamFactoryImpl(HttpNetworkSession* session);
   ~HttpStreamFactoryImpl() override;
 
   // HttpStreamFactory interface
@@ -126,6 +123,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       HttpStreamRequest::Delegate* delegate,
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       HttpStreamRequest::StreamType stream_type,
+      bool is_websocket,
       bool enable_ip_based_pooling,
       bool enable_alternative_services,
       const NetLogWithSource& net_log);
@@ -172,8 +170,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   // Set of proxy servers that support request priorities to which subsequent
   // preconnects should be skipped.
   std::set<PreconnectingProxyServer> preconnecting_proxy_servers_;
-
-  const bool for_websockets_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryImpl);
 };

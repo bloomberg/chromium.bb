@@ -29,11 +29,6 @@ void HttpNetworkSessionPeer::SetHttpStreamFactory(
   session_->http_stream_factory_.swap(http_stream_factory);
 }
 
-void HttpNetworkSessionPeer::SetHttpStreamFactoryForWebSocket(
-    std::unique_ptr<HttpStreamFactory> http_stream_factory) {
-  session_->http_stream_factory_for_websocket_.swap(http_stream_factory);
-}
-
 void HttpNetworkSessionPeer::SetNetworkStreamThrottler(
     std::unique_ptr<NetworkThrottleManager> network_throttle_manager) {
   session_->network_stream_throttler_.swap(network_throttle_manager);

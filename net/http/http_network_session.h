@@ -290,9 +290,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   HttpStreamFactory* http_stream_factory() {
     return http_stream_factory_.get();
   }
-  HttpStreamFactory* http_stream_factory_for_websocket() {
-    return http_stream_factory_for_websocket_.get();
-  }
   NetworkThrottleManager* throttler() {
     return network_stream_throttler_.get();
   }
@@ -371,7 +368,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   QuicStreamFactory quic_stream_factory_;
   SpdySessionPool spdy_session_pool_;
   std::unique_ptr<HttpStreamFactory> http_stream_factory_;
-  std::unique_ptr<HttpStreamFactory> http_stream_factory_for_websocket_;
   std::map<HttpResponseBodyDrainer*, std::unique_ptr<HttpResponseBodyDrainer>>
       response_drainers_;
   std::unique_ptr<NetworkThrottleManager> network_stream_throttler_;

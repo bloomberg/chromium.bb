@@ -120,6 +120,7 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
                                NextProto alternative_protocol,
                                QuicTransportVersion quic_version,
                                const ProxyServer& alternative_proxy_server,
+                               bool is_websocket,
                                bool enable_ip_based_pooling,
                                NetLog* net_log);
 
@@ -147,6 +148,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       const SSLConfig& proxy_ssl_config,
       HostPortPair destination,
       GURL origin_url,
+      bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
@@ -163,6 +165,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       GURL origin_url,
       NextProto alternative_protocol,
       QuicTransportVersion quic_version,
+      bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
@@ -178,6 +181,7 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       HostPortPair destination,
       GURL origin_url,
       const ProxyServer& alternative_proxy_server,
+      bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 

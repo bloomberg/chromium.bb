@@ -31,11 +31,8 @@
 
 namespace net {
 
-HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
-                                             bool for_websockets)
-    : session_(session),
-      job_factory_(new JobFactory()),
-      for_websockets_(for_websockets) {}
+HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session)
+    : session_(session), job_factory_(new JobFactory()) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {}
 
@@ -48,11 +45,10 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::RequestStream(
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
     const NetLogWithSource& net_log) {
-  DCHECK(!for_websockets_);
   return RequestStreamInternal(
       request_info, priority, server_ssl_config, proxy_ssl_config, delegate,
-      nullptr, HttpStreamRequest::HTTP_STREAM, enable_ip_based_pooling,
-      enable_alternative_services, net_log);
+      nullptr, HttpStreamRequest::HTTP_STREAM, false /* is_websocket */,
+      enable_ip_based_pooling, enable_alternative_services, net_log);
 }
 
 std::unique_ptr<HttpStreamRequest>
@@ -66,12 +62,11 @@ HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
     const NetLogWithSource& net_log) {
-  DCHECK(for_websockets_);
   DCHECK(create_helper);
   return RequestStreamInternal(
       request_info, priority, server_ssl_config, proxy_ssl_config, delegate,
-      create_helper, HttpStreamRequest::HTTP_STREAM, enable_ip_based_pooling,
-      enable_alternative_services, net_log);
+      create_helper, HttpStreamRequest::HTTP_STREAM, true /* is_websocket */,
+      enable_ip_based_pooling, enable_alternative_services, net_log);
 }
 
 std::unique_ptr<HttpStreamRequest>
@@ -84,12 +79,12 @@ HttpStreamFactoryImpl::RequestBidirectionalStreamImpl(
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
     const NetLogWithSource& net_log) {
-  DCHECK(!for_websockets_);
   DCHECK(request_info.url.SchemeIs(url::kHttpsScheme));
 
   return RequestStreamInternal(
       request_info, priority, server_ssl_config, proxy_ssl_config, delegate,
-      nullptr, HttpStreamRequest::BIDIRECTIONAL_STREAM, enable_ip_based_pooling,
+      nullptr, HttpStreamRequest::BIDIRECTIONAL_STREAM,
+      false /* is_websocket */, enable_ip_based_pooling,
       enable_alternative_services, net_log);
 }
 
@@ -102,12 +97,13 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::RequestStreamInternal(
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
     HttpStreamRequest::StreamType stream_type,
+    bool is_websocket,
     bool enable_ip_based_pooling,
     bool enable_alternative_services,
     const NetLogWithSource& net_log) {
   auto job_controller = std::make_unique<JobController>(
       this, delegate, session_, job_factory_.get(), request_info,
-      /* is_preconnect = */ false, enable_ip_based_pooling,
+      /* is_preconnect = */ false, is_websocket, enable_ip_based_pooling,
       enable_alternative_services, server_ssl_config, proxy_ssl_config);
   JobController* job_controller_raw_ptr = job_controller.get();
   job_controller_set_.insert(std::move(job_controller));
@@ -128,11 +124,10 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   server_ssl_config.verify_ev_cert = true;
   proxy_ssl_config.verify_ev_cert = true;
 
-  DCHECK(!for_websockets_);
-
   auto job_controller = std::make_unique<JobController>(
       this, nullptr, session_, job_factory_.get(), request_info,
       /* is_preconnect = */ true,
+      /* is_websocket = */ false,
       /* enable_ip_based_pooling = */ true,
       /* enable_alternative_services = */ true, server_ssl_config,
       proxy_ssl_config);
