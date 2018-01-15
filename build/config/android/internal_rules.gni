@@ -757,7 +757,7 @@ if (enable_java_templates) {
         lint_suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
-      _lint_path = "$lint_android_sdk_root/tools-lint/bin/lint"
+      _lint_path = "$lint_android_sdk_root/tools/bin/lint"
       _cache_dir = "$root_build_dir/android_lint_cache"
       _result_path = "$target_gen_dir/$target_name/result.xml"
       _config_path = "$target_gen_dir/$target_name/config.xml"

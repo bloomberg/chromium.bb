@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.survey;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -393,6 +394,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {
         final ChromeHomeSurveyController mController;
+        @SuppressLint("StaticFieldLeak") // TODO(crbug.com/799070): Fix.
         final Context mContext;
         final TabModelSelector mSelector;
 
