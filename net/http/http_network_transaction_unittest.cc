@@ -15970,8 +15970,7 @@ TEST_F(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
     HttpNetworkSessionPeer peer(session.get());
     FakeStreamFactory* fake_factory = new FakeStreamFactory();
     FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
-    peer.SetHttpStreamFactoryForWebSocket(
-        std::unique_ptr<HttpStreamFactory>(fake_factory));
+    peer.SetHttpStreamFactory(std::unique_ptr<HttpStreamFactory>(fake_factory));
 
     HttpRequestInfo request;
     HttpNetworkTransaction trans(LOW, session.get());

@@ -158,7 +158,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
  public:
   explicit MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session)
-      : HttpStreamFactoryImpl(session, false),
+      : HttpStreamFactoryImpl(session),
         preconnect_done_(false),
         waiting_for_preconnect_(false) {}
 
@@ -1806,12 +1806,11 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
-      session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(
-              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-              &create_helper,
-              /* enable_ip_based_pooling = */ true,
-              /* enable_alternative_services = */ true, NetLogWithSource()));
+      session->http_stream_factory()->RequestWebSocketHandshakeStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          &create_helper,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());
@@ -1851,12 +1850,11 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
-      session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(
-              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-              &create_helper,
-              /* enable_ip_based_pooling = */ true,
-              /* enable_alternative_services = */ true, NetLogWithSource()));
+      session->http_stream_factory()->RequestWebSocketHandshakeStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          &create_helper,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());
@@ -1894,12 +1892,11 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
   StreamRequestWaiter waiter;
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
-      session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(
-              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-              &create_helper,
-              /* enable_ip_based_pooling = */ true,
-              /* enable_alternative_services = */ true, NetLogWithSource()));
+      session->http_stream_factory()->RequestWebSocketHandshakeStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          &create_helper,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());

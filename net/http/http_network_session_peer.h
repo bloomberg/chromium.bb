@@ -29,8 +29,6 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
 
   void SetHttpStreamFactory(
       std::unique_ptr<HttpStreamFactory> http_stream_factory);
-  void SetHttpStreamFactoryForWebSocket(
-      std::unique_ptr<HttpStreamFactory> http_stream_factory_for_websocket);
 
   void SetNetworkStreamThrottler(
       std::unique_ptr<NetworkThrottleManager> network_throttle_manager);

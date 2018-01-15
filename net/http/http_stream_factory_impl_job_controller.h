@@ -35,14 +35,13 @@ class HttpStreamFactoryImpl::JobController
                 JobFactory* job_factory,
                 const HttpRequestInfo& request_info,
                 bool is_preconnect,
+                bool is_websocket,
                 bool enable_ip_based_pooling,
                 bool enable_alternative_services,
                 const SSLConfig& server_ssl_config,
                 const SSLConfig& proxy_ssl_config);
 
   ~JobController() override;
-
-  bool for_websockets() override;
 
   // Used in tests only for verification purpose.
   const Job* main_job() const { return main_job_.get(); }
@@ -326,6 +325,9 @@ class HttpStreamFactoryImpl::JobController
 
   // True if this JobController is used to preconnect streams.
   const bool is_preconnect_;
+
+  // True if request is for Websocket.
+  const bool is_websocket_;
 
   // Enable pooling to a SpdySession with matching IP and certificate even if
   // the SpdySessionKey is different.
