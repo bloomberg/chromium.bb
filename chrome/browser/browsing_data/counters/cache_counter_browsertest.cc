@@ -8,7 +8,7 @@
 // responsibility of a lower layer, and is tested in
 // DiskCacheBackendTest.CalculateSizeOfAllEntries in net_unittests.
 
-#include "chrome/browser/browsing_data/cache_counter.h"
+#include "chrome/browser/browsing_data/counters/cache_counter.h"
 
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"

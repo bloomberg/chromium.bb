@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_
+#ifndef CHROME_BROWSER_BROWSING_DATA_COUNTERS_CACHE_COUNTER_H_
+#define CHROME_BROWSER_BROWSING_DATA_COUNTERS_CACHE_COUNTER_H_
 
 #include <stdint.h>
 
@@ -54,4 +54,4 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
   base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_
+#endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_CACHE_COUNTER_H_

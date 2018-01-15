@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
+#include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/media_licenses_counter.h"
+#include "chrome/browser/browsing_data/counters/cache_counter.h"
+#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,7 +24,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 #endif
 
 

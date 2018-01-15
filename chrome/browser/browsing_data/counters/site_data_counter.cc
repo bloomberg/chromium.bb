@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/site_data_counter.h"
+#include "chrome/browser/browsing_data/counters/site_data_counter.h"
 
-#include "chrome/browser/browsing_data/site_data_counting_helper.h"
+#include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 

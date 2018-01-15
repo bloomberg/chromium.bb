@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 
 #include <algorithm>
 #include <memory>
