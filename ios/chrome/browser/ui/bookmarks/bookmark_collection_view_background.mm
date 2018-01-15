@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,16 +82,11 @@ const CGFloat kToolbarHeight = 48.0;
 - (CGRect)emptyBookmarkLabelFrame {
   const CGSize labelSizeThatFit =
       [self.emptyBookmarksLabel sizeThatFits:CGSizeZero];
-  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    return CGRectMake(0,
-                      (CGRectGetHeight(self.bounds) + kToolbarHeight +
-                       labelSizeThatFit.height) /
-                          2.0,
-                      CGRectGetWidth(self.bounds), labelSizeThatFit.height);
-  }
-  return CGRectMake(
-      0, (CGRectGetHeight(self.bounds) - labelSizeThatFit.height) / 2.0,
-      CGRectGetWidth(self.bounds), labelSizeThatFit.height);
+  return CGRectMake(0,
+                    (CGRectGetHeight(self.bounds) + kToolbarHeight +
+                     labelSizeThatFit.height) /
+                        2.0,
+                    CGRectGetWidth(self.bounds), labelSizeThatFit.height);
 }
 
 // Returns imageView frame above the text with kImageViewOffsetFromText from

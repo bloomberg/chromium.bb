@@ -29,7 +29,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 }  // namespace NewTabPage
 
 @protocol ApplicationCommands;
-@class BookmarkHomeTabletNTPController;
 @protocol BrowserCommands;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
@@ -113,7 +112,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 
 @interface NewTabPageController (TestSupport)
 - (id<NewTabPagePanelProtocol>)currentController;
-- (BookmarkHomeTabletNTPController*)bookmarkController;
 - (id<NewTabPagePanelProtocol>)incognitoController;
 @end
 

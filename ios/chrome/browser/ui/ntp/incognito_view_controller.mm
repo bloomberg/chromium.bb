@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 
@@ -59,12 +58,8 @@ const CGFloat kDistanceToFadeToolbar = 50.0;
   [self.incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                           UIViewAutoresizingFlexibleWidth];
 
-  if (!PresentNTPPanelModally()) {
-    [self.incognitoView setBackgroundColor:[UIColor clearColor]];
-  } else {
-    [self.incognitoView
-        setBackgroundColor:[UIColor colorWithWhite:34 / 255.0 alpha:1.0]];
-  }
+  [self.incognitoView
+      setBackgroundColor:[UIColor colorWithWhite:34 / 255.0 alpha:1.0]];
 
   if (!IsIPadIdiom()) {
     [self.incognitoView setDelegate:self];

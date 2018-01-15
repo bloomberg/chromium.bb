@@ -46,9 +46,6 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
       chrome_test_util::GetCurrentNewTabPageController();
   if (IsIPadIdiom()) {
     [ntp_controller selectPanel:panel_type];
-  } else if (panel_type == ntp_home::BOOKMARKS_PANEL) {
-    [chrome_test_util::BrowserCommandDispatcherForMainBVC()
-        showBookmarksManager];
   } else if (panel_type == ntp_home::RECENT_TABS_PANEL) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() showRecentTabs];
   }

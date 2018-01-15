@@ -87,7 +87,7 @@
       return;
 
     const base::StringPiece host = item->GetVirtualURL().host_piece();
-    if (host == kChromeUINewTabHost || host == kChromeUIBookmarksHost)
+    if (host == kChromeUINewTabHost)
       return;
   }
 

@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/753599): Remove this file when clean up old bookmarks.
+
 // This UIButton subclass extends the tappable area.
 @interface BookmarkExtendedButton : UIButton
 // Positive values extend tappable area of the button.

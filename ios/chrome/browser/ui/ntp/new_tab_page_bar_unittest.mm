@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -58,66 +57,6 @@ TEST_F(NewTabPageBarTest, SetItems) {
   EXPECT_EQ(bar_.buttons.count, 3U);
   [bar_ setItems:[NSArray arrayWithObject:firstItem]];
   EXPECT_EQ(bar_.buttons.count, 1U);
-}
-
-TEST_F(NewTabPageBarTest, SetSelectedIndex_iPadOnly) {
-  // TODO(crbug.com/753599): Remove this unittest when clean up the old
-  // bookmark.
-  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    return;
-  }
-  // Selected index isn't meaningful on iPhone.
-  if (!IsIPadIdiom()) {
-    return;
-  }
-
-  NewTabPageBarItem* firstItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Home"
-                      identifier:ntp_home::HOME_PANEL
-                           image:[UIImage imageNamed:@"ntp_bookmarks"]];
-  NewTabPageBarItem* secondItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Bookmarks"
-                      identifier:ntp_home::BOOKMARKS_PANEL
-                           image:[UIImage imageNamed:@"ntp_bookmarks"]];
-  NewTabPageBarItem* thirdItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"RecentTabs"
-                      identifier:ntp_home::RECENT_TABS_PANEL
-                           image:[UIImage imageNamed:@"ntp_bookmarks"]];
-
-  [bar_ setItems:[NSArray
-                     arrayWithObjects:firstItem, secondItem, thirdItem, nil]];
-
-  UIButton* button = [[bar_ buttons] objectAtIndex:0];
-  [button sendActionsForControlEvents:UIControlEventTouchDown];
-  EXPECT_TRUE([[[bar_ buttons] objectAtIndex:0] isSelected]);
-
-  id secondItemDelegate =
-      [OCMockObject mockForProtocol:@protocol(NewTabPageBarDelegate)];
-  [[secondItemDelegate expect] newTabBarItemDidChange:secondItem
-                                          changePanel:YES];
-  [bar_ setDelegate:secondItemDelegate];
-  button = [[bar_ buttons] objectAtIndex:1];
-  [button sendActionsForControlEvents:UIControlEventTouchDown];
-  EXPECT_TRUE([[[bar_ buttons] objectAtIndex:1] isSelected]);
-  EXPECT_OCMOCK_VERIFY(secondItemDelegate);
-
-  id thirdItemDelegate =
-      [OCMockObject mockForProtocol:@protocol(NewTabPageBarDelegate)];
-  [[thirdItemDelegate expect] newTabBarItemDidChange:thirdItem changePanel:YES];
-  [bar_ setDelegate:thirdItemDelegate];
-  button = [[bar_ buttons] objectAtIndex:2];
-  [button sendActionsForControlEvents:UIControlEventTouchDown];
-  EXPECT_TRUE([[[bar_ buttons] objectAtIndex:2] isSelected]);
-  EXPECT_OCMOCK_VERIFY(thirdItemDelegate);
-
-  // Reselecting the same item should not cause the method to be called again.
-  id uncalledDelegate =
-      [OCMockObject niceMockForProtocol:@protocol(NewTabPageBarDelegate)];
-  [[uncalledDelegate reject] newTabBarItemDidChange:OCMOCK_ANY changePanel:YES];
-  [bar_ setDelegate:uncalledDelegate];
-  [bar_ setSelectedIndex:2];
-  EXPECT_TRUE([[[bar_ buttons] objectAtIndex:2] isSelected]);
-  EXPECT_OCMOCK_VERIFY(uncalledDelegate);
 }
 
 }  // anonymous namespace

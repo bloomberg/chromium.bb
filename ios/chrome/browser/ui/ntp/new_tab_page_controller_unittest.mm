@@ -14,7 +14,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -22,7 +21,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/test/block_cleanup_test.h"
@@ -126,79 +124,6 @@ class NewTabPageControllerTest : public BlockCleanupTest {
   NewTabPageController* incognitoController_;
 };
 
-TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
-  // Switching the selected index in the NewTabPageBar should cause
-  // newTabBarItemDidChange to get called.
-  NewTabPageView* NTPView =
-      base::mac::ObjCCastStrict<NewTabPageView>(controller_.view);
-  NewTabPageBar* bar = [NTPView tabBar];
-  NSUInteger bookmarkIndex = 0;
-  UIButton* button = [[bar buttons] objectAtIndex:bookmarkIndex];
-  UIControlEvents event = !PresentNTPPanelModally()
-                              ? UIControlEventTouchDown
-                              : UIControlEventTouchUpInside;
-  [button sendActionsForControlEvents:event];
-
-  // Expecting bookmarks panel to be loaded now and to be the current controller
-  // on iPad but not iPhone.
-  // Deliberately comparing pointers.
-  if (!PresentNTPPanelModally()) {
-    EXPECT_EQ([controller_ currentController],
-              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
-  } else {
-    EXPECT_NE([controller_ currentController],
-              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
-  }
-}
-
-// TODO(crbug.com/753599): Remove this test when clean up old bookmarks.
-TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
-  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    return;
-  }
-  // Expecting on start up that the bookmarkController does not exist.
-  // Deliberately comparing pointers.
-  EXPECT_NE([controller_ currentController],
-            (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
-
-  // Switching to the Bookmarks panel.
-  [controller_ selectPanel:ntp_home::BOOKMARKS_PANEL];
-
-  // Expecting bookmarks panel to be loaded now and to be the current controller
-  // on iPad but not iPhone.
-  // Deliberately comparing pointers.
-  if (!PresentNTPPanelModally()) {
-    EXPECT_EQ([controller_ currentController],
-              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
-  } else {
-    EXPECT_NE([controller_ currentController],
-              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
-  }
-}
-
-TEST_F(NewTabPageControllerTest, SelectIncognitoPanel) {
-  // Expect on start up that the Incognito panel is the default.
-  EXPECT_EQ(
-      (id<NewTabPagePanelProtocol>)[incognitoController_ incognitoController],
-      [incognitoController_ currentController]);
-
-  // Switch to the Bookmarks panel.
-  [incognitoController_ selectPanel:ntp_home::BOOKMARKS_PANEL];
-
-  // Expecting bookmarks panel to be loaded now and to be the current controller
-  // on iPad but not iPhone.
-  // Deliberately comparing pointers.
-  if (!PresentNTPPanelModally()) {
-    EXPECT_EQ(
-        [incognitoController_ currentController],
-        (id<NewTabPagePanelProtocol>)[incognitoController_ bookmarkController]);
-  } else {
-    EXPECT_NE(
-        [incognitoController_ currentController],
-        (id<NewTabPagePanelProtocol>)[incognitoController_ bookmarkController]);
-  }
-}
-
 TEST_F(NewTabPageControllerTest, TestWantsLocationBarHintText) {
   // Default NTP doesn't show location bar hint text on iPad, and it does on
   // iPhone.
@@ -215,8 +140,6 @@ TEST_F(NewTabPageControllerTest, NewTabPageIdentifierConversion) {
   EXPECT_EQ("open_tabs",
             NewTabPage::FragmentFromIdentifier(ntp_home::RECENT_TABS_PANEL));
   EXPECT_EQ("", NewTabPage::FragmentFromIdentifier(ntp_home::NONE));
-  EXPECT_EQ(ntp_home::BOOKMARKS_PANEL,
-            NewTabPage::IdentifierFromFragment("bookmarks"));
   EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment("garbage"));
   EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment(""));
 }

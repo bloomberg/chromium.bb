@@ -31,7 +31,7 @@ class GURL;
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
-// Accesses the default folder for new bookmarks. The default folder is Mobile
+// Accesses the default folder for bookmarks. The default folder is Mobile
 // Bookmarks.
 + (const bookmarks::BookmarkNode*)folderForNewBookmarksInBrowserState:
     (ios::ChromeBrowserState*)browserState;

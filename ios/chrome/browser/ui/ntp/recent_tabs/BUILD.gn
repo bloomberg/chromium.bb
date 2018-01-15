@@ -90,7 +90,6 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/browser/ui/ntp/recent_tabs",

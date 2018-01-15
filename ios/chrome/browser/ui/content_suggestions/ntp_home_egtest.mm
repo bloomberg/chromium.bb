@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -84,18 +83,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 + (void)setUp {
   [super setUp];
-
-  // TODO(crbug.com/753599): When old bookmark is removed, NTP panel will always
-  // be shown modally.  Clean up the non-modal code below.
-  if (!PresentNTPPanelModally()) {
-    // Make sure we are on the Home panel on iPad when NTP is shown modally.
-    chrome_test_util::OpenNewTab();
-
-    NewTabPageController* ntp_controller =
-        chrome_test_util::GetCurrentNewTabPageController();
-    [ntp_controller selectPanel:ntp_home::HOME_PANEL];
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  }
 
   // Clear the pasteboard in case there is a URL copied, triggering an omnibox
   // suggestion.
