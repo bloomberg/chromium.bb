@@ -77,7 +77,7 @@ MetricsHelper* AssetsLoader::GetMetricsHelper() {
   // first time it is used and, thus, give the caller control over when the
   // sequence starts.
   if (!metrics_helper_) {
-    metrics_helper_ = base::MakeUnique<MetricsHelper>();
+    metrics_helper_ = std::make_unique<MetricsHelper>();
   }
   return metrics_helper_.get();
 }
@@ -115,7 +115,7 @@ AssetsLoadStatus LoadImage(const base::FilePath& component_install_dir,
   }
 
   if (is_png) {
-    (*out_image) = base::MakeUnique<SkBitmap>();
+    (*out_image) = std::make_unique<SkBitmap>();
     if (!gfx::PNGCodec::Decode(
             reinterpret_cast<const unsigned char*>(encoded_file_content.data()),
             encoded_file_content.size(), out_image->get())) {
@@ -140,7 +140,7 @@ void AssetsLoader::LoadAssetsTask(
     const base::Version& component_version,
     const base::FilePath& component_install_dir,
     OnAssetsLoadedCallback on_loaded) {
-  auto assets = base::MakeUnique<Assets>();
+  auto assets = std::make_unique<Assets>();
   AssetsLoadStatus status = AssetsLoadStatus::kSuccess;
 
   status = LoadImage(component_install_dir, kBackgroundBaseFilename,

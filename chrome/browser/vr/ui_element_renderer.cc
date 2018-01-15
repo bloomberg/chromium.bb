@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
 #include "chrome/browser/vr/renderers/external_textured_quad_renderer.h"
@@ -37,17 +36,17 @@ UiElementRenderer::~UiElementRenderer() = default;
 
 void UiElementRenderer::Init() {
   external_textured_quad_renderer_ =
-      base::MakeUnique<ExternalTexturedQuadRenderer>();
-  textured_quad_renderer_ = base::MakeUnique<TexturedQuadRenderer>();
-  gradient_quad_renderer_ = base::MakeUnique<GradientQuadRenderer>();
-  webvr_renderer_ = base::MakeUnique<WebVrRenderer>();
-  reticle_renderer_ = base::MakeUnique<Reticle::Renderer>();
-  laser_renderer_ = base::MakeUnique<Laser::Renderer>();
-  controller_renderer_ = base::MakeUnique<Controller::Renderer>();
-  gradient_grid_renderer_ = base::MakeUnique<Grid::Renderer>();
-  shadow_renderer_ = base::MakeUnique<Shadow::Renderer>();
-  stars_renderer_ = base::MakeUnique<Stars::Renderer>();
-  background_renderer_ = base::MakeUnique<Background::Renderer>();
+      std::make_unique<ExternalTexturedQuadRenderer>();
+  textured_quad_renderer_ = std::make_unique<TexturedQuadRenderer>();
+  gradient_quad_renderer_ = std::make_unique<GradientQuadRenderer>();
+  webvr_renderer_ = std::make_unique<WebVrRenderer>();
+  reticle_renderer_ = std::make_unique<Reticle::Renderer>();
+  laser_renderer_ = std::make_unique<Laser::Renderer>();
+  controller_renderer_ = std::make_unique<Controller::Renderer>();
+  gradient_grid_renderer_ = std::make_unique<Grid::Renderer>();
+  shadow_renderer_ = std::make_unique<Shadow::Renderer>();
+  stars_renderer_ = std::make_unique<Stars::Renderer>();
+  background_renderer_ = std::make_unique<Background::Renderer>();
 }
 
 void UiElementRenderer::DrawTexturedQuad(

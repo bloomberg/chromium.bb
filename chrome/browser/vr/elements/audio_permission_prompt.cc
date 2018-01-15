@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/audio_permission_prompt.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/audio_permission_prompt_texture.h"
 
 namespace vr {
@@ -14,7 +13,7 @@ AudioPermissionPrompt::AudioPermissionPrompt(
     const base::Callback<void()>& primary_button_callback,
     const base::Callback<void()>& secondary_buttton_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<AudioPermissionPromptTexture>()),
+      texture_(std::make_unique<AudioPermissionPromptTexture>()),
       primary_button_callback_(primary_button_callback),
       secondary_buttton_callback_(secondary_buttton_callback) {}
 

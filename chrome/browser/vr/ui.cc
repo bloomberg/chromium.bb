@@ -7,7 +7,6 @@
 
 #include "chrome/browser/vr/ui.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
@@ -35,7 +34,7 @@ Ui::Ui(UiBrowserInterface* browser,
        vr::TextInputDelegate* text_input_delegate,
        const UiInitialState& ui_initial_state)
     : Ui(browser,
-         base::MakeUnique<ContentInputDelegate>(content_input_forwarder),
+         std::make_unique<ContentInputDelegate>(content_input_forwarder),
          keyboard_delegate,
          text_input_delegate,
          ui_initial_state) {}
@@ -46,10 +45,10 @@ Ui::Ui(UiBrowserInterface* browser,
        vr::TextInputDelegate* text_input_delegate,
        const UiInitialState& ui_initial_state)
     : browser_(browser),
-      scene_(base::MakeUnique<UiScene>()),
-      model_(base::MakeUnique<Model>()),
+      scene_(std::make_unique<UiScene>()),
+      model_(std::make_unique<Model>()),
       content_input_delegate_(std::move(content_input_delegate)),
-      input_manager_(base::MakeUnique<UiInputManager>(scene_.get())),
+      input_manager_(std::make_unique<UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {
   InitializeModel(ui_initial_state);
   UiSceneCreator(browser, scene_.get(), this, content_input_delegate_.get(),
@@ -213,13 +212,13 @@ bool Ui::ShouldRenderWebVr() {
 void Ui::OnGlInitialized(unsigned int content_texture_id,
                          UiElementRenderer::TextureLocation content_location,
                          bool use_ganesh) {
-  ui_element_renderer_ = base::MakeUnique<UiElementRenderer>();
+  ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
-      base::MakeUnique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
+      std::make_unique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
   if (use_ganesh) {
-    provider_ = base::MakeUnique<GaneshSurfaceProvider>();
+    provider_ = std::make_unique<GaneshSurfaceProvider>();
   } else {
-    provider_ = base::MakeUnique<CpuSurfaceProvider>();
+    provider_ = std::make_unique<CpuSurfaceProvider>();
   }
   scene_->OnGlInitialized(provider_.get());
   model_->content_texture_id = content_texture_id;

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/databinding/binding.h"
@@ -75,8 +74,8 @@ class TextInputSceneTest : public UiTest {
 
     // Make test text input.
     text_input_delegate_ =
-        base::MakeUnique<StrictMock<MockTextInputDelegate>>();
-    text_input_info_ = base::MakeUnique<TextInputInfo>();
+        std::make_unique<StrictMock<MockTextInputDelegate>>();
+    text_input_info_ = std::make_unique<TextInputInfo>();
     auto text_input = UiSceneCreator::CreateTextInput(
         1, model_, text_input_info_.get(), text_input_delegate_.get());
     text_input_ = text_input.get();
@@ -94,7 +93,7 @@ class TextInputSceneTest : public UiTest {
 TEST_F(TextInputSceneTest, InputFieldFocus) {
   // Set mock delegates.
   auto* kb = static_cast<Keyboard*>(scene_->GetUiElementByName(kKeyboard));
-  auto kb_delegate = base::MakeUnique<StrictMock<MockKeyboardDelegate>>();
+  auto kb_delegate = std::make_unique<StrictMock<MockKeyboardDelegate>>();
   EXPECT_CALL(*kb_delegate, HideKeyboard()).InSequence(in_sequence_);
   kb->SetKeyboardDelegate(kb_delegate.get());
 
@@ -144,8 +143,8 @@ TEST_F(TextInputSceneTest, ClickOnTextGrabsFocus) {
 }
 
 TEST(TextInputTest, ControllerInteractionsSentToDelegate) {
-  auto keyboard = base::MakeUnique<Keyboard>();
-  auto kb_delegate = base::MakeUnique<StrictMock<MockKeyboardDelegate>>();
+  auto keyboard = std::make_unique<Keyboard>();
+  auto kb_delegate = std::make_unique<StrictMock<MockKeyboardDelegate>>();
   testing::Sequence s;
   EXPECT_CALL(*kb_delegate, HideKeyboard()).InSequence(s);
   keyboard->SetKeyboardDelegate(kb_delegate.get());
@@ -167,7 +166,7 @@ TEST(TextInputTest, HintText) {
   UiScene scene;
 
   auto instance =
-      base::MakeUnique<TextInput>(10, TextInput::OnFocusChangedCallback(),
+      std::make_unique<TextInput>(10, TextInput::OnFocusChangedCallback(),
                                   TextInput::OnInputEditedCallback());
   instance->SetName(kOmniboxTextField);
   instance->SetSize(1, 0);
@@ -190,7 +189,7 @@ TEST(TextInputTest, Cursor) {
   UiScene scene;
 
   auto instance =
-      base::MakeUnique<TextInput>(10, TextInput::OnFocusChangedCallback(),
+      std::make_unique<TextInput>(10, TextInput::OnFocusChangedCallback(),
                                   TextInput::OnInputEditedCallback());
   instance->SetName(kOmniboxTextField);
   instance->SetSize(1, 0);

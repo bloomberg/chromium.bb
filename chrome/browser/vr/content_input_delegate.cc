@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/content_input_delegate.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -160,7 +159,7 @@ std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(
       NOTREACHED();
   }
 
-  auto mouse_event = base::MakeUnique<blink::WebMouseEvent>(
+  auto mouse_event = std::make_unique<blink::WebMouseEvent>(
       type, modifiers, (timestamp - base::TimeTicks()).InSecondsF());
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = blink::WebPointerProperties::Button::kLeft;

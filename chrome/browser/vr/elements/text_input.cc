@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/text_input.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
@@ -21,7 +22,7 @@ TextInput::TextInput(float font_height_meters,
                      OnInputEditedCallback input_edit_callback)
     : focus_changed_callback_(focus_changed_callback),
       input_edit_callback_(input_edit_callback) {
-  auto text = base::MakeUnique<Text>(font_height_meters);
+  auto text = std::make_unique<Text>(font_height_meters);
   text->SetType(kTypeTextInputHint);
   text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(false);
@@ -34,7 +35,7 @@ TextInput::TextInput(float font_height_meters,
   hint_element_ = text.get();
   this->AddChild(std::move(text));
 
-  text = base::MakeUnique<Text>(font_height_meters);
+  text = std::make_unique<Text>(font_height_meters);
   text->SetType(kTypeTextInputText);
   text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(true);
@@ -49,7 +50,7 @@ TextInput::TextInput(float font_height_meters,
   text_element_ = text.get();
   this->AddChild(std::move(text));
 
-  auto cursor = base::MakeUnique<Rect>();
+  auto cursor = std::make_unique<Rect>();
   cursor->SetVisible(false);
   cursor->SetType(kTypeTextInputCursor);
   cursor->SetDrawPhase(kPhaseForeground);

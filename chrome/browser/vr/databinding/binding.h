@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_VR_DATABINDING_BINDING_H_
 
 #include "base/bind.h"
+
+#include <memory>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
@@ -105,7 +108,7 @@ class Binding : public BindingBase {
 //
 #ifndef NDEBUG
 #define VR_BIND(T, M, m, Get, V, v, Set)                                      \
-  base::MakeUnique<Binding<T>>(                                               \
+  std::make_unique<Binding<T>>(                                               \
       base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
       #Get,                                                                   \
       base::BindRepeating([](V* view, const T& value) { Set; },               \
@@ -113,7 +116,7 @@ class Binding : public BindingBase {
       #Set)
 #else
 #define VR_BIND(T, M, m, Get, V, v, Set)                                      \
-  base::MakeUnique<Binding<T>>(                                               \
+  std::make_unique<Binding<T>>(                                               \
       base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
       base::BindRepeating([](V* view, const T& value) { Set; },               \
                           base::Unretained(v)))

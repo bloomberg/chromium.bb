@@ -5,7 +5,6 @@
 #include "chrome/browser/vr/elements/button.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -28,7 +27,7 @@ Button::Button(base::RepeatingCallback<void()> click_handler)
     : click_handler_(click_handler), hover_offset_(kDefaultHoverOffsetDMM) {
   set_hit_testable(false);
 
-  auto background = base::MakeUnique<Rect>();
+  auto background = std::make_unique<Rect>();
   background->SetType(kTypeButtonBackground);
   background->set_bubble_events(true);
   background->set_contributes_to_parent_bounds(false);
@@ -37,7 +36,7 @@ Button::Button(base::RepeatingCallback<void()> click_handler)
   background_ = background.get();
   AddChild(std::move(background));
 
-  auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
+  auto hit_plane = std::make_unique<InvisibleHitTarget>();
   hit_plane->SetType(kTypeButtonHitTarget);
   hit_plane->set_bubble_events(true);
   hit_plane->set_contributes_to_parent_bounds(false);

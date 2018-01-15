@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/toast.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -19,13 +18,13 @@ namespace vr {
 Toast::Toast() {
   set_bounds_contain_children(true);
 
-  auto background = base::MakeUnique<Rect>();
+  auto background = std::make_unique<Rect>();
   background->SetType(kTypeToastBackground);
   background->set_contributes_to_parent_bounds(false);
   background->set_hit_testable(false);
   background_ = background.get();
 
-  auto container = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
+  auto container = std::make_unique<LinearLayout>(LinearLayout::kRight);
   container->SetType(kTypeToastContainer);
   container->set_hit_testable(false);
   container_ = container.get();
@@ -43,7 +42,7 @@ void Toast::AddIcon(const gfx::VectorIcon& icon,
                     int width_pixels,
                     float icon_size) {
   DCHECK(!icon_);
-  auto vector_icon = base::MakeUnique<VectorIcon>(width_pixels);
+  auto vector_icon = std::make_unique<VectorIcon>(width_pixels);
   vector_icon->SetType(kTypeToastIcon);
   vector_icon->set_hit_testable(false);
   vector_icon->SetDrawPhase(draw_phase());
@@ -59,7 +58,7 @@ void Toast::AddText(const base::string16& text,
                     float font_height_dmm,
                     TextLayoutMode text_layout_mode) {
   DCHECK(!text_);
-  auto text_element = base::MakeUnique<Text>(font_height_dmm);
+  auto text_element = std::make_unique<Text>(font_height_dmm);
   text_element->SetType(kTypeToastText);
   text_element->set_hit_testable(false);
   text_element->SetDrawPhase(draw_phase());

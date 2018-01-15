@@ -5,7 +5,6 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1055,7 +1054,7 @@ TEST_F(UiTest, TextureBackgroundAfterAssetLoaded) {
   EXPECT_FALSE(IsVisible(k2dBrowsingDefaultBackground));
   EXPECT_FALSE(IsVisible(kContentQuad));
 
-  auto assets = base::MakeUnique<Assets>();
+  auto assets = std::make_unique<Assets>();
   ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
                       base::Version("1.0"));
 

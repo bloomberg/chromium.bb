@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/vector_icon.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -56,7 +57,7 @@ class VectorIconTexture : public UiTexture {
 
 VectorIcon::VectorIcon(int maximum_width_pixels)
     : TexturedElement(maximum_width_pixels),
-      texture_(base::MakeUnique<VectorIconTexture>()) {}
+      texture_(std::make_unique<VectorIconTexture>()) {}
 VectorIcon::~VectorIcon() {}
 
 void VectorIcon::SetColor(SkColor color) {

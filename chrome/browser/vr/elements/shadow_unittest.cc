@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/shadow.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -15,11 +16,11 @@ namespace vr {
 
 TEST(Shadow, ShadowPaddingGrows) {
   UiScene scene;
-  auto rect = base::MakeUnique<Rect>();
+  auto rect = std::make_unique<Rect>();
   auto* rect_ptr = rect.get();
   rect->SetSize(2.0, 2.0);
 
-  auto shadow = base::MakeUnique<Shadow>();
+  auto shadow = std::make_unique<Shadow>();
   auto* shadow_ptr = shadow.get();
   shadow->AddChild(std::move(rect));
   scene.AddUiElement(kRoot, std::move(shadow));

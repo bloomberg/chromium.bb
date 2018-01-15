@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/test/ui_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/animation_utils.h"
@@ -68,15 +67,15 @@ UiTest::UiTest() {}
 UiTest::~UiTest() {}
 
 void UiTest::SetUp() {
-  browser_ = base::MakeUnique<testing::NiceMock<MockUiBrowserInterface>>();
+  browser_ = std::make_unique<testing::NiceMock<MockUiBrowserInterface>>();
 }
 
 void UiTest::CreateScene(const UiInitialState& state) {
   auto content_input_delegate =
-      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
+      std::make_unique<testing::NiceMock<MockContentInputDelegate>>();
   content_input_delegate_ = content_input_delegate.get();
 
-  ui_ = base::MakeUnique<Ui>(std::move(browser_.get()),
+  ui_ = std::make_unique<Ui>(std::move(browser_.get()),
                              std::move(content_input_delegate), nullptr,
                              nullptr, state);
   scene_ = ui_->scene();

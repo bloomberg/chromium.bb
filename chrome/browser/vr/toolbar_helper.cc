@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/toolbar_helper.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/toolbar/toolbar_model_impl.h"
 
 class ToolbarModelDelegate;
@@ -23,7 +24,7 @@ ToolbarHelper::ToolbarHelper(BrowserUiInterface* ui,
                              ToolbarModelDelegate* delegate)
     : ui_(ui),
       toolbar_model_(
-          base::MakeUnique<ToolbarModelImpl>(delegate, kMaxURLDisplayChars)) {}
+          std::make_unique<ToolbarModelImpl>(delegate, kMaxURLDisplayChars)) {}
 
 ToolbarHelper::~ToolbarHelper() {}
 

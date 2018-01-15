@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/spinner.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
@@ -74,7 +73,7 @@ class SpinnerTexture : public UiTexture {
 
 Spinner::Spinner(int maximum_width)
     : TexturedElement(maximum_width),
-      texture_(base::MakeUnique<SpinnerTexture>()) {
+      texture_(std::make_unique<SpinnerTexture>()) {
   std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve(
       cc::KeyframedFloatAnimationCurve::Create());
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/url_bar.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/url_bar_texture.h"
 
 namespace vr {
@@ -14,7 +13,7 @@ UrlBar::UrlBar(
     const base::RepeatingCallback<void()>& url_click_callback,
     const base::RepeatingCallback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
+      texture_(std::make_unique<UrlBarTexture>(failure_callback)),
       url_click_callback_(url_click_callback),
       failure_callback_(failure_callback) {}
 
