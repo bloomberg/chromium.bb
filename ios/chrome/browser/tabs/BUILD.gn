@@ -26,6 +26,7 @@ source_set("tabs") {
     "//components/signin/ios/browser",
     "//components/sync_sessions",
     "//ios/chrome/browser/web:tab_helper_delegates",
+    "//ios/chrome/browser/web_state_list",
     "//ios/net",
     "//ios/web/public",
     "//ui/base",

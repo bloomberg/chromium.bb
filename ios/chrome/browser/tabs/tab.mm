@@ -59,7 +59,6 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -236,11 +235,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 - (void)setParentTabModel:(TabModel*)model {
   DCHECK(!model || !_parentTabModel);
   _parentTabModel = model;
-
-  if (_parentTabModel.syncedWindowDelegate) {
-    IOSChromeSessionTabHelper::FromWebState(self.webState)
-        ->SetWindowID(model.sessionID);
-  }
 }
 
 - (NSString*)description {

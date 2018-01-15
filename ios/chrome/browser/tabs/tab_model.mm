@@ -151,8 +151,6 @@ void CleanCertificatePolicyCache(
 
   // Backs up property with the same name.
   std::unique_ptr<TabUsageRecorder> _tabUsageRecorder;
-  // Backs up property with the same name.
-  const SessionID _sessionID;
   // Saves session's state.
   SessionServiceIOS* _sessionService;
   // List of TabModelObservers.
@@ -176,7 +174,6 @@ void CleanCertificatePolicyCache(
 @implementation TabModel
 
 @synthesize browserState = _browserState;
-@synthesize sessionID = _sessionID;
 @synthesize webUsageEnabled = _webUsageEnabled;
 
 #pragma mark - Overriden
@@ -253,8 +250,8 @@ void CleanCertificatePolicyCache(
           _webStateList.get(),
           PrerenderServiceFactory::GetForBrowserState(browserState));
     }
-    _syncedWindowDelegate = base::MakeUnique<TabModelSyncedWindowDelegate>(
-        _webStateList.get(), _sessionID);
+    _syncedWindowDelegate =
+        base::MakeUnique<TabModelSyncedWindowDelegate>(_webStateList.get());
 
     // There must be a valid session service defined to consume session windows.
     DCHECK(service);
