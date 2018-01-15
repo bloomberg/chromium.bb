@@ -488,3 +488,90 @@ Please be very cautious if you want to use a heap collection from multiple threa
 You can put `WeakMember<T>` in heap collections except for `HeapVector` and `HeapDeque` which we do not support.
 
 During an Oilpan GC, the weak members that refernce a collected object will be removed from its heap collection, meaning the size of the collection will shrink and you do not have to check for null weak members when iterating through the collection.
+
+## Traits helpers
+
+At times, one may be working on code that needs to deal with both "regular" types and classes managed by the Blink GC. The following helpers can aid in writing code that needs to use different wrappers and containers based on whether a type is managed by Oilpan.
+
+### AddMemberIfNeeded<T>
+
+Given a type `T`, defines a type alias that is either `Member<T>` or `T` depending on whether `T` is a type managed by the Blink GC.
+
+```c++
+class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass> {
+  // ...
+};
+
+class MyNotGarbageCollectedClass {
+  // ...
+};
+
+AddMemberIfNeeded<MyNotGarbageCollectedClass> v1;  // MyNotGarbageCollectedClass v1;
+AddMemberIfNeeded<int32_t> v2;                     // int32_t v2;
+AddMemberIfNeeded<MyGarbageCollectedClass> v3;     // Member<MyGarbageCollectedClass> v3;
+```
+
+### VectorOf<T>
+
+Given a type `T`, defines a type alias that is either `HeapVector<T>`, `HeapVector<Member<T>>` or `Vector<T>` based on the following rules:
+
+* `T` is a type managed by the Blink GC → `HeapVector<Member<T>>`
+* `T` has a `Trace()` method but is not managed by the Blink GC → `HeapVector<T>` (this is a rare case; IDL unions and dictionaries fall in this category, for example)
+* All other cases → `Vector<T>`
+
+```c++
+class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass> {
+  // ...
+};
+
+class MyNonGCButTraceableClass {
+ public:
+  void Trace(Visitor* visitor) {
+    // ...
+  }
+};
+
+class MyNotGarbageCollectedClass {
+  // ...
+};
+
+VectorOf<float> v1;                       // Vector<float> v1;
+VectorOf<MyNotGarbageCollectedClass> v2;  // Vector<MyNotGarbageCollectedClass> v2;
+VectorOf<MyNonGCButTraceableClass> v3;    // HeapVector<MyNonGCButTraceableClass> v3;
+VectorOf<MyGarbageCollectedClass> v4;     // HeapVector<Member<MyGarbageCollectedClass>> v4;
+```
+
+### VectorOfPairs<T, U>
+
+Similar to `VectorOf<T>`, but defines a type alias that is either `HeapVector<std::pair<V, X>>` (where `V` is either `T` or `Member<T>` and `X` is either `U` or `Member<U>`) or `Vector<std::pair<T, U>>`.
+
+In other words, if either `T` or `U` needs to be wrapped in a `HeapVector` instead of a `Vector`, `VectorOfPairs` will use a `HeapVector<std::pair<>>` and wrap them with `Member<>` appropriately. Otherwise, a `Vector<std::pair<>>` will be used.
+
+```c++
+class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass> {
+  // ...
+};
+
+class MyNonGCButTraceableClass {
+ public:
+  void Trace(Visitor* visitor) {
+    // ...
+  }
+};
+
+class MyNotGarbageCollectedClass {
+  // ...
+};
+
+// Vector<std::pair<double, int8_t>> v1;
+VectorOfPairs<double, int8_t> v1;
+
+// Vector<std::pair<MyNotGarbageCollectedClass, String>> v2;
+VectorOfPairs<MyNotGarbageCollectedClass, String> v2;
+
+// HeapVector<std::pair<float, MyNonGCButTraceableClass>> v3;
+VectorOfPairs<float, MyNonGCButTraceableClass> v3;
+
+// HeapVector<std::pair<MyNonGCButTraceableClass, Member<MyGarbageCollectedClass>>> v4;
+VectorOfPairs<MyNonGCButTraceableClass, MyGarbageCollectedClass> v4;
+```
