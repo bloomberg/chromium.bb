@@ -51,8 +51,7 @@ struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
 // Sequence
 template <typename T>
 struct IDLSequence final : public IDLBase {
-  using ImplType =
-      typename VectorOf<typename NativeValueTraits<T>::ImplType>::type;
+  using ImplType = VectorOf<typename NativeValueTraits<T>::ImplType>;
 };
 
 // Record
@@ -64,8 +63,7 @@ struct IDLRecord final : public IDLBase {
                 "IDLRecord keys must be of a WebIDL string type");
 
   using ImplType =
-      typename VectorOfPairs<String,
-                             typename NativeValueTraits<Value>::ImplType>::type;
+      VectorOfPairs<String, typename NativeValueTraits<Value>::ImplType>;
 };
 
 // Nullable (T?).

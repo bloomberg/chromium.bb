@@ -31,97 +31,94 @@ struct GarbageCollectedStruct
 };
 
 // AddMemberIfNeeded<T>
-static_assert(std::is_same<AddMemberIfNeeded<double>::type, double>::value,
+static_assert(std::is_same<AddMemberIfNeeded<double>, double>::value,
               "AddMemberIfNeeded<double> must not add a Member wrapper");
-static_assert(std::is_same<AddMemberIfNeeded<double*>::type, double*>::value,
+static_assert(std::is_same<AddMemberIfNeeded<double*>, double*>::value,
               "AddMemberIfNeeded<double*> must not add a Member wrapper");
 
-static_assert(std::is_same<AddMemberIfNeeded<Empty>::type, Empty>::value,
+static_assert(std::is_same<AddMemberIfNeeded<Empty>, Empty>::value,
               "AddMemberIfNeeded<Empty> must not add a Member wrapper");
 
 static_assert(
-    std::is_same<AddMemberIfNeeded<StructWithTraceMethod>::type,
+    std::is_same<AddMemberIfNeeded<StructWithTraceMethod>,
                  StructWithTraceMethod>::value,
     "AddMemberIfNeeded<StructWithTraceMethod> must not add a Member wrapper");
 
 static_assert(
-    std::is_same<AddMemberIfNeeded<GarbageCollectedStruct>::type,
+    std::is_same<AddMemberIfNeeded<GarbageCollectedStruct>,
                  Member<GarbageCollectedStruct>>::value,
     "AddMemberIfNeeded<GarbageCollectedStruct> must not add a Member wrapper");
 
 static_assert(
-    std::is_same<
-        AddMemberIfNeeded<HeapVector<Member<GarbageCollectedStruct>>>::type,
-        Member<HeapVector<Member<GarbageCollectedStruct>>>>::value,
+    std::is_same<AddMemberIfNeeded<HeapVector<Member<GarbageCollectedStruct>>>,
+                 Member<HeapVector<Member<GarbageCollectedStruct>>>>::value,
     "AddMemberIfNeeded on a HeapVector<Member<T>> must wrap it in a Member<>");
 
 // VectorOf<T>
-static_assert(std::is_same<VectorOf<double>::type, Vector<double>>::value,
+static_assert(std::is_same<VectorOf<double>, Vector<double>>::value,
               "VectorOf<double> should use a Vector");
-static_assert(std::is_same<VectorOf<double*>::type, Vector<double*>>::value,
+static_assert(std::is_same<VectorOf<double*>, Vector<double*>>::value,
               "VectorOf<double*> should use a Vector");
-static_assert(std::is_same<VectorOf<Empty>::type, Vector<Empty>>::value,
+static_assert(std::is_same<VectorOf<Empty>, Vector<Empty>>::value,
               "VectorOf<Empty> should use a Vector");
 
 static_assert(
-    std::is_same<VectorOf<StructWithTraceMethod>::type,
+    std::is_same<VectorOf<StructWithTraceMethod>,
                  HeapVector<StructWithTraceMethod>>::value,
     "VectorOf<StructWithTraceMethod> must not add a Member<> wrapper");
-static_assert(std::is_same<VectorOf<GarbageCollectedStruct>::type,
+static_assert(std::is_same<VectorOf<GarbageCollectedStruct>,
                            HeapVector<Member<GarbageCollectedStruct>>>::value,
               "VectorOf<GarbageCollectedStruct> must add a Member<> wrapper");
 
 static_assert(
-    std::is_same<VectorOf<Vector<double>>::type, Vector<Vector<double>>>::value,
+    std::is_same<VectorOf<Vector<double>>, Vector<Vector<double>>>::value,
     "Nested Vectors must not add HeapVectors");
 static_assert(
-    std::is_same<VectorOf<HeapVector<StructWithTraceMethod>>::type,
+    std::is_same<VectorOf<HeapVector<StructWithTraceMethod>>,
                  HeapVector<Member<HeapVector<StructWithTraceMethod>>>>::value,
     "Nested HeapVector<StructWithTraceMethod> must add a HeapVector");
 static_assert(
     std::is_same<
-        VectorOf<HeapVector<Member<GarbageCollectedStruct>>>::type,
+        VectorOf<HeapVector<Member<GarbageCollectedStruct>>>,
         HeapVector<Member<HeapVector<Member<GarbageCollectedStruct>>>>>::value,
     "Nested HeapVectors must not add Vectors");
 
 // VectorOfPairs<T, U>
-static_assert(std::is_same<VectorOfPairs<int, double>::type,
+static_assert(std::is_same<VectorOfPairs<int, double>,
                            Vector<std::pair<int, double>>>::value,
               "POD types must use a regular Vector");
-static_assert(std::is_same<VectorOfPairs<Empty, double>::type,
+static_assert(std::is_same<VectorOfPairs<Empty, double>,
                            Vector<std::pair<Empty, double>>>::value,
               "POD types must use a regular Vector");
 
 static_assert(
-    std::is_same<VectorOfPairs<StructWithTraceMethod, float>::type,
+    std::is_same<VectorOfPairs<StructWithTraceMethod, float>,
                  HeapVector<std::pair<StructWithTraceMethod, float>>>::value,
     "StructWithTraceMethod causes a HeapVector to be used");
 static_assert(
-    std::is_same<VectorOfPairs<float, StructWithTraceMethod>::type,
+    std::is_same<VectorOfPairs<float, StructWithTraceMethod>,
                  HeapVector<std::pair<float, StructWithTraceMethod>>>::value,
     "StructWithTraceMethod causes a HeapVector to be used");
 static_assert(
-    std::is_same<
-        VectorOfPairs<StructWithTraceMethod, StructWithTraceMethod>::type,
-        HeapVector<std::pair<StructWithTraceMethod, StructWithTraceMethod>>>::
-        value,
+    std::is_same<VectorOfPairs<StructWithTraceMethod, StructWithTraceMethod>,
+                 HeapVector<std::pair<StructWithTraceMethod,
+                                      StructWithTraceMethod>>>::value,
     "StructWithTraceMethod causes a HeapVector to be used");
 
 static_assert(
     std::is_same<
-        VectorOfPairs<GarbageCollectedStruct, float>::type,
+        VectorOfPairs<GarbageCollectedStruct, float>,
         HeapVector<std::pair<Member<GarbageCollectedStruct>, float>>>::value,
     "GarbageCollectedStruct causes a HeapVector to be used");
 static_assert(
     std::is_same<
-        VectorOfPairs<float, GarbageCollectedStruct>::type,
+        VectorOfPairs<float, GarbageCollectedStruct>,
         HeapVector<std::pair<float, Member<GarbageCollectedStruct>>>>::value,
     "GarbageCollectedStruct causes a HeapVector to be used");
 static_assert(
-    std::is_same<
-        VectorOfPairs<GarbageCollectedStruct, GarbageCollectedStruct>::type,
-        HeapVector<std::pair<Member<GarbageCollectedStruct>,
-                             Member<GarbageCollectedStruct>>>>::value,
+    std::is_same<VectorOfPairs<GarbageCollectedStruct, GarbageCollectedStruct>,
+                 HeapVector<std::pair<Member<GarbageCollectedStruct>,
+                                      Member<GarbageCollectedStruct>>>>::value,
     "GarbageCollectedStruct causes a HeapVector to be used");
 
 }  // namespace
