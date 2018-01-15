@@ -93,6 +93,13 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
   }
   secure_tracker_.Remove(video_track);
 
+  {
+    auto it = std::find(suspended_tracks_.begin(), suspended_tracks_.end(),
+                        video_track);
+    if (it != suspended_tracks_.end())
+      suspended_tracks_.erase(it);
+  }
+
   for (auto it = pending_tracks_.begin(); it != pending_tracks_.end(); ++it) {
     if (it->track == video_track) {
       pending_tracks_.erase(it);
