@@ -48,7 +48,7 @@ namespace blink {
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
                                                          ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr), style_(style) {
-  DCHECK(!element.IsActiveSlotOrActiveV0InsertionPoint());
+  DCHECK(element.CanParticipateInFlatTree());
   // TODO(ecobos): Move the first-letter logic inside ParentLayoutObject too?
   // It's an extra (unnecessary) check for text nodes, though.
   if (element.IsFirstLetterPseudoElement()) {

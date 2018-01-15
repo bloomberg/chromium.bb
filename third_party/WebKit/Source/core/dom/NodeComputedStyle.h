@@ -51,7 +51,7 @@ inline ComputedStyle* Node::MutableComputedStyle() const {
 }
 
 inline const ComputedStyle* Node::ParentComputedStyle() const {
-  if (IsActiveSlotOrActiveV0InsertionPoint())
+  if (!CanParticipateInFlatTree())
     return nullptr;
   ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
   return parent ? parent->GetComputedStyle() : nullptr;

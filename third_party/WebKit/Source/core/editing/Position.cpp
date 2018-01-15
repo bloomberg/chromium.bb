@@ -561,7 +561,7 @@ PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
   if (pos.IsOffsetInAnchor()) {
     if (anchor->IsCharacterDataNode())
       return PositionInFlatTree(anchor, pos.ComputeOffsetInContainerNode());
-    DCHECK(!anchor->IsActiveSlotOrActiveV0InsertionPoint());
+    DCHECK(!anchor->IsElementNode() || anchor->CanParticipateInFlatTree());
     int offset = pos.ComputeOffsetInContainerNode();
     Node* child = NodeTraversal::ChildAt(*anchor, offset);
     if (!child) {
@@ -571,7 +571,7 @@ PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
       return PositionInFlatTree(anchor, PositionAnchorType::kAfterChildren);
     }
     child->UpdateDistribution();
-    if (child->IsActiveSlotOrActiveV0InsertionPoint()) {
+    if (!child->CanParticipateInFlatTree()) {
       if (anchor->IsShadowRoot())
         return PositionInFlatTree(anchor->OwnerShadowHost(), offset);
       return PositionInFlatTree(anchor, offset);

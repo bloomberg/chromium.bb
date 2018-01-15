@@ -47,13 +47,13 @@ ElementResolveContext::ElementResolveContext(Element& element)
               element)),
       distributed_to_insertion_point_(false) {
   LayoutTreeBuilderTraversal::ParentDetails parent_details;
-  if (element.IsActiveSlotOrActiveV0InsertionPoint()) {
-    parent_node_ = nullptr;
-    layout_parent_ = nullptr;
-  } else {
+  if (element.CanParticipateInFlatTree()) {
     parent_node_ = LayoutTreeBuilderTraversal::Parent(element);
     layout_parent_ =
         LayoutTreeBuilderTraversal::LayoutParent(element, &parent_details);
+  } else {
+    parent_node_ = nullptr;
+    layout_parent_ = nullptr;
   }
   distributed_to_insertion_point_ = parent_details.GetInsertionPoint();
 
