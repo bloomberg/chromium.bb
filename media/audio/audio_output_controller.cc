@@ -326,7 +326,8 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
                                       base::TimeTicks delay_timestamp,
                                       int prior_frames_skipped,
                                       AudioBus* dest) {
-  TRACE_EVENT0("audio", "AudioOutputController::OnMoreData");
+  TRACE_EVENT_BEGIN1("audio", "AudioOutputController::OnMoreData",
+                     "frames skipped", prior_frames_skipped);
 
   stats_tracker_->OnMoreDataCalled();
 
@@ -364,12 +365,20 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
     }
   }
 
+  TRACE_EVENT_END2("audio", "AudioOutputController::OnMoreData",
+                   "timestamp (ms)",
+                   (delay_timestamp - base::TimeTicks()).InMillisecondsF(),
+                   "delay (ms)", delay.InMillisecondsF());
   return frames;
 }
 
 void AudioOutputController::BroadcastDataToDuplicationTargets(
     std::unique_ptr<AudioBus> audio_bus,
     base::TimeTicks reference_time) {
+  TRACE_EVENT1("audio",
+               "AudioOutputController::BroadcastDataToDuplicationTargets",
+               "reference_time (ms)",
+               (reference_time - base::TimeTicks()).InMillisecondsF());
   DCHECK(message_loop_->BelongsToCurrentThread());
   if (state_ != kPlaying || duplication_targets_.empty())
     return;

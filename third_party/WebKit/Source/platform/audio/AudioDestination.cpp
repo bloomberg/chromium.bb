@@ -101,9 +101,9 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
                               double delay,
                               double delay_timestamp,
                               size_t prior_frames_skipped) {
-  TRACE_EVENT1("webaudio", "AudioDestination::Render",
-               "callback_buffer_size", number_of_frames);
-
+  TRACE_EVENT_BEGIN2("webaudio", "AudioDestination::Render",
+                     "callback_buffer_size", number_of_frames, "frames skipped",
+                     prior_frames_skipped);
   DCHECK(
       !(worklet_backing_thread_ && worklet_backing_thread_->IsCurrentThread()));
 
@@ -113,8 +113,14 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   // Note that this method is called by AudioDeviceThread. If FIFO is not ready,
   // or the requested render size is greater than FIFO size return here.
   // (crbug.com/692423)
-  if (!fifo_ || fifo_->length() < number_of_frames)
+  if (!fifo_ || fifo_->length() < number_of_frames) {
+    TRACE_EVENT_INSTANT1(
+        "webaudio", "AudioDestination::Render - not enough data in fifo",
+        TRACE_EVENT_SCOPE_THREAD, "fifo length", fifo_ ? fifo_->length() : 0);
+    TRACE_EVENT_END2("webaudio", "AudioDestination::Render", "timestamp (s)",
+                     delay_timestamp, "delay (s)", delay);
     return;
+  }
 
   // Associate the destination data array with the output bus then fill the
   // FIFO.
@@ -136,6 +142,8 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
     RequestRender(number_of_frames, frames_to_render, delay,
                   delay_timestamp, prior_frames_skipped);
   }
+  TRACE_EVENT_END2("webaudio", "AudioDestination::Render", "timestamp (s)",
+                   delay_timestamp, "delay (s)", delay);
 }
 
 void AudioDestination::RequestRender(size_t frames_requested,
@@ -143,8 +151,9 @@ void AudioDestination::RequestRender(size_t frames_requested,
                                      double delay,
                                      double delay_timestamp,
                                      size_t prior_frames_skipped) {
-  TRACE_EVENT1("webaudio", "AudioDestination::RequestRender",
-               "frames_to_render", frames_to_render);
+  TRACE_EVENT2("webaudio", "AudioDestination::RequestRender",
+               "frames_to_render", frames_to_render, "timestamp (s)",
+               delay_timestamp);
 
   DCHECK(
       !worklet_backing_thread_ || worklet_backing_thread_->IsCurrentThread());
