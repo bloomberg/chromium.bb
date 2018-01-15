@@ -1337,9 +1337,9 @@ void UiSceneCreator::CreateUrlBar() {
 
   base::RepeatingCallback<void()> url_click_callback;
   if (base::FeatureList::IsEnabled(features::kVrBrowserKeyboard)) {
-    url_click_callback =
-        base::BindRepeating([](Ui* ui) { ui->SetOmniboxEditingEnabled(true); },
-                            base::Unretained(ui_));
+    url_click_callback = base::BindRepeating(
+        [](Model* model) { model->push_mode(kModeEditingOmnibox); },
+        base::Unretained(model_));
   } else {
     url_click_callback = base::BindRepeating([] {});
   }
@@ -1635,8 +1635,9 @@ void UiSceneCreator::CreateOmnibox() {
 
   auto close_button = Create<DiscButton>(
       kOmniboxCloseButton, kPhaseForeground,
-      base::BindRepeating([](Ui* ui) { ui->SetOmniboxEditingEnabled(false); },
-                          base::Unretained(ui_)),
+      base::BindRepeating(
+          [](Model* model) { model->pop_mode(kModeEditingOmnibox); },
+          base::Unretained(model_)),
       vector_icons::kBackArrowIcon);
   close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
                         kOmniboxCloseButtonDiameterDMM);

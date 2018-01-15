@@ -167,14 +167,6 @@ void Ui::OnUiRequestedNavigation() {
   model_->pop_mode(kModeEditingOmnibox);
 }
 
-void Ui::SetOmniboxEditingEnabled(bool enabled) {
-  if (enabled) {
-    model_->push_mode(kModeEditingOmnibox);
-  } else {
-    model_->pop_mode(kModeEditingOmnibox);
-  }
-}
-
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
   if (enabled) {
     model_->push_mode(kModeVoiceSearch);
@@ -259,6 +251,17 @@ void Ui::OnAppButtonClicked() {
   // App button click exits the WebVR presentation and fullscreen.
   browser_->ExitPresent();
   browser_->ExitFullscreen();
+
+  switch (model_->get_last_opaque_mode()) {
+    case kModeVoiceSearch:
+      browser_->SetVoiceSearchActive(false);
+      break;
+    case kModeEditingOmnibox:
+      model_->pop_mode(kModeEditingOmnibox);
+      break;
+    default:
+      break;
+  }
 }
 
 void Ui::OnAppButtonGesturePerformed(
