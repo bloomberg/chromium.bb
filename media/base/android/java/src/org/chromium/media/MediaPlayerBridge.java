@@ -4,6 +4,7 @@
 
 package org.chromium.media;
 
+import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.TrackInfo;
 import android.net.Uri;
@@ -352,6 +353,7 @@ public class MediaPlayerBridge {
         boolean canSeekForward = true;
         boolean canSeekBackward = true;
         try {
+            @SuppressLint("PrivateApi")
             Method getMetadata = player.getClass().getDeclaredMethod(
                     "getMetadata", boolean.class, boolean.class);
             getMetadata.setAccessible(true);

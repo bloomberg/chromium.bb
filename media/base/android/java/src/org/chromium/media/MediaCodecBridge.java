@@ -4,6 +4,7 @@
 
 package org.chromium.media;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.media.AudioFormat;
 import android.media.MediaCodec;
@@ -289,6 +290,7 @@ class MediaCodecBridge {
     }
 
     /** Returns null if MediaCodec throws IllegalStateException. */
+    @SuppressLint("NewApi")
     @CalledByNative
     private ByteBuffer getInputBuffer(int index) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
@@ -303,6 +305,7 @@ class MediaCodecBridge {
     }
 
     /** Returns null if MediaCodec throws IllegalStateException. */
+    @SuppressLint("NewApi")
     @CalledByNative
     protected ByteBuffer getOutputBuffer(int index) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
@@ -373,6 +376,7 @@ class MediaCodecBridge {
         }
     }
 
+    @SuppressLint("WrongConstant") // TODO(crbug.com/799070): Not sure why it is necessary.
     @CalledByNative
     private int queueSecureInputBuffer(int index, int offset, byte[] iv, byte[] keyId,
             int[] numBytesOfClearData, int[] numBytesOfEncryptedData, int numSubSamples,

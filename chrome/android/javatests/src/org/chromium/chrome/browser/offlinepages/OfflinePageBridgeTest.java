@@ -592,7 +592,8 @@ public class OfflinePageBridgeTest {
                         new OfflinePageOrigin(), new Callback<Integer>() {
                             @Override
                             public void onResult(Integer i) {
-                                Assert.assertEquals("SavePageLater did not succeed", new Integer(0),
+                                Assert.assertEquals("SavePageLater did not succeed",
+                                        Integer.valueOf(0),
                                         i); // 0 is SUCCESS
                                 semaphore.release();
                             }
