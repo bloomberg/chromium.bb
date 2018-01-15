@@ -111,14 +111,13 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         : Keyframe::PropertySpecificKeyframe(offset,
                                              std::move(easing),
                                              composite),
-          value_(const_cast<CSSValue*>(value)) {}
+          value_(value) {}
 
     scoped_refptr<Keyframe::PropertySpecificKeyframe> CloneWithOffset(
         double offset) const override;
     bool IsCSSPropertySpecificKeyframe() const override { return true; }
 
-    // TODO(sashab): Make this a const CSSValue.
-    Persistent<CSSValue> value_;
+    Persistent<const CSSValue> value_;
     mutable scoped_refptr<AnimatableValue> animatable_value_cache_;
   };
 
