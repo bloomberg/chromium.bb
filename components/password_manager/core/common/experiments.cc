@@ -10,7 +10,7 @@ namespace password_manager {
 
 bool ForceSavingExperimentEnabled() {
   return base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordForceSaving);
+      password_manager::features::kPasswordForceSaving);
 }
 
 }  // namespace password_manager

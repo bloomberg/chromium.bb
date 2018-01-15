@@ -1710,10 +1710,10 @@ TEST_F(PasswordManagerTest,
 }
 
 TEST_F(PasswordManagerTest, ForceSavingPasswords) {
-  // Add the enable-password-force-saving feature.
+  // Add the PasswordForceSaving feature.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kEnablePasswordForceSaving);
+      features::kPasswordForceSaving);
   PasswordForm form(MakeSimpleForm());
 
   std::vector<PasswordForm> observed;
@@ -1737,10 +1737,10 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
 
 // Forcing Chrome to save an empty passwords should fail without a crash.
 TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
-  // Add the enable-password-force-saving feature.
+  // Add the PasswordForceSaving feature.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kEnablePasswordForceSaving);
+      features::kPasswordForceSaving);
   PasswordForm empty_password_form;
 
   std::vector<PasswordForm> observed;
