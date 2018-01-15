@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -65,6 +66,7 @@ const char kPageLoadCompletedAfterAppBackground[] =
     "PageLoad.Internal.PageLoadCompleted.AfterAppBackground";
 const char kPageLoadStartedInForeground[] =
     "PageLoad.Internal.NavigationStartedInForeground";
+const char kPageLoadPrerender[] = "PageLoad.Internal.Prerender";
 
 }  // namespace internal
 
@@ -193,6 +195,11 @@ PageLoadTracker::PageLoadTracker(
 
   UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadStartedInForeground,
                         started_in_foreground_);
+  const bool is_prerender = prerender::PrerenderContents::FromWebContents(
+                                navigation_handle->GetWebContents()) != nullptr;
+  if (is_prerender) {
+    UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadPrerender, true);
+  }
 }
 
 PageLoadTracker::~PageLoadTracker() {
