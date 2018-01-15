@@ -19,7 +19,6 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   ~MockIdleDeadlineScheduler() override = default;
 
   // WebScheduler implementation:
-  WebTaskRunner* LoadingTaskRunner() override { return nullptr; }
   WebTaskRunner* TimerTaskRunner() override { return nullptr; }
   WebTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}

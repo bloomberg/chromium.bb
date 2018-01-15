@@ -9,6 +9,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"
@@ -59,15 +60,11 @@ class VirtualTimeTest : public SimTest {
   // Some task queues may have repeating v8 tasks that run forever so we impose
   // a hard (virtual) time limit.
   void RunTasksForPeriod(double delay_ms) {
-    Platform::Current()
-        ->CurrentThread()
-        ->Scheduler()
-        ->LoadingTaskRunner()
-        ->PostDelayedTask(
-            FROM_HERE,
-            WTF::Bind(&VirtualTimeTest::StopVirtualTimeAndExitRunLoop,
-                      WTF::Unretained(this)),
-            TimeDelta::FromMillisecondsD(delay_ms));
+    scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
+        FROM_HERE,
+        WTF::Bind(&VirtualTimeTest::StopVirtualTimeAndExitRunLoop,
+                  WTF::Unretained(this)),
+        TimeDelta::FromMillisecondsD(delay_ms));
     testing::EnterRunLoop();
   }
 };

@@ -21,10 +21,12 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -35,10 +37,7 @@ namespace {
 class ScriptStreamingTest : public ::testing::Test {
  public:
   ScriptStreamingTest()
-      : loading_task_runner_(Platform::Current()
-                                 ->CurrentThread()
-                                 ->Scheduler()
-                                 ->LoadingTaskRunner()),
+      : loading_task_runner_(scheduler::CreateWebTaskRunnerForTesting()),
         dummy_page_holder_(DummyPageHolder::Create(IntSize(800, 600))) {
     dummy_page_holder_->GetPage().GetSettings().SetScriptEnabled(true);
     MockScriptElementBase* element = MockScriptElementBase::Create();

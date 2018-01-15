@@ -26,7 +26,6 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
  public:
   WebSchedulerImpl(ChildScheduler* child_scheduler,
                    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-                   scoped_refptr<TaskQueue> loading_task_runner,
                    scoped_refptr<TaskQueue> timer_task_runner,
                    scoped_refptr<TaskQueue> v8_task_runner);
   ~WebSchedulerImpl() override;
@@ -39,7 +38,6 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
                     WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,
                                WebThread::IdleTask task) override;
-  WebTaskRunner* LoadingTaskRunner() override;
   WebTaskRunner* TimerTaskRunner() override;
   WebTaskRunner* V8TaskRunner() override;
   WebTaskRunner* CompositorTaskRunner() override;
@@ -58,7 +56,6 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
 
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<WebTaskRunnerImpl> loading_web_task_runner_;
   scoped_refptr<WebTaskRunnerImpl> timer_web_task_runner_;
   scoped_refptr<WebTaskRunnerImpl> v8_web_task_runner_;
 
