@@ -37689,6 +37689,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.RendererAll.Committed" units="MB">
+  <obsolete>
+    Deprecated 01/2018. No direct replacement, although
+    Memory.Total.PrivateMemoryFootprint is similar.
+  </obsolete>
   <owner>bashi@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>tasak@chromium.org</owner>
