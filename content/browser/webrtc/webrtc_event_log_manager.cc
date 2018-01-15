@@ -13,11 +13,17 @@ namespace content {
 
 const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
 
-base::LazyInstance<WebRtcEventLogManager>::Leaky g_webrtc_event_log_manager =
-    LAZY_INSTANCE_INITIALIZER;
+WebRtcEventLogManager* WebRtcEventLogManager::g_webrtc_event_log_manager =
+    nullptr;
+
+WebRtcEventLogManager* WebRtcEventLogManager::CreateSingletonInstance() {
+  DCHECK(!g_webrtc_event_log_manager);
+  g_webrtc_event_log_manager = new WebRtcEventLogManager;
+  return g_webrtc_event_log_manager;
+}
 
 WebRtcEventLogManager* WebRtcEventLogManager::GetInstance() {
-  return g_webrtc_event_log_manager.Pointer();
+  return g_webrtc_event_log_manager;
 }
 
 WebRtcEventLogManager::WebRtcEventLogManager()
@@ -27,10 +33,13 @@ WebRtcEventLogManager::WebRtcEventLogManager()
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!g_webrtc_event_log_manager);
+  g_webrtc_event_log_manager = this;
 }
 
 WebRtcEventLogManager::~WebRtcEventLogManager() {
-  // This should never actually run, except in unit tests.
+  DCHECK(g_webrtc_event_log_manager);
+  g_webrtc_event_log_manager = nullptr;
 }
 
 void WebRtcEventLogManager::PeerConnectionAdded(

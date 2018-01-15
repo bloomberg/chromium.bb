@@ -225,6 +225,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+#include "content/browser/webrtc/webrtc_event_log_manager.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #endif
 
@@ -1581,6 +1582,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+  webrtc_event_log_manager_.reset(
+      WebRtcEventLogManager::CreateSingletonInstance());
   webrtc_internals_.reset(WebRTCInternals::CreateSingletonInstance());
 #endif
 

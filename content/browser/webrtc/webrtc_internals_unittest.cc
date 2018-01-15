@@ -94,18 +94,9 @@ class WebRTCInternalsForTest : public WebRTCInternals {
 
   bool HasWakeLock() { return mock_wake_lock_.HasWakeLock(); }
 
-  WebRtcEventLogManager* GetWebRtcEventLogManager() override {
-    return &temporary_webrtc_event_log_manager_;
-  }
-
  private:
   MockWakeLock mock_wake_lock_;
-  // WebRtcEventLogManager is a lazily constructed singleton with its own
-  // sequenced task runner. The singleton remains alive between tests, but
-  // the runner's underlying task queue becomes invalidated. Therefore, we
-  // override it and make WebRtcInternals (the unit under test) use a temporary
-  // object, that would not outlive the test.
-  WebRtcEventLogManagerForTesting temporary_webrtc_event_log_manager_;
+  WebRtcEventLogManagerForTesting synchronous_webrtc_event_log_manager_;
 };
 
 class WebRtcInternalsTest : public testing::Test {

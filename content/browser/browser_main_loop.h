@@ -112,6 +112,7 @@ struct MainFunctionParams;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 class WebRTCInternals;
+class WebRtcEventLogManager;
 #endif
 
 #if defined(OS_ANDROID)
@@ -378,6 +379,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+  std::unique_ptr<WebRtcEventLogManager> webrtc_event_log_manager_;
   std::unique_ptr<WebRTCInternals> webrtc_internals_;
 #endif
 
