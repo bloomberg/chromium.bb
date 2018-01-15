@@ -120,13 +120,7 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (av1_is_compound_reference_allowed(cm)) {
-#if CONFIG_REF_ADAPT
     return aom_rb_read_bit(rb) ? REFERENCE_MODE_SELECT : SINGLE_REFERENCE;
-#else
-    return aom_rb_read_bit(rb)
-               ? REFERENCE_MODE_SELECT
-               : (aom_rb_read_bit(rb) ? COMPOUND_REFERENCE : SINGLE_REFERENCE);
-#endif  // CONFIG_REF_ADAPT
   } else {
     return SINGLE_REFERENCE;
   }
@@ -2282,16 +2276,8 @@ void read_sequence_header(SequenceHeader *seq_params,
 
 static void read_compound_tools(AV1_COMMON *cm,
                                 struct aom_read_bit_buffer *rb) {
-#if CONFIG_REF_ADAPT
   cm->allow_interintra_compound =
       !frame_is_intra_only(cm) ? aom_rb_read_bit(rb) : 0;
-#else
-  if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
-    cm->allow_interintra_compound = aom_rb_read_bit(rb);
-  } else {
-    cm->allow_interintra_compound = 0;
-  }
-#endif  // CONFIG_REF_ADAPT
 
   if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
     cm->allow_masked_compound = aom_rb_read_bit(rb);

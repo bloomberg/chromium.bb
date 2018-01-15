@@ -1275,9 +1275,7 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
         r, xd->tile_ctx->comp_inter_cdf[ctx], 2, ACCT_STR);
     return mode;  // SINGLE_REFERENCE or COMPOUND_REFERENCE
   } else {
-#if CONFIG_REF_ADAPT
     assert(cm->reference_mode == SINGLE_REFERENCE);
-#endif  // CONFIG_REF_ADAPT
     return cm->reference_mode;
   }
 }
@@ -2024,9 +2022,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   mbmi->use_wedge_interintra = 0;
   if (cm->allow_interintra_compound &&
-#if !CONFIG_REF_ADAPT
-      cm->reference_mode != COMPOUND_REFERENCE &&
-#endif  // !CONFIG_REF_ADAPT
 #if CONFIG_EXT_SKIP
       !mbmi->skip_mode &&
 #endif  // CONFIG_EXT_SKIP
