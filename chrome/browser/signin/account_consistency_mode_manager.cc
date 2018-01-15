@@ -74,6 +74,13 @@ void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
 }
 
 // static
+bool AccountConsistencyModeManager::IsDiceEnabledForProfile(
+    const Profile* profile) {
+  return profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE &&
+         signin::IsDiceEnabledForProfile(profile->GetPrefs());
+}
+
+// static
 void AccountConsistencyModeManager::SetDiceMigrationOnStartup(
     PrefService* prefs,
     bool migrate) {

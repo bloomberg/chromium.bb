@@ -134,6 +134,7 @@ class ProfileChooserViewExtensionsTest
     constexpr char kSignedIn[] = "SignedIn";
     constexpr char kMultiProfile[] = "MultiProfile";
     constexpr char kGuest[] = "Guest";
+    constexpr char kDiceGuest[] = "DiceGuest";
     constexpr char kManageAccountLink[] = "ManageAccountLink";
     constexpr char kSupervisedOwner[] = "SupervisedOwner";
     constexpr char kSupervisedUser[] = "SupervisedUser";
@@ -151,7 +152,7 @@ class ProfileChooserViewExtensionsTest
       CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
       CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
     }
-    if (name == kGuest) {
+    if (name == kGuest || name == kDiceGuest) {
       content::WindowedNotificationObserver browser_creation_observer(
           chrome::NOTIFICATION_BROWSER_WINDOW_READY,
           content::NotificationService::AllSources());
@@ -490,6 +491,13 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 
 // Shows the |ProfileChooserView| during a Guest browsing session.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_Guest) {
+  ShowAndVerifyUi();
+}
+
+// Shows the |ProfileChooserView| during a Guest browsing session when the DICE
+// flag is enabled.
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_DiceGuest) {
+  signin::ScopedAccountConsistencyDice scoped_dice;
   ShowAndVerifyUi();
 }
 
