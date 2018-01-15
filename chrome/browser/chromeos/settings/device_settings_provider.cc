@@ -685,6 +685,19 @@ bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
   return std::find(kKnownSettings, end, name) != end;
 }
 
+// static
+void DeviceSettingsProvider::DecodePolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  DecodeLoginPolicies(policy, new_values_cache);
+  DecodeNetworkPolicies(policy, new_values_cache);
+  DecodeAutoUpdatePolicies(policy, new_values_cache);
+  DecodeReportingPolicies(policy, new_values_cache);
+  DecodeHeartbeatPolicies(policy, new_values_cache);
+  DecodeGenericPolicies(policy, new_values_cache);
+  DecodeLogUploadPolicies(policy, new_values_cache);
+}
+
 void DeviceSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
   // Make sure that either the current user is the device owner or the
@@ -824,13 +837,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
                                policy_data.service_account_identity());
   }
 
-  DecodeLoginPolicies(settings, &new_values_cache);
-  DecodeNetworkPolicies(settings, &new_values_cache);
-  DecodeAutoUpdatePolicies(settings, &new_values_cache);
-  DecodeReportingPolicies(settings, &new_values_cache);
-  DecodeHeartbeatPolicies(settings, &new_values_cache);
-  DecodeGenericPolicies(settings, &new_values_cache);
-  DecodeLogUploadPolicies(settings, &new_values_cache);
+  DecodePolicies(settings, &new_values_cache);
   DecodeDeviceState(policy_data, &new_values_cache);
 
   // Collect all notifications but send them only after we have swapped the

@@ -244,9 +244,6 @@ class ChromeUserManagerImpl
   // Removes user from the list of the users who should be reported.
   void RemoveReportingUser(const AccountId& account_id);
 
-  // Checks if constraint defined by minimum version policy is satisfied.
-  bool MinVersionConstraintsSatisfied() const;
-
   // Creates a user for the given device local account.
   std::unique_ptr<user_manager::User> CreateUserFromDeviceLocalAccount(
       const AccountId& account_id,

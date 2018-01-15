@@ -4,12 +4,45 @@
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 
-#include "components/user_manager/user.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_provider.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_value_map.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
 namespace chrome_user_manager_util {
+namespace {
+// Checks if constraint defined by minimum version policy is satisfied.
+bool MinVersionConstraintsSatisfied() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetMinimumVersionPolicyHandler()
+      ->RequirementsAreSatisfied();
+}
+
+bool IsUserAllowedInner(const user_manager::User& user,
+                        bool supervised_users_allowed,
+                        bool is_guest_allowed,
+                        bool is_user_whitelisted) {
+  if (user.GetType() == user_manager::USER_TYPE_GUEST && !is_guest_allowed)
+    return false;
+  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED &&
+      !supervised_users_allowed)
+    return false;
+  if (user.HasGaiaAccount() && !is_user_whitelisted)
+    return false;
+  if (!MinVersionConstraintsSatisfied() &&
+      user.GetType() != user_manager::USER_TYPE_GUEST)
+    return false;
+  return true;
+}
+}  // namespace
 
 bool GetPlatformKnownUserId(const std::string& user_email,
                             const std::string& gaia_id,
@@ -61,6 +94,75 @@ void UpdateLoginState(const user_manager::User* active_user,
     chromeos::LoginState::Get()->SetLoggedInState(logged_in_state,
                                                   login_user_type);
   }
+}
+
+bool AreSupervisedUsersAllowed(const CrosSettings* cros_settings) {
+  bool supervised_users_allowed = false;
+  cros_settings->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
+                            &supervised_users_allowed);
+  return supervised_users_allowed;
+}
+
+bool IsGuestSessionAllowed(const CrosSettings* cros_settings) {
+  bool is_guest_allowed = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowGuest, &is_guest_allowed);
+  return is_guest_allowed;
+}
+
+bool IsGaiaUserAllowed(const user_manager::User& user,
+                       const CrosSettings* cros_settings) {
+  DCHECK(user.HasGaiaAccount());
+  return cros_settings->IsUserWhitelisted(user.GetAccountId().GetUserEmail(),
+                                          nullptr);
+}
+
+bool IsUserAllowed(const user_manager::User& user,
+                   const enterprise_management::ChromeDeviceSettingsProto&
+                       device_settings_proto) {
+  DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
+         user.GetType() == user_manager::USER_TYPE_GUEST ||
+         user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
+         user.GetType() == user_manager::USER_TYPE_CHILD);
+
+  PrefValueMap prefs;
+  DeviceSettingsProvider::DecodePolicies(device_settings_proto, &prefs);
+
+  bool supervised_users_allowed = false;
+  prefs.GetBoolean(kAccountsPrefSupervisedUsersEnabled,
+                   &supervised_users_allowed);
+
+  bool is_guest_allowed = false;
+  prefs.GetBoolean(kAccountsPrefAllowGuest, &is_guest_allowed);
+
+  const base::Value* value;
+  const base::ListValue* list;
+  if (prefs.GetValue(kAccountsPrefUsers, &value)) {
+    value->GetAsList(&list);
+  }
+
+  bool is_user_whitelisted =
+      user.HasGaiaAccount() &&
+      CrosSettings::FindEmailInList(list, user.GetAccountId().GetUserEmail(),
+                                    nullptr);
+  bool allow_new_user = false;
+  prefs.GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+
+  return IsUserAllowedInner(
+      user, supervised_users_allowed, is_guest_allowed,
+      user.HasGaiaAccount() && (allow_new_user || is_user_whitelisted));
+}
+
+bool IsUserAllowed(const user_manager::User& user,
+                   const CrosSettings* cros_settings) {
+  DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
+         user.GetType() == user_manager::USER_TYPE_GUEST ||
+         user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
+         user.GetType() == user_manager::USER_TYPE_CHILD);
+
+  return IsUserAllowedInner(
+      user, AreSupervisedUsersAllowed(cros_settings),
+      IsGuestSessionAllowed(cros_settings),
+      user.HasGaiaAccount() && IsGaiaUserAllowed(user, cros_settings));
 }
 
 }  // namespace chrome_user_manager_util

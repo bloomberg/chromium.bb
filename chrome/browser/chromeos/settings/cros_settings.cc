@@ -48,22 +48,19 @@ CrosSettings* CrosSettings::Get() {
   return g_cros_settings;
 }
 
-// static
-bool CrosSettings::IsWhitelisted(const std::string& username,
-                                 bool* wildcard_match) {
+bool CrosSettings::IsUserWhitelisted(const std::string& username,
+                                     bool* wildcard_match) const {
   // Skip whitelist check for tests.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipPostLogin)) {
     return true;
   }
 
-  CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return true;
-  return cros_settings->FindEmailInList(kAccountsPrefUsers, username,
-                                        wildcard_match);
+  return FindEmailInList(kAccountsPrefUsers, username, wildcard_match);
 }
 
 CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
@@ -225,6 +222,21 @@ bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email,
                                    bool* wildcard_match) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::ListValue* list;
+  if (!GetList(path, &list)) {
+    if (wildcard_match)
+      *wildcard_match = false;
+    return false;
+  }
+
+  return FindEmailInList(list, email, wildcard_match);
+}
+
+// static
+bool CrosSettings::FindEmailInList(const base::ListValue* list,
+                                   const std::string& email,
+                                   bool* wildcard_match) {
   std::string canonicalized_email(
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
   std::string wildcard_email;
@@ -236,10 +248,6 @@ bool CrosSettings::FindEmailInList(const std::string& path,
 
   if (wildcard_match)
     *wildcard_match = false;
-
-  const base::ListValue* list;
-  if (!GetList(path, &list))
-    return false;
 
   bool found_wildcard_match = false;
   for (base::ListValue::const_iterator entry(list->begin());

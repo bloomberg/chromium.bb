@@ -30,6 +30,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   ~FakeChromeUserManager() override;
 
   // Create and add various types of users.
+  user_manager::User* AddGuestUser();
   user_manager::User* AddKioskAppUser(const AccountId& account_id);
   user_manager::User* AddArcKioskAppUser(const AccountId& account_id);
   user_manager::User* AddSupervisedUser(const AccountId& account_id);

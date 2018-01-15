@@ -39,7 +39,8 @@ class CrosSettings {
   // Checks if the given username is whitelisted and allowed to sign-in to
   // this device. |wildcard_match| may be NULL. If it's present, it'll be set to
   // true if the whitelist check was satisfied via a wildcard.
-  static bool IsWhitelisted(const std::string& username, bool* wildcard_match);
+  bool IsUserWhitelisted(const std::string& username,
+                         bool* wildcard_match) const;
 
   // Creates a device settings service instance. This is meant for unit tests,
   // production code uses the singleton returned by Get() above.
@@ -105,6 +106,11 @@ class CrosSettings {
   bool FindEmailInList(const std::string& path,
                        const std::string& email,
                        bool* wildcard_match) const;
+
+  // Same as above, but receives already populated user list.
+  static bool FindEmailInList(const base::ListValue* list,
+                              const std::string& email,
+                              bool* wildcard_match);
 
   // Adding/removing of providers.
   bool AddSettingsProvider(std::unique_ptr<CrosSettingsProvider> provider);
