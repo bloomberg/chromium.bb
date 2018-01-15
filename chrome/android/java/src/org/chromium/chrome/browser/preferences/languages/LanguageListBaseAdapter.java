@@ -143,15 +143,6 @@ public class LanguageListBaseAdapter
     @Override
     public void onBindViewHolder(LanguageRowViewHolder holder, int position) {
         holder.updateLanguageInfo(mLanguageList.get(position));
-        if (mDragEnabled && getItemCount() > 1) {
-            assert mItemTouchHelper != null;
-            holder.mStartIcon.setOnTouchListener((v, event) -> {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    mItemTouchHelper.startDrag(holder);
-                }
-                return false;
-            });
-        }
     }
 
     @Override
@@ -170,97 +161,129 @@ public class LanguageListBaseAdapter
     }
 
     /**
+     * Show a drag indicator at the start of the row if applicable.
+     *
+     * @param holder The LanguageRowViewHolder of the row.
+     * @param indicatorResId The identifier of the drawable resource for the indicator.
+     */
+    void showDragIndicatorInRow(LanguageRowViewHolder holder, @DrawableRes int indicatorResId) {
+        // Quit if it's not applicable.
+        if (getItemCount() <= 1 || !mDragEnabled) return;
+
+        assert mItemTouchHelper != null;
+        holder.setStartIcon(indicatorResId);
+        holder.mStartIcon.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mItemTouchHelper.startDrag(holder);
+            }
+            return false;
+        });
+    }
+
+    /**
      * Enables drag & drop interaction on the given RecyclerView.
      * @param recyclerView The RecyclerView you want to drag from.
      */
     void enableDrag(RecyclerView recyclerView) {
         mDragEnabled = true;
 
-        ItemTouchHelper.Callback touchHelperCallBack = new ItemTouchHelper.Callback() {
+        if (mItemTouchHelper == null) {
+            ItemTouchHelper.Callback touchHelperCallBack = new ItemTouchHelper.Callback() {
 
-            // The dragged language info during a single drag operation.
-            // The first is its start postion when it's dragged, the second is its language code.
-            @Nullable
-            private Pair<Integer, String> mDraggedLanguage;
+                // The dragged language info during a single drag operation.
+                // The first is its start postion when it's dragged, the second is its language
+                // code.
+                @Nullable
+                private Pair<Integer, String> mDraggedLanguage;
 
-            @Override
-            public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
-                return makeMovementFlags(
-                        ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0 /* swipe flags */);
-            }
-
-            @Override
-            public boolean onMove(
-                    RecyclerView recyclerView, ViewHolder current, ViewHolder target) {
-                int from = current.getAdapterPosition();
-                int to = target.getAdapterPosition();
-                if (from == to) return false;
-
-                Collections.swap(mLanguageList, from, to);
-                notifyItemMoved(from, to);
-                return true;
-            }
-
-            @Override
-            public void onSelectedChanged(ViewHolder viewHolder, int actionState) {
-                super.onSelectedChanged(viewHolder, actionState);
-                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                    // mDraggedLanguage should be cleaned up before.
-                    assert mDraggedLanguage == null;
-                    int start = viewHolder.getAdapterPosition();
-                    mDraggedLanguage = Pair.create(start, getItemByPosition(start).getCode());
-
-                    updateVisualState(true, viewHolder.itemView);
+                @Override
+                public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
+                    return makeMovementFlags(
+                            ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0 /* swipe flags */);
                 }
-            }
 
-            @Override
-            public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
-                super.clearView(recyclerView, viewHolder);
+                @Override
+                public boolean onMove(
+                        RecyclerView recyclerView, ViewHolder current, ViewHolder target) {
+                    int from = current.getAdapterPosition();
+                    int to = target.getAdapterPosition();
+                    if (from == to) return false;
 
-                // Commit the postion change for the dragged language when it's dropped.
-                if (mDraggedLanguage != null) {
-                    int offset = viewHolder.getAdapterPosition() - mDraggedLanguage.first;
-                    if (offset != 0) {
-                        PrefServiceBridge.getInstance().moveAcceptLanguage(
-                                mDraggedLanguage.second, offset);
-                        LanguagesManager.recordAction(
-                                LanguagesManager.ACTION_LANGUAGE_LIST_REORDERED);
+                    Collections.swap(mLanguageList, from, to);
+                    notifyItemMoved(from, to);
+                    return true;
+                }
+
+                @Override
+                public void onSelectedChanged(ViewHolder viewHolder, int actionState) {
+                    super.onSelectedChanged(viewHolder, actionState);
+                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                        // mDraggedLanguage should be cleaned up before.
+                        assert mDraggedLanguage == null;
+                        int start = viewHolder.getAdapterPosition();
+                        mDraggedLanguage = Pair.create(start, getItemByPosition(start).getCode());
+
+                        updateVisualState(true, viewHolder.itemView);
                     }
-                    mDraggedLanguage = null;
                 }
 
-                updateVisualState(false, viewHolder.itemView);
-            }
+                @Override
+                public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
+                    super.clearView(recyclerView, viewHolder);
 
-            @Override
-            public boolean isLongPressDragEnabled() {
-                return true;
-            }
+                    // Commit the postion change for the dragged language when it's dropped.
+                    if (mDraggedLanguage != null) {
+                        int offset = viewHolder.getAdapterPosition() - mDraggedLanguage.first;
+                        if (offset != 0) {
+                            PrefServiceBridge.getInstance().moveAcceptLanguage(
+                                    mDraggedLanguage.second, offset);
+                            LanguagesManager.recordAction(
+                                    LanguagesManager.ACTION_LANGUAGE_LIST_REORDERED);
+                        }
+                        mDraggedLanguage = null;
+                    }
 
-            @Override
-            public boolean isItemViewSwipeEnabled() {
-                return false;
-            }
+                    updateVisualState(false, viewHolder.itemView);
+                }
 
-            @Override
-            public void onSwiped(ViewHolder viewHolder, int direction) {
-                // no-op
-            }
+                @Override
+                public boolean isLongPressDragEnabled() {
+                    return true;
+                }
 
-            private void updateVisualState(boolean dragged, View view) {
-                ViewCompat.animate(view)
-                        .translationZ(dragged ? mDraggedElevation : 0)
-                        .withEndAction(
-                                ()
-                                        -> view.setBackgroundColor(dragged ? mDraggedBackgroundColor
-                                                                           : Color.TRANSPARENT))
-                        .setDuration(ANIMATION_DELAY_MS)
-                        .start();
-            }
-        };
+                @Override
+                public boolean isItemViewSwipeEnabled() {
+                    return false;
+                }
 
-        mItemTouchHelper = new ItemTouchHelper(touchHelperCallBack);
+                @Override
+                public void onSwiped(ViewHolder viewHolder, int direction) {
+                    // no-op
+                }
+
+                private void updateVisualState(boolean dragged, View view) {
+                    ViewCompat.animate(view)
+                            .translationZ(dragged ? mDraggedElevation : 0)
+                            .withEndAction(()
+                                                   -> view.setBackgroundColor(dragged
+                                                                   ? mDraggedBackgroundColor
+                                                                   : Color.TRANSPARENT))
+                            .setDuration(ANIMATION_DELAY_MS)
+                            .start();
+                }
+            };
+
+            mItemTouchHelper = new ItemTouchHelper(touchHelperCallBack);
+        }
         mItemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+    /**
+     * Disables drag & drop interaction.
+     * @param recyclerView The RecyclerView you want to drag from.
+     */
+    void disableDrag() {
+        mDragEnabled = false;
+        if (mItemTouchHelper != null) mItemTouchHelper.attachToRecyclerView(null);
     }
 }
