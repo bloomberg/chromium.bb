@@ -56,6 +56,6 @@ FAIL Only enumerable properties on keyframes are read assert_equals: number of f
 FAIL Only properties defined directly on keyframes are read assert_equals: number of frames expected 2 but got 0
 FAIL Only enumerable properties on property-indexed keyframes are read assert_equals: number of frames expected 2 but got 0
 FAIL Only properties defined directly on property-indexed keyframes are read assert_equals: number of frames expected 2 but got 0
-FAIL Properties are read in ascending order by Unicode codepoint assert_array_equals: property access order lengths differ, expected 5 got 8
+FAIL Properties are read in ascending order by Unicode codepoint assert_array_equals: property access order property 3, expected "left" but got "marginLeft"
 Harness: the test ran to completion.
 

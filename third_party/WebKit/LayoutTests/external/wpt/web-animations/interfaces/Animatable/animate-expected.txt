@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 121 tests; 109 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 121 tests; 110 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -81,9 +81,7 @@ PASS Element.animate() does not accept empty property-indexed keyframe with an i
 PASS Element.animate() does not accept a keyframe sequence with an invalid easing value
 PASS Element.animate() does not accept property-indexed keyframes with an invalid composite value
 PASS Element.animate() does not accept property-indexed keyframes with an invalid composite value as one of the array values
-FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "() => {
-      div.animate(subtest.input, 2000);
-    }" did not throw
+PASS Element.animate() does not accept keyframes with an invalid composite value
 PASS Element.animate() does not accept invalid easing: ''
 PASS Element.animate() does not accept invalid easing: '7'
 PASS Element.animate() does not accept invalid easing: 'test'

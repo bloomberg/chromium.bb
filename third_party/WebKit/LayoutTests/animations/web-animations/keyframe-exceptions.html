@@ -20,7 +20,7 @@ test(function() {
         {offset: 0.4}
       ]);
     },
-    "Failed to execute 'animate' on 'Element': Keyframes with specified offsets are not sorted"
+    "Failed to execute 'animate' on 'Element': Offsets must be montonically non-decreasing."
   );
 
   assert_throws_with_message('TypeError',
@@ -29,7 +29,7 @@ test(function() {
         {offset: 'a donkey'}
       ]);
     },
-    "Failed to execute 'animate' on 'Element': Non numeric offset provided"
+    "Failed to execute 'animate' on 'Element': The provided double value is non-finite."
   );
 
   assert_throws_with_message('TypeError',
@@ -38,7 +38,7 @@ test(function() {
         {offset: -1}
       ]);
     },
-    "Failed to execute 'animate' on 'Element': Offsets provided outside the range [0, 1]"
+    "Failed to execute 'animate' on 'Element': Offsets must be null or in the range [0,1]."
   );
 });
 </script>

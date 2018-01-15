@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
-Found 167 tests; 148 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 167 tests; 149 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffectReadOnly can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
 FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes assert_equals: resulting composite for 'accumulate' expected (string) "accumulate" but got (undefined) undefined
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
 FAIL composite value is absent if the composite operation specified on the keyframe effect is being used Failed to construct 'KeyframeEffectReadOnly': Invalid composite value: 'accumulate'
 PASS A KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification
 PASS A KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification roundtrips
@@ -138,9 +138,7 @@ PASS KeyframeEffectReadOnly constructor throws with empty property-indexed keyfr
 PASS KeyframeEffectReadOnly constructor throws with a keyframe sequence with an invalid easing value
 PASS KeyframeEffectReadOnly constructor throws with property-indexed keyframes with an invalid composite value
 PASS KeyframeEffectReadOnly constructor throws with property-indexed keyframes with an invalid composite value as one of the array values
-FAIL KeyframeEffectReadOnly constructor throws with keyframes with an invalid composite value assert_throws: function "() => {
-      new KeyframeEffectReadOnly(target, subtest.input);
-    }" did not throw
+PASS KeyframeEffectReadOnly constructor throws with keyframes with an invalid composite value
 FAIL A KeyframeEffectReadOnly constructed without any KeyframeEffectOptions object assert_equals: default iterationComposite expected (string) "replace" but got (undefined) undefined
 PASS A KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object
 PASS A KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object
