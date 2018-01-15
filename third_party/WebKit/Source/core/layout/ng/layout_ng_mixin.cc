@@ -146,6 +146,28 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   paint_fragment_ = std::make_unique<NGPaintFragment>(std::move(fragment));
 }
 
+static Vector<NGPaintFragment*> GetNGPaintFragmentsInternal(
+    NGPaintFragment* paint,
+    const LayoutObject& layout_object) {
+  if (!paint)
+    return Vector<NGPaintFragment*>();
+  Vector<NGPaintFragment*> fragments;
+  if (paint->GetLayoutObject() == &layout_object)
+    fragments.push_back(paint);
+  for (const auto& child : paint->Children()) {
+    const auto& result =
+        GetNGPaintFragmentsInternal(child.get(), layout_object);
+    fragments.AppendVector(result);
+  }
+  return fragments;
+}
+
+template <typename Base>
+Vector<NGPaintFragment*> LayoutNGMixin<Base>::GetPaintFragments(
+    const LayoutObject& layout_object) const {
+  return GetNGPaintFragmentsInternal(PaintFragment(), layout_object);
+}
+
 template <typename Base>
 void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) const {
