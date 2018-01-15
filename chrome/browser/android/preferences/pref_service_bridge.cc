@@ -1154,16 +1154,24 @@ static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
 
   std::vector<translate::TranslateLanguageInfo> languages;
+  std::string app_locale = g_browser_process->GetApplicationLocale();
   translate_prefs->GetLanguageInfoList(
-      g_browser_process->GetApplicationLocale(),
-      translate_prefs->IsTranslateAllowedByPolicy(), &languages);
+      app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
+  translate::ToTranslateLanguageSynonym(&app_locale);
   for (const auto& info : languages) {
+    // If the language comes from the same language family as the app locale,
+    // translate for this language won't be supported on this device.
+    std::string lang_code = info.code;
+    translate::ToTranslateLanguageSynonym(&lang_code);
+    bool supports_translate =
+        info.supports_translate && lang_code != app_locale;
+
     Java_PrefServiceBridge_addNewLanguageItemToList(
         env, list, ConvertUTF8ToJavaString(env, info.code),
         ConvertUTF8ToJavaString(env, info.display_name),
         ConvertUTF8ToJavaString(env, info.native_display_name),
-        info.supports_translate);
+        supports_translate);
   }
 }
 
