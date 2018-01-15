@@ -6,8 +6,8 @@
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -109,9 +109,11 @@ TEST_F(SharedGpuContextTest, AccelerateImageBufferSurfaceAutoRecovery) {
   gl_.SetIsContextLost(true);
   EXPECT_FALSE(SharedGpuContext::IsValidWithoutRestoring());
   IntSize size(10, 10);
-  std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
-  EXPECT_TRUE(surface->IsValid());
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper());
+  EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }
 
@@ -148,9 +150,11 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
   // With a bad shared context, AccelerateImageBufferSurface creation should
   // fail gracefully
   IntSize size(10, 10);
-  std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
-  EXPECT_FALSE(surface->IsValid());
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper());
+  EXPECT_FALSE(!resource_provider);
 }
 
 TEST_F(SharedGpuContextTest, CompositingMode) {
@@ -174,11 +178,12 @@ class FakeMailboxGenerator {
 
 TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
   IntSize size(10, 10);
-  std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
-  EXPECT_TRUE(surface->IsValid());
-  scoped_refptr<StaticBitmapImage> image =
-      surface->NewImageSnapshot(kPreferAcceleration);
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper());
+  EXPECT_TRUE(resource_provider && resource_provider->IsValid());
+  scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
@@ -210,11 +215,12 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
 TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   IntSize size(10, 10);
-  std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
-  EXPECT_TRUE(surface->IsValid());
-  scoped_refptr<StaticBitmapImage> image =
-      surface->NewImageSnapshot(kPreferAcceleration);
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper());
+  EXPECT_TRUE(resource_provider && resource_provider->IsValid());
+  scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
@@ -234,14 +240,16 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   // Destroy image and surface to return texture to recleable resource pool
   image = nullptr;
-  surface = nullptr;
+  resource_provider = nullptr;
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Re-creating surface should recycle the old GrTexture inside skia
-  surface = WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
-  EXPECT_TRUE(surface->IsValid());
-  image = surface->NewImageSnapshot(kPreferAcceleration);
+  resource_provider = CanvasResourceProvider::Create(
+      size, CanvasResourceProvider::kAcceleratedResourceUsage,
+      SharedGpuContext::ContextProviderWrapper());
+  EXPECT_TRUE(resource_provider && resource_provider->IsValid());
+  image = resource_provider->Snapshot();
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 

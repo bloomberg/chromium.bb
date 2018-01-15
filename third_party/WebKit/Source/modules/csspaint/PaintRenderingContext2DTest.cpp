@@ -4,7 +4,6 @@
 
 #include "modules/csspaint/PaintRenderingContext2D.h"
 
-#include "platform/graphics/ImageBuffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -33,7 +33,6 @@
 #import "platform/graphics/BitmapImage.h"
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/graphics/Image.h"
-#import "platform/graphics/ImageBuffer.h"
 #import "platform/graphics/paint/PaintCanvas.h"
 #import "platform/mac/BlockExceptions.h"
 #import "platform/mac/ColorMac.h"

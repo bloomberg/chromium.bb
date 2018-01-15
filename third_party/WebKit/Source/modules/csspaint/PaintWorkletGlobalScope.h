@@ -11,7 +11,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 

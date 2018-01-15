@@ -33,7 +33,6 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/InterpolationSpace.h"
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/PaintController.h"

@@ -37,7 +37,6 @@
 #include "platform/graphics/CanvasResource.h"
 #include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
@@ -64,10 +63,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          int msaa_sample_count,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params)
-    : ImageBufferSurface(size, color_params),
-      logger_(WTF::WrapUnique(new Logger)),
+    : logger_(WTF::WrapUnique(new Logger)),
       weak_ptr_factory_(this),
-      image_buffer_(nullptr),
       msaa_sample_count_(msaa_sample_count),
       bytes_allocated_(0),
       have_recorded_draw_commands_(false),
@@ -78,14 +75,23 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       software_rendering_while_hidden_(false),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
+      size_(size),
       snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
   StartRecording();
-  Clear();
-  DidDraw(FloatRect(FloatPoint(0, 0), FloatSize(Size())));
+  // Clear the background transparent or opaque. Similar code at
+  // CanvasResourceProvider::Clear().
+  if (IsValid()) {
+    DCHECK(!resource_provider_);
+    DCHECK(recorder_);
+    recorder_->getRecordingCanvas()->clear(
+        color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
+                                                  : SK_ColorTRANSPARENT);
+  }
+  DidDraw(FloatRect(FloatPoint(0, 0), FloatSize(size_)));
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
@@ -98,7 +104,7 @@ void Canvas2DLayerBridge::StartRecording() {
   DCHECK(is_deferral_enabled_);
   recorder_ = WTF::WrapUnique(new PaintRecorder);
   PaintCanvas* canvas =
-      recorder_->beginRecording(Size().Width(), Size().Height());
+      recorder_->beginRecording(size_.Width(), size_.Height());
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
   canvas->save();
@@ -209,7 +215,7 @@ void Canvas2DLayerBridge::Hibernate() {
 
   TRACE_EVENT0("blink", "Canvas2DLayerBridge::hibernate");
   sk_sp<SkSurface> temp_hibernation_surface =
-      SkSurface::MakeRasterN32Premul(Size().Width(), Size().Height());
+      SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
   if (!temp_hibernation_surface) {
     logger_->ReportHibernationEvent(kHibernationAbortedDueToAllocationFailure);
     return;
@@ -277,7 +283,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
           : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
 
   resource_provider_ = CanvasResourceProvider::Create(
-      Size(), usage, SharedGpuContext::ContextProviderWrapper(),
+      size_, usage, SharedGpuContext::ContextProviderWrapper(),
       msaa_sample_count_, color_params_);
 
   if (resource_provider_) {
@@ -377,10 +383,6 @@ void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
     resource_host_->RestoreCanvasMatrixClipStack(resource_provider_->Canvas());
 }
 
-void Canvas2DLayerBridge::SetImageBuffer(ImageBuffer* image_buffer) {
-  image_buffer_ = image_buffer;
-}
-
 void Canvas2DLayerBridge::BeginDestruction() {
   if (destruction_in_progress_)
     return;
@@ -388,7 +390,6 @@ void Canvas2DLayerBridge::BeginDestruction() {
     logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
   hibernation_image_.reset();
   recorder_.reset();
-  image_buffer_ = nullptr;
   destruction_in_progress_ = true;
   SetIsHidden(true);
   ResetResourceProvider();
@@ -478,8 +479,8 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
                                       int y) {
   if (!GetOrCreateResourceProvider())
     return false;
-  if (x <= 0 && y <= 0 && x + orig_info.width() >= Size().Width() &&
-      y + orig_info.height() >= Size().Height()) {
+  if (x <= 0 && y <= 0 && x + orig_info.width() >= size_.Width() &&
+      y + orig_info.height() >= size_.Height()) {
     SkipQueuedDrawCommands();
   } else {
     FlushRecording();
@@ -596,7 +597,7 @@ bool Canvas2DLayerBridge::Restore() {
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     std::unique_ptr<CanvasResourceProvider> resource_provider =
         CanvasResourceProvider::Create(
-            Size(), CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
+            size_, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
             std::move(context_provider_wrapper), msaa_sample_count_,
             color_params_);
 
@@ -686,8 +687,8 @@ void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
       DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
       return;
     }
-    CheckedNumeric<int> threshold_size = Size().Width();
-    threshold_size *= Size().Height();
+    CheckedNumeric<int> threshold_size = size_.Width();
+    threshold_size *= size_.Height();
     threshold_size *= CanvasHeuristicParameters::kExpensiveOverdrawThreshold;
     if (!threshold_size.IsValid()) {
       DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);

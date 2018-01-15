@@ -25,68 +25,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageBuffer_h
-#define ImageBuffer_h
+#ifndef ImageDataBuffer_h
+#define ImageDataBuffer_h
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/Canvas2DLayerBridge.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/GraphicsTypes3D.h"
-#include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/Uint8ClampedArray.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
-
-class PLATFORM_EXPORT ImageBuffer {
-  WTF_MAKE_NONCOPYABLE(ImageBuffer);
-  USING_FAST_MALLOC(ImageBuffer);
-
- public:
-  static std::unique_ptr<ImageBuffer> Create(
-      std::unique_ptr<ImageBufferSurface>);
-
-  virtual ~ImageBuffer();
-
-  const IntSize& Size() const { return surface_->Size(); }
-  bool IsAccelerated() const { return surface_->IsAccelerated(); }
-
-  bool IsSurfaceValid() const;
-
-  PaintCanvas* Canvas() const;
-
-  scoped_refptr<StaticBitmapImage> NewImageSnapshot(
-      AccelerationHint = kPreferNoAcceleration) const;
-
-  const CanvasColorParams& ColorParams() const {
-    return surface_->ColorParams();
-  }
-
-  base::WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
-  bool WritePixels(const SkImageInfo& orig_info,
-                   const void* pixels,
-                   size_t row_bytes,
-                   int x,
-                   int y);
-
- protected:
-  ImageBuffer(std::unique_ptr<ImageBufferSurface>);
-
- private:
-  std::unique_ptr<ImageBufferSurface> surface_;
-};
 
 class ImageDataBuffer {
  public:
@@ -120,4 +73,4 @@ class ImageDataBuffer {
 
 }  // namespace blink
 
-#endif  // ImageBuffer_h
+#endif  // ImageDataBuffer_h

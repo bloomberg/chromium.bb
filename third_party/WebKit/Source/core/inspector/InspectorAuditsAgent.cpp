@@ -5,7 +5,7 @@
 #include "core/inspector/InspectorAuditsAgent.h"
 
 #include "core/inspector/InspectorNetworkAgent.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageDataBuffer.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebImage.h"

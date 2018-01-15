@@ -16,7 +16,6 @@
 #include "core/workers/WorkerSettings.h"
 #include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/text/BidiTextRun.h"

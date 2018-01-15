@@ -39,7 +39,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
