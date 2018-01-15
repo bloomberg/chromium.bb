@@ -357,7 +357,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // decode 0-th order Golomb code
       *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
       // Save golomb in tcoeffs because adding it to level may incur overflow
-      tran_high_t t = *level + read_golomb(xd, r, counts);
+      tran_low_t t = *level + read_golomb(xd, r, counts);
       cul_level += (int)t;
 #if CONFIG_NEW_QUANT
       dqv_val = &dq_val[pos != 0][0];
@@ -373,7 +373,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
       if (signs[pos]) t = -t;
-      tcoeffs[pos] = clamp((tran_low_t)t, min_value, max_value);
+      tcoeffs[pos] = clamp(t, min_value, max_value);
     }
   }
 
