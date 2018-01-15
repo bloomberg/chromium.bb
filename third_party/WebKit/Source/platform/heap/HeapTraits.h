@@ -12,36 +12,28 @@
 
 namespace blink {
 
-// Given a type T, sets |type| to either Member<T> or just T depending on
-// whether T is a garbage-collected type.
+// Given a type T, returns a type that is either Member<T> or just T depending
+// on whether T is a garbage-collected type.
 template <typename T>
-struct AddMemberIfNeeded final {
-  using type = typename std::
-      conditional<WTF::IsGarbageCollectedType<T>::value, Member<T>, T>::type;
-};
+using AddMemberIfNeeded =
+    std::conditional_t<WTF::IsGarbageCollectedType<T>::value, Member<T>, T>;
 
-// Given a type T, sets |type| to a HeapVector<T>, HeapVector<Member<T>> or
-// Vector<T> depending on T.
+// Given a type T, returns a type that is either HeapVector<T>,
+// HeapVector<Member<T>> or Vector<T> depending on T.
 template <typename T>
-struct VectorOf final {
-  using type =
-      typename std::conditional<WTF::IsTraceable<T>::value,
-                                HeapVector<typename AddMemberIfNeeded<T>::type>,
-                                Vector<T>>::type;
-};
+using VectorOf = std::conditional_t<WTF::IsTraceable<T>::value,
+                                    HeapVector<AddMemberIfNeeded<T>>,
+                                    Vector<T>>;
 
-// Given types T and U, sets |type| to one of the following:
+// Given types T and U, returns a type that is one of the following:
 // - HeapVector<std::pair<V, X>>
 //   (where V is either T or Member<T> and X is either U or Member<U>)
 // - Vector<std::pair<T, U>>
 template <typename T, typename U>
-struct VectorOfPairs final {
-  using type = typename std::conditional<
-      WTF::IsTraceable<T>::value || WTF::IsTraceable<U>::value,
-      HeapVector<std::pair<typename AddMemberIfNeeded<T>::type,
-                           typename AddMemberIfNeeded<U>::type>>,
-      Vector<std::pair<T, U>>>::type;
-};
+using VectorOfPairs = std::conditional_t<
+    WTF::IsTraceable<T>::value || WTF::IsTraceable<U>::value,
+    HeapVector<std::pair<AddMemberIfNeeded<T>, AddMemberIfNeeded<U>>>,
+    Vector<std::pair<T, U>>>;
 
 }  // namespace blink
 

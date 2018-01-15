@@ -395,12 +395,12 @@ NodeFilter* ToNodeFilter(v8::Local<v8::Value>,
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
 template <typename IDLType>
-typename VectorOf<typename NativeValueTraits<IDLType>::ImplType>::type
-ToImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
-                int start_index,
-                ExceptionState& exception_state) {
+VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    int start_index,
+    ExceptionState& exception_state) {
   using TraitsType = NativeValueTraits<IDLType>;
-  using VectorType = typename VectorOf<typename TraitsType::ImplType>::type;
+  using VectorType = VectorOf<typename TraitsType::ImplType>;
 
   int length = info.Length();
   VectorType result;
