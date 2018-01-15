@@ -11,9 +11,13 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,8 +44,13 @@ const int kTestFrameWidth1 = 500;
 const int kTestFrameHeight1 = 500;
 const int kTestFrameWidth2 = 400;
 const int kTestFrameHeight2 = 300;
+const int kTestFrameWidth3 = 64;
+const int kTestFrameHeight3 = 64;
 
 const int kFrameRate = 30;
+
+constexpr base::TimeDelta kVirtualTestDurationSeconds =
+    base::TimeDelta::FromSeconds(100);
 
 // The value of the padding bytes in unpacked frames.
 const uint8_t kFramePaddingValue = 0;
@@ -562,6 +571,150 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
                output_frame_->data() + i * output_frame_->stride(),
                output_frame_->stride()));
   }
+}
+
+class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
+ public:
+  // Capture frames at kFrameRate for a duration of total_capture_duration and
+  // return the throttled frame rate.
+  double CaptureFrames() {
+    CreateScreenCaptureDevice(
+        std::unique_ptr<webrtc::DesktopCapturer>(new FakeScreenCapturer()));
+
+    FormatChecker format_checker(
+        gfx::Size(kTestFrameWidth3, kTestFrameHeight3),
+        gfx::Size(kTestFrameWidth3, kTestFrameHeight3));
+
+    base::WaitableEvent done_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner;
+    int nb_frames = 0;
+
+    std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
+    EXPECT_CALL(*client, OnError(_, _)).Times(0);
+    // On started is called from the capture thread.
+    EXPECT_CALL(*client, OnStarted())
+        .WillOnce(InvokeWithoutArgs([this, &task_runner] {
+          task_runner = new base::TestMockTimeTaskRunner(
+              base::Time::Now(), base::TimeTicks::Now(),
+              base::TestMockTimeTaskRunner::Type::kStandalone);
+
+          capture_device_->SetMockTimeForTesting(
+              task_runner, task_runner->GetMockTickClock());
+        }));
+
+    EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
+        .WillRepeatedly(DoAll(
+            WithArg<2>(
+                Invoke(&format_checker, &FormatChecker::ExpectAcceptableSize)),
+            WithArg<5>(Invoke([&done_event, &nb_frames, &task_runner]
+                              (base::TimeDelta timestamp) {
+              ++nb_frames;
+
+              // Simulate real device capture time. Indeed the time spent
+              // here in OnIncomingCapturedData is take into account for
+              // the capture duration
+              const base::TimeDelta device_capture_duration =
+                  base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
+                      static_cast<double>(base::Time::kMicrosecondsPerSecond) /
+                          kFrameRate +
+                      0.5 /* round to nearest int */));
+              task_runner->FastForwardBy(device_capture_duration);
+
+              // Stop advancing the virtual time when reaching the end.
+              if (timestamp > kVirtualTestDurationSeconds) {
+                done_event.Signal();
+              } else {
+                // 'PostNonNestable' is required to make sure the next one
+                // shot capture timer is already pushed when forwaring the
+                // virtual time by the next pending task delay.
+                base::MessageLoop::current()
+                    ->task_runner()
+                    ->PostNonNestableTask(
+                        FROM_HERE,
+                        base::BindOnce(
+                            [](scoped_refptr<base::TestMockTimeTaskRunner>
+                                   task_runner) {
+                              task_runner->FastForwardBy(
+                                  task_runner->NextPendingTaskDelay());
+                            },
+                            task_runner));
+              }
+            }))));
+    media::VideoCaptureParams capture_params;
+    capture_params.requested_format.frame_size.SetSize(kTestFrameWidth3,
+                                                       kTestFrameHeight3);
+    capture_params.requested_format.frame_rate = kFrameRate;
+    capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+    capture_params.resolution_change_policy =
+        media::ResolutionChangePolicy::FIXED_RESOLUTION;
+
+    capture_device_->AllocateAndStart(capture_params, std::move(client));
+
+    EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+    done_event.Reset();
+
+    EXPECT_GT(nb_frames, 0);
+
+    capture_device_->StopAndDeAllocate();
+
+    return nb_frames / kVirtualTestDurationSeconds.InSecondsF();
+  }
+};
+
+// The test verifies that the capture pipeline is throttled as defined with
+// kDefaultMaximumCpuConsumptionPercentage.
+TEST_F(DesktopCaptureDeviceThrottledTest, ThrottledOn) {
+  const double actual_framerate = CaptureFrames();
+
+  // By default when capturing a frame it is expected to do the actual device
+  // capture for at most half of a capture period. This is to ensure that the
+  // cpu is idle for at least 50% of the time, otherwise it will be throttled
+  // to reach this idle duration.
+  const int expected_framerate = kFrameRate / 2;
+
+  // The test succeeds if the actual framerate is near the expected_framerate.
+  EXPECT_GE(actual_framerate, expected_framerate);
+  EXPECT_LE(actual_framerate, expected_framerate + 0.1);
+}
+
+// The test verifies that the capture pipeline is not throttled when passing
+// --webrtc-max-cpu-consumption-percentage=100.
+TEST_F(DesktopCaptureDeviceThrottledTest, ThrottledOff) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--webrtc-max-cpu-consumption-percentage", "100");
+
+  const double actual_framerate = CaptureFrames();
+
+  // Throttling is disabled so the test expects the configured framerate.
+  const int expected_framerate = kFrameRate;
+
+  // The test succeeds if the actual framerate is near the expected_framerate.
+  EXPECT_GE(actual_framerate, expected_framerate);
+  EXPECT_LE(actual_framerate, expected_framerate + 0.1);
+}
+
+// The test verifies that the capture pipeline is throttled when passing
+// --webrtc-max-cpu-consumption-percentage=80.
+TEST_F(DesktopCaptureDeviceThrottledTest, Throttled80) {
+  const int max_cpu_consumption_percentage = 80;
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--webrtc-max-cpu-consumption-percentage",
+      base::IntToString(max_cpu_consumption_percentage));
+
+  const double actual_framerate = CaptureFrames();
+
+  // The pipeline is throttled to ensure that the cpu is idle for at least
+  // N% of the time.
+  const int expected_framerate =
+      (kFrameRate * max_cpu_consumption_percentage) / 100;
+
+  // The test succeeds if the actual framerate is near the expected_framerate.
+  EXPECT_GE(actual_framerate, expected_framerate);
+  EXPECT_LE(actual_framerate, expected_framerate + 0.1);
 }
 
 }  // namespace content

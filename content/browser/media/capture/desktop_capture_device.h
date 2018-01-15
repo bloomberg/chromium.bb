@@ -48,11 +48,18 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
 
  private:
   friend class DesktopCaptureDeviceTest;
+  friend class DesktopCaptureDeviceThrottledTest;
   class Core;
 
   DesktopCaptureDevice(
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
       DesktopMediaID::Type type);
+
+  // Useful to pass the TestMockTimeTaskRunner and the MockTickClock or any
+  // other testing entities inheriting the common runner and tick interfaces.
+  void SetMockTimeForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::unique_ptr<base::TickClock> tick_clock);
 
   base::Thread thread_;
   std::unique_ptr<Core> core_;
