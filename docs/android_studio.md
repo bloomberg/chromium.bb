@@ -17,11 +17,19 @@ This creates a project at `out/Debug/gradle`. To create elsewhere:
 build/android/gradle/generate_gradle.py --output-directory out/Debug --project-dir my-project
 ```
 
+If you are planning to use Android emulators use the
+--sdk=AndroidStudioDefault or the --sdk-path option, since adding emulator
+images to the project sdk will modify the project sdk, hence causing problems
+when you next run gclient sync.
+
+See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
+for more information about building and running emulators.
+
 For first-time Android Studio users:
 
-* Avoid running the setup wizard.
-    * The wizard will force you to download unwanted SDK components to
-      `//third_party/android_tools`.
+* Only run the setup wizard if you are planning to use emulators.
+    * The wizard will force you to download SDK components that are only needed
+      for emulation.
     * To skip it, select "Cancel" when it comes up.
 
 To import the project:
@@ -31,7 +39,7 @@ To import the project:
 
 If you're asked to use Studio's Android SDK:
 
-* No. (Always use project's own SDK)
+* No. (Always use the SDK configured by generate_gradle.py)
 
 If you're asked to use Studio's Gradle wrapper:
 
