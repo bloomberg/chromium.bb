@@ -13,8 +13,4 @@ blink_modules_sources("nfc") {
     "NavigatorNFC.cpp",
     "NavigatorNFC.h",
   ]
-
-  deps = [
-    "//services/device/public/interfaces:interfaces_blink",
-  ]
 }

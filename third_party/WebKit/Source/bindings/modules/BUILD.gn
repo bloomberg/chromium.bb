@@ -73,10 +73,7 @@ make_event_factory("event_modules") {
     "$blink_modules_output_dir/event_modules_factory.cc",
   ]
   deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
-  deps += [
-    "//media/midi:mojo_blink",
-    "//services/device/public/interfaces:generic_sensor_blink",
-  ]
+  deps += [ "//media/midi:mojo_blink" ]
 }
 
 make_names("event_modules_names") {
