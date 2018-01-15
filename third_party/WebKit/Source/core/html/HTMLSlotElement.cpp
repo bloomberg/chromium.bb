@@ -269,7 +269,7 @@ HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
-    for (auto& node : distributed_nodes_)
+    for (auto& node : ChildrenInFlatTreeIfAssignmentIsSupported())
       node->LazyReattachIfAttached();
   }
   HTMLElement::DetachLayoutTree(context);
