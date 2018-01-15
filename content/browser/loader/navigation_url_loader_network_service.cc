@@ -13,6 +13,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -127,16 +128,25 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 // See MimeSniffingResourceHandler.
 bool IsDownload(const ResourceResponse& response,
                 const GURL& url,
+                const std::vector<GURL>& url_chain,
+                const base::Optional<url::Origin>& initiator_origin,
                 const base::Optional<std::string>& suggested_filename) {
   if (response.head.headers) {
+    GURL url_chain_back = url_chain.empty() ? url : url_chain.back();
+    bool is_cross_origin =
+        (initiator_origin.has_value() && !url_chain_back.SchemeIsBlob() &&
+         !url_chain_back.SchemeIs(url::kAboutScheme) &&
+         !url_chain_back.SchemeIs(url::kDataScheme) &&
+         initiator_origin->GetURL() != url_chain_back.GetOrigin());
+
     std::string disposition;
-    if (suggested_filename.has_value()) {
+    if (response.head.headers->GetNormalizedHeader("content-disposition",
+                                                   &disposition) &&
+        !disposition.empty() &&
+        net::HttpContentDisposition(disposition, std::string())
+            .is_attachment()) {
       return true;
-    } else if (response.head.headers->GetNormalizedHeader("content-disposition",
-                                                          &disposition) &&
-               !disposition.empty() &&
-               net::HttpContentDisposition(disposition, std::string())
-                   .is_attachment()) {
+    } else if (suggested_filename.has_value() && !is_cross_origin) {
       return true;
     } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
                    url, response.head.mime_type)) {
@@ -155,6 +165,9 @@ bool IsDownload(const ResourceResponse& response,
     return false;
 
   // TODO(qinmin): Check whether there is a plugin handler.
+
+  if (suggested_filename.has_value())
+    RecordDownloadCount(CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
 
   return (!response.head.headers ||
           response.head.headers->response_code() / 100 == 2);
@@ -178,6 +191,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       ResourceContext* resource_context,
       scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
       const GURL& url,
+      base::Optional<url::Origin> initiator_origin,
       base::Optional<std::string> suggested_filename,
       const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
       : handlers_(std::move(initial_handlers)),
@@ -185,6 +199,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         resource_context_(resource_context),
         default_url_loader_factory_getter_(default_url_loader_factory_getter),
         url_(url),
+        initiator_origin_(initiator_origin),
         suggested_filename_(suggested_filename),
         owner_(owner),
         response_loader_binding_(this),
@@ -530,7 +545,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      is_download = IsDownload(*response.get(), url_, suggested_filename_);
+      is_download = IsDownload(*response.get(), url_, url_chain_,
+                               initiator_origin_, suggested_filename_);
       is_stream = false;
     } else {
       ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
@@ -676,6 +692,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
 
+  base::Optional<url::Origin> initiator_origin_;
+
   // If this request was triggered by an anchor tag with a download attribute,
   // the |suggested_filename_| will be the (possibly empty) value of said
   // attribute.
@@ -760,6 +778,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         /* resource_request = */ nullptr, resource_context,
         /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
+        request_info->begin_params->initiator_origin,
         request_info->begin_params->suggested_filename,
         weak_factory_.GetWeakPtr());
 
@@ -840,6 +859,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_handlers), std::move(new_request), resource_context,
       partition->url_loader_factory_getter(), request_info->common_params.url,
+      request_info->begin_params->initiator_origin,
       request_info->begin_params->suggested_filename,
       weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(

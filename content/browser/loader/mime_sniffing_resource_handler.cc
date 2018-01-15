@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -515,13 +514,21 @@ bool MimeSniffingResourceHandler::MustDownload() {
 
   must_download_is_set_ = true;
 
+  bool is_cross_origin =
+      (request()->initiator().has_value() &&
+       !request()->url_chain().back().SchemeIsBlob() &&
+       !request()->url_chain().back().SchemeIs(url::kAboutScheme) &&
+       !request()->url_chain().back().SchemeIs(url::kDataScheme) &&
+       request()->initiator()->GetURL() !=
+           request()->url_chain().back().GetOrigin());
+
   std::string disposition;
   request()->GetResponseHeaderByName("content-disposition", &disposition);
-  if (GetRequestInfo()->suggested_filename().has_value()) {
+  if (!disposition.empty() &&
+      net::HttpContentDisposition(disposition, std::string()).is_attachment()) {
     must_download_ = true;
-  } else if (!disposition.empty() &&
-             net::HttpContentDisposition(disposition, std::string())
-                 .is_attachment()) {
+  } else if (GetRequestInfo()->suggested_filename().has_value() &&
+             !is_cross_origin) {
     must_download_ = true;
   } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
                  request()->url(), response_->head.mime_type)) {
@@ -539,6 +546,9 @@ bool MimeSniffingResourceHandler::MustDownload() {
   } else {
     must_download_ = false;
   }
+
+  if (GetRequestInfo()->suggested_filename().has_value() && !must_download_)
+    RecordDownloadCount(CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
 
   return must_download_;
 }
