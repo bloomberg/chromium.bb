@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 
-#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -30,6 +29,8 @@ namespace chromeos {
 namespace tether {
 
 namespace {
+
+const char kNotifierTether[] = "ash.tether";
 
 // Mean value of NetworkState's signal_strength() range.
 const int kMediumSignalStrength = 50;
@@ -215,7 +216,7 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
       GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          ash::system_notifier::kNotifierTether),
+          kNotifierTether),
       {} /* rich_notification_data */,
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &TetherNotificationPresenter::OnNotificationClicked,
@@ -264,7 +265,7 @@ TetherNotificationPresenter::CreateNotification(
       GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          ash::system_notifier::kNotifierTether),
+          kNotifierTether),
       rich_notification_data,
       new TetherNotificationDelegate(
           base::BindRepeating(
@@ -273,7 +274,6 @@ TetherNotificationPresenter::CreateNotification(
           base::BindRepeating(
               &TetherNotificationPresenter::OnNotificationClosed,
               weak_ptr_factory_.GetWeakPtr(), id)));
-  notification->SetSystemPriority();
   notification->set_small_image(gfx::Image(small_image));
   return notification;
 }

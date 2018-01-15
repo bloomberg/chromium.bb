@@ -15,7 +15,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -40,6 +39,7 @@ namespace ash {
 namespace {
 
 const char kNotificationId[] = "chrome://settings/accessibility";
+const char kNotifierAccessibility[] = "ash.accessibility";
 
 enum AccessibilityState {
   A11Y_NONE = 0,
@@ -544,11 +544,13 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
           text, gfx::Image(), base::string16(), GURL(),
-          message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                     system_notifier::kNotifierAccessibility),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              kNotifierAccessibility),
           message_center::RichNotificationData(), nullptr,
           GetNotificationIcon(being_enabled),
           message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center->AddNotification(std::move(notification));
 }
 

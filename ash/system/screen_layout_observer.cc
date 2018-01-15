@@ -16,7 +16,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -37,6 +36,8 @@ using message_center::Notification;
 
 namespace ash {
 namespace {
+
+const char kNotifierDisplay[] = "ash.display";
 
 display::DisplayManager* GetDisplayManager() {
   return Shell::Get()->display_manager();
@@ -367,14 +368,14 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierDisplay),
+              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDisplay),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&OpenSettingsFromNotification)),
           kNotificationScreenIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);

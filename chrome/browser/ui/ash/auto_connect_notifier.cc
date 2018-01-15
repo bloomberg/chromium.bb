@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/auto_connect_notifier.h"
 
 #include "ash/system/network/network_icon.h"
-#include "ash/system/system_notifier.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -26,6 +25,8 @@
 #include "url/gurl.h"
 
 namespace {
+
+const char kNotifierAutoConnect[] = "ash.auto-connect";
 
 // Signal strength to use for the notification icon. The network icon should be
 // at full signal strength (4 out of 4).
@@ -131,7 +132,7 @@ void AutoConnectNotifier::DisplayNotification() {
       GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          ash::system_notifier::kNotifierNetwork),
+          kNotifierAutoConnect),
       message_center::RichNotificationData(), nullptr /* delegate */);
 
   notification->SetSystemPriority();

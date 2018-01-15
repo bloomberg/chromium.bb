@@ -12,7 +12,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -25,6 +24,7 @@ namespace ash {
 namespace {
 
 const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
+const char kNotifierScreenCapture[] = "ash.screen-capture";
 
 }  // namespace
 
@@ -59,7 +59,7 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierScreenCapture),
+              kNotifierScreenCapture),
           data, new tray::ScreenNotificationDelegate(this),
           kNotificationScreenshareIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

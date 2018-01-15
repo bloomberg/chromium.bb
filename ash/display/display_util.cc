@@ -16,7 +16,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -40,6 +39,7 @@ namespace ash {
 namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
+const char kNotifierDisplayError[] = "ash.display.error";
 
 // A notification delegate that will start the feedback app when the notication
 // is clicked.
@@ -181,10 +181,11 @@ void ShowDisplayErrorNotification(const base::string16& message,
           GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierDisplayError),
+              kNotifierDisplayError),
           data, new DisplayErrorNotificationDelegate,
           kNotificationMonitorWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

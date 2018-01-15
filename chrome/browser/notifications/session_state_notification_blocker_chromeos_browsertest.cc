@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -21,6 +20,8 @@ using base::UTF8ToUTF16;
 using namespace testing;
 
 namespace {
+
+const char kNotifierImportantComponent[] = "ash.important_component";
 
 class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
  public:
@@ -56,11 +57,11 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
 
 }  // anonymous namespace
 
-class LoginStateNotificationBlockerChromeOSBrowserTest
+class SessionStateNotificationBlockerChromeOSBrowserTest
     : public chromeos::LoginManagerTest,
       public message_center::MessageCenterObserver {
  public:
-  LoginStateNotificationBlockerChromeOSBrowserTest()
+  SessionStateNotificationBlockerChromeOSBrowserTest()
       : chromeos::LoginManagerTest(false) {
     struct {
       const char* email;
@@ -73,7 +74,7 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     }
   }
 
-  ~LoginStateNotificationBlockerChromeOSBrowserTest() override {}
+  ~SessionStateNotificationBlockerChromeOSBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     message_center::MessageCenter::Get()->AddObserver(this);
@@ -123,12 +124,15 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     size_t initial_count =
         message_center::MessageCenter::Get()->GetPopupNotifications().size();
     std::string id("browser-id");
+    auto notification = std::make_unique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, id,
+        UTF8ToUTF16("browser-title"), UTF8ToUTF16("browser-message"),
+        gfx::Image(), UTF8ToUTF16("browser-source"), GURL(), notifier_id,
+        message_center::RichNotificationData(), nullptr);
+    if (notifier_id.id == kNotifierImportantComponent)
+      notification->set_priority(message_center::SYSTEM_PRIORITY);
     message_center::MessageCenter::Get()->AddNotification(
-        std::make_unique<message_center::Notification>(
-            message_center::NOTIFICATION_TYPE_SIMPLE, id,
-            UTF8ToUTF16("browser-title"), UTF8ToUTF16("browser-message"),
-            gfx::Image(), UTF8ToUTF16("browser-source"), GURL(), notifier_id,
-            message_center::RichNotificationData(), nullptr));
+        std::move(notification));
     size_t new_count =
         message_center::MessageCenter::Get()->GetPopupNotifications().size();
     message_center::MessageCenter::Get()->RemoveNotification(id, false);
@@ -143,17 +147,17 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
   std::unique_ptr<base::RunLoop> wait_loop_;
   int expected_state_change_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(SessionStateNotificationBlockerChromeOSBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
+IN_PROC_BROWSER_TEST_F(SessionStateNotificationBlockerChromeOSBrowserTest,
                        PRE_BaseTest) {
   RegisterUser(test_users_[0]);
   RegisterUser(test_users_[1]);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
+IN_PROC_BROWSER_TEST_F(SessionStateNotificationBlockerChromeOSBrowserTest,
                        BaseTest) {
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
@@ -162,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
   // Logged in as a normal user.
   LoginUser(test_users_[0]);
 
-  // One state change from LoginStateNotificationBloker plus one state change
+  // One state change from SessionStateNotificationBloker plus one state change
   // for the InactiveUserNotificationBlocker.
   WaitForStateChangeAndReset(2);
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
@@ -182,25 +186,25 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
-IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
+IN_PROC_BROWSER_TEST_F(SessionStateNotificationBlockerChromeOSBrowserTest,
                        PRE_AlwaysAllowedNotifier) {
   RegisterUser(test_users_[0]);
   RegisterUser(test_users_[1]);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
+IN_PROC_BROWSER_TEST_F(SessionStateNotificationBlockerChromeOSBrowserTest,
                        AlwaysAllowedNotifier) {
-  // NOTIFIER_DISPLAY is allowed to shown in the login screen.
+  // High priority system notifications (no associated user email) are shown on
+  // the lock screen..
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
-      ash::system_notifier::kNotifierDisplay);
-  notifier_id.profile_id = test_users_[0].GetUserEmail();
+      kNotifierImportantComponent);
 
   // Logged in as a normal user.
   LoginUser(test_users_[0]);
 
-  // One state change from LoginStateNotificationBloker plus one state change
+  // One state change from SessionStateNotificationBloker plus one state change
   // for the InactiveUserNotificationBlocker.
   WaitForStateChangeAndReset(2);
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));

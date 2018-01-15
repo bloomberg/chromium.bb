@@ -4719,7 +4719,7 @@ if (is_android) {
         "../browser/chromeos/login/test/oobe_base_test.h",
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc",
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h",
-        "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc",
+        "../browser/notifications/session_state_notification_blocker_chromeos_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
         "../browser/ui/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
