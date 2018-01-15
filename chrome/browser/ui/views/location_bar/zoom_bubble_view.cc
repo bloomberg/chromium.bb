@@ -233,7 +233,9 @@ ZoomBubbleView::ZoomBubbleView(
       reset_button_(nullptr),
       auto_close_(reason == AUTOMATIC),
       ignore_close_bubble_(false),
-      immersive_mode_controller_(immersive_mode_controller) {
+      immersive_mode_controller_(immersive_mode_controller),
+      session_id_(
+          chrome::FindBrowserWithWebContents(web_contents)->session_id()) {
   set_notify_enter_exit_on_child(true);
   if (immersive_mode_controller_)
     immersive_mode_controller_->AddObserver(this);
@@ -468,9 +470,10 @@ void ZoomBubbleView::UpdateZoomPercent() {
 
 void ZoomBubbleView::UpdateZoomIconVisibility() {
   // Note that we can't rely on web_contents() here, as it may have been
-  // destroyed by the time we get this call.
-  Browser* browser = chrome::FindBrowserWithWindow(
-      platform_util::GetTopLevel(parent_window()));
+  // destroyed by the time we get this call. Also note parent_window() (if set)
+  // may also be destroyed: the call to WindowClosing() may be triggered by
+  // parent window destruction tearing down its child windows.
+  Browser* browser = chrome::FindBrowserWithID(session_id_.id());
   if (browser && browser->window() && browser->window()->GetLocationBar())
     browser->window()->GetLocationBar()->UpdateZoomViewVisibility();
 }
