@@ -263,6 +263,14 @@ TEST_F(UseCounterTest, CSSSelectorPseudoWebkitAnyLink) {
   EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
 }
 
+TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {
+  UseCounter use_counter;
+  WebFeature feature = WebFeature::kCSSTypedOMStylePropertyMap;
+  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
+  use_counter.Count(GetDocument(), feature);
+  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
+}
+
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   UseCounter use_counter;
 

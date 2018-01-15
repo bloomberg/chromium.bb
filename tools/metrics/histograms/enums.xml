@@ -17594,6 +17594,7 @@ Called by update_net_error_codes.py.-->
   <int value="2331" label="TemporalInputTypeIgnoreUntrustedClick"/>
   <int value="2332" label="ColorInputTypeChooserByTrustedClick"/>
   <int value="2333" label="ColorInputTypeChooserByUntrustedClick"/>
+  <int value="2334" label="CSSTypedOMStylePropertyMap"/>
 </enum>
 
 <enum name="FeedbackSource">

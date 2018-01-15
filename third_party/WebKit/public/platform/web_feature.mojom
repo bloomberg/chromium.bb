@@ -1840,6 +1840,7 @@ enum WebFeature {
   kTemporalInputTypeIgnoreUntrustedClick = 2331,
   kColorInputTypeChooserByTrustedClick = 2332,
   kColorInputTypeChooserByUntrustedClick = 2333,
+  kCSSTypedOMStylePropertyMap = 2334,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -8,5 +8,5 @@
     ImplementedAs=ElementComputedStyleMap,
     RuntimeEnabled=CSSTypedOM
 ] partial interface Element {
-    StylePropertyMapReadOnly computedStyleMap();
+    [MeasureAs=CSSTypedOMStylePropertyMap] StylePropertyMapReadOnly computedStyleMap();
 };
