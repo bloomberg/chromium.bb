@@ -166,13 +166,12 @@ bool KeyframeEffectReadOnly::HasIncompatibleStyle() {
   if (!target_->GetComputedStyle())
     return false;
 
-  bool affects_transform =
-      GetAnimation()->Affects(*target_, GetCSSPropertyTransform()) ||
-      GetAnimation()->Affects(*target_, GetCSSPropertyScale()) ||
-      GetAnimation()->Affects(*target_, GetCSSPropertyRotate()) ||
-      GetAnimation()->Affects(*target_, GetCSSPropertyTranslate());
+  bool affects_transform = Affects(PropertyHandle(GetCSSPropertyTransform())) ||
+                           Affects(PropertyHandle(GetCSSPropertyScale())) ||
+                           Affects(PropertyHandle(GetCSSPropertyRotate())) ||
+                           Affects(PropertyHandle(GetCSSPropertyTranslate()));
 
-  if (GetAnimation()->HasActiveAnimationsOnCompositor()) {
+  if (HasActiveAnimationsOnCompositor()) {
     if (target_->GetComputedStyle()->HasOffset() && affects_transform)
       return true;
     return HasMultipleTransformProperties();
