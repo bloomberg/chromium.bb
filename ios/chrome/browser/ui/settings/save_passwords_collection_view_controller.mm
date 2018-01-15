@@ -217,16 +217,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [model addItem:savePasswordsItem_
       toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    // Export passwords button.
-    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    exportPasswordsItem_ = [self exportPasswordsItem];
-    [model addItem:exportPasswordsItem_
-        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    [self updateExportPasswordsItem];
-  }
-
   // Saved passwords.
   if (!savedForms_.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
@@ -256,6 +246,16 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       [model addItem:[self blacklistedFormItemWithForm:form.get()]
           toSectionWithIdentifier:SectionIdentifierBlacklist];
     }
+  }
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    // Export passwords button.
+    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+    exportPasswordsItem_ = [self exportPasswordsItem];
+    [model addItem:exportPasswordsItem_
+        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+    [self updateExportPasswordsItem];
   }
 }
 
