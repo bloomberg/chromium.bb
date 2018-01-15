@@ -2129,5 +2129,40 @@ TEST_F(SurfaceSynchronizationTest, DropDependenciesThatWillNeverArrive) {
   EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
 }
 
+// This test verifies that a surface will continue to observe a child surface
+// until its dependency arrives.
+TEST_F(SurfaceSynchronizationTest, ObserveDependenciesUntilArrival) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id21 = MakeSurfaceId(kChildFrameSink1, 2, 1);
+  const SurfaceId child_id22 = MakeSurfaceId(kChildFrameSink1, 2, 2);
+
+  // |parent_id| depends on |child_id22|. It shouldn't activate.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id22}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+
+  // The child submits to |child_id21|. The parent should not activate.
+  child_support1().SubmitCompositorFrame(
+      child_id21.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id22));
+
+  // The child submits to |child_id22|. The parent should activate.
+  child_support1().SubmitCompositorFrame(
+      child_id22.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+}
+
 }  // namespace test
 }  // namespace viz

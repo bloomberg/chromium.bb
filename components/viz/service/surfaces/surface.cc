@@ -211,7 +211,10 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   if (it == frame_sink_id_dependencies_.end())
     return;
 
-  if (surface_id.local_surface_id().parent_sequence_number() >= it->second) {
+  if (surface_id.local_surface_id().parent_sequence_number() >=
+          it->second.parent_sequence_number &&
+      surface_id.local_surface_id().child_sequence_number() >=
+          it->second.child_sequence_number) {
     frame_sink_id_dependencies_.erase(it);
     surface_manager_->SurfaceDependenciesChanged(this, {},
                                                  {surface_id.frame_sink_id()});
@@ -318,7 +321,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
 void Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
-  base::flat_map<FrameSinkId, uint32_t> new_frame_sink_id_dependencies;
+  base::flat_map<FrameSinkId, SequenceNumbers> new_frame_sink_id_dependencies;
   base::flat_set<SurfaceId> new_activation_dependencies;
 
   for (const SurfaceId& surface_id :
@@ -330,10 +333,19 @@ void Surface::UpdateActivationDependencies(
       // Record the latest |parent_sequence_number| this surface is interested
       // in observing for the provided FrameSinkId.
       uint32_t& parent_sequence_number =
-          new_frame_sink_id_dependencies[surface_id.frame_sink_id()];
+          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+              .parent_sequence_number;
       parent_sequence_number =
           std::max(parent_sequence_number,
                    surface_id.local_surface_id().parent_sequence_number());
+
+      uint32_t& child_sequence_number =
+          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+              .child_sequence_number;
+      child_sequence_number =
+          std::max(child_sequence_number,
+                   surface_id.local_surface_id().child_sequence_number());
+
       new_activation_dependencies.insert(surface_id);
     }
   }
@@ -348,7 +360,7 @@ void Surface::UpdateActivationDependencies(
 }
 
 void Surface::ComputeChangeInDependencies(
-    const base::flat_map<FrameSinkId, uint32_t>& new_dependencies) {
+    const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies) {
   base::flat_set<FrameSinkId> added_dependencies;
   base::flat_set<FrameSinkId> removed_dependencies;
 
