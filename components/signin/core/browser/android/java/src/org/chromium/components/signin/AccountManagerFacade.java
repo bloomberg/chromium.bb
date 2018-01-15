@@ -98,7 +98,7 @@ public class AccountManagerFacade {
         mDelegate.registerObservers();
         mDelegate.addObserver(this::updateAccounts);
 
-        updateAccounts();
+        new InitializeTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -561,7 +561,6 @@ public class AccountManagerFacade {
 
     private void updateAccounts() {
         ThreadUtils.assertOnUiThread();
-        ++mUpdateTasksCounter;
         new UpdateAccountsTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
@@ -571,32 +570,62 @@ public class AccountManagerFacade {
         }
     }
 
-    private class UpdateAccountsTask extends AsyncTask<Void, Void, Void> {
+    private AccountManagerResult<Account[]> getAllAccounts() {
+        try {
+            return new AccountManagerResult<>(mDelegate.getAccountsSync());
+        } catch (AccountManagerDelegateException ex) {
+            return new AccountManagerResult<>(ex);
+        }
+    }
+
+    private void decrementUpdateCounter() {
+        if (--mUpdateTasksCounter > 0) return;
+
+        for (Runnable callback : mCallbacksWaitingForPendingUpdates) {
+            callback.run();
+        }
+        mCallbacksWaitingForPendingUpdates.clear();
+    }
+
+    private class InitializeTask extends AsyncTask<Void, Void, Void> {
         @Override
-        public Void doInBackground(Void... params) {
-            mMaybeAccounts.set(getAccountManagerResult());
-            mPopulateAccountCacheLatch.countDown();
-            return null;
+        protected void onPreExecute() {
+            ++mUpdateTasksCounter;
         }
 
-        private AccountManagerResult<Account[]> getAccountManagerResult() {
-            try {
-                return new AccountManagerResult<>(mDelegate.getAccountsSync());
-            } catch (AccountManagerDelegateException ex) {
-                return new AccountManagerResult<>(ex);
-            }
+        @Override
+        public Void doInBackground(Void... params) {
+            mMaybeAccounts.set(getAllAccounts());
+            // It's important that countDown() is called on background thread and not in
+            // onPostExecute, as UI thread may be blocked in getGoogleAccounts waiting on the latch.
+            mPopulateAccountCacheLatch.countDown();
+            return null;
         }
 
         @Override
         public void onPostExecute(Void v) {
             fireOnAccountsChangedNotification();
+            decrementUpdateCounter();
+        }
+    }
 
-            if (--mUpdateTasksCounter > 0) return;
+    private class UpdateAccountsTask
+            extends AsyncTask<Void, Void, AccountManagerResult<Account[]>> {
+        @Override
+        protected void onPreExecute() {
+            ++mUpdateTasksCounter;
+        }
 
-            for (Runnable callback : mCallbacksWaitingForPendingUpdates) {
-                callback.run();
-            }
-            mCallbacksWaitingForPendingUpdates.clear();
+        @Override
+        public AccountManagerResult<Account[]> doInBackground(Void... params) {
+            return getAllAccounts();
+        }
+
+        @Override
+        public void onPostExecute(AccountManagerResult<Account[]> maybeAccounts) {
+            mMaybeAccounts.set(maybeAccounts);
+            fireOnAccountsChangedNotification();
+            decrementUpdateCounter();
         }
     }
 
