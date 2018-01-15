@@ -118,6 +118,15 @@ user_manager::User* FakeChromeUserManager::AddSupervisedUser(
   return user;
 }
 
+user_manager::User* FakeChromeUserManager::AddGuestUser() {
+  user_manager::User* user =
+      user_manager::User::CreateGuestUser(GetGuestAccountId());
+  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
+      GetGuestAccountId().GetUserEmail()));
+  users_.push_back(user);
+  return user;
+}
+
 const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
     const AccountId& account_id) {
   user_manager::User* user =
@@ -576,8 +585,8 @@ bool FakeChromeUserManager::IsGuestSessionAllowed() const {
 bool FakeChromeUserManager::IsGaiaUserAllowed(
     const user_manager::User& user) const {
   DCHECK(user.HasGaiaAccount());
-  return CrosSettings::IsWhitelisted(user.GetAccountId().GetUserEmail(),
-                                     nullptr);
+  return CrosSettings::Get()->IsUserWhitelisted(
+      user.GetAccountId().GetUserEmail(), nullptr);
 }
 
 bool FakeChromeUserManager::IsUserAllowed(

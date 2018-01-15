@@ -597,17 +597,19 @@ void SessionControllerClient::SendSessionLengthLimit() {
 
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
-  base::TimeTicks policy_off_hours_end_time =
-      off_hours_controller->GetOffHoursEndTime();
+  base::TimeTicks off_hours_session_end_time;
+  // Use "OffHours" end time only if the session will be actually terminated.
+  if (off_hours_controller->IsCurrentSessionAllowedOnlyForOffHours())
+    off_hours_session_end_time = off_hours_controller->GetOffHoursEndTime();
 
   // If |session_length_limit| is zero or |session_start_time| is null then
   // "SessionLengthLimit" policy is unset.
   const bool session_length_limit_policy_set =
       !session_length_limit.is_zero() && !session_start_time.is_null();
 
-  // If |policy_off_hours_end_time| is null then "OffHours" policy mode is
-  // off.
-  if (policy_off_hours_end_time.is_null()) {
+  // If |off_hours_session_end_time| is null then either "OffHours" policy mode
+  // is off or the current session shouldn't be terminated after "OffHours".
+  if (off_hours_session_end_time.is_null()) {
     // Send even if both values are zero because enterprise policy could turn
     // both features off in the middle of the session.
     session_controller_->SetSessionLengthLimit(session_length_limit,
@@ -615,14 +617,14 @@ void SessionControllerClient::SendSessionLengthLimit() {
     return;
   }
   if (session_length_limit_policy_set &&
-      session_start_time + session_length_limit < policy_off_hours_end_time) {
+      session_start_time + session_length_limit < off_hours_session_end_time) {
     session_controller_->SetSessionLengthLimit(session_length_limit,
                                                session_start_time);
     return;
   }
-  base::TimeTicks policy_off_hours_start_time = base::TimeTicks::Now();
-  base::TimeDelta policy_off_hours_length_limit =
-      policy_off_hours_end_time - policy_off_hours_start_time;
-  session_controller_->SetSessionLengthLimit(policy_off_hours_length_limit,
-                                             policy_off_hours_start_time);
+  base::TimeTicks off_hours_session_start_time = base::TimeTicks::Now();
+  base::TimeDelta off_hours_session_length_limit =
+      off_hours_session_end_time - off_hours_session_start_time;
+  session_controller_->SetSessionLengthLimit(off_hours_session_length_limit,
+                                             off_hours_session_start_time);
 }

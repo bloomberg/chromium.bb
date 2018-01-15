@@ -734,8 +734,8 @@ bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
   if (login_performer_.get())
     return login_performer_->IsUserWhitelisted(account_id, &wildcard_match);
 
-  return chromeos::CrosSettings::IsWhitelisted(account_id.GetUserEmail(),
-                                               &wildcard_match);
+  return cros_settings_->IsUserWhitelisted(account_id.GetUserEmail(),
+                                           &wildcard_match);
 }
 
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(

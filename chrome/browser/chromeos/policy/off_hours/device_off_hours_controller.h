@@ -60,6 +60,11 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   // Return current "OffHours" mode status.
   bool is_off_hours_mode() const { return off_hours_mode_; }
 
+  // Return true if the current user session is allowed only during the
+  // "OffHours" and will be signed out at the end of session. Always returns
+  // false outside of "OffHours".
+  bool IsCurrentSessionAllowedOnlyForOffHours() const;
+
   // Save actual "OffHours" intervals from |device_settings_proto| to
   // |off_hours_intervals_| and call "UpdateOffhoursMode()".
   void UpdateOffHoursPolicy(
@@ -136,6 +141,10 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // Current "OffHours" time intervals.
   std::vector<OffHoursInterval> off_hours_intervals_;
+
+  // Non-"OffHours" device settings proto.
+  // Needed to check policies outside of "OffHours" mode.
+  enterprise_management::ChromeDeviceSettingsProto device_settings_proto_;
 
   base::WeakPtrFactory<DeviceOffHoursController> weak_ptr_factory_{this};
 

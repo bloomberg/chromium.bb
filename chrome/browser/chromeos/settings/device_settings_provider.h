@@ -53,6 +53,12 @@ class DeviceSettingsProvider
   TrustedStatus PrepareTrustedValues(const base::Closure& callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
+  // Helper function that decodes policies from provided proto into the pref
+  // map.
+  static void DecodePolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache);
+
  private:
   // CrosSettingsProvider implementation:
   void DoSet(const std::string& path, const base::Value& value) override;

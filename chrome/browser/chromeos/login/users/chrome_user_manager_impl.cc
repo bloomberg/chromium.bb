@@ -1214,55 +1214,25 @@ void ChromeUserManagerImpl::ResetUserFlow(const AccountId& account_id) {
 }
 
 bool ChromeUserManagerImpl::AreSupervisedUsersAllowed() const {
-  bool supervised_users_allowed = false;
-  cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
-                             &supervised_users_allowed);
-  return supervised_users_allowed;
+  return chrome_user_manager_util::AreSupervisedUsersAllowed(cros_settings_);
 }
 
 bool ChromeUserManagerImpl::IsGuestSessionAllowed() const {
-  bool is_guest_allowed = false;
-  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &is_guest_allowed);
-  return is_guest_allowed;
+  return chrome_user_manager_util::IsGuestSessionAllowed(cros_settings_);
 }
 
 bool ChromeUserManagerImpl::IsGaiaUserAllowed(
     const user_manager::User& user) const {
-  DCHECK(user.HasGaiaAccount());
-  return CrosSettings::IsWhitelisted(user.GetAccountId().GetUserEmail(),
-                                     nullptr);
+  return chrome_user_manager_util::IsGaiaUserAllowed(user, cros_settings_);
 }
 
 void ChromeUserManagerImpl::OnMinimumVersionStateChanged() {
   NotifyUsersSignInConstraintsChanged();
 }
 
-bool ChromeUserManagerImpl::MinVersionConstraintsSatisfied() const {
-  return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetMinimumVersionPolicyHandler()
-      ->RequirementsAreSatisfied();
-}
-
 bool ChromeUserManagerImpl::IsUserAllowed(
     const user_manager::User& user) const {
-  DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
-         user.GetType() == user_manager::USER_TYPE_GUEST ||
-         user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
-         user.GetType() == user_manager::USER_TYPE_CHILD);
-
-  if (user.GetType() == user_manager::USER_TYPE_GUEST &&
-      !IsGuestSessionAllowed())
-    return false;
-  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED &&
-      !AreSupervisedUsersAllowed())
-    return false;
-  if (user.HasGaiaAccount() && !IsGaiaUserAllowed(user))
-    return false;
-  if (!MinVersionConstraintsSatisfied() &&
-      user.GetType() != user_manager::USER_TYPE_GUEST)
-    return false;
-  return true;
+  return chrome_user_manager_util::IsUserAllowed(user, cros_settings_);
 }
 
 UserFlow* ChromeUserManagerImpl::GetDefaultUserFlow() const {

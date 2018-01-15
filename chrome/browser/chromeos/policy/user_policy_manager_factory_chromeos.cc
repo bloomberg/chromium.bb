@@ -276,8 +276,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     // TODO(tnagel): Enable whitelist for Active Directory.
     bool wildcard_match = false;
     if (connector->IsEnterpriseManaged() &&
-        chromeos::CrosSettings::IsWhitelisted(account_id.GetUserEmail(),
-                                              &wildcard_match) &&
+        chromeos::CrosSettings::Get()->IsUserWhitelisted(
+            account_id.GetUserEmail(), &wildcard_match) &&
         wildcard_match &&
         !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
       manager->EnableWildcardLoginCheck(account_id.GetUserEmail());
