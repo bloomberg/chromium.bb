@@ -69,7 +69,7 @@ In this case, GL fences must be used for sequencing, for example:
 1. Context A: draw image, create GLFence
 1. Context B: server wait or client wait for GLFence, read image
 
-[gl::GLFence](/src/ui/gl/gl_fence.h) and its subclasses provide wrappers for
+[gl::GLFence](/ui/gl/gl_fence.h) and its subclasses provide wrappers for
 GL/EGL fence handling methods such as `eglFenceSyncKHR` and `eglWaitSyncKHR`.
 These fence objects can be used cross-thread as long as both thread's GL
 contexts are part of the same share group.
@@ -131,7 +131,7 @@ Command buffers in the same client-side share group must be in the same stream.
 Command scheduling granuarity is at the stream level, and a client can choose to
 create and use multiple streams with different stream priorities. Stream IDs are
 arbitrary integers assigned by the client at creation time, see for example the
-[ui::ContextProviderCommandBuffer](/src/services/ui/public/cpp/gpu/context_provider_command_buffer.h)
+[ui::ContextProviderCommandBuffer](/services/ui/public/cpp/gpu/context_provider_command_buffer.h)
 constructor.
 
 The CHROMIUM sync token is intended to order operations among command buffer GL
@@ -143,7 +143,7 @@ have been executed at the GPU driver level, this mechanism is not suitable for
 synchronizing command buffer GL operations with a local driver-level GL context.
 
 See the
-[CHROMIUM_sync_point](/src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_sync_point.txt)
+[CHROMIUM_sync_point](/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_sync_point.txt)
 documentation for details.
 
 Commands issued within a single command buffer don't need to be synchronized
@@ -210,7 +210,7 @@ were issued in that thread. This is handled in different ways:
   tiling GPUs as used on many mobile GPUs where glFlush is an expensive
   operation, it may force content load/store between tile memory and main
   memory.) See for example
-  [gl::GLContextCGL::MakeCurrent](/src/ui/gl/gl_context_cgl.cc):
+  [gl::GLContextCGL::MakeCurrent](/ui/gl/gl_context_cgl.cc):
 ```c++
   // It's likely we're going to switch OpenGL contexts at this point.
   // Before doing so, if there is a current context, flush it. There
@@ -284,7 +284,7 @@ context, then issue a server wait on the local GL fence object. This local
 server wait will be unblocked when the *service-side* gpu fence signals.
 
 The [CHROMIUM_gpu_fence
-extension](/src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_fence.txt) documents
+extension](/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_fence.txt) documents
 the GLES API as used through the command buffer interface. This section contains
 additional information about the integration with local GL contexts that is
 needed to work with these objects.
@@ -297,7 +297,7 @@ platform-specific local fence object instead of using an implementation class
 directly.
 
 For Android and ChromeOS, the
-[gl::GLFenceAndroidNativeFenceSync](/src/ui/gl/gl_fence_android_native_fence_sync.h)
+[gl::GLFenceAndroidNativeFenceSync](/ui/gl/gl_fence_android_native_fence_sync.h)
 implementation wraps the
 [EGL_ANDROID_native_fence_sync](https://www.khronos.org/registry/EGL/extensions/ANDROID/EGL_ANDROID_native_fence_sync.txt)
 extension that allows creating a special EGLFence object from which a file
@@ -306,13 +306,13 @@ that file descriptor that is synchronized with the original fence.
 
 ### GpuFence and GpuFenceHandle
 
-A [gfx::GpuFence](/src/ui/gfx/gpu_fence.h) object owns a GPU fence handle
+A [gfx::GpuFence](/ui/gfx/gpu_fence.h) object owns a GPU fence handle
 representing a native GL fence. The `AsClientGpuFence` method casts it to a
 ClientGpuFence type for use with the [CHROMIUM_gpu_fence
-extension](/src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_fence.txt)'s
+extension](/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_fence.txt)'s
 `CreateClientGpuFenceCHROMIUM` call.
 
-A [gfx::GpuFenceHandle](/src/ui/gfx/gpu_fence_handle.h) is an IPC-transportable
+A [gfx::GpuFenceHandle](/ui/gfx/gpu_fence_handle.h) is an IPC-transportable
 wrapper for a file descriptor or other underlying primitive object, and is used
 to duplicate a native GL fence into another process. It has value semantics and
 can be copied multiple times, and then consumed exactly one time. Consumers take
