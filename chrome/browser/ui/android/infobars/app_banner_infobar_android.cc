@@ -12,8 +12,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
+#include "components/url_formatter/elide_url.h"
 #include "jni/AppBannerInfoBarAndroid_jni.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
@@ -44,14 +44,13 @@ AppBannerInfoBarAndroid::CreateRenderInfoBar(JNIEnv* env) {
     infobar.Reset(Java_AppBannerInfoBarAndroid_createNativeAppInfoBar(
         env, app_title, java_bitmap, japp_data_));
   } else {
-    // Trim down the app URL to the domain and registry.
-    std::string trimmed_url =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            app_url_,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
+    // Trim down the app URL to the origin. Banners only show on secure origins,
+    // so elide the scheme.
     base::android::ScopedJavaLocalRef<jstring> app_url =
-        base::android::ConvertUTF8ToJavaString(env, trimmed_url);
+        base::android::ConvertUTF16ToJavaString(
+            env,
+            url_formatter::FormatUrlForSecurityDisplay(
+                app_url_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
     infobar.Reset(Java_AppBannerInfoBarAndroid_createWebAppInfoBar(
         env, app_title, java_bitmap, app_url));
