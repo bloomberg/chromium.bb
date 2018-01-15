@@ -35,6 +35,7 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
+#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
@@ -705,6 +706,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebEncryptedMediaClient* EncryptedMediaClient() override;
   blink::WebString UserAgentOverride() override;
   blink::WebString DoNotTrackValue() override;
+  mojom::RendererAudioInputStreamFactory* GetAudioInputStreamFactory();
   bool ShouldBlockWebGL() override;
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
@@ -1424,6 +1426,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;
+
+  mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
 
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;

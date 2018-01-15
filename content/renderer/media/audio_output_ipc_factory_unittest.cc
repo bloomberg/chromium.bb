@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_ipc_factory.h"
+#include "content/renderer/media/audio_output_ipc_factory.h"
 
 #include <string>
 #include <utility>
@@ -67,7 +67,7 @@ class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   base::OnceClosure on_called_;
 };
 
-class FakeAudioIPCDelegate : public media::AudioOutputIPCDelegate {
+class FakeAudioOutputIPCDelegate : public media::AudioOutputIPCDelegate {
   void OnError() override {}
   void OnDeviceAuthorized(media::OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params,
@@ -79,10 +79,10 @@ class FakeAudioIPCDelegate : public media::AudioOutputIPCDelegate {
 
 }  // namespace
 
-class AudioIPCFactoryTest : public testing::Test {
+class AudioOutputIPCFactoryTest : public testing::Test {
  public:
-  AudioIPCFactoryTest() {}
-  ~AudioIPCFactoryTest() override {}
+  AudioOutputIPCFactoryTest() {}
+  ~AudioOutputIPCFactoryTest() override {}
 
   void RequestAuthorizationOnIOThread(
       std::unique_ptr<media::AudioOutputIPC> output_ipc) {
@@ -93,11 +93,11 @@ class AudioIPCFactoryTest : public testing::Test {
   }
 
  private:
-  FakeAudioIPCDelegate fake_delegate;
+  FakeAudioOutputIPCDelegate fake_delegate;
 };
 
-TEST_F(AudioIPCFactoryTest, CallFactoryFromIOThread) {
-  // This test makes sure that AudioIPCFactory correctly binds the
+TEST_F(AudioOutputIPCFactoryTest, CallFactoryFromIOThread) {
+  // This test makes sure that AudioOutputIPCFactory correctly binds the
   // RendererAudioOutputStreamFactoryPtr to the IO thread.
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
@@ -112,7 +112,7 @@ TEST_F(AudioIPCFactoryTest, CallFactoryFromIOThread) {
                         base::BindRepeating(&FakeRemoteFactory::Bind,
                                             base::Unretained(&remote_factory)));
 
-  AudioIPCFactory ipc_factory(nullptr, io_thread->task_runner());
+  AudioOutputIPCFactory ipc_factory(nullptr, io_thread->task_runner());
 
   ipc_factory.MaybeRegisterRemoteFactory(kRenderFrameId, &interface_provider);
 
@@ -122,7 +122,7 @@ TEST_F(AudioIPCFactoryTest, CallFactoryFromIOThread) {
   // This is supposed to call |remote_factory| on the main thread.
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioIPCFactoryTest::RequestAuthorizationOnIOThread,
+      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
                      base::Unretained(this),
                      ipc_factory.CreateAudioOutputIPC(kRenderFrameId)));
 
@@ -135,7 +135,7 @@ TEST_F(AudioIPCFactoryTest, CallFactoryFromIOThread) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AudioIPCFactoryTest, SeveralFactories) {
+TEST_F(AudioOutputIPCFactoryTest, SeveralFactories) {
   // This test simulates having several frames being created and destructed.
   base::MessageLoop message_loop;
   auto io_thread = MakeIOThread();
@@ -156,7 +156,7 @@ TEST_F(AudioIPCFactoryTest, SeveralFactories) {
 
   base::RunLoop().RunUntilIdle();
 
-  AudioIPCFactory ipc_factory(nullptr, io_thread->task_runner());
+  AudioOutputIPCFactory ipc_factory(nullptr, io_thread->task_runner());
 
   for (size_t i = 0; i < n_factories; i++) {
     ipc_factory.MaybeRegisterRemoteFactory(kRenderFrameId + i,
@@ -167,7 +167,7 @@ TEST_F(AudioIPCFactoryTest, SeveralFactories) {
   remote_factories[0].SetOnCalledCallback(run_loop.QuitWhenIdleClosure());
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioIPCFactoryTest::RequestAuthorizationOnIOThread,
+      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
                      base::Unretained(this),
                      ipc_factory.CreateAudioOutputIPC(kRenderFrameId)));
   run_loop.Run();
@@ -179,7 +179,7 @@ TEST_F(AudioIPCFactoryTest, SeveralFactories) {
   remote_factories[2].SetOnCalledCallback(run_loop2.QuitWhenIdleClosure());
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioIPCFactoryTest::RequestAuthorizationOnIOThread,
+      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
                      base::Unretained(this),
                      ipc_factory.CreateAudioOutputIPC(kRenderFrameId + 2)));
   run_loop2.Run();
@@ -194,7 +194,7 @@ TEST_F(AudioIPCFactoryTest, SeveralFactories) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AudioIPCFactoryTest, RegisterDeregisterBackToBack_Deregisters) {
+TEST_F(AudioOutputIPCFactoryTest, RegisterDeregisterBackToBack_Deregisters) {
   // This test makes sure that calling Register... followed by Deregister...
   // correctly sequences the registration before the deregistration.
   base::MessageLoop message_loop;
@@ -208,12 +208,12 @@ TEST_F(AudioIPCFactoryTest, RegisterDeregisterBackToBack_Deregisters) {
                         base::BindRepeating(&FakeRemoteFactory::Bind,
                                             base::Unretained(&remote_factory)));
 
-  AudioIPCFactory ipc_factory(nullptr, io_thread->task_runner());
+  AudioOutputIPCFactory ipc_factory(nullptr, io_thread->task_runner());
 
   ipc_factory.MaybeRegisterRemoteFactory(kRenderFrameId, &interface_provider);
   ipc_factory.MaybeDeregisterRemoteFactory(kRenderFrameId);
   // That there is no factory remaining at destruction is DCHECKed in the
-  // AudioIPCFactory destructor.
+  // AudioOutputIPCFactory destructor.
 
   base::RunLoop().RunUntilIdle();
   io_thread.reset();

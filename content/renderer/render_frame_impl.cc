@@ -116,7 +116,7 @@
 #include "content/renderer/manifest/manifest_change_notifier.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_ipc_factory.h"
+#include "content/renderer/media/audio_output_ipc_factory.h"
 #include "content/renderer/media/media_devices_listener_impl.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_device_observer.h"
@@ -1380,7 +1380,7 @@ RenderFrameImpl::~RenderFrameImpl() {
   if (input_handler_manager)
     input_handler_manager->UnregisterRoutingID(GetRoutingID());
 
-  if (auto* factory = AudioIPCFactory::get())
+  if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetRoutingID());
 
   if (is_main_frame_) {
@@ -1442,8 +1442,8 @@ void RenderFrameImpl::Initialize() {
         GetRoutingID(), render_view_->GetRoutingID());
   }
 
-  // AudioIPCFactory may be null in tests.
-  if (auto* factory = AudioIPCFactory::get())
+  // AudioOutputIPCFactory may be null in tests.
+  if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeRegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
 
   const base::CommandLine& command_line =
@@ -4263,8 +4263,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     remote_interfaces_.Close();
     remote_interfaces_.Bind(std::move(interfaces_provider));
 
-    // AudioIPCFactory may be null in tests.
-    if (auto* factory = AudioIPCFactory::get()) {
+    // AudioOutputIPCFactory may be null in tests.
+    if (auto* factory = AudioOutputIPCFactory::get()) {
       // The RendererAudioOutputStreamFactory must be readily accessible on the
       // IO thread when it's needed, because the main thread may block while
       // waiting for the factory call to finish on the IO thread, so if we tried
@@ -4277,6 +4277,13 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       factory->MaybeRegisterRemoteFactory(GetRoutingID(),
                                           GetRemoteInterfaces());
     }
+
+    // If the request for |audio_input_stream_factory_| is in flight when
+    // |remote_interfaces_| is reset, it will be silently dropped. We reset
+    // |audio_input_stream_factory_| to force a new mojo request to be sent
+    // the next time it's used. See https://crbug.com/795258 for implementing a
+    // nicer solution.
+    audio_input_stream_factory_.reset();
   }
 
   // Notify the MediaPermissionDispatcher that its connection will be closed
@@ -5143,6 +5150,13 @@ blink::WebString RenderFrameImpl::DoNotTrackValue() {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     return WebString::FromUTF8("1");
   return WebString();
+}
+
+mojom::RendererAudioInputStreamFactory*
+RenderFrameImpl::GetAudioInputStreamFactory() {
+  if (!audio_input_stream_factory_)
+    GetRemoteInterfaces()->GetInterface(&audio_input_stream_factory_);
+  return audio_input_stream_factory_.get();
 }
 
 bool RenderFrameImpl::ShouldBlockWebGL() {

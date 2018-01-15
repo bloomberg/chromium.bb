@@ -372,6 +372,11 @@ const base::Feature kEnablePreventLayerSquashing{
 const base::Feature kUseFeaturePolicyForPermissions{
     "UseFeaturePolicyForPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use MojoAudioInputIPC and RenderFrameAudioInputStreamFactory rather than
+// AudioInputMessageFilter and AudioInputRendererHost.
+const base::Feature kUseMojoAudioInputStreamFactory{
+    "UseMojoAudioInputStreamFactory", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
 // AudioMessageFilter and AudioRendererHost.
 const base::Feature kUseMojoAudioOutputStreamFactory{
