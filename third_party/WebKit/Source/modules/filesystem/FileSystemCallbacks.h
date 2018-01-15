@@ -136,7 +136,7 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
   class OnDidGetEntryV8Impl : public OnDidGetEntryCallback {
    public:
     static OnDidGetEntryV8Impl* Create(V8EntryCallback* callback) {
-      return new OnDidGetEntryV8Impl(callback);
+      return callback ? new OnDidGetEntryV8Impl(callback) : nullptr;
     }
     void Trace(blink::Visitor*) override;
     void OnSuccess(Entry*) override;

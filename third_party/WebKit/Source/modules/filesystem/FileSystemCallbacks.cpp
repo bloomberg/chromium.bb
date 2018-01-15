@@ -196,11 +196,12 @@ EntryCallbacks::EntryCallbacks(OnDidGetEntryCallback* success_callback,
     : FileSystemCallbacksBase(error_callback, file_system, context),
       success_callback_(success_callback),
       expected_path_(expected_path),
-      is_directory_(is_directory) {
-  DCHECK(success_callback_);
-}
+      is_directory_(is_directory) {}
 
 void EntryCallbacks::DidSucceed() {
+  if (!success_callback_)
+    return;
+
   Entry* entry = is_directory_ ? static_cast<Entry*>(DirectoryEntry::Create(
                                      file_system_, expected_path_))
                                : static_cast<Entry*>(FileEntry::Create(
