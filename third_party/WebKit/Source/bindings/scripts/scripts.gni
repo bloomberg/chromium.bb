@@ -566,11 +566,14 @@ template("generate_origin_trial_features") {
 
 template("generate_web_idl_collection") {
   action(target_name) {
-    script = "//third_party/WebKit/Source/bindings/scripts/generate_web_idl_collection.py"
+    script = "${bindings_scripts_dir}/generate_web_idl_collection.py"
     output_dir = invoker.output_dir
     output_file_name = invoker.output
     output_path = "${output_dir}/${output_file_name}"
-    inputs = web_idl_scripts + invoker.sources
+    inputs = [
+               script,
+               "${bindings_scripts_dir}/utilities.py",
+             ] + web_idl_scripts + invoker.sources
     outputs = [
       output_path,
     ]

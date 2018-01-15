@@ -36,8 +36,8 @@ def main():
 
     parser = blink_idl_parser.BlinkIDLParser()
     collector = Collector(component=options.component, parser=parser)
-    collection = collector.collect_from_idl_files(idl_file_names)
-    utilities.write_pickle_file(options.output, collection)
+    collector.collect_from_idl_files(idl_file_names)
+    utilities.write_pickle_file(options.output, collector.get_collection())
 
 
 if __name__ == '__main__':
