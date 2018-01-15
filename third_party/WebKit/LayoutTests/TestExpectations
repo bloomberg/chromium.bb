@@ -1347,6 +1347,7 @@ crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-consumed-touchs
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_boundary_events_in_capturing-manual.html [ Skip ]
@@ -1813,7 +1814,6 @@ crbug.com/626703 [ Android Mac10.10 ] virtual/mojo-localstorage/external/wpt/web
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-002.html [ Failure ]
-crbug.com/626703 external/wpt/quirks/active-and-hover-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-table-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/form-elements/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
@@ -1946,10 +1946,8 @@ crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/gro
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/scripting/events/contextmenu-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
-crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/orientation-event/deviceorientationabsoluteevent.html [ Timeout ]
@@ -2224,7 +2222,6 @@ crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type
 crbug.com/626703 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes-manual.html [ Timeout ]
 crbug.com/626703 virtual/mojo-blobs/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/mojo-blobs/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.html [ Timeout ]
@@ -2391,7 +2388,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.
 
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors/focus-within-004.html [ Failure ]
-crbug.com/706118 external/wpt/css/selectors/hover-001-manual.html [ Skip ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-rtl-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-01a.html [ Failure ]
@@ -2789,9 +2785,6 @@ crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-afte
 crbug.com/679742 external/wpt/mediacapture-streams/MediaStreamTrack-getSettings.https.html [ Failure ]
 
 crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
-
-# This is a manual test.
-crbug.com/711493 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
 
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
