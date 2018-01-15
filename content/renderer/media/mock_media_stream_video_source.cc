@@ -56,6 +56,10 @@ void MockMediaStreamVideoSource::RequestRefreshFrame() {
   }
 }
 
+void MockMediaStreamVideoSource::OnHasConsumers(bool has_consumers) {
+  is_suspended_ = !has_consumers;
+}
+
 void MockMediaStreamVideoSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());

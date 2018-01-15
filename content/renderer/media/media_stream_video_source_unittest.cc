@@ -673,4 +673,24 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartNotSupported) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(MediaStreamVideoSourceTest, StopSuspendedTrack) {
+  blink::WebMediaStreamTrack web_track1 = CreateTrack("123");
+  mock_source()->StartMockedSource();
+  blink::WebMediaStreamTrack web_track2 = CreateTrack("123");
+
+  // Simulate assigning |track1| to a sink, then removing it from the sink, and
+  // then stopping it.
+  MediaStreamVideoTrack* track1 =
+      MediaStreamVideoTrack::GetVideoTrack(web_track1);
+  mock_source()->UpdateHasConsumers(track1, true);
+  mock_source()->UpdateHasConsumers(track1, false);
+  track1->Stop();
+
+  // Simulate assigning |track2| to a sink. The source should not be suspended.
+  MediaStreamVideoTrack* track2 =
+      MediaStreamVideoTrack::GetVideoTrack(web_track2);
+  mock_source()->UpdateHasConsumers(track2, true);
+  EXPECT_FALSE(mock_source()->is_suspended());
+}
+
 }  // namespace content
