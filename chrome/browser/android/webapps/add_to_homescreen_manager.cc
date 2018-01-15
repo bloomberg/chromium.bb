@@ -16,12 +16,12 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AddToHomescreenManager_jni.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -124,12 +124,11 @@ void AddToHomescreenManager::OnUserTitleAvailable(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_user_title =
       base::android::ConvertUTF16ToJavaString(env, user_title);
-  // Trim down the app URL to the domain and registry.
-  std::string trimmed_url =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  ScopedJavaLocalRef<jstring> j_url =
-      base::android::ConvertUTF8ToJavaString(env, trimmed_url);
+  // Trim down the app URL to the origin. Elide cryptographic schemes so HTTP
+  // is still shown.
+  ScopedJavaLocalRef<jstring> j_url = base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrlForSecurityDisplay(
+               url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
   Java_AddToHomescreenManager_onUserTitleAvailable(
       env, java_ref_, j_user_title, j_url,
       !is_webapk_compatible_ /* isTitleEditable */);
