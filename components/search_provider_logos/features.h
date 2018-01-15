@@ -18,6 +18,8 @@ extern const base::Feature kThirdPartyDoodles;
 // third-party search engines. Useful for testing.
 extern const char kThirdPartyDoodlesOverrideUrlParam[];
 
+extern const base::Feature kDoodleLogging;
+
 }  // namespace features
 }  // namespace search_provider_logos
 

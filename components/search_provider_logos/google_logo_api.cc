@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -19,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
@@ -237,6 +239,11 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
 
   logo->metadata.on_click_url = ParseUrl(*ddljson, "target_url", base_url);
   ddljson->GetString("alt_text", &logo->metadata.alt_text);
+
+  if (base::FeatureList::IsEnabled(features::kDoodleLogging)) {
+    logo->metadata.cta_log_url = ParseUrl(*ddljson, "cta_log_url", base_url);
+    logo->metadata.log_url = ParseUrl(*ddljson, "log_url", base_url);
+  }
 
   ddljson->GetString("fingerprint", &logo->metadata.fingerprint);
 
