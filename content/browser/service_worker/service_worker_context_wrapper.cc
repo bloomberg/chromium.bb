@@ -281,7 +281,6 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
       net::SimplifyUrlForRequest(options.scope), options.update_via_cache);
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options_to_pass,
-      nullptr /* provider_host */,
       base::Bind(&FinishRegistrationOnIO, base::Passed(std::move(callback))));
 }
 

@@ -105,13 +105,12 @@ ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
 void ServiceWorkerJobCoordinator::Register(
     const GURL& script_url,
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
-    ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   std::unique_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerRegisterJob(context_, script_url, options));
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
       job_queues_[options.scope].Push(std::move(job)));
-  queued_job->AddCallback(callback, provider_host);
+  queued_job->AddCallback(callback);
 }
 
 void ServiceWorkerJobCoordinator::Unregister(
@@ -140,7 +139,6 @@ void ServiceWorkerJobCoordinator::Update(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
     bool skip_script_comparison,
-    ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   DCHECK(registration);
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
@@ -149,7 +147,7 @@ void ServiceWorkerJobCoordinator::Update(
               new ServiceWorkerRegisterJob(context_, registration,
                                            force_bypass_cache,
                                            skip_script_comparison))));
-  queued_job->AddCallback(callback, provider_host);
+  queued_job->AddCallback(callback);
 }
 
 void ServiceWorkerJobCoordinator::AbortAll() {

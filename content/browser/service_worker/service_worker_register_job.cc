@@ -74,12 +74,9 @@ ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
 }
 
 void ServiceWorkerRegisterJob::AddCallback(
-    const RegistrationCallback& callback,
-    ServiceWorkerProviderHost* provider_host) {
+    const RegistrationCallback& callback) {
   if (!is_promise_resolved_) {
     callbacks_.push_back(callback);
-    if (provider_host)
-      provider_host->AddScopedProcessReferenceToPattern(pattern_);
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(

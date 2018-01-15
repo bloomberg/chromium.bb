@@ -141,13 +141,13 @@ class BackgroundSyncManagerTest : public testing::Test {
     blink::mojom::ServiceWorkerRegistrationOptions options2;
     options2.scope = GURL(kPattern2);
     helper_->context()->RegisterServiceWorker(
-        GURL(kScript1), options1, nullptr,
+        GURL(kScript1), options1,
         base::AdaptCallbackForRepeating(
             base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
                            &sw_registration_id_1_)));
 
     helper_->context()->RegisterServiceWorker(
-        GURL(kScript2), options2, nullptr,
+        GURL(kScript2), options2,
         base::AdaptCallbackForRepeating(
             base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
                            &sw_registration_id_2_)));

@@ -305,10 +305,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // purposes. This can only be called if IsProviderForClient() is true.
   void CountFeature(uint32_t feature);
 
-  // A no-op just here to keep patch size small as code is deleted.
-  // TODO(falken): Remove this.
-  void AddScopedProcessReferenceToPattern(const GURL& pattern);
-
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(ServiceWorkerRegistration* registration);
 
@@ -416,12 +412,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Discards all references to matching registrations.
   void RemoveAllMatchingRegistrations();
 
-  // These are no-ops that are just here to keep patch size small as code is
-  // deleted.
-  // TODO(falken): Remove these.
-  void IncreaseProcessReference(const GURL& pattern);
-  void DecreaseProcessReference(const GURL& pattern);
-
   void ReturnRegistrationForReadyIfNeeded();
 
   bool IsReadyToSendMessages() const;
@@ -526,7 +516,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   GURL document_url_;
   GURL topmost_frame_url_;
 
-  std::vector<GURL> associated_patterns_;
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   // Keyed by registration scope URL length.

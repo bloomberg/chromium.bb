@@ -59,10 +59,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
 
   // Registers a callback to be called when the promise would resolve (whether
   // successfully or not). Multiple callbacks may be registered.
-  // If |provider_host| is not NULL, its process will be regarded as a candidate
-  // process to run the worker.
-  void AddCallback(const RegistrationCallback& callback,
-                   ServiceWorkerProviderHost* provider_host);
+  void AddCallback(const RegistrationCallback& callback);
 
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;

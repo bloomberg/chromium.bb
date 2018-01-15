@@ -233,9 +233,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     controller_->RemoveControllee(this);
 
   RemoveAllMatchingRegistrations();
-
-  for (const GURL& pattern : associated_patterns_)
-    DecreaseProcessReference(pattern);
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
@@ -416,7 +413,6 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
   size_t key = registration->pattern().spec().size();
   if (base::ContainsKey(matching_registrations_, key))
     return;
-  IncreaseProcessReference(registration->pattern());
   registration->AddListener(this);
   matching_registrations_[key] = registration;
   ReturnRegistrationForReadyIfNeeded();
@@ -426,7 +422,6 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
     ServiceWorkerRegistration* registration) {
   size_t key = registration->pattern().spec().size();
   DCHECK(base::ContainsKey(matching_registrations_, key));
-  DecreaseProcessReference(registration->pattern());
   registration->RemoveListener(this);
   matching_registrations_.erase(key);
 }
@@ -577,11 +572,6 @@ void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {
   container_->CountFeature(web_feature);
 }
 
-void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
-    const GURL& pattern) {
-  // TODO(falken): Remove this no-op.
-}
-
 void ServiceWorkerProviderHost::ClaimedByRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration->active_version());
@@ -617,13 +607,9 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   render_process_id_ = process_id;
   dispatcher_host_ = dispatcher_host;
 
-  // Increase the references because the process which this provider host will
-  // host has been decided.
-  for (const GURL& pattern : associated_patterns_)
-    IncreaseProcessReference(pattern);
-  for (auto& key_registration : matching_registrations_)
-    IncreaseProcessReference(key_registration.second->pattern());
-
+  // Now that there is a connection with the renderer-side provider, initialize
+  // the handle for ServiceWorkerContainer#controller, and send the controller
+  // info to the renderer if needed.
   if (!controller_)
     return;
 
@@ -639,11 +625,9 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     dispatcher_host_->RegisterServiceWorkerHandle(std::move(new_handle));
   }
 
-  // Now that there is a connection with the renderer-side provider,
-  // send it the SetController IPC.
-  // (In S13nServiceWorker case the controller is already sent in navigation
+  // In S13nServiceWorker case the controller is already sent in navigation
   // commit, but we still need this for S13nServiceWorker case for setting the
-  // use counter correctly.)
+  // use counter correctly.
   // TODO(kinuko): Stop doing this in S13nServiceWorker case.
   SendSetControllerServiceWorker(controller_.get(),
                                  false /* notify_controllerchange */);
@@ -752,20 +736,9 @@ void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
 void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
   for (const auto& it : matching_registrations_) {
     ServiceWorkerRegistration* registration = it.second.get();
-    DecreaseProcessReference(registration->pattern());
     registration->RemoveListener(this);
   }
   matching_registrations_.clear();
-}
-
-void ServiceWorkerProviderHost::IncreaseProcessReference(
-    const GURL& pattern) {
-  // TODO(falken): Remove this no-op.
-}
-
-void ServiceWorkerProviderHost::DecreaseProcessReference(
-    const GURL& pattern) {
-  // TODO(falken): Remove this no-op.
 }
 
 void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
@@ -860,7 +833,7 @@ void ServiceWorkerProviderHost::Register(
       "ServiceWorker", "ServiceWorkerProviderHost::Register", trace_id, "Scope",
       options->scope.spec(), "Script URL", script_url.spec());
   context_->RegisterServiceWorker(
-      script_url, *options, this,
+      script_url, *options,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
                          AsWeakPtr(), std::move(callback), trace_id)));
