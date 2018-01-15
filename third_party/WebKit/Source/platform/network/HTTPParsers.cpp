@@ -36,7 +36,6 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "platform/json/JSONParser.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HeaderFieldTokenizer.h"
 #include "platform/network/http_names.h"
@@ -808,18 +807,6 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
   }
 
   return true;
-}
-
-// See https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01, Section 4.
-std::unique_ptr<JSONArray> ParseJSONHeader(const String& header,
-                                           int max_parse_depth) {
-  StringBuilder sb;
-  sb.Append("[");
-  sb.Append(header);
-  sb.Append("]");
-  std::unique_ptr<JSONValue> header_value =
-      ParseJSON(sb.ToString(), max_parse_depth);
-  return JSONArray::From(std::move(header_value));
 }
 
 bool ParseContentRangeHeaderFor206(const String& content_range,
