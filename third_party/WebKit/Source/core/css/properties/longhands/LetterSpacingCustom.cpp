@@ -4,7 +4,9 @@
 
 #include "core/css/properties/longhands/LetterSpacing.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +16,17 @@ const CSSValue* LetterSpacing::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ParseSpacing(range, context);
+}
+
+const CSSValue* LetterSpacing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (!style.LetterSpacing())
+    return CSSIdentifierValue::Create(CSSValueNormal);
+  return ZoomAdjustedPixelValue(style.LetterSpacing(), style);
 }
 
 }  // namespace CSSLonghand

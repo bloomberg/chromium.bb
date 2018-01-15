@@ -8,6 +8,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -47,6 +48,17 @@ bool Overflow::ParseShorthand(
       CSSPropertyOverflowY, CSSPropertyOverflow, *overflow_y_value, important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   return true;
+}
+
+const CSSValue* Overflow::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.OverflowX() == style.OverflowY())
+    return CSSIdentifierValue::Create(style.OverflowX());
+  return nullptr;
 }
 
 }  // namespace CSSShorthand

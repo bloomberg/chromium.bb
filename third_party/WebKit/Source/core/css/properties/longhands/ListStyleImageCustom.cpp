@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/ListStyleImage.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -17,6 +18,17 @@ const CSSValue* ListStyleImage::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
+}
+
+const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.ListStyleImage())
+    return style.ListStyleImage()->ComputedCSSValue();
+  return CSSIdentifierValue::Create(CSSValueNone);
 }
 
 }  // namespace CSSLonghand

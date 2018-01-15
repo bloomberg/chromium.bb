@@ -6,6 +6,8 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -29,6 +31,16 @@ const CSSValue* StrokeDasharray::ParseSingleValue(
     dashes->Append(*dash);
   } while (!range.AtEnd());
   return dashes;
+}
+
+const CSSValue* StrokeDasharray::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::StrokeDashArrayToCSSValueList(
+      *svg_style.StrokeDashArray(), style);
 }
 
 }  // namespace CSSLonghand

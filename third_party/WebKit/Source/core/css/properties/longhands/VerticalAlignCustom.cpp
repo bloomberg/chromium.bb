@@ -6,6 +6,8 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -22,6 +24,39 @@ const CSSValue* VerticalAlign::ParseSingleValue(
         CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
   }
   return parsed_value;
+}
+
+const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  switch (style.VerticalAlign()) {
+    case EVerticalAlign::kBaseline:
+      return CSSIdentifierValue::Create(CSSValueBaseline);
+    case EVerticalAlign::kMiddle:
+      return CSSIdentifierValue::Create(CSSValueMiddle);
+    case EVerticalAlign::kSub:
+      return CSSIdentifierValue::Create(CSSValueSub);
+    case EVerticalAlign::kSuper:
+      return CSSIdentifierValue::Create(CSSValueSuper);
+    case EVerticalAlign::kTextTop:
+      return CSSIdentifierValue::Create(CSSValueTextTop);
+    case EVerticalAlign::kTextBottom:
+      return CSSIdentifierValue::Create(CSSValueTextBottom);
+    case EVerticalAlign::kTop:
+      return CSSIdentifierValue::Create(CSSValueTop);
+    case EVerticalAlign::kBottom:
+      return CSSIdentifierValue::Create(CSSValueBottom);
+    case EVerticalAlign::kBaselineMiddle:
+      return CSSIdentifierValue::Create(CSSValueWebkitBaselineMiddle);
+    case EVerticalAlign::kLength:
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.GetVerticalAlignLength(), style);
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace CSSLonghand

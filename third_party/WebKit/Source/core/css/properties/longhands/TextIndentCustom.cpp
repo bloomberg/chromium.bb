@@ -7,6 +7,8 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -55,6 +57,26 @@ const CSSValue* TextIndent::ParseSingleValue(
   if (!has_length_or_percentage)
     return nullptr;
 
+  return list;
+}
+
+const CSSValue* TextIndent::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.TextIndent(), style));
+  if (RuntimeEnabledFeatures::CSS3TextEnabled() &&
+      (style.GetTextIndentLine() == TextIndentLine::kEachLine ||
+       style.GetTextIndentType() == TextIndentType::kHanging)) {
+    if (style.GetTextIndentLine() == TextIndentLine::kEachLine)
+      list->Append(*CSSIdentifierValue::Create(CSSValueEachLine));
+    if (style.GetTextIndentType() == TextIndentType::kHanging)
+      list->Append(*CSSIdentifierValue::Create(CSSValueHanging));
+  }
   return list;
 }
 

@@ -6,6 +6,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -34,6 +35,28 @@ const CSSValue* Scale::ParseSingleValue(CSSParserTokenRange& range,
       list->Append(*scale);
   }
 
+  return list;
+}
+
+const CSSValue* Scale::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (!style.Scale())
+    return CSSIdentifierValue::Create(CSSValueNone);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSPrimitiveValue::Create(
+      style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));
+  if (style.Scale()->Y() == 1 && style.Scale()->Z() == 1)
+    return list;
+  list->Append(*CSSPrimitiveValue::Create(
+      style.Scale()->Y(), CSSPrimitiveValue::UnitType::kNumber));
+  if (style.Scale()->Z() != 1) {
+    list->Append(*CSSPrimitiveValue::Create(
+        style.Scale()->Z(), CSSPrimitiveValue::UnitType::kNumber));
+  }
   return list;
 }
 

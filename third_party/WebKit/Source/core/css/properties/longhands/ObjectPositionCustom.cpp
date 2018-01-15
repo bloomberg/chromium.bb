@@ -6,7 +6,9 @@
 
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 #include "core/frame/WebFeature.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -18,6 +20,20 @@ const CSSValue* ObjectPosition::ParseSingleValue(
   return ConsumePosition(range, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
                          WebFeature::kThreeValuedPositionObjectPosition);
+}
+
+const CSSValue* ObjectPosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return CSSValuePair::Create(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.ObjectPosition().X(), style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.ObjectPosition().Y(), style),
+      CSSValuePair::kKeepIdenticalValues);
 }
 
 }  // namespace CSSLonghand

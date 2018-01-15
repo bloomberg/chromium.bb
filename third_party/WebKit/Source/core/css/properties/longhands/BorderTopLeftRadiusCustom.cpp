@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/BorderTopLeftRadius.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +16,16 @@ const CSSValue* BorderTopLeftRadius::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ParseBorderRadiusCorner(range, context);
+}
+
+const CSSValue* BorderTopLeftRadius::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return &ComputedStyleUtils::ValueForBorderRadiusCorner(
+      style.BorderTopLeftRadius(), style);
 }
 
 }  // namespace CSSLonghand

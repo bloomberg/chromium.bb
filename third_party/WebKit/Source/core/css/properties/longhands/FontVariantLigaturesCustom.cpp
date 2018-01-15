@@ -6,6 +6,8 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -25,6 +27,15 @@ const CSSValue* FontVariantLigatures::ParseSingleValue(
   } while (!range.AtEnd());
 
   return ligatures_parser.FinalizeValue();
+}
+
+const CSSValue* FontVariantLigatures::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForFontVariantLigatures(style);
 }
 
 }  // namespace CSSLonghand

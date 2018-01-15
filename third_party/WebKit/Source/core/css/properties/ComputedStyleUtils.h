@@ -6,7 +6,9 @@
 #define ComputedStyleUtils_h
 
 #include "core/css/CSSBorderImageSliceValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/Allocator.h"
@@ -27,6 +29,15 @@ class ComputedStyleUtils {
       const AtomicString& resource) {
     return "#" + resource;
   }
+
+  inline static CSSValue* ZoomAdjustedPixelValueOrAuto(
+      const Length& length,
+      const ComputedStyle& style) {
+    if (length.IsAuto())
+      return CSSIdentifierValue::Create(CSSValueAuto);
+    return ZoomAdjustedPixelValue(length.Value(), style);
+  }
+
   static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
                                             const StyleColor&);
   static const blink::Color BorderSideColor(const ComputedStyle&,
@@ -77,6 +88,87 @@ class ComputedStyleUtils {
                                   const LayoutObject*,
                                   Node*,
                                   bool allow_visited_style);
+  static CSSValue* MinWidthOrMinHeightAuto(Node*, const ComputedStyle&);
+  static CSSValue* ValueForPositionOffset(const ComputedStyle&,
+                                          const CSSProperty&,
+                                          const LayoutObject*);
+  static CSSValueList* ValueForItemPositionWithOverflowAlignment(
+      const StyleSelfAlignmentData&);
+  static CSSValueList*
+  ValueForContentPositionAndDistributionWithOverflowAlignment(
+      const StyleContentAlignmentData&);
+  static CSSValue* ValueForLineHeight(const ComputedStyle&);
+  static CSSValueList* ValueForFontFamily(const ComputedStyle&);
+  static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle&);
+  static CSSPrimitiveValue* ValueForFontStretch(const ComputedStyle&);
+  static CSSIdentifierValue* ValueForFontStyle(const ComputedStyle&);
+  static CSSPrimitiveValue* ValueForFontWeight(const ComputedStyle&);
+  static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle&);
+  static CSSValue* ValueForFontVariantLigatures(const ComputedStyle&);
+  static CSSValue* ValueForFontVariantNumeric(const ComputedStyle&);
+  static CSSValue* ValueForFont(const ComputedStyle&);
+  static CSSValue* ValueForFontVariantEastAsian(const ComputedStyle&);
+  static CSSValue* SpecifiedValueForGridTrackSize(const GridTrackSize&,
+                                                  const ComputedStyle&);
+  static CSSValue* ValueForGridTrackSizeList(GridTrackSizingDirection,
+                                             const ComputedStyle&);
+  static CSSValue* ValueForGridTrackList(GridTrackSizingDirection,
+                                         const LayoutObject*,
+                                         const ComputedStyle&);
+  static CSSValue* ValueForGridPosition(const GridPosition&);
+  static LayoutRect SizingBox(const LayoutObject&);
+  static CSSValue* RenderTextDecorationFlagsToCSSValue(TextDecoration);
+  static CSSValue* ValueForTextDecorationStyle(ETextDecorationStyle);
+  static CSSValue* ValueForTextDecorationSkipInk(ETextDecorationSkipInk);
+  static CSSValue* TouchActionFlagsToCSSValue(TouchAction);
+  static CSSValue* ValueForWillChange(const Vector<CSSPropertyID>&,
+                                      bool will_change_contents,
+                                      bool will_change_scroll_position);
+  static CSSValue* ValueForAnimationDelay(const CSSTimingData*);
+  static CSSValue* ValueForAnimationDirection(Timing::PlaybackDirection);
+  static CSSValue* ValueForAnimationDuration(const CSSTimingData*);
+  static CSSValue* ValueForAnimationFillMode(Timing::FillMode);
+  static CSSValue* ValueForAnimationIterationCount(double iteration_count);
+  static CSSValue* ValueForAnimationPlayState(EAnimPlayState);
+  static CSSValue* CreateTimingFunctionValue(const TimingFunction*);
+  static CSSValue* ValueForAnimationTimingFunction(const CSSTimingData*);
+  static CSSValueList* ValuesForBorderRadiusCorner(const LengthSize&,
+                                                   const ComputedStyle&);
+  static const CSSValue& ValueForBorderRadiusCorner(const LengthSize&,
+                                                    const ComputedStyle&);
+  static CSSValue* ComputedTransform(const LayoutObject*, const ComputedStyle&);
+  static CSSValue* CreateTransitionPropertyValue(
+      const CSSTransitionData::TransitionProperty&);
+  static CSSValue* ValueForTransitionProperty(const CSSTransitionData*);
+  static CSSValue* ValueForContentData(const ComputedStyle&);
+  static CSSValue* ValueForCounterDirectives(const ComputedStyle&,
+                                             bool is_increment);
+  static CSSValue* ValueForShape(const ComputedStyle&, ShapeValue*);
+  static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
+  static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
+                                                 const ComputedStyle&);
+  static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle&);
+  static CSSValue* AdjustSVGPaintForCurrentColor(SVGPaintType,
+                                                 const String&,
+                                                 const Color&,
+                                                 const Color&);
+  static CSSValue* ValueForShadowData(const ShadowData&,
+                                      const ComputedStyle&,
+                                      bool use_spread);
+  static CSSValue* ValueForShadowList(const ShadowList*,
+                                      const ComputedStyle&,
+                                      bool use_spread);
+  static CSSValue* ValueForFilter(const ComputedStyle&,
+                                  const FilterOperations&);
+  static CSSValue* ValueForScrollSnapType(const ScrollSnapType&,
+                                          const ComputedStyle&);
+  static CSSValue* ValueForScrollSnapAlign(const ScrollSnapAlign&,
+                                           const ComputedStyle&);
+  static CSSValue* ValueForPageBreakBetween(EBreakBetween);
+  static CSSValue* ValueForWebkitColumnBreakBetween(EBreakBetween);
+  static CSSValue* ValueForPageBreakInside(EBreakInside);
+  static CSSValue* ValueForWebkitColumnBreakInside(EBreakInside);
+  static bool WidthOrHeightShouldReturnUsedValue(const LayoutObject*);
 };
 
 }  // namespace blink

@@ -4,8 +4,10 @@
 
 #include "core/css/properties/shorthands/BorderSpacing.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -38,6 +40,18 @@ bool BorderSpacing::ParseShorthand(
       *vertical_spacing, important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   return true;
+}
+
+const CSSValue* BorderSpacing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ZoomAdjustedPixelValue(style.HorizontalBorderSpacing(), style));
+  list->Append(*ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style));
+  return list;
 }
 
 }  // namespace CSSShorthand

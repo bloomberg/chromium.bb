@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/TransitionDelay.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 
 namespace blink {
@@ -16,6 +18,15 @@ const CSSValue* TransitionDelay::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyParserHelpers::ConsumeTime, range, kValueRangeAll);
+}
+
+const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationDelay(style.Transitions());
 }
 
 }  // namespace CSSLonghand

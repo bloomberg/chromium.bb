@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/ColumnCount.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +15,18 @@ const CSSValue* ColumnCount::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ConsumeColumnCount(range);
+}
+
+const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.HasAutoColumnCount())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  return CSSPrimitiveValue::Create(style.ColumnCount(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

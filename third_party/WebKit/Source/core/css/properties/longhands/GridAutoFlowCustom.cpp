@@ -7,6 +7,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -33,6 +34,39 @@ const CSSValue* GridAutoFlow::ParseSingleValue(
   if (dense_algorithm)
     parsed_values->Append(*dense_algorithm);
   return parsed_values;
+}
+
+const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  switch (style.GetGridAutoFlow()) {
+    case kAutoFlowRow:
+    case kAutoFlowRowDense:
+      list->Append(*CSSIdentifierValue::Create(CSSValueRow));
+      break;
+    case kAutoFlowColumn:
+    case kAutoFlowColumnDense:
+      list->Append(*CSSIdentifierValue::Create(CSSValueColumn));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (style.GetGridAutoFlow()) {
+    case kAutoFlowRowDense:
+    case kAutoFlowColumnDense:
+      list->Append(*CSSIdentifierValue::Create(CSSValueDense));
+      break;
+    default:
+      // Do nothing.
+      break;
+  }
+
+  return list;
 }
 
 }  // namespace CSSLonghand

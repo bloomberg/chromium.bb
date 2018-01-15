@@ -6,6 +6,7 @@
 
 #include "core/css/CSSStringValue.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -17,6 +18,17 @@ const CSSValue* WebkitHyphenateCharacter::ParseSingleValue(
   if (range.Peek().Id() == CSSValueAuto)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumeString(range);
+}
+
+const CSSValue* WebkitHyphenateCharacter::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.HyphenationString().IsNull())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  return CSSStringValue::Create(style.HyphenationString());
 }
 
 }  // namespace CSSLonghand

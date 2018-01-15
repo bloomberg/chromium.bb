@@ -7,6 +7,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -60,6 +61,34 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*over_under);
   list->Append(*left_right);
+  return list;
+}
+
+const CSSValue* WebkitTextEmphasisPosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  switch (style.GetTextEmphasisPosition()) {
+    case TextEmphasisPosition::kOverRight:
+      list->Append(*CSSIdentifierValue::Create(CSSValueOver));
+      list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+      break;
+    case TextEmphasisPosition::kOverLeft:
+      list->Append(*CSSIdentifierValue::Create(CSSValueOver));
+      list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+      break;
+    case TextEmphasisPosition::kUnderRight:
+      list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
+      list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+      break;
+    case TextEmphasisPosition::kUnderLeft:
+      list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
+      list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+      break;
+  }
   return list;
 }
 

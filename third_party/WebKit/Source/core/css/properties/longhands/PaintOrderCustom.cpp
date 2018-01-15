@@ -6,6 +6,8 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -61,6 +63,15 @@ const CSSValue* PaintOrder::ParseSingleValue(
   }
 
   return paint_order_list;
+}
+
+const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
+    const ComputedStyle&,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::PaintOrderToCSSValueList(svg_style);
 }
 
 }  // namespace CSSLonghand

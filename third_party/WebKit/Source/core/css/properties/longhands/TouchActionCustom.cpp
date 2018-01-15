@@ -6,6 +6,8 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
@@ -61,6 +63,15 @@ const CSSValue* TouchAction::ParseSingleValue(
   if (pinch_zoom)
     list->Append(*pinch_zoom);
   return list;
+}
+
+const CSSValue* TouchAction::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::TouchActionFlagsToCSSValue(style.GetTouchAction());
 }
 
 }  // namespace CSSLonghand

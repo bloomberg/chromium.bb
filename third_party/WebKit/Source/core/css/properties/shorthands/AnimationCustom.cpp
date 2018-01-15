@@ -10,6 +10,8 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
@@ -76,6 +78,62 @@ bool Animation::ParseShorthand(
         properties);
   }
   return range.AtEnd();
+}
+
+const CSSValue* Animation::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  const CSSAnimationData* animation_data = style.Animations();
+  if (animation_data) {
+    CSSValueList* animations_list = CSSValueList::CreateCommaSeparated();
+    for (size_t i = 0; i < animation_data->NameList().size(); ++i) {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(*CSSCustomIdentValue::Create(animation_data->NameList()[i]));
+      list->Append(*CSSPrimitiveValue::Create(
+          CSSTimingData::GetRepeated(animation_data->DurationList(), i),
+          CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
+          CSSTimingData::GetRepeated(animation_data->TimingFunctionList(), i)
+              .get()));
+      list->Append(*CSSPrimitiveValue::Create(
+          CSSTimingData::GetRepeated(animation_data->DelayList(), i),
+          CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
+          CSSTimingData::GetRepeated(animation_data->IterationCountList(), i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
+          CSSTimingData::GetRepeated(animation_data->DirectionList(), i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
+          CSSTimingData::GetRepeated(animation_data->FillModeList(), i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
+          CSSTimingData::GetRepeated(animation_data->PlayStateList(), i)));
+      animations_list->Append(*list);
+    }
+    return animations_list;
+  }
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  // animation-name default value.
+  list->Append(*CSSIdentifierValue::Create(CSSValueNone));
+  list->Append(
+      *CSSPrimitiveValue::Create(CSSAnimationData::InitialDuration(),
+                                 CSSPrimitiveValue::UnitType::kSeconds));
+  list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
+      CSSAnimationData::InitialTimingFunction().get()));
+  list->Append(*CSSPrimitiveValue::Create(
+      CSSAnimationData::InitialDelay(), CSSPrimitiveValue::UnitType::kSeconds));
+  list->Append(
+      *CSSPrimitiveValue::Create(CSSAnimationData::InitialIterationCount(),
+                                 CSSPrimitiveValue::UnitType::kNumber));
+  list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
+      CSSAnimationData::InitialDirection()));
+  list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
+      CSSAnimationData::InitialFillMode()));
+  // Initial animation-play-state.
+  list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
+  return list;
 }
 
 }  // namespace CSSShorthand
