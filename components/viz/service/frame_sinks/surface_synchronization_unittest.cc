@@ -2081,30 +2081,14 @@ TEST_F(SurfaceSynchronizationTest, DropDependenciesThatWillNeverArrive) {
   const SurfaceId child_id11 = MakeSurfaceId(kChildFrameSink1, 1);
   const SurfaceId child_id12 = MakeSurfaceId(kChildFrameSink1, 2);
   const SurfaceId child_id21 = MakeSurfaceId(kChildFrameSink2, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
-  // |parent_id| depends on { child_id11, child_id12, child_id21 }. It
-  // shouldn't activate.
+  // |parent_id| depends on { child_id11, child_id21 }. It shouldn't activate.
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id11, child_id12, child_id21},
-                          empty_surface_ids(),
+      MakeCompositorFrame({child_id11, child_id21}, empty_surface_ids(),
                           std::vector<TransferableResource>()));
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-
-  // |child_id11| is created but it depends on |arbitrary_id|. |parent_id| and
-  // |child_id11| must remain pending.
-  child_support1().SubmitCompositorFrame(
-      child_id11.local_surface_id(),
-      MakeCompositorFrame({arbitrary_id}, empty_surface_ids(),
-                          std::vector<TransferableResource>()));
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->activation_dependencies(),
-              UnorderedElementsAre(child_id11, child_id12, child_id21));
-  EXPECT_FALSE(GetSurfaceForId(child_id11)->HasActiveFrame());
-  EXPECT_TRUE(GetSurfaceForId(child_id11)->HasPendingFrame());
 
   // The first child submits a new CompositorFrame to |child_id12|. |parent_id|
   // no longer depends on |child_id11| because it cannot expect it to arrive.
