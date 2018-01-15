@@ -45,7 +45,7 @@ HTMLProgressElement::~HTMLProgressElement() = default;
 
 HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
   HTMLProgressElement* progress = new HTMLProgressElement(document);
-  progress->EnsureLegacyUserAgentShadowRootV0();
+  progress->EnsureUserAgentShadowRootV1();
   return progress;
 }
 
