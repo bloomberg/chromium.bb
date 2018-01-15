@@ -311,8 +311,8 @@ body.check-select .dialog-header
 }
 
 .dialog-header paper-button {
-  padding: 0 8px;
   line-height: 32px;
+  padding: 0 8px;
 }
 
 .dialog-header button.icon-button {
@@ -349,8 +349,8 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   height: 100%;
   left: 0;
   position: absolute;
-  width: 32px;
   top: 0;
+  width: 32px;
 }
 
 #search-button > .icon {
@@ -481,7 +481,7 @@ body:not(.check-select) #selection-menu-button {
   line-height: 1.5em;
   position: absolute;
   top: 42px;  /* Positioned just overlapping the top of the toolbar */
-  transition: all 0.2s ease;
+  transition: all 200ms ease;
   width: 270px;
   z-index: 550;
 }
@@ -499,13 +499,13 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details.hidden {
-  transform: translateY(-10px);
   opacity: 0;
+  transform: translateY(-10px);
 }
 
 #cloud-import-details .banner {
-  background-color: #37474F;
-  border-radius: 2px 2px 0px 0px;
+  background-color: rgb(55, 71, 79);
+  border-radius: 2px 2px 0 0;
   color: white;
   padding: 20px;
 }
@@ -537,33 +537,33 @@ html[dir='rtl'] #cloud-import-details {
 
 #cloud-import-details .status .content {
   -webkit-padding-start: 10px;
-  flex: 1;
   color: #646464;
+  flex: 1;
 }
 
 #cloud-import-details .status .content::first-line {
+  color: #333;
   font-size: 110%;
-  color: #333333;
 }
 
 #cloud-import-details .status a[is='action-link'] {
-  color: #3367D6;
+  color: rgb(51, 103, 214);
 }
 
 #cloud-import-details .progress {
-  height: 4px;
   background-color: #E0E0E0;
   border-radius: 2px;
+  height: 4px;
   margin-top: 14px;
   width: 100%;
 }
 
 #cloud-import-details .progress .value {
-  background-color: #1AC222;
+  background-color: rgb(26, 194, 34);
   border-radius: 2px;
   height: 4px;
-  transition: width 0.1s linear;
-  width: 0%;
+  transition: width 100ms linear;
+  width: 0;
 }
 
 #cloud-import-details paper-button {
@@ -574,11 +574,11 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details paper-button.import {
-  background-color: #3367D6;
+  background-color: rgb(51, 103, 214);
 }
 
 #cloud-import-details paper-button.cancel {
-  background-color: #DB4437;
+  background-color: rgb(219, 68, 55);
 }
 
 #files-selected-label {
@@ -654,7 +654,7 @@ body.check-select #search-box {
 
 #search-box input {
   display: inline-block;
-  transition: width 0.2s ease;
+  transition: width 200ms ease;
   width: 0;
 }
 
@@ -766,7 +766,7 @@ html[dir='rtl'] #search-box .clear {
   position: relative;
   text-align: center;
   text-transform: uppercase;
-  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   z-index: 0;
 }
@@ -886,8 +886,8 @@ html[dir='rtl'] #search-box .clear {
 .breadcrumbs {
   align-items: center;
   display: flex;
-  flex-direction: row;
   flex: auto;
+  flex-direction: row;
   overflow: hidden;
 }
 
@@ -1684,8 +1684,8 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 }
 
 #filename-input-box {
-  -webkit-margin-start: 30px;
   -webkit-margin-end: 30px;
+  -webkit-margin-start: 30px;
   align-items: center;
   display: flex;
   flex: auto;
@@ -1936,9 +1936,9 @@ list.autocomplete-suggestions > li {
 }
 
 list.autocomplete-suggestions > li > div.detail-icon {
+  flex: none;
   height: 32px;
   width: 32px;
-  flex: none;
 }
 
 list.autocomplete-suggestions > li > div.detail-text {
@@ -1991,8 +1991,8 @@ list.autocomplete-suggestions > [lead] {
 }
 
 .suggest-apps-dialog-text.cr-dialog-text {
-  padding: 0 20px 10px;
   margin: 0;
+  padding: 0 20px 10px;
 }
 
 .cr-dialog-frame.error-dialog-frame {
@@ -2244,7 +2244,7 @@ li#progress-center-close-view.error.single button.dismiss,
 }
 
 #cloud-import-banner {
-  background: #2196f3;
+  background: rgb(33, 150, 243);
   color: white;
   display: flex;
   flex: 0 0 14px;
