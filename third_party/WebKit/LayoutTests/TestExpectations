@@ -677,18 +677,14 @@ crbug.com/801463 virtual/incremental-shadow-dom/fast/dom/shadow/make-marquee-bol
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-dom-event-dispatching-details-summary.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/user-modify-inheritance.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/css-style-inherit.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-fallback-default-tabindex.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-fallback.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-nested-2levels.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-nested-fallback.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-shadow-in-fallback.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-shadow-in-slot.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/offsetParent.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-fallback-1.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-fallback-2.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-fallback-3.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-text-nodes.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-dynamic-attribute-change.html [ Failure ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 

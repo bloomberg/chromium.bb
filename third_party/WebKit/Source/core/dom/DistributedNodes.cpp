@@ -37,7 +37,7 @@ void DistributedNodes::Swap(DistributedNodes& other) {
 
 void DistributedNodes::Append(Node* node) {
   DCHECK(node);
-  DCHECK(!node->IsActiveSlotOrActiveV0InsertionPoint());
+  DCHECK(node->CanParticipateInFlatTree());
   size_t size = nodes_.size();
   indices_.Set(node, size);
   nodes_.push_back(node);
