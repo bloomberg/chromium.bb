@@ -90,6 +90,9 @@ void GeoNotifier::TimerFired(TimerBase*) {
   if (!geolocation_->GetExecutionContext()) {
     return;  // Do not invoke anything because of no execution context.
   }
+  // TODO(yukishiino): Remove this check once we understand the cause.
+  // https://crbug.com/792604
+  CHECK(!geolocation_->GetExecutionContext()->IsContextDestroyed());
 
   // Test for fatal error first. This is required for the case where the
   // LocalFrame is disconnected and requests are cancelled.

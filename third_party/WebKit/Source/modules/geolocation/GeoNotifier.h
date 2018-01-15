@@ -50,16 +50,16 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   void StartTimer();
   void StopTimer();
 
-  // Runs the error callback if there is a fatal error. Otherwise, if a
-  // cached position must be used, registers itself for receiving one.
-  // Otherwise, the notifier has expired, and its error callback is run.
-  void TimerFired(TimerBase*);
-
  private:
   GeoNotifier(Geolocation*,
               V8PositionCallback*,
               V8PositionErrorCallback*,
               const PositionOptions&);
+
+  // Runs the error callback if there is a fatal error. Otherwise, if a
+  // cached position must be used, registers itself for receiving one.
+  // Otherwise, the notifier has expired, and its error callback is run.
+  void TimerFired(TimerBase*);
 
   Member<Geolocation> geolocation_;
   TraceWrapperMember<V8PositionCallback> success_callback_;
