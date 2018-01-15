@@ -88,7 +88,7 @@ class RenderWidgetTargeter {
   // set, is the location in |target|'s coordinate space.
   void FoundFrameSinkId(base::WeakPtr<RenderWidgetHostViewBase> root_view,
                         base::WeakPtr<RenderWidgetHostViewBase> target,
-                        const blink::WebInputEvent& event,
+                        ui::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency,
                         const base::Optional<gfx::PointF>& target_location,
                         const viz::FrameSinkId& frame_sink_id);
