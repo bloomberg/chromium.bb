@@ -213,8 +213,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     remote_endpoint_.BindWithProviderHostInfo(&info);
 
     dispatcher_host_->OnProviderCreated(std::move(info));
-    helper_->SimulateAddProcessToPattern(pattern,
-                                         helper_->mock_render_process_id());
     provider_host_ = context()->GetProviderHost(
         helper_->mock_render_process_id(), kProviderId);
   }
@@ -227,8 +225,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
             true /* is_parent_frame_secure */, version, context()->AsWeakPtr(),
             &remote_endpoint_);
     provider_host_ = host.get();
-    helper_->SimulateAddProcessToPattern(pattern,
-                                         helper_->mock_render_process_id());
     context()->AddProviderHost(std::move(host));
   }
 

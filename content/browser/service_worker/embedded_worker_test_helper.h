@@ -103,12 +103,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
   ~EmbeddedWorkerTestHelper() override;
 
-  // Registers this sender for the process.
-  // TODO(falken): Rename or delete this function. It used to call a function in
-  // ServiceWorkerProcessManager to associate a process with a pattern (hence
-  // the name), but that function no longer exists.
-  void SimulateAddProcessToPattern(const GURL& pattern, int process_id);
-
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 
@@ -121,14 +115,19 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
 
   // Registers the dispatcher host for the process to a map managed by this test
-  // helper. If there is a existing dispatcher host, it'll removed before adding
-  // to the map. This should be called before ServiceWorkerDispatcherHost::Init
-  // because it internally calls ServiceWorkerContextCore::AddDispatcherHost.
-  // If |dispatcher_host| is nullptr, this method just removes the existing
-  // dispatcher host from the map.
+  // helper. If there is a existing dispatcher host, it'll replace the existing
+  // dispatcher host with the given one. When replacing, this should be called
+  // before ServiceWorkerDispatcherHost::Init to allow the old dispatcher host
+  // to destruct and remove itself from ServiceWorkerContextCore, since Init
+  // adds to context core. If |dispatcher_host| is nullptr, this method just
+  // removes the existing dispatcher host from the map.
   void RegisterDispatcherHost(
       int process_id,
       scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host);
+
+  // Creates and registers a basic dispatcher host for the process if one
+  // registered isn't already.
+  void EnsureDispatcherHostForProcess(int process_id);
 
   template <typename MockType, typename... Args>
   MockType* CreateAndRegisterMockInstanceClient(Args&&... args);

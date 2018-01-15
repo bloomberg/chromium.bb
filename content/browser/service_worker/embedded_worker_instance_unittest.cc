@@ -363,10 +363,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   worker->AddListener(this);
 
-  // Simulate adding one process to the pattern.
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
-
   // Start should succeed.
   ServiceWorkerStatusCode status;
   base::RunLoop run_loop;
@@ -412,17 +408,6 @@ TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-
-  // Simulate adding one process to the pattern.
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
-
-  // Also simulate adding a "newly created" process to the pattern because
-  // unittests can't actually create a new process itself.
-  // ServiceWorkerProcessManager only chooses this process id in unittests if
-  // can_use_existing_process is false.
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->new_render_process_id());
 
   {
     // Start once normally.
@@ -480,10 +465,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
       embedded_worker_registry()->CreateWorker(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
-  // Simulate adding one process to the pattern.
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
-
   // Start the worker and then call StopIfNotAttachedToDevTools().
   EXPECT_EQ(SERVICE_WORKER_OK,
             StartWorker(worker.get(), service_worker_version_id, pattern, url));
@@ -535,7 +516,6 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   const int64_t version_id2 = pair2.second->version_id();
   int process_id = helper_->mock_render_process_id();
 
-  helper_->SimulateAddProcessToPattern(pattern, process_id);
   {
     // Start worker1.
     ServiceWorkerStatusCode status;
@@ -833,8 +813,6 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   worker->AddListener(this);
 
@@ -871,8 +849,6 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
   worker->AddListener(this);
 
   // Attempt to start the worker.
@@ -918,8 +894,6 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
   worker->AddListener(this);
 
   // Attempt to start the worker.
@@ -972,8 +946,6 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  helper_->SimulateAddProcessToPattern(pattern,
-                                       helper_->mock_render_process_id());
   worker->AddListener(this);
 
   // Attempt to start the worker and immediate AddMessageToConsole should not

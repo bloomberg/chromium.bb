@@ -420,13 +420,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          url_loader_factory_getter_.get());
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-
-  scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host(
-      base::MakeRefCounted<MockServiceWorkerDispatcherHost>(
-          mock_render_process_id_, browser_context_->GetResourceContext(),
-          this));
-  dispatcher_host->Init(wrapper_.get());
-  dispatcher_hosts_[mock_render_process_id_] = std::move(dispatcher_host);
+  EnsureDispatcherHostForProcess(mock_render_process_id());
+  EnsureDispatcherHostForProcess(new_render_process_id());
 
   // Install a mocked mojom::Renderer interface to catch requests to
   // establish Mojo connection for EWInstanceClient.
@@ -453,17 +448,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
   if (wrapper_.get())
     wrapper_->Shutdown();
-}
-
-void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(const GURL& pattern,
-                                                           int process_id) {
-  if (!context()->GetDispatcherHost(process_id)) {
-    scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host(
-        new MockServiceWorkerDispatcherHost(
-            process_id, browser_context_->GetResourceContext(), this));
-    dispatcher_host->Init(wrapper_.get());
-    dispatcher_hosts_[process_id] = std::move(dispatcher_host);
-  }
 }
 
 bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {
@@ -496,6 +480,15 @@ void EmbeddedWorkerTestHelper::RegisterDispatcherHost(
     int process_id,
     scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host) {
   dispatcher_hosts_[process_id] = std::move(dispatcher_host);
+}
+
+void EmbeddedWorkerTestHelper::EnsureDispatcherHostForProcess(int process_id) {
+  if (context()->GetDispatcherHost(process_id))
+    return;
+  auto dispatcher_host = base::MakeRefCounted<MockServiceWorkerDispatcherHost>(
+      process_id, browser_context_->GetResourceContext(), this);
+  dispatcher_host->Init(wrapper_.get());
+  RegisterDispatcherHost(process_id, std::move(dispatcher_host));
 }
 
 ServiceWorkerContextCore* EmbeddedWorkerTestHelper::context() {
