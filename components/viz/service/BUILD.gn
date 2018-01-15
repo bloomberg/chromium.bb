@@ -60,6 +60,8 @@ viz_component("service") {
     "display/overlay_strategy_underlay_cast.h",
     "display/program_binding.cc",
     "display/program_binding.h",
+    "display/renderer_utils.cc",
+    "display/renderer_utils.h",
     "display/scoped_gpu_memory_buffer_texture.cc",
     "display/scoped_gpu_memory_buffer_texture.h",
     "display/scoped_render_pass_texture.cc",

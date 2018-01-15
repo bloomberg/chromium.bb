@@ -19,6 +19,7 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/opacity_filter_canvas.h"
@@ -37,23 +38,6 @@
 #include "ui/gfx/transform.h"
 
 namespace viz {
-namespace {
-
-static inline bool IsScalarNearlyInteger(SkScalar scalar) {
-  return SkScalarNearlyZero(scalar - SkScalarRoundToScalar(scalar));
-}
-
-bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
-  return IsScalarNearlyInteger(matrix[SkMatrix::kMTransX]) &&
-         IsScalarNearlyInteger(matrix[SkMatrix::kMTransY]) &&
-         SkScalarNearlyZero(matrix[SkMatrix::kMSkewX]) &&
-         SkScalarNearlyZero(matrix[SkMatrix::kMSkewY]) &&
-         SkScalarNearlyZero(matrix[SkMatrix::kMPersp0]) &&
-         SkScalarNearlyZero(matrix[SkMatrix::kMPersp1]) &&
-         SkScalarNearlyZero(matrix[SkMatrix::kMPersp2] - 1.0f);
-}
-
-}  // anonymous namespace
 
 SoftwareRenderer::SoftwareRenderer(
     const RendererSettings* settings,
