@@ -22,6 +22,7 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -1808,10 +1809,8 @@ void RenderWidgetHostViewAuraTest::TimerBasedWheelEventPhaseInfo() {
 
   // Let the MouseWheelPhaseHandler::mouse_wheel_end_dispatch_timer_ fire. A
   // synthetic wheel event with zero deltas and kPhaseEnded will be sent.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(100));
-  base::RunLoop().Run();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  base::RunLoop().RunUntilIdle();
 
   events = GetAndResetDispatchedMessages();
   const WebMouseWheelEvent* wheel_end_event =
@@ -1846,6 +1845,12 @@ void RenderWidgetHostViewAuraTest::TimerBasedLatchingBreaksWithMouseMove() {
   // The test is valid only when wheel scroll latching is enabled.
   if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
     return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when the wheel event with different
+  // location is sent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
 
   view_->InitAsChild(nullptr);
   view_->Show();
@@ -1921,6 +1926,11 @@ void RenderWidgetHostViewAuraTest::TouchpadFlingStartResetsWheelPhaseState() {
   // The test is valid only when wheel scroll latching is enabled.
   if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
     return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when the touchpad fling start is sent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
 
   // When the user puts their fingers down a GFC is receieved.
   ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
@@ -2034,6 +2044,12 @@ void RenderWidgetHostViewAuraTest::
   // The test is valid only when wheel scroll latching is enabled.
   if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
     return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when the GSB event with touch source
+  // is sent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
 
   ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
@@ -4955,15 +4971,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   // enough overscroll to complete the gesture, the overscroll controller
   // will reset the state. The scroll-end should therefore be dispatched to the
   // renderer, and the gesture-event-filter should await an ACK for it.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(15));
-  base::RunLoop().Run();
-
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
-  events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
 }
 
@@ -5079,10 +5092,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
                        blink::kWebGestureDeviceTouchscreen);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(10));
-  base::RunLoop().Run();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+  base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
@@ -5133,10 +5144,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::kWebGestureDeviceTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(10));
-  base::RunLoop().Run();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
@@ -5176,10 +5185,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::kWebGestureDeviceTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(10));
-  base::RunLoop().Run();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
