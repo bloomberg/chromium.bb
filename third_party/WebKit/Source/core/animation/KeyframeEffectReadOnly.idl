@@ -8,6 +8,7 @@ enum CompositeOperation { "replace", "add", "accumulate" };
 
 [
     Constructor(Element? target, object? keyframes, optional (unrestricted double or KeyframeEffectOptions) options),
+    Constructor(KeyframeEffectReadOnly source),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI

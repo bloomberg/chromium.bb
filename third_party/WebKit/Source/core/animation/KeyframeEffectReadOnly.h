@@ -44,6 +44,9 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
                                         Element*,
                                         const ScriptValue&,
                                         ExceptionState&);
+  static KeyframeEffectReadOnly* Create(ScriptState*,
+                                        KeyframeEffectReadOnly*,
+                                        ExceptionState&);
 
   ~KeyframeEffectReadOnly() override = default;
 
