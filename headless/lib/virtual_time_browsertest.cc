@@ -31,7 +31,7 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   void RunDevTooledTest() override {
     devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
     devtools_client_->GetRuntime()->AddObserver(this);
-    devtools_client_->GetRuntime()->Enable(base::Bind(
+    devtools_client_->GetRuntime()->Enable(base::BindRepeating(
         &VirtualTimeBrowserTest::RuntimeEnabled, base::Unretained(this)));
   }
 
@@ -50,8 +50,8 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
             .Build(),
-        base::Bind(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
-                   base::Unretained(this)));
+        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                            base::Unretained(this)));
 
     SetAfterLoadVirtualTimePolicy();
   }
@@ -231,10 +231,10 @@ class FrameDetatchWithPendingResourceLoadVirtualTimeTest
     if (url.spec() == "http://test.com/style.css") {
       // Detach the iframe but leave the css resource fetch hanging.
       browser()->BrowserMainThread()->PostTask(
-          FROM_HERE,
-          base::Bind(&FrameDetatchWithPendingResourceLoadVirtualTimeTest::
-                         DetatchIFrame,
-                     base::Unretained(this)));
+          FROM_HERE, base::BindRepeating(
+                         &FrameDetatchWithPendingResourceLoadVirtualTimeTest::
+                             DetatchIFrame,
+                         base::Unretained(this)));
     } else {
       complete_request.Run();
     }
@@ -541,8 +541,9 @@ class VirtualTimeAndHistoryNavigationTest : public VirtualTimeBrowserTest {
     if (step_ < test_commands_.size()) {
       devtools_client_->GetRuntime()->Evaluate(
           test_commands_[step_++],
-          base::Bind(&VirtualTimeAndHistoryNavigationTest::OnEvaluateResult,
-                     base::Unretained(this)));
+          base::BindRepeating(
+              &VirtualTimeAndHistoryNavigationTest::OnEvaluateResult,
+              base::Unretained(this)));
     } else {
       FinishAsynchronousTest();
     }
@@ -570,5 +571,81 @@ class VirtualTimeAndHistoryNavigationTest : public VirtualTimeBrowserTest {
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeAndHistoryNavigationTest);
+
+namespace {
+static constexpr char kIndexHtmlWithScript[] = R"(
+<html>
+<body>
+<script src="/large.js"></script>
+</body>
+</html>
+)";
+
+static constexpr char kLargeDotJS[] = R"(
+(function() {
+var setTitle = function(newTitle) {
+  document.title = newTitle;
+};
+%s
+setTitle('Test PASS');
+})();
+)";
+
+}  // namespace
+
+class PendingScriptVirtualTimeTest : public VirtualTimeBrowserTest {
+ public:
+  PendingScriptVirtualTimeTest() {
+    SetInitialURL("http://test.com/index.html");
+  }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
+    http_handler_ = http_handler.get();
+    http_handler_->InsertResponse("http://test.com/index.html",
+                                  {kIndexHtmlWithScript, "text/html"});
+    // We want to pad |kLargeDotJS| out with some dummy code which is parsed
+    // asynchronously to make sure the virtual_time_pauser in PendingScript
+    // actually does something. We construct a large number of long unused
+    // function declarations which seems to trigger the desired code path.
+    std::string dummy;
+    dummy.reserve(1024 * 1024 * 4);
+    for (int i = 0; i < 1024; i++) {
+      dummy.append(base::StringPrintf("var i%d=function(){return '", i));
+      dummy.append(1024, 'A');
+      dummy.append("';}\n");
+    }
+    large_js_ = base::StringPrintf(kLargeDotJS, dummy.c_str());
+    http_handler_->InsertResponse(
+        "http://test.com/large.js",
+        {large_js_.c_str(), "application/javascript"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    VirtualTimeBrowserTest::RunDevTooledTest();
+  }
+
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    devtools_client_->GetRuntime()->Evaluate(
+        "document.title",
+        base::BindRepeating(&PendingScriptVirtualTimeTest::OnEvaluateResult,
+                            base::Unretained(this)));
+  }
+
+  void OnEvaluateResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    EXPECT_EQ("Test PASS", result->GetResult()->GetValue()->GetString());
+    FinishAsynchronousTest();
+  }
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+  std::string large_js_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(PendingScriptVirtualTimeTest);
 
 }  // namespace headless
