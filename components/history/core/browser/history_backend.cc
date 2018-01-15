@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -71,11 +72,6 @@ using syncer::ModelTypeChangeProcessor;
 */
 
 namespace history {
-
-// TODO(crbug.com/746268): Clean up this toggle after impact is measured via
-// Finch, which is expected to be neutral.
-const base::Feature kAvoidStrippingRefFromFaviconPageUrls{
-    "AvoidStrippingRefFromFaviconPageUrls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -2204,22 +2200,6 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
       !SetFaviconMappingsForPages(base::flat_set<GURL>(redirects), icon_type,
                                   icon_id)
            .empty();
-  if (page_url.has_ref() &&
-      !base::FeatureList::IsEnabled(kAvoidStrippingRefFromFaviconPageUrls)) {
-    // Refs often gets added by Javascript, but the redirect chain is keyed to
-    // the URL without a ref.
-    // TODO(crbug.com/746268): This can cause orphan favicons, i.e. without a
-    // matching history URL, which will never be cleaned up by the expirer.
-    GURL::Replacements replacements;
-    replacements.ClearRef();
-    GURL page_url_without_ref = page_url.ReplaceComponents(replacements);
-    redirects = GetCachedRecentRedirects(page_url_without_ref);
-    mappings_changed |=
-        !SetFaviconMappingsForPages(base::flat_set<GURL>(redirects), icon_type,
-                                    icon_id)
-             .empty();
-  }
-
   return mappings_changed;
 }
 
