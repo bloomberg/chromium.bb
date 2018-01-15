@@ -671,7 +671,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fa
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fallback.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
-crbug.com/788635 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-002.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/788617 virtual/incremental-shadow-dom/fast/dom/shadow/drag-and-drop-in-user-agent-shadow.html [ Failure Crash ]
 crbug.com/801463 virtual/incremental-shadow-dom/fast/dom/shadow/make-marquee-bold-by-exec-command-crash.html [ Failure ]
