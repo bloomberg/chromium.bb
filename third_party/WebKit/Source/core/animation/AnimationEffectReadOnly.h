@@ -111,6 +111,7 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
   const Timing& SpecifiedTiming() const { return timing_; }
   virtual AnimationEffectTimingReadOnly* timing();
   void UpdateSpecifiedTiming(const Timing&);
+  EventDelegate* GetEventDelegate() { return event_delegate_; }
 
   void getComputedTiming(ComputedTimingProperties&);
   ComputedTimingProperties getComputedTiming();

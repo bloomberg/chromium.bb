@@ -65,6 +65,9 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
                                 Element*,
                                 const ScriptValue&,
                                 ExceptionState&);
+  static KeyframeEffect* Create(ScriptState*,
+                                KeyframeEffectReadOnly*,
+                                ExceptionState&);
 
   ~KeyframeEffect() override;
 

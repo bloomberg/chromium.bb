@@ -136,6 +136,8 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   bool IsTransformRelatedEffect() const override;
 
+  virtual KeyframeEffectModelBase* Clone() = 0;
+
  protected:
   KeyframeEffectModelBase(CompositeOperation composite,
                           scoped_refptr<TimingFunction> default_keyframe_easing)
@@ -170,16 +172,26 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 };
 
 // Time independent representation of an Animation's keyframes.
-template <class Keyframe>
+template <class K>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
  public:
-  using KeyframeVector = Vector<scoped_refptr<Keyframe>>;
-  static KeyframeEffectModel<Keyframe>* Create(
+  using KeyframeVector = Vector<scoped_refptr<K>>;
+  static KeyframeEffectModel<K>* Create(
       const KeyframeVector& keyframes,
       CompositeOperation composite = kCompositeReplace,
       scoped_refptr<TimingFunction> default_keyframe_easing = nullptr) {
     return new KeyframeEffectModel(keyframes, composite,
                                    std::move(default_keyframe_easing));
+  }
+
+  KeyframeEffectModelBase* Clone() override {
+    KeyframeVector keyframes;
+    for (const auto& keyframe : GetFrames()) {
+      scoped_refptr<Keyframe> new_keyframe = keyframe->Clone();
+      keyframes.push_back(
+          scoped_refptr<K>(static_cast<K*>(new_keyframe.get())));
+    }
+    return Create(keyframes, composite_, default_keyframe_easing_);
   }
 
  private:
