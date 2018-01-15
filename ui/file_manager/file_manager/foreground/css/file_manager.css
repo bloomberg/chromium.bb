@@ -88,7 +88,7 @@ a:focus {
   flex: none;
   flex-direction: column;
   max-width: 40%;
-  min-width: 100px;
+  min-width: 105px;
   overflow: hidden;
   position: relative;
   width: 240px;
