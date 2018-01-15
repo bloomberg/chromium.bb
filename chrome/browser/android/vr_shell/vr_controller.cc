@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/ranges.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -80,8 +79,8 @@ gvr::ControllerButton PlatformToGvrButton(
 VrController::VrController(gvr_context* gvr_context) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   CHECK(gvr_context != nullptr) << "invalid gvr_context";
-  controller_api_ = base::MakeUnique<gvr::ControllerApi>();
-  controller_state_ = base::MakeUnique<gvr::ControllerState>();
+  controller_api_ = std::make_unique<gvr::ControllerApi>();
+  controller_state_ = std::make_unique<gvr::ControllerState>();
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_context);
 
   int32_t options = gvr::ControllerApi::DefaultOptions();
@@ -281,7 +280,7 @@ void VrController::UpdateTouchInfo() {
 }
 
 std::unique_ptr<GestureList> VrController::DetectGestures() {
-  std::unique_ptr<GestureList> gesture_list = base::MakeUnique<GestureList>();
+  std::unique_ptr<GestureList> gesture_list = std::make_unique<GestureList>();
   std::unique_ptr<blink::WebGestureEvent> gesture(new blink::WebGestureEvent());
 
   if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {

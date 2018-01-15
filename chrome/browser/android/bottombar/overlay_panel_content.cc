@@ -8,7 +8,6 @@
 
 #include "base/android/jni_string.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/tab_android.h"
@@ -144,7 +143,7 @@ void OverlayPanelContent::SetInterceptNavigationDelegate(
   DCHECK(web_contents);
   navigation_interception::InterceptNavigationDelegate::Associate(
       web_contents,
-      base::MakeUnique<navigation_interception::InterceptNavigationDelegate>(
+      std::make_unique<navigation_interception::InterceptNavigationDelegate>(
           env, delegate));
 }
 

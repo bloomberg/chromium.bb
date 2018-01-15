@@ -191,8 +191,8 @@ LogoBridge::LogoBridge(const JavaRef<jobject>& j_profile)
 
   logo_service_ = LogoServiceFactory::GetForProfile(profile);
 
-  animated_logo_fetcher_ = base::MakeUnique<AnimatedLogoFetcher>(
-      profile->GetRequestContext());
+  animated_logo_fetcher_ =
+      std::make_unique<AnimatedLogoFetcher>(profile->GetRequestContext());
 }
 
 LogoBridge::~LogoBridge() {}

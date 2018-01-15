@@ -447,7 +447,7 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 void DownloadController::OnDangerousDownload(DownloadItem* item) {
   WebContents* web_contents = item->GetWebContents();
   if (!web_contents) {
-    auto download_manager_getter = base::MakeUnique<DownloadManagerGetter>(
+    auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(item->GetBrowserContext()));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

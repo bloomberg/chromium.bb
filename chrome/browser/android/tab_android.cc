@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/trace_event/trace_event.h"
@@ -396,7 +395,7 @@ void TabAndroid::InitWebContents(
       SetViewAndroid(web_contents()->GetNativeView());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
   web_contents_delegate_ =
-      base::MakeUnique<android::TabWebContentsDelegateAndroid>(
+      std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
   web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
@@ -433,7 +432,7 @@ void TabAndroid::UpdateDelegates(
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
   web_contents_delegate_ =
-      base::MakeUnique<android::TabWebContentsDelegateAndroid>(
+      std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
   web_contents()->SetDelegate(web_contents_delegate_.get());
 }
@@ -837,7 +836,7 @@ void TabAndroid::SetInterceptNavigationDelegate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InterceptNavigationDelegate::Associate(
       web_contents(),
-      base::MakeUnique<ChromeInterceptNavigationDelegate>(env, delegate));
+      std::make_unique<ChromeInterceptNavigationDelegate>(env, delegate));
 }
 
 void TabAndroid::SetWebappManifestScope(JNIEnv* env,
@@ -939,7 +938,7 @@ void TabAndroid::CreateInProductHelpService(
   if (media_in_product_help_)
     return;
 
-  media_in_product_help_ = base::MakeUnique<MediaDownloadInProductHelp>(
+  media_in_product_help_ = std::make_unique<MediaDownloadInProductHelp>(
       render_frame_host, this, std::move(request));
 }
 

@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -96,7 +95,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AddToHomescreenManager_showDialog(env, java_ref_);
 
-  data_fetcher_ = base::MakeUnique<AddToHomescreenDataFetcher>(
+  data_fetcher_ = std::make_unique<AddToHomescreenDataFetcher>(
       web_contents, kDataTimeoutInMilliseconds, this);
 }
 

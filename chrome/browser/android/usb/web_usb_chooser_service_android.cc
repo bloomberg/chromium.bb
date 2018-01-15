@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -23,7 +22,7 @@ void WebUsbChooserServiceAndroid::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     GetPermissionCallback callback) {
   usb_chooser_dialog_android_.push_back(
-      base::MakeUnique<UsbChooserDialogAndroid>(
+      std::make_unique<UsbChooserDialogAndroid>(
           std::move(device_filters), render_frame_host_, std::move(callback)));
 }
 

@@ -25,9 +25,9 @@ AutocompleteController::AutocompleteController(
     const SuggestionCallback& callback)
     : profile_(ProfileManager::GetActiveUserProfile()),
       suggestion_callback_(callback) {
-  auto client = base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
+  auto client = std::make_unique<ChromeAutocompleteProviderClient>(profile_);
   client_ = client.get();
-  autocomplete_controller_ = base::MakeUnique<::AutocompleteController>(
+  autocomplete_controller_ = std::make_unique<::AutocompleteController>(
       std::move(client), this,
       AutocompleteClassifier::DefaultOmniboxProviders());
 }
@@ -47,7 +47,7 @@ void AutocompleteController::Start(const base::string16& text) {
 
 void AutocompleteController::Stop() {
   autocomplete_controller_->Stop(true);
-  suggestion_callback_.Run(base::MakeUnique<vr::OmniboxSuggestions>());
+  suggestion_callback_.Run(std::make_unique<vr::OmniboxSuggestions>());
 }
 
 GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
@@ -67,7 +67,7 @@ GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
 }
 
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
-  auto suggestions = base::MakeUnique<vr::OmniboxSuggestions>();
+  auto suggestions = std::make_unique<vr::OmniboxSuggestions>();
   for (const auto& match : autocomplete_controller_->result()) {
     suggestions->suggestions.emplace_back(vr::OmniboxSuggestion(
         match.contents, match.description, match.type, match.destination_url));

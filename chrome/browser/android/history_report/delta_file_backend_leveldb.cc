@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
@@ -195,7 +194,7 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
     int64_t last_seq_no,
     int32_t limit) {
   if (!EnsureInitialized())
-    return base::MakeUnique<std::vector<DeltaFileEntryWithData>>();
+    return std::make_unique<std::vector<DeltaFileEntryWithData>>();
   std::string start;
   base::SStringPrintf(&start, "%" PRId64, last_seq_no + 1);
   leveldb::ReadOptions options;

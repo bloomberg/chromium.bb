@@ -5,10 +5,10 @@
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -37,7 +37,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
       net::NetLog* net_log)
       : NetworkQualityEstimator(
             std::move(external_estimate_provider),
-            base::MakeUnique<net::NetworkQualityEstimatorParams>(
+            std::make_unique<net::NetworkQualityEstimatorParams>(
                 variation_params),
             net_log),
         notified_(false) {}
