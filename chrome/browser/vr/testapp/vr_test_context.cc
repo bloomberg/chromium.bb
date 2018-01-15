@@ -210,6 +210,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_P:
         model_->toggle_mode(kModeRepositionWindow);
         break;
+      case ui::DomCode::US_X:
+        ui_->OnAppButtonClicked();
+        break;
       default:
         break;
     }

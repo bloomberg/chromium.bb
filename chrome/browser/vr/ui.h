@@ -115,7 +115,6 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnSwapContents(int new_content_id);
   void OnContentBoundsChanged(int width, int height);
   void OnPlatformControllerInitialized(PlatformController* controller);
-  void SetOmniboxEditingEnabled(bool enabled);
   void OnUiRequestedNavigation();
 
   Model* model_for_test() { return model_.get(); }
