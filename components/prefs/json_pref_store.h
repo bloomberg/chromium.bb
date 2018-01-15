@@ -35,7 +35,6 @@ class HistogramBase;
 class JsonPrefStoreCallbackTest;
 class JsonPrefStoreLossyWriteTest;
 class SequencedTaskRunner;
-class SequencedWorkerPool;
 class WriteCallbacksObserver;
 class Value;
 FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestBasic);
@@ -56,12 +55,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // to disk.
   using OnWriteCallbackPair =
       std::pair<base::Closure, base::Callback<void(bool success)>>;
-
-  // Returns instance of SequencedTaskRunner which guarantees that file
-  // operations on the same file will be executed in sequenced order.
-  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunnerForFile(
-      const base::FilePath& pref_filename,
-      base::SequencedWorkerPool* worker_pool);
 
   // |pref_filename| is the path to the file to read prefs from. It is incorrect
   // to create multiple JsonPrefStore with the same |pref_filename|.

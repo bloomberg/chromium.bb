@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/prefs/pref_filter.h"
@@ -130,17 +129,6 @@ std::unique_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
 }
 
 }  // namespace
-
-// static
-scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
-    const base::FilePath& filename,
-    base::SequencedWorkerPool* worker_pool) {
-  std::string token("json_pref_store-");
-  token.append(filename.AsUTF8Unsafe());
-  return worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      worker_pool->GetNamedSequenceToken(token),
-      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
-}
 
 JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
