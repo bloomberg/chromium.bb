@@ -137,7 +137,7 @@ static INLINE void cfl_predict_lbd_x(const int16_t *pred_buf_q3, uint8_t *dst,
     } else {
       res = _mm256_permute4x64_epi64(res, _MM_SHUFFLE(3, 1, 2, 0));
       if (width == 16)
-        _mm_store_si128((__m128i *)dst, _mm256_castsi256_si128(res));
+        _mm_storeu_si128((__m128i *)dst, _mm256_castsi256_si128(res));
       else
         _mm256_storeu_si256((__m256i *)dst, res);
     }
