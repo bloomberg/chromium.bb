@@ -4219,8 +4219,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "WorkStealingAndBackgroundCompile",
                     "enable_features": [
+                        "V8BackgroundCompile",
                         "WorkStealingInScriptRunner"
                     ]
                 }
