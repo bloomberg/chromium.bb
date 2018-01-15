@@ -10,6 +10,7 @@
 
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_parameters.h"
 
 namespace content {
@@ -103,6 +104,9 @@ class MediaStreamAudioDeliverer {
   // Deliver data to all consumers. This method may be called on any thread.
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks reference_time) {
+    TRACE_EVENT1("audio", "MediaStreamAudioDeliverer::OnData",
+                 "reference time (ms)",
+                 (reference_time - base::TimeTicks()).InMillisecondsF());
     base::AutoLock auto_lock(consumers_lock_);
 
     // Call OnSetFormat() for all pending consumers and move them to the

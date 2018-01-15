@@ -172,7 +172,8 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
                                  double volume,
                                  bool key_pressed,
                                  base::TimeTicks capture_time) {
-  TRACE_EVENT0("audio", "AudioInputSyncWriter::Write");
+  TRACE_EVENT1("audio", "AudioInputSyncWriter::Write", "capture time (ms)",
+               (capture_time - base::TimeTicks()).InMillisecondsF());
   ++write_count_;
   CheckTimeSinceLastWrite();
 
@@ -270,10 +271,16 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
                                           double volume,
                                           bool key_pressed,
                                           base::TimeTicks capture_time) {
+  TRACE_EVENT1("audio", "AudioInputSyncWriter::PushDataToFifo",
+               "capture time (ms)",
+               (capture_time - base::TimeTicks()).InMillisecondsF());
   if (overflow_data_.size() == kMaxOverflowBusesSize) {
     // We use |write_error_count_| for capping number of log messages.
     // |write_error_count_| also includes socket Send() errors, but those should
     // be rare.
+    TRACE_EVENT_INSTANT0("audio",
+                         "AudioInputSyncWriter::PushDataToFifo - overflow",
+                         TRACE_EVENT_SCOPE_THREAD);
     if (write_error_count_ <= 50 && write_error_count_ % 10 == 0) {
       const std::string error_message = "AISW: No room in fifo.";
       LOG(WARNING) << error_message;
@@ -306,6 +313,8 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
 }
 
 bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
+  TRACE_EVENT0("audio",
+               "AudioInputSyncWriter::WriteDataFromFifoToSharedMemory");
   if (overflow_data_.empty())
     return true;
 
@@ -345,6 +354,8 @@ void AudioInputSyncWriter::WriteParametersToCurrentSegment(
     double volume,
     bool key_pressed,
     base::TimeTicks capture_time) {
+  TRACE_EVENT1("audio", "WriteParametersToCurrentSegment", "capture time (ms)",
+               (capture_time - base::TimeTicks()).InMillisecondsF());
   uint8_t* ptr = static_cast<uint8_t*>(shared_memory_->memory());
   CHECK_LT(current_segment_id_, audio_buses_.size());
   ptr += current_segment_id_ * shared_memory_segment_size_;

@@ -83,7 +83,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   audio_transport_callback_->PullRenderData(
       bytes_per_sample * kBitsPerByte, sample_rate, audio_bus->channels(),
       frames_per_10_ms, audio_data, &elapsed_time_ms, &ntp_time_ms);
-  TRACE_EVENT_END0("audio", "VoE::PullRenderData");
+  TRACE_EVENT_END2("audio", "VoE::PullRenderData", "elapsed_time_ms",
+                   elapsed_time_ms, "ntp_time_ms", ntp_time_ms);
   if (elapsed_time_ms >= 0)
     *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
 

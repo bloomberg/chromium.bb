@@ -371,7 +371,8 @@ void MediaStreamAudioProcessor::PushCaptureData(
     const media::AudioBus& audio_source,
     base::TimeDelta capture_delay) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-
+  TRACE_EVENT1("audio", "MediaStreamAudioProcessor::PushCaptureData",
+               "delay (ms)", capture_delay.InMillisecondsF());
   capture_fifo_->Push(audio_source, capture_delay);
 }
 
@@ -562,7 +563,8 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
   DCHECK(!audio_processing_->echo_control_mobile()->is_enabled());
 #endif
 
-  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::OnPlayoutData");
+  TRACE_EVENT1("audio", "MediaStreamAudioProcessor::OnPlayoutData",
+               "delay (ms)", audio_delay_milliseconds);
   DCHECK_LT(audio_delay_milliseconds,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
@@ -842,13 +844,16 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   DCHECK(audio_processing_);
   DCHECK(capture_thread_checker_.CalledOnValidThread());
 
-  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessData");
-
   base::subtle::Atomic32 render_delay_ms =
       base::subtle::Acquire_Load(&render_delay_ms_);
   int64_t capture_delay_ms = capture_delay.InMilliseconds();
   DCHECK_LT(capture_delay_ms,
             std::numeric_limits<base::subtle::Atomic32>::max());
+
+  TRACE_EVENT2("audio", "MediaStreamAudioProcessor::ProcessData",
+               "capture_delay_ms", capture_delay_ms, "render_delay_ms",
+               render_delay_ms);
+
   int total_delay_ms =  capture_delay_ms + render_delay_ms;
   if (total_delay_ms > 300) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
