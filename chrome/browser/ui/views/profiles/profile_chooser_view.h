@@ -233,6 +233,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // |signin_with_gaia_account_button_| is pressed.
   std::string signin_with_gaia_account_id_;
 
+  const bool dice_enabled_;
+
   const int menu_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);

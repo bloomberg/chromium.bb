@@ -30,6 +30,11 @@ class AccountConsistencyModeManager {
   void SetReadyForDiceMigration(bool is_ready);
 #endif
 
+  // If true, then account management is done through Gaia webpages.
+  // Can only be used on the UI thread.
+  // Returns false if |profile| is in Guest or Incognito mode.
+  static bool IsDiceEnabledForProfile(const Profile* profile);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            MigrateAtCreation);
