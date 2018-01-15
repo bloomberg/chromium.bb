@@ -32,6 +32,8 @@ LogoMetadata GetExampleMetadata() {
   metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   metadata.alt_text = "A logo about chickens";
   metadata.mime_type = "image/jpeg";
+  metadata.log_url = GURL("https://www.google.com/ddllog?a=b");
+  metadata.cta_log_url = GURL("https://www.google.com/ddllog?c=d");
   return metadata;
 }
 
@@ -87,6 +89,8 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
   EXPECT_EQ(expected_metadata.animated_url, actual_metadata.animated_url);
   EXPECT_EQ(expected_metadata.alt_text, actual_metadata.alt_text);
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
+  EXPECT_EQ(expected_metadata.log_url, actual_metadata.log_url);
+  EXPECT_EQ(expected_metadata.cta_log_url, actual_metadata.cta_log_url);
 }
 
 void ExpectLogosEqual(const EncodedLogo& expected_logo,

@@ -13,5 +13,8 @@ const base::Feature kThirdPartyDoodles{"ThirdPartyDoodles",
 const char kThirdPartyDoodlesOverrideUrlParam[] =
     "third-party-doodles-override-url";
 
+const base::Feature kDoodleLogging{"DoodleLogging",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace search_provider_logos

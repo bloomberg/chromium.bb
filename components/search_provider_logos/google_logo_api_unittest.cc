@@ -209,6 +209,32 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
   EXPECT_EQ(LogoType::ANIMATED, logo->metadata.type);
 }
 
+TEST(GoogleNewLogoApiTest, ParsesLoggingUrls) {
+  const GURL base_url("https://base.doo/");
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "ANIMATED",
+    "target_url": "/target",
+    "large_image": {
+      "is_animated_gif": true,
+      "url": "https://www.doodle.com/image.gif"
+    },
+    "log_url": "/log?a=b",
+    "cta_log_url": "/ctalog?c=d"
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ(GURL("https://base.doo/log?a=b"), logo->metadata.log_url);
+  EXPECT_EQ(GURL("https://base.doo/ctalog?c=d"), logo->metadata.cta_log_url);
+}
+
 TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {
   const GURL base_url("https://base.doo/");
   const std::string json = R"json()]}'

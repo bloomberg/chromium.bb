@@ -244,6 +244,8 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   result->SetString("animatedUrl", meta.animated_url.spec());
   result->SetInteger("iframeWidthPx", meta.iframe_width_px);
   result->SetInteger("iframeHeightPx", meta.iframe_height_px);
+  result->SetString("logUrl", meta.log_url.spec());
+  result->SetString("ctaLogUrl", meta.cta_log_url.spec());
 
   GURL full_page_url = meta.full_page_url;
   if (base::GetFieldTrialParamByFeatureAsBool(

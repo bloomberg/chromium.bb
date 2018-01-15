@@ -26,6 +26,7 @@
 #include "components/search_provider_logos/logo_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -45,6 +46,10 @@ namespace {
 
 const char kCachedB64[] = "\161\247\041\171\337\276";  // b64decode("cached++")
 const char kFreshB64[] = "\176\267\254\207\357\276";   // b64decode("fresh+++")
+
+// A base64 encoding of a tiny but valid gif file.
+const char kTinyGifData[] =
+    "R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 scoped_refptr<base::RefCountedString> MakeRefPtr(std::string content) {
   return base::RefCountedString::TakeString(&content);
@@ -627,4 +632,145 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
   histograms.ExpectTotalCount("NewTabPage.LogoShownTime2", 1);
   histograms.ExpectTotalCount("NewTabPage.LogoClick", 1);
   histograms.ExpectBucketCount("NewTabPage.LogoClick", kLogoClickCta, 1);
+}
+
+std::string WaitForDdllogResponse(content::WebContents* tab,
+                                  int expected_ddllog_count) {
+  std::string response;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab,
+      base::StringPrintf(R"js(
+        if (numDdllogResponsesReceived == %i) {
+          window.domAutomationController.send(lastDdllogResponse);
+        } else {
+          onDdllogResponse = function() {
+            if (numDdllogResponsesReceived == %i) {
+              window.domAutomationController.send(lastDdllogResponse);
+              onDdllogResponse = null;
+            }
+          }
+        }                )js",
+                         expected_ddllog_count, expected_ddllog_count),
+      &response));
+  return response;
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForSimpleDoodle) {
+  // Start a test server to provide the ddllog response.
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.ServeFilesFromSourceDirectory("chrome/test/data/local_ntp");
+  ASSERT_TRUE(test_server.Start());
+  const GURL on_click_url = test_server.GetURL("/simple.html");
+  const GURL log_url = test_server.GetURL("/ddllog-target_url_params");
+
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = on_click_url;
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.log_url = log_url;
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::WebContentsDelegate* original_delegate = active_tab->GetDelegate();
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+
+  // Wait for the ddllog request to get resolved.
+  std::string response = WaitForDdllogResponse(active_tab, 1);
+  EXPECT_EQ("target_url_params a=b&c=d", response);
+
+  // Before clicking on the Doodle, re-attach the original WebContentsDelegate,
+  // otherwise setting 'window.location' doesn't have any effect.
+  active_tab->SetDelegate(original_delegate);
+  content::TestNavigationObserver nav_observer(active_tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('logo-doodle-button').click();"));
+  nav_observer.Wait();
+  ASSERT_TRUE(nav_observer.last_navigation_succeeded());
+
+  std::string target_url;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.location.href", &target_url));
+  EXPECT_EQ(on_click_url.spec() + "?a=b&c=d", target_url);
+
+  EXPECT_THAT(console_observer.message(), IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
+  // Start a test server to provide the ddllog responses.
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.ServeFilesFromSourceDirectory("chrome/test/data/local_ntp");
+  ASSERT_TRUE(test_server.Start());
+  const GURL on_click_url = test_server.GetURL("/simple.html");
+  const GURL cta_log_url = test_server.GetURL("/ddllog-interaction_log_url");
+  const GURL log_url = test_server.GetURL("/ddllog-target_url_params");
+
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.type = LogoType::ANIMATED;
+  cached_logo.metadata.animated_url =
+      GURL(std::string("data:image/gif;base64,") + kTinyGifData);
+  cached_logo.metadata.on_click_url = on_click_url;
+  cached_logo.metadata.alt_text = "alt text";
+  cached_logo.metadata.cta_log_url = cta_log_url;
+  cached_logo.metadata.log_url = log_url;
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::WebContentsDelegate* original_delegate = active_tab->GetDelegate();
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+
+  // Wait for the first (CTA) ddllog request to get resolved.
+  std::string cta_response = WaitForDdllogResponse(active_tab, 1);
+  EXPECT_EQ(
+      "interaction_log_url https://www.chromium.org/doodle_interaction_log",
+      cta_response);
+
+  // Click image, swapping out for animated URL.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('logo-doodle-button').click();"));
+  ASSERT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "src"),
+              Eq(cached_logo.metadata.animated_url.spec()));
+
+  // Wait for the second (non-CTA) ddllog request to get resolved.
+  std::string anim_response = WaitForDdllogResponse(active_tab, 2);
+  EXPECT_EQ("target_url_params a=b&c=d", anim_response);
+
+  // Before clicking on the Doodle, re-attach the original WebContentsDelegate,
+  // otherwise setting 'window.location' doesn't seem to have any effect for
+  // some reason.
+  active_tab->SetDelegate(original_delegate);
+  content::TestNavigationObserver nav_observer(active_tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('logo-doodle-button').click();"));
+  nav_observer.Wait();
+  ASSERT_TRUE(nav_observer.last_navigation_succeeded());
+
+  std::string target_url;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.location.href", &target_url));
+  EXPECT_EQ(on_click_url.spec() + "?a=b&c=d", target_url);
+
+  EXPECT_THAT(console_observer.message(), IsEmpty());
 }
