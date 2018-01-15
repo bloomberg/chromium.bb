@@ -203,9 +203,10 @@ IN_PROC_BROWSER_TEST_F(
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
+// TODO(crbug.com/802042) Lots of recent flakes
 IN_PROC_BROWSER_TEST_F(
     WebUIWebViewBrowserTest,
-    AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
+    DISABLED_AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
