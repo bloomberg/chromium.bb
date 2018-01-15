@@ -1030,18 +1030,18 @@ void ComputedStyle::ApplyMotionPathTransform(
   float origin_shift_y = 0;
   // If the offset-position and offset-anchor properties are not yet enabled,
   // they will have the default value, auto.
+  FloatPoint anchor_point(origin_x, origin_y);
   if (!position.X().IsAuto() || !anchor.X().IsAuto()) {
+    anchor_point = FloatPointForLengthPoint(anchor, bounding_box.Size());
+    anchor_point += bounding_box.Location();
+
     // Shift the origin from transform-origin to offset-anchor.
-    origin_shift_x =
-        FloatValueForLength(anchor.X(), bounding_box.Width()) -
-        FloatValueForLength(TransformOriginX(), bounding_box.Width());
-    origin_shift_y =
-        FloatValueForLength(anchor.Y(), bounding_box.Height()) -
-        FloatValueForLength(TransformOriginY(), bounding_box.Height());
+    origin_shift_x = anchor_point.X() - origin_x;
+    origin_shift_y = anchor_point.Y() - origin_y;
   }
 
-  transform.Translate(point.X() - origin_x + origin_shift_x,
-                      point.Y() - origin_y + origin_shift_y);
+  transform.Translate(point.X() - anchor_point.X() + origin_shift_x,
+                      point.Y() - anchor_point.Y() + origin_shift_y);
   transform.Rotate(angle + rotate.angle);
 
   if (!position.X().IsAuto() || !anchor.X().IsAuto())
