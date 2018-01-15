@@ -10,12 +10,14 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
+#import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 
 @protocol Toolbar<AbstractWebToolbar,
                   OmniboxFocuser,
+                  FakeboxFocuser,
                   VoiceSearchControllerDelegate,
                   ActivityServicePositioner,
                   QRScannerResultLoading,

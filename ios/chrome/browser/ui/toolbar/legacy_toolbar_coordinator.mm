@@ -175,6 +175,8 @@
   [self.toolbarController cancelOmniboxEdit];
 }
 
+#pragma mark - FakeboxFocuser
+
 - (void)focusFakebox {
   [self.toolbarController focusFakebox];
 }
