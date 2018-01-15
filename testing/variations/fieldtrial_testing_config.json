@@ -1899,31 +1899,6 @@
             ]
         }
     ],
-    "NTPArticleSuggestions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "UnifyWifiAndFallbackTier1",
-                    "params": {
-                        "fetching_interval_hours-fallback-active_suggestions_consumer": "24",
-                        "soft_fetching_interval_hours-fallback-active_ntp_user": "4",
-                        "soft_fetching_interval_hours-fallback-rare_ntp_user": "4",
-                        "soft_fetching_interval_hours-wifi-active_ntp_user": "4",
-                        "soft_fetching_interval_hours-wifi-rare_ntp_user": "4",
-                        "startup_fetching_interval_hours-fallback-rare_ntp_user": "24",
-                        "startup_fetching_interval_hours-wifi-rare_ntp_user": "24",
-                        "user_classifier_rare_user_opens_ntp_at_most_once_per_hours": "96"
-                    },
-                    "enable_features": [
-                        "NTPArticleSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPBreakingNewsPush": [
         {
             "platforms": [
