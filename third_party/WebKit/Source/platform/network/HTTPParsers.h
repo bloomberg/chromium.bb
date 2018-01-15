@@ -32,7 +32,6 @@
 #define HTTPParsers_h
 
 #include "platform/PlatformExport.h"
-#include "platform/json/JSONValues.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ServerTimingHeader.h"
 #include "platform/wtf/Allocator.h"
@@ -149,14 +148,6 @@ PLATFORM_EXPORT bool ParseMultipartHeadersFromBody(const char* bytes,
                                                    size_t,
                                                    ResourceResponse*,
                                                    size_t* end);
-
-// Parses a header duration containing JSON data, according to
-// https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01
-// Returns an empty unique_ptr if the header cannot be parsed as JSON. JSON
-// strings which represent object nested deeper than |maxParseDepth| will also
-// cause an empty return duration.
-PLATFORM_EXPORT std::unique_ptr<JSONArray> ParseJSONHeader(const String& header,
-                                                           int max_parse_depth);
 
 // Extracts the values in a Content-Range header and returns true if all three
 // values are present and valid for a 206 response; otherwise returns false.

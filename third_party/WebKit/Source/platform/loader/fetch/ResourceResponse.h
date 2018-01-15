@@ -39,6 +39,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
