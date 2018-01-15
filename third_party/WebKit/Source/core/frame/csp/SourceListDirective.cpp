@@ -7,6 +7,7 @@
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/HashSet.h"
@@ -14,6 +15,13 @@
 #include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringToNumber.h"
 #include "platform/wtf/text/WTFString.h"
+
+namespace {
+struct SupportedPrefixesStruct {
+  const char* prefix;
+  blink::ContentSecurityPolicyHashAlgorithm type;
+};
+}  // namespace
 
 namespace blink {
 
@@ -212,7 +220,10 @@ bool SourceListDirective::ParseSource(
     return true;
   }
 
-  if (EqualIgnoringASCIICase("'strict-dynamic'", token)) {
+  if (EqualIgnoringASCIICase("'strict-dynamic'", token) ||
+      (RuntimeEnabledFeatures::
+           ExperimentalContentSecurityPolicyFeaturesEnabled() &&
+       EqualIgnoringASCIICase("'csp3-strict-dynamic'", token))) {
     AddSourceStrictDynamic();
     return true;
   }
@@ -334,8 +345,16 @@ bool SourceListDirective::ParseNonce(const UChar* begin,
 
   // TODO(esprehn): Should be StringView(begin, nonceLength).startsWith(prefix).
   if (nonce_length <= prefix.length() ||
-      !EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length())))
-    return true;
+      !EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
+    // Experimentally the prefix could also be "'csp3-nonce-"
+    prefix = "'csp3-nonce-";
+    if (!RuntimeEnabledFeatures::
+            ExperimentalContentSecurityPolicyFeaturesEnabled() ||
+        nonce_length <= prefix.length() ||
+        !EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
+      return true;
+    }
+  }
 
   const UChar* position = begin + prefix.length();
   const UChar* nonce_begin = position;
@@ -361,11 +380,10 @@ bool SourceListDirective::ParseHash(
     DigestValue& hash,
     ContentSecurityPolicyHashAlgorithm& hash_algorithm) {
   // Any additions or subtractions from this struct should also modify the
-  // respective entries in the kAlgorithmMap array in checkDigest().
-  static const struct {
-    const char* prefix;
-    ContentSecurityPolicyHashAlgorithm type;
-  } kSupportedPrefixes[] = {
+  // respective entries in the kAlgorithmMap array in
+  // ContentSecurityPolicy::FillInCSPHashValues().
+
+  static const SupportedPrefixesStruct kSupportedPrefixes[] = {
       {"'sha256-", kContentSecurityPolicyHashAlgorithmSha256},
       {"'sha384-", kContentSecurityPolicyHashAlgorithmSha384},
       {"'sha512-", kContentSecurityPolicyHashAlgorithmSha512},
@@ -374,17 +392,44 @@ bool SourceListDirective::ParseHash(
       {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
       {"'ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
 
+  static const SupportedPrefixesStruct kSupportedPrefixesExperimental[] = {
+      {"'sha256-", kContentSecurityPolicyHashAlgorithmSha256},
+      {"'sha384-", kContentSecurityPolicyHashAlgorithmSha384},
+      {"'sha512-", kContentSecurityPolicyHashAlgorithmSha512},
+      {"'sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
+      {"'sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
+      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
+      {"'ed25519-", kContentSecurityPolicyHashAlgorithmEd25519},
+      {"'csp3-sha256-", kContentSecurityPolicyHashAlgorithmSha256},
+      {"'csp3-sha384-", kContentSecurityPolicyHashAlgorithmSha384},
+      {"'csp3-sha512-", kContentSecurityPolicyHashAlgorithmSha512},
+      {"'csp3-sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
+      {"'csp3-sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
+      {"'csp3-sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
+      {"'csp3-ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
+
+  const auto supportedPrefixes =
+      RuntimeEnabledFeatures::ExperimentalContentSecurityPolicyFeaturesEnabled()
+          ? kSupportedPrefixesExperimental
+          : kSupportedPrefixes;
+
+  const size_t supportedPrefixesLength =
+      RuntimeEnabledFeatures::ExperimentalContentSecurityPolicyFeaturesEnabled()
+          ? sizeof(kSupportedPrefixesExperimental) /
+                sizeof(kSupportedPrefixesExperimental[0])
+          : sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0]);
+
   StringView prefix;
   hash_algorithm = kContentSecurityPolicyHashAlgorithmNone;
   size_t hash_length = end - begin;
 
-  for (const auto& algorithm : kSupportedPrefixes) {
-    prefix = algorithm.prefix;
+  for (size_t i = 0; i < supportedPrefixesLength; i++) {
+    prefix = supportedPrefixes[i].prefix;
     // TODO(esprehn): Should be StringView(begin, end -
     // begin).startsWith(prefix).
     if (hash_length > prefix.length() &&
         EqualIgnoringASCIICase(prefix, StringView(begin, prefix.length()))) {
-      hash_algorithm = algorithm.type;
+      hash_algorithm = supportedPrefixes[i].type;
       break;
     }
   }
