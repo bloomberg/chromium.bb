@@ -157,10 +157,10 @@ class scoped_refptr {
  public:
   typedef T element_type;
 
-  scoped_refptr() {}
+  constexpr scoped_refptr() = default;
 
-  // Constructs from raw pointer.
-  scoped_refptr(T* p) : ptr_(p) {
+  // Constructs from raw pointer. constexpr if |p| is null.
+  constexpr scoped_refptr(T* p) : ptr_(p) {
     if (ptr_)
       AddRef(ptr_);
   }
