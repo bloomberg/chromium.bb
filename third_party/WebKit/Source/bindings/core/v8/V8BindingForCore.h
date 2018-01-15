@@ -71,7 +71,6 @@ class FlexibleArrayBufferView;
 class Frame;
 class LocalDOMWindow;
 class LocalFrame;
-class NodeFilter;
 class XPathNSResolver;
 
 template <typename CallbackInfo>
@@ -388,10 +387,7 @@ inline double ToCoreDate(v8::Isolate* isolate,
   return object.As<v8::Date>()->ValueOf();
 }
 
-// FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
-NodeFilter* ToNodeFilter(v8::Local<v8::Value>,
-                         v8::Local<v8::Object>,
-                         ScriptState*);
+// FIXME: Remove the special casing for XPathNSResolver.
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
 template <typename IDLType>
