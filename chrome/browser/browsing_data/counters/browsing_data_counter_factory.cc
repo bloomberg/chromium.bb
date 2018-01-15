@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
+#include "chrome/browser/browsing_data/counters/browsing_data_counter_factory.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
-#include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/downloads_counter.h"
-#include "chrome/browser/browsing_data/media_licenses_counter.h"
-#include "chrome/browser/browsing_data/site_data_counter.h"
+#include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
+#include "chrome/browser/browsing_data/counters/cache_counter.h"
+#include "chrome/browser/browsing_data/counters/downloads_counter.h"
+#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
+#include "chrome/browser/browsing_data/counters/site_data_counter.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -32,7 +32,7 @@
 #include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/browsing_data/hosted_apps_counter.h"
+#include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 #endif
 
 #if !defined(OS_ANDROID)

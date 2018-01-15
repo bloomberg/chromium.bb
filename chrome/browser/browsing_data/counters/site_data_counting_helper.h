@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTING_HELPER_H_
-#define CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTING_HELPER_H_
+#ifndef CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_
+#define CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_
 
 #include <set>
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -72,4 +72,4 @@ class SiteDataCountingHelper {
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTING_HELPER_H_
+#endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_

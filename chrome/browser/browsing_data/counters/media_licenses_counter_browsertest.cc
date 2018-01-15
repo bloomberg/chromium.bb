@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/media_licenses_counter.h"
+#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"

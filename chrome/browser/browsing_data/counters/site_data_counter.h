@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTER_H_
+#ifndef CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTER_H_
+#define CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
@@ -25,4 +25,4 @@ class SiteDataCounter : public browsing_data::BrowsingDataCounter {
   base::WeakPtrFactory<SiteDataCounter> weak_ptr_factory_;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_SITE_DATA_COUNTER_H_
+#endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTER_H_

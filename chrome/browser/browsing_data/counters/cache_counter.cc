@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/cache_counter.h"
+#include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/browsing_data/core/pref_names.h"

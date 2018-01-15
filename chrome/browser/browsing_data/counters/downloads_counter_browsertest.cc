@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/downloads_counter.h"
+#include "chrome/browser/browsing_data/counters/downloads_counter.h"
 
 #include <set>
 
@@ -10,6 +10,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"

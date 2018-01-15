@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_MEDIA_LICENSES_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_MEDIA_LICENSES_COUNTER_H_
+#ifndef CHROME_BROWSER_BROWSING_DATA_COUNTERS_MEDIA_LICENSES_COUNTER_H_
+#define CHROME_BROWSER_BROWSING_DATA_COUNTERS_MEDIA_LICENSES_COUNTER_H_
 
 #include <memory>
 #include <set>
@@ -50,4 +50,4 @@ class MediaLicensesCounter : public browsing_data::BrowsingDataCounter {
   DISALLOW_COPY_AND_ASSIGN(MediaLicensesCounter);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_MEDIA_LICENSES_COUNTER_H_
+#endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_MEDIA_LICENSES_COUNTER_H_
