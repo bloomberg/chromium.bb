@@ -4,9 +4,9 @@
 
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -98,7 +98,7 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     bool has_user_gesture,
     CreateCheckerAndCheckCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  auto checker_impl = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
+  auto checker_impl = std::make_unique<SafeBrowsingUrlCheckerImpl>(
       headers, static_cast<int>(load_flags), resource_type, has_user_gesture,
       delegate_,
       base::Bind(&GetWebContentsFromID, render_process_id_,

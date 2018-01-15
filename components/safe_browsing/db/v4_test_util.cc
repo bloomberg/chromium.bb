@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/safe_browsing/db/util.h"
 #include "crypto/sha2.h"
 
@@ -70,7 +69,7 @@ TestV4StoreFactory::~TestV4StoreFactory() = default;
 std::unique_ptr<V4Store> TestV4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  auto new_store = base::MakeUnique<TestV4Store>(task_runner, store_path);
+  auto new_store = std::make_unique<TestV4Store>(task_runner, store_path);
   new_store->Initialize();
   return std::move(new_store);
 }
@@ -83,7 +82,7 @@ std::unique_ptr<V4Database> TestV4DatabaseFactory::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     std::unique_ptr<StoreMap> store_map) {
   auto v4_db =
-      base::MakeUnique<TestV4Database>(db_task_runner, std::move(store_map));
+      std::make_unique<TestV4Database>(db_task_runner, std::move(store_map));
   v4_db_ = v4_db.get();
   return std::move(v4_db);
 }
@@ -116,7 +115,7 @@ TestV4GetHashProtocolManagerFactory::CreateProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
     const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config) {
-  auto pm = base::MakeUnique<TestV4GetHashProtocolManager>(
+  auto pm = std::make_unique<TestV4GetHashProtocolManager>(
       request_context_getter, stores_to_check, config);
   pm_ = pm.get();
   return std::move(pm);

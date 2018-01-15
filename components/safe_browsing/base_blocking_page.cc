@@ -4,9 +4,10 @@
 
 #include "components/safe_browsing/base_blocking_page.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -57,7 +58,7 @@ BaseBlockingPage::BaseBlockingPage(
       unsafe_resources_(unsafe_resources),
       proceeded_(false),
       threat_details_proceed_delay_ms_(kThreatDetailsProceedDelayMilliSeconds),
-      sb_error_ui_(base::MakeUnique<SafeBrowsingLoudErrorUI>(
+      sb_error_ui_(std::make_unique<SafeBrowsingLoudErrorUI>(
           unsafe_resources_[0].url,
           main_frame_url_,
           GetInterstitialReason(unsafe_resources_),
@@ -350,11 +351,11 @@ BaseBlockingPage::CreateControllerClient(
       ui_manager->history_service(web_contents);
 
   std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper =
-      base::MakeUnique<security_interstitials::MetricsHelper>(
+      std::make_unique<security_interstitials::MetricsHelper>(
           unsafe_resources[0].url, GetReportingInfo(unsafe_resources),
           history_service);
 
-  return base::MakeUnique<SecurityInterstitialControllerClient>(
+  return std::make_unique<SecurityInterstitialControllerClient>(
       web_contents, std::move(metrics_helper), pref_service,
       ui_manager->app_locale(), ui_manager->default_safe_page());
 }

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -52,7 +54,7 @@ class WhitelistCheckerClientTest : public testing::Test {
     task_runner_ = new base::TestMockTimeTaskRunner(base::Time::Now(),
                                                     base::TimeTicks::Now());
     message_loop_.reset(new base::MessageLoop);
-    io_thread_ = base::MakeUnique<content::TestBrowserThread>(
+    io_thread_ = std::make_unique<content::TestBrowserThread>(
         content::BrowserThread::IO, base::MessageLoop::current());
     message_loop_->SetTaskRunner(task_runner_);
   }

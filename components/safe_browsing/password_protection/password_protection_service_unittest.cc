@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -178,7 +179,7 @@ class PasswordProtectionServiceTest
     database_manager_ = new MockSafeBrowsingDatabaseManager();
     dummy_request_context_getter_ = new DummyURLRequestContextGetter();
     password_protection_service_ =
-        base::MakeUnique<TestPasswordProtectionService>(
+        std::make_unique<TestPasswordProtectionService>(
             database_manager_, dummy_request_context_getter_,
             content_setting_map_);
 
@@ -252,10 +253,10 @@ class PasswordProtectionServiceTest
             std::string(), nullptr));
 
     if (!verdict_dictionary.get())
-      verdict_dictionary = base::MakeUnique<base::DictionaryValue>();
+      verdict_dictionary = std::make_unique<base::DictionaryValue>();
 
     std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
-        base::MakeUnique<base::DictionaryValue>();
+        std::make_unique<base::DictionaryValue>();
     invalid_verdict_entry->SetString("invalid", "invalid_string");
 
     verdict_dictionary->SetWithoutPathExpansion(
@@ -284,7 +285,7 @@ class PasswordProtectionServiceTest
 
 TEST_P(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
   std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   invalid_verdict_entry->SetString("cache_creation_time", "invalid_time");
 
   int cache_creation_time;

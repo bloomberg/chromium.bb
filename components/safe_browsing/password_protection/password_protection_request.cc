@@ -4,7 +4,8 @@
 
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -63,7 +64,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_field_exists_(password_field_exists),
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
-      request_proto_(base::MakeUnique<LoginReputationClientRequest>()),
+      request_proto_(std::make_unique<LoginReputationClientRequest>()),
       is_modal_warning_showing_(false),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -126,7 +127,7 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   }
 
   std::unique_ptr<LoginReputationClientResponse> cached_response =
-      base::MakeUnique<LoginReputationClientResponse>();
+      std::make_unique<LoginReputationClientResponse>();
   auto verdict = password_protection_service_->GetCachedVerdict(
       main_frame_url_, trigger_type_, cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
@@ -309,7 +310,7 @@ void PasswordProtectionRequest::OnURLFetchComplete(
   }
 
   std::unique_ptr<LoginReputationClientResponse> response =
-      base::MakeUnique<LoginReputationClientResponse>();
+      std::make_unique<LoginReputationClientResponse>();
   std::string response_body;
   bool received_data = source->GetResponseAsString(&response_body);
   DCHECK(received_data);

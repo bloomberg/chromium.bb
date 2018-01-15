@@ -5,12 +5,13 @@
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -282,7 +283,7 @@ void PasswordProtectionService::CacheVerdict(
           std::string(), nullptr));
 
   if (!cache_dictionary || !cache_dictionary.get())
-    cache_dictionary = base::MakeUnique<base::DictionaryValue>();
+    cache_dictionary = std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> verdict_entry(
       CreateDictionaryFromVerdict(verdict, receive_time));
@@ -751,7 +752,7 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
     const LoginReputationClientResponse* verdict,
     const base::Time& receive_time) {
   std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   result->SetInteger(kCacheCreationTime,
                      static_cast<int>(receive_time.ToDoubleT()));
   std::string serialized_proto(verdict->SerializeAsString());
@@ -804,14 +805,14 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
         request->trigger_type() ==
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
         request->matches_sync_password()) {
-      return base::MakeUnique<PasswordProtectionNavigationThrottle>(
+      return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/false);
     }
   }
 
   for (scoped_refptr<PasswordProtectionRequest> request : warning_requests_) {
     if (request->web_contents() == web_contents) {
-      return base::MakeUnique<PasswordProtectionNavigationThrottle>(
+      return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/true);
     }
   }
