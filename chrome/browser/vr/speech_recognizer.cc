@@ -4,6 +4,8 @@
 
 #include "chrome/browser/vr/speech_recognizer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -283,7 +285,7 @@ SpeechRecognizer::SpeechRecognizer(
       ui_(ui),
       url_request_context_getter_(url_request_context_getter),
       locale_(locale),
-      speech_recognizer_on_io_(base::MakeUnique<SpeechRecognizerOnIO>()),
+      speech_recognizer_on_io_(std::make_unique<SpeechRecognizerOnIO>()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "ui/gfx/canvas.h"
@@ -105,7 +104,7 @@ class TextTexture : public UiTexture {
 };
 
 Text::Text(float font_height_dmms)
-    : TexturedElement(0), texture_(base::MakeUnique<TextTexture>()) {
+    : TexturedElement(0), texture_(std::make_unique<TextTexture>()) {
   texture_->SetFontHeightInDmm(font_height_dmms);
 }
 

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -25,9 +26,9 @@ void CheckScaleAndDepth(UiElement* element, float s) {
 // in magnitude).
 TEST(ScaledDepthAdjuster, SimpleDepth) {
   UiScene scene;
-  auto element = base::MakeUnique<UiElement>();
+  auto element = std::make_unique<UiElement>();
   auto* p_element = element.get();
-  auto adjuster = base::MakeUnique<ScaledDepthAdjuster>(2.5);
+  auto adjuster = std::make_unique<ScaledDepthAdjuster>(2.5);
   adjuster->AddChild(std::move(element));
   scene.AddUiElement(kRoot, std::move(adjuster));
   scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
@@ -45,17 +46,17 @@ TEST(ScaledDepthAdjuster, SimpleDepth) {
 //             child
 TEST(ScaledDepthAdjuster, InheritedDepth) {
   UiScene scene;
-  auto child = base::MakeUnique<UiElement>();
+  auto child = std::make_unique<UiElement>();
   auto* p_child = child.get();
-  auto child_adjuster = base::MakeUnique<ScaledDepthAdjuster>(0.2f);
+  auto child_adjuster = std::make_unique<ScaledDepthAdjuster>(0.2f);
 
-  auto parent = base::MakeUnique<UiElement>();
+  auto parent = std::make_unique<UiElement>();
   auto* p_parent = parent.get();
-  auto parent_adjuster = base::MakeUnique<ScaledDepthAdjuster>(-0.1f);
+  auto parent_adjuster = std::make_unique<ScaledDepthAdjuster>(-0.1f);
 
-  auto grandparent = base::MakeUnique<UiElement>();
+  auto grandparent = std::make_unique<UiElement>();
   auto* p_grandparent = grandparent.get();
-  auto grandparent_adjuster = base::MakeUnique<ScaledDepthAdjuster>(2.5f);
+  auto grandparent_adjuster = std::make_unique<ScaledDepthAdjuster>(2.5f);
 
   child_adjuster->AddChild(std::move(child));
   parent->AddChild(std::move(child_adjuster));

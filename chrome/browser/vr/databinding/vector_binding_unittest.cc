@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/databinding/vector_binding.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_element_binding.h"
@@ -53,9 +52,9 @@ void SetValue(ElemBinding* element, const int& value) {
 }
 
 void OnModelAdded(ViewRegistry* registry, ElemBinding* element) {
-  std::unique_ptr<View> view = base::MakeUnique<View>();
+  std::unique_ptr<View> view = std::make_unique<View>();
   element->set_view(view.get());
-  element->bindings().push_back(base::MakeUnique<Binding<int>>(
+  element->bindings().push_back(std::make_unique<Binding<int>>(
       base::Bind(&GetValue, base::Unretained(element)),
       base::Bind(&SetValue, base::Unretained(element))));
   registry->AddView(std::move(view));

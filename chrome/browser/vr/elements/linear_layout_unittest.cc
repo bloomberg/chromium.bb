@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/linear_layout.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -28,7 +29,7 @@ class TestElement : public UiElement {
 TEST(LinearLayout, HorizontalLayout) {
   LinearLayout layout(LinearLayout::kRight);
   layout.set_margin(10);
-  auto element = base::MakeUnique<UiElement>();
+  auto element = std::make_unique<UiElement>();
   UiElement* rect_a = element.get();
   rect_a->SetSize(10, 10);
   layout.AddChild(std::move(element));
@@ -38,7 +39,7 @@ TEST(LinearLayout, HorizontalLayout) {
   EXPECT_TRUE(rect_a->LocalTransform().IsIdentity());
 
   // Two elements should be centered and separated by the margin.
-  element = base::MakeUnique<UiElement>();
+  element = std::make_unique<UiElement>();
   UiElement* rect_b = element.get();
   rect_b->SetSize(10, 10);
   rect_b->SetScale(2.0f, 2.0f, 0.0f);
@@ -68,7 +69,7 @@ TEST(LinearLayout, Orientations) {
 
   TestElement* rect;
   for (int i = 0; i < 2; i++) {
-    auto element = base::MakeUnique<TestElement>();
+    auto element = std::make_unique<TestElement>();
     rect = element.get();
     element->SetSize(10, 10);
     layout.AddChild(std::move(element));
@@ -102,25 +103,25 @@ TEST(LinearLayout, NestedLayouts) {
   //       rect_a
   //       rect_b
   //     rect_c
-  auto parent_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
+  auto parent_layout = std::make_unique<LinearLayout>(LinearLayout::kDown);
   UiElement* p_parent_layout = parent_layout.get();
-  auto child_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
+  auto child_layout = std::make_unique<LinearLayout>(LinearLayout::kDown);
   UiElement* p_child_layout = child_layout.get();
-  auto rect_a = base::MakeUnique<TestElement>();
+  auto rect_a = std::make_unique<TestElement>();
   TestElement* p_rect_a = rect_a.get();
   rect_a->SetSize(10, 10);
   child_layout->AddChild(std::move(rect_a));
-  auto rect_b = base::MakeUnique<TestElement>();
+  auto rect_b = std::make_unique<TestElement>();
   TestElement* p_rect_b = rect_b.get();
   rect_b->SetSize(10, 10);
   child_layout->AddChild(std::move(rect_b));
-  auto rect_c = base::MakeUnique<TestElement>();
+  auto rect_c = std::make_unique<TestElement>();
   TestElement* p_rect_c = rect_c.get();
   rect_c->SetSize(999, 10);
   parent_layout->AddChild(std::move(child_layout));
   parent_layout->AddChild(std::move(rect_c));
 
-  auto scene = base::MakeUnique<UiScene>();
+  auto scene = std::make_unique<UiScene>();
   scene->AddUiElement(kRoot, std::move(parent_layout));
   scene->OnBeginFrame(MicrosecondsToTicks(1), kStartHeadPose);
 

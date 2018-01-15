@@ -4,9 +4,10 @@
 
 #include "chrome/browser/vr/elements/transient_element.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -95,13 +96,13 @@ TEST(SimpleTransientElementTest, VisibilityChildren) {
   UiScene scene;
   // Create transient root.
   auto transient_element =
-      base::MakeUnique<SimpleTransientElement>(base::TimeDelta::FromSeconds(2));
+      std::make_unique<SimpleTransientElement>(base::TimeDelta::FromSeconds(2));
   SimpleTransientElement* parent = transient_element.get();
   transient_element->set_opacity_when_visible(0.5);
   scene.AddUiElement(kRoot, std::move(transient_element));
 
   // Create child.
-  auto element = base::MakeUnique<UiElement>();
+  auto element = std::make_unique<UiElement>();
   UiElement* child = element.get();
   element->set_opacity_when_visible(0.5);
   element->SetVisible(true);
@@ -143,7 +144,7 @@ class ShowUntilSignalElementTest : public testing::Test {
 
   void SetUp() override {
     callback_triggered_ = false;
-    element_ = base::MakeUnique<ShowUntilSignalTransientElement>(
+    element_ = std::make_unique<ShowUntilSignalTransientElement>(
         base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(5),
         base::Bind(&ShowUntilSignalElementTest::OnTimeout,
                    base::Unretained(this)));

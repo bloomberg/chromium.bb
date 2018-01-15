@@ -7,7 +7,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -99,7 +98,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
             const gfx::Rect& bounds)
       : window_manager_(window_manager),
         renderer_factory_(renderer_factory),
-        vr_(base::MakeUnique<vr::VrTestContext>()),
+        vr_(std::make_unique<vr::VrTestContext>()),
         weak_ptr_factory_(this) {
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
         this, {1024, 768});
@@ -192,7 +191,7 @@ std::unique_ptr<vr::GlRenderer> RendererFactory::CreateRenderer(
     LOG(FATAL) << "Failed to create GL surface";
     return nullptr;
   }
-  return base::MakeUnique<vr::GlRenderer>(surface, vr);
+  return std::make_unique<vr::GlRenderer>(surface, vr);
 }
 
 WindowManager::WindowManager(const base::Closure& quit_closure)

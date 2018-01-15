@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/controller_mesh.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/vr/gltf_parser.h"
 #include "chrome/grit/vr_shell_resources.h"
@@ -161,7 +160,7 @@ std::unique_ptr<ControllerMesh> ControllerMesh::LoadFromResources() {
   DCHECK(asset);
 
   auto controller_model =
-      base::MakeUnique<ControllerMesh>(std::move(asset), std::move(buffers));
+      std::make_unique<ControllerMesh>(std::move(asset), std::move(buffers));
   sk_sp<SkImage> base_texture = LoadPng(IDR_VR_SHELL_DDCONTROLLER_IDLE_TEXTURE);
   controller_model->SetBaseTexture(std::move(base_texture));
 

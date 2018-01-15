@@ -4,8 +4,9 @@
 
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 
+#include <memory>
+
 #include "base/i18n/icu_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -67,7 +68,7 @@ void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
 bool LoadPng(int resource_id, std::unique_ptr<SkBitmap>* out_image) {
   base::StringPiece data =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-  *out_image = base::MakeUnique<SkBitmap>();
+  *out_image = std::make_unique<SkBitmap>();
   return gfx::PNGCodec::Decode(
       reinterpret_cast<const unsigned char*>(data.data()), data.size(),
       out_image->get());
@@ -87,10 +88,10 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   // TODO(cjgrant): Remove this when the keyboard is enabled by default.
   base::FeatureList::InitializeInstance("VrBrowserKeyboard", "");
 
-  text_input_delegate_ = base::MakeUnique<TextInputDelegate>();
-  keyboard_delegate_ = base::MakeUnique<TestKeyboardDelegate>();
+  text_input_delegate_ = std::make_unique<TextInputDelegate>();
+  keyboard_delegate_ = std::make_unique<TestKeyboardDelegate>();
 
-  ui_ = base::MakeUnique<Ui>(this, nullptr, keyboard_delegate_.get(),
+  ui_ = std::make_unique<Ui>(this, nullptr, keyboard_delegate_.get(),
                              text_input_delegate_.get(), UiInitialState());
 
   text_input_delegate_->SetRequestFocusCallback(
@@ -488,7 +489,7 @@ void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 void VrTestContext::StartAutocomplete(const base::string16& string) {
-  auto result = base::MakeUnique<OmniboxSuggestions>();
+  auto result = std::make_unique<OmniboxSuggestions>();
   for (int i = 0; i < 5; i++) {
     result->suggestions.emplace_back(OmniboxSuggestion(
         base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
@@ -501,7 +502,7 @@ void VrTestContext::StartAutocomplete(const base::string16& string) {
 }
 
 void VrTestContext::StopAutocomplete() {
-  ui_->SetOmniboxSuggestions(base::MakeUnique<OmniboxSuggestions>());
+  ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
 }
 
 void VrTestContext::CycleOrigin() {
@@ -534,7 +535,7 @@ void VrTestContext::CycleOrigin() {
 void VrTestContext::LoadAssets() {
   base::Version assets_component_version(VR_ASSETS_COMPONENT_VERSION);
 #if defined(GOOGLE_CHROME_BUILD)
-  auto assets = base::MakeUnique<Assets>();
+  auto assets = std::make_unique<Assets>();
   if (!(LoadPng(IDR_VR_BACKGROUND_IMAGE, &assets->background) &&
         LoadPng(IDR_VR_NORMAL_GRADIENT_IMAGE, &assets->normal_gradient) &&
         LoadPng(IDR_VR_INCOGNITO_GRADIENT_IMAGE, &assets->incognito_gradient) &&

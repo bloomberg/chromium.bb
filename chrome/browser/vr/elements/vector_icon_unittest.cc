@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/elements/vector_icon.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/test/gtest_util.h"
 #include "cc/test/test_skcanvas.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
@@ -38,7 +39,7 @@ class TestVectorIcon : public VectorIcon {
 
 TEST(VectorIcon, SmokeTest) {
   UiScene scene;
-  auto icon = base::MakeUnique<TestVectorIcon>(kMaximumWidth);
+  auto icon = std::make_unique<TestVectorIcon>(kMaximumWidth);
   icon->SetInitializedForTesting();
   icon->SetIcon(vector_icons::kClose16Icon);
   UiTexture* texture = icon->GetTexture();

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/testapp/test_keyboard_delegate.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
@@ -20,7 +21,7 @@ constexpr gfx::Vector2dF kKeyboardTranslate = {0, -0.1};
 }  // namespace
 
 TestKeyboardDelegate::TestKeyboardDelegate()
-    : renderer_(base::MakeUnique<TestKeyboardRenderer>()) {}
+    : renderer_(std::make_unique<TestKeyboardRenderer>()) {}
 
 TestKeyboardDelegate::~TestKeyboardDelegate() {}
 

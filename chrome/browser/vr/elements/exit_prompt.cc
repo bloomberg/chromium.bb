@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/exit_prompt.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/exit_prompt_texture.h"
 
 namespace vr {
@@ -13,7 +12,7 @@ ExitPrompt::ExitPrompt(int preferred_width,
                        const ExitPrompt::Callback& primary_button_callback,
                        const ExitPrompt::Callback& secondary_button_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<ExitPromptTexture>()),
+      texture_(std::make_unique<ExitPromptTexture>()),
       primary_button_callback_(primary_button_callback),
       secondary_button_callback_(secondary_button_callback) {}
 

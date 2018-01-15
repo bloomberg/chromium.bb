@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/disc_button.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -24,7 +23,7 @@ constexpr float kIconScaleFactor = 0.5f;
 DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
                        const gfx::VectorIcon& icon)
     : Button(click_handler) {
-  auto vector_icon = base::MakeUnique<VectorIcon>(512);
+  auto vector_icon = std::make_unique<VectorIcon>(512);
   vector_icon->SetType(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
   vector_icon->set_bubble_events(true);

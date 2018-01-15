@@ -5,8 +5,8 @@
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 
 #include <cmath>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/test/animation_utils.h"
@@ -67,13 +67,13 @@ class ViewportAwareRootTest : public testing::Test {
   ~ViewportAwareRootTest() override = default;
 
   void SetUp() override {
-    scene_ = base::MakeUnique<UiScene>();
-    auto viewport_aware_root = base::MakeUnique<ViewportAwareRootForTesting>();
+    scene_ = std::make_unique<UiScene>();
+    auto viewport_aware_root = std::make_unique<ViewportAwareRootForTesting>();
     viewport_aware_root->SetDrawPhase(kPhaseForeground);
     viewport_root = viewport_aware_root.get();
     scene_->AddUiElement(kRoot, std::move(viewport_aware_root));
 
-    auto element = base::MakeUnique<UiElement>();
+    auto element = std::make_unique<UiElement>();
     element->SetDrawPhase(kPhaseForeground);
     element->SetTranslate(0.f, 0.f, -1.f);
     viewport_element = element.get();
@@ -225,7 +225,7 @@ TEST_F(ViewportAwareRootTest, ResetPositionWhenReshow) {
 }
 
 TEST_F(ViewportAwareRootTest, IsChildrenVisible) {
-  auto element = base::MakeUnique<UiElement>();
+  auto element = std::make_unique<UiElement>();
   element->SetDrawPhase(kPhaseNone);
   UiElement* child = element.get();
   viewport_element->AddChild(std::move(element));

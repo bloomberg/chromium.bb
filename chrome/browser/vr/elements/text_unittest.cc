@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/render_text.h"
@@ -15,7 +14,7 @@ TEST(Text, MultiLine) {
   const float kInitialSize = 1.0f;
 
   // Create an initialize a text element with a long string.
-  auto text = base::MakeUnique<Text>(0.020);
+  auto text = std::make_unique<Text>(0.020);
   text->SetSize(kInitialSize, 0);
   text->SetText(base::UTF8ToUTF16(std::string(1000, 'x')));
 
