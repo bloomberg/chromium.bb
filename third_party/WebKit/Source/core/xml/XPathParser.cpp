@@ -28,11 +28,11 @@
 #include "core/xml/XPathParser.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/XPathGrammar.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathPath.h"
+#include "core/xpath_grammar.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringHash.h"
