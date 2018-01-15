@@ -152,8 +152,8 @@ void SetKeyframeValue(Element& element,
                                                                       element);
   if (css_property != CSSPropertyInvalid) {
     keyframe.SetPresentationAttributeValue(
-        css_property, value, element.GetDocument().GetSecureContextMode(),
-        style_sheet_contents);
+        CSSProperty::Get(css_property), value,
+        element.GetDocument().GetSecureContextMode(), style_sheet_contents);
     return;
   }
   const QualifiedName* svg_attribute =

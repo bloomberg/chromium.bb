@@ -71,7 +71,7 @@
 
 namespace blink {
 
-using PropertySet = HashSet<CSSPropertyID>;
+using PropertySet = HashSet<const CSSProperty*>;
 
 namespace {
 
@@ -106,9 +106,9 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     keyframe->SetEasing(default_timing_function);
     const CSSPropertyValueSet& properties = style_keyframe->Properties();
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
-      CSSPropertyID property = properties.PropertyAt(j).Id();
-      specified_properties_for_use_counter.insert(property);
-      if (property == CSSPropertyAnimationTimingFunction) {
+      const CSSProperty& property = properties.PropertyAt(j).Property();
+      specified_properties_for_use_counter.insert(&property);
+      if (property.PropertyID() == CSSPropertyAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
@@ -136,13 +136,15 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
   DEFINE_STATIC_LOCAL(SparseHistogram, property_histogram,
                       ("WebCore.Animation.CSSProperties"));
-  for (CSSPropertyID property : specified_properties_for_use_counter) {
-    DCHECK(isValidCSSPropertyID(property));
-    UseCounter::CountAnimatedCSS(element_for_scoping->GetDocument(), property);
+  for (const CSSProperty* property : specified_properties_for_use_counter) {
+    DCHECK(isValidCSSPropertyID(property->PropertyID()));
+    UseCounter::CountAnimatedCSS(element_for_scoping->GetDocument(),
+                                 property->PropertyID());
 
     // TODO(crbug.com/458925): Remove legacy histogram and counts
     property_histogram.Sample(
-        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property));
+        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
+            property->PropertyID()));
   }
 
   // Merge duplicate keyframes.
@@ -154,7 +156,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
         keyframes[target_index]->CheckedOffset()) {
       for (const auto& property : keyframes[i]->Properties()) {
         keyframes[target_index]->SetCSSPropertyValue(
-            property.GetCSSProperty().PropertyID(),
+            property.GetCSSProperty(),
             keyframes[i]->CssPropertyValue(property));
       }
     } else {
@@ -1224,8 +1226,8 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 
 // Properties that affect animations are not allowed to be affected by
 // animations. http://w3c.github.io/web-animations/#not-animatable-section
-bool CSSAnimations::IsAnimationAffectingProperty(CSSPropertyID property) {
-  switch (property) {
+bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
+  switch (property.PropertyID()) {
     case CSSPropertyAnimation:
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:

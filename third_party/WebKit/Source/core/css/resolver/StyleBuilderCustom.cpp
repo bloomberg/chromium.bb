@@ -119,7 +119,7 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||
                                     value.IsPendingSubstitutionValue())) {
     bool omit_animation_tainted =
-        CSSAnimations::IsAnimationAffectingProperty(id);
+        CSSAnimations::IsAnimationAffectingProperty(property);
     const CSSValue* resolved_value =
         CSSVariableResolver(state).ResolveVariableReferences(
             id, value, omit_animation_tainted);
