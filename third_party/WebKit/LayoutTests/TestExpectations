@@ -3516,6 +3516,7 @@ crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 # Sheriff failures 2018-01-09
 # This test is flaky and times out on Windows 7 bots. It also times out on MSAN
 # bots due to taling too long to complete.
+crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Pass Timeout ]
 crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Pass Timeout ]
 
 crbug.com/799929 external/wpt/performance-timeline/po-takeRecords.html [ Failure ]
