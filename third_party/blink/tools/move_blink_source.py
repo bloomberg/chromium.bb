@@ -297,6 +297,11 @@ Bug: 768828
         content = content.replace('//third_party/WebKit/Source/*', '//third_party/blink/renderer/*')
         content = content.replace('//third_party/WebKit/public/*', '//third_party/blink/renderer/public/*')
 
+        # Update mojom variables
+        content = content.replace('export_header = "third_party/WebKit/common',
+                                  'export_header = "third_party/blink/common')
+        content = content.replace('export_header_blink = "third_party/WebKit/Source',
+                                  'export_header_blink = "third_party/blink/renderer')
         return self._update_basename(content)
 
     def _update_owners(self, content):
@@ -317,6 +322,7 @@ Bug: 768828
 
     def _update_mojom(self, content):
         content = content.replace('third_party/WebKit/public', 'third_party/blink/renderer/public')
+        content = content.replace('third_party/WebKit/common', 'third_party/blink/common')
         return content
 
     def _update_typemap(self, content):
