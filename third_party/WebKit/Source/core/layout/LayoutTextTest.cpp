@@ -386,6 +386,7 @@ TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
 }
 
 TEST_P(ParameterizedLayoutTextTest, QuadsBasic) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   LoadAhem();
   SetBasicBody(
       "<style>p {font: 13px/17px Ahem;}</style>"

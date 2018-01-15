@@ -16,9 +16,6 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   void SetUp() override {
     NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::Create();
-    // TODO(mstensho): Remove this when
-    // https://chromium-review.googlesource.com/c/chromium/src/+/862562 lands.
-    GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
   }
 
   scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
