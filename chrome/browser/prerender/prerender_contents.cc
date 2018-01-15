@@ -352,7 +352,13 @@ PrerenderContents::~PrerenderContents() {
        !host_iterator.IsAtEnd();
        host_iterator.Advance()) {
     content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-    host->Send(new PrerenderMsg_OnPrerenderRemoveAliases(alias_urls_));
+    IPC::ChannelProxy* channel = host->GetChannel();
+    // |channel| might be NULL in tests.
+    if (channel) {
+      chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+      channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
+      prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
+    }
   }
 
   if (!prerender_contents_)
@@ -468,7 +474,13 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
        !host_iterator.IsAtEnd();
        host_iterator.Advance()) {
     content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-    host->Send(new PrerenderMsg_OnPrerenderAddAlias(url));
+    IPC::ChannelProxy* channel = host->GetChannel();
+    // |channel| might be NULL in tests.
+    if (channel) {
+      chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+      channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
+      prerender_dispatcher->PrerenderAddAlias(url);
+    }
   }
 
   return true;

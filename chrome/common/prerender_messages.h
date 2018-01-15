@@ -62,28 +62,4 @@ IPC_MESSAGE_ROUTED2(PrerenderMsg_SetIsPrerendering,
                     prerender::PrerenderMode,
                     std::string /* histogram_prefix */)
 
-// Signals to launcher that a prerender is running.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,
-                     int /* prerender_id */)
-
-// Signals to launcher that a prerender is running.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStopLoading,
-                     int /* prerender_id */)
-
-// Signals to launcher that a prerender has had it's 'domcontentloaded' event.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderDomContentLoaded,
-                     int /* prerender_id */)
-
-// Signals to a launcher that a new alias has been added to a prerender.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderAddAlias,
-                     GURL /* url */)
-
-// Signals to a launcher that a new alias has been added to a prerender.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderRemoveAliases,
-                     std::vector<GURL> /* urls */)
-
-// Signals to a launcher that a prerender is no longer running.
-IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStop,
-                     int /* prerender_id */)
-
 #endif  // CHROME_COMMON_PRERENDER_MESSAGES_H_

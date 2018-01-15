@@ -24,6 +24,7 @@
           "blink::mojom::document_metadata::CopylessPaste",
           "chrome::mojom::ChromeRenderFrame",
           "chrome::mojom::ContentSettingsRenderer",
+          "chrome::mojom::PrerenderDispatcher",
           "dom_distiller::mojom::DistillerPageNotifierService",
           "extensions::mojom::AppWindow",
           "spellcheck::mojom::SpellCheckPanel"
