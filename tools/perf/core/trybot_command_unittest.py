@@ -327,7 +327,7 @@ class TrybotCommandTest(unittest.TestCase):
     command, options = self._SetupTrybotCommand(
         {'linux_perf_bisect': 'stuff'}, 'linux', repo_path='/dummy/path')
     command.Run(options)
-    self.assertEquals((
+    self.assertIn((
         '(ERROR) Perf Try Job: Repository path "/dummy/path" does not exist, '
         'please check the value of <repo_path> argument.'),
                       sys.stdout.getvalue().strip())
