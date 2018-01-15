@@ -7,12 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -153,7 +154,7 @@ void BookmarkBridge::LoadEmptyPartnerBookmarkShimForTesting(
   if (partner_bookmarks_shim_->IsLoaded())
       return;
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
-      base::MakeUnique<BookmarkPermanentNode>(0));
+      std::make_unique<BookmarkPermanentNode>(0));
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 }
 

@@ -46,7 +46,7 @@ void SearchGeolocationDisclosureInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents);
   // Add the new delegate.
   infobar_service->AddInfoBar(
-      base::MakeUnique<SearchGeolocationDisclosureInfoBar>(
+      std::make_unique<SearchGeolocationDisclosureInfoBar>(
           base::WrapUnique(new SearchGeolocationDisclosureInfoBarDelegate(
               web_contents, search_url, search_engine_name))));
 }

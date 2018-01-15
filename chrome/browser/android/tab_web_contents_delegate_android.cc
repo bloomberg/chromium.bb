@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/feature_utilities.h"
@@ -104,7 +105,7 @@ void ShowFramebustBlockInfobarInternal(content::WebContents* web_contents,
                                        const GURL& url) {
   FramebustBlockInfoBar::Show(
       web_contents,
-      base::MakeUnique<FramebustBlockMessageDelegate>(
+      std::make_unique<FramebustBlockMessageDelegate>(
           web_contents, url, FramebustBlockMessageDelegate::OutcomeCallback()));
 }
 
@@ -140,7 +141,7 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
     vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kBluetoothChooser);
     return nullptr;
   }
-  return base::MakeUnique<BluetoothChooserAndroid>(frame, event_handler);
+  return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
 }
 
 void TabWebContentsDelegateAndroid::CloseContents(

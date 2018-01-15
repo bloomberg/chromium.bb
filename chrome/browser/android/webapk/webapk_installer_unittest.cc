@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -247,7 +246,7 @@ class BuildProtoRunner {
  private:
   // Called when the |webapk_request_| is populated.
   void OnBuiltWebApkProto(std::unique_ptr<std::string> serialized_proto) {
-    webapk_request_ = base::MakeUnique<webapk::WebApk>();
+    webapk_request_ = std::make_unique<webapk::WebApk>();
     webapk_request_->ParseFromString(*serialized_proto);
     on_completed_callback_.Run();
   }

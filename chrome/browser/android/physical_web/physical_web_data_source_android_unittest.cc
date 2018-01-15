@@ -4,9 +4,10 @@
 
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::android::JavaParamRef;
@@ -30,7 +31,7 @@ class PhysicalWebCollectionTest : public testing::Test {
   ~PhysicalWebCollectionTest() override {}
 
   void SetUp() override {
-    collection_ = base::MakeUnique<PhysicalWebCollection>();
+    collection_ = std::make_unique<PhysicalWebCollection>();
     env_ = base::android::AttachCurrentThread();
   }
 

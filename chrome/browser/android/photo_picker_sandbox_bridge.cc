@@ -11,7 +11,6 @@
 #include "sandbox/sandbox_features.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
-#include "base/memory/ptr_util.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"
 #endif
 
@@ -23,7 +22,7 @@ void JNI_DecoderService_InitializePhotoPickerSandbox(
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
   // The policy compiler is only available if USE_SECCOMP_BPF is enabled.
-  starter.set_policy(base::MakeUnique<sandbox::BaselinePolicyAndroid>());
+  starter.set_policy(std::make_unique<sandbox::BaselinePolicyAndroid>());
 #endif
   starter.StartSandbox();
 

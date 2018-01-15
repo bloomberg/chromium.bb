@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -42,7 +41,7 @@ BrowsingHistoryBridge::BrowsingHistoryBridge(JNIEnv* env,
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
-  browsing_history_service_ = base::MakeUnique<BrowsingHistoryService>(
+  browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
 
   j_history_service_obj_.Reset(env, obj);

@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -198,7 +197,7 @@ void ContextualSearchSceneLayer::FetchThumbnail(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
   fetcher_ =
-      base::MakeUnique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
+      std::make_unique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
       std::string(),
       net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,

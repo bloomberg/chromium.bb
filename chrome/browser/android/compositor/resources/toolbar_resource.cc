@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/compositor/resources/toolbar_resource.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 namespace android {
 
@@ -28,7 +28,7 @@ ToolbarResource::ToolbarResource(gfx::Rect toolbar_rect,
 ToolbarResource::~ToolbarResource() = default;
 
 std::unique_ptr<ui::Resource> ToolbarResource::CreateForCopy() {
-  return base::MakeUnique<ToolbarResource>(
+  return std::make_unique<ToolbarResource>(
       toolbar_rect_, location_bar_content_rect_, shadow_height_);
 }
 

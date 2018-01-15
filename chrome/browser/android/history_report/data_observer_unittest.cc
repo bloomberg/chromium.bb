@@ -4,9 +4,10 @@
 
 #include "chrome/browser/android/history_report/data_observer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/history_report/delta_file_service.h"
 #include "chrome/browser/android/history_report/usage_reports_buffer_service.h"
@@ -62,12 +63,12 @@ class DataObserverTest : public testing::Test {
     // Make unique temp directory.
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     delta_file_service_ =
-        base::MakeUnique<MockDeltaFileService>(temp_dir_.GetPath());
+        std::make_unique<MockDeltaFileService>(temp_dir_.GetPath());
     usage_report_service_ =
-        base::MakeUnique<MockUsageReportsBufferService>(temp_dir_.GetPath());
+        std::make_unique<MockUsageReportsBufferService>(temp_dir_.GetPath());
     bookmark_model_ = TestBookmarkClient::CreateModel();
-    history_service_ = base::MakeUnique<HistoryService>();
-    data_observer_ = base::MakeUnique<DataObserver>(
+    history_service_ = std::make_unique<HistoryService>();
+    data_observer_ = std::make_unique<DataObserver>(
         base::Bind(&MockRun), base::Bind(&MockRun), base::Bind(&MockRun),
         delta_file_service_.get(), usage_report_service_.get(),
         bookmark_model_.get(), history_service_.get());

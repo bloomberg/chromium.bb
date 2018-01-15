@@ -5,7 +5,6 @@
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -240,38 +239,38 @@ void VrMetricsHelper::SetVrMode(vr::Mode mode) {
     switch (mode) {
       case vr::Mode::kWebVr:
         if (started_with_autopresentation_) {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_WEBVR_DLA>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_DLA>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         } else {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_WEBVR>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         }
         mode_video_timer_ =
-            base::MakeUnique<SessionTimerImpl<MODE_WEBVR_WITH_VIDEO>>(
+            std::make_unique<SessionTimerImpl<MODE_WEBVR_WITH_VIDEO>>(
                 kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         break;
       case vr::Mode::kVrBrowsingRegular:
         if (started_with_autopresentation_) {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_BROWSER_DLA>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER_DLA>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         } else {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_BROWSER>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         }
         mode_video_timer_ =
-            base::MakeUnique<SessionTimerImpl<MODE_BROWSER_WITH_VIDEO>>(
+            std::make_unique<SessionTimerImpl<MODE_BROWSER_WITH_VIDEO>>(
                 kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         break;
       case vr::Mode::kVrBrowsingFullscreen:
         if (started_with_autopresentation_) {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_FULLSCREEN_DLA>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_DLA>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         } else {
-          mode_timer_ = base::MakeUnique<SessionTimerImpl<MODE_FULLSCREEN>>(
+          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         }
         mode_video_timer_ =
-            base::MakeUnique<SessionTimerImpl<MODE_FULLSCREEN_WITH_VIDEO>>(
+            std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_WITH_VIDEO>>(
                 kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
         break;
       default:
@@ -333,14 +332,14 @@ VrMetricsHelper::VrMetricsHelper(content::WebContents* contents,
 
   Observe(contents);
   if (started_with_autopresentation) {
-    session_timer_ = base::MakeUnique<SessionTimerImpl<SESSION_VR_DLA>>(
+    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR_DLA>>(
         kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
   } else {
-    session_timer_ = base::MakeUnique<SessionTimerImpl<SESSION_VR>>(
+    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
         kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
   }
   session_video_timer_ =
-      base::MakeUnique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
+      std::make_unique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
           kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
 
   UpdateMode();

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/customtabs/origin_verifier.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/values.h"
@@ -27,7 +29,7 @@ OriginVerifier::OriginVerifier(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
   asset_link_handler_ =
-      base::MakeUnique<digital_asset_links::DigitalAssetLinksHandler>(
+      std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
           profile->GetRequestContext());
 }
 

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
@@ -86,7 +85,7 @@ class SearchPermissionsServiceTest : public testing::Test {
 
     ClearNotificationsChannels();
 
-    auto test_delegate = base::MakeUnique<TestSearchEngineDelegate>();
+    auto test_delegate = std::make_unique<TestSearchEngineDelegate>();
     test_delegate_ = test_delegate.get();
     GetService()->SetSearchEngineDelegateForTest(std::move(test_delegate));
     ReinitializeService(true /* clear_pref */);
@@ -415,7 +414,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChangesWithEnterprisePolicy) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
@@ -442,7 +441,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChangesWithEnterprisePolicy) {
 
   // Put an ALLOW enterprise policy in place.
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));

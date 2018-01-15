@@ -12,7 +12,6 @@
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -299,7 +298,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
 void VrShellGl::CreateContentSurface() {
   content_surface_ =
-      base::MakeUnique<gl::ScopedJavaSurface>(content_surface_texture_.get());
+      std::make_unique<gl::ScopedJavaSurface>(content_surface_texture_.get());
   browser_->ContentSurfaceChanged(content_surface_->j_surface().obj());
 }
 
@@ -326,7 +325,7 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   if (mailbox_bridge_) {
     mailbox_bridge_->ResizeSurface(size.width(), size.height());
   } else {
-    mailbox_bridge_ = base::MakeUnique<MailboxToSurfaceBridge>();
+    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
     mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
   }
 }
@@ -555,7 +554,7 @@ void VrShellGl::InitializeRenderer() {
       render_size_default.height / kWebVrBrowserUiSizeFactor};
 
   swap_chain_ =
-      base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
+      std::make_unique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
 
   // Allocate a buffer viewport for use in UI drawing. This isn't
   // initialized at this point, it'll be set from other viewport list
@@ -796,7 +795,7 @@ void VrShellGl::UpdateSamples() {
   if (specs_[kFramePrimaryBuffer].GetSamples() != required_samples) {
     specs_[kFramePrimaryBuffer].SetSamples(required_samples);
     swap_chain_ =
-        base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
+        std::make_unique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
   }
 }
 
@@ -1241,7 +1240,7 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   //
   // See third_party/catapult/tracing/tracing/extras/vsync/vsync_auditor.html
   std::unique_ptr<base::trace_event::TracedValue> args =
-      base::MakeUnique<base::trace_event::TracedValue>();
+      std::make_unique<base::trace_event::TracedValue>();
   args->SetDouble(
       "frame_time_us",
       static_cast<double>((frame_time - base::TimeTicks()).InMicroseconds()));

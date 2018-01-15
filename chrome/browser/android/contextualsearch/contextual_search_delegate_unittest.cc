@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -74,7 +73,7 @@ class ContextualSearchDelegateTest : public testing::Test {
         "{google:contextualSearchVersion}{google:contextualSearchContextData}";
     TemplateURLService* template_url_service = new TemplateURLService(NULL, 0);
     TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+        template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
     return template_url_service;
   }

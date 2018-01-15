@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -257,7 +256,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   }
 
   std::unique_ptr<std::string> serialized_proto =
-      base::MakeUnique<std::string>();
+      std::make_unique<std::string>();
   webapk->SerializeToString(serialized_proto.get());
   return serialized_proto;
 }
@@ -293,7 +292,7 @@ bool StoreUpdateRequestToFileInBackground(
 // Reads |file| and returns contents. Must be called on a background thread.
 std::unique_ptr<std::string> ReadFileInBackground(const base::FilePath& file) {
   base::AssertBlockingAllowed();
-  std::unique_ptr<std::string> update_request = base::MakeUnique<std::string>();
+  std::unique_ptr<std::string> update_request = std::make_unique<std::string>();
   base::ReadFileToString(file, update_request.get());
   return update_request;
 }

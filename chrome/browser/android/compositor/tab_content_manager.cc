@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -15,7 +16,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/tab_android.h"
@@ -112,7 +112,7 @@ TabContentManager::TabContentManager(JNIEnv* env,
                                      jint write_queue_max_size,
                                      jboolean use_approximation_thumbnail)
     : weak_java_tab_content_manager_(env, obj), weak_factory_(this) {
-  thumbnail_cache_ = base::MakeUnique<ThumbnailCache>(
+  thumbnail_cache_ = std::make_unique<ThumbnailCache>(
       static_cast<size_t>(default_cache_size),
       static_cast<size_t>(approximation_cache_size),
       static_cast<size_t>(compression_queue_max_size),
@@ -246,7 +246,7 @@ void TabContentManager::CacheTab(JNIEnv* env,
     TabReadbackCallback readback_done_callback =
         base::Bind(&TabContentManager::PutThumbnailIntoCache,
                    weak_factory_.GetWeakPtr(), tab_id);
-    pending_tab_readbacks_[tab_id] = base::MakeUnique<TabReadbackRequest>(
+    pending_tab_readbacks_[tab_id] = std::make_unique<TabReadbackRequest>(
         rwhv, thumbnail_scale, readback_done_callback);
   }
 }
