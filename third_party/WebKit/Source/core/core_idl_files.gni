@@ -546,6 +546,7 @@ core_callback_function_idl_files =
 core_dictionary_idl_files =
     get_path_info([
                     "animation/AnimationEffectTimingProperties.idl",
+                    "animation/BaseKeyframe.idl",
                     "animation/BasePropertyIndexedKeyframe.idl",
                     "animation/ComputedTimingProperties.idl",
                     "animation/DocumentTimelineOptions.idl",
