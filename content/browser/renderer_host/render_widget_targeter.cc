@@ -96,51 +96,26 @@ void RenderWidgetTargeter::QueryClient(
   request_in_flight_ = true;
   auto* target_client =
       target->GetRenderWidgetHostImpl()->input_target_client();
-  // TODO: Unify the codepaths by converting to ui::WebScopedInputEvent here (or
-  // earlier).
-  if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
+  if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+      event.GetType() == blink::WebInputEvent::kMouseWheel ||
+      event.GetType() == blink::WebInputEvent::kTouchStart ||
+      (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
+       (static_cast<const blink::WebGestureEvent&>(event).source_device ==
+            blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
+        static_cast<const blink::WebGestureEvent&>(event).source_device ==
+            blink::WebGestureDevice::kWebGestureDeviceTouchpad))) {
     target_client->FrameSinkIdAt(
         gfx::ToCeiledPoint(target_location.value()),
         base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
                        weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
                        target->GetWeakPtr(),
-                       static_cast<const blink::WebMouseEvent&>(event), latency,
+                       ui::WebInputEventTraits::Clone(event), latency,
                        target_location));
-  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
-    target_client->FrameSinkIdAt(
-        gfx::ToCeiledPoint(target_location.value()),
-        base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
-                       weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-                       target->GetWeakPtr(),
-                       static_cast<const blink::WebMouseWheelEvent&>(event),
-                       latency, target_location));
-  } else if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
-    auto touch_event = static_cast<const blink::WebTouchEvent&>(event);
-    DCHECK(touch_event.GetType() == blink::WebInputEvent::kTouchStart);
-    target_client->FrameSinkIdAt(
-        gfx::ToCeiledPoint(target_location.value()),
-        base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
-                       weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-                       target->GetWeakPtr(),
-                       static_cast<const blink::WebTouchEvent&>(event), latency,
-                       target_location));
-  } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
-    auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
-    DCHECK(gesture_event.source_device ==
-               blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
-           gesture_event.source_device ==
-               blink::WebGestureDevice::kWebGestureDeviceTouchpad);
-    target_client->FrameSinkIdAt(
-        gfx::ToCeiledPoint(target_location.value()),
-        base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
-                       weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-                       target->GetWeakPtr(),
-                       static_cast<const blink::WebGestureEvent&>(event),
-                       latency, target_location));
-  } else {
-    // TODO(crbug.com/796656): Handle other types of events.
-    NOTREACHED();
+    return;
   }
+
+  // TODO(crbug.com/796656): Handle other types of events.
+  NOTREACHED();
 }
 
 void RenderWidgetTargeter::FlushEventQueue() {
@@ -160,7 +135,7 @@ void RenderWidgetTargeter::FlushEventQueue() {
 void RenderWidgetTargeter::FoundFrameSinkId(
     base::WeakPtr<RenderWidgetHostViewBase> root_view,
     base::WeakPtr<RenderWidgetHostViewBase> target,
-    const blink::WebInputEvent& event,
+    ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location,
     const viz::FrameSinkId& frame_sink_id) {
@@ -171,7 +146,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   // If a client was asked to find a target, then it is necessary to keep
   // asking the clients until a client claims an event for itself.
   if (view == target.get()) {
-    FoundTarget(root_view.get(), view, event, latency, target_location);
+    FoundTarget(root_view.get(), view, *event, latency, target_location);
   } else {
     base::Optional<gfx::PointF> location = target_location;
     if (target_location) {
@@ -181,7 +156,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
         location.emplace(updated_location);
       }
     }
-    QueryClient(root_view.get(), view, event, latency, location);
+    QueryClient(root_view.get(), view, *event, latency, location);
   }
 }
 
