@@ -201,7 +201,8 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& text_bounds) {
   url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults |
-      url_formatter::kFormatUrlOmitHTTPS;
+      url_formatter::kFormatUrlOmitHTTPS |
+      url_formatter::kFormatUrlOmitTrivialSubdomains;
 
   url::Parsed parsed;
   const base::string16 unelided_url = url_formatter::FormatUrl(

@@ -60,7 +60,7 @@ extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
 
 // Omits some trivially informative subdomains such as "www" or "m". Not in
 // kFormatUrlOmitDefaults.
-extern const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains;
+extern const FormatUrlType kFormatUrlOmitTrivialSubdomains;
 
 // Convenience for omitting all unecessary types. Does not include HTTPS scheme
 // removal, or experimental flags.

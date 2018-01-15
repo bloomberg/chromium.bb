@@ -407,7 +407,7 @@ const FormatUrlType kFormatUrlOmitHTTP = 1 << 1;
 const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 1 << 2;
 const FormatUrlType kFormatUrlOmitHTTPS = 1 << 3;
 const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 4;
-const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains = 1 << 5;
+const FormatUrlType kFormatUrlOmitTrivialSubdomains = 1 << 5;
 
 const FormatUrlType kFormatUrlOmitDefaults =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
@@ -526,7 +526,7 @@ base::string16 FormatUrlWithAdjustments(
 
   // Host.
   bool trim_trivial_subdomains =
-      (format_types & kFormatUrlExperimentalOmitTrivialSubdomains) != 0;
+      (format_types & kFormatUrlOmitTrivialSubdomains) != 0;
   AppendFormattedComponent(spec, parsed.host,
                            HostComponentTransform(trim_trivial_subdomains),
                            &url_string, &new_parsed->host, adjustments);

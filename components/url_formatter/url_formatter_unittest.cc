@@ -1091,55 +1091,52 @@ TEST(UrlFormatterTest, FormatUrl) {
 
       // -------- omit trivial subdomains --------
       {"omit trivial subdomains - trim www", "http://www.google.com/",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
+       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
        L"http://google.com/", 7},
       {"omit trivial subdomains - trim m", "http://m.google.com/",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
+       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
        L"http://google.com/", 7},
       {"omit trivial subdomains - trim m and www", "http://m.www.google.com/",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
+       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
        L"http://google.com/", 7},
       {"omit trivial subdomains - trim m from middle",
-       "http://en.m.wikipedia.org/",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
-       L"http://en.wikipedia.org/", 7},
+       "http://en.m.wikipedia.org/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://en.wikipedia.org/", 7},
       {"omit trivial subdomains - exclude private registries",
-       "http://www.blogspot.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://www.blogspot.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://blogspot.com/", 7},
       {"omit trivial subdomains - don't do blind substring matches for www",
-       "http://wwww.google.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://wwww.google.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://wwww.google.com/", 7},
       {"omit trivial subdomains - don't do blind substring matches for m",
-       "http://foom.google.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://foom.google.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://foom.google.com/", 7},
       {"omit trivial subdomains - don't crash on multiple delimiters",
-       "http://www...m..foobar...google.com/",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
-       L"http://...foobar...google.com/", 7},
+       "http://www...m..foobar...google.com/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://...foobar...google.com/", 7},
 
       {"omit trivial subdomains - sanity check for ordinary subdomains",
-       "http://mail.yahoo.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://mail.yahoo.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://mail.yahoo.com/", 7},
       {"omit trivial subdomains - sanity check for auth",
-       "http://www:m@google.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://www:m@google.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://www:m@google.com/", 13},
       {"omit trivial subdomains - sanity check for path",
-       "http://google.com/www.m.foobar",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
-       L"http://google.com/www.m.foobar", 7},
+       "http://google.com/www.m.foobar", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://google.com/www.m.foobar", 7},
       {"omit trivial subdomains - sanity check for IDN",
        "http://www.xn--cy2a840a.m.xn--cy2a840a.com",
-       kFormatUrlExperimentalOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
+       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
        L"http://\x89c6\x9891.\x89c6\x9891.com/", 7},
 
       {"omit trivial subdomains but leave registry and domain alone - trivial",
-       "http://google.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://google.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://google.com/", 7},
       {"omit trivial subdomains but leave registry and domain alone - www",
-       "http://www.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://www.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://www.com/", 7},
       {"omit trivial subdomains but leave registry and domain alone - co.uk",
-       "http://m.co.uk/", kFormatUrlExperimentalOmitTrivialSubdomains,
+       "http://m.co.uk/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://m.co.uk/", 7},
   };
 
@@ -1534,16 +1531,15 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
   const size_t strip_trivial_subdomains_offsets_1[] = {
       0, 1, 2,  3,  4,  5,  6,  7,  kNpos, kNpos, kNpos, 7,  kNpos, 7,
       8, 9, 10, 11, 12, 13, 14, 15, 16,    17,    18,    19, 20,    21};
-  CheckAdjustedOffsets("http://www.m.google.com/foo/",
-                       kFormatUrlExperimentalOmitTrivialSubdomains,
-                       net::UnescapeRule::NORMAL,
-                       strip_trivial_subdomains_offsets_1);
+  CheckAdjustedOffsets(
+      "http://www.m.google.com/foo/", kFormatUrlOmitTrivialSubdomains,
+      net::UnescapeRule::NORMAL, strip_trivial_subdomains_offsets_1);
 
   const size_t strip_trivial_subdomains_offsets_2[] = {
       0,  1,     2,     3,     4,  5,  6,  7,  kNpos, 7,  8,  9,
       10, kNpos, kNpos, kNpos, 10, 11, 12, 13, 14,    15, 16, 17};
   CheckAdjustedOffsets(
-      "http://m.en.www.foo.com/", kFormatUrlExperimentalOmitTrivialSubdomains,
+      "http://m.en.www.foo.com/", kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::NORMAL, strip_trivial_subdomains_offsets_2);
 
   const size_t strip_trivial_subdomains_from_idn_offsets[] = {
@@ -1551,10 +1547,9 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
       kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos,
       kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 12,
       13,    14,    15,    16,    17,    18,    19};
-  CheckAdjustedOffsets("http://www.xn--l8jvb1ey91xtjb.jp/foo/",
-                       kFormatUrlExperimentalOmitTrivialSubdomains,
-                       net::UnescapeRule::NORMAL,
-                       strip_trivial_subdomains_from_idn_offsets);
+  CheckAdjustedOffsets(
+      "http://www.xn--l8jvb1ey91xtjb.jp/foo/", kFormatUrlOmitTrivialSubdomains,
+      net::UnescapeRule::NORMAL, strip_trivial_subdomains_from_idn_offsets);
 }
 
 }  // namespace url_formatter
