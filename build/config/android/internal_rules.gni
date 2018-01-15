@@ -794,10 +794,7 @@ if (enable_java_templates) {
         rebase_path(_config_path, root_build_dir),
         "--result-path",
         rebase_path(_result_path, root_build_dir),
-
-        # The following option should be turned on after all unexpected failures
-        # are resolved.
-        #"--include-unexpected-failures",
+        "--include-unexpected-failures",
       ]
       if (defined(invoker.android_manifest)) {
         inputs += [ invoker.android_manifest ]
