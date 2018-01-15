@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -76,7 +75,7 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
   }
 
   void SetupStoreStates() {
-    store_state_map_ = base::MakeUnique<StoreStateMap>();
+    store_state_map_ = std::make_unique<StoreStateMap>();
 
     ListIdentifier win_url_malware(WINDOWS_PLATFORM, URL, MALWARE_THREAT);
     store_state_map_->insert({win_url_malware, "initial_state_1"});

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/safe_browsing/db/v4_database.h"
@@ -52,7 +51,7 @@ class FakeV4StoreFactory : public V4StoreFactory {
   std::unique_ptr<V4Store> CreateV4Store(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const base::FilePath& store_path) override {
-    return base::MakeUnique<FakeV4Store>(task_runner, store_path,
+    return std::make_unique<FakeV4Store>(task_runner, store_path,
                                          hash_prefix_should_match_);
   }
 
@@ -95,7 +94,7 @@ class V4DatabaseTest : public PlatformTest {
 
   void RegisterFactory(bool hash_prefix_matches = true) {
     V4Database::RegisterStoreFactoryForTest(
-        base::MakeUnique<FakeV4StoreFactory>(hash_prefix_matches));
+        std::make_unique<FakeV4StoreFactory>(hash_prefix_matches));
   }
 
   void SetupInfoMapAndExpectedState() {
@@ -141,10 +140,10 @@ class V4DatabaseTest : public PlatformTest {
   std::unique_ptr<ParsedServerResponse> CreateFakeServerResponse(
       StoreStateMap store_state_map,
       bool use_valid_response_type) {
-    auto parsed_server_response = base::MakeUnique<ParsedServerResponse>();
+    auto parsed_server_response = std::make_unique<ParsedServerResponse>();
     for (const auto& store_state_iter : store_state_map) {
       ListIdentifier identifier = store_state_iter.first;
-      auto lur = base::MakeUnique<ListUpdateResponse>();
+      auto lur = std::make_unique<ListUpdateResponse>();
       lur->set_platform_type(identifier.platform_type());
       lur->set_threat_entry_type(identifier.threat_entry_type());
       lur->set_threat_type(identifier.threat_type());
@@ -305,7 +304,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
     old_stores_map_[store_iter.first] = store;
   }
 
-  auto parsed_server_response = base::MakeUnique<ParsedServerResponse>();
+  auto parsed_server_response = std::make_unique<ParsedServerResponse>();
   v4_database_->ApplyUpdate(std::move(parsed_server_response),
                             callback_db_updated_);
 
@@ -499,8 +498,8 @@ TEST_F(V4DatabaseTest, UsingWeakPtrDropsCallback) {
 
   // Step 2: Try to update the database. This posts V4Store::ApplyUpdate on the
   // task runner.
-  auto parsed_server_response = base::MakeUnique<ParsedServerResponse>();
-  auto lur = base::MakeUnique<ListUpdateResponse>();
+  auto parsed_server_response = std::make_unique<ParsedServerResponse>();
+  auto lur = std::make_unique<ListUpdateResponse>();
   lur->set_platform_type(linux_malware_id_.platform_type());
   lur->set_threat_entry_type(linux_malware_id_.threat_entry_type());
   lur->set_threat_type(linux_malware_id_.threat_type());

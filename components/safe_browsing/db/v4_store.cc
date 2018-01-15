@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -178,7 +177,7 @@ std::ostream& operator<<(std::ostream& os, const V4Store& store) {
 std::unique_ptr<V4Store> V4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  auto new_store = base::MakeUnique<V4Store>(task_runner, store_path);
+  auto new_store = std::make_unique<V4Store>(task_runner, store_path);
   new_store->Initialize();
   return new_store;
 }

@@ -5,7 +5,6 @@
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -70,7 +69,7 @@ class FakeGetHashProtocolManagerFactory
       net::URLRequestContextGetter* request_context_getter,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) override {
-    return base::MakeUnique<FakeGetHashProtocolManager>(
+    return std::make_unique<FakeGetHashProtocolManager>(
         request_context_getter, stores_to_check, config, full_hash_infos_);
   }
 
@@ -85,7 +84,7 @@ class ScopedFakeGetHashProtocolManagerFactory {
   ScopedFakeGetHashProtocolManagerFactory(
       const FullHashInfos& full_hash_infos) {
     V4GetHashProtocolManager::RegisterFactory(
-        base::MakeUnique<FakeGetHashProtocolManagerFactory>(full_hash_infos));
+        std::make_unique<FakeGetHashProtocolManagerFactory>(full_hash_infos));
   }
   ~ScopedFakeGetHashProtocolManagerFactory() {
     V4GetHashProtocolManager::RegisterFactory(nullptr);
@@ -336,7 +335,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     NewDatabaseReadyCallback db_ready_callback =
         base::Bind(&V4LocalDatabaseManager::DatabaseReadyForChecks,
                    base::Unretained(v4_local_database_manager_.get()));
-    FakeV4Database::Create(task_runner_, base::MakeUnique<StoreMap>(),
+    FakeV4Database::Create(task_runner_, std::make_unique<StoreMap>(),
                            store_and_hash_prefixes, db_ready_callback,
                            stores_available);
     WaitForTasksOnTaskRunner();
