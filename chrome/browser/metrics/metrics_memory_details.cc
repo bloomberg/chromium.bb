@@ -103,8 +103,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         }
         continue;
       case content::PROCESS_TYPE_RENDERER: {
-        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll.Committed",
-                                      committed / 1024);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.RendererAll.OpenFDs",
                                      num_open_fds);
