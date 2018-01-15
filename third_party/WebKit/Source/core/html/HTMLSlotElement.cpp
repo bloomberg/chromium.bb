@@ -247,6 +247,8 @@ AtomicString HTMLSlotElement::GetName() const {
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
+  HTMLElement::AttachLayoutTree(context);
+
   if (SupportsAssignment()) {
     AttachContext children_context(context);
 
@@ -257,7 +259,6 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
     if (children_context.previous_in_flow)
       context.previous_in_flow = children_context.previous_in_flow;
   }
-  HTMLElement::AttachLayoutTree(context);
 }
 
 const HeapVector<Member<Node>>&
