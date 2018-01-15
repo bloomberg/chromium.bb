@@ -9,7 +9,6 @@
 
 @protocol ApplicationCommands;
 @class BookmarkHomeViewController;
-@class BookmarkHomeTabletNTPController;
 @protocol NewTabPagePanelProtocol;
 @protocol UrlLoader;
 
@@ -17,6 +16,8 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
+// TODO(crbug.com/753599) : Remove this class after
+// BookmarkHomeHandsetViewController merged into BookmarkHomeViewController.
 // This factory is responsible for providing an instance of a bookmark
 // controller that can browse and edit the bookmark hierarchy.
 @interface BookmarkControllerFactory : NSObject
@@ -26,13 +27,6 @@ class ChromeBrowserState;
 bookmarkControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                             loader:(id<UrlLoader>)loader
                         dispatcher:(id<ApplicationCommands>)dispatcher;
-
-// Returns an instance of a NewTabPagePanelProtocol that can navigate and edit
-// the bookmark hierarchy.
-- (BookmarkHomeTabletNTPController*)
-bookmarkPanelControllerForBrowserState:(ios::ChromeBrowserState*)browserState
-                                loader:(id<UrlLoader>)loader
-                            dispatcher:(id<ApplicationCommands>)dispatcher;
 
 @end
 

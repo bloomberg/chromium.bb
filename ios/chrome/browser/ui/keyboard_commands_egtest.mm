@@ -7,7 +7,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -146,11 +145,6 @@ using chrome_test_util::RecentTabsMenuButton;
 // Tests that keyboard commands are not registered when the Bookmarks UI is
 // shown.
 - (void)testKeyboardCommandsNotRegistered_BookmarksPresented {
-  // TODO(crbug.com/753599): Remove scoped feature list when clean up old
-  // bookmarks.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   // Open Bookmarks
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];

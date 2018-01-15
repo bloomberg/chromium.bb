@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -57,12 +56,6 @@
 }
 
 - (void)setFrame:(CGRect)frame {
-  // When transitioning the iPhone xib to an iPad idiom, the setFrame call below
-  // can sometimes fire a scrollViewDidScroll event which changes the
-  // selectedIndex underneath us.  Save the selected index and remove the
-  // delegate so scrollViewDidScroll isn't called. Then fix the scrollView
-  // offset after updating the frame.
-  NSUInteger selectedIndex = self.tabBar.selectedIndex;
   id<UIScrollViewDelegate> delegate = self.scrollView.delegate;
   self.scrollView.delegate = nil;
   [super setFrame:frame];
@@ -70,23 +63,6 @@
 
   // Set the scrollView content size.
   [self updateScrollViewContentSize];
-
-  // Set the frame of the laid out NTP panels on iPad.
-  if (!PresentNTPPanelModally()) {
-    NSUInteger index = 0;
-    CGFloat selectedItemXOffset = 0;
-    for (NewTabPageBarItem* item in self.tabBar.items) {
-      item.view.frame = [self panelFrameForItemAtIndex:index];
-      if (index == selectedIndex)
-        selectedItemXOffset = CGRectGetMinX(item.view.frame);
-      index++;
-    }
-
-    // Ensure the selected NTP panel is lined up correctly when the frame
-    // changes.
-    CGPoint point = CGPointMake(selectedItemXOffset, 0);
-    [self.scrollView setContentOffset:point animated:NO];
-  }
 
   // This should never be needed in autolayout.
   if (self.translatesAutoresizingMaskIntoConstraints) {
@@ -127,11 +103,6 @@
 
 - (void)updateScrollViewContentSize {
   CGSize contentSize = self.scrollView.bounds.size;
-  // On iPhone, NTP doesn't scroll horizontally, as alternate panels are shown
-  // modally. On iPad, panels are laid out side by side in the scroll view.
-  if (!PresentNTPPanelModally()) {
-    contentSize.width *= self.tabBar.items.count;
-  }
   self.scrollView.contentSize = contentSize;
 }
 

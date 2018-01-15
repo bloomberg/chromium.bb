@@ -16,10 +16,6 @@ extern const char kAdaptiveToolbarDescription[];
 extern const char kBookmarkNewEditPageName[];
 extern const char kBookmarkNewEditPageDescription[];
 
-// Title and description for the flag to enable the new bookmark UI.
-extern const char kBookmarkNewGenerationName[];
-extern const char kBookmarkNewGenerationDescription[];
-
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];

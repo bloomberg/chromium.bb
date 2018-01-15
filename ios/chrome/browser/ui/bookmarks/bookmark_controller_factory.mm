@@ -6,7 +6,6 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 
@@ -14,6 +13,8 @@
 #error "This file requires ARC support."
 #endif
 
+// TODO(crbug.com/753599) : Remove this class after
+// BookmarkHomeHandsetViewController merged into BookmarkHomeViewController.
 @implementation BookmarkControllerFactory
 
 - (BookmarkHomeViewController*)
@@ -24,15 +25,6 @@ bookmarkControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
       initWithLoader:loader
         browserState:browserState
           dispatcher:dispatcher];
-}
-
-- (BookmarkHomeTabletNTPController*)
-bookmarkPanelControllerForBrowserState:(ios::ChromeBrowserState*)browserState
-                                loader:(id<UrlLoader>)loader
-                            dispatcher:(id<ApplicationCommands>)dispatcher {
-  return [[BookmarkHomeTabletNTPController alloc] initWithLoader:loader
-                                                    browserState:browserState
-                                                      dispatcher:dispatcher];
 }
 
 @end

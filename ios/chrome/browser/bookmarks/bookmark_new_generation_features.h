@@ -8,9 +8,6 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
-// Feature flag for the new bookmark UI.
-extern const base::Feature kBookmarkNewGeneration;
-
 // Feature flag for the new edit page and folder picker of the new bookmark UI.
 extern const base::Feature kBookmarkNewEditPage;
 

@@ -20,11 +20,6 @@ const char kBookmarkNewEditPageDescription[] =
     "When enabled, the new bookmark edit page and folder picker will be used "
     "in the new bookmark UI.";
 
-const char kBookmarkNewGenerationName[] = "Bookmark New Generation";
-const char kBookmarkNewGenerationDescription[] =
-    "When enabled, change to the new bookmark UI which will support bookmark "
-    "reordering, have reduced favicon size and improved navigation experience.";
-
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

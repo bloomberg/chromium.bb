@@ -162,7 +162,6 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -784,10 +783,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Showing and Dismissing child UI
 // -------------------------------
-// Show the bookmarks page.
-- (void)showAllBookmarks;
-// Shows a panel within the New Tab Page.
-- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel;
 // Dismisses the "rate this app" dialog.
 - (void)dismissRateThisAppDialog;
 
@@ -2397,30 +2392,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - Private Methods: Showing and Dismissing Child UI
 
-- (void)showAllBookmarks {
-  DCHECK(self.visible || self.dismissingModal);
-  GURL URL(kChromeUIBookmarksURL);
-  Tab* tab = [_model currentTab];
-  web::NavigationManager::WebLoadParams params(URL);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [tab navigationManager]->LoadURLWithParams(params);
-}
-
-- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel {
-  DCHECK(self.visible || self.dismissingModal);
-  GURL url(kChromeUINewTabURL);
-  std::string fragment(NewTabPage::FragmentFromIdentifier(panel));
-  if (fragment != "") {
-    GURL::Replacements replacement;
-    replacement.SetRefStr(fragment);
-    url = url.ReplaceComponents(replacement);
-  }
-  Tab* tab = [_model currentTab];
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [tab navigationManager]->LoadURLWithParams(params);
-}
-
 - (void)dismissRateThisAppDialog {
   if (_rateThisAppDialog) {
     base::RecordAction(base::UserMetricsAction(
@@ -3790,11 +3761,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return reading_list::IsOfflineURLValid(
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
-
-  if (host == kChromeUIBookmarksHost) {
-    return IsBookmarksHostEnabled();
-  }
-
   return host == kChromeUINewTabHost;
 }
 
@@ -3804,8 +3770,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   id<CRWNativeContent> nativeController = nil;
   base::StringPiece url_host = url.host_piece();
-  if (url_host == kChromeUINewTabHost ||
-      (url_host == kChromeUIBookmarksHost && IsBookmarksHostEnabled())) {
+  if (url_host == kChromeUINewTabHost) {
     CGFloat fakeStatusBarHeight = _fakeStatusBarView.frame.size.height;
     UIEdgeInsets safeAreaInset = UIEdgeInsetsZero;
     if (@available(iOS 11.0, *)) {
@@ -3830,21 +3795,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // Panel is always NTP for iPhone.
     ntp_home::PanelIdentifier panelType = ntp_home::HOME_PANEL;
 
-    if (IsBookmarksHostEnabled()) {
-      // New Tab Page can have multiple panels. Each panel is addressable
-      // by a #fragment, e.g. chrome://newtab/#most_visited takes user to
-      // the Most Visited page, chrome://newtab/#bookmarks takes user to
-      // the Bookmark Manager, etc.
-      // The utility functions NewTabPage::IdentifierFromFragment() and
-      // FragmentFromIdentifier() map an identifier to/from a #fragment.
-      // If the URL is chrome://bookmarks, pre-select the #bookmarks panel
-      // without changing the URL since the URL may be chrome://bookmarks/#123.
-      // If the URL is chrome://newtab/, pre-select the panel based on the
-      // #fragment.
-      panelType = url_host == kChromeUIBookmarksHost
-                      ? ntp_home::BOOKMARKS_PANEL
-                      : NewTabPage::IdentifierFromFragment(url.ref());
-    }
     [pageController selectPanel:panelType];
     nativeController = pageController;
   } else if (url_host == kChromeUIOfflineHost &&
@@ -4698,27 +4648,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showBookmarksManager {
-  if (!PresentNTPPanelModally()) {
-    [self showAllBookmarks];
-  } else {
-    [self initializeBookmarkInteractionController];
-    [_bookmarkInteractionController presentBookmarks];
-  }
+  [self initializeBookmarkInteractionController];
+  [_bookmarkInteractionController presentBookmarks];
 }
 
 - (void)showRecentTabs {
-  if (!PresentNTPPanelModally()) {
-    [self showNTPPanel:ntp_home::RECENT_TABS_PANEL];
-  } else {
-    if (!self.recentTabsCoordinator) {
-      self.recentTabsCoordinator = [[RecentTabsHandsetCoordinator alloc]
-          initWithBaseViewController:self];
-      self.recentTabsCoordinator.loader = self;
-      self.recentTabsCoordinator.dispatcher = self.dispatcher;
-      self.recentTabsCoordinator.browserState = _browserState;
-    }
-    [self.recentTabsCoordinator start];
+  if (!self.recentTabsCoordinator) {
+    self.recentTabsCoordinator =
+        [[RecentTabsHandsetCoordinator alloc] initWithBaseViewController:self];
+    self.recentTabsCoordinator.loader = self;
+    self.recentTabsCoordinator.dispatcher = self.dispatcher;
+    self.recentTabsCoordinator.browserState = _browserState;
   }
+  [self.recentTabsCoordinator start];
 }
 
 - (void)requestDesktopSite {

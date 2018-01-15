@@ -14,6 +14,7 @@
 
 @protocol UrlLoader;
 
+// TODO(crbug.com/753599) : Merge this file into BookmarkHomeViewController.
 // Navigate/edit the bookmark hierarchy on a handset.
 @interface BookmarkHomeHandsetViewController : BookmarkHomeViewController
 

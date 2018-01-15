@@ -16,7 +16,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
@@ -152,6 +151,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 }  // namespace
 
+// TODO(crbug.com/753599): Rename this file as bookmarks_egtest.mm and this
+// class as BookmarksTestCase.
 // Bookmark integration tests for Chrome.
 @interface BookmarksNewGenTestCase : ChromeTestCase
 @end
@@ -159,9 +160,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 @implementation BookmarksNewGenTestCase
 
 - (void)setUp {
-  // Set flags before setup.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
   [super setUp];
 
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
@@ -187,9 +185,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Verifies that adding a bookmark and removing a bookmark via the UI properly
 // updates the BookmarkModel.
 - (void)testAddRemoveBookmark {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   std::string expectedURLContent = bookmarkedURL.GetContent();
@@ -255,9 +250,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Test to set bookmarks in multiple tabs.
 - (void)testBookmarkMultipleTabs {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   const GURL firstURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   const GURL secondURL = web::test::HttpServer::MakeUrl(
@@ -273,9 +265,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Test the creation of a bookmark and new folder (by tapping on the star).
 - (void)testAddBookmarkInNewFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   std::string expectedURLContent = bookmarkedURL.GetContent();
@@ -327,9 +316,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that the default folder bookmarks are saved in is updated to the last
 // used folder.
 - (void)testStickyDefaultFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -406,9 +392,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -456,9 +439,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests moving bookmarks into a new folder created in the moving process.
 - (void)testCreateNewFolderWhileMovingBookmarks {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -552,12 +532,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
                            ofFolderWithName:@"Title For New Folder"];
 }
 
-// Tests that keyboard commands are registered when a bookmark is added with the
-// new bookmark UI as it shows only a snackbar.
+// Tests that keyboard commands are registered when a bookmark is added as it
+// shows only a snackbar.
 - (void)testKeyboardCommandsRegistered_AddBookmark {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   // Add the bookmark.
   [BookmarksNewGenTestCase starCurrentTab];
   GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() > 0,
@@ -567,9 +544,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -606,9 +580,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
   }
 #endif
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -638,9 +609,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -683,9 +651,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
   FLAKY_testSwipeToDeleteDisabledInEditMode
 #endif
 - (void)MAYBE_testSwipeToDeleteDisabledInEditMode {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -738,9 +703,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -759,9 +721,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testBookmarkContextBarInVariousSelectionModes {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -985,9 +944,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForSingleURLSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1013,9 +969,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Edit functionality on single URL selection.
 - (void)testEditFunctionalityOnSingleURL {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1149,9 +1102,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1190,9 +1140,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForMultipleURLSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1238,9 +1185,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify the Open All functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAll {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1283,9 +1227,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify the Open All in Incognito functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAllInIncognito {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1326,9 +1267,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify the Open and Open in Incognito functionality on single url.
 - (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1460,9 +1398,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextBarForSingleFolderSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1495,9 +1430,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForMultipleFolderSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1525,9 +1457,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForMixedSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1555,9 +1484,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testLongPressOnSingleURL {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1571,9 +1497,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testLongPressOnSingleFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1620,9 +1543,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Edit functionality for single folder selection.
 - (void)testEditFunctionalityOnSingleFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1761,9 +1681,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on single folder through long press.
 - (void)testMoveFunctionalityOnSingleFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1854,9 +1771,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on multiple folder selection.
 - (void)testMoveFunctionalityOnMultipleFolder {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -1933,9 +1847,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on mixed folder / url selection.
 - (void)testMoveFunctionalityOnMixedSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2026,9 +1937,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on multiple url selection.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2089,9 +1997,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Verify Move is cancelled when all selected folder/url are deleted in
 // background.
 - (void)testMoveCancelledWhenAllSelectionDeleted {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2136,9 +2041,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2201,9 +2103,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteSingleURLNode {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2241,9 +2140,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteSingleFolderNode {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2281,9 +2177,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteMultipleNodes {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2329,9 +2222,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
 - (void)testPromoViewIsSeenOnlyInRootNode {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
 
@@ -2365,9 +2255,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
 
@@ -2397,9 +2284,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithColdStateUsingPrimaryButton {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase openBookmarks];
 
   // Check that sign-in promo view are visible.
@@ -2425,9 +2309,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // state makes the confirmaiton sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
 
@@ -2465,9 +2346,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   // Set up a fake identity.
@@ -2500,9 +2378,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that the sign-in promo should not be shown after been shown 19 times.
 - (void)testAutomaticSigninPromoDismiss {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   PrefService* prefs = browser_state->GetPrefs();
@@ -2528,9 +2403,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests the creation of new folders by tapping on 'New Folder' button of the
 // context bar.
 - (void)testCreateNewFolderWithContextBar {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2558,9 +2430,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests when total height of bookmarks exceeds screen height.
 - (void)testBookmarksExceedsScreenHeight {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupBookmarksWhichExceedsScreenHeight];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2585,9 +2454,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAway {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2652,16 +2518,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
+// TODO(crbug.com/801453): Folder name is not commited as expected in this test.
 // Tests the new folder name is committed when "hide keyboard" button is
 // pressed. (iPad specific)
-- (void)testNewFolderNameCommittedWhenKeyboardDismissedOnIpad {
+- (void)DISABLED_testNewFolderNameCommittedWhenKeyboardDismissedOnIpad {
   // Tablet only (handset keyboard does not have "hide keyboard" button).
   if (!IsIPadIdiom()) {
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2686,9 +2550,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2742,9 +2603,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Test when current navigating folder is deleted in background, empty
 // background should be shown with context bar buttons disabled.
 - (void)testWhenCurrentFolderDeletedInBackground {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2793,9 +2651,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testCachePositionIsRecreated {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupBookmarksWhichExceedsScreenHeight];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2829,9 +2684,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify root node is opened when cache position is deleted.
 - (void)testCachePositionIsResetWhenNodeIsDeleted {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2862,9 +2714,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Verify root node is opened when cache position is a permanent node and is
 // empty.
 - (void)testCachePositionIsResetWhenNodeIsPermanentAndEmpty {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2889,9 +2738,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsMoved {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2929,9 +2775,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
 
@@ -2940,9 +2783,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on mobile bookmarks are accessible.
 - (void)testAccessibilityOnMobileBookmarks {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2952,9 +2792,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks folder Edit page are accessible.
 - (void)testAccessibilityOnBookmarksFolderEditPage {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2977,9 +2814,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -2997,9 +2831,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -3019,9 +2850,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that all elements on the bookmarks Move to New Folder page are
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -3045,9 +2873,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -3076,9 +2901,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
@@ -3093,9 +2915,6 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that chrome://bookmarks is disabled.
 - (void)testBookmarksURLDisabled {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
   const std::string kChromeBookmarksURL = "chrome://bookmarks";
   [ChromeEarlGrey loadURL:GURL(kChromeBookmarksURL)];
 

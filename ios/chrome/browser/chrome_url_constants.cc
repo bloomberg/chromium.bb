@@ -10,7 +10,6 @@
 
 const char kChromeUIScheme[] = "chrome";
 
-const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
@@ -23,7 +22,6 @@ const char kChromeUISuggestionsURL[] = "chrome://suggestions/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
-const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUICrashHost[] = "crash";
 const char kChromeUIChromeURLsHost[] = "chrome-urls";
@@ -52,7 +50,6 @@ const char kChromeUIVersionHost[] = "version";
 // These hosts will also be suggested by BuiltinProvider.
 // 'histograms' is chrome WebUI on iOS, content WebUI on other platforms.
 const char* const kChromeHostURLs[] = {
-    kChromeUIBookmarksHost,
     kChromeUIChromeURLsHost,
     kChromeUICreditsHost,
     kChromeUIFlagsHost,

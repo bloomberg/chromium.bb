@@ -230,7 +230,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
-    "//ios/chrome/browser/ui/ntp:modal_ntp",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

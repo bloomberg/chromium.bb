@@ -38,7 +38,6 @@ source_set("eg_tests") {
     "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
