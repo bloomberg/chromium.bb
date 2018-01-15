@@ -246,7 +246,7 @@ enum class CSSBoxType : unsigned {
   kContent
 };
 
-enum TextEmphasisPosition {
+enum class TextEmphasisPosition : unsigned {
   kOverRight,
   kOverLeft,
   kUnderRight,
