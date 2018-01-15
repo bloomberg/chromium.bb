@@ -27,6 +27,7 @@ namespace {
 
 using testing::ElementsAre;
 using testing::Return;
+using testing::SizeIs;
 using testing::_;
 
 class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
@@ -98,6 +99,9 @@ TEST_F(ContentFaviconDriverTest, ShouldNotCauseImageDownload) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(web_contents_tester()->HasPendingDownloadImage(kIconURL));
+
+  // Nevertheless, we expect the list exposed via favicon_urls().
+  EXPECT_THAT(favicon_driver->favicon_urls(), SizeIs(1));
 }
 
 // Test that Favicon is not requested repeatedly during the same session if
