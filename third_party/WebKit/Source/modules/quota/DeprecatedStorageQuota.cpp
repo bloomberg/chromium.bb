@@ -129,8 +129,8 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
   Platform::Current()->QueryStorageUsageAndQuota(
       WrapRefCounted(security_origin), storage_type,
       WTF::Bind(&DeprecatedQueryStorageUsageAndQuotaCallback,
-                WrapPersistent(success_callback),
-                WrapPersistent(error_callback)));
+                WrapPersistentCallbackFunction(success_callback),
+                WrapPersistentCallbackFunction(error_callback)));
 }
 
 void DeprecatedStorageQuota::requestQuota(
