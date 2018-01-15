@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -196,7 +195,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   base::OnceClosure first_disallowed_load_callback(base::BindOnce(
       &SubresourceFilterAgent::SignalFirstSubresourceDisallowedForCommittedLoad,
       AsWeakPtr()));
-  auto filter = base::MakeUnique<WebDocumentSubresourceFilterImpl>(
+  auto filter = std::make_unique<WebDocumentSubresourceFilterImpl>(
       url::Origin::Create(url), activation_state, std::move(ruleset),
       std::move(first_disallowed_load_callback));
 
@@ -236,7 +235,7 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
   if (!ruleset_file.IsValid())
     return;
   worker_fetch_context->SetSubresourceFilterBuilder(
-      base::MakeUnique<WebDocumentSubresourceFilterImpl::BuilderImpl>(
+      std::make_unique<WebDocumentSubresourceFilterImpl::BuilderImpl>(
           url::Origin::Create(GetDocumentURL()),
           filter_for_last_committed_load_->filter().activation_state(),
           std::move(ruleset_file),

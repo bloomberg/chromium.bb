@@ -8,14 +8,13 @@
 #include <sstream>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace subresource_filter {
 
 std::unique_ptr<base::trace_event::TracedValue> ActivationState::ToTracedValue()
     const {
-  auto value = base::MakeUnique<base::trace_event::TracedValue>();
+  auto value = std::make_unique<base::trace_event::TracedValue>();
   std::ostringstream level;
   level << activation_level;
   value->SetString("activation_level", level.str());

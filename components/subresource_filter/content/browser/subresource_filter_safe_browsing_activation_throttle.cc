@@ -265,7 +265,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
       "highest_priority_activated_config",
       has_activated_config
           ? highest_priority_activated_config->ToTracedValue()
-          : base::MakeUnique<base::trace_event::TracedValue>());
+          : std::make_unique<base::trace_event::TracedValue>());
 
   if (!has_activated_config)
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;

@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -138,13 +137,13 @@ class ContentSubresourceFilterThrottleManagerTest
     // Make the blocking task runner run on the current task runner for the
     // tests, to ensure that the NavigationSimulator properly runs all necessary
     // tasks while waiting for throttle checks to finish.
-    dealer_handle_ = base::MakeUnique<VerifiedRulesetDealer::Handle>(
+    dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoop::current()->task_runner());
     dealer_handle_->SetRulesetFile(
         testing::TestRuleset::Open(test_ruleset_pair_.indexed));
 
     throttle_manager_ =
-        base::MakeUnique<ContentSubresourceFilterThrottleManager>(
+        std::make_unique<ContentSubresourceFilterThrottleManager>(
             this, dealer_handle_.get(),
             RenderViewHostTestHarness::web_contents());
     Observe(RenderViewHostTestHarness::web_contents());
@@ -266,7 +265,7 @@ class ContentSubresourceFilterThrottleManagerTest
         ::testing::UnitTest::GetInstance()->current_test_info()->value_param()
             ? GetParam()
             : WILL_PROCESS_RESPONSE;
-    throttles.push_back(base::MakeUnique<MockPageStateActivationThrottle>(
+    throttles.push_back(std::make_unique<MockPageStateActivationThrottle>(
         navigation_handle, state));
     throttle_manager_->MaybeAppendNavigationThrottles(navigation_handle,
                                                       &throttles);

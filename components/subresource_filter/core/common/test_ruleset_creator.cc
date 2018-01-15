@@ -4,11 +4,11 @@
 
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
@@ -112,7 +112,7 @@ TestRulesetPair::~TestRulesetPair() = default;
 // TestRulesetCreator ----------------------------------------------------------
 
 TestRulesetCreator::TestRulesetCreator()
-    : scoped_temp_dir_(base::MakeUnique<base::ScopedTempDir>()) {}
+    : scoped_temp_dir_(std::make_unique<base::ScopedTempDir>()) {}
 
 TestRulesetCreator::~TestRulesetCreator() {
   base::ScopedAllowBlockingForTesting allow_blocking;

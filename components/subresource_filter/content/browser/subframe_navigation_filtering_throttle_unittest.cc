@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -59,7 +58,7 @@ class SubframeNavigationFilteringThrottleTest
     // throttle if the parent is not activated with a valid filter.
     if (parent_filter_) {
       navigation_handle->RegisterThrottleForTesting(
-          base::MakeUnique<SubframeNavigationFilteringThrottle>(
+          std::make_unique<SubframeNavigationFilteringThrottle>(
               navigation_handle, parent_filter_.get()));
     }
   }
@@ -72,15 +71,15 @@ class SubframeNavigationFilteringThrottleTest
     // Make the blocking task runner run on the current task runner for the
     // tests, to ensure that the NavigationSimulator properly runs all necessary
     // tasks while waiting for throttle checks to finish.
-    dealer_handle_ = base::MakeUnique<VerifiedRulesetDealer::Handle>(
+    dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoop::current()->task_runner());
     dealer_handle_->SetRulesetFile(
         testing::TestRuleset::Open(test_ruleset_pair_.indexed));
     ruleset_handle_ =
-        base::MakeUnique<VerifiedRuleset::Handle>(dealer_handle_.get());
+        std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
 
     testing::TestActivationStateCallbackReceiver activation_state;
-    parent_filter_ = base::MakeUnique<AsyncDocumentSubresourceFilter>(
+    parent_filter_ = std::make_unique<AsyncDocumentSubresourceFilter>(
         ruleset_handle_.get(),
         AsyncDocumentSubresourceFilter::InitializationParams(
             document_url, ActivationLevel::ENABLED,
