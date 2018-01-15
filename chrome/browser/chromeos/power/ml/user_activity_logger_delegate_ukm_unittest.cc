@@ -37,8 +37,8 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
     event->set_reason(UserActivityEvent::Event::USER_ACTIVITY);
     UserActivityEvent::Features* features =
         user_activity_event_.mutable_features();
-    features->set_last_activity_time_sec(730);
-    features->set_last_user_activity_time_sec(380);
+    features->set_last_activity_time_sec(7300);
+    features->set_last_user_activity_time_sec(3800);
     features->set_last_activity_day(UserActivityEvent::Features::MON);
     features->set_time_since_last_mouse_sec(100);
     features->set_recent_time_active_sec(10);
