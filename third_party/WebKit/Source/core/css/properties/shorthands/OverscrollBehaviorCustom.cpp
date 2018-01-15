@@ -6,6 +6,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -18,6 +19,18 @@ bool OverscrollBehavior::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
       overscrollBehaviorShorthand(), important, context, range, properties);
+}
+
+const CSSValue* OverscrollBehavior::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorX()));
+  list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorY()));
+  return list;
 }
 
 }  // namespace CSSShorthand

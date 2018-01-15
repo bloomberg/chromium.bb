@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/TextDecorationLine.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +16,16 @@ const CSSValue* TextDecorationLine::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ConsumeTextDecorationLine(range);
+}
+
+const CSSValue* TextDecorationLine::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
+      style.GetTextDecoration());
 }
 
 }  // namespace CSSLonghand

@@ -10,6 +10,8 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
@@ -68,6 +70,47 @@ bool Transition::ParseShorthand(
   }
 
   return range.AtEnd();
+}
+
+const CSSValue* Transition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  const CSSTransitionData* transition_data = style.Transitions();
+  if (transition_data) {
+    CSSValueList* transitions_list = CSSValueList::CreateCommaSeparated();
+    for (size_t i = 0; i < transition_data->PropertyList().size(); ++i) {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(*ComputedStyleUtils::CreateTransitionPropertyValue(
+          transition_data->PropertyList()[i]));
+      list->Append(*CSSPrimitiveValue::Create(
+          CSSTimingData::GetRepeated(transition_data->DurationList(), i),
+          CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
+          CSSTimingData::GetRepeated(transition_data->TimingFunctionList(), i)
+              .get()));
+      list->Append(*CSSPrimitiveValue::Create(
+          CSSTimingData::GetRepeated(transition_data->DelayList(), i),
+          CSSPrimitiveValue::UnitType::kSeconds));
+      transitions_list->Append(*list);
+    }
+    return transitions_list;
+  }
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  // transition-property default value.
+  list->Append(*CSSIdentifierValue::Create(CSSValueAll));
+  list->Append(
+      *CSSPrimitiveValue::Create(CSSTransitionData::InitialDuration(),
+                                 CSSPrimitiveValue::UnitType::kSeconds));
+  list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
+      CSSTransitionData::InitialTimingFunction().get()));
+  list->Append(
+      *CSSPrimitiveValue::Create(CSSTransitionData::InitialDelay(),
+                                 CSSPrimitiveValue::UnitType::kSeconds));
+  return list;
 }
 
 }  // namespace CSSShorthand

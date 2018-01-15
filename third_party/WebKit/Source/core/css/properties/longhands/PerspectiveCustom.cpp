@@ -4,10 +4,12 @@
 
 #include "core/css/properties/longhands/Perspective.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -33,6 +35,17 @@ const CSSValue* Perspective::ParseSingleValue(
       (parsed_value->IsCalculated() || parsed_value->GetDoubleValue() > 0))
     return parsed_value;
   return nullptr;
+}
+
+const CSSValue* Perspective::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (!style.HasPerspective())
+    return CSSIdentifierValue::Create(CSSValueNone);
+  return ZoomAdjustedPixelValue(style.Perspective(), style);
 }
 
 }  // namespace CSSLonghand

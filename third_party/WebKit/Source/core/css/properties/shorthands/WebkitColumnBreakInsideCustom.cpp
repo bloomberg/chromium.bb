@@ -6,6 +6,8 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -26,6 +28,16 @@ bool WebkitColumnBreakInside::ParseShorthand(
       *CSSIdentifierValue::Create(value), important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   return true;
+}
+
+const CSSValue* WebkitColumnBreakInside::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForWebkitColumnBreakInside(
+      style.BreakInside());
 }
 
 }  // namespace CSSShorthand

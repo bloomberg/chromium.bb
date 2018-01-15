@@ -10,6 +10,7 @@
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -66,6 +67,32 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
     return cursor_type;
   list->Append(*cursor_type);
   return list;
+}
+
+const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  CSSValueList* list = nullptr;
+  CursorList* cursors = style.Cursors();
+  if (cursors && cursors->size() > 0) {
+    list = CSSValueList::CreateCommaSeparated();
+    for (const CursorData& cursor : *cursors) {
+      if (StyleImage* image = cursor.GetImage()) {
+        list->Append(*cssvalue::CSSCursorImageValue::Create(
+            *image->ComputedCSSValue(), cursor.HotSpotSpecified(),
+            cursor.HotSpot()));
+      }
+    }
+  }
+  CSSValue* value = CSSIdentifierValue::Create(style.Cursor());
+  if (list) {
+    list->Append(*value);
+    return list;
+  }
+  return value;
 }
 
 }  // namespace CSSLonghand

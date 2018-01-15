@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/WebkitLineClamp.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -22,6 +23,20 @@ const CSSValue* WebkitLineClamp::ParseSingleValue(
     return clamp_value;
   // When specifying number of lines, don't allow 0 as a valid value.
   return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+}
+
+const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.LineClamp().IsNone())
+    return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSPrimitiveValue::Create(
+      style.LineClamp().Value(), style.LineClamp().IsPercentage()
+                                     ? CSSPrimitiveValue::UnitType::kPercentage
+                                     : CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

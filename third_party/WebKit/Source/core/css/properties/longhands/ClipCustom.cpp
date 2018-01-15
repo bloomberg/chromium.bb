@@ -7,6 +7,8 @@
 #include "core/css/CSSQuadValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
@@ -52,6 +54,26 @@ const CSSValue* Clip::ParseSingleValue(CSSParserTokenRange& range,
   CSSValue* left = ConsumeClipComponent(args, context.Mode());
   if (!left || !args.AtEnd())
     return nullptr;
+  return CSSQuadValue::Create(top, right, bottom, left,
+                              CSSQuadValue::kSerializeAsRect);
+}
+
+const CSSValue* Clip::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.HasAutoClip())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  CSSValue* top = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
+      style.Clip().Top(), style);
+  CSSValue* right = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
+      style.Clip().Right(), style);
+  CSSValue* bottom = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
+      style.Clip().Bottom(), style);
+  CSSValue* left = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
+      style.Clip().Left(), style);
   return CSSQuadValue::Create(top, right, bottom, left,
                               CSSQuadValue::kSerializeAsRect);
 }

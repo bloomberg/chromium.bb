@@ -8,6 +8,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -57,6 +58,27 @@ const CSSValue* FontVariationSettings::ParseSingleValue(
     variation_settings->Append(*font_variation_value);
   } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
   return variation_settings;
+}
+
+const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
+  const blink::FontVariationSettings* variation_settings =
+      style.GetFontDescription().VariationSettings();
+  if (!variation_settings || !variation_settings->size())
+    return CSSIdentifierValue::Create(CSSValueNormal);
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (unsigned i = 0; i < variation_settings->size(); ++i) {
+    const FontVariationAxis& variation_axis = variation_settings->at(i);
+    CSSFontVariationValue* variation_value = CSSFontVariationValue::Create(
+        variation_axis.Tag(), variation_axis.Value());
+    list->Append(*variation_value);
+  }
+  return list;
 }
 
 }  // namespace CSSLonghand

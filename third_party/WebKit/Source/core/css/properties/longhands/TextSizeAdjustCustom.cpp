@@ -6,6 +6,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -20,6 +21,18 @@ const CSSValue* TextSizeAdjust::ParseSingleValue(
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumePercent(range,
                                                   kValueRangeNonNegative);
+}
+
+const CSSValue* TextSizeAdjust::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (style.GetTextSizeAdjust().IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+  return CSSPrimitiveValue::Create(style.GetTextSizeAdjust().Multiplier() * 100,
+                                   CSSPrimitiveValue::UnitType::kPercentage);
 }
 
 }  // namespace CSSLonghand
