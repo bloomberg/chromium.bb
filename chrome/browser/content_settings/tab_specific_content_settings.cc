@@ -333,12 +333,6 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
 
   ContentSettingsStatus& status = content_settings_status_[type];
 
-  // TODO(garykac): Investigate why this is necessary for cookies.
-  // https://crbug.com/800845
-  if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    status.allowed = true;
-  }
-
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
     // For Android we do not have a persistent button that will always be
