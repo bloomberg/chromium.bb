@@ -770,6 +770,10 @@ void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
   base::string16 title;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+  // |web_contents| can be nullptr if the last tab in the browser was closed
+  // but the browser wasn't closed yet. https://crbug.com/799668
+  if (!web_contents)
+    return;
   GetURLAndTitleToBookmark(web_contents, &url, &title);
   bool is_bookmarked_by_any = model->IsBookmarked(url);
   if (!is_bookmarked_by_any &&
