@@ -153,10 +153,6 @@
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
 }
 
-- (BOOL)isShowingToolsMenu {
-  return NO;
-}
-
 #pragma mark - ToolbarCommands
 
 - (void)contractToolbar {
