@@ -23,7 +23,7 @@ namespace {
 
 base::string16 FormatUrlToSubdomain(const GURL& url) {
   base::string16 formated_url = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlExperimentalOmitTrivialSubdomains,
+      url, url_formatter::kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   return base::UTF8ToUTF16(GURL(formated_url).host());
 }

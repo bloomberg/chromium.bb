@@ -569,7 +569,7 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
   if (!preserve_subdomain &&
       base::FeatureList::IsEnabled(
           omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)) {
-    format_types |= url_formatter::kFormatUrlExperimentalOmitTrivialSubdomains;
+    format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
   }
 
   if (!preserve_after_host &&

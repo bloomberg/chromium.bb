@@ -138,7 +138,8 @@ class UrlEmphasisTest : public testing::Test {
     const base::string16 formatted_url = url_formatter::FormatUrl(
         url,
         url_formatter::kFormatUrlOmitDefaults |
-            url_formatter::kFormatUrlOmitHTTPS,
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlOmitTrivialSubdomains,
         net::UnescapeRule::NORMAL, &parsed, nullptr, nullptr);
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
     TestUrlBarTexture::TestUrlStyling(
