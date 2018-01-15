@@ -168,6 +168,7 @@ enum {
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               OmniboxFocuser,
+                              FakeboxFocuser,
                               SnackbarCommands,
                               UrlLoader>
     dispatcher;
@@ -207,6 +208,7 @@ enum {
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
                              OmniboxFocuser,
+                             FakeboxFocuser,
                              SnackbarCommands,
                              UrlLoader>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset {

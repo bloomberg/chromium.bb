@@ -979,6 +979,9 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
   [self updateToolbarState];
 }
 
+#pragma mark -
+#pragma mark FakeboxFocuser methods.
+
 - (void)focusFakebox {
   if (IsIPadIdiom()) {
     OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();

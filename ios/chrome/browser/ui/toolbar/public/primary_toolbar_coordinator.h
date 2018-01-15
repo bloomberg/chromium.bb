@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_PRIMARY_TOOLBAR_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_PRIMARY_TOOLBAR_COORDINATOR_H_
 
+#import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
@@ -19,6 +20,7 @@
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
 // split between primary and secondary.
 @protocol PrimaryToolbarCoordinator<OmniboxFocuser,
+                                    FakeboxFocuser,
                                     SideSwipeToolbarInteracting,
                                     ToolbarCoordinating>
 
