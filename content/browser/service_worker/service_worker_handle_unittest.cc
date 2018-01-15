@@ -111,8 +111,6 @@ class ServiceWorkerHandleTest : public testing::Test {
         helper_->mock_render_process_id(), 1 /* provider_id */,
         helper_->context()->AsWeakPtr(), kRenderFrameId, dispatcher_host_.get(),
         &remote_endpoint_);
-    helper_->SimulateAddProcessToPattern(pattern,
-                                         helper_->mock_render_process_id());
   }
 
   void TearDown() override {

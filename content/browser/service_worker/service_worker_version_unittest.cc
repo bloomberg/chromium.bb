@@ -264,10 +264,6 @@ class ServiceWorkerVersionTest : public testing::Test {
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(SERVICE_WORKER_OK, status);
-
-    // Simulate adding one process to the pattern.
-    helper_->SimulateAddProcessToPattern(pattern_,
-                                         helper_->mock_render_process_id());
   }
 
   virtual std::unique_ptr<MessageReceiver> GetMessageReceiver() {
@@ -1354,9 +1350,6 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
 
 TEST_F(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
-
-  helper_->SimulateAddProcessToPattern(pattern_,
-                                       helper_->new_render_process_id());
   ServiceWorkerContextCore* context = helper_->context();
   int64_t id = version_->version_id();
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
