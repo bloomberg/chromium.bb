@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_layout_observer.h"
-#include "ash/system/system_notifier.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -27,6 +26,8 @@ using message_center::Notification;
 
 namespace ash {
 namespace {
+
+const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 
 bool g_use_timer = true;
 
@@ -253,11 +254,11 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       timeout_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16() /* display_source */, GURL(),
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierDisplayResolutionChange),
-      data, new ResolutionChangeNotificationDelegate(
-                this, change_info_->timeout_count > 0)));
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kNotifierDisplayResolutionChange),
+      data,
+      new ResolutionChangeNotificationDelegate(
+          this, change_info_->timeout_count > 0)));
   notification->set_clickable(true);
   notification->SetSystemPriority();
   message_center->AddNotification(std::move(notification));

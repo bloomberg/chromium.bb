@@ -40,7 +40,6 @@
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray.h"
@@ -86,6 +85,8 @@
 #include "ui/message_center/message_center.h"
 
 namespace ash {
+
+const char kNotifierAccelerator[] = "ash.accelerator-controller";
 
 const char kHighContrastToggleAccelNotificationId[] =
     "chrome://settings/accessibility/highcontrast";
@@ -173,11 +174,12 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
           gfx::Image(), base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierDeprecatedAccelerator),
+              kNotifierAccelerator),
           message_center::RichNotificationData(),
           new DeprecatedAcceleratorNotificationDelegate,
           kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
@@ -815,10 +817,11 @@ void HandleToggleHighContrast() {
             gfx::Image(), base::string16() /* display source */, GURL(),
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT,
-                system_notifier::kNotifierAccessibility),
+                kNotifierAccelerator),
             message_center::RichNotificationData(), nullptr,
             kNotificationAccessibilityIcon,
             SystemNotificationWarningLevel::NORMAL);
+    notification->set_priority(message_center::SYSTEM_PRIORITY);
     message_center::MessageCenter::Get()->AddNotification(
         std::move(notification));
   } else {

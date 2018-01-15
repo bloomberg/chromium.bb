@@ -632,8 +632,6 @@ component("ash") {
     "system/supervised/tray_supervised_user.h",
     "system/system_clock_observer.cc",
     "system/system_clock_observer.h",
-    "system/system_notifier.cc",
-    "system/system_notifier.h",
     "system/system_tray_focus_observer.h",
     "system/tiles/tiles_default_view.cc",
     "system/tiles/tiles_default_view.h",

@@ -10,7 +10,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -42,10 +41,12 @@ const int kLowBatteryLevel = 15;
 constexpr base::TimeDelta kNotificationInterval =
     base::TimeDelta::FromSeconds(60);
 
+const char kNotifierStylusBattery[] = "ash.stylus-battery";
+
 // TODO(sammiequon): Add a notification url to chrome://settings/stylus once
 // battery related information is shown there.
 const char kNotificationOriginUrl[] = "chrome://peripheral-battery";
-const char kNotifierId[] = "power.peripheral-battery";
+const char kNotifierNonStylusBattery[] = "power.peripheral-battery";
 
 // HID device's battery sysfs entry path looks like
 // /sys/class/power_supply/hid-{AA:BB:CC:DD:EE:FF|AAAA:BBBB:CCCC.DDDD}-battery.
@@ -139,7 +140,7 @@ NotificationParams GetNonStylusNotificationParams(const std::string& address,
       base::ASCIIToUTF16(name),
       l10n_util::GetStringFUTF16Int(
           IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT, battery_level),
-      kNotifierId,
+      kNotifierNonStylusBattery,
       GURL(kNotificationOriginUrl),
       is_bluetooth ? &kNotificationBluetoothBatteryWarningIcon
                    : &kNotificationBatteryCriticalIcon};
@@ -150,7 +151,7 @@ NotificationParams GetStylusNotificationParams() {
       PeripheralBatteryNotifier::kStylusNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY),
-      system_notifier::kNotifierStylusBattery,
+      kNotifierStylusBattery,
       GURL(),
       &kNotificationStylusBatteryWarningIcon};
 }

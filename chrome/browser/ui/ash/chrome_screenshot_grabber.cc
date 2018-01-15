@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -52,6 +51,7 @@
 namespace {
 
 const char kNotificationId[] = "screenshot";
+const char kNotifierScreenshot[] = "ash.screenshot";
 
 const char kNotificationOriginUrl[] = "chrome://screenshot";
 
@@ -599,7 +599,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
-              ash::system_notifier::kNotifierScreenshot),
+              kNotifierScreenshot),
           optional_field,
           new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                     screenshot_path),

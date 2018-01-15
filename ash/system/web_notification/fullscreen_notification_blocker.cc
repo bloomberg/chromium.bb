@@ -6,7 +6,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
@@ -26,11 +25,14 @@ FullscreenNotificationBlocker::~FullscreenNotificationBlocker() {
 
 bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
     const message_center::Notification& notification) const {
-  bool enabled =
-      !should_block_ ||
-      (notification.fullscreen_visibility() !=
-       message_center::FullscreenVisibility::NONE) ||
-      system_notifier::ShouldAlwaysShowPopups(notification.notifier_id());
+  // Show the notification if any of the following are true:
+  // - we're not in fullscreen
+  // - the notification explicitly asked to be shown over fullscreen
+  // - the notification's priority is SYSTEM_PRIORITY
+  bool enabled = !should_block_ ||
+                 (notification.fullscreen_visibility() !=
+                  message_center::FullscreenVisibility::NONE) ||
+                 notification.priority() == message_center::SYSTEM_PRIORITY;
 
   if (enabled && !should_block_) {
     UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Windowed",
