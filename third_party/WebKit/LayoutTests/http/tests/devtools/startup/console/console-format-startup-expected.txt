@@ -411,7 +411,7 @@ console-format-startup.html:218 HTMLAllCollection(14)
     p: p#p
     sel: select#sel
     svg-node: svg#svg-node
-    x: NodeList(3) [div#x, input, input]
+    x: HTMLCollection(3) [div#x, input, input, x: div#x]
     __proto__: HTMLAllCollection
 console-format-startup.html:222 HTMLFormControlsCollection(3)
     0: select#sel
