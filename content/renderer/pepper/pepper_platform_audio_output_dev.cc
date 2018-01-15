@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
-#include "content/renderer/media/audio_ipc_factory.h"
+#include "content/renderer/media/audio_output_ipc_factory.h"
 #include "content/renderer/pepper/audio_helper.h"
 #include "content/renderer/pepper/pepper_audio_output_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
@@ -260,7 +260,7 @@ bool PepperPlatformAudioOutputDev::Initialize(int sample_rate,
 
   client_ = client;
 
-  ipc_ = AudioIPCFactory::get()->CreateAudioOutputIPC(render_frame_id_);
+  ipc_ = AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id_);
   CHECK(ipc_);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,

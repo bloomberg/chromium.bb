@@ -115,6 +115,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
+#include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
@@ -1732,10 +1733,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->audio_manager();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  AddFilter(new AudioInputRendererHost(
-      GetID(), audio_manager, media_stream_manager,
-      AudioMirroringManager::GetInstance(),
-      BrowserMainLoop::GetInstance()->user_input_monitor()));
+  if (!RenderFrameAudioInputStreamFactory::UseMojoFactories()) {
+    AddFilter(base::MakeRefCounted<AudioInputRendererHost>(
+                  GetID(), audio_manager, media_stream_manager,
+                  AudioMirroringManager::GetInstance(),
+                  BrowserMainLoop::GetInstance()->user_input_monitor())
+                  .get());
+  }
   if (!RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
     AddFilter(base::MakeRefCounted<AudioRendererHost>(
                   GetID(), audio_manager,

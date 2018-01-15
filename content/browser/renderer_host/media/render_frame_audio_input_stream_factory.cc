@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/task_runner_util.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/common/content_features.h"
 #include "media/base/audio_parameters.h"
 
 namespace content {
@@ -68,6 +70,12 @@ RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
 
 RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+// static
+bool RenderFrameAudioInputStreamFactory::UseMojoFactories() {
+  return base::FeatureList::IsEnabled(
+      features::kUseMojoAudioInputStreamFactory);
 }
 
 void RenderFrameAudioInputStreamFactory::CreateStream(

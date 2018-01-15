@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_IPC_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_IPC_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_OUTPUT_IPC_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_OUTPUT_IPC_FACTORY_H_
 
 #include <memory>
 
@@ -35,15 +35,16 @@ namespace content {
 // sure that there are no outstanding references (such as in a unit test), the
 // class can be destructed.
 // TODO(maxmorin): Registering the factories for each frame will become
-// unnecessary when crbug.com/668275 is fixed. When that is done, this class can
-// be greatly simplified.
-class CONTENT_EXPORT AudioIPCFactory {
+// unnecessary when https://crbug.com/668275 is fixed. When that is done, this
+// class can be greatly simplified.
+class CONTENT_EXPORT AudioOutputIPCFactory {
  public:
-  AudioIPCFactory(scoped_refptr<AudioMessageFilter> audio_message_filter,
-                  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  ~AudioIPCFactory();
+  AudioOutputIPCFactory(
+      scoped_refptr<AudioMessageFilter> audio_message_filter,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  ~AudioOutputIPCFactory();
 
-  static AudioIPCFactory* get() { return instance_; }
+  static AudioOutputIPCFactory* get() { return instance_; }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
@@ -87,11 +88,11 @@ class CONTENT_EXPORT AudioIPCFactory {
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Global instance, set in constructor and unset in destructor.
-  static AudioIPCFactory* instance_;
+  static AudioOutputIPCFactory* instance_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioIPCFactory);
+  DISALLOW_COPY_AND_ASSIGN(AudioOutputIPCFactory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_IPC_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_OUTPUT_IPC_FACTORY_H_

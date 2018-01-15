@@ -150,6 +150,7 @@
           // InputInjector is only exposed when gpu benchmarking is enabled.
           "content::mojom::InputInjector",
 
+          "content::mojom::RendererAudioInputStreamFactory",
           "content::mojom::RendererAudioOutputStreamFactory",
           "content::mojom::SharedWorkerConnector",
           "device::mojom::Geolocation",

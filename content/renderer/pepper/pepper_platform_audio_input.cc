@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/audio_input_message_filter.h"
+#include "content/renderer/media/audio_input_ipc_factory.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
@@ -154,9 +154,7 @@ bool PepperPlatformAudioInput::Initialize(
   if (!GetMediaDeviceManager())
     return false;
 
-  ipc_ = RenderThreadImpl::current()
-             ->audio_input_message_filter()
-             ->CreateAudioInputIPC(render_frame_id);
+  ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_MONO,

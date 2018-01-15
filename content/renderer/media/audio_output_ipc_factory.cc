@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_ipc_factory.h"
+#include "content/renderer/media/audio_output_ipc_factory.h"
 
 #include <utility>
 
@@ -15,9 +15,9 @@
 
 namespace content {
 
-AudioIPCFactory* AudioIPCFactory::instance_ = nullptr;
+AudioOutputIPCFactory* AudioOutputIPCFactory::instance_ = nullptr;
 
-AudioIPCFactory::AudioIPCFactory(
+AudioOutputIPCFactory::AudioOutputIPCFactory(
     scoped_refptr<AudioMessageFilter> audio_message_filter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : audio_message_filter_(std::move(audio_message_filter)),
@@ -26,24 +26,25 @@ AudioIPCFactory::AudioIPCFactory(
   instance_ = this;
 }
 
-AudioIPCFactory::~AudioIPCFactory() {
+AudioOutputIPCFactory::~AudioOutputIPCFactory() {
   // Allow destruction in tests.
   DCHECK(factory_ptrs_.empty());
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 }
 
-std::unique_ptr<media::AudioOutputIPC> AudioIPCFactory::CreateAudioOutputIPC(
-    int frame_id) const {
+std::unique_ptr<media::AudioOutputIPC>
+AudioOutputIPCFactory::CreateAudioOutputIPC(int frame_id) const {
   if (UsingMojoFactories()) {
     // Unretained is safe due to the contract at the top of the header file.
-    return std::make_unique<MojoAudioOutputIPC>(base::BindRepeating(
-        &AudioIPCFactory::GetRemoteFactory, base::Unretained(this), frame_id));
+    return std::make_unique<MojoAudioOutputIPC>(
+        base::BindRepeating(&AudioOutputIPCFactory::GetRemoteFactory,
+                            base::Unretained(this), frame_id));
   }
   return audio_message_filter_->CreateAudioOutputIPC(frame_id);
 }
 
-void AudioIPCFactory::MaybeRegisterRemoteFactory(
+void AudioOutputIPCFactory::MaybeRegisterRemoteFactory(
     int frame_id,
     service_manager::InterfaceProvider* interface_provider) {
   if (!UsingMojoFactories())
@@ -55,29 +56,30 @@ void AudioIPCFactory::MaybeRegisterRemoteFactory(
   // Unretained is safe due to the contract at the top of the header file.
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioIPCFactory::RegisterRemoteFactoryOnIOThread,
+      base::BindOnce(&AudioOutputIPCFactory::RegisterRemoteFactoryOnIOThread,
                      base::Unretained(this), frame_id,
                      factory_ptr.PassInterface()));
 }
 
-void AudioIPCFactory::MaybeDeregisterRemoteFactory(int frame_id) {
+void AudioOutputIPCFactory::MaybeDeregisterRemoteFactory(int frame_id) {
   if (!UsingMojoFactories())
     return;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread,
-                     base::Unretained(this), frame_id));
+      base::BindOnce(
+          &AudioOutputIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread,
+          base::Unretained(this), frame_id));
 }
 
-mojom::RendererAudioOutputStreamFactory* AudioIPCFactory::GetRemoteFactory(
-    int frame_id) const {
+mojom::RendererAudioOutputStreamFactory*
+AudioOutputIPCFactory::GetRemoteFactory(int frame_id) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(UsingMojoFactories());
   auto it = factory_ptrs_.find(frame_id);
   return it == factory_ptrs_.end() ? nullptr : it->second.get();
 }
 
-void AudioIPCFactory::RegisterRemoteFactoryOnIOThread(
+void AudioOutputIPCFactory::RegisterRemoteFactoryOnIOThread(
     int frame_id,
     mojom::RendererAudioOutputStreamFactoryPtrInfo factory_ptr_info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -96,12 +98,13 @@ void AudioIPCFactory::RegisterRemoteFactoryOnIOThread(
 
   // Unretained is safe because |this| owns the binding, so a connection error
   // cannot trigger after destruction.
-  emplaced_factory.set_connection_error_handler(
-      base::BindOnce(&AudioIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread,
-                     base::Unretained(this), frame_id));
+  emplaced_factory.set_connection_error_handler(base::BindOnce(
+      &AudioOutputIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread,
+      base::Unretained(this), frame_id));
 }
 
-void AudioIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread(int frame_id) {
+void AudioOutputIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread(
+    int frame_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(UsingMojoFactories());
   // This function can be called both by the frame and the connection error
@@ -111,7 +114,7 @@ void AudioIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread(int frame_id) {
   factory_ptrs_.erase(frame_id);
 }
 
-bool AudioIPCFactory::UsingMojoFactories() const {
+bool AudioOutputIPCFactory::UsingMojoFactories() const {
   return audio_message_filter_ == nullptr;
 }
 

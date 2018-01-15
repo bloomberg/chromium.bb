@@ -759,22 +759,37 @@ void RenderThreadImpl::Init(
   AddFilter(aec_dump_message_filter_.get());
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
+  {
+    scoped_refptr<AudioInputMessageFilter> audio_input_message_filter;
+    if (!base::FeatureList::IsEnabled(
+            features::kUseMojoAudioInputStreamFactory)) {
+      // In case we shouldn't use mojo factories, we need to create an
+      // AudioInputMessageFilter which |audio_input_ipc_factory_| can use for
+      // IPC.
+      audio_input_message_filter =
+          base::MakeRefCounted<AudioInputMessageFilter>(GetIOTaskRunner());
+      AddFilter(audio_input_message_filter.get());
+    }
 
-  audio_input_message_filter_ = new AudioInputMessageFilter(GetIOTaskRunner());
-  AddFilter(audio_input_message_filter_.get());
-
-  scoped_refptr<AudioMessageFilter> audio_message_filter;
-  if (!base::FeatureList::IsEnabled(
-          features::kUseMojoAudioOutputStreamFactory)) {
-    // In case we shouldn't use mojo factories, we need to create an
-    // AudioMessageFilter which |audio_ipc_factory_| can use for IPC.
-    audio_message_filter =
-        base::MakeRefCounted<AudioMessageFilter>(GetIOTaskRunner());
-    AddFilter(audio_message_filter.get());
+    audio_input_ipc_factory_.emplace(std::move(audio_input_message_filter),
+                                     message_loop()->task_runner(),
+                                     GetIOTaskRunner());
   }
 
-  audio_ipc_factory_.emplace(std::move(audio_message_filter),
-                             GetIOTaskRunner());
+  {
+    scoped_refptr<AudioMessageFilter> audio_output_message_filter;
+    if (!base::FeatureList::IsEnabled(
+            features::kUseMojoAudioOutputStreamFactory)) {
+      // In case we shouldn't use mojo factories, we need to create an
+      // AudioMessageFilter which |audio_output_ipc_factory_| can use for IPC.
+      audio_output_message_filter =
+          base::MakeRefCounted<AudioMessageFilter>(GetIOTaskRunner());
+      AddFilter(audio_output_message_filter.get());
+    }
+
+    audio_output_ipc_factory_.emplace(std::move(audio_output_message_filter),
+                                      GetIOTaskRunner());
+  }
 
   midi_message_filter_ = new MidiMessageFilter(GetIOTaskRunner());
   AddFilter(midi_message_filter_.get());

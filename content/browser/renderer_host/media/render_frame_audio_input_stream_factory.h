@@ -58,6 +58,8 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
 
   ~RenderFrameAudioInputStreamFactory() override;
 
+  static bool UseMojoFactories();
+
  private:
   using InputStreamSet = base::flat_set<std::unique_ptr<AudioInputStreamHandle>,
                                         base::UniquePtrComparator>;
