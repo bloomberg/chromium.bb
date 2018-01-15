@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/ProfilingCanvas.h"
 #include "platform/graphics/ReplayingCanvas.h"

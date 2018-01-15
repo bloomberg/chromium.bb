@@ -94,9 +94,9 @@
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
+#include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CheckedNumeric.h"
@@ -767,18 +767,21 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   if (IsMainThread()) {
     GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
     IntSize size = ClampedCanvasSize();
-    std::unique_ptr<AcceleratedImageBufferSurface> surface =
-        std::make_unique<AcceleratedImageBufferSurface>(size, ColorParams());
-    if (!surface->IsValid())
+    std::unique_ptr<CanvasResourceProvider> resource_provider =
+        CanvasResourceProvider::Create(
+            size, CanvasResourceProvider::kAcceleratedResourceUsage,
+            SharedGpuContext::ContextProviderWrapper());
+    if (!resource_provider && resource_provider->IsValid())
       return nullptr;
-    if (!CopyRenderingResultsFromDrawingBuffer(surface.get(), kBackBuffer)) {
+    if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
+                                               kBackBuffer)) {
       // copyRenderingResultsFromDrawingBuffer is expected to always succeed
       // because we've explicitly created an Accelerated surface and have
       // already validated it.
       NOTREACHED();
       return nullptr;
     }
-    return surface->NewImageSnapshot(hint);
+    return resource_provider->Snapshot();
   }
 
   // If on a worker thread, create a copy from the drawing buffer and create
@@ -1465,7 +1468,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->WebGLBuffer(),
+  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->ResourceProvider(),
                                              source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
@@ -1479,7 +1482,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
 }
 
 bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
-    AcceleratedImageBufferSurface* webgl_buffer,
+    CanvasResourceProvider* resource_provider,
     SourceDrawingBuffer source_buffer) const {
   if (!drawing_buffer_)
     return false;
@@ -1488,7 +1491,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   if (!provider)
     return false;
   gpu::gles2::GLES2Interface* gl = provider->ContextGL();
-  GLuint texture_id = webgl_buffer->GetBackingTextureHandleForOverwrite();
+  GLuint texture_id = resource_provider->GetBackingTextureHandleForOverwrite();
   if (!texture_id)
     return false;
 
@@ -5303,16 +5306,18 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   if (use_copyTextureCHROMIUM) {
     // Try using an accelerated image buffer, this allows YUV conversion to be
     // done on the GPU.
-    std::unique_ptr<AcceleratedImageBufferSurface> surface =
-        std::make_unique<AcceleratedImageBufferSurface>(
-            IntSize(video->videoWidth(), video->videoHeight()));
-    if (surface->IsValid()) {
+    std::unique_ptr<CanvasResourceProvider> resource_provider =
+        CanvasResourceProvider::Create(
+            IntSize(video->videoWidth(), video->videoHeight()),
+            CanvasResourceProvider::kAcceleratedResourceUsage,
+            SharedGpuContext::ContextProviderWrapper());
+    if (resource_provider && resource_provider->IsValid()) {
       // The video element paints an RGBA frame into our surface here. By
       // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
       // implementation to do any necessary color space conversion on the GPU
       // (though it may still do a CPU conversion and upload the results).
       video->PaintCurrentFrame(
-          surface->Canvas(),
+          resource_provider->Canvas(),
           IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr,
           already_uploaded_id, frame_metadata_ptr);
 
@@ -5325,8 +5330,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                      video->videoHeight(), 0, format, type, nullptr);
 
       if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target)) {
-        scoped_refptr<StaticBitmapImage> image =
-            surface->NewImageSnapshot(kPreferAcceleration);
+        scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
         if (!!image &&
             image->CopyToTexture(
                 ContextGL(), target, texture->Object(),

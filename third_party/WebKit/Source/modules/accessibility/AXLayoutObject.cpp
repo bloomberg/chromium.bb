@@ -90,6 +90,7 @@
 #include "modules/accessibility/AXSpinButton.h"
 #include "modules/accessibility/AXTable.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/ImageDataBuffer.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/StdLibExtras.h"

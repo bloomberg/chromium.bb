@@ -13,10 +13,10 @@
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
 class SkCanvas;
-class SkSurface;
 
 namespace cc {
 
@@ -94,6 +94,10 @@ class PLATFORM_EXPORT CanvasResourceProvider {
                    size_t row_bytes,
                    int x,
                    int y);
+  virtual GLuint GetBackingTextureHandleForOverwrite() {
+    NOTREACHED();
+    return 0;
+  }
   void Clear();
   virtual ~CanvasResourceProvider();
 

@@ -30,65 +30,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageDataBuffer.h"
 
 #include <memory>
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
-#include "platform/graphics/paint/PaintImage.h"
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
 
 namespace blink {
-
-std::unique_ptr<ImageBuffer> ImageBuffer::Create(
-    std::unique_ptr<ImageBufferSurface> surface) {
-  if (!surface->IsValid())
-    return nullptr;
-  return WTF::WrapUnique(new ImageBuffer(std::move(surface)));
-}
-
-ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
-    : weak_ptr_factory_(this),
-      surface_(std::move(surface)) {
-  surface_->SetImageBuffer(this);
-}
-
-ImageBuffer::~ImageBuffer() {
-  surface_->SetImageBuffer(nullptr);
-}
-
-PaintCanvas* ImageBuffer::Canvas() const {
-  return surface_->Canvas();
-}
-
-bool ImageBuffer::IsSurfaceValid() const {
-  return surface_->IsValid();
-}
-
-scoped_refptr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
-    AccelerationHint hint) const {
-  if (!IsSurfaceValid())
-    return nullptr;
-  return surface_->NewImageSnapshot(hint);
-}
-
-bool ImageBuffer::WritePixels(const SkImageInfo& orig_info,
-                              const void* pixels,
-                              size_t row_bytes,
-                              int x,
-                              int y) {
-  return surface_->WritePixels(orig_info, pixels, row_bytes, x, y);
-}
 
 const unsigned char* ImageDataBuffer::Pixels() const {
   if (uses_pixmap_)

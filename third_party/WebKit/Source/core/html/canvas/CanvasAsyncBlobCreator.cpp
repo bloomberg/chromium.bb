@@ -12,7 +12,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageDataBuffer.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "platform/wtf/Functional.h"
