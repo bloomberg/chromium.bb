@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -97,7 +96,7 @@ void ProtocolHandlersHandler::GetHandlersForProtocol(
   handlers_value->SetBoolean("has_policy_recommendations",
                              registry->HasPolicyRegisteredHandler(protocol));
 
-  auto handlers_list = base::MakeUnique<base::ListValue>();
+  auto handlers_list = std::make_unique<base::ListValue>();
   GetHandlersAsListValue(registry->GetHandlersFor(protocol),
                          handlers_list.get());
   handlers_value->Set("handlers", std::move(handlers_list));

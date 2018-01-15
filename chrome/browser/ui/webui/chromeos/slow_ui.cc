@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -127,7 +127,7 @@ void SlowHandler::UpdatePage() {
 SlowUI::SlowUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
-  web_ui->AddMessageHandler(base::MakeUnique<SlowHandler>(profile));
+  web_ui->AddMessageHandler(std::make_unique<SlowHandler>(profile));
 
   // Set up the chrome://slow/ source.
   content::WebUIDataSource::Add(profile, CreateSlowUIHTMLSource());

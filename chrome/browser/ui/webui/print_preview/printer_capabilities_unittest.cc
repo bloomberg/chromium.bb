@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
@@ -250,7 +249,7 @@ TEST_F(PrinterCapabilitiesTest, NonNullForMissingPrinter) {
 TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
   std::string printer_name = "test_printer";
   PrinterBasicInfo basic_info;
-  auto caps = base::MakeUnique<PrinterSemanticCapsAndDefaults>();
+  auto caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
 
   // set a capability
   caps->dpis = {gfx::Size(600, 600)};

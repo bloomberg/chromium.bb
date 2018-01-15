@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 
+#include <memory>
+
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -119,7 +120,7 @@ LocalStateUI::LocalStateUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   html_source->AddResourcePath("local_state.js", IDR_LOCAL_STATE_JS);
   html_source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
-  web_ui->AddMessageHandler(base::MakeUnique<LocalStateUIHandler>());
+  web_ui->AddMessageHandler(std::make_unique<LocalStateUIHandler>());
 }
 
 LocalStateUI::~LocalStateUI() {

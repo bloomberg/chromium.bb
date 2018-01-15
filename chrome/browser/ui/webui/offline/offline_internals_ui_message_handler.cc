@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -160,7 +159,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
   base::ListValue results;
 
   for (const auto& page : pages) {
-    auto offline_page = base::MakeUnique<base::DictionaryValue>();
+    auto offline_page = std::make_unique<base::DictionaryValue>();
     offline_page->SetString("onlineUrl", page.url.spec());
     offline_page->SetString("namespace", page.client_id.name_space);
     offline_page->SetDouble("size", page.file_size);
@@ -183,7 +182,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
   base::ListValue save_page_requests;
   if (result == offline_pages::GetRequestsResult::SUCCESS) {
     for (const auto& request : requests) {
-      auto save_page_request = base::MakeUnique<base::DictionaryValue>();
+      auto save_page_request = std::make_unique<base::DictionaryValue>();
       save_page_request->SetString("onlineUrl", request->url().spec());
       save_page_request->SetDouble("creationTime",
                                    request->creation_time().ToJsTime());

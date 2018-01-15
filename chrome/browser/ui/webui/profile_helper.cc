@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/profile_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -89,10 +90,11 @@ void DeleteProfileAtPath(base::FilePath file_path,
   if (!profiles::IsMultipleProfilesEnabled())
     return;
   g_browser_process->profile_manager()->MaybeScheduleProfileForDeletion(
-      file_path, base::Bind(&DeleteProfileCallback,
-                            base::Passed(base::MakeUnique<ScopedKeepAlive>(
-                                KeepAliveOrigin::PROFILE_HELPER,
-                                KeepAliveRestartOption::DISABLED))),
+      file_path,
+      base::Bind(&DeleteProfileCallback,
+                 base::Passed(std::make_unique<ScopedKeepAlive>(
+                     KeepAliveOrigin::PROFILE_HELPER,
+                     KeepAliveRestartOption::DISABLED))),
       deletion_source);
 }
 

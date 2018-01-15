@@ -497,7 +497,7 @@ TEST_F(PeopleHandlerTest, AcquireSyncBlockerWhenLoadingSyncSettingsSubpage) {
   /// We set up a factory override here to prevent a new web ui from being
   /// created when we navigate to a page that would normally create one.
   web_ui_.set_web_contents(web_contents());
-  test_factory_ = base::MakeUnique<TestChromeWebUIControllerFactory>();
+  test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
   test_factory_->AddFactoryOverride(
       chrome::GetSettingsUrl(chrome::kSyncSetupSubPage).host(),
       &test_provider_);

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,14 +35,14 @@ const int kMaxAllowedFingerprints = 5;
 
 std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
     const std::vector<std::string>& fingerprints_list) {
-  auto response = base::MakeUnique<base::DictionaryValue>();
-  auto fingerprints = base::MakeUnique<base::ListValue>();
+  auto response = std::make_unique<base::DictionaryValue>();
+  auto fingerprints = std::make_unique<base::ListValue>();
 
   DCHECK_LE(static_cast<int>(fingerprints_list.size()),
             kMaxAllowedFingerprints);
   for (auto& fingerprint_name: fingerprints_list) {
     std::unique_ptr<base::Value> str =
-        base::MakeUnique<base::Value>(fingerprint_name);
+        std::make_unique<base::Value>(fingerprint_name);
     fingerprints->Append(std::move(str));
   }
 
@@ -124,7 +124,7 @@ void FingerprintHandler::OnRestarted() {}
 void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
                                           bool enroll_session_complete,
                                           int percent_complete) {
-  auto scan_attempt = base::MakeUnique<base::DictionaryValue>();
+  auto scan_attempt = std::make_unique<base::DictionaryValue>();
   scan_attempt->SetInteger("result", scan_result);
   scan_attempt->SetBoolean("isComplete", enroll_session_complete);
   scan_attempt->SetInteger("percentComplete", percent_complete);
@@ -144,7 +144,7 @@ void FingerprintHandler::OnAuthScanDone(
   if (it == matches.end() || it->second.size() < 1)
     return;
 
-  auto fingerprint_ids = base::MakeUnique<base::ListValue>();
+  auto fingerprint_ids = std::make_unique<base::ListValue>();
 
   for (const std::string& matched_path : it->second) {
     auto path_it = std::find(fingerprints_paths_.begin(),
@@ -154,7 +154,7 @@ void FingerprintHandler::OnAuthScanDone(
         static_cast<int>(path_it - fingerprints_paths_.begin()));
   }
 
-  auto fingerprint_attempt = base::MakeUnique<base::DictionaryValue>();
+  auto fingerprint_attempt = std::make_unique<base::DictionaryValue>();
   fingerprint_attempt->SetInteger("result", scan_result);
   fingerprint_attempt->Set("indexes", std::move(fingerprint_ids));
 

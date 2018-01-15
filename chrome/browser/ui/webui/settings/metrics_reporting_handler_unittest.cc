@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -51,7 +50,7 @@ class MetricsReportingHandlerTest : public testing::Test {
     EXPECT_TRUE(test_web_ui()->call_data().empty());
 
     base::ListValue args;
-    args.Append(base::MakeUnique<base::Value>(1));
+    args.Append(std::make_unique<base::Value>(1));
     handler()->HandleGetMetricsReporting(&args);
 
     EXPECT_TRUE(handler()->IsJavascriptAllowed());
@@ -106,7 +105,7 @@ TEST_F(MetricsReportingHandlerTest, PolicyChangesNotifyPage) {
   // Change the policy, check that the page was notified.
   map()->Set(policy::key::kMetricsReportingEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
              nullptr);
   provider()->UpdateChromePolicy(*map());
   EXPECT_EQ(1u, test_web_ui()->call_data().size());
@@ -117,7 +116,7 @@ TEST_F(MetricsReportingHandlerTest, PolicyChangesNotifyPage) {
   // Policies changing while JavaScript is disabled shouldn't notify the page.
   map()->Set(policy::key::kMetricsReportingEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   provider()->UpdateChromePolicy(*map());
   EXPECT_TRUE(test_web_ui()->call_data().empty());

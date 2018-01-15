@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -226,7 +226,7 @@ void SupervisedUserCreationScreenHandler::Show() {
        it != users.end();
        ++it) {
     bool is_owner = ((*it)->GetAccountId().GetUserEmail() == owner);
-    auto user_dict = base::MakeUnique<base::DictionaryValue>();
+    auto user_dict = std::make_unique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, is_owner, false, /* is_signin_to_add */
         proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,

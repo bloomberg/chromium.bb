@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -205,7 +204,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
 
   base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Set(kId, base::MakeUnique<base::Value>());
+    args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent_node));
   args.SetInteger(kStart, start);
@@ -225,7 +224,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
 
   base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Set(kId, base::MakeUnique<base::Value>());
+    args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
   args.SetInteger(kStart, start);
@@ -443,15 +442,15 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
       }
     }
     std::unique_ptr<base::DictionaryValue> list_info(new base::DictionaryValue);
-    list_info->Set(kLocalData, base::MakeUnique<base::Value>(description));
+    list_info->Set(kLocalData, std::make_unique<base::Value>(description));
     std::string title = base::UTF16ToUTF8(site->GetTitle());
-    list_info->Set(kSite, base::MakeUnique<base::Value>(title));
+    list_info->Set(kSite, std::make_unique<base::Value>(title));
     site_list->Append(std::move(list_info));
   }
 
   base::DictionaryValue response;
   response.Set(kItems, std::move(site_list));
-  response.Set(kTotal, base::MakeUnique<base::Value>(list_item_count));
+  response.Set(kTotal, std::make_unique<base::Value>(list_item_count));
 
   ResolveJavascriptCallback(base::Value(request_.callback_id_), response);
   request_.Clear();
@@ -467,7 +466,7 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Set(kId, base::MakeUnique<base::Value>());
+    args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));
@@ -487,7 +486,7 @@ void CookiesViewHandler::SendCookieDetails(const CookieTreeNode* parent) {
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Set(kId, base::MakeUnique<base::Value>());
+    args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));

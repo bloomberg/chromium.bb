@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -109,7 +108,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
 
   // Build the first list (default search engines).
   std::unique_ptr<base::ListValue> defaults =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   int last_default_engine_index =
       list_controller_.table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
@@ -118,7 +117,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
   }
 
   // Build the second list (other search engines).
-  std::unique_ptr<base::ListValue> others = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> others = std::make_unique<base::ListValue>();
   int last_other_engine_index =
       list_controller_.table_model()->last_other_engine_index();
   for (int i = std::max(last_default_engine_index, 0);
@@ -128,7 +127,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
 
   // Build the third list (omnibox extensions).
   std::unique_ptr<base::ListValue> extensions =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   int engine_count = list_controller_.table_model()->RowCount();
   for (int i = std::max(last_other_engine_index, 0); i < engine_count; ++i) {
     extensions->Append(CreateDictionaryForEngine(i, i == default_index));

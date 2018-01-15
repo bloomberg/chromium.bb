@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -36,7 +37,7 @@ enum class ActiveDirectoryPasswordChangeErrorState {
 ActiveDirectoryPasswordChangeScreenHandler::
     ActiveDirectoryPasswordChangeScreenHandler(CoreOobeView* core_oobe_view)
     : BaseScreenHandler(OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE),
-      authpolicy_login_helper_(base::MakeUnique<AuthPolicyLoginHelper>()),
+      authpolicy_login_helper_(std::make_unique<AuthPolicyLoginHelper>()),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
   set_call_js_prefix(kJsScreenPath);

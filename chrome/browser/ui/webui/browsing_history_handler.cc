@@ -13,7 +13,6 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
@@ -241,7 +240,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
-  browsing_history_service_ = base::MakeUnique<BrowsingHistoryService>(
+  browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
 
   // Create our favicon data source.

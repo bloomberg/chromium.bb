@@ -11,7 +11,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -108,7 +107,7 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 void PrintersToValues(const PrinterList& printer_list,
                       base::ListValue* printers) {
   for (const PrinterBasicInfo& printer : printer_list) {
-    auto printer_info = base::MakeUnique<base::DictionaryValue>();
+    auto printer_info = std::make_unique<base::DictionaryValue>();
     printer_info->SetString(kSettingDeviceName, printer.printer_name);
 
     const auto printer_name_description = GetPrinterNameAndDescription(printer);
@@ -117,7 +116,7 @@ void PrintersToValues(const PrinterList& printer_list,
     printer_info->SetString(kSettingPrinterName, printer_name);
     printer_info->SetString(kSettingPrinterDescription, printer_description);
 
-    auto options = base::MakeUnique<base::DictionaryValue>();
+    auto options = std::make_unique<base::DictionaryValue>();
     for (const auto opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
@@ -204,7 +203,7 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   const std::string& printer_name = printer_name_description.first;
   const std::string& printer_description = printer_name_description.second;
 
-  auto printer_info = base::MakeUnique<base::DictionaryValue>();
+  auto printer_info = std::make_unique<base::DictionaryValue>();
   printer_info->SetString(kSettingDeviceName, device_name);
   printer_info->SetString(kSettingPrinterName, printer_name);
   printer_info->SetString(kSettingPrinterDescription, printer_description);

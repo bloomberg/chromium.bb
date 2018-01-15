@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -183,7 +182,7 @@ const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
 
 std::unique_ptr<base::ListValue> IdentityInternalsUIMessageHandler::GetScopes(
     const extensions::ExtensionTokenKey& token_cache_key) {
-  auto scopes_value = base::MakeUnique<base::ListValue>();
+  auto scopes_value = std::make_unique<base::ListValue>();
   for (std::set<std::string>::const_iterator
            iter = token_cache_key.scopes.begin();
        iter != token_cache_key.scopes.end(); ++iter) {
@@ -264,7 +263,7 @@ void IdentityInternalsUIMessageHandler::RevokeToken(
   std::string access_token;
   args->GetString(kRevokeTokenExtensionOffset, &extension_id);
   args->GetString(kRevokeTokenTokenOffset, &access_token);
-  token_revokers_.push_back(base::MakeUnique<IdentityInternalsTokenRevoker>(
+  token_revokers_.push_back(std::make_unique<IdentityInternalsTokenRevoker>(
       extension_id, access_token, Profile::FromWebUI(web_ui()), this));
 }
 
@@ -325,7 +324,7 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 
   web_ui->AddMessageHandler(
-      base::MakeUnique<IdentityInternalsUIMessageHandler>());
+      std::make_unique<IdentityInternalsUIMessageHandler>());
 }
 
 IdentityInternalsUI::~IdentityInternalsUI() {}

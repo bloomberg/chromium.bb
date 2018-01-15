@@ -20,7 +20,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -735,7 +734,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
   std::string domain;
   bool get_domain_result = list->GetString(0, &domain);
   DCHECK(get_domain_result);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
 
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
@@ -854,7 +853,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnExpectCTQuery(
   std::string domain;
   bool domain_result = list->GetString(0, &domain);
   DCHECK(domain_result);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
 
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
@@ -935,10 +934,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnExpectCTTestReport(
 
   if (!expect_ct_reporter_) {
     std::unique_ptr<base::Value> success =
-        base::MakeUnique<base::Value>("success");
+        std::make_unique<base::Value>("success");
     std::unique_ptr<base::Value> failure =
-        base::MakeUnique<base::Value>("failure");
-    expect_ct_reporter_ = base::MakeUnique<ChromeExpectCTReporter>(
+        std::make_unique<base::Value>("failure");
+    expect_ct_reporter_ = std::make_unique<ChromeExpectCTReporter>(
         GetMainContext(),
         base::Bind(
             &NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand,
@@ -995,7 +994,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
   if (!user) {
     std::string error = "User not found.";
     SendJavascriptCommand("receivedONCFileParse",
-                          base::MakeUnique<base::Value>(error));
+                          std::make_unique<base::Value>(error));
     return;
   }
 
@@ -1037,7 +1036,7 @@ void NetInternalsMessageHandler::OnCertificatesImported(
     error += "Some certificates couldn't be imported. ";
 
   SendJavascriptCommand("receivedONCFileParse",
-                        base::MakeUnique<base::Value>(error));
+                        std::make_unique<base::Value>(error));
 }
 
 void NetInternalsMessageHandler::OnImportONCFile(
@@ -1060,7 +1059,7 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
   DCHECK(list);
 
   SendJavascriptCommand("receivedStoreDebugLogs",
-                        base::MakeUnique<base::Value>("Creating log file..."));
+                        std::make_unique<base::Value>("Creating log file..."));
   Profile* profile = Profile::FromWebUI(web_ui());
   const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(profile);
   base::FilePath path = prefs->DownloadPath();
@@ -1081,7 +1080,7 @@ void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
   else
     status = "Failed to create log file";
   SendJavascriptCommand("receivedStoreDebugLogs",
-                        base::MakeUnique<base::Value>(status));
+                        std::make_unique<base::Value>(status));
 }
 
 void NetInternalsMessageHandler::OnSetNetworkDebugMode(
@@ -1105,7 +1104,7 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
                                  : "Failed to change debug mode to ";
   status += subsystem;
   SendJavascriptCommand("receivedSetNetworkDebugMode",
-                        base::MakeUnique<base::Value>(status));
+                        std::make_unique<base::Value>(status));
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -1204,7 +1203,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendNetInfo(int info_sources) {
 
 NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<NetInternalsMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<NetInternalsMessageHandler>());
 
   // Set up the chrome://net-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

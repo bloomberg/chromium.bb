@@ -39,7 +39,7 @@ content::WebContents* StartKeyboardOverlayUI(Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   web_contents->GetWebUI()->AddMessageHandler(
-      base::MakeUnique<TestWebUIMessageHandler>());
+      std::make_unique<TestWebUIMessageHandler>());
   return web_contents;
 }
 

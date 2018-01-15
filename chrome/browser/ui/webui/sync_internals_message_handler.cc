@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -182,7 +181,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   AllowJavascript();
 
   DictionaryValue event_details;
-  auto type_list = base::MakeUnique<ListValue>();
+  auto type_list = std::make_unique<ListValue>();
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
@@ -293,7 +292,7 @@ void SyncInternalsMessageHandler::EmitCounterUpdate(
     syncer::ModelType type,
     const std::string& counter_type,
     std::unique_ptr<DictionaryValue> value) {
-  auto details = base::MakeUnique<DictionaryValue>();
+  auto details = std::make_unique<DictionaryValue>();
   details->SetString(syncer::sync_ui_util::kModelType, ModelTypeToString(type));
   details->SetString(syncer::sync_ui_util::kCounterType, counter_type);
   details->Set(syncer::sync_ui_util::kCounters, std::move(value));

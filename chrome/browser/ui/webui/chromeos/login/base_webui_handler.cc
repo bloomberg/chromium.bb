@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -43,7 +44,7 @@ void BaseWebUIHandler::InitializeBase() {
 }
 
 void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
-  auto builder = base::MakeUnique<::login::LocalizedValuesBuilder>(dict);
+  auto builder = std::make_unique<::login::LocalizedValuesBuilder>(dict);
   DeclareLocalizedValues(builder.get());
   GetAdditionalParameters(dict);
 }

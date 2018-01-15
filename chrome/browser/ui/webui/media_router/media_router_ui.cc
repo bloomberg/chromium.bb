@@ -11,7 +11,6 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -334,7 +333,7 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
       initiator_(nullptr),
       router_(nullptr),
       weak_factory_(this) {
-  auto handler = base::MakeUnique<MediaRouterWebUIMessageHandler>(this);
+  auto handler = std::make_unique<MediaRouterWebUIMessageHandler>(this);
   handler_ = handler.get();
 
   // Create a WebUIDataSource containing the chrome://media-router page's
@@ -782,7 +781,7 @@ void MediaRouterUI::ClearIssue(const Issue::Id& issue_id) {
 
 void MediaRouterUI::OpenFileDialog() {
   if (!media_router_file_dialog_) {
-    media_router_file_dialog_ = base::MakeUnique<MediaRouterFileDialog>(this);
+    media_router_file_dialog_ = std::make_unique<MediaRouterFileDialog>(this);
   }
 
   media_router_file_dialog_->OpenFileDialog(GetBrowser());
@@ -822,7 +821,7 @@ void MediaRouterUI::RecordCastModeSelection(MediaCastMode cast_mode) {
       break;
     case MediaCastMode::TAB_MIRROR:
       update->AppendIfNotPresent(
-          base::MakeUnique<base::Value>(GetSerializedInitiatorOrigin()));
+          std::make_unique<base::Value>(GetSerializedInitiatorOrigin()));
       break;
     case MediaCastMode::DESKTOP_MIRROR:
       // Desktop mirroring isn't domain-specific, so we don't record the
@@ -1066,7 +1065,7 @@ void MediaRouterUI::OnMediaControllerUIAvailable(
   DVLOG_IF(1, route_controller_observer_)
       << "Route controller observer unexpectedly exists.";
   route_controller_observer_ =
-      base::MakeUnique<UIMediaRouteControllerObserver>(this, controller);
+      std::make_unique<UIMediaRouteControllerObserver>(this, controller);
 }
 
 void MediaRouterUI::OnMediaControllerUIClosed() {

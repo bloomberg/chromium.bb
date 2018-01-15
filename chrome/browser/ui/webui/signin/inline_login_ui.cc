@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -60,8 +61,8 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
       auth_extension_(Profile::FromWebUI(web_ui)) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
-  web_ui->AddMessageHandler(base::MakeUnique<InlineLoginHandlerImpl>());
-  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
+  web_ui->AddMessageHandler(std::make_unique<InlineLoginHandlerImpl>());
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   content::WebContents* contents = web_ui->GetWebContents();
   // Required for intercepting extension function calls when the page is loaded

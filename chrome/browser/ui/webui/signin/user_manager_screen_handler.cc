@@ -658,7 +658,7 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
   // Copy result into return_value.
   base::DictionaryValue return_value;
   for (const auto& item : result) {
-    auto stat = base::MakeUnique<base::DictionaryValue>();
+    auto stat = std::make_unique<base::DictionaryValue>();
     stat->SetKey("count", base::Value(item.count));
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
@@ -898,7 +898,7 @@ void UserManagerScreenHandler::SendUserList() {
     if (entry->IsOmitted())
       continue;
 
-    auto profile_value = base::MakeUnique<base::DictionaryValue>();
+    auto profile_value = std::make_unique<base::DictionaryValue>();
     base::FilePath profile_path = entry->GetPath();
 
     profile_value->SetString(kKeyUsername, entry->GetUserName());

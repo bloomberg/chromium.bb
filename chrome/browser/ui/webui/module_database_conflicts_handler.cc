@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -38,7 +37,7 @@ void ModuleDatabaseConflictsHandler::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK(module_list_);
 
-  auto data = base::MakeUnique<base::DictionaryValue>();
+  auto data = std::make_unique<base::DictionaryValue>();
 
   // TODO(pmonette): Set the status when conflicting module detection is added.
   constexpr int kGoodStatus = 1;
@@ -93,7 +92,7 @@ void ModuleDatabaseConflictsHandler::HandleRequestModuleList(
 
   // The request is handled asynchronously, filling up the |module_list_|,
   // and will callback via OnModuleDatabaseIdle() on completion.
-  module_list_ = base::MakeUnique<base::ListValue>();
+  module_list_ = std::make_unique<base::ListValue>();
 
   auto* module_database = ModuleDatabase::GetInstance();
   module_database->IncreaseInspectionPriority();

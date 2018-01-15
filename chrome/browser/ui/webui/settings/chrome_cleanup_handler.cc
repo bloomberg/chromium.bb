@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -42,7 +43,7 @@ enum ChromeCleanerDismissSource {
 // Returns a ListValue containing a copy of the file paths stored in |files|.
 std::unique_ptr<base::ListValue> GetFilesAsListStorage(
     const std::set<base::FilePath>& files) {
-  auto value = base::MakeUnique<base::ListValue>();
+  auto value = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : files)
     value->AppendString(path.value());
 
@@ -53,7 +54,7 @@ std::unique_ptr<base::ListValue> GetFilesAsListStorage(
 // |registry_keys|.
 std::unique_ptr<base::ListValue> GetRegistryKeysAsListStorage(
     const std::set<base::string16>& registry_keys) {
-  auto value = base::MakeUnique<base::ListValue>();
+  auto value = std::make_unique<base::ListValue>();
   for (const base::string16& key : registry_keys)
     value->AppendString(key);
 

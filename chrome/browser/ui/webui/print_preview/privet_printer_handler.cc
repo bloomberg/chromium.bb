@@ -102,7 +102,7 @@ void PrivetPrinterHandler::LocalPrinterChanged(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (has_local_printing ||
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
-    auto printer_info = base::MakeUnique<base::DictionaryValue>();
+    auto printer_info = std::make_unique<base::DictionaryValue>();
     FillPrinterDescription(name, description, has_local_printing,
                            printer_info.get());
     base::ListValue printers;
@@ -134,9 +134,9 @@ void PrivetPrinterHandler::StartLister(
   DCHECK(!service_discovery_client_.get() ||
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
-  printer_lister_ = base::MakeUnique<cloud_print::PrivetLocalPrinterLister>(
+  printer_lister_ = std::make_unique<cloud_print::PrivetLocalPrinterLister>(
       service_discovery_client_.get(), profile_->GetRequestContext(), this);
-  privet_lister_timer_ = base::MakeUnique<base::OneShotTimer>();
+  privet_lister_timer_ = std::make_unique<base::OneShotTimer>();
   privet_lister_timer_->Start(FROM_HERE,
                               base::TimeDelta::FromSeconds(kSearchTimeoutSec),
                               this, &PrivetPrinterHandler::StopLister);

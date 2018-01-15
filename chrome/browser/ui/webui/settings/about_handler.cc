@@ -16,7 +16,6 @@
 #include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -637,9 +636,9 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
     if (!types_msg.empty())
       event->SetString("connectionTypes", types_msg);
     else
-      event->Set("connectionTypes", base::MakeUnique<base::Value>());
+      event->Set("connectionTypes", std::make_unique<base::Value>());
   } else {
-    event->Set("connectionTypes", base::MakeUnique<base::Value>());
+    event->Set("connectionTypes", std::make_unique<base::Value>());
   }
 #endif  // defined(OS_CHROMEOS)
 

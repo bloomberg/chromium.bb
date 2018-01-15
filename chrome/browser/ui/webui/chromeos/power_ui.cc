@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -190,7 +189,7 @@ void PowerMessageHandler::GetJsStateOccupancyData(
 }  // namespace
 
 PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<PowerMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<PowerMessageHandler>());
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUIPowerHost);

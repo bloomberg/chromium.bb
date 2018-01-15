@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -106,5 +105,5 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
 void SyncConfirmationUI::InitializeMessageHandlerWithBrowser(Browser* browser) {
   web_ui()->AddMessageHandler(
-      base::MakeUnique<SyncConfirmationHandler>(browser));
+      std::make_unique<SyncConfirmationHandler>(browser));
 }

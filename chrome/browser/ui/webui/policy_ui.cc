@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/policy_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
@@ -64,7 +65,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
 }  // namespace
 
 PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<PolicyUIHandler>());
+  web_ui->AddMessageHandler(std::make_unique<PolicyUIHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 CreatePolicyUIHtmlSource());
 }

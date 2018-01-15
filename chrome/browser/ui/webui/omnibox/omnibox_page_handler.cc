@@ -11,7 +11,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -211,6 +210,6 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
 
 void OmniboxPageHandler::ResetController() {
   controller_.reset(new AutocompleteController(
-      base::MakeUnique<ChromeAutocompleteProviderClient>(profile_), this,
+      std::make_unique<ChromeAutocompleteProviderClient>(profile_), this,
       AutocompleteClassifier::DefaultOmniboxProviders()));
 }

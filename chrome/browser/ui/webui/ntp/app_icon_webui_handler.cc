@@ -23,7 +23,7 @@ std::unique_ptr<base::Value> GetDominantColorCssString(
     scoped_refptr<base::RefCountedMemory> png) {
   color_utils::GridSampler sampler;
   SkColor color = color_utils::CalculateKMeanColorOfPNG(png);
-  return base::MakeUnique<base::Value>(
+  return std::make_unique<base::Value>(
       base::StringPrintf("rgb(%d, %d, %d)", SkColorGetR(color),
                          SkColorGetG(color), SkColorGetB(color)));
 }

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/welcome_win10_ui.h"
 
+#include <memory>
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
@@ -82,7 +82,7 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
 
-  web_ui->AddMessageHandler(base::MakeUnique<WelcomeWin10Handler>());
+  web_ui->AddMessageHandler(std::make_unique<WelcomeWin10Handler>());
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());

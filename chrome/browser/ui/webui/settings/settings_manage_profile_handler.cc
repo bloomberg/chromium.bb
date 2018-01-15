@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -123,7 +122,7 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
           GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     const gfx::Image* icon = entry->GetGAIAPicture();
     if (icon) {
-      auto gaia_picture_info = base::MakeUnique<base::DictionaryValue>();
+      auto gaia_picture_info = std::make_unique<base::DictionaryValue>();
       gfx::Image avatar_icon = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_info->SetString(
           "url", webui::GetBitmapDataUrl(avatar_icon.AsBitmap()));

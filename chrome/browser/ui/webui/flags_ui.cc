@@ -291,7 +291,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
       weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
-  auto handler_owner = base::MakeUnique<FlagsDOMHandler>();
+  auto handler_owner = std::make_unique<FlagsDOMHandler>();
   FlagsDOMHandler* handler = handler_owner.get();
   web_ui->AddMessageHandler(std::move(handler_owner));
 

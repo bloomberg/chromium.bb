@@ -182,7 +182,7 @@ TEST_F(ProfileInfoHandlerTest, PushProfileManagesSupervisedUsers) {
       new DictionaryPrefUpdate(profile()->GetPrefs(), prefs::kSupervisedUsers));
   base::DictionaryValue* dict = update->Get();
   dict->SetWithoutPathExpansion("supervised-user-id",
-                                base::MakeUnique<base::DictionaryValue>());
+                                std::make_unique<base::DictionaryValue>());
   update.reset();
 
   EXPECT_EQ(1U, web_ui()->call_data().size());

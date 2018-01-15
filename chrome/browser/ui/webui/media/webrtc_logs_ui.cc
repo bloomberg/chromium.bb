@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -217,7 +217,7 @@ void WebRtcLogsDOMHandler::UpdateUI() {
 
 WebRtcLogsUI::WebRtcLogsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  web_ui->AddMessageHandler(base::MakeUnique<WebRtcLogsDOMHandler>(profile));
+  web_ui->AddMessageHandler(std::make_unique<WebRtcLogsDOMHandler>(profile));
 
   // Set up the chrome://webrtc-logs/ source.
   content::WebUIDataSource::Add(profile, CreateWebRtcLogsUIHTMLSource());

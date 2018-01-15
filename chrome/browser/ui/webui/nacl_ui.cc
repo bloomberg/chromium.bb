@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
@@ -388,7 +387,7 @@ void NaClDomHandler::MaybeRespondToPage() {
 NaClUI::NaClUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   base::RecordAction(UserMetricsAction("ViewAboutNaCl"));
 
-  web_ui->AddMessageHandler(base::MakeUnique<NaClDomHandler>());
+  web_ui->AddMessageHandler(std::make_unique<NaClDomHandler>());
 
   // Set up the about:nacl source.
   Profile* profile = Profile::FromWebUI(web_ui);

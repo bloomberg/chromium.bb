@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_file_dialog.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task_scheduler/post_task.h"
@@ -122,7 +124,7 @@ void MediaRouterFileDialog::FileSystemDelegate::OpenFileDialog(
 
 MediaRouterFileDialog::MediaRouterFileDialog(
     MediaRouterFileDialogDelegate* delegate)
-    : MediaRouterFileDialog(delegate, base::MakeUnique<FileSystemDelegate>()) {}
+    : MediaRouterFileDialog(delegate, std::make_unique<FileSystemDelegate>()) {}
 
 // Used for tests
 MediaRouterFileDialog::MediaRouterFileDialog(

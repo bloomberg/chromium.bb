@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sys_info.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,7 +26,7 @@ namespace app_list {
 
 StartPageUI::StartPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<StartPageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<StartPageHandler>());
   InitDataSource();
 }
 

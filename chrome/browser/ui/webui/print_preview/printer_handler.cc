@@ -22,7 +22,7 @@
 // static
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForExtensionPrinters(
     Profile* profile) {
-  return base::MakeUnique<ExtensionPrinterHandler>(profile);
+  return std::make_unique<ExtensionPrinterHandler>(profile);
 }
 
 // static
@@ -30,10 +30,10 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForLocalPrinters(
     content::WebContents* preview_web_contents,
     Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<LocalPrinterHandlerChromeos>(profile,
+  return std::make_unique<LocalPrinterHandlerChromeos>(profile,
                                                        preview_web_contents);
 #else
-  return base::MakeUnique<LocalPrinterHandlerDefault>(preview_web_contents);
+  return std::make_unique<LocalPrinterHandlerDefault>(preview_web_contents);
 #endif
 }
 
@@ -42,7 +42,7 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPdfPrinter(
     Profile* profile,
     content::WebContents* preview_web_contents,
     printing::StickySettings* sticky_settings) {
-  return base::MakeUnique<PdfPrinterHandler>(profile, preview_web_contents,
+  return std::make_unique<PdfPrinterHandler>(profile, preview_web_contents,
                                              sticky_settings);
 }
 
@@ -50,7 +50,7 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPdfPrinter(
 // static
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPrivetPrinters(
     Profile* profile) {
-  return base::MakeUnique<PrivetPrinterHandler>(profile);
+  return std::make_unique<PrivetPrinterHandler>(profile);
 }
 #endif
 

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -33,13 +32,13 @@ void MetricsReportingHandler::RegisterMessages() {
 }
 
 void MetricsReportingHandler::OnJavascriptAllowed() {
-  pref_member_ = base::MakeUnique<BooleanPrefMember>();
+  pref_member_ = std::make_unique<BooleanPrefMember>();
   pref_member_->Init(metrics::prefs::kMetricsReportingEnabled,
                      g_browser_process->local_state(),
                      base::Bind(&MetricsReportingHandler::OnPrefChanged,
                                 base::Unretained(this)));
 
-  policy_registrar_ = base::MakeUnique<policy::PolicyChangeRegistrar>(
+  policy_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
       g_browser_process->policy_service(),
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
   policy_registrar_->Observe(policy::key::kMetricsReportingEnabled,
@@ -63,7 +62,7 @@ void MetricsReportingHandler::HandleGetMetricsReporting(
 std::unique_ptr<base::DictionaryValue>
     MetricsReportingHandler::CreateMetricsReportingDict() {
   std::unique_ptr<base::DictionaryValue> dict(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   dict->SetBoolean("enabled",
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
   dict->SetBoolean("managed", IsMetricsReportingPolicyManaged());

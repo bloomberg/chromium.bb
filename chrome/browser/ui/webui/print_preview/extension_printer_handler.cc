@@ -187,7 +187,7 @@ void ExtensionPrinterHandler::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedBytes>& print_data,
     PrintCallback callback) {
-  auto print_job = base::MakeUnique<extensions::PrinterProviderPrintJob>();
+  auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();
   print_job->printer_id = destination_id;
   print_job->job_title = job_title;
   print_job->ticket_json = ticket_json;

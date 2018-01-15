@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -425,7 +424,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 #endif
 
     auto install_extension_handler =
-        base::MakeUnique<InstallExtensionHandler>();
+        std::make_unique<InstallExtensionHandler>();
     InstallExtensionHandler* handler = install_extension_handler.get();
     web_ui->AddMessageHandler(std::move(install_extension_handler));
     handler->GetLocalizedValues(source);
@@ -433,29 +432,29 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     source = CreateExtensionsHTMLSource();
 
     auto extension_settings_handler =
-        base::MakeUnique<ExtensionSettingsHandler>();
+        std::make_unique<ExtensionSettingsHandler>();
     ExtensionSettingsHandler* settings_handler =
         extension_settings_handler.get();
     web_ui->AddMessageHandler(std::move(extension_settings_handler));
     settings_handler->GetLocalizedValues(source);
 
     auto extension_loader_handler =
-        base::MakeUnique<ExtensionLoaderHandler>(profile);
+        std::make_unique<ExtensionLoaderHandler>(profile);
     ExtensionLoaderHandler* loader_handler = extension_loader_handler.get();
     web_ui->AddMessageHandler(std::move(extension_loader_handler));
     loader_handler->GetLocalizedValues(source);
 
     auto install_extension_handler =
-        base::MakeUnique<InstallExtensionHandler>();
+        std::make_unique<InstallExtensionHandler>();
     InstallExtensionHandler* install_handler = install_extension_handler.get();
     web_ui->AddMessageHandler(std::move(install_extension_handler));
     install_handler->GetLocalizedValues(source);
 
-    web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
+    web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
   }
 
 #if defined(OS_CHROMEOS)
-  auto kiosk_app_handler = base::MakeUnique<chromeos::KioskAppsHandler>(
+  auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile));
   chromeos::KioskAppsHandler* kiosk_handler = kiosk_app_handler.get();

@@ -164,7 +164,7 @@ void PdfPrinterHandler::StartGetPrinters(
 
 void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
-  auto printer_info = base::MakeUnique<base::DictionaryValue>();
+  auto printer_info = std::make_unique<base::DictionaryValue>();
   printer_info->SetString(printing::kSettingDeviceName, destination_id);
   printer_info->Set(
       printing::kSettingCapabilities,

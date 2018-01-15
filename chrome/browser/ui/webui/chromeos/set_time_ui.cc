@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/build_time.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -111,7 +112,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 }  // namespace
 
 SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<SetTimeMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<SetTimeMessageHandler>());
 
   // Set up the chrome://set-time source.
   content::WebUIDataSource* source =

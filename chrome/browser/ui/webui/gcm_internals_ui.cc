@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -174,7 +174,7 @@ GCMInternalsUI::GCMInternalsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
 
-  web_ui->AddMessageHandler(base::MakeUnique<GcmInternalsUIMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<GcmInternalsUIMessageHandler>());
 }
 
 GCMInternalsUI::~GCMInternalsUI() {}
