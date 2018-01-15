@@ -120,6 +120,9 @@ enum DownloadCountTypes {
   // Count of downloads that has target determination completed.
   DOWNLOAD_TARGET_DETERMINED_COUNT,
 
+  // A cross origin download without a content disposition header.
+  CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
