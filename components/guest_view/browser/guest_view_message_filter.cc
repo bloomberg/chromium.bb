@@ -158,6 +158,9 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   manager->AttachGuest(render_process_id_, element_instance_id,
                        guest_instance_id, params);
 
+  embedder_web_contents->GetMainFrame()->Send(
+      new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
+
   guest->WillAttach(
       embedder_web_contents, element_instance_id, false,
       base::Bind(&GuestViewBase::DidAttach,
@@ -170,11 +173,6 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   // which depend on the WebViewGuest being initialized which happens above.
   guest_web_contents->AttachToOuterWebContentsFrame(embedder_web_contents,
                                                     embedder_frame);
-
-  // We don't ACK until after AttachToOuterWebContentsFrame, so that
-  // |embedder_frame| gets swapped before the AttachIframeGuest callback is run.
-  embedder_web_contents->GetMainFrame()->Send(
-      new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
 }
 
 }  // namespace guest_view
