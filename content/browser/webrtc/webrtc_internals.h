@@ -125,10 +125,6 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   WebRTCInternals();
   WebRTCInternals(int aggregate_updates_ms, bool should_block_power_saving);
 
-  // This allows unit-tests to override to using either a mock, or a locally
-  // scoped, version of WebRtcEventLogManager.
-  virtual WebRtcEventLogManager* GetWebRtcEventLogManager();
-
   device::mojom::WakeLockPtr wake_lock_;
 
  private:
