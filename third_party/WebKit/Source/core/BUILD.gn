@@ -1262,8 +1262,8 @@ code_generator("make_core_generated_media_feature_names") {
   script = "../build/scripts/core/css/make_media_feature_names.py"
   json_inputs = [ "css/media_feature_names.json5" ]
   templates = [
-    "../build/scripts/templates/MakeNames.cpp.tmpl",
-    "../build/scripts/templates/MakeNames.h.tmpl",
+    "../build/scripts/templates/make_names.cc.tmpl",
+    "../build/scripts/templates/make_names.h.tmpl",
   ]
   other_inputs = make_names_files
   outputs = [

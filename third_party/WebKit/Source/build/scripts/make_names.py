@@ -87,11 +87,11 @@ class MakeNamesWriter(json5_generator.Writer):
             'this_include_header_name': basename + '.h',
         }
 
-    @template_expander.use_jinja("templates/MakeNames.h.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/make_names.h.tmpl", filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("templates/MakeNames.cpp.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/make_names.cc.tmpl", filters=filters)
     def generate_implementation(self):
         return self._template_context
 
