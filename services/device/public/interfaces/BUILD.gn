@@ -23,17 +23,24 @@ mojom("interfaces") {
     "wake_lock_provider.mojom",
   ]
 
-  deps = [
-    "//device/geolocation/public/interfaces",
-    "//services/network/public/interfaces:interfaces",
-  ]
-
   public_deps = [
     ":constants",
+    "//device/geolocation/public/interfaces",
+    "//services/network/public/interfaces",
   ]
 
-  overridden_deps_blink = [ "//services/network/public/interfaces:interfaces" ]
-  component_deps_blink = [ "//third_party/WebKit/Source/platform" ]
+  # The blink variant of the Device Service interfaces are depended on by the
+  # blink platform target. All blink variant mojoms use WTF types, which are
+  # part of the blink platform component. In order to avoid a dependency cycle,
+  # these targets must be part of that component.
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+
+  visibility_blink = [
+    "//third_party/WebKit/Source/platform:blink_platform_public_deps",
+    "//third_party/WebKit/public:mojo_bindings_blink",
+  ]
 }
 
 mojom("generic_sensor") {
@@ -45,10 +52,26 @@ mojom("generic_sensor") {
   public_deps = [
     ":constants",
   ]
+
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+
+  visibility_blink =
+      [ "//third_party/WebKit/Source/platform:blink_platform_public_deps" ]
 }
 
 mojom("constants") {
   sources = [
     "constants.mojom",
+  ]
+
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+
+  visibility_blink = [
+    "//third_party/WebKit/Source/platform:blink_platform_public_deps",
+    ":*",
   ]
 }

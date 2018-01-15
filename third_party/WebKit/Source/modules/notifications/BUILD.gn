@@ -23,7 +23,6 @@ blink_modules_sources("notifications") {
     "ServiceWorkerRegistrationNotifications.h",
   ]
   deps = [
-    "//services/device/public/interfaces:interfaces_blink",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
 }

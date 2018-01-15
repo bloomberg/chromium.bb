@@ -207,6 +207,8 @@ group("blink_platform_public_deps") {
     "//gpu/command_buffer/common:common",
     "//media",
     "//net",
+    "//services/device/public/interfaces:generic_sensor_blink",
+    "//services/device/public/interfaces:interfaces_blink",
     "//services/network/public/cpp:cpp",
     "//services/network/public/interfaces",
     "//services/network/public/interfaces:interfaces_blink",
