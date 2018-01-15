@@ -84,8 +84,9 @@ void StorageQuotaClient::RequestQuota(ScriptState* script_state,
       WebLocalFrameImpl::FromFrame(document->GetFrame());
   web_frame->Client()->RequestStorageQuota(
       storage_type, new_quota_in_bytes,
-      WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
-                WrapPersistent(error_callback)));
+      WTF::Bind(&RequestStorageQuotaCallback,
+                WrapPersistentCallbackFunction(success_callback),
+                WrapPersistentCallbackFunction(error_callback)));
 }
 
 const char* StorageQuotaClient::SupplementName() {
