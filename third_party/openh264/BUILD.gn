@@ -38,24 +38,34 @@ config("config") {
 use_assembler = (is_win || is_linux) &&
                 (target_cpu == "x86" || target_cpu == "x64") && !is_msan
 
+yasm_defines = []
+if (!is_component_build) {
+  if (is_mac || is_ios) {
+    yasm_defines += [ "WELS_PRIVATE_EXTERN=:private_extern" ]
+  } else if (is_linux || is_android || is_fuchsia) {
+    yasm_defines += [ "WELS_PRIVATE_EXTERN=:hidden" ]
+  }
+}
+
 # This IF statement will make the targets visible only on specific builds,
 # which will lead to failures on other platforms if accidentally invoked.
 if (use_assembler) {
   yasm_assemble("openh264_common_yasm") {
     include_dirs = openh264_common_include_dirs
     sources = openh264_common_sources_asm_x86
+    defines = yasm_defines
     if (target_cpu == "x86") {
-      defines = [ "X86_32" ]
+      defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
-        defines = [
+        defines += [
           "PREFIX",
           "UNIX64",
         ]
       } else if (is_win) {
-        defines = [ "WIN64" ]
+        defines += [ "WIN64" ]
       } else if (is_linux) {
-        defines = [ "UNIX64" ]
+        defines += [ "UNIX64" ]
       }
     }
   }
@@ -64,18 +74,19 @@ if (use_assembler) {
     include_dirs = openh264_processing_include_dirs
     include_dirs += [ "./src/codec/common/x86" ]
     sources = openh264_processing_sources_asm_x86
+    defines = yasm_defines
     if (target_cpu == "x86") {
-      defines = [ "X86_32" ]
+      defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
-        defines = [
+        defines += [
           "PREFIX",
           "UNIX64",
         ]
       } else if (is_win) {
-        defines = [ "WIN64" ]
+        defines += [ "WIN64" ]
       } else if (is_linux) {
-        defines = [ "UNIX64" ]
+        defines += [ "UNIX64" ]
       }
     }
   }
@@ -84,18 +95,19 @@ if (use_assembler) {
     include_dirs = openh264_encoder_include_dirs
     include_dirs += [ "./src/codec/common/x86" ]
     sources = openh264_encoder_sources_asm_x86
+    defines = yasm_defines
     if (target_cpu == "x86") {
-      defines = [ "X86_32" ]
+      defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
-        defines = [
+        defines += [
           "PREFIX",
           "UNIX64",
         ]
       } else if (is_win) {
-        defines = [ "WIN64" ]
+        defines += [ "WIN64" ]
       } else if (is_linux) {
-        defines = [ "UNIX64" ]
+        defines += [ "UNIX64" ]
       }
     }
   }
