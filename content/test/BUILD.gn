@@ -1349,7 +1349,6 @@ test("content_unittests") {
     "../browser/payments/payment_app_content_unittest_base.h",
     "../browser/payments/payment_app_provider_impl_unittest.cc",
     "../browser/payments/payment_manager_unittest.cc",
-    "../browser/permissions/permission_service_impl_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/renderer_host/clipboard_host_impl_unittest.cc",
     "../browser/renderer_host/compositor_resize_lock_unittest.cc",

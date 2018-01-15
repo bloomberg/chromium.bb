@@ -67,7 +67,7 @@ bool TaskService::UnbindInstance() {
   // quitting this method, wait for all tasks to complete.
   base::AutoLock tasks_in_flight_auto_lock(tasks_in_flight_lock_);
   // TODO(https://crbug.com/796830): Remove sync operations on the I/O thread.
-  base::ScopedAllowBaseSyncPrimitives allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   while (tasks_in_flight_ > 0)
     no_tasks_in_flight_cv_.Wait();
 
