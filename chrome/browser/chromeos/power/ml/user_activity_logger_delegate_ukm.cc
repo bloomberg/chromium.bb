@@ -94,7 +94,7 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   user_activity.SetEventType(event.event().type())
       .SetEventReason(event.event().reason())
       .SetLastActivityTime(
-          std::floor(event.features().last_activity_time_sec() / 360))
+          std::floor(event.features().last_activity_time_sec() / 3600))
       .SetLastActivityDay(event.features().last_activity_day())
       .SetRecentTimeActive(event.features().recent_time_active_sec())
       .SetDeviceType(event.features().device_type())
@@ -102,7 +102,7 @@ void UserActivityLoggerDelegateUkm::LogActivity(
 
   if (event.features().has_last_user_activity_time_sec()) {
     user_activity.SetLastUserActivityTime(
-        std::floor(event.features().last_user_activity_time_sec() / 360));
+        std::floor(event.features().last_user_activity_time_sec() / 3600));
   }
   if (event.features().has_time_since_last_mouse_sec()) {
     user_activity.SetTimeSinceLastMouse(
