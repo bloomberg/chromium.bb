@@ -128,6 +128,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/DocumentAllNameCollection.h"
 #include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -5763,6 +5764,11 @@ HTMLCollection* Document::WindowNamedItems(const AtomicString& name) {
 DocumentNameCollection* Document::DocumentNamedItems(const AtomicString& name) {
   return EnsureCachedCollection<DocumentNameCollection>(kDocumentNamedItems,
                                                         name);
+}
+
+HTMLCollection* Document::DocumentAllNamedItems(const AtomicString& name) {
+  return EnsureCachedCollection<DocumentAllNameCollection>(
+      kDocumentAllNamedItems, name);
 }
 
 LocalDOMWindow* Document::defaultView() const {

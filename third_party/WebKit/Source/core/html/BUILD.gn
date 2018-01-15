@@ -13,6 +13,8 @@ blink_core_sources("html") {
     "CollectionType.h",
     "CrossOriginAttribute.cpp",
     "CrossOriginAttribute.h",
+    "DocumentAllNameCollection.cpp",
+    "DocumentAllNameCollection.h",
     "DocumentNameCollection.cpp",
     "DocumentNameCollection.h",
     "HTMLAllCollection.cpp",

@@ -36,6 +36,5 @@
     // spec has a (HTMLCollection or Element)? item(DOMString name) method.
     [Custom] Element? item([Default=Undefined] optional unsigned long index);
     // FIXME: namedItem() should be a legacycaller.
-    // FIXME: namedItem() should return an (HTMLCollection or Element)? union.
-    [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
+    [ImplementedAs=namedGetter] getter (HTMLCollection or Element)? namedItem(DOMString name);
 };

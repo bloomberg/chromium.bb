@@ -41,6 +41,6 @@ FAIL item method with invalid "array index property name" assert_equals: expecte
 FAIL item method with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
 PASS item method with null
 FAIL item method with no argument assert_equals: expected (object) null but got (undefined) undefined
-FAIL collections are new live HTMLCollection instances assert_true: expected true got false
+FAIL collections are new live HTMLCollection instances assert_not_equals: got disallowed value object "[object HTMLCollection]"
 Harness: the test ran to completion.
 
