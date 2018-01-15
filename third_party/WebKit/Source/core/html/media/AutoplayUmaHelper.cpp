@@ -34,10 +34,32 @@ const char kAutoplayAttemptUkmVideoTrackMetric[] = "VideoTrack";
 const char kAutoplayAttemptUkmUserGestureRequiredMetric[] =
     "UserGestureRequired";
 const char kAutoplayAttemptUkmMutedMetric[] = "Muted";
+const char kAutoplayAttemptUkmHighMediaEngagementMetric[] =
+    "HighMediaEngagement";
+const char kAutoplayAttemptUkmUserGestureStatusMetric[] = "UserGestureStatus";
 
 const char kAutoplayMutedUnmuteUkmEvent[] = "Media.Autoplay.Muted.UnmuteAction";
 const char kAutoplayMutedUnmuteUkmSourceMetric[] = "Source";
 const char kAutoplayMutedUnmuteUkmResultMetric[] = "Result";
+
+// Returns a int64_t with the following structure:
+// 0b0001 set if there is a user gesture on the stack.
+// 0b0010 set if there was a user gesture on the page.
+// 0b0100 set if there was a user gesture propagated after navigation.
+int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
+  DCHECK(frame);
+
+  int64_t result = 0;
+
+  if (Frame::HasTransientUserActivation(frame, false))
+    result |= 0x01;
+  if (frame->HasBeenActivated())
+    result |= 0x02;
+  if (frame->HasReceivedUserGestureBeforeNavigation())
+    result |= 0x04;
+
+  return result;
+}
 
 }  // namespace
 
@@ -183,6 +205,9 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
 
   // Record UKM autoplay event.
   if (element_->GetDocument().IsInMainFrame()) {
+    LocalFrame* frame = element_->GetDocument().GetFrame();
+    DCHECK(frame);
+
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         CreateUkmBuilder(kAutoplayAttemptUkmEvent);
     builder->AddMetric(kAutoplayAttemptUkmSourceMetric,
@@ -195,6 +220,10 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
         kAutoplayAttemptUkmUserGestureRequiredMetric,
         element_->GetAutoplayPolicy().IsGestureNeededForPlayback());
     builder->AddMetric(kAutoplayAttemptUkmMutedMetric, element_->muted());
+    builder->AddMetric(kAutoplayAttemptUkmHighMediaEngagementMetric,
+                       element_->GetDocument().HasHighMediaEngagement());
+    builder->AddMetric(kAutoplayAttemptUkmUserGestureStatusMetric,
+                       GetUserGestureStatusForUkmMetric(frame));
   }
 
   element_->addEventListener(EventTypeNames::playing, this, false);
