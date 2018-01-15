@@ -40,6 +40,27 @@ static inline bool IsValidSource(EventTarget* source) {
          source->ToServiceWorker();
 }
 
+MessageEvent::V8GCAwareString::V8GCAwareString(const String& value)
+    : string_(value) {
+  const int64_t size = string_.length();
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
+}
+
+MessageEvent::V8GCAwareString::~V8GCAwareString() {
+  const int64_t size = string_.length();
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-size);
+}
+
+MessageEvent::V8GCAwareString& MessageEvent::V8GCAwareString::operator=(
+    const String& other) {
+  const int64_t old_size = string_.length();
+  const int64_t new_size = other.length();
+  string_ = other;
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(new_size -
+                                                                   old_size);
+  return *this;
+}
+
 MessageEvent::MessageEvent() : data_type_(kDataTypeScriptValue) {}
 
 MessageEvent::MessageEvent(const AtomicString& type,

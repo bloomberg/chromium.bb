@@ -151,9 +151,9 @@ class CORE_EXPORT MessageEvent final : public Event {
     DCHECK_EQ(data_type_, kDataTypeSerializedScriptValue);
     return data_as_serialized_script_value_.Get();
   }
-  String DataAsString() const {
+  const String& DataAsString() const {
     DCHECK_EQ(data_type_, kDataTypeString);
-    return data_as_string_;
+    return data_as_string_.data();
   }
   Blob* DataAsBlob() const {
     DCHECK_EQ(data_type_, kDataTypeBlob);
@@ -174,6 +174,21 @@ class CORE_EXPORT MessageEvent final : public Event {
       v8::Local<v8::Object> wrapper) override;
 
  private:
+  class V8GCAwareString final {
+   public:
+    V8GCAwareString() = default;
+    V8GCAwareString(const String&);
+
+    ~V8GCAwareString();
+
+    V8GCAwareString& operator=(const String&);
+
+    const String& data() const { return string_; }
+
+   private:
+    String string_;
+  };
+
   MessageEvent();
   MessageEvent(const AtomicString&, const MessageEventInit&);
   MessageEvent(const String& origin,
@@ -205,7 +220,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   DataType data_type_;
   ScriptValue data_as_script_value_;
   Member<UnpackedSerializedScriptValue> data_as_serialized_script_value_;
-  String data_as_string_;
+  V8GCAwareString data_as_string_;
   Member<Blob> data_as_blob_;
   Member<DOMArrayBuffer> data_as_array_buffer_;
   String origin_;
