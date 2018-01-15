@@ -5,13 +5,17 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/controllable_http_response.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -24,6 +28,20 @@ class RenderFrameDevToolsAgentHostBrowserTest : public ContentBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
   }
 };
+
+namespace {
+
+// A DevToolsAgentHostClient implementation doing nothing.
+class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
+ public:
+  StubDevToolsAgentHostClient() {}
+  ~StubDevToolsAgentHostClient() override {}
+  void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
+  void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
+                               const std::string& message) override {}
+};
+
+}  // namespace
 
 // This test checks which RenderFrameHostImpl the RenderFrameDevToolsAgentHost
 // is tracking while a cross-site navigation is canceled after having reached
@@ -106,6 +124,31 @@ IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
   observer_c.WaitForNavigationFinished();
   EXPECT_EQ(speculative_rfh_c, root->render_manager()->current_frame_host());
   EXPECT_EQ(speculative_rfh_c, rfh_devtools_agent->GetFrameHostForTesting());
+}
+
+// Regression test for https://crbug.com/795694.
+// * Open chrome://dino
+// * Open DevTools
+// * Reload from DevTools must work.
+IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
+                       ReloadDinoPage) {
+  // 1) Navigate to chrome://dino.
+  GURL dino_url(kChromeUIScheme + std::string("://") + kChromeUIDinoHost);
+  EXPECT_FALSE(NavigateToURL(shell(), dino_url));
+
+  // 2) Open DevTools.
+  scoped_refptr<DevToolsAgentHost> devtools_agent_host =
+      DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
+  StubDevToolsAgentHostClient devtools_agent_host_client;
+  devtools_agent_host->AttachClient(&devtools_agent_host_client);
+
+  // 3) Reload from DevTools.
+  TestNavigationObserver reload_observer(shell()->web_contents());
+  devtools_agent_host->DispatchProtocolMessage(
+      &devtools_agent_host_client,
+      R"({"id":1,"method": "Page.reload"})");
+  reload_observer.Wait();
+  devtools_agent_host->DetachClient(&devtools_agent_host_client);
 }
 
 }  // namespace content

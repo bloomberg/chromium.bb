@@ -274,10 +274,9 @@ void LocalFrame::Reload(FrameLoadType load_type,
   if (client_redirect_policy == ClientRedirectPolicy::kNotClientRedirect) {
     if (!loader_.GetDocumentLoader()->GetHistoryItem())
       return;
-    DCHECK(GetDocument());
     FrameLoadRequest request = FrameLoadRequest(
-        GetDocument(), loader_.ResourceRequestForReload(
-                           load_type, NullURL(), client_redirect_policy));
+        nullptr, loader_.ResourceRequestForReload(load_type, NullURL(),
+                                                  client_redirect_policy));
     request.SetClientRedirect(client_redirect_policy);
     loader_.Load(request, load_type);
   } else {
