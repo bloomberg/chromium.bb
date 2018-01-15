@@ -29,4 +29,5 @@
 interface HTMLSlotElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [ImplementedAs=assignedNodesForBinding] sequence<Node> assignedNodes(optional AssignedNodesOptions options);
+    sequence<Elements> assignedElements(optional AssignedNodesOptions options);
 };
