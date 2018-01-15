@@ -318,7 +318,7 @@ CHAR-LIMIT guidelines:
         Notifications are allowed
       </message>
       <message name="IDS_SEARCH_ENGINE_NOTIFICATIONS_ALLOWED_SYSTEM_LOCATION_DISABLED" desc="The text of a link displayed when the location and notifications permissions for a particular search engine are allowed but system location location is turned off. Contains a link to the settings menu to change it.">
-        Notifications are allowed. Location is off; turn it on in Android Settings.
+        Notifications are allowed. Location is off for this device.
       </message>
       <message name="IDS_SEARCH_ENGINE_SYSTEM_LOCATION_DISABLED" desc="The text of a link displayed when the user has granted geolocation to a particular search engine but system location is turned off. Contains a link to the settings menu to change it.">
         Location is off; turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
@@ -974,10 +974,10 @@ Your Google account may have other forms of browsing history like searches and a
         Turn on permission for Chrome in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_ANDROID_LOCATION_OFF_GLOBALLY" desc="The message to show when Location has been turned off globally in Android. Contains a link to the settings menu to enable location.">
-        Location access is <ph name="BEGIN_LINK">&lt;link&gt;</ph>turned off for this device<ph name="END_LINK">&lt;/link&gt;</ph>.
+        Location access is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_ANDROID_LOCATION_ALSO_OFF_GLOBALLY" desc="The additional message to show when Location has not just been turned off for Chrome but also globally in Android. Contains a link to the settings menu to enable location.">
-        Location access is also <ph name="BEGIN_LINK">&lt;link&gt;</ph>turned off for this device<ph name="END_LINK">&lt;/link&gt;</ph>.
+        Location access is also off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
 
       <!-- Camera and microphone preferences -->
