@@ -196,11 +196,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerProviderHost* GetProviderHostByClientID(
       const std::string& client_uuid);
 
-  // Non-null |provider_host| must be given if this is called from a document.
   void RegisterServiceWorker(
       const GURL& script_url,
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
-      ServiceWorkerProviderHost* provider_host,
       const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,
                                const UnregistrationCallback& callback);
@@ -219,7 +217,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache,
                            bool skip_script_comparison,
-                           ServiceWorkerProviderHost* provider_host,
                            const UpdateCallback& callback);
 
   // Used in DevTools to update the service worker registrations without

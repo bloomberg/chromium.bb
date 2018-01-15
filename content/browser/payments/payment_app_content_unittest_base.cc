@@ -148,7 +148,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;
   registration_opt.scope = scope_url;
   worker_helper_->context()->RegisterServiceWorker(
-      sw_script_url, registration_opt, nullptr,
+      sw_script_url, registration_opt,
       base::Bind(&RegisterServiceWorkerCallback, &called, &registration_id));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);

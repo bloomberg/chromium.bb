@@ -102,7 +102,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
 
   context_->UpdateServiceWorker(
       registration_.get(), false /* force_bypass_cache */,
-      false /* skip_script_comparison */, provider_host_,
+      false /* skip_script_comparison */,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistrationObjectHost::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
