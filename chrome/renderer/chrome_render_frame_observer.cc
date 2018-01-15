@@ -132,12 +132,13 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     : content::RenderFrameObserver(render_frame),
       translate_helper_(nullptr),
       phishing_classifier_(nullptr) {
-  // Don't do anything else for subframes.
-  if (!render_frame->IsMainFrame())
-    return;
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
                  base::Unretained(this)));
+  // Don't do anything else for subframes.
+  if (!render_frame->IsMainFrame())
+    return;
+
 #if defined(SAFE_BROWSING_CSD)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -249,7 +250,6 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
         break;
       }
   }
-
   callback.Run(thumbnail_data, original_size);
 }
 
