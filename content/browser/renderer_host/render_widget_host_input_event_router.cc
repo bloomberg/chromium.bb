@@ -1124,7 +1124,7 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
     const blink::WebGestureEvent& event) const {
   if (event.GetType() != blink::WebInputEvent::kGesturePinchBegin &&
       event.GetType() != blink::WebInputEvent::kGestureFlingStart) {
-    return {nullptr, false, gfx::PointF()};
+    return {nullptr, false, base::nullopt};
   }
 
   gfx::PointF transformed_point;
@@ -1218,7 +1218,6 @@ RenderWidgetHostInputEventRouter::FindTargetSynchronously(
       return FindTouchpadGestureEventTarget(root_view, gesture_event);
     }
   }
-  // TODO(crbug.com/796656): Handle other types of events.
   NOTREACHED();
   return RenderWidgetTargetResult();
 }
@@ -1260,7 +1259,6 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
       return;
     }
   }
-  // TODO(crbug.com/796656): Handle other types of events.
   NOTREACHED();
 }
 

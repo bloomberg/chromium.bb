@@ -80,18 +80,19 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
   RenderWidgetHostViewBase* target = result.view;
   auto* event_ptr = &event;
   if (result.should_query_view) {
-    QueryClient(root_view, target, *event_ptr, latency, result.target_location);
+    DCHECK(target && result.target_location.has_value());
+    QueryClient(root_view, target, *event_ptr, latency,
+                result.target_location.value());
   } else {
     FoundTarget(root_view, target, *event_ptr, latency, result.target_location);
   }
 }
 
-void RenderWidgetTargeter::QueryClient(
-    RenderWidgetHostViewBase* root_view,
-    RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency,
-    const base::Optional<gfx::PointF>& target_location) {
+void RenderWidgetTargeter::QueryClient(RenderWidgetHostViewBase* root_view,
+                                       RenderWidgetHostViewBase* target,
+                                       const blink::WebInputEvent& event,
+                                       const ui::LatencyInfo& latency,
+                                       const gfx::PointF& target_location) {
   DCHECK(!request_in_flight_);
   request_in_flight_ = true;
   auto* target_client =
@@ -105,7 +106,7 @@ void RenderWidgetTargeter::QueryClient(
         static_cast<const blink::WebGestureEvent&>(event).source_device ==
             blink::WebGestureDevice::kWebGestureDeviceTouchpad))) {
     target_client->FrameSinkIdAt(
-        gfx::ToCeiledPoint(target_location.value()),
+        gfx::ToCeiledPoint(target_location),
         base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
                        weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
                        target->GetWeakPtr(),
@@ -113,8 +114,6 @@ void RenderWidgetTargeter::QueryClient(
                        target_location));
     return;
   }
-
-  // TODO(crbug.com/796656): Handle other types of events.
   NOTREACHED();
 }
 
@@ -137,7 +136,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     base::WeakPtr<RenderWidgetHostViewBase> target,
     ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
-    const base::Optional<gfx::PointF>& target_location,
+    const gfx::PointF& target_location,
     const viz::FrameSinkId& frame_sink_id) {
   request_in_flight_ = false;
   auto* view = delegate_->FindViewFromFrameSinkId(frame_sink_id);
@@ -148,14 +147,8 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   if (view == target.get()) {
     FoundTarget(root_view.get(), view, *event, latency, target_location);
   } else {
-    base::Optional<gfx::PointF> location = target_location;
-    if (target_location) {
-      gfx::PointF updated_location = *target_location;
-      if (target->TransformPointToCoordSpaceForView(updated_location, view,
-                                                    &updated_location)) {
-        location.emplace(updated_location);
-      }
-    }
+    gfx::PointF location = target_location;
+    target->TransformPointToCoordSpaceForView(location, view, &location);
     QueryClient(root_view.get(), view, *event, latency, location);
   }
 }
@@ -188,7 +181,6 @@ void RenderWidgetTargeter::FoundTarget(
                 blink::WebGestureDevice::kWebGestureDeviceTouchpad));
     delegate_->DispatchEventToTarget(root_view, target, event, latency);
   } else {
-    // TODO(crbug.com/796656): Handle other types of events.
     NOTREACHED();
     return;
   }

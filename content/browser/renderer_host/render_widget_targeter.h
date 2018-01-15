@@ -82,7 +82,7 @@ class RenderWidgetTargeter {
                    RenderWidgetHostViewBase* target,
                    const blink::WebInputEvent& event,
                    const ui::LatencyInfo& latency,
-                   const base::Optional<gfx::PointF>& target_location);
+                   const gfx::PointF& target_location);
 
   // |event| is in the coordinate space of |root_view|. |target_location|, if
   // set, is the location in |target|'s coordinate space.
@@ -90,7 +90,7 @@ class RenderWidgetTargeter {
                         base::WeakPtr<RenderWidgetHostViewBase> target,
                         ui::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency,
-                        const base::Optional<gfx::PointF>& target_location,
+                        const gfx::PointF& target_location,
                         const viz::FrameSinkId& frame_sink_id);
 
   // |event| is in the coordinate space of |root_view|. |target_location|, if
