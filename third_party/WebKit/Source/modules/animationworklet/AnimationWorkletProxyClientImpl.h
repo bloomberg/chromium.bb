@@ -5,10 +5,10 @@
 #ifndef AnimationWorkletProxyClientImpl_h
 #define AnimationWorkletProxyClientImpl_h
 
-#include "core/animation/CompositorAnimator.h"
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "modules/ModulesExport.h"
 #include "modules/animationworklet/AnimationWorkletGlobalScope.h"
+#include "platform/graphics/CompositorAnimator.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 

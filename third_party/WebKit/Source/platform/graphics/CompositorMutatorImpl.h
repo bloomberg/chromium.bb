@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "core/animation/CompositorAnimator.h"
+#include "platform/graphics/CompositorAnimator.h"
 #include "platform/graphics/CompositorMutator.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
@@ -25,7 +25,7 @@ class CompositorMutatorClient;
 //
 // Owned by the control thread (unless threaded compositing is disabled).
 // Should be accessed only on the compositor thread.
-class CORE_EXPORT CompositorMutatorImpl final : public CompositorMutator {
+class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
  public:
   static std::unique_ptr<CompositorMutatorClient> CreateClient();
   static CompositorMutatorImpl* Create();
