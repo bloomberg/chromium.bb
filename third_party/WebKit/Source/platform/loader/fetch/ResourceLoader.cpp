@@ -54,16 +54,6 @@
 
 namespace blink {
 
-static scoped_refptr<WebTaskRunner> GetTaskRunnerFor(
-    const ResourceRequest& request,
-    FetchContext& context) {
-  if (!request.GetKeepalive())
-    return context.GetLoadingTaskRunner();
-  // The loader should be able to work after the frame destruction, so we
-  // cannot use the task runner associated with the frame.
-  return Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
-}
-
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
                                        Resource* resource,
@@ -82,10 +72,9 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       resource_(resource),
       inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
-      cancel_timer_(
-          GetTaskRunnerFor(resource_->GetResourceRequest(), Context()),
-          this,
-          &ResourceLoader::CancelTimerFired) {
+      cancel_timer_(Context().GetLoadingTaskRunner(),
+                    this,
+                    &ResourceLoader::CancelTimerFired) {
   DCHECK(resource_);
   DCHECK(fetcher_);
 
@@ -105,7 +94,7 @@ void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
   loader_ =
-      Context().CreateURLLoader(request, GetTaskRunnerFor(request, Context()));
+      Context().CreateURLLoader(request, Context().GetLoadingTaskRunner());
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   auto throttle_option = ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
 
@@ -167,7 +156,7 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
   loader_ =
-      Context().CreateURLLoader(request, GetTaskRunnerFor(request, Context()));
+      Context().CreateURLLoader(request, Context().GetLoadingTaskRunner());
   StartWith(request);
 }
 

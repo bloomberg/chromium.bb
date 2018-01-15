@@ -24,7 +24,6 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   ~MockScriptedIdleTaskControllerScheduler() override = default;
 
   // WebScheduler implementation:
-  WebTaskRunner* LoadingTaskRunner() override { return nullptr; }
   WebTaskRunner* TimerTaskRunner() override { return nullptr; }
   WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
   WebTaskRunner* V8TaskRunner() override { return nullptr; }

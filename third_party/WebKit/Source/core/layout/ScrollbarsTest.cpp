@@ -22,6 +22,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebThemeEngine.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,16 +118,12 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
   // a hard (virtual) time limit.
   void RunTasksForPeriod(double delay_ms) {
     TimeAdvance();
-    Platform::Current()
-        ->CurrentThread()
-        ->Scheduler()
-        ->LoadingTaskRunner()
-        ->PostDelayedTask(
-            FROM_HERE,
-            WTF::Bind(
-                &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
-                WTF::Unretained(this)),
-            TimeDelta::FromMillisecondsD(delay_ms));
+    scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
+        FROM_HERE,
+        WTF::Bind(
+            &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
+            WTF::Unretained(this)),
+        TimeDelta::FromMillisecondsD(delay_ms));
     testing::EnterRunLoop();
   }
 };

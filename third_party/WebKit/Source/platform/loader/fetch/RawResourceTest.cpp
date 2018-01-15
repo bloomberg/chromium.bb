@@ -126,12 +126,9 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
     // First schedule an asynchronous task to remove the client.
     // We do not expect a client to be called if the client is removed before
     // a callback invocation task queued inside addClient() is scheduled.
-    Platform::Current()
-        ->CurrentThread()
-        ->Scheduler()
-        ->LoadingTaskRunner()
-        ->PostTask(FROM_HERE, WTF::Bind(&AddingClient::RemoveClient,
-                                        WrapPersistent(this)));
+    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+        FROM_HERE,
+        WTF::Bind(&AddingClient::RemoveClient, WrapPersistent(this)));
     resource->AddClient(
         dummy_client_,
         Platform::Current()->CurrentThread()->GetWebTaskRunner());

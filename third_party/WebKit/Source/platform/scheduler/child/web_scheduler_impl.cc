@@ -18,13 +18,10 @@ namespace scheduler {
 WebSchedulerImpl::WebSchedulerImpl(
     ChildScheduler* child_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-    scoped_refptr<TaskQueue> loading_task_runner,
     scoped_refptr<TaskQueue> timer_task_runner,
     scoped_refptr<TaskQueue> v8_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
-      loading_web_task_runner_(
-          WebTaskRunnerImpl::Create(loading_task_runner, base::nullopt)),
       timer_web_task_runner_(
           WebTaskRunnerImpl::Create(timer_task_runner, base::nullopt)),
       v8_web_task_runner_(
@@ -64,10 +61,6 @@ void WebSchedulerImpl::PostNonNestableIdleTask(
   idle_task_runner_->PostNonNestableIdleTask(
       location,
       base::BindOnce(&WebSchedulerImpl::RunIdleTask, std::move(task)));
-}
-
-blink::WebTaskRunner* WebSchedulerImpl::LoadingTaskRunner() {
-  return loading_web_task_runner_.get();
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
