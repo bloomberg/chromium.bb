@@ -53,6 +53,7 @@
   for (id<ToolbarCoordinating> coordinator in self.coordinators) {
     [coordinator updateToolbarState];
   }
+  [self.toolsMenuCoordinator updateConfiguration];
 }
 
 #pragma mark - IncognitoViewControllerDelegate
