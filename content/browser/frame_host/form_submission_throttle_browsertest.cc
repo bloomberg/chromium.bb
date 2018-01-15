@@ -33,7 +33,6 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
   const struct {
     GURL main_page_url;
     GURL form_page_url;
-    NavigationThrottle::ThrottleAction start_expectation;
     NavigationThrottle::ThrottleAction redirect_expectation;
   } kTestCases[] = {
       // Form submissions is allowed by default when there is no CSP.
@@ -41,7 +40,6 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
           embedded_test_server()->GetURL(
               "/form_submission_throttle/no_csp.html"),
           embedded_test_server()->GetURL("/simple_page.html"),
-          NavigationThrottle::PROCEED,  // start expectation.
           NavigationThrottle::PROCEED   // redirect expectation.
       },
 
@@ -51,22 +49,7 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
           embedded_test_server()->GetURL(
               "/form_submission_throttle/form_action_none.html"),
           embedded_test_server()->GetURL("/simple_page.html"),
-          NavigationThrottle::CANCEL,  // start expectation.
           NavigationThrottle::CANCEL   // redirect expectation.
-      },
-
-      // The path of the source-expression is only enforced when there is no
-      // redirection. By using this behavior, this test can check a case where
-      // the request is canceled in WillStartRequest() but not in
-      // WillRedirectRequest().
-      // See https://www.w3.org/TR/CSP2/#source-list-paths-and-redirects for
-      // details.
-      {
-          embedded_test_server()->GetURL(
-              "/form_submission_throttle/form_action_with_path.html"),
-          embedded_test_server()->GetURL("/not_the_file.html"),
-          NavigationThrottle::CANCEL,  // start expectation.
-          NavigationThrottle::PROCEED  // redirect expectation.
       },
   };
 
@@ -100,7 +83,9 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
     std::unique_ptr<NavigationThrottle> throttle =
         FormSubmissionThrottle::MaybeCreateThrottleFor(handle.get());
     ASSERT_TRUE(throttle);
-    EXPECT_EQ(test.start_expectation, throttle->WillStartRequest());
+    // Browser side checks have been disabled on the initial load. Only the
+    // renderer side checks occurs. Related issue: https://crbug.com/798698.
+    EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest());
     EXPECT_EQ(test.redirect_expectation, throttle->WillRedirectRequest());
   }
 }
