@@ -1497,10 +1497,10 @@ action("make_core_generated_origin_trials") {
 action_foreach("make_core_generated_bison") {
   script = "../build/scripts/rule_bison.py"
   sources = [
-    "xml/XPathGrammar.y",
+    "xml/xpath_grammar.y",
   ]
   outputs = [
-    "$blink_core_output_dir/{{source_name_part}}.cpp",
+    "$blink_core_output_dir/{{source_name_part}}.cc",
     "$blink_core_output_dir/{{source_name_part}}.h",
   ]
   args = [

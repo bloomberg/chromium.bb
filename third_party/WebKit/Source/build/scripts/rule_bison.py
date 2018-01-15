@@ -58,8 +58,8 @@ if pathToBison:
     os.environ['PATH'] = pathToBison + os.pathsep + os.environ['PATH']
 
 inputName = os.path.basename(inputFile)
-assert inputName == 'XPathGrammar.y'
-prefix = {'XPathGrammar.y': 'xpathyy'}[inputName]
+assert inputName == 'xpath_grammar.y'
+prefix = {'xpath_grammar.y': 'xpathyy'}[inputName]
 
 (inputRoot, inputExt) = os.path.splitext(inputName)
 
@@ -68,6 +68,7 @@ prefix = {'XPathGrammar.y': 'xpathyy'}[inputName]
 outputHTries = [
     os.path.join(outputDir, inputRoot + '.cpp.h'),
     os.path.join(outputDir, inputRoot + '.hpp'),
+    os.path.join(outputDir, inputRoot + '.hh'),
 ]
 
 for outputHTry in outputHTries:
@@ -77,7 +78,7 @@ for outputHTry in outputHTries:
         if e.errno != errno.ENOENT:
             raise
 
-outputCpp = os.path.join(outputDir, inputRoot + '.cpp')
+outputCpp = os.path.join(outputDir, inputRoot + '.cc')
 
 returnCode = subprocess.call([bisonExe, '-d', '-p', prefix, inputFile, '-o', outputCpp])
 assert returnCode == 0
