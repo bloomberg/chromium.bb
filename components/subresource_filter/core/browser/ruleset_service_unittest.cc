@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -70,7 +69,7 @@ template <typename Fun>
 std::unique_ptr<ScopedFunctionOverride<Fun>> OverrideFunctionForScope(
     Fun* target,
     Fun replacement) {
-  return base::MakeUnique<ScopedFunctionOverride<Fun>>(target, replacement);
+  return std::make_unique<ScopedFunctionOverride<Fun>>(target, replacement);
 }
 
 std::vector<uint8_t> ReadFileContents(base::File* file) {
@@ -172,8 +171,8 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
   void ResetRulesetService() {
-    mock_delegate_ = base::MakeUnique<MockRulesetServiceDelegate>();
-    service_ = base::MakeUnique<RulesetService>(
+    mock_delegate_ = std::make_unique<MockRulesetServiceDelegate>();
+    service_ = std::make_unique<RulesetService>(
         &pref_service_, task_runner_, mock_delegate_.get(), base_dir());
   }
 

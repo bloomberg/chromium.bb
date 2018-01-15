@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -79,12 +78,12 @@ class ActivationStateComputingNavigationThrottleTest
     // Make the blocking task runner run on the current task runner for the
     // tests, to ensure that the NavigationSimulator properly runs all necessary
     // tasks while waiting for throttle checks to finish.
-    dealer_handle_ = base::MakeUnique<VerifiedRulesetDealer::Handle>(
+    dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoop::current()->task_runner());
     dealer_handle_->SetRulesetFile(
         testing::TestRuleset::Open(test_ruleset_pair_.indexed));
     ruleset_handle_ =
-        base::MakeUnique<VerifiedRuleset::Handle>(dealer_handle_.get());
+        std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
   }
 
   void NavigateAndCommitMainFrameWithPageActivationState(

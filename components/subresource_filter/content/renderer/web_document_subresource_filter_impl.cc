@@ -4,10 +4,10 @@
 
 #include "components/subresource_filter/content/renderer/web_document_subresource_filter_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "components/subresource_filter/core/common/activation_state.h"
@@ -165,7 +165,7 @@ std::unique_ptr<blink::WebDocumentSubresourceFilter>
 WebDocumentSubresourceFilterImpl::BuilderImpl::Build() {
   DCHECK(ruleset_file_.IsValid());
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
-  return base::MakeUnique<WebDocumentSubresourceFilterImpl>(
+  return std::make_unique<WebDocumentSubresourceFilterImpl>(
       document_origin_, activation_state_,
       base::MakeRefCounted<MemoryMappedRuleset>(std::move(ruleset_file_)),
       base::BindOnce(&ProxyToTaskRunner, main_task_runner_,

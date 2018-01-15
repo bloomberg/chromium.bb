@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -125,7 +124,7 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     statistics_.reset();
     if (filter) {
       statistics_ =
-          base::MakeUnique<PageLoadStatistics>(filter->activation_state());
+          std::make_unique<PageLoadStatistics>(filter->activation_state());
       if (filter->activation_state().enable_logging) {
         DCHECK(filter->activation_state().activation_level !=
                ActivationLevel::DISABLED);
@@ -233,7 +232,7 @@ ContentSubresourceFilterThrottleManager::
     return nullptr;
   AsyncDocumentSubresourceFilter* parent_filter =
       GetParentFrameFilter(navigation_handle);
-  return parent_filter ? base::MakeUnique<SubframeNavigationFilteringThrottle>(
+  return parent_filter ? std::make_unique<SubframeNavigationFilteringThrottle>(
                              navigation_handle, parent_filter)
                        : nullptr;
 }
@@ -296,7 +295,7 @@ void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
 VerifiedRuleset::Handle*
 ContentSubresourceFilterThrottleManager::EnsureRulesetHandle() {
   if (!ruleset_handle_)
-    ruleset_handle_ = base::MakeUnique<VerifiedRuleset::Handle>(dealer_handle_);
+    ruleset_handle_ = std::make_unique<VerifiedRuleset::Handle>(dealer_handle_);
   return ruleset_handle_.get();
 }
 
