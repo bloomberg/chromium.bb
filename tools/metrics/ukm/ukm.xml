@@ -741,6 +741,11 @@ be describing additional metrics about the same event.
       Whether the element had an audio track when autoplay was attempted.
     </summary>
   </metric>
+  <metric name="HighMediaEngagement">
+    <summary>
+      Whether the document has a high media engagement.
+    </summary>
+  </metric>
   <metric name="Muted">
     <summary>
       Whether the element was muted when autoplay was attempted.
@@ -756,6 +761,15 @@ be describing additional metrics about the same event.
       Whether a user gesture was required per autoplay rules at the time of
       attempt. By definition there is no user gesture on the stack when the
       attempt is registered.
+    </summary>
+  </metric>
+  <metric name="UserGestureStatus">
+    <summary>
+      Reflects the current status of user gesture/activation. This is a bit
+      field with the following values: - 0b0001 if there is a user gesture on
+      the stack; - 0b0010 if there was a user gesture on the page (ie. was
+      activated); - 0b0100 if there was a user gesture propogated after a
+      navigation.
     </summary>
   </metric>
   <metric name="VideoTrack">
