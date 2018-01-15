@@ -5,22 +5,26 @@
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
 
 // static
 std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
 PrerenderPageLoadMetricsObserver::CreateIfNeeded(
-    content::WebContents* web_contents,
-    prerender::PrerenderManager* manager) {
+    content::WebContents* web_contents) {
+  prerender::PrerenderManager* manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
   if (!manager)
     return nullptr;
 
   if (manager->PageLoadMetricsObserverDisabledForTesting())
     return nullptr;
 
-  return std::make_unique<PrerenderPageLoadMetricsObserver>(manager,
+  return base::MakeUnique<PrerenderPageLoadMetricsObserver>(manager,
                                                             web_contents);
 }
 
