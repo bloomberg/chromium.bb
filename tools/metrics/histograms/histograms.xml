@@ -90001,42 +90001,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="Tabs.UnusedAndClosedInInterval.Count" units="Tabs">
-  <owner>sebmarchand@chromium.org</owner>
-  <summary>
-    The number of tabs that haven't been interacted with, visible or audible
-    over a given interval time, but which no longer exist at all at the end of
-    this interval.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Tabs.UnusedInInterval.Count" units="Tabs">
-  <owner>sebmarchand@chromium.org</owner>
-  <summary>
-    The number of tabs that haven't been interacted with, visible or audible or
-    visible during a given interval of time and still exist at the end of this
-    interval.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Tabs.UsedAndClosedInInterval.Count" units="Tabs">
-  <owner>sebmarchand@chromium.org</owner>
-  <summary>
-    The number of tabs that have been interacted with, visible or audible over a
-    given interval of time, but which no longer exist at all at the end of this
-    interval.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Tabs.UsedInInterval.Count" units="Tabs">
-  <owner>sebmarchand@chromium.org</owner>
-  <summary>
-    The number of tabs that have been interacted with, visible or audible during
-    a given interval of time, includes tabs that don't exist at the end of this
-    interval.
-  </summary>
-</histogram>
-
 <histogram name="TabsApi.RequestedWindowState" enum="RequestedWindowState">
   <owner>afakhry@chromium.org</owner>
   <summary>
@@ -110935,19 +110899,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Tabs.SwitchFromExitLatency"/>
   <affected-histogram name="Tabs.SwitchFromNewLatency"/>
   <affected-histogram name="Tabs.SwitchFromUserLatency"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="Tabs.TabUsageIntervalLength" separator="_">
-  <suffix name="30" label="30 seconds"/>
-  <suffix name="60" label="1 minute"/>
-  <suffix name="600" label="10 minutes"/>
-  <suffix name="3600" label="1 hour"/>
-  <suffix name="18000" label="5 hours"/>
-  <suffix name="43200" label="12 hours"/>
-  <affected-histogram name="Tabs.UnusedAndClosedInInterval.Count"/>
-  <affected-histogram name="Tabs.UnusedInInterval.Count"/>
-  <affected-histogram name="Tabs.UsedAndClosedInInterval.Count"/>
-  <affected-histogram name="Tabs.UsedInInterval.Count"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="TaskSchedulerMayBlock" separator=".">
