@@ -3378,6 +3378,7 @@ interface HTMLShadowElement : HTMLElement
 interface HTMLSlotElement : HTMLElement
     attribute @@toStringTag
     getter name
+    method assignedElements
     method assignedNodes
     method constructor
     setter name

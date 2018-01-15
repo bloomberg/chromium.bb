@@ -50,6 +50,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   const HeapVector<Member<Node>>& GetDistributedNodes();
   const HeapVector<Member<Node>> assignedNodesForBinding(
       const AssignedNodesOptions&);
+  const HeapVector<Member<Element>> assignedElements(
+      const AssignedNodesOptions&);
 
   Node* FirstAssignedNode() const {
     return assigned_nodes_.IsEmpty() ? nullptr : assigned_nodes_.front().Get();
