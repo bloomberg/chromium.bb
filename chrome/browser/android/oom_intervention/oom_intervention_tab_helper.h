@@ -66,6 +66,8 @@ class OomInterventionTabHelper
   void StartMonitoringIfNeeded();
   // Stops observing near-OOM situation.
   void StopMonitoring();
+  // Starts detecting near-OOM situation in renderer.
+  void StartDetectionInRenderer();
 
   // Called when NearOomMonitor detects near-OOM situation.
   void OnNearOomDetected();
