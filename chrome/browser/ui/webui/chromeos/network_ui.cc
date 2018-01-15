@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -266,7 +266,7 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<NetworkConfigMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/supervised_user_internals_message_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -246,7 +246,7 @@ void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
     const base::DictionaryValue* settings) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveUserSettings",
-      *(settings ? settings : base::MakeUnique<base::Value>().get()));
+      *(settings ? settings : std::make_unique<base::Value>().get()));
 }
 
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(

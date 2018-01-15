@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -456,7 +455,7 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
 
 std::unique_ptr<KeyedService> BuildTestingPrinterProviderAPI(
     content::BrowserContext* context) {
-  return base::MakeUnique<FakePrinterProviderAPI>();
+  return std::make_unique<FakePrinterProviderAPI>();
 }
 
 }  // namespace
@@ -470,9 +469,9 @@ class ExtensionPrinterHandlerTest : public testing::Test {
     extensions::PrinterProviderAPIFactory::GetInstance()->SetTestingFactory(
         env_.profile(), &BuildTestingPrinterProviderAPI);
     extension_printer_handler_ =
-        base::MakeUnique<ExtensionPrinterHandler>(env_.profile());
+        std::make_unique<ExtensionPrinterHandler>(env_.profile());
 
-    auto pwg_raster_converter = base::MakeUnique<FakePwgRasterConverter>();
+    auto pwg_raster_converter = std::make_unique<FakePwgRasterConverter>();
     pwg_raster_converter_ = pwg_raster_converter.get();
     extension_printer_handler_->SetPwgRasterConverterForTesting(
         std::move(pwg_raster_converter));

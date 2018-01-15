@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -59,7 +58,7 @@ void ArcKioskSplashScreenHandler::Show() {
   base::DictionaryValue data;
   // |data| will take ownership of |app_info|.
   std::unique_ptr<base::DictionaryValue> app_info =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   PopulateAppInfo(app_info.get());
   data.Set("appInfo", std::move(app_info));
   ShowScreenWithData(kScreenId, &data);

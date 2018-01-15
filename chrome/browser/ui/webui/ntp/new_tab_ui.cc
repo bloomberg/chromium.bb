@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -56,7 +55,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   Profile* profile = GetProfile();
 
   if (!profile->IsGuestSession())
-    web_ui->AddMessageHandler(base::MakeUnique<ThemeHandler>());
+    web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
 
   // content::URLDataSource assumes the ownership of the html source.
   content::URLDataSource::Add(

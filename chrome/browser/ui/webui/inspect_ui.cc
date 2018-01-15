@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/inspect_ui.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
@@ -69,7 +68,7 @@ const char kIsAdditionalField[] = "isAdditional";
 void GetUiDevToolsTargets(base::ListValue& targets) {
   for (const auto& client_pair :
        ui_devtools::UiDevToolsServer::GetClientNamesAndUrls()) {
-    auto target_data = base::MakeUnique<base::DictionaryValue>();
+    auto target_data = std::make_unique<base::DictionaryValue>();
     target_data->SetString(kNameField, client_pair.first);
     target_data->SetString(kUrlField, client_pair.second);
     target_data->SetBoolean(kIsAdditionalField, true);
@@ -326,7 +325,7 @@ void DevToolsUIBindingsEnabler::DidFinishNavigation(
 
 InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<InspectMessageHandler>(this));
+  web_ui->AddMessageHandler(std::make_unique<InspectMessageHandler>(this));
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 

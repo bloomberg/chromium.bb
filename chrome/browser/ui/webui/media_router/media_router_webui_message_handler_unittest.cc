@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
+
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
@@ -138,7 +141,7 @@ class TestMediaRouterWebUIMessageHandler
 class MediaRouterWebUIMessageHandlerTest : public MediaRouterWebUITest {
  public:
   MediaRouterWebUIMessageHandlerTest()
-      : web_ui_(base::MakeUnique<content::TestWebUI>()),
+      : web_ui_(std::make_unique<content::TestWebUI>()),
         provider_extension_id_(kProviderExtensionIdForTesting) {}
   ~MediaRouterWebUIMessageHandlerTest() override {}
 
@@ -148,8 +151,8 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterWebUITest {
     chrome::NewTab(browser());
     web_ui_->set_web_contents(
         browser()->tab_strip_model()->GetActiveWebContents());
-    mock_media_router_ui_ = base::MakeUnique<MockMediaRouterUI>(web_ui_.get());
-    handler_ = base::MakeUnique<TestMediaRouterWebUIMessageHandler>(
+    mock_media_router_ui_ = std::make_unique<MockMediaRouterUI>(web_ui_.get());
+    handler_ = std::make_unique<TestMediaRouterWebUIMessageHandler>(
         mock_media_router_ui_.get());
     handler_->SetWebUIForTest(web_ui_.get());
   }
@@ -591,7 +594,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnRouteDetailsOpenedAndClosed) {
   const std::string route_id = "routeId123";
   base::ListValue args_list;
   base::DictionaryValue* args;
-  args_list.Append(base::MakeUnique<base::DictionaryValue>());
+  args_list.Append(std::make_unique<base::DictionaryValue>());
   args_list.GetDictionary(0, &args);
   args->SetString("routeId", route_id);
 
@@ -621,7 +624,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
   handler_->OnPauseCurrentMedia(&args_list);
 
   base::DictionaryValue* args;
-  args_list.Append(base::MakeUnique<base::DictionaryValue>());
+  args_list.Append(std::make_unique<base::DictionaryValue>());
   args_list.GetDictionary(0, &args);
 
   const int time = 50;
@@ -669,7 +672,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnInvalidMediaCommandsReceived) {
   base::ListValue args_list;
 
   base::DictionaryValue* args;
-  args_list.Append(base::MakeUnique<base::DictionaryValue>());
+  args_list.Append(std::make_unique<base::DictionaryValue>());
   args_list.GetDictionary(0, &args);
 
   // Seek positions greater than the duration or negative should be ignored.

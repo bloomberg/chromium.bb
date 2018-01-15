@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
@@ -68,7 +67,7 @@ L10nUtilTest::L10nUtilTest()
     : input_manager_(new MockInputMethodManagerWithInputMethods) {
   chromeos::input_method::InitializeForTesting(input_manager_);
   input_manager_->SetComponentExtensionIMEManager(
-      base::MakeUnique<ComponentExtensionIMEManager>());
+      std::make_unique<ComponentExtensionIMEManager>());
 
   chromeos::system::StatisticsProvider::GetInstance()
       ->StartLoadingMachineStatistics(false);

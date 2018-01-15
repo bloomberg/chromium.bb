@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_file_dialog.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -75,12 +76,12 @@ class MediaRouterFileDialogTest : public Test {
   }
 
   void SetUp() override {
-    mock_delegate_ = base::MakeUnique<MockDelegate>();
+    mock_delegate_ = std::make_unique<MockDelegate>();
 
-    auto temp_mock = base::MakeUnique<MockFileSystemDelegate>();
+    auto temp_mock = std::make_unique<MockFileSystemDelegate>();
     mock_file_system_delegate = temp_mock.get();
 
-    dialog_ = base::MakeUnique<MediaRouterFileDialog>(mock_delegate_.get(),
+    dialog_ = std::make_unique<MediaRouterFileDialog>(mock_delegate_.get(),
                                                       std::move(temp_mock));
     dialog_as_listener_ = dialog_.get();
 

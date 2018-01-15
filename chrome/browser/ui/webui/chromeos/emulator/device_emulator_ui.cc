@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h"
@@ -57,7 +58,7 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
 DeviceEmulatorUI::DeviceEmulatorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(
-      base::MakeUnique<chromeos::DeviceEmulatorMessageHandler>());
+      std::make_unique<chromeos::DeviceEmulatorMessageHandler>());
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 CreateDeviceEmulatorUIDataSource());

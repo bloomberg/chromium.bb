@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -74,7 +73,7 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
 
   // Add a policy exception.
   std::string star_google_com = "http://[*.]google.com";
-  auto policy_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto policy_provider = std::make_unique<content_settings::MockProvider>();
   policy_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(star_google_com),
       ContentSettingsPattern::Wildcard(), kContentType, "",
@@ -92,7 +91,7 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
 
   // Add an extension exception.
   std::string drive_google_com = "http://drive.google.com";
-  auto extension_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto extension_provider = std::make_unique<content_settings::MockProvider>();
   extension_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(drive_google_com),
       ContentSettingsPattern::Wildcard(), kContentType, "",
@@ -185,7 +184,7 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 #endif
 
   // Extension.
-  auto extension_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto extension_provider = std::make_unique<content_settings::MockProvider>();
   extension_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
                                         ContentSettingsPattern::FromURL(origin),
                                         kContentType, "",
@@ -201,7 +200,7 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
 
   // Enterprise policy.
-  auto policy_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto policy_provider = std::make_unique<content_settings::MockProvider>();
   policy_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
                                      ContentSettingsPattern::FromURL(origin),
                                      kContentType, "",

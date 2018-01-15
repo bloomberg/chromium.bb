@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DISABLED_Editing) {
                          &file_contents);
   values = base::JSONReader::Read(file_contents);
   expected.SetDictionary("extensionPolicies",
-                         base::MakeUnique<base::DictionaryValue>());
+                         std::make_unique<base::DictionaryValue>());
   expected.Remove("chromePolicies." + name + ".status", nullptr);
   EXPECT_EQ(expected, *values);
 

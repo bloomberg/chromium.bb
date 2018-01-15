@@ -128,7 +128,7 @@ class PdfPrinterHandlerWinTest : public BrowserWithTestWindowTest {
     AddTab(browser(), GURL("chrome://print"));
 
     // Create the PDF printer
-    pdf_printer_ = base::MakeUnique<FakePdfPrinterHandler>(
+    pdf_printer_ = std::make_unique<FakePdfPrinterHandler>(
         profile(), browser()->tab_strip_model()->GetWebContentsAt(0), nullptr);
   }
 

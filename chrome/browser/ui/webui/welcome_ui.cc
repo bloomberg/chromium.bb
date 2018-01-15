@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/welcome_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
 #include "chrome/common/pref_names.h"
@@ -41,7 +42,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
-  web_ui->AddMessageHandler(base::MakeUnique<WelcomeHandler>(web_ui));
+  web_ui->AddMessageHandler(std::make_unique<WelcomeHandler>(web_ui));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());

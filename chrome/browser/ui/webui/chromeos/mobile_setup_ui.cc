@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -15,7 +17,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -622,7 +623,7 @@ void MobileSetupHandler::UpdatePortalReachability(
 
 MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<MobileSetupHandler>());
+  web_ui->AddMessageHandler(std::make_unique<MobileSetupHandler>());
   MobileSetupUIHTMLSource* html_source = new MobileSetupUIHTMLSource();
 
   // Set up the chrome://mobilesetup/ source.

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
@@ -149,8 +150,8 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
   web_ui->AddMessageHandler(
-      base::MakeUnique<MdDownloadsDOMHandler>(dlm, web_ui));
-  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
+      std::make_unique<MdDownloadsDOMHandler>(dlm, web_ui));
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);

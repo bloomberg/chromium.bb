@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -96,7 +95,7 @@ class TestEasyUnlockSettingsHandler : public EasyUnlockSettingsHandler {
 
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  return base::MakeUnique<FakeEasyUnlockService>(
+  return std::make_unique<FakeEasyUnlockService>(
       Profile::FromBrowserContext(context));
 }
 

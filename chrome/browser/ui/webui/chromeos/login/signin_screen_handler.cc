@@ -1466,7 +1466,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
   if (!test_focus_pod_callback_.is_null())
     test_focus_pod_callback_.Run();
 
-  focused_pod_account_id_ = base::MakeUnique<AccountId>(account_id);
+  focused_pod_account_id_ = std::make_unique<AccountId>(account_id);
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);

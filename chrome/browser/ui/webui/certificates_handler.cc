@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"  // for FileAccessProvider
 #include "base/i18n/string_compare.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1037,7 +1036,7 @@ void CertificatesHandler::PopulateTree(
 
   {
     std::unique_ptr<base::ListValue> nodes =
-        base::MakeUnique<base::ListValue>();
+        std::make_unique<base::ListValue>();
     for (CertificateManagerModel::OrgGroupingMap::iterator i = map.begin();
          i != map.end(); ++i) {
       // Populate first level (org name).
@@ -1046,7 +1045,7 @@ void CertificatesHandler::PopulateTree(
       dict->SetString(kNameField, i->first);
 
       // Populate second level (certs).
-      auto subnodes = base::MakeUnique<base::ListValue>();
+      auto subnodes = std::make_unique<base::ListValue>();
       for (net::ScopedCERTCertificateList::const_iterator org_cert_it =
                i->second.begin();
            org_cert_it != i->second.end(); ++org_cert_it) {
@@ -1123,7 +1122,7 @@ void CertificatesHandler::RejectCallbackWithImportError(
         IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_SOME_NOT_IMPORTED);
 
   std::unique_ptr<base::ListValue> cert_error_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   for (size_t i = 0; i < not_imported.size(); ++i) {
     const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);

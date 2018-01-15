@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -309,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
 
   values.Set(policy::key::kDefaultImagesSetting, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(2), nullptr);
+             std::make_unique<base::Value>(2), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kDefaultImagesSetting,
                     "mandatory", "machine", "sourceCloud", base::Value(2));
 
@@ -330,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   // Set the extension policies to an empty dictionary as we haven't added any
   // such policies.
   expected_values.SetDictionary("extensionPolicies",
-                                base::MakeUnique<base::DictionaryValue>());
+                                std::make_unique<base::DictionaryValue>());
 
   UpdateProviderPolicy(values);
 
@@ -349,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   values.Set(policy::key::kAllowFileSelectionDialogs,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
              policy::POLICY_SOURCE_PLATFORM,
-             base::MakeUnique<base::Value>(false), nullptr);
+             std::make_unique<base::Value>(false), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kAllowFileSelectionDialogs,
                     "mandatory", "machine", "sourcePlatform",
                     base::Value(false));
@@ -411,26 +410,26 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   expected_values[policy::key::kRestoreOnStartupURLs] = "aaa,bbb,ccc";
   values.Set(policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>("http://google.com"), nullptr);
+             std::make_unique<base::Value>("http://google.com"), nullptr);
   expected_values[policy::key::kHomepageLocation] = "http://google.com";
   values.Set(policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(4), nullptr);
+             std::make_unique<base::Value>(4), nullptr);
   expected_values[policy::key::kRestoreOnStartup] = "4";
   values.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(true), nullptr);
+             std::make_unique<base::Value>(true), nullptr);
   expected_values[policy::key::kShowHomeButton] = "true";
   // Set the value of a policy that does not exist.
   const std::string kUnknownPolicy = "NoSuchThing";
   values.Set(kUnknownPolicy, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-             base::MakeUnique<base::Value>(true), nullptr);
+             std::make_unique<base::Value>(true), nullptr);
   expected_values[kUnknownPolicy] = "true";
   const std::string kUnknownPolicyWithDots = "no.such.thing";
   values.Set(kUnknownPolicyWithDots, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-             base::MakeUnique<base::Value>("blub"), nullptr);
+             std::make_unique<base::Value>("blub"), nullptr);
   expected_values[kUnknownPolicyWithDots] = "blub";
 
   UpdateProviderPolicy(values);

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
@@ -130,7 +131,7 @@ NTPTilesInternalsUI::NTPTilesInternalsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateNTPTilesInternalsHTMLSource());
   web_ui->AddMessageHandler(
-      base::MakeUnique<ChromeNTPTilesInternalsMessageHandlerClient>(
+      std::make_unique<ChromeNTPTilesInternalsMessageHandlerClient>(
           FaviconServiceFactory::GetForProfile(
               profile, ServiceAccessType::EXPLICIT_ACCESS)));
 }

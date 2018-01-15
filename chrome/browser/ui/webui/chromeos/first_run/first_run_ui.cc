@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
+#include <memory>
+
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
@@ -99,7 +100,7 @@ namespace chromeos {
 FirstRunUI::FirstRunUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       actor_(NULL) {
-  auto handler = base::MakeUnique<FirstRunHandler>();
+  auto handler = std::make_unique<FirstRunHandler>();
   actor_ = handler.get();
   web_ui->AddMessageHandler(std::move(handler));
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), CreateDataSource());

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
@@ -90,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
   // Open additional browser will add new window and activates it.
   Profile* additional_profile = CreateProfile();
   activation_observer =
-      base::MakeUnique<ExpectBrowserActivationForProfile>(additional_profile);
+      std::make_unique<ExpectBrowserActivationForProfile>(additional_profile);
   webui::OpenNewWindowForProfile(additional_profile);
   EXPECT_EQ(2u, browser_list->size());
   activation_observer->Wait();
@@ -104,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #if !defined(OS_MACOSX)
   // Switch to original browser. Only LastActive should change.
   activation_observer =
-      base::MakeUnique<ExpectBrowserActivationForProfile>(original_profile);
+      std::make_unique<ExpectBrowserActivationForProfile>(original_profile);
   webui::OpenNewWindowForProfile(original_profile);
   EXPECT_EQ(2u, browser_list->size());
   activation_observer->Wait();

@@ -61,7 +61,7 @@ class ContentSettingSourceSetter {
 
   void SetPolicyDefault(ContentSetting setting) {
     prefs_->SetManagedPref(GetPrefNameForDefaultPermissionSetting(),
-                           base::MakeUnique<base::Value>(setting));
+                           std::make_unique<base::Value>(setting));
   }
 
   const char* GetPrefNameForDefaultPermissionSetting() {
@@ -373,7 +373,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   base::ListValue get_origin_permissions_args;
   get_origin_permissions_args.AppendString(kCallbackId);
   get_origin_permissions_args.AppendString(google);
-  auto category_list = base::MakeUnique<base::ListValue>();
+  auto category_list = std::make_unique<base::ListValue>();
   category_list->AppendString(kNotifications);
   get_origin_permissions_args.Append(std::move(category_list));
 
@@ -435,7 +435,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
   get_args.AppendString(kCallbackId);
   get_args.AppendString(origin_with_port);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     get_args.Append(std::move(category_list));
   }
@@ -448,7 +448,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
   base::ListValue set_args;
   set_args.AppendString(origin_with_port);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     set_args.Append(std::move(category_list));
   }
@@ -460,7 +460,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
   // Reset things back to how they were.
   base::ListValue reset_args;
   reset_args.AppendString(origin_with_port);
-  auto category_list = base::MakeUnique<base::ListValue>();
+  auto category_list = std::make_unique<base::ListValue>();
   category_list->AppendString(kNotifications);
   reset_args.Append(std::move(category_list));
   reset_args.AppendString(
@@ -483,7 +483,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
   get_args.AppendString(kCallbackId);
   get_args.AppendString(origin);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     get_args.Append(std::move(category_list));
   }
@@ -498,7 +498,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
   base::ListValue set_args;
   set_args.AppendString(origin);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     set_args.Append(std::move(category_list));
   }
@@ -588,7 +588,7 @@ TEST_F(SiteSettingsHandlerTest, ExtensionDisplayName) {
   get_origin_permissions_args.AppendString(kCallbackId);
   get_origin_permissions_args.AppendString(test_extension_url);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     get_origin_permissions_args.Append(std::move(category_list));
   }
@@ -666,7 +666,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    handler_ = base::MakeUnique<SiteSettingsHandler>(profile());
+    handler_ = std::make_unique<SiteSettingsHandler>(profile());
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
@@ -777,7 +777,7 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
   base::ListValue set_args;
   set_args.AppendString(origin_anchor_string);
   {
-    auto category_list = base::MakeUnique<base::ListValue>();
+    auto category_list = std::make_unique<base::ListValue>();
     category_list->AppendString(kNotifications);
     set_args.Append(std::move(category_list));
   }
@@ -834,7 +834,7 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
   // Reset all permissions.
   base::ListValue reset_args;
   reset_args.AppendString(origin_anchor_string);
-  auto category_list = base::MakeUnique<base::ListValue>();
+  auto category_list = std::make_unique<base::ListValue>();
   category_list->AppendString(kNotifications);
   reset_args.Append(std::move(category_list));
   reset_args.AppendString(

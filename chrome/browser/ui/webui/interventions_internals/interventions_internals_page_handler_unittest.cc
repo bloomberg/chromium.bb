@@ -122,7 +122,7 @@ class TestInterventionsInternalsPage
 
   // mojom::InterventionsInternalsPage:
   void LogNewMessage(mojom::MessageLogPtr message) override {
-    message_ = base::MakeUnique<mojom::MessageLogPtr>(std::move(message));
+    message_ = std::make_unique<mojom::MessageLogPtr>(std::move(message));
   }
   void OnBlacklistedHost(const std::string& host, int64_t time) override {
     host_blacklisted_ = host;
@@ -261,31 +261,31 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   void SetUp() override {
     TestPreviewsIOData io_data;
     std::unique_ptr<TestPreviewsLogger> logger =
-        base::MakeUnique<TestPreviewsLogger>();
+        std::make_unique<TestPreviewsLogger>();
     logger_ = logger.get();
     previews_ui_service_ =
-        base::MakeUnique<TestPreviewsUIService>(&io_data, std::move(logger));
+        std::make_unique<TestPreviewsUIService>(&io_data, std::move(logger));
 
     ASSERT_TRUE(profile_manager_.SetUp());
     TestingProfile* test_profile =
         profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
     ui_nqe_service_ =
-        base::MakeUnique<TestUINetworkQualityEstimatorService>(test_profile);
+        std::make_unique<TestUINetworkQualityEstimatorService>(test_profile);
 
     mojom::InterventionsInternalsPageHandlerPtr page_handler_ptr;
     handler_request_ = mojo::MakeRequest(&page_handler_ptr);
-    page_handler_ = base::MakeUnique<InterventionsInternalsPageHandler>(
+    page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(
         std::move(handler_request_), previews_ui_service_.get(),
         ui_nqe_service_.get());
 
     mojom::InterventionsInternalsPagePtr page_ptr;
     page_request_ = mojo::MakeRequest(&page_ptr);
-    page_ = base::MakeUnique<TestInterventionsInternalsPage>(
+    page_ = std::make_unique<TestInterventionsInternalsPage>(
         std::move(page_request_));
 
     page_handler_->SetClientPage(std::move(page_ptr));
 
-    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
   void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }

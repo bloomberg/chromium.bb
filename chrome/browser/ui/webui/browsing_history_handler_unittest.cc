@@ -141,7 +141,7 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
  private:
   static std::unique_ptr<KeyedService> BuildFakeSyncService(
       content::BrowserContext* context) {
-    return base::MakeUnique<TestSyncService>(
+    return std::make_unique<TestSyncService>(
         static_cast<TestingProfile*>(context));
   }
 
@@ -150,7 +150,7 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
     Profile* profile = static_cast<TestingProfile*>(context);
 
     std::unique_ptr<history::FakeWebHistoryService> service =
-        base::MakeUnique<history::FakeWebHistoryService>(
+        std::make_unique<history::FakeWebHistoryService>(
             profile->GetRequestContext());
     service->SetupFakeResponse(true /* success */, net::HTTP_OK);
     return std::move(service);

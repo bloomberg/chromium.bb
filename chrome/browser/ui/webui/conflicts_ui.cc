@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/conflicts_handler.h"
@@ -61,9 +62,9 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
     web_ui->AddMessageHandler(
-        base::MakeUnique<ModuleDatabaseConflictsHandler>());
+        std::make_unique<ModuleDatabaseConflictsHandler>());
   } else {
-    web_ui->AddMessageHandler(base::MakeUnique<ConflictsHandler>());
+    web_ui->AddMessageHandler(std::make_unique<ConflictsHandler>());
   }
 
   // Set up the about:conflicts source.

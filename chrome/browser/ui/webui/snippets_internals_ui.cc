@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
@@ -47,7 +48,7 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateSnippetsInternalsHTMLSource());
 
-  web_ui->AddMessageHandler(base::MakeUnique<SnippetsInternalsMessageHandler>(
+  web_ui->AddMessageHandler(std::make_unique<SnippetsInternalsMessageHandler>(
       ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile),
       ContextualContentSuggestionsServiceFactory::GetInstance()->GetForProfile(
           profile),
