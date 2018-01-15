@@ -799,6 +799,7 @@ class EventHandlerTooltipTest : public EventHandlerTest {
 };
 
 TEST_F(EventHandlerTooltipTest, mouseLeaveClearsTooltip) {
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   SetHtmlInnerHTML(
       "<style>.box { width: 100%; height: 100%; }</style>"
       "<img src='image.png' class='box' title='tooltip'>link</img>");
