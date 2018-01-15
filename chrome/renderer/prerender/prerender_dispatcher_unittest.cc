@@ -45,23 +45,23 @@ class PrerenderDispatcherTest : public testing::Test {
     DCHECK_EQ(0u, prerender_dispatcher_.prerenders_.count(g_next_prerender_id));
     prerender_dispatcher_.prerenders_[g_next_prerender_id] = WebPrerender();
 
-    prerender_dispatcher_.OnPrerenderStart(g_next_prerender_id);
-    prerender_dispatcher_.OnPrerenderAddAlias(url);
+    prerender_dispatcher_.PrerenderStart(g_next_prerender_id);
+    prerender_dispatcher_.PrerenderAddAlias(url);
     return g_next_prerender_id++;
   }
 
   void AddAliasToPrerender(const GURL& url) {
-    prerender_dispatcher_.OnPrerenderAddAlias(url);
+    prerender_dispatcher_.PrerenderAddAlias(url);
   }
 
   void RemoveAliasFromPrerender(const GURL& url) {
     std::vector<GURL> urls;
     urls.push_back(url);
-    prerender_dispatcher_.OnPrerenderRemoveAliases(urls);
+    prerender_dispatcher_.PrerenderRemoveAliases(urls);
   }
 
   void StopPrerender(int prerender_id) {
-    prerender_dispatcher_.OnPrerenderStop(prerender_id);
+    prerender_dispatcher_.PrerenderStop(prerender_id);
   }
 
   int GetCountForURL(const GURL& url) const {
