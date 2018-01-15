@@ -1,5 +1,7 @@
 # Network Traffic Annotations List
 This file describes the `tools/traffic_annotation/summary/annotations.xml`.
+Please see `docs/network_traffic_annotations.md` for an introduction to network
+traffic annotations.
 
 # Content Description
 `annotations.xml` includes the summary of all network traffic annotations in
