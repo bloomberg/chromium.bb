@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/test/gtest_util.h"
-#include "base/test/opaque_ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -193,37 +192,6 @@ TEST(RefCountedUnitTest, ScopedRefPtrToSelfMoveAssignment) {
   // release |check->self_ptr_|.
   check->self_ptr_ = scoped_refptr<ScopedRefPtrToSelf>();
   EXPECT_TRUE(ScopedRefPtrToSelf::was_destroyed());
-}
-
-TEST(RefCountedUnitTest, ScopedRefPtrToOpaque) {
-  scoped_refptr<base::OpaqueRefCounted> initial = base::MakeOpaqueRefCounted();
-  base::TestOpaqueRefCounted(initial);
-
-  scoped_refptr<base::OpaqueRefCounted> assigned;
-  assigned = initial;
-
-  scoped_refptr<base::OpaqueRefCounted> copied(initial);
-
-  scoped_refptr<base::OpaqueRefCounted> moved(std::move(initial));
-
-  scoped_refptr<base::OpaqueRefCounted> move_assigned;
-  move_assigned = std::move(moved);
-}
-
-TEST(RefCountedUnitTest, ScopedRefPtrToOpaqueThreadSafe) {
-  scoped_refptr<base::OpaqueRefCountedThreadSafe> initial =
-      base::MakeOpaqueRefCountedThreadSafe();
-  base::TestOpaqueRefCountedThreadSafe(initial);
-
-  scoped_refptr<base::OpaqueRefCountedThreadSafe> assigned;
-  assigned = initial;
-
-  scoped_refptr<base::OpaqueRefCountedThreadSafe> copied(initial);
-
-  scoped_refptr<base::OpaqueRefCountedThreadSafe> moved(std::move(initial));
-
-  scoped_refptr<base::OpaqueRefCountedThreadSafe> move_assigned;
-  move_assigned = std::move(moved);
 }
 
 TEST(RefCountedUnitTest, BooleanTesting) {
