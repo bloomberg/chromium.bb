@@ -50,6 +50,24 @@ const char* FormSubmissionThrottle::GetNameForLogging() {
 
 NavigationThrottle::ThrottleCheckResult
 FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
+  // TODO(arthursonzogni): form-action is enforced on the wrong RenderFrameHost.
+  // The navigating one is used instead of the one that has initiated the form
+  // submission. The renderer side checks are still in place and are used for
+  // the moment instead. For redirects, the behavior was already broken before
+  // using the browser side checks.
+  // See https://crbug.com/700964 and https://crbug.com/798698.
+  //
+  // In absence of redirects, the target URL is sufficiently verified against
+  // the form-action CSP by the frame that hosts the form element + initiates
+  // form submission + declares the form-action CSP (i.e. the same frame does
+  // all those 4 things). Because in this scenario there are no frame or
+  // renderer boundaries crossed, we don't have to worry about one (potentially
+  // compromised) renderer being responsible for enforcing the CSP of another
+  // (victim) renderer. Therefore it is okay to return early and do no further
+  // browser-side checks.
+  if (!is_redirect)
+    return NavigationThrottle::PROCEED;
+
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());
 
@@ -57,6 +75,10 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
     return NavigationThrottle::PROCEED;
 
   const GURL& url = handle->GetURL();
+
+  // TODO(arthursonzogni): This is not the right RenderFrameHostImpl. The one
+  // that has initiated the navigation must be used instead.
+  // See https://crbug.com/700964
   RenderFrameHostImpl* render_frame =
       handle->frame_tree_node()->current_frame_host();
 
