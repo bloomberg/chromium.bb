@@ -33,7 +33,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -71,6 +70,7 @@
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorMutatorClient.h"
+#include "platform/graphics/CompositorMutatorImpl.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"

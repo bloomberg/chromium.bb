@@ -5,13 +5,13 @@
 #ifndef CompositorAnimator_h
 #define CompositorAnimator_h
 
-#include "core/CoreExport.h"
+#include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorAnimatorsState.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CORE_EXPORT CompositorAnimator : public GarbageCollectedMixin {
+class PLATFORM_EXPORT CompositorAnimator : public GarbageCollectedMixin {
  public:
   // Runs the animation frame callback.
   virtual void Mutate(const CompositorMutatorInputState&) = 0;

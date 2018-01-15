@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CompositorMutatorImpl.h"
+#include "platform/graphics/CompositorMutatorImpl.h"
 
-#include "core/animation/CompositorAnimator.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/graphics/CompositorAnimator.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
