@@ -35,6 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
+#include "public/platform/WebScopedVirtualTimePauser.h"
 
 namespace blink {
 
@@ -133,6 +134,7 @@ class CORE_EXPORT PendingScript
   TextPosition starting_position_;  // Only used for inline script tags.
   double parser_blocking_load_start_time_;
 
+  WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PendingScriptClient> client_;
   DISALLOW_COPY_AND_ASSIGN(PendingScript);
 };

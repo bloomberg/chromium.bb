@@ -25,16 +25,32 @@
 
 #include "core/script/PendingScript.h"
 
+#include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/script/ScriptElementBase.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {
+
+namespace {
+WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+    ScriptElementBase* element) {
+  if (!element || !element->GetDocument().GetFrame())
+    return WebScopedVirtualTimePauser();
+  return element->GetDocument()
+      .GetFrame()
+      ->FrameScheduler()
+      ->CreateWebScopedVirtualTimePauser();
+}
+}  // namespace
 
 PendingScript::PendingScript(ScriptElementBase* element,
                              const TextPosition& starting_position)
     : element_(element),
       starting_position_(starting_position),
       parser_blocking_load_start_time_(0),
+      virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr) {}
 
 PendingScript::~PendingScript() {}
@@ -62,8 +78,11 @@ void PendingScript::WatchForLoad(PendingScriptClient* client) {
   // m_watchingForLoad early, since addClient() can result in calling
   // notifyFinished and further stopWatchingForLoad().
   client_ = client;
-  if (IsReady())
+  if (IsReady()) {
     client_->PendingScriptFinished(this);
+  } else {
+    virtual_time_pauser_.PauseVirtualTime(true);
+  }
 }
 
 void PendingScript::StopWatchingForLoad() {
@@ -72,6 +91,7 @@ void PendingScript::StopWatchingForLoad() {
   CheckState();
   DCHECK(IsExternalOrModule());
   client_ = nullptr;
+  virtual_time_pauser_.PauseVirtualTime(false);
 }
 
 ScriptElementBase* PendingScript::GetElement() const {
