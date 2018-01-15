@@ -22,11 +22,11 @@ HRESULT MockIToastNotification::QueryInterface(REFIID riid, void** ppvObject) {
 }
 
 ULONG MockIToastNotification::AddRef() {
-  return ++refcount;
+  return ++refcount_;
 }
 
 ULONG MockIToastNotification::Release() {
-  return --refcount;
+  return --refcount_;
 }
 
 HRESULT MockIToastNotification::GetIids(ULONG* iidCount, IID** iids) {

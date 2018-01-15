@@ -145,9 +145,10 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   HSTRING hstring_group;
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Group(&hstring_group));
   base::win::ScopedHString group(hstring_group);
-  GURL origin(kOrigin);
-  ASSERT_STREQ(base::UintToString16(base::Hash(origin.spec())).c_str(),
-               group.Get().as_string().c_str());
+  // NOTE: If you find yourself needing to change this value, make sure that
+  // NotificationPlatformBridgeWinImpl::Close supports specifying the right
+  // group value for RemoveGroupedTagWithId.
+  ASSERT_STREQ(L"Notifications", group.Get().as_string().c_str());
 
   HSTRING hstring_tag;
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Tag(&hstring_tag));

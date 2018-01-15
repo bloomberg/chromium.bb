@@ -52,7 +52,7 @@ class MockIToastNotification
  private:
   base::string16 xml_;
 
-  int refcount = 0;
+  int refcount_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MockIToastNotification);
 };
