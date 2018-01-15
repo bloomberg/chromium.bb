@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -246,7 +247,7 @@ std::unique_ptr<ClientFilterableState>
 VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
     const base::Version& version) {
   std::unique_ptr<ClientFilterableState> state =
-      base::MakeUnique<ClientFilterableState>();
+      std::make_unique<ClientFilterableState>();
   state->locale = client_->GetApplicationLocale();
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;

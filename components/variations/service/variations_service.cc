@@ -15,7 +15,6 @@
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -412,7 +411,7 @@ std::unique_ptr<VariationsService> VariationsService::Create(
   std::unique_ptr<VariationsService> result;
   result.reset(new VariationsService(
       std::move(client),
-      base::MakeUnique<web_resource::ResourceRequestAllowedNotifier>(
+      std::make_unique<web_resource::ResourceRequestAllowedNotifier>(
           local_state, disable_network_switch),
       local_state, state_manager, ui_string_overrider));
   return result;

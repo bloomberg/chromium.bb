@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -952,7 +951,7 @@ TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   // An entorpy value of 0.1 will cause the AA group to be chosen, since AA is
   // the only non-default group, and has a probability percent above 0.1.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<base::MockEntropyProvider>(0.1));
+      std::make_unique<base::MockEntropyProvider>(0.1));
 
   // Use a stack instance, since nothing takes ownership of this provider.
   // This entropy value will cause the default group to be chosen since it's a

@@ -9,11 +9,11 @@
 
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <numeric>
 
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/metrics_util.h"
@@ -191,7 +191,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   // _might_ actually give the same result, but we know that given
   // the particular client_id we use for unit tests they won't.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<SHA1EntropyProvider>("client_id"));
+      std::make_unique<SHA1EntropyProvider>("client_id"));
   const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
@@ -221,7 +221,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   // _might_ actually give the same result, but we know that given
   // the particular client_id we use for unit tests they won't.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<PermutedEntropyProvider>(1234, kMaxLowEntropySize));
+      std::make_unique<PermutedEntropyProvider>(1234, kMaxLowEntropySize));
   const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
@@ -247,7 +247,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   // Ensures that two trials with different names but the same custom seed used
   // for one time randomization produce the same group assignments.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<PermutedEntropyProvider>(1234, kMaxLowEntropySize));
+      std::make_unique<PermutedEntropyProvider>(1234, kMaxLowEntropySize));
   const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   const uint32_t kCustomSeed = 9001;
   scoped_refptr<base::FieldTrial> trials[] = {
@@ -274,7 +274,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedSHA1) {
   // Ensures that two trials with different names but the same custom seed used
   // for one time randomization produce the same group assignments.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<SHA1EntropyProvider>("client_id"));
+      std::make_unique<SHA1EntropyProvider>("client_id"));
   const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   const uint32_t kCustomSeed = 9001;
   scoped_refptr<base::FieldTrial> trials[] = {
