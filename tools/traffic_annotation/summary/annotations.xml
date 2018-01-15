@@ -154,7 +154,7 @@ Refer to README.md for content description and update process.
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" content_hash_code="31866133" os_list="linux,windows" file_path="net/proxy/proxy_script_fetcher_impl.cc"/>
  <item id="ranker_url_fetcher" hash_code="95682324" type="0" content_hash_code="45958626" os_list="linux,windows" file_path="components/assist_ranker/ranker_url_fetcher.cc"/>
  <item id="rappor_report" hash_code="44606780" type="0" content_hash_code="111287826" os_list="linux,windows" file_path="components/rappor/log_uploader.cc"/>
- <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" content_hash_code="137103383" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="4,5" file_path="components/signin/core/browser/refresh_token_annotation_request.cc"/>
+ <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" content_hash_code="137103383" os_list="windows" semantics_fields="1,2,3,4,5" policy_fields="4,5" file_path="components/signin/core/browser/refresh_token_annotation_request.cc"/>
  <item id="remote_suggestions_provider" hash_code="49544361" type="0" content_hash_code="126329742" os_list="linux,windows" file_path="components/ntp_snippets/remote/cached_image_fetcher.cc"/>
  <item id="render_view_context_menu" hash_code="25844439" type="0" content_hash_code="69471170" os_list="linux,windows" file_path="chrome/browser/renderer_context_menu/render_view_context_menu.cc"/>
  <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_message_filter.cc"/>
