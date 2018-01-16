@@ -1140,24 +1140,26 @@ public class VrShellDelegate
     }
 
     @CalledByNative
-    private boolean exitWebVRPresent() {
-        if (!mInVr) return false;
+    private void exitWebVRPresent() {
+        if (!mInVr) return;
         if (mAutopresentWebVr) {
             // For autopresent from Daydream home, we do NOT want to show ChromeVR. So if we
             // ever exit WebVR for whatever reason (navigation, call exitPresent etc), go back to
             // Daydream home.
             mVrDaydreamApi.launchVrHomescreen();
-            return true;
+            return;
         }
-        if (!isVrShellEnabled(mVrSupportLevel) || !isDaydreamCurrentViewer()
-                || !activitySupportsVrBrowsing(mActivity)) {
-            if (isDaydreamCurrentViewer() && showDoff(false /* optional */)) return false;
-            shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
+        if (!isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity)
+                || !isDaydreamCurrentViewer()) {
+            if (isDaydreamCurrentViewer()) {
+                mVrDaydreamApi.launchVrHomescreen();
+            } else {
+                shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
+            }
         } else {
             mVrBrowserUsed = true;
             mVrShell.setWebVrModeEnabled(false, false);
         }
-        return true;
     }
 
     private boolean cancelStartupAnimationIfNeeded() {

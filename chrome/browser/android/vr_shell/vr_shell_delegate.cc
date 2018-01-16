@@ -227,14 +227,11 @@ void VrShellDelegate::RequestWebVRPresent(
 }
 
 void VrShellDelegate::ExitWebVRPresent() {
-  // VRShell is no longer needed by WebVR, allow it to shut down if it's not
-  // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
-  if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_)) {
-    device::VRDevice* device = GetDevice();
-    if (device)
-      device->OnExitPresent();
-  }
+  Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_);
+  device::VRDevice* device = GetDevice();
+  if (device)
+    device->OnExitPresent();
 }
 
 std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
