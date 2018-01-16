@@ -28,6 +28,24 @@ Node* GeneratingNodeForObject(const LayoutBoxModelObject& box_model) {
   return node;
 }
 
+LayoutSize LogicalOffsetOnLine(const InlineFlowBox& flow_box) {
+  // Compute the offset of the passed flow box when seen as part of an
+  // unbroken continuous strip (c.f box-decoration-break: slice.)
+  LayoutUnit logical_offset_on_line;
+  if (flow_box.IsLeftToRightDirection()) {
+    for (const InlineFlowBox* curr = flow_box.PrevLineBox(); curr;
+         curr = curr->PrevLineBox())
+      logical_offset_on_line += curr->LogicalWidth();
+  } else {
+    for (const InlineFlowBox* curr = flow_box.NextLineBox(); curr;
+         curr = curr->NextLineBox())
+      logical_offset_on_line += curr->LogicalWidth();
+  }
+  LayoutSize logical_offset(logical_offset_on_line, LayoutUnit());
+  return flow_box.IsHorizontal() ? logical_offset
+                                 : logical_offset.TransposedSize();
+}
+
 }  // anonymous namespace
 
 BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
@@ -83,10 +101,13 @@ void BoxModelObjectPainter::PaintFillLayerTextFillBox(
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
+    LayoutSize local_offset = ToLayoutSize(flow_box_->Location());
+    if (box_model_.StyleRef().BoxDecorationBreak() ==
+        EBoxDecorationBreak::kSlice) {
+      local_offset -= LogicalOffsetOnLine(*flow_box_);
+    }
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info,
-                     LayoutPoint(scrolled_paint_rect.X() - flow_box_->X(),
-                                 scrolled_paint_rect.Y() - flow_box_->Y()),
+    flow_box_->Paint(paint_info, scrolled_paint_rect.Location() - local_offset,
                      root.LineTop(), root.LineBottom());
   } else {
     // FIXME: this should only have an effect for the line box list within
