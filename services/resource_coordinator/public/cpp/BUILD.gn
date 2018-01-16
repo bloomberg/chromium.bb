@@ -12,6 +12,8 @@ component("resource_coordinator_cpp") {
     "memory_instrumentation/client_process_impl.cc",
     "memory_instrumentation/client_process_impl.h",
     "memory_instrumentation/coordinator.h",
+    "memory_instrumentation/global_memory_dump.cc",
+    "memory_instrumentation/global_memory_dump.h",
     "memory_instrumentation/memory_instrumentation.cc",
     "memory_instrumentation/memory_instrumentation.h",
     "memory_instrumentation/os_metrics.cc",
