@@ -7547,7 +7547,7 @@ static int64_t motion_mode_rd(
         rd = RDCOST(x->rdmult, rate_mv + rmode + rate_sum, dist_sum);
       best_interintra_rd = rd;
 
-      if (ref_best_rd < INT64_MAX && best_interintra_rd > 2 * ref_best_rd)
+      if (ref_best_rd < INT64_MAX && (best_interintra_rd >> 1) > ref_best_rd)
         continue;
 
       if (is_interintra_wedge_used(bsize)) {
@@ -7619,7 +7619,7 @@ static int64_t motion_mode_rd(
           if (best_interintra_rd_wedge < best_interintra_rd_nowedge) {
             mbmi->use_wedge_interintra = 1;
             mbmi->mv[0].as_int = tmp_mv.as_int;
-            rd_stats->rate += tmp_rate_mv - rate_mv;
+            tmp_rate2 += tmp_rate_mv - rate_mv;
             rate_mv = tmp_rate_mv;
           } else {
             mbmi->use_wedge_interintra = 0;
