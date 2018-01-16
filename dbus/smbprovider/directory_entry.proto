@@ -101,6 +101,7 @@ message CloseFileOptions {
   // ID of the file returned from OpenFile().
   optional int32 file_id = 2;
 }
+
 // Used for passing inputs into SmbProvider.ReadFile().
 message ReadFileOptions {
   // ID of the mount returned from Mount().
@@ -111,4 +112,15 @@ message ReadFileOptions {
   optional int64 offset = 3;
   // Length in bytes to be read.
   optional int32 length = 4;
+}
+
+// Used for passing inputs into SmbProvider.DeleteEntry().
+message DeleteEntryOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the entry to be deleted. This can be a file or directory path.
+  // The paths are relative to the mount root. (e.g. "/testfolder/dog.jpg")
+  optional string entry_path = 2;
+  // Boolean indicating whether the delete should be recursive for directories.
+  optional bool recursive = 3;
 }

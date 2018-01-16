@@ -20,6 +20,7 @@ const char kGetMetadataEntryMethod[] = "GetMetadataEntry";
 const char kOpenFileMethod[] = "OpenFile";
 const char kCloseFileMethod[] = "CloseFile";
 const char kReadFileMethod[] = "ReadFile";
+const char kDeleteEntryMethod[] = "DeleteEntry";
 
 }  // namespace smbprovider
 
