@@ -7,10 +7,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
-#include "third_party/WebKit/public/platform/WebCORS.h"
-#include "third_party/WebKit/public/platform/WebHTTPHeaderMap.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "services/network/public/cpp/cors/cors.h"
 
 using network::mojom::CORSError;
 using network::mojom::FetchRequestMode;
@@ -32,6 +29,15 @@ bool CalculateCORSFlag(const network::ResourceRequest& request) {
     return true;
   url::Origin security_origin(request.request_initiator.value());
   return !security_origin.IsSameOriginWith(url_origin);
+}
+
+base::Optional<std::string> GetHeaderString(
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    const std::string& header_name) {
+  std::string header_value;
+  if (!headers->GetNormalizedHeader(header_name, &header_value))
+    return base::nullopt;
+  return header_value;
 }
 
 }  // namespace
@@ -121,10 +127,17 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   if (fetch_cors_flag_ &&
-      blink::WebCORS::IsCORSEnabledRequestMode(fetch_request_mode_)) {
-    base::Optional<CORSError> cors_error = blink::WebCORS::CheckAccess(
+      network::cors::IsCORSEnabledRequestMode(fetch_request_mode_)) {
+    base::Optional<CORSError> cors_error = network::cors::CheckAccess(
         last_response_url_, response_head.headers->response_code(),
-        blink::WebHTTPHeaderMap(response_head.headers.get()),
+        GetHeaderString(response_head.headers,
+                        network::cors::header_names::kAccessControlAllowOrigin),
+        GetHeaderString(
+            response_head.headers,
+            network::cors::header_names::kAccessControlAllowSuborigin),
+        GetHeaderString(
+            response_head.headers,
+            network::cors::header_names::kAccessControlAllowCredentials),
         fetch_credentials_mode_, security_origin_);
     if (cors_error) {
       // TODO(toyoshim): Generate related_response_headers here.
