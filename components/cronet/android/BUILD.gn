@@ -475,6 +475,7 @@ shared_library("cronet_tests") {
     # Cronet header files to facilitate accessing these fields.
     "//components/cronet/android/cronet_url_request_adapter.h",
     "//components/cronet/android/cronet_url_request_context_adapter.h",
+    "//components/cronet/cronet_url_request.h",
     "//components/cronet/cronet_url_request_context.h",
     "//components/cronet/url_request_context_config.h",
     "test/cronet_test_jni.cc",

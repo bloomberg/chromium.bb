@@ -114,6 +114,11 @@ def main():
     gn_args = 'use_errorprone_java_compiler=true arm_use_neon=false '
     gn_extra = ''
     out_dir_suffix = ''
+    if options.asan:
+      # ASAN on Android requires one-time setup described here:
+      # https://www.chromium.org/developers/testing/addresssanitizer
+      gn_args += ' is_asan=true is_clang=true is_debug=false '
+      out_dir_suffix += '-asan'
 
   gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
