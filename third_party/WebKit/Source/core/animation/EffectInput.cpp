@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8BaseKeyframe.h"
