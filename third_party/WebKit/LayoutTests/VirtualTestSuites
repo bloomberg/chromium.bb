@@ -649,6 +649,11 @@
     "args": ["--enable-blink-features=IncrementalShadowDOM"]
   },
   {
+    "prefix": "incremental-shadow-dom",
+    "base": "external/wpt/css/css-scoping",
+    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+  },
+  {
     "prefix": "modern-media-controls",
     "base": "media/controls/modern",
     "args": ["--enable-features=UseModernMediaControls"]

@@ -280,9 +280,13 @@ void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   if (!SupportsAssignment())
     return;
+
+  const HeapVector<Member<Node>>& flat_tree_children =
+      ChildrenInFlatTreeIfAssignmentIsSupported();
+
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (auto it = distributed_nodes_.rbegin(); it != distributed_nodes_.rend();
+  for (auto it = flat_tree_children.rbegin(); it != flat_tree_children.rend();
        ++it) {
     RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
@@ -353,15 +357,31 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
 }
 
 void HTMLSlotElement::WillRecalcStyle(StyleRecalcChange change) {
-  if (change < kIndependentInherit &&
-      GetStyleChangeType() < kSubtreeStyleChange)
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
     return;
-
-  for (auto& node : distributed_nodes_)
+  if (change < kIndependentInherit &&
+      GetStyleChangeType() < kSubtreeStyleChange) {
+    return;
+  }
+  for (auto& node : distributed_nodes_) {
     node->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(
             StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+  }
+}
+
+void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
+  if (!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    return;
+  if (change < kIndependentInherit)
+    return;
+  for (auto& node : assigned_nodes_) {
+    node->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(
+            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+  }
 }
 
 void HTMLSlotElement::UpdateDistributedNodesWithFallback() {

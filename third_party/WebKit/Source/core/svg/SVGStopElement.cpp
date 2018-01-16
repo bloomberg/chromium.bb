@@ -65,8 +65,8 @@ void SVGStopElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGStopElement::DidRecalcStyle() {
-  SVGElement::DidRecalcStyle();
+void SVGStopElement::DidRecalcStyle(StyleRecalcChange change) {
+  SVGElement::DidRecalcStyle(change);
 
   InvalidateInstancesAndAncestorResources(this);
 }

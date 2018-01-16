@@ -466,6 +466,9 @@ class CORE_EXPORT Element : public ContainerNode {
   void RecalcStyleForReattach();
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
+    // TODO(futhark@chromium.org): IsActiveSlotOrActiveV0InsertionPoint() can be
+    // replaced by IsActiveV0InsertionPoint() when slots are always part of the
+    // flat tree, and removed completely when Shadow DOM V0 support is removed.
     return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
            IsActiveSlotOrActiveV0InsertionPoint() ||
            (whitespace_attacher.TraverseIntoDisplayContents() &&
@@ -859,7 +862,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void ChildrenChanged(const ChildrenChange&) override;
 
   virtual void WillRecalcStyle(StyleRecalcChange);
-  virtual void DidRecalcStyle();
+  virtual void DidRecalcStyle(StyleRecalcChange);
   virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject();
 
   virtual NamedItemType GetNamedItemType() const {

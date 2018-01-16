@@ -991,6 +991,7 @@ crbug.com/505364 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failur
 crbug.com/505364 external/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-slot-display-override.html [ Failure ]
 crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-slot-style.html [ Failure ]
+crbug.com/505364 external/wpt/css/css-scoping/css-scoping-shadow-nested-slot-display-override.html [ Failure ]
 
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]

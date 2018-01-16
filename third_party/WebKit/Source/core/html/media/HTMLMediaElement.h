@@ -365,7 +365,7 @@ class CORE_EXPORT HTMLMediaElement
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
-  void DidRecalcStyle() final;
+  void DidRecalcStyle(StyleRecalcChange) final;
 
   bool CanStartSelection() const override { return false; }
 
