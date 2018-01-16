@@ -140,6 +140,8 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
@@ -2353,9 +2355,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel {
-  NSMutableSet* result = [NSMutableSet setWithCapacity:[tabModel count]];
-  for (Tab* tab in tabModel) {
-    [result addObject:tab.tabId];
+  WebStateList* webStateList = tabModel.webStateList;
+  NSMutableSet* result = [NSMutableSet setWithCapacity:webStateList->count()];
+  for (int index = 0; index < webStateList->count(); ++index) {
+    web::WebState* webState = webStateList->GetWebStateAt(index);
+    [result addObject:TabIdTabHelper::FromWebState(webState)->tab_id()];
   }
   return result;
 }

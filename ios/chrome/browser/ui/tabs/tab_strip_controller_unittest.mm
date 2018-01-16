@@ -8,12 +8,16 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -27,58 +31,125 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ArrayBackedTabModel : TabModel {
- @private
-  NSMutableArray* tabsForTesting_;
-}
+@interface TabStripControllerTestTab : NSObject
+
+- (instancetype)initWithWebState:(web::WebState*)webState
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+@property(nonatomic, copy) NSString* title;
 
 @end
 
-@implementation ArrayBackedTabModel
+@implementation TabStripControllerTestTab {
+  web::WebState* _webState;
+}
 
-- (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
-                       sessionService:(SessionServiceIOS*)service
-                         browserState:(ios::ChromeBrowserState*)browserState {
-  if ((self = [super initWithSessionWindow:window
-                            sessionService:service
-                              browserState:browserState])) {
-    tabsForTesting_ = [[NSMutableArray alloc] initWithCapacity:5];
+@synthesize title = _title;
+
+- (instancetype)initWithWebState:(web::WebState*)webState {
+  if ((self = [super init])) {
+    DCHECK(webState);
+    _webState = webState;
   }
   return self;
 }
 
-- (void)addTabForTesting:(Tab*)tab {
-  [tabsForTesting_ addObject:tab];
+- (web::WebState*)webState {
+  return _webState;
+}
+
+@end
+
+@interface TabStripControllerTestTabModel : NSObject
+
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+@end
+
+@implementation TabStripControllerTestTabModel {
+  FakeWebStateListDelegate _webStateListDelegate;
+  std::unique_ptr<WebStateList> _webStateList;
+}
+
+@synthesize browserState = _browserState;
+
+- (instancetype)init {
+  if ((self = [super init])) {
+    _webStateList = std::make_unique<WebStateList>(&_webStateListDelegate);
+  }
+  return self;
+}
+
+- (void)browserStateDestroyed {
+  _webStateList->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
+  _webStateList.reset();
+  _browserState = nullptr;
+}
+
+- (TabStripControllerTestTab*)addTabForTestingWithTitle:(NSString*)title {
+  auto testWebState = std::make_unique<web::TestWebState>();
+  testWebState->SetNavigationManager(
+      std::make_unique<web::TestNavigationManager>());
+
+  TabStripControllerTestTab* tab =
+      [[TabStripControllerTestTab alloc] initWithWebState:testWebState.get()];
+  tab.title = title;
+
+  LegacyTabHelper::CreateForWebStateForTesting(testWebState.get(),
+                                               static_cast<Tab*>(tab));
+  _webStateList->InsertWebState(0, std::move(testWebState),
+                                WebStateList::INSERT_NO_FLAGS,
+                                WebStateOpener());
+
+  return tab;
+}
+
+- (Tab*)currentTab {
+  web::WebState* activeWebState = _webStateList->GetActiveWebState();
+  return activeWebState ? LegacyTabHelper::GetTabForWebState(activeWebState)
+                        : nil;
 }
 
 - (Tab*)tabAtIndex:(NSUInteger)index {
-  return (Tab*)[tabsForTesting_ objectAtIndex:index];
+  DCHECK(index < static_cast<NSUInteger>(INT_MAX));
+  DCHECK(static_cast<int>(index) < _webStateList->count());
+  return LegacyTabHelper::GetTabForWebState(
+      _webStateList->GetWebStateAt(static_cast<int>(index)));
 }
 
 - (NSUInteger)indexOfTab:(Tab*)tab {
-  return [tabsForTesting_ indexOfObject:tab];
+  const int index = _webStateList->GetIndexOfWebState(tab.webState);
+  return index == WebStateList::kInvalidIndex ? NSNotFound
+                                              : static_cast<NSUInteger>(index);
 }
 
 - (BOOL)isEmpty {
-  return [tabsForTesting_ count] == 0;
+  return _webStateList->empty();
 }
 
 - (NSUInteger)count {
-  return [tabsForTesting_ count];
-}
-
-// Pass along fast enumeration calls to the tab array.
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id __unsafe_unretained*)stackbuf
-                                    count:(NSUInteger)len {
-  return [tabsForTesting_ countByEnumeratingWithState:state
-                                              objects:stackbuf
-                                                count:len];
+  return static_cast<NSUInteger>(_webStateList->count());
 }
 
 - (void)closeTabAtIndex:(NSUInteger)index {
-  DCHECK(index < [tabsForTesting_ count]);
-  [self closeTab:[tabsForTesting_ objectAtIndex:index]];
+  DCHECK(index < static_cast<NSUInteger>(INT_MAX));
+  DCHECK(static_cast<int>(index) < _webStateList->count());
+  _webStateList->CloseWebStateAt(static_cast<int>(index),
+                                 WebStateList::CLOSE_NO_FLAGS);
+}
+
+- (void)addObserver:(id<TabModelObserver>)observer {
+  // Do nothing.
+}
+
+- (void)removeObserver:(id<TabModelObserver>)observer {
+  // Do nothing.
+}
+
+- (WebStateList*)webStateList {
+  return _webStateList.get();
 }
 
 @end
@@ -95,59 +166,18 @@ class TabStripControllerTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    // Setup mock TabModel, sessionService, and Tabs.
-    TestSessionService* test_service = [[TestSessionService alloc] init];
-    real_tab_model_ = [[ArrayBackedTabModel alloc]
-        initWithSessionWindow:nil
-               sessionService:test_service
-                 browserState:chrome_browser_state_.get()];
-    id tabModel = [OCMockObject partialMockForObject:real_tab_model_];
-    id tab1 = [OCMockObject mockForClass:[Tab class]];
-    id tab2 = [OCMockObject mockForClass:[Tab class]];
+    // Setup mock TabModel.
+    tab_model_ = [[TabStripControllerTestTabModel alloc] init];
+    tab_model_.browserState = chrome_browser_state_.get();
 
-    // Populate the tab model.
-    [real_tab_model_ addTabForTesting:tab1];
-    [real_tab_model_ addTabForTesting:tab2];
+    // Populate the TabModel.
+    tab1_ = [tab_model_ addTabForTestingWithTitle:@"Tab Title 1"];
+    tab2_ = [tab_model_ addTabForTestingWithTitle:@"Tab Title 2"];
 
-    // Stub methods for TabModel.
-    [[[tabModel stub] andDo:^(NSInvocation* invocation) {
-      // Return the raw pointer to the C++ object.
-      ios::ChromeBrowserState* browser_state = chrome_browser_state_.get();
-      [invocation setReturnValue:&browser_state];
-    }] browserState];
-    [[tabModel stub] addObserver:[OCMArg any]];
-    [[tabModel stub] removeObserver:[OCMArg any]];
-
-    // Stub methods for Tabs.
-    test_web_state1_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
-    [[[tab1 stub] andDo:^(NSInvocation* invocation) {
-      // Use a local variable to store the pointer to the WebState as
-      // -setReturnValue: takes a pointer to a buffer with the value
-      // to copy (and the value is a pointer).
-      web::WebState* web_state = &test_web_state1_;
-      [invocation setReturnValue:&web_state];
-    }] webState];
-    [[[tab1 stub] andReturn:@"Tab Title 1"] title];
-
-    test_web_state2_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
-    [[[tab2 stub] andDo:^(NSInvocation* invocation) {
-      // Use a local variable to store the pointer to the WebState as
-      // -setReturnValue: takes a pointer to a buffer with the value
-      // to copy (and the value is a pointer).
-      web::WebState* web_state = &test_web_state2_;
-      [invocation setReturnValue:&web_state];
-    }] webState];
-    [[[tab2 stub] andReturn:@"Tab Title 2"] title];
-
-    tabModel_ = tabModel;
-    tab1_ = tab1;
-    tab2_ = tab2;
-    controller_ =
-        [[TabStripController alloc] initWithTabModel:(TabModel*)tabModel_
-                                               style:NORMAL
-                                          dispatcher:nil];
+    controller_ = [[TabStripController alloc]
+        initWithTabModel:static_cast<TabModel*>(tab_model_)
+                   style:NORMAL
+              dispatcher:nil];
 
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];
@@ -158,29 +188,22 @@ class TabStripControllerTest : public PlatformTest {
   void TearDown() override {
     if (!IsIPadIdiom())
       return;
-    [real_tab_model_ browserStateDestroyed];
+
+    [tab_model_ browserStateDestroyed];
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  web::TestWebState test_web_state1_;
-  web::TestWebState test_web_state2_;
-  OCMockObject* tab1_;
-  OCMockObject* tab2_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  OCMockObject* tabModel_;
   TabStripController* controller_;
   UIWindow* window_;
-  ArrayBackedTabModel* real_tab_model_;
+  TabStripControllerTestTabModel* tab_model_;
+  TabStripControllerTestTab* tab1_;
+  TabStripControllerTestTab* tab2_;
 };
 
 TEST_F(TabStripControllerTest, LoadAndDisplay) {
   if (!IsIPadIdiom())
     return;
-
-  // If this doesn't crash, we're good.
-  ASSERT_OCMOCK_VERIFY(tabModel_);
-  ASSERT_OCMOCK_VERIFY(tab1_);
-  ASSERT_OCMOCK_VERIFY(tab2_);
 
   // There should be two TabViews and one new tab button nested within the
   // parent view (which contains exactly one scroll view).

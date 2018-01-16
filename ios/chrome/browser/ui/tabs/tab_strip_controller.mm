@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -45,6 +46,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/snapshot_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
@@ -465,9 +467,13 @@ UIColor* BackgroundColor() {
 
 - (void)initializeTabArrayFromTabModel {
   DCHECK(_tabModel);
-  for (Tab* tab in _tabModel) {
-    BOOL isSelectedTab = [_tabModel currentTab] == tab;
-    TabView* view = [self tabViewForTab:tab isSelected:isSelectedTab];
+  WebStateList* webStateList = _tabModel.webStateList;
+  for (int index = 0; index < webStateList->count(); ++index) {
+    web::WebState* webState = webStateList->GetWebStateAt(index);
+    BOOL isSelected = index == webStateList->active_index();
+    TabView* view =
+        [self tabViewForTab:LegacyTabHelper::GetTabForWebState(webState)
+                 isSelected:isSelected];
     [_tabArray addObject:view];
     [_tabStripView addSubview:view];
   }

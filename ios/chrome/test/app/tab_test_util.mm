@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/testing/wait_util.h"
 
@@ -129,12 +130,16 @@ BOOL SetCurrentTabsToBeColdStartTabs() {
   if (!GetCurrentTabModel().tabUsageRecorder)
     return NO;
   TabModel* tab_model = GetCurrentTabModel();
+  WebStateList* web_state_list = tab_model.webStateList;
+
   std::vector<web::WebState*> web_states;
-  for (Tab* tab in tab_model) {
-    web_states.push_back(tab.webState);
+  web_states.reserve(web_state_list->count());
+  for (int index = 0; index < web_state_list->count(); ++index) {
+    web_states.push_back(web_state_list->GetWebStateAt(index));
   }
-  tab_model.tabUsageRecorder->InitialRestoredTabs(tab_model.currentTab.webState,
-                                                  web_states);
+
+  tab_model.tabUsageRecorder->InitialRestoredTabs(
+      web_state_list->GetActiveWebState(), web_states);
   return YES;
 }
 

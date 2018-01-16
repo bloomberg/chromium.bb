@@ -7,8 +7,6 @@ source_set("web_state_list") {
     "web_state_list.h",
     "web_state_list.mm",
     "web_state_list_delegate.h",
-    "web_state_list_fast_enumeration_helper.h",
-    "web_state_list_fast_enumeration_helper.mm",
     "web_state_list_metrics_observer.h",
     "web_state_list_metrics_observer.mm",
     "web_state_list_observer.h",
@@ -47,7 +45,6 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "web_state_list_fast_enumeration_helper_unittest.mm",
     "web_state_list_order_controller_unittest.mm",
     "web_state_list_serialization_unittest.mm",
     "web_state_list_unittest.mm",

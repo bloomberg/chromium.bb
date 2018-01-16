@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "url/gurl.h"
 
@@ -88,12 +89,9 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
 
   return FindLiveTabContextWithCondition(base::Bind(
       [](const web::WebState* web_state, TabModel* tab_model) {
-        for (Tab* current_tab in tab_model) {
-          if (current_tab.webState && current_tab.webState == web_state) {
-            return true;
-          }
-        }
-        return false;
+        WebStateList* web_state_list = tab_model.webStateList;
+        const int index = web_state_list->GetIndexOfWebState(web_state);
+        return index != WebStateList::kInvalidIndex;
       },
       requested_tab->web_state()));
 }

@@ -49,7 +49,6 @@
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_fast_enumeration_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
@@ -111,26 +110,12 @@ void CleanCertificatePolicyCache(
 
 }  // anonymous namespace
 
-@interface TabModelWebStateProxyFactory : NSObject<WebStateProxyFactory>
-@end
-
-@implementation TabModelWebStateProxyFactory
-
-- (id)proxyForWebState:(web::WebState*)webState {
-  return LegacyTabHelper::GetTabForWebState(webState);
-}
-
-@end
-
 @interface TabModel () {
   // Delegate for the WebStateList.
   std::unique_ptr<WebStateListDelegate> _webStateListDelegate;
 
   // Underlying shared model implementation.
   std::unique_ptr<WebStateList> _webStateList;
-
-  // Helper providing NSFastEnumeration implementation over the WebStateList.
-  std::unique_ptr<WebStateListFastEnumerationHelper> _fastEnumerationHelper;
 
   // WebStateListObservers reacting to modifications of the model (may send
   // notification, translate and forward events, update metrics, ...).
@@ -233,10 +218,6 @@ void CleanCertificatePolicyCache(
     _webStateListDelegate =
         base::MakeUnique<TabModelWebStateListDelegate>(self);
     _webStateList = base::MakeUnique<WebStateList>(_webStateListDelegate.get());
-
-    _fastEnumerationHelper =
-        base::MakeUnique<WebStateListFastEnumerationHelper>(
-            _webStateList.get(), [[TabModelWebStateProxyFactory alloc] init]);
 
     _browserState = browserState;
     DCHECK(_browserState);
@@ -468,7 +449,9 @@ void CleanCertificatePolicyCache(
 }
 
 - (void)haltAllTabs {
-  for (Tab* tab in self) {
+  for (int index = 0; index < _webStateList->count(); ++index) {
+    web::WebState* webState = _webStateList->GetWebStateAt(index);
+    Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
     [tab terminateNetworkActivity];
   }
 }
@@ -541,14 +524,15 @@ void CleanCertificatePolicyCache(
   if (!_browserState)
     return referencedFiles;
   // Check the currently open tabs for external files.
-  for (Tab* tab in self) {
-    const GURL& lastCommittedURL = tab.webState->GetLastCommittedURL();
+  for (int index = 0; index < _webStateList->count(); ++index) {
+    web::WebState* webState = _webStateList->GetWebStateAt(index);
+    const GURL& lastCommittedURL = webState->GetLastCommittedURL();
     if (UrlIsExternalFileReference(lastCommittedURL)) {
       [referencedFiles addObject:base::SysUTF8ToNSString(
                                      lastCommittedURL.ExtractFileName())];
     }
     web::NavigationItem* pendingItem =
-        tab.webState->GetNavigationManager()->GetPendingItem();
+        webState->GetNavigationManager()->GetPendingItem();
     if (pendingItem && UrlIsExternalFileReference(pendingItem->GetURL())) {
       [referencedFiles addObject:base::SysUTF8ToNSString(
                                      pendingItem->GetURL().ExtractFileName())];
@@ -628,17 +612,6 @@ void CleanCertificatePolicyCache(
 
   int tabCount = static_cast<int>(self.count);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
-}
-
-#pragma mark - NSFastEnumeration
-
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id __unsafe_unretained*)objects
-                                    count:(NSUInteger)count {
-  return [_fastEnumerationHelper->GetFastEnumeration()
-      countByEnumeratingWithState:state
-                          objects:objects
-                            count:count];
 }
 
 #pragma mark - Private methods
