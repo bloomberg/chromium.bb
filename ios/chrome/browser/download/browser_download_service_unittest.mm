@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/web/public/download/download_controller.h"
@@ -27,12 +28,13 @@
 namespace {
 char kUrl[] = "https://test.test/";
 
-// Fake Tab Helper that substitutes real PassKitTabHelper for testing.
-class StubPassKitTabHelper : public PassKitTabHelper {
+// Substitutes real TabHelper for testing.
+template <class TabHelper>
+class StubTabHelper : public TabHelper {
  public:
   static void CreateForWebState(web::WebState* web_state) {
-    web_state->SetUserData(
-        UserDataKey(), base::WrapUnique(new StubPassKitTabHelper(web_state)));
+    web_state->SetUserData(TabHelper::UserDataKey(),
+                           base::WrapUnique(new StubTabHelper(web_state)));
   }
 
   // Adds the given task to tasks() lists.
@@ -45,12 +47,12 @@ class StubPassKitTabHelper : public PassKitTabHelper {
   const DownloadTasks& tasks() const { return tasks_; }
 
  private:
-  StubPassKitTabHelper(web::WebState* web_state)
-      : PassKitTabHelper(web_state, /*delegate=*/nil) {}
+  StubTabHelper(web::WebState* web_state)
+      : TabHelper(web_state, /*delegate=*/nil) {}
 
   DownloadTasks tasks_;
 
-  DISALLOW_COPY_AND_ASSIGN(StubPassKitTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(StubTabHelper);
 };
 
 }  // namespace
@@ -60,8 +62,12 @@ class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
       : browser_state_(browser_state_builder_.Build()) {
-    feature_list_.InitAndEnableFeature(web::features::kNewPassKitDownload);
-    StubPassKitTabHelper::CreateForWebState(&web_state_);
+    feature_list_.InitWithFeatures(
+        {web::features::kNewPassKitDownload, web::features::kNewFileDownload},
+        /*disabled_features=*/{});
+
+    StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
+    StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
 
     // BrowserDownloadServiceFactory sets its service as
     // DownloadControllerDelegate. These test use separate
@@ -83,9 +89,14 @@ class BrowserDownloadServiceTest : public PlatformTest {
     return web::DownloadController::FromBrowserState(browser_state_.get());
   }
 
-  StubPassKitTabHelper* pass_kit_tab_helper() {
-    return static_cast<StubPassKitTabHelper*>(
+  StubTabHelper<PassKitTabHelper>* pass_kit_tab_helper() {
+    return static_cast<StubTabHelper<PassKitTabHelper>*>(
         PassKitTabHelper::FromWebState(&web_state_));
+  }
+
+  StubTabHelper<DownloadManagerTabHelper>* download_manager_tab_helper() {
+    return static_cast<StubTabHelper<DownloadManagerTabHelper>*>(
+        DownloadManagerTabHelper::FromWebState(&web_state_));
   }
 
   web::DownloadControllerDelegate* previous_delegate_;
@@ -108,15 +119,19 @@ TEST_F(BrowserDownloadServiceTest, PkPassMimeType) {
       download_controller(), &web_state_, std::move(task));
   ASSERT_EQ(1U, pass_kit_tab_helper()->tasks().size());
   EXPECT_EQ(task_ptr, pass_kit_tab_helper()->tasks()[0].get());
+  ASSERT_TRUE(download_manager_tab_helper()->tasks().empty());
 }
 
-// Tests that BrowserDownloadService does not use PassKitTabHelper for pdf
-// Mime Type.
+// Tests that BrowserDownloadService uses DownloadManagerTabHelper for PDF Mime
+// Type.
 TEST_F(BrowserDownloadServiceTest, PdfMimeType) {
   ASSERT_TRUE(download_controller()->GetDelegate());
   auto task =
       std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "application/pdf");
+  web::DownloadTask* task_ptr = task.get();
   download_controller()->GetDelegate()->OnDownloadCreated(
       download_controller(), &web_state_, std::move(task));
   ASSERT_TRUE(pass_kit_tab_helper()->tasks().empty());
+  ASSERT_EQ(1U, download_manager_tab_helper()->tasks().size());
+  EXPECT_EQ(task_ptr, download_manager_tab_helper()->tasks()[0].get());
 }
