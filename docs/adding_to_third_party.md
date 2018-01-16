@@ -114,32 +114,29 @@ sure the directory is listed in Chromium's `.gitignore`.
 
 ## Get a Review
 
-All third party additions and substantive changes like re-licensing need various
-sign-offs. Some of these are accessible to Googlers only. Non-Googlers can email
-one of the people in third_party/OWNERS for help.
+All third party additions and substantive changes like re-licensing need the
+following sign-offs. Some of these are accessible to Googlers only. Non-Googlers
+can email one of the people in third_party/OWNERS for help.
 
+* Get Chrome Eng Review approval. Googlers should see
+  go/chrome-eng-review. Please include information about the additional
+  checkout size, build times, and binary sizes. Please also make sure that the
+  motivation for your project is clear, e.g., a design doc has been circulated.
+* Get security@chromium.org approval. Email the list with relevant details and
+  a link to the CL. Third party code is a hot spot for security vulnerabilities.
+  When adding a new package that could potentially carry security risk, make
+  sure to highlight risk to security@chromium.org. You may be asked to add
+  a README.security or, in dangerous cases, README.SECURITY.URGENTLY file.
 * Add chromium-third-party@google.com as a reviewer on your change. This
   will trigger an automatic round-robin assignment of the review to an
   appropriate reviewer. This list does not receive or deliver email, so only
   use it as a reviewer, not for other communication.
-* If necessary, get Chrome Eng Review approval. Googlers should see
-  go/chrome-eng-review. Please include information about the additional
-  checkout size, build times, and binary sizes. Please also make sure that the
-  motivation for your project is clear, e.g., a design doc has been circulated.
-* If necessary, get security@chromium.org approval. Email the list with relevant
-  details and a link to the CL.
 
 Please send separate emails to the eng review and security lists.
 
-Third party code is a hot spot for security vulnerabilities. When adding a new
-package that could potentially carry security risk, make sure to highlight risk
-to security@chromium.org. You may be asked to add a README.security or, in
-dangerous cases, README.SECURITY.URGENTLY file. When you update your code, be
-mindful of security-related mailing lists for the project and relevant CVE to
-update your package.
-
 Subsequent changes don't require third-party-owners approval; you can modify the
-code as much as you want.
+code as much as you want. When you update code, be mindful of security-related
+mailing lists for the project and relevant CVE to update your package.
 
 ## Ask the infrastructure team to add a git mirror for the dependency
 
