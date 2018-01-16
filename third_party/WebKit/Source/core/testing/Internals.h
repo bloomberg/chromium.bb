@@ -270,12 +270,6 @@ class Internals final : public ScriptWrappable {
                                                long height,
                                                Document*,
                                                ExceptionState&);
-  DOMRectReadOnly* bestZoomableAreaForTouchPoint(long x,
-                                                 long y,
-                                                 long width,
-                                                 long height,
-                                                 Document*,
-                                                 ExceptionState&);
 
   int lastSpellCheckRequestSequence(Document*, ExceptionState&);
   int lastSpellCheckProcessedSequence(Document*, ExceptionState&);

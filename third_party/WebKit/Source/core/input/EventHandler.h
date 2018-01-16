@@ -192,12 +192,6 @@ class CORE_EXPORT EventHandler final
   bool BestContextMenuNodeForHitTestResult(const HitTestResult&,
                                            IntPoint& target_point,
                                            Node*& target_node);
-  // FIXME: This doesn't appear to be used outside tests anymore, what path are
-  // we using now and is it tested?
-  bool BestZoomableAreaForTouchPoint(const IntPoint& touch_center,
-                                     const IntSize& touch_radius,
-                                     IntRect& target_area,
-                                     Node*& target_node);
 
   WebInputEventResult SendContextMenuEvent(
       const WebMouseEvent&,

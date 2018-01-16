@@ -1419,31 +1419,6 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
                                       HeapVector<Member<Node>>(nodes));
 }
 
-bool EventHandler::BestZoomableAreaForTouchPoint(const IntPoint& touch_center,
-                                                 const IntSize& touch_radius,
-                                                 IntRect& target_area,
-                                                 Node*& target_node) {
-  if (touch_radius.IsEmpty())
-    return false;
-
-  IntPoint hit_test_point = frame_->View()->RootFrameToContents(touch_center);
-
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
-                                                HitTestRequest::kActive |
-                                                HitTestRequest::kListBased;
-  HitTestResult result =
-      HitTestResultAtPoint(hit_test_point, hit_type, LayoutSize(touch_radius));
-
-  IntRect touch_rect(touch_center - touch_radius, touch_radius + touch_radius);
-  HeapVector<Member<Node>, 11> nodes;
-  CopyToVector(result.ListBasedTestResult(), nodes);
-
-  // FIXME: the explicit Vector conversion copies into a temporary and is
-  // wasteful.
-  return FindBestZoomableArea(target_node, target_area, touch_center,
-                              touch_rect, HeapVector<Member<Node>>(nodes));
-}
-
 // Update the hover and active state across all frames for this gesture.
 // This logic is different than the mouse case because mice send MouseLeave
 // events to frames as they're exited.  With gestures, a single event
