@@ -103,4 +103,3 @@ per-file vr_shell_resources.grdp=file://chrome/browser/android/vr_shell/OWNERS
 
 per-file web_bluetooth*=jyasskin@chromium.org
 per-file web_bluetooth*=ortuno@chromium.org
-per-file web_bluetooth*=scheib@chromium.org
