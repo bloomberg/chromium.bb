@@ -301,9 +301,9 @@ void OmniboxResultView::Invalidate() {
 void OmniboxResultView::OnSelected() {
   DCHECK_EQ(SELECTED, GetState());
 
-  // The text is also accessible via text/value change events in
-  // the omnibox but this selection event allows the screen reader to
-  // get more details about the list and the user's position within it.
+  // The text is also accessible via text/value change events in the omnibox but
+  // this selection event allows the screen reader to get more details about the
+  // list and the user's position within it.
   NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 }
 

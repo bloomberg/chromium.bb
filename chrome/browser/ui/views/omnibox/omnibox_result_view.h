@@ -83,7 +83,6 @@ class OmniboxResultView : public views::View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-  bool IsAccessibilityFocusable() const { return true; }
 
  private:
   enum RenderTextType {

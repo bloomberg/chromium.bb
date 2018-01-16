@@ -770,8 +770,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // the omnibox.
   int32_t popup_view_id =
       popup_view_->GetViewAccessibility().GetUniqueId().Get();
-  std::vector<int32_t> controlled_ids = {popup_view_id};
-  node_data->AddIntListAttribute(ui::AX_ATTR_CONTROLS_IDS, controlled_ids);
+  node_data->AddIntListAttribute(ui::AX_ATTR_CONTROLS_IDS, {popup_view_id});
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;

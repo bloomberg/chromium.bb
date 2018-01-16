@@ -58,6 +58,7 @@ static int AccessibilityLabelPrefixLength(base::string16 accessibility_label) {
   return length == base::string16::npos ? 0 : static_cast<int>(length);
 }
 
+// static
 base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     const AutocompleteMatch& match,
     const base::string16& match_text,
@@ -154,6 +155,7 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
              : l10n_util::GetStringFUTF16(message, match_text);
 }
 
+// static
 base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     const AutocompleteMatch& match,
     const base::string16& match_text,
