@@ -41,6 +41,7 @@ Refer to README.md for content description and update process.
  <item id="cloud_print_search" hash_code="132055347" type="0" content_hash_code="123783474" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
  <item id="component_updater_utils" hash_code="125596241" type="0" content_hash_code="12311195" os_list="linux,windows" file_path="components/update_client/utils.cc"/>
  <item id="content_hash_verification_job" hash_code="64733114" type="0" content_hash_code="127912411" os_list="linux,windows" file_path="extensions/browser/content_hash_fetcher.cc"/>
+ <item id="content_resource_fetcher" hash_code="70796791"  type="0" deprecated="2017-09-16" content_hash_code="135648626" file_path=""/>
  <item id="content_suggestion_get_favicon" hash_code="16653985" type="0" content_hash_code="134280933" os_list="linux,windows" file_path="components/ntp_snippets/content_suggestions_service.cc"/>
  <item id="credenential_avatar" hash_code="53695122" type="0" content_hash_code="113035371" os_list="linux,windows" file_path="chrome/browser/ui/passwords/account_avatar_fetcher.cc"/>
  <item id="cros_recovery_image_download" hash_code="101725581" type="0" content_hash_code="23088027" os_list="linux,windows" file_path="chrome/browser/extensions/api/image_writer_private/write_from_url_operation.cc"/>
@@ -56,6 +57,7 @@ Refer to README.md for content description and update process.
  <item id="data_reduction_proxy_secure_proxy_check" hash_code="131236802" type="0" content_hash_code="122297136" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/secure_proxy_checker.cc"/>
  <item id="data_reduction_proxy_warmup" hash_code="8250451" type="0" content_hash_code="6321249" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/warmup_url_fetcher.cc"/>
  <item id="desktop_ios_promotion" hash_code="13694792" type="0" content_hash_code="19776951" os_list="windows" file_path="chrome/browser/ui/desktop_ios_promotion/sms_service.cc"/>
+ <item id="device_geolocation_request" hash_code="77673751"  type="0" deprecated="2017-10-20" content_hash_code="97181773" file_path=""/>
  <item id="device_management_service" hash_code="117782019" type="0" content_hash_code="127535409" os_list="linux,windows" file_path="components/policy/core/common/cloud/device_management_service.cc"/>
  <item id="devtools_free_data_source" hash_code="22774132" type="0" content_hash_code="136324050" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
  <item id="devtools_handle_front_end_messages" hash_code="135636011" type="0" content_hash_code="18422190" os_list="linux,windows" file_path="content/shell/browser/shell_devtools_bindings.cc"/>
@@ -67,6 +69,8 @@ Refer to README.md for content description and update process.
  <item id="dom_distiller" hash_code="3989826" type="0" content_hash_code="106153970" os_list="linux,windows" file_path="components/dom_distiller/core/distiller_url_fetcher.cc"/>
  <item id="domain_reliability_report_upload" hash_code="108804096" type="0" content_hash_code="35902036" os_list="linux,windows" file_path="components/domain_reliability/uploader.cc"/>
  <item id="domain_security_policy" hash_code="77597059" type="0" content_hash_code="30916983" os_list="linux,windows" file_path="chrome/browser/profiles/profile_io_data.cc"/>
+ <item id="doodle_fetcher" hash_code="97199008"  type="0" deprecated="2017-08-28" content_hash_code="87981692" file_path=""/>
+ <item id="doodle_service" hash_code="41154842"  type="0" deprecated="2017-08-28" content_hash_code="28273962" file_path=""/>
  <item id="download_manager_resume" hash_code="35380758" type="0" content_hash_code="41227674" os_list="linux,windows" file_path="content/browser/download/download_item_impl.cc"/>
  <item id="download_web_contents_frame" hash_code="56351037" type="0" content_hash_code="3657889" os_list="linux,windows" file_path="content/browser/web_contents/web_contents_impl.cc"/>
  <item id="downloads_api_run_async" hash_code="121068967" type="0" content_hash_code="87443585" os_list="linux,windows" file_path="chrome/browser/extensions/api/downloads/downloads_api.cc"/>
@@ -113,6 +117,7 @@ Refer to README.md for content description and update process.
  <item id="metrics_report_ukm" hash_code="727478" type="0" content_hash_code="40919254" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="metrics_report_uma" hash_code="727528" type="0" content_hash_code="10176197" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="missing" hash_code="77012883" type="0" reserved="1" os_list="linux,windows" file_path=""/>
+ <item id="mojo_context_state" hash_code="93232258"  type="0" deprecated="2017-10-20" content_hash_code="124821232" file_path=""/>
  <item id="navigation_url_loader" hash_code="63171670" type="0" content_hash_code="129352907" os_list="linux,windows" file_path="content/browser/loader/navigation_url_loader_network_service.cc"/>
  <item id="net_error_helper" hash_code="60071001" type="0" content_hash_code="68322861" os_list="linux,windows" file_path="chrome/renderer/net/net_error_helper.cc"/>
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="4,5" file_path="device/geolocation/network_location_provider.cc"/>
@@ -137,6 +142,7 @@ Refer to README.md for content description and update process.
  <item id="open_search" hash_code="107267424" type="0" content_hash_code="25715812" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
  <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="content/browser/download/parallel_download_job.cc"/>
  <item id="password_protection_request" hash_code="66322287" type="0" content_hash_code="21270837" os_list="linux,windows" file_path="components/safe_browsing/password_protection/password_protection_request.cc"/>
+ <item id="payment_instrument_icon_fetcher" hash_code="73309970"  type="0" deprecated="2017-09-16" content_hash_code="84709873" file_path=""/>
  <item id="payment_manifest_downloader" hash_code="84045030" type="0" content_hash_code="19293316" os_list="linux,windows" file_path="components/payments/core/payment_manifest_downloader.cc"/>
  <item id="payments_sync_cards" hash_code="95588446" type="0" content_hash_code="56526513" os_list="linux,windows" file_path="components/autofill/core/browser/payments/payments_client.cc"/>
  <item id="pdf_plugin_placeholder" hash_code="56866367" type="0" content_hash_code="16907221" os_list="linux,windows" file_path="chrome/browser/plugins/pdf_plugin_placeholder_observer.cc"/>
@@ -177,6 +183,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_module_loader" hash_code="6019475" type="0" content_hash_code="49511650" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_model_loader.cc"/>
  <item id="safe_browsing_v4_get_hash" hash_code="8561691" type="0" content_hash_code="132435617" os_list="linux,windows" file_path="components/safe_browsing/db/v4_get_hash_protocol_manager.cc"/>
  <item id="safe_search_url_reporter" hash_code="119677115" type="0" content_hash_code="67393078" os_list="linux,windows" file_path="chrome/browser/supervised_user/experimental/safe_search_url_reporter.cc"/>
+ <item id="sdch_dictionary_fetch" hash_code="47152935"  type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="save_file_manager" hash_code="56275203" type="0" content_hash_code="56692339" os_list="linux,windows" file_path="content/browser/download/save_file_manager.cc"/>
  <item id="service_worker_navigation_preload" hash_code="129872904" type="0" content_hash_code="79473248" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_fetch_dispatcher.cc"/>
  <item id="service_worker_write_to_cache_job" hash_code="117963307" type="0" content_hash_code="18065724" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_write_to_cache_job.cc"/>
