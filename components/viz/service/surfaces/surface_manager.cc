@@ -202,13 +202,9 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
 
 void SurfaceManager::SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
                                             const std::string& debug_label) {
-#if DCHECK_IS_ON()
   auto it = valid_frame_sink_labels_.find(frame_sink_id);
   DCHECK(it != valid_frame_sink_labels_.end());
   it->second = debug_label;
-#else
-  NOTREACHED();
-#endif
 }
 
 std::string SurfaceManager::GetFrameSinkDebugLabel(

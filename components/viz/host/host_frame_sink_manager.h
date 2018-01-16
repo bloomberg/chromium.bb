@@ -157,6 +157,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     // The client to be notified of changes to this FrameSink.
     HostFrameSinkClient* client = nullptr;
 
+    // The name of the HostFrameSinkClient used for debug purposes.
+    std::string debug_label;
+
     // If the frame sink is a root that corresponds to a Display.
     bool is_root = false;
 
