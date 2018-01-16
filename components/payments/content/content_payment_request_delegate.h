@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_CONTENT_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 
+#include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/core/payment_request_delegate.h"
 
 template <class T>
@@ -30,8 +31,11 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
 
   // Embed the content of the web page at |url| passed through
   // PaymentRequestEvent.openWindow inside the current Payment Request UI
-  // surface.
-  virtual void EmbedPaymentHandlerWindow(const GURL& url) = 0;
+  // surface. |callback| is invoked after navigation is completed, passing
+  // true/false to indicate success/failure.
+  virtual void EmbedPaymentHandlerWindow(
+      const GURL& url,
+      PaymentHandlerOpenWindowCallback callback) = 0;
 };
 
 }  // namespace payments

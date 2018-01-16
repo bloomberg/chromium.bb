@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/payments/content/payment_request_display_manager.h"
 
 namespace content {
 class WebContents;
@@ -39,7 +40,11 @@ class PaymentRequestDialog {
           result_delegate,
       content::WebContents* web_contents) = 0;
 
-  virtual void ShowPaymentHandlerScreen(const GURL& url) = 0;
+  // Display |url| in a new screen and run |callback| after navigation is
+  // completed, passing true/false to indicate success/failure.
+  virtual void ShowPaymentHandlerScreen(
+      const GURL& url,
+      PaymentHandlerOpenWindowCallback callback) = 0;
 };
 
 }  // namespace payments

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
@@ -15,6 +16,12 @@ namespace payments {
 
 class ContentPaymentRequestDelegate;
 class PaymentRequest;
+
+// The callback type for functions that need to signal back to the ServiceWorker
+// when a window was/failed to open following an openWindow call. The parameter
+// indicates whether the call was successful or not.
+using PaymentHandlerOpenWindowCallback =
+    base::OnceCallback<void(bool /* success */)>;
 
 // This KeyedService is responsible for displaying and hiding Payment Request
 // UI. It ensures that only one Payment Request is showing per profile.
@@ -26,7 +33,11 @@ class PaymentRequestDisplayManager : public KeyedService {
                            ContentPaymentRequestDelegate* delegate);
     ~DisplayHandle();
     void Show(PaymentRequest* request);
-    void DisplayPaymentHandlerWindow(const GURL& url);
+    // Attempt to display |url| inside the Payment Request dialog and run
+    // |callback| after navigation is completed, passing true/false to indicate
+    // success/failure.
+    void DisplayPaymentHandlerWindow(const GURL& url,
+                                     base::OnceCallback<void(bool)> callback);
 
    private:
     PaymentRequestDisplayManager* display_manager_;
@@ -45,7 +56,7 @@ class PaymentRequestDisplayManager : public KeyedService {
   std::unique_ptr<DisplayHandle> TryShow(
       ContentPaymentRequestDelegate* delegate);
   void ShowPaymentHandlerWindow(const GURL& url,
-                                base::OnceCallback<void(bool)> callback);
+                                PaymentHandlerOpenWindowCallback callback);
 
  private:
   void set_current_handle(DisplayHandle* handle) { current_handle_ = handle; }
