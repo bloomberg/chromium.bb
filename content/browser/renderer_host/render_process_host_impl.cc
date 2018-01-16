@@ -3785,7 +3785,8 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 }
 
 void RenderProcessHostImpl::UpdateProcessPriority() {
-  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting()) {
+  if (!run_renderer_in_process() && (!child_process_launcher_.get() ||
+                                     child_process_launcher_->IsStarting())) {
     priority_.background = kLaunchingProcessIsBackgrounded;
     priority_.boost_for_pending_views =
         kLaunchingProcessIsBoostedForPendingView;
@@ -3832,7 +3833,11 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // tasks executing at lowered priority ahead of it or simply by not being
   // swiftly scheduled by the OS per the low process priority
   // (http://crbug.com/398103).
-  child_process_launcher_->SetProcessPriority(priority_);
+  if (!run_renderer_in_process()) {
+    DCHECK(child_process_launcher_.get());
+    DCHECK(!child_process_launcher_->IsStarting());
+    child_process_launcher_->SetProcessPriority(priority_);
+  }
 
   // Notify the child process of background state. Note
   // |priority_.boost_for_pending_views| state is not sent to renderer simply
