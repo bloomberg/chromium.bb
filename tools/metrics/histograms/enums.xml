@@ -36709,8 +36709,13 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="RendererSchedulerThreadType">
   <int value="0" label="MainThread"/>
-  <int value="1" label="WorkerThread"/>
+  <int value="1" label="UnspecifiedWorkerThread"/>
   <int value="2" label="CompositorThread"/>
+  <int value="3" label="DedicatedWorkerThread"/>
+  <int value="4" label="SharedWorkerThread"/>
+  <int value="5" label="AnimationWorkletThread"/>
+  <int value="6" label="ServiceWorkerThread"/>
+  <int value="7" label="AudioWorkletThread"/>
 </enum>
 
 <enum name="RendererType">

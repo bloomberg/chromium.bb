@@ -52,6 +52,10 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
 
   bool IsOwningBackingThread() const override { return false; }
 
+  scheduler::ThreadType GetThreadType() const override {
+    return scheduler::ThreadType::kAudioWorkletThread;
+  }
+
   // This raw pointer gets assigned in EnsureSharedBackingThread() and manually
   // released by ClearSharedBackingThread().
   static WebThread* s_backing_thread_;

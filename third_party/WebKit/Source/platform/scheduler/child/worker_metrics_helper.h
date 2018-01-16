@@ -21,6 +21,8 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
+  using MetricsHelper::SetThreadType;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkerMetricsHelper);
 };

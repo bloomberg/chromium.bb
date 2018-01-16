@@ -22,7 +22,7 @@ namespace scheduler {
 namespace {
 // Workers could be short-lived, set a shorter interval than
 // the renderer thread.
-constexpr base::TimeDelta kWorkerThreadLoadTrackerReportingInterval =
+constexpr base::TimeDelta kUnspecifiedWorkerThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromSeconds(1);
 
 void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
@@ -57,7 +57,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->NowTicks(),
                     base::Bind(&ReportWorkerTaskLoad),
-                    kWorkerThreadLoadTrackerReportingInterval) {
+                    kUnspecifiedWorkerThreadLoadTrackerReportingInterval) {
   initialized_ = false;
   thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
@@ -169,6 +169,11 @@ void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
   base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
 
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
+}
+
+void WorkerSchedulerImpl::SetThreadType(ThreadType thread_type) {
+  DCHECK_NE(thread_type, ThreadType::kMainThread);
+  worker_metrics_helper_.SetThreadType(thread_type);
 }
 
 }  // namespace scheduler

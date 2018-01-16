@@ -37,6 +37,8 @@ class PLATFORM_EXPORT MetricsHelper {
                                base::TimeTicks start_time,
                                base::TimeTicks end_time);
 
+  void SetThreadType(ThreadType thread_type);
+
  private:
   ThreadType thread_type_;
 
