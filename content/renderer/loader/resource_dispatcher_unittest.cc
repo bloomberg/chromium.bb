@@ -38,6 +38,7 @@
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -113,7 +114,8 @@ class ResourceDispatcherTest : public testing::Test,
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id = dispatcher()->StartAsync(
-        std::move(request), 0, nullptr, url::Origin(),
+        std::move(request), 0,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer), this,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         mojom::URLLoaderClientEndpointsPtr());

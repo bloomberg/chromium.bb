@@ -37,6 +37,7 @@ class SyncLoadContext : public RequestPeer {
   static void StartAsyncWithWaitableEvent(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactoryPtrInfo url_loader_factory_pipe,

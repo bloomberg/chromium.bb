@@ -16,6 +16,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
@@ -28,7 +29,8 @@ class URLLoaderClientImplTest : public ::testing::Test,
     mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
     request_id_ = dispatcher_->StartAsync(
-        std::make_unique<network::ResourceRequest>(), 0, nullptr, url::Origin(),
+        std::make_unique<network::ResourceRequest>(), 0,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
