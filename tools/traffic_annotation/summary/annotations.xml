@@ -34,9 +34,9 @@ Refer to README.md for content description and update process.
  <item id="chrome_variations_service" hash_code="115188287" type="0" content_hash_code="32485683" os_list="linux,windows" file_path="components/variations/service/variations_service.cc"/>
  <item id="client_download_request" hash_code="125522256" type="0" content_hash_code="23897505" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/check_client_download_request.cc"/>
  <item id="cloud_print" hash_code="111712433" type="2" content_hash_code="60926140" os_list="linux,windows" semantics_fields="1,5" policy_fields="-2,4,5" file_path="chrome/service/cloud_print/cloud_print_url_fetcher.cc"/>
- <item id="cloud_print_backend" hash_code="71578042" type="1" second_id="111712433" content_hash_code="85425333" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="" file_path="chrome/service/cloud_print/cloud_print_proxy_backend.cc"/>
+ <item id="cloud_print_backend" hash_code="71578042" type="1" second_id="111712433" content_hash_code="85425333" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/cloud_print_proxy_backend.cc"/>
  <item id="cloud_print_privet_register" hash_code="24978481" type="0" content_hash_code="131359002" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
- <item id="cloud_print_proxy" hash_code="50859288" type="1" second_id="111712433" content_hash_code="90868083" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="" file_path="chrome/service/cloud_print/cloud_print_proxy.cc"/>
+ <item id="cloud_print_proxy" hash_code="50859288" type="1" second_id="111712433" content_hash_code="90868083" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/cloud_print_proxy.cc"/>
  <item id="cloud_print_search" hash_code="132055347" type="0" content_hash_code="123783474" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
  <item id="component_updater_utils" hash_code="125596241" type="0" content_hash_code="12311195" os_list="linux,windows" file_path="components/update_client/utils.cc"/>
  <item id="content_hash_verification_job" hash_code="64733114" type="0" content_hash_code="127912411" os_list="linux,windows" file_path="extensions/browser/content_hash_fetcher.cc"/>
@@ -51,7 +51,7 @@ Refer to README.md for content description and update process.
  <item id="cryptauth_get_my_devices" hash_code="136498680" type="1" second_id="29188932" content_hash_code="73842435" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="4,5" file_path="components/cryptauth/cryptauth_device_manager.cc"/>
  <item id="cryptauth_toggle_easyunlock" hash_code="25204343" type="1" second_id="29188932" content_hash_code="13570943" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="4,5" file_path="components/cryptauth/cryptauth_client_impl.cc"/>
  <item id="data_reduction_proxy_config" hash_code="485305" type="0" content_hash_code="134075813" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.cc"/>
- <item id="data_reduction_proxy_pingback" hash_code="68561428" type="0" content_hash_code="78407792" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.cc"/>
+ <item id="data_reduction_proxy_pingback" hash_code="68561428" type="0" content_hash_code="78407792" os_list="linux,windows" file_path="components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.cc"/>
  <item id="data_reduction_proxy_secure_proxy_check" hash_code="131236802" type="0" content_hash_code="122297136" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/secure_proxy_checker.cc"/>
  <item id="data_reduction_proxy_warmup" hash_code="8250451" type="0" content_hash_code="6321249" os_list="linux,windows" file_path="components/data_reduction_proxy/core/browser/warmup_url_fetcher.cc"/>
  <item id="desktop_ios_promotion" hash_code="13694792" type="0" content_hash_code="19776951" os_list="windows" file_path="chrome/browser/ui/desktop_ios_promotion/sms_service.cc"/>
@@ -121,9 +121,9 @@ Refer to README.md for content description and update process.
  <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" content_hash_code="29742597" os_list="linux,windows" file_path="components/ntp_snippets/contextual/contextual_json_request.cc"/>
  <item id="ntp_snippets_fetch" hash_code="15418154" type="0" content_hash_code="10078959" os_list="linux,windows" file_path="components/ntp_snippets/remote/json_request.cc"/>
  <item id="oauth2_access_token_fetcher" hash_code="27915688" type="0" content_hash_code="33501872" os_list="linux,windows" file_path="google_apis/gaia/oauth2_access_token_fetcher_impl.cc"/>
- <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
+ <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" policy_fields="-2" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="4,5" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
- <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="24127780" os_list="linux" file_path="net/cert_net/nss_ocsp.cc"/>
+ <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="24127780" os_list="linux,windows" file_path="net/cert_net/nss_ocsp.cc"/>
  <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="57248156" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
  <item id="omnibox_navigation_observer" hash_code="61684939" type="0" content_hash_code="70941231" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc"/>
  <item id="omnibox_prefetch_image" hash_code="109200878" type="0" content_hash_code="107906693" os_list="linux,windows" file_path="chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc"/>
@@ -147,7 +147,7 @@ Refer to README.md for content description and update process.
  <item id="popular_sites_fetch" hash_code="50755044" type="0" content_hash_code="6910083" os_list="linux,windows" file_path="components/ntp_tiles/popular_sites_impl.cc"/>
  <item id="ppapi_download_request" hash_code="135967426" type="0" content_hash_code="110461402" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc"/>
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="100587691" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
- <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
+ <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
  <item id="profile_avatar" hash_code="51164680" type="0" content_hash_code="113550845" os_list="linux,windows" file_path="chrome/browser/profiles/profile_avatar_downloader.cc"/>
  <item id="profile_resetter_upload" hash_code="105330607" type="0" content_hash_code="129329171" os_list="linux,windows" file_path="chrome/browser/profile_resetter/reset_report_uploader.cc"/>

@@ -310,7 +310,7 @@ std::string TrafficAnnotationExporter::GenerateSerializedXML() const {
     }
 
     // Write policy list (for incomplete annotations).
-    if (!item.second.semantics_fields.empty()) {
+    if (!item.second.policy_fields.empty()) {
       std::string text;
       for (int field : item.second.policy_fields)
         text += base::StringPrintf("%i,", field);
