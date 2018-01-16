@@ -13,6 +13,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/media_stream_source.h"
@@ -84,9 +86,28 @@ void ApplyConstraintsProcessor::ProcessRequest(
   } else {
     DCHECK_EQ(current_request_.Track().Source().GetType(),
               blink::WebMediaStreamSource::kTypeAudio);
-    // TODO(guidou): Implement applyConstraints() for audio tracks.
-    // http://crbug.com/763320
-    CannotApplyConstraints("applyConstraints not supported for audio tracks");
+    ProcessAudioRequest();
+  }
+}
+
+void ApplyConstraintsProcessor::ProcessAudioRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.IsNull());
+  DCHECK_EQ(current_request_.Track().Source().GetType(),
+            blink::WebMediaStreamSource::kTypeAudio);
+  DCHECK(request_completed_cb_);
+  MediaStreamAudioSource* audio_source = GetCurrentAudioSource();
+  if (!audio_source) {
+    CannotApplyConstraints("The track is not connected to any source");
+    return;
+  }
+
+  AudioCaptureSettings settings =
+      SelectSettingsAudioCapture(audio_source, current_request_.Constraints());
+  if (settings.HasValue()) {
+    ApplyConstraintsSucceeded();
+  } else {
+    ApplyConstraintsFailed(settings.failed_constraint_name());
   }
 }
 
@@ -268,6 +289,12 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   return SelectSettingsVideoDeviceCapture(
       video_capabilities, current_request_.Constraints(), settings.width,
       settings.height, settings.frame_rate);
+}
+
+MediaStreamAudioSource* ApplyConstraintsProcessor::GetCurrentAudioSource() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.Track().IsNull());
+  return MediaStreamAudioSource::From(current_request_.Track().Source());
 }
 
 MediaStreamVideoTrack* ApplyConstraintsProcessor::GetCurrentVideoTrack() {

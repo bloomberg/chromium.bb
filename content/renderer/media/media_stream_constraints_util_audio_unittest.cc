@@ -5,11 +5,18 @@
 #include "content/renderer/media/media_stream_constraints_util_audio.h"
 
 #include <cmath>
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "content/common/media/media_stream_controls.h"
+#include "content/renderer/media/local_media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/mock_constraint_factory.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -102,6 +109,47 @@ class MediaStreamConstraintsUtilAudioTest
 
   std::string GetMediaStreamSource() { return GetParam(); }
   bool IsDeviceCapture() { return GetMediaStreamSource().empty(); }
+
+  MediaStreamType GetMediaStreamType() {
+    std::string media_source = GetMediaStreamSource();
+    if (media_source.empty())
+      return MEDIA_DEVICE_AUDIO_CAPTURE;
+    else if (media_source == kMediaStreamSourceTab)
+      return MEDIA_TAB_AUDIO_CAPTURE;
+    return MEDIA_DESKTOP_AUDIO_CAPTURE;
+  }
+
+  std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
+      const AudioProcessingProperties& properties,
+      bool hotword_enabled,
+      bool disable_local_echo,
+      bool render_to_associated_sink) {
+    MediaStreamDevice device;
+    device.type = GetMediaStreamType();
+    if (render_to_associated_sink)
+      device.matched_output_device_id = std::string("some_device_id");
+
+    return std::make_unique<ProcessedLocalAudioSource>(
+        -1, device, hotword_enabled, disable_local_echo, properties,
+        MediaStreamSource::ConstraintsCallback(), &pc_factory_);
+  }
+
+  std::unique_ptr<LocalMediaStreamAudioSource> GetLocalMediaStreamAudioSource(
+      bool enable_hardware_echo_canceller,
+      bool hotword_enabled,
+      bool disable_local_echo,
+      bool render_to_associated_sink) {
+    MediaStreamDevice device;
+    device.type = GetMediaStreamType();
+    if (enable_hardware_echo_canceller)
+      device.input.set_effects(media::AudioParameters::ECHO_CANCELLER);
+    if (render_to_associated_sink)
+      device.matched_output_device_id = std::string("some_device_id");
+
+    return std::make_unique<LocalMediaStreamAudioSource>(
+        -1, device, hotword_enabled, disable_local_echo,
+        MediaStreamSource::ConstraintsCallback());
+  }
 
   AudioCaptureSettings SelectSettings() {
     blink::WebMediaConstraints constraints =
@@ -312,6 +360,11 @@ class MediaStreamConstraintsUtilAudioTest
       nullptr;
   const blink::mojom::AudioInputDeviceCapabilities* geometry_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
+
+ private:
+  // Required for tests involving a MediaStreamAudioSource.
+  base::MessageLoop message_loop_;
+  MockPeerConnectionDependencyFactory pc_factory_;
 };
 
 // The Unconstrained test checks the default selection criteria.
@@ -974,6 +1027,213 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesWithConstraints) {
       capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
+}
+
+// Test functionality to support applyConstraints() for tracks attached to
+// sources that have no audio processing.
+TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
+  for (bool enable_properties : {true, false}) {
+    std::unique_ptr<LocalMediaStreamAudioSource> source =
+        GetLocalMediaStreamAudioSource(
+            enable_properties /* enable_hardware_echo_canceller */,
+            enable_properties /* hotword_enabled */,
+            enable_properties /* disable_local_echo */,
+            enable_properties /* render_to_associated_sink */);
+
+    // These constraints are false in |source|.
+    const std::vector<
+        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        kConstraints = {
+            &blink::WebMediaTrackConstraintSet::echo_cancellation,
+            &blink::WebMediaTrackConstraintSet::hotword_enabled,
+            &blink::WebMediaTrackConstraintSet::disable_local_echo,
+            &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
+        };
+
+    for (size_t i = 0; i < kConstraints.size(); ++i) {
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kConstraints[i])
+          .SetExact(enable_properties);
+      auto result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kConstraints[i])
+          .SetExact(!enable_properties);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_FALSE(result.HasValue());
+
+      // Setting just ideal values should always succeed.
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kConstraints[i]).SetIdeal(true);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kConstraints[i]).SetIdeal(false);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+    }
+  }
+}
+
+// Test functionality to support applyConstraints() for tracks attached to
+// sources that have audio processing.
+TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
+  // Processed audio sources are supported only for device capture.
+  if (!IsDeviceCapture())
+    return;
+
+  for (bool use_defaults : {true, false}) {
+    AudioProcessingProperties properties;
+    properties.disable_hw_echo_cancellation = true;
+    if (!use_defaults) {
+      properties.enable_sw_echo_cancellation =
+          !properties.enable_sw_echo_cancellation;
+      properties.goog_audio_mirroring = !properties.goog_audio_mirroring;
+      properties.goog_auto_gain_control = !properties.goog_auto_gain_control;
+      properties.goog_experimental_echo_cancellation =
+          !properties.goog_experimental_echo_cancellation;
+      properties.goog_typing_noise_detection =
+          !properties.goog_typing_noise_detection;
+      properties.goog_noise_suppression = !properties.goog_noise_suppression;
+      properties.goog_experimental_noise_suppression =
+          !properties.goog_experimental_noise_suppression;
+      properties.goog_beamforming = !properties.goog_beamforming;
+      properties.goog_highpass_filter = !properties.goog_highpass_filter;
+      properties.goog_experimental_auto_gain_control =
+          !properties.goog_experimental_auto_gain_control;
+      properties.goog_array_geometry = {{1, 1, 1}, {2, 2, 2}};
+    }
+
+    std::unique_ptr<ProcessedLocalAudioSource> source =
+        GetProcessedLocalAudioSource(
+            properties, use_defaults /* hotword_enabled */,
+            use_defaults /* disable_local_echo */,
+            use_defaults /* render_to_associated_sink */);
+    const std::vector<
+        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        kAudioProcessingConstraints = {
+            &blink::WebMediaTrackConstraintSet::echo_cancellation,
+            &blink::WebMediaTrackConstraintSet::goog_audio_mirroring,
+            &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
+            &blink::WebMediaTrackConstraintSet::
+                goog_experimental_echo_cancellation,
+            &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection,
+            &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
+            &blink::WebMediaTrackConstraintSet::
+                goog_experimental_noise_suppression,
+            &blink::WebMediaTrackConstraintSet::goog_beamforming,
+            &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
+            &blink::WebMediaTrackConstraintSet::
+                goog_experimental_auto_gain_control,
+        };
+    const AudioPropertiesBoolMembers kAudioProcessingProperties = {
+        &AudioProcessingProperties::enable_sw_echo_cancellation,
+        &AudioProcessingProperties::goog_audio_mirroring,
+        &AudioProcessingProperties::goog_auto_gain_control,
+        &AudioProcessingProperties::goog_experimental_echo_cancellation,
+        &AudioProcessingProperties::goog_typing_noise_detection,
+        &AudioProcessingProperties::goog_noise_suppression,
+        &AudioProcessingProperties::goog_experimental_noise_suppression,
+        &AudioProcessingProperties::goog_beamforming,
+        &AudioProcessingProperties::goog_highpass_filter,
+        &AudioProcessingProperties::goog_experimental_auto_gain_control};
+
+    ASSERT_EQ(kAudioProcessingConstraints.size(),
+              kAudioProcessingProperties.size());
+
+    for (size_t i = 0; i < kAudioProcessingConstraints.size(); ++i) {
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioProcessingConstraints[i])
+          .SetExact(properties.*kAudioProcessingProperties[i]);
+      auto result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioProcessingConstraints[i])
+          .SetExact(!(properties.*kAudioProcessingProperties[i]));
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_FALSE(result.HasValue());
+
+      // Setting just ideal values should always succeed.
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioProcessingConstraints[i])
+          .SetIdeal(true);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioProcessingConstraints[i])
+          .SetIdeal(false);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+    }
+
+    {
+      constraint_factory_.Reset();
+      // TODO(guidou): Support any semantically equivalent strings for the
+      // goog_array_geometry constrainable property. http://crbug.com/796955
+      constraint_factory_.basic().goog_array_geometry.SetExact(
+          blink::WebString("1 1 1  2 2 2"));
+      auto result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_EQ(result.HasValue(), !use_defaults);
+
+      // Setting ideal should succeed.
+      constraint_factory_.Reset();
+      constraint_factory_.basic().goog_array_geometry.SetIdeal(
+          blink::WebString("4 4 4  5 5 5"));
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+    }
+
+    // These constraints are false in |source|.
+    const std::vector<
+        blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
+        kAudioBrowserConstraints = {
+            &blink::WebMediaTrackConstraintSet::hotword_enabled,
+            &blink::WebMediaTrackConstraintSet::disable_local_echo,
+            &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
+        };
+    for (size_t i = 0; i < kAudioBrowserConstraints.size(); ++i) {
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioBrowserConstraints[i])
+          .SetExact(use_defaults);
+      auto result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioBrowserConstraints[i])
+          .SetExact(!use_defaults);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_FALSE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioBrowserConstraints[i]).SetIdeal(true);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+
+      constraint_factory_.Reset();
+      (constraint_factory_.basic().*kAudioBrowserConstraints[i])
+          .SetIdeal(false);
+      result = SelectSettingsAudioCapture(
+          source.get(), constraint_factory_.CreateWebMediaConstraints());
+      EXPECT_TRUE(result.HasValue());
+    }
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(,

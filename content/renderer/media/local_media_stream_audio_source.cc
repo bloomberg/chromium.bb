@@ -13,8 +13,12 @@ namespace content {
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
     const MediaStreamDevice& device,
+    bool hotword_enabled,
+    bool disable_local_echo,
     const ConstraintsCallback& started_callback)
-    : MediaStreamAudioSource(true /* is_local_source */),
+    : MediaStreamAudioSource(true /* is_local_source */,
+                             hotword_enabled,
+                             disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       started_callback_(started_callback) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";

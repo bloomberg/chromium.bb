@@ -244,7 +244,7 @@ std::string GetMediaStreamSource(
     const blink::WebMediaConstraints& constraints) {
   std::string source;
   if (constraints.Basic().media_stream_source.HasIdeal() &&
-      constraints.Basic().media_stream_source.Exact().size() > 0) {
+      constraints.Basic().media_stream_source.Ideal().size() > 0) {
     source = constraints.Basic().media_stream_source.Ideal()[0].Utf8();
   }
   if (constraints.Basic().media_stream_source.HasExact() &&

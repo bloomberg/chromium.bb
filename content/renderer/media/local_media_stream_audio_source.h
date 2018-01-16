@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_LOCAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_LOCAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 
+#include <string>
+
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "media/base/audio_capturer_source.h"
 
@@ -24,6 +26,8 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
   // ID are read from |device_info|.
   LocalMediaStreamAudioSource(int consumer_render_frame_id,
                               const MediaStreamDevice& device,
+                              bool hotword_enabled,
+                              bool disable_local_echo,
                               const ConstraintsCallback& started_callback);
 
   ~LocalMediaStreamAudioSource() final;

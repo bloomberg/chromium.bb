@@ -73,7 +73,7 @@ AudioProcessingProperties& AudioProcessingProperties::operator=(
     AudioProcessingProperties&& other) = default;
 AudioProcessingProperties::~AudioProcessingProperties() = default;
 
-void AudioProcessingProperties::DisableDefaultPropertiesForTesting() {
+void AudioProcessingProperties::DisableDefaultProperties() {
   enable_sw_echo_cancellation = false;
   goog_auto_gain_control = false;
   goog_experimental_echo_cancellation = false;

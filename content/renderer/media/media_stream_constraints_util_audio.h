@@ -18,6 +18,8 @@ class WebMediaConstraints;
 
 namespace content {
 
+class MediaStreamAudioSource;
+
 using AudioDeviceCaptureCapabilities =
     std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>;
 
@@ -93,6 +95,17 @@ AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
                            const blink::WebMediaConstraints& constraints,
                            bool should_disable_hardware_noise_suppression);
+
+// This variant of SelectSettings takes an existing MediaStreamAudioSource
+// as input in order to determine settings that are compatible with it.
+// This is intended to be used by applyConstraints().
+// The current implementation rejects constraints that would result in settings
+// different from those of |source| because it is currently not possible to
+// reconfigure audio tracks or sources.
+// TODO(guidou): Allow reconfiguring audio tracks. http://crbug.com/796964
+AudioCaptureSettings CONTENT_EXPORT
+SelectSettingsAudioCapture(MediaStreamAudioSource* source,
+                           const blink::WebMediaConstraints& constraints);
 
 }  // namespace content
 

@@ -717,6 +717,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
     const MediaStreamDevice& device,
     bool* is_pending) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(current_request_info_);
 
   *is_pending = true;
 
@@ -763,6 +764,7 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 
+  StreamControls* stream_controls = current_request_info_->stream_controls();
   // If the audio device is a loopback device (for screen capture), or if the
   // constraints/effects parameters indicate no audio processing is needed,
   // create an efficient, direct-path MediaStreamAudioSource instance.
@@ -773,17 +775,19 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
       !MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     *has_sw_echo_cancellation = false;
-    return new LocalMediaStreamAudioSource(render_frame_id_, device,
-                                           source_ready);
+    return new LocalMediaStreamAudioSource(
+        render_frame_id_, device, stream_controls->hotword_enabled,
+        stream_controls->disable_local_echo, source_ready);
   }
 
   // The audio device is not associated with screen capture and also requires
   // processing.
   *has_sw_echo_cancellation =
       audio_processing_properties.enable_sw_echo_cancellation;
-  return new ProcessedLocalAudioSource(render_frame_id_, device,
-                                       audio_processing_properties,
-                                       source_ready, dependency_factory_);
+  return new ProcessedLocalAudioSource(
+      render_frame_id_, device, stream_controls->hotword_enabled,
+      stream_controls->disable_local_echo, audio_processing_properties,
+      source_ready, dependency_factory_);
 }
 
 MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(

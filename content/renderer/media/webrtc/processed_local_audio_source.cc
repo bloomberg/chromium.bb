@@ -33,10 +33,14 @@ void* const kProcessedLocalAudioSourceIdentifier =
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
     const MediaStreamDevice& device,
+    bool hotword_enabled,
+    bool disable_local_echo,
     const AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
     PeerConnectionDependencyFactory* factory)
-    : MediaStreamAudioSource(true /* is_local_source */),
+    : MediaStreamAudioSource(true /* is_local_source */,
+                             hotword_enabled,
+                             disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       pc_factory_(factory),
       audio_processing_properties_(audio_processing_properties),
