@@ -319,8 +319,6 @@ typedef struct MB_MODE_INFO {
   int cfl_alpha_signs;
 #endif
 
-  BOUNDARY_TYPE boundary_info;
-
 #if CONFIG_JNT_COMP
   int compound_idx;
   int comp_group_idx;

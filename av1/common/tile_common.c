@@ -199,30 +199,30 @@ void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
 #endif  // CONFIG_MAX_TILE
 
 void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
-  MODE_INFO *mi = cm->mi;
+  BOUNDARY_TYPE *bi = cm->boundary_info;
   int col;
   for (col = 0; col < cm->mi_cols; ++col) {
-    mi->mbmi.boundary_info |= FRAME_ABOVE_BOUNDARY | TILE_ABOVE_BOUNDARY;
-    mi += 1;
+    *bi |= FRAME_ABOVE_BOUNDARY | TILE_ABOVE_BOUNDARY;
+    bi += 1;
   }
 
-  mi = cm->mi;
+  bi = cm->boundary_info;
   int row;
   for (row = 0; row < cm->mi_rows; ++row) {
-    mi->mbmi.boundary_info |= FRAME_LEFT_BOUNDARY | TILE_LEFT_BOUNDARY;
-    mi += cm->mi_stride;
+    *bi |= FRAME_LEFT_BOUNDARY | TILE_LEFT_BOUNDARY;
+    bi += cm->mi_stride;
   }
 
-  mi = cm->mi + (cm->mi_rows - 1) * cm->mi_stride;
+  bi = cm->boundary_info + (cm->mi_rows - 1) * cm->mi_stride;
   for (col = 0; col < cm->mi_cols; ++col) {
-    mi->mbmi.boundary_info |= FRAME_BOTTOM_BOUNDARY | TILE_BOTTOM_BOUNDARY;
-    mi += 1;
+    *bi |= FRAME_BOTTOM_BOUNDARY | TILE_BOTTOM_BOUNDARY;
+    bi += 1;
   }
 
-  mi = cm->mi + cm->mi_cols - 1;
+  bi = cm->boundary_info + cm->mi_cols - 1;
   for (row = 0; row < cm->mi_rows; ++row) {
-    mi->mbmi.boundary_info |= FRAME_RIGHT_BOUNDARY | TILE_RIGHT_BOUNDARY;
-    mi += cm->mi_stride;
+    *bi |= FRAME_RIGHT_BOUNDARY | TILE_RIGHT_BOUNDARY;
+    bi += cm->mi_stride;
   }
 }
 
@@ -302,9 +302,10 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
   if (cm->tile_cols * cm->tile_rows > 1) {
     const int mi_row = tile_info->mi_row_start;
     const int mi_col = tile_info->mi_col_start;
-    MODE_INFO *const mi_start = cm->mi + mi_row * cm->mi_stride + mi_col;
-    assert(mi_start < cm->mip + cm->mi_alloc_size);
-    MODE_INFO *mi = 0;
+    BOUNDARY_TYPE *const bi_start =
+        cm->boundary_info + mi_row * cm->mi_stride + mi_col;
+    // assert(mi_start < cm->mip + cm->mi_alloc_size);
+    BOUNDARY_TYPE *bi = 0;
     const int row_diff = tile_info->mi_row_end - tile_info->mi_row_start;
     const int col_diff = tile_info->mi_col_end - tile_info->mi_col_start;
     int row, col;
@@ -318,10 +319,10 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     if (cm->loop_filter_across_tiles_h_enabled == 0)
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {
-      mi = mi_start;
+      bi = bi_start;
       for (col = 0; col < col_diff; ++col) {
-        mi->mbmi.boundary_info |= TILE_ABOVE_BOUNDARY;
-        mi += 1;
+        *bi |= TILE_ABOVE_BOUNDARY;
+        bi += 1;
       }
     }
 
@@ -329,10 +330,10 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     if (cm->loop_filter_across_tiles_v_enabled == 0)
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {
-      mi = mi_start;
+      bi = bi_start;
       for (row = 0; row < row_diff; ++row) {
-        mi->mbmi.boundary_info |= TILE_LEFT_BOUNDARY;
-        mi += cm->mi_stride;
+        *bi |= TILE_LEFT_BOUNDARY;
+        bi += cm->mi_stride;
       }
     }
 
@@ -340,12 +341,12 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     if (cm->loop_filter_across_tiles_h_enabled == 0)
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {
-      mi = mi_start + (row_diff - 1) * cm->mi_stride;
+      bi = bi_start + (row_diff - 1) * cm->mi_stride;
       // explicit bounds checking
-      assert(mi + col_diff <= cm->mip + cm->mi_alloc_size);
+      // assert(mi + col_diff <= cm->mip + cm->mi_alloc_size);
       for (col = 0; col < col_diff; ++col) {
-        mi->mbmi.boundary_info |= TILE_BOTTOM_BOUNDARY;
-        mi += 1;
+        *bi |= TILE_BOTTOM_BOUNDARY;
+        bi += 1;
       }
     }
 
@@ -353,10 +354,10 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     if (cm->loop_filter_across_tiles_v_enabled == 0)
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {
-      mi = mi_start + col_diff - 1;
+      bi = bi_start + col_diff - 1;
       for (row = 0; row < row_diff; ++row) {
-        mi->mbmi.boundary_info |= TILE_RIGHT_BOUNDARY;
-        mi += cm->mi_stride;
+        *bi |= TILE_RIGHT_BOUNDARY;
+        bi += cm->mi_stride;
       }
     }
   }  // end of cm->tile_cols * cm->tile_rows > 1

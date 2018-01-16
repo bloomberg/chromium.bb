@@ -3264,10 +3264,10 @@ static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
   {
     int row, col;
     for (row = 0; row < cm->mi_rows; ++row) {
-      MODE_INFO *mi = cm->mi + row * cm->mi_stride;
+      BOUNDARY_TYPE *bi = cm->boundary_info + row * cm->mi_stride;
       for (col = 0; col < cm->mi_cols; ++col) {
-        mi->mbmi.boundary_info = 0;
-        mi++;
+        *bi = 0;
+        bi++;
       }
     }
     av1_setup_frame_boundary_info(cm);

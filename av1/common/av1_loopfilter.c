@@ -1020,16 +1020,17 @@ static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
                                              const int mi_row, const int mi_col,
                                              LOOP_FILTER_MASK *lfm) {
   int i;
-  MODE_INFO *const mi = cm->mi + mi_row * cm->mi_stride + mi_col;
+  const BOUNDARY_TYPE *const bi =
+      cm->boundary_info + mi_row * cm->mi_stride + mi_col;
 
-  if (mi->mbmi.boundary_info & TILE_LEFT_BOUNDARY) {
+  if (*bi & TILE_LEFT_BOUNDARY) {
     for (i = 0; i <= TX_32X32; i++) {
       lfm->left_y[i] &= 0xfefefefefefefefeULL;
       lfm->left_uv[i] &= 0xeeee;
     }
   }
 
-  if (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY) {
+  if (*bi & TILE_ABOVE_BOUNDARY) {
     for (i = 0; i <= TX_32X32; i++) {
       lfm->above_y[i] &= 0xffffffffffffff00ULL;
       lfm->above_uv[i] &= 0xfff0;
@@ -1585,9 +1586,10 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
     // Disable filtering on the leftmost column or tile boundary
     unsigned int border_mask = ~(mi_col == 0 ? 1 : 0);
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-    MODE_INFO *const mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
+    const BOUNDARY_TYPE *const bi =
+        cm->boundary_info + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if (av1_disable_loopfilter_on_tile_boundary(cm) &&
-        ((mi->mbmi.boundary_info & TILE_LEFT_BOUNDARY) != 0)) {
+        ((*bi & TILE_LEFT_BOUNDARY) != 0)) {
       border_mask = 0xfffffffe;
     }
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -1632,9 +1634,10 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     // Disable filtering on the abovemost row or tile boundary
-    const MODE_INFO *mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
+    const BOUNDARY_TYPE *bi =
+        cm->boundary_info + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if ((av1_disable_loopfilter_on_tile_boundary(cm) &&
-         (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY)) ||
+         (*bi & TILE_ABOVE_BOUNDARY)) ||
         (mi_row + idx_r == 0))
       memset(&row_masks, 0, sizeof(row_masks));
 #else
@@ -2096,13 +2099,13 @@ static void set_lpf_parameters(
       // to extract the correct boundary information.
       const int mi_row_bound = ((y << scale_vert) >> MI_SIZE_LOG2);
       const int mi_col_bound = ((x << scale_horz) >> MI_SIZE_LOG2);
-      MODE_INFO *const mi_bound =
-          cm->mi + mi_row_bound * cm->mi_stride + mi_col_bound;
-      // here, assuming boundary_info is set correctly based on the
+      BOUNDARY_TYPE *const bi =
+          cm->boundary_info + mi_row_bound * cm->mi_stride + mi_col_bound;
+      // here, assuming bounfary_info is set correctly based on the
       // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
       // only be set to true when this flag is set to 0.
-      int left_boundary = (mi_bound->mbmi.boundary_info & TILE_LEFT_BOUNDARY);
-      int top_boundary = (mi_bound->mbmi.boundary_info & TILE_ABOVE_BOUNDARY);
+      int left_boundary = (*bi & TILE_LEFT_BOUNDARY);
+      int top_boundary = (*bi & TILE_ABOVE_BOUNDARY);
       if (((VERT_EDGE == edge_dir) && (0 == left_boundary)) ||
           ((HORZ_EDGE == edge_dir) && (0 == top_boundary)))
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES

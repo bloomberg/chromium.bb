@@ -231,20 +231,20 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       // loop_filter_across_tiles_enabled flag, i.e, if this flag is set to 1,
       // then boundary_info should not be treated as tile boundaries. Also
       // assume CDEF filter block size is 64x64.
-      MODE_INFO *const mi_tl = cm->mi + mi_idx_tl;
-      MODE_INFO *const mi_tr = cm->mi + mi_idx_tr;
-      MODE_INFO *const mi_bl = cm->mi + mi_idx_bl;
-      BOUNDARY_TYPE boundary_tl = mi_tl->mbmi.boundary_info;
+      BOUNDARY_TYPE *const bi_tl = cm->boundary_info + mi_idx_tl;
+      BOUNDARY_TYPE *const bi_tr = cm->boundary_info + mi_idx_tr;
+      BOUNDARY_TYPE *const bi_bl = cm->boundary_info + mi_idx_bl;
+      BOUNDARY_TYPE boundary_tl = *bi_tl;
       tile_top = boundary_tl & TILE_ABOVE_BOUNDARY;
       tile_left = boundary_tl & TILE_LEFT_BOUNDARY;
 
-      if (fbr != nvfb - 1 && mi_bl)
-        tile_bottom = mi_bl->mbmi.boundary_info & TILE_BOTTOM_BOUNDARY;
+      if (fbr != nvfb - 1 && bi_bl)
+        tile_bottom = *bi_bl & TILE_BOTTOM_BOUNDARY;
       else
         tile_bottom = 1;
 
-      if (fbc != nhfb - 1 && mi_tr)
-        tile_right = mi_tr->mbmi.boundary_info & TILE_RIGHT_BOUNDARY;
+      if (fbc != nhfb - 1 && bi_tr)
+        tile_right = *bi_tr & TILE_RIGHT_BOUNDARY;
       else
         tile_right = 1;
 

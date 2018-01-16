@@ -472,6 +472,9 @@ typedef struct AV1Common {
   int tile_cols, tile_rows;
   int last_tile_cols, last_tile_rows;
 
+  BOUNDARY_TYPE *boundary_info;
+  int boundary_info_alloc_size;
+
 #if CONFIG_MAX_TILE
   int min_log2_tile_cols;
   int max_log2_tile_cols;
