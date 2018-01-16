@@ -71,6 +71,8 @@ class SelectionModifier {
   const LocalFrame& GetFrame() const { return *frame_; }
 
   static bool ShouldAlwaysUseDirectionalSelection(const LocalFrame&);
+  VisibleSelection PrepareToModifySelection(SelectionModifyAlteration,
+                                            SelectionModifyDirection) const;
   TextDirection DirectionOfEnclosingBlock() const;
   TextDirection DirectionOfSelection() const;
   VisiblePosition PositionForPlatform(bool is_get_start) const;
