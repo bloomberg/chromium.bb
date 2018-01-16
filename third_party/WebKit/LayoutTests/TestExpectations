@@ -1810,7 +1810,7 @@ crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-fetch.any.
 crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/content-security-policy/navigation/javascript-url-navigation-inherits-csp.html [ Timeout ]
+crbug.com/626703 external/wpt/content-security-policy/navigation/javascript-url-navigation-inherits-csp.html [ Failure Timeout ]
 crbug.com/626703 [ Android Mac10.10 ] virtual/mojo-localstorage/external/wpt/webstorage/storage_enumerate.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-001.html [ Failure ]
