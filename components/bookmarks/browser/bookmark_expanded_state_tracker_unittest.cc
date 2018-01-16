@@ -4,9 +4,10 @@
 
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,9 +45,9 @@ BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
   prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
-                                      base::MakeUnique<base::ListValue>());
+                                      std::make_unique<base::ListValue>());
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-  model_.reset(new BookmarkModel(base::MakeUnique<TestBookmarkClient>()));
+  model_.reset(new BookmarkModel(std::make_unique<TestBookmarkClient>()));
   model_->Load(&prefs_, base::FilePath(),
                base::ThreadTaskRunnerHandle::Get(),
                base::ThreadTaskRunnerHandle::Get());

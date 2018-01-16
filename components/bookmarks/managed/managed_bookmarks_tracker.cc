@@ -58,7 +58,7 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
       continue;
 
     BookmarkNode* child =
-        folder->Add(base::MakeUnique<BookmarkNode>(next_node_id++, url),
+        folder->Add(std::make_unique<BookmarkNode>(next_node_id++, url),
                     folder->child_count());
     child->SetTitle(title);
     if (children) {

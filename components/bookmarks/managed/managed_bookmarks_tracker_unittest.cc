@@ -115,11 +115,11 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   }
 
   static std::unique_ptr<base::ListValue> CreateTestTree() {
-    auto folder = base::MakeUnique<base::ListValue>();
-    folder->Append(CreateFolder("Empty", base::MakeUnique<base::ListValue>()));
+    auto folder = std::make_unique<base::ListValue>();
+    folder->Append(CreateFolder("Empty", std::make_unique<base::ListValue>()));
     folder->Append(CreateBookmark("Youtube", "http://youtube.com/"));
 
-    auto list = base::MakeUnique<base::ListValue>();
+    auto list = std::make_unique<base::ListValue>();
     list->Append(CreateBookmark("Google", "http://google.com/"));
     list->Append(CreateFolder("Folder", std::move(folder)));
 

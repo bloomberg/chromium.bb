@@ -5,11 +5,12 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -422,7 +423,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
   BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(base::MakeUnique<BookmarkPermanentNode>(100));
+  extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
   BookmarkPermanentNode* extra_node = extra_nodes.back().get();
   client->SetExtraNodesToLoad(std::move(extra_nodes));
 
@@ -573,7 +574,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
   BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(base::MakeUnique<BookmarkPermanentNode>(100));
+  extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
   BookmarkPermanentNode* extra_node = extra_nodes.back().get();
   client->SetExtraNodesToLoad(std::move(extra_nodes));
 

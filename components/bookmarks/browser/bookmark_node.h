@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/titled_url_node.h"
@@ -135,7 +134,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   // Sets the favicon's URL.
   void set_icon_url(const GURL& icon_url) {
-    icon_url_ = base::MakeUnique<GURL>(icon_url);
+    icon_url_ = std::make_unique<GURL>(icon_url);
   }
 
   // Returns the favicon. In nearly all cases you should use the method

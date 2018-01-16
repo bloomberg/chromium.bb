@@ -72,7 +72,7 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
     int64_t sync_transaction_version) {
   ids_reassigned_ = false;
   InitializeChecksum();
-  auto roots = base::MakeUnique<base::DictionaryValue>();
+  auto roots = std::make_unique<base::DictionaryValue>();
   roots->Set(kRootFolderNameKey, EncodeNode(bookmark_bar_node));
   roots->Set(kOtherBookmarkFolderNameKey, EncodeNode(other_folder_node));
   roots->Set(kMobileBookmarkFolderNameKey, EncodeNode(mobile_folder_node));
@@ -83,7 +83,7 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
     roots->SetString(kSyncTransactionVersion,
                      base::Int64ToString(sync_transaction_version));
   }
-  auto main = base::MakeUnique<base::DictionaryValue>();
+  auto main = std::make_unique<base::DictionaryValue>();
   main->SetInteger(kVersionKey, kCurrentVersion);
   FinalizeChecksum();
   // We are going to store the computed checksum. So set stored checksum to be
@@ -137,7 +137,7 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
         base::Int64ToString(node->date_folder_modified().ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
-    auto child_values = base::MakeUnique<base::ListValue>();
+    auto child_values = std::make_unique<base::ListValue>();
     for (int i = 0; i < node->child_count(); ++i)
       child_values->Append(EncodeNode(node->GetChild(i)));
     value->Set(kChildrenKey, std::move(child_values));
@@ -155,7 +155,7 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
 
 std::unique_ptr<base::Value> BookmarkCodec::EncodeMetaInfo(
     const BookmarkNode::MetaInfoMap& meta_info_map) {
-  auto meta_info = base::MakeUnique<base::DictionaryValue>();
+  auto meta_info = std::make_unique<base::DictionaryValue>();
   for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.begin();
       it != meta_info_map.end(); ++it) {
     meta_info->SetKey(it->first, base::Value(it->second));

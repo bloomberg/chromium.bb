@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -528,7 +527,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   std::unique_ptr<BookmarkModel> model =
       TestBookmarkClient::CreateModelWithClient(
-          base::MakeUnique<BookmarkClientMock>(typed_count_map));
+          std::make_unique<BookmarkClientMock>(typed_count_map));
 
   for (size_t i = 0; i < arraysize(data); ++i)
     // Populate the bookmark index.
