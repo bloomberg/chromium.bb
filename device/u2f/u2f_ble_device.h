@@ -32,6 +32,7 @@ class U2fBleDevice : public U2fDevice {
   explicit U2fBleDevice(std::unique_ptr<U2fBleConnection> connection);
   ~U2fBleDevice() override;
 
+  void Connect();
   void SendPing(std::vector<uint8_t> data, MessageCallback callback);
   static std::string GetId(base::StringPiece address);
 
@@ -42,7 +43,6 @@ class U2fBleDevice : public U2fDevice {
   U2fBleConnection::ConnectionStatusCallback
   GetConnectionStatusCallbackForTesting();
   U2fBleConnection::ReadCallback GetReadCallbackForTesting();
-  void TransitionForTesting();
 
  protected:
   // U2fDevice:
