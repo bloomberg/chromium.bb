@@ -75,7 +75,6 @@ source_set("libpng_sources") {
     sources += [
       "arm/arm_init.c",
       "arm/filter_neon_intrinsics.c",
-      "arm/palette_neon_intrinsics.c",
     ]
     defines += [
       "PNG_ARM_NEON_OPT=2",
