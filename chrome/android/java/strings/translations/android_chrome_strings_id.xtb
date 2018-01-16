@@ -56,7 +56,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1409879593029778104">Download <ph name="FILE_NAME" /> dicegah karena file sudah ada.</translation>
 <translation id="1414981605391750300">Menghubungi Google. Tindakan ini memerlukan waktu beberapa saat…</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
-<translation id="1423209968422390786">Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1445680696957526815">Komponen Chrome tidak kompatibel dengan satu sama lain. Chrome mungkin ditingkatkan versinya, coba lagi dalam beberapa menit. Jika masalah terus berlanjut, coba uninstal dan instal ulang.</translation>
 <translation id="1446450296470737166">Izinkan kontrol penuh perangkat MIDI</translation>
@@ -84,6 +83,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1660204651932907780">Mengizinkan situs memutar suara (direkomendasikan)</translation>
 <translation id="1670399744444387456">Dasar</translation>
 <translation id="1671236975893690980">Proses download tertunda...</translation>
+<translation id="1674523662097951983">Fitur “Bookmark” sedang dipindahkan. Selanjutnya, tarik kolom URL ke atas untuk mengaksesnya.</translation>
 <translation id="169033420419426091">Download <ph name="FILE_NAME" /> gagal karena Kartu SD tidak ada.</translation>
 <translation id="1709438864123551175">Penghemat Kuota Internet</translation>
 <translation id="1718835860248848330">Jam terakhir</translation>
@@ -116,6 +116,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1993768208584545658"><ph name="SITE" /> ingin menyandingkan</translation>
 <translation id="1994173015038366702">URL situs</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB aplikasi lain</translation>
+<translation id="2015632741368427174">Pengalihan diblokir ke situs:</translation>
 <translation id="2017836877785168846">Hapus histori dan pelengkapan otomatis di kolom URL.</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
@@ -413,6 +414,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="4807963036345170158">Penghemat Kuota Internet nonaktif</translation>
 <translation id="4811736444948656478">Panel navigasi dibuka dalam setengah layar</translation>
 <translation id="4816465935029283692">Jenis data</translation>
+<translation id="482201002591920174">Penyimpanan utama</translation>
 <translation id="4837753911714442426">Membuka opsi untuk mencetak halaman</translation>
 <translation id="4842092870884894799">Menampilkan pop-up pembuatan sandi</translation>
 <translation id="4850886885716139402">Lihat</translation>
@@ -472,7 +474,6 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5335288049665977812">Izinkan situs menjalankan JavaScript (disarankan)</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE" /></translation>
-<translation id="5345083863238459644">Akses lokasi juga <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL disalin.</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Hanya izinkan situs tertentu</translation>
@@ -554,6 +555,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5956665950594638604">Membuka Pusat Bantuan Chrome di tab baru</translation>
 <translation id="5958275228015807058">Temukan file dan halaman di Download</translation>
 <translation id="5962718611393537961">Tap untuk menciutkan</translation>
+<translation id="5974562976030145789">Fitur “Download” sedang dipindahkan. Selanjutnya, tarik kolom URL ke atas untuk mengaksesnya.</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
 <translation id="6031101910111098835">Diciutkan - Klik untuk memperluas</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
@@ -652,7 +654,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6846298663435243399">Memuat…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab ditutup</translation>
-<translation id="6856477143496886355">Kartu dan alamat yang menggunakan Google Payments</translation>
 <translation id="6864459304226931083">Download gambar</translation>
 <translation id="6865313869410766144">Data formulir isi-otomatis</translation>
 <translation id="6868088497967843822">Masuk untuk mendapatkan bookmark, histori, sandi, dan setelan Anda lainnya di semua perangkat</translation>
@@ -664,6 +665,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6905163627763043954">Cobalah</translation>
 <translation id="6910211073230771657">Dihapus</translation>
 <translation id="6945221475159498467">Pilih</translation>
+<translation id="6959661084585705671">Penyimpanan sekunder</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
@@ -818,6 +820,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8489271220582375723">Membuka halaman histori</translation>
 <translation id="8493948351860045254">Kosongkan ruang</translation>
+<translation id="8494508527479967437">Fitur “Histori” sedang dipindahkan. Selanjutnya, tarik kolom URL ke atas untuk mengaksesnya.</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8514477925623180633">Ekspor sandi yang disimpan dengan Chrome</translation>
@@ -862,7 +865,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>
 <translation id="8922289737868596582">Download halaman dari tombol opsi Lainnya untuk menggunakannya secara offline</translation>
-<translation id="892369953214061711">Notifikasi diizinkan. Lokasi nonaktif; aktifkan di Setelan Android.</translation>
 <translation id="8936297887573571433">Tap untuk melihat hasil download, bookmark, dan histori</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Buka di jendela lain</translation>

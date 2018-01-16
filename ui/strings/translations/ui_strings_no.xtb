@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Åpne mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{for 1 år siden}other{for # år siden}}</translation>
 <translation id="2931838996092594335">klikk</translation>
-<translation id="2983818520079887040">Innstillinger</translation>
 <translation id="3036649622769666520">Åpne filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Bunn</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{For 1 sekund siden}other{For # sekunder siden}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{for 1 sekund siden}other{for # sekunder siden}}</translation>
+<translation id="654149438358937226">Blokkér alle varsler</translation>
 <translation id="6567071839949112727">klikk på et overordnet element</translation>
 <translation id="6612467943526193239">For å lukke kalibreringen, trykk på Esc.</translation>
 <translation id="6620110761915583480">Lagre fil</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
+<translation id="7879499977785298635">Ikke blokkér</translation>
 <translation id="7907591526440419938">Åpne filen</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{For 1 time siden}other{For # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek igjen}other{# sek igjen}}</translation>

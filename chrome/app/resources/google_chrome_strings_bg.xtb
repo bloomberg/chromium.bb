@@ -149,7 +149,6 @@
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS не може да отвори тази страница.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (копирано в Chrome)</translation>
 <translation id="5251420635869119124">Гостите могат да използват Chrome, без да оставят следи.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ще се рестартира след 1 секунда.}other{Google Chrome ще се рестартира след # секунди.}}</translation>
 <translation id="532046782124376502">Предупреждение: Google Chrome не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
@@ -231,6 +230,7 @@
 <translation id="7896673875602241923">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
 <translation id="7908168227788431038">Актуализирането почти завърши! Остава само да стартирате отново Google Chrome.</translation>
 <translation id="795025003224538582">Без рестартиране</translation>
+<translation id="7962410387636238736">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече не се поддържат</translation>
 <translation id="8005540215158006229">Chrome е почти готов.</translation>
 <translation id="8008534537613507642">Повторно инсталиране на Chrome</translation>
 <translation id="8030318113982266900">Устройството ви се актуализира до канал: <ph name="CHANNEL_NAME" />...</translation>

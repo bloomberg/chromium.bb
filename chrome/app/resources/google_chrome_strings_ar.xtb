@@ -151,7 +151,6 @@
 قد تكون بعض الميزات غير متاحة. يُرجى تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
-<translation id="5243785881901838525">‏Google Payments (تم النسخ إلى Chrome)</translation>
 <translation id="5251420635869119124">‏يمكن للضيف استخدام Chrome بدون أن يترك أي أثر وراءه.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{‏ستتم إعادة تشغيل Google Chrome خلال ثانية واحدة (1).}zero{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}two{‏ستتم إعادة تشغيل Google Chrome خلال ثانيتين (#).}few{‏ستتم إعادة تشغيل Google Chrome خلال # ثوانٍ.}many{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}other{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية.}}</translation>
 <translation id="532046782124376502">‏تحذير: يتعذّر على Google Chrome منع الإضافات من تسجيل سجل تصفحك. لإيقاف هذه الإضافة في وضع التصفح المتخفي، ألغِ تحديد هذا الخيار.</translation>
@@ -233,6 +232,7 @@
 <translation id="7896673875602241923">‏سجّل شخص ما الدخول من قبل إلى Chrome على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chrome للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
 <translation id="7908168227788431038">‏أوشك التحديث على الانتهاء! أعِد تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="795025003224538582">عدم إعادة التشغيل</translation>
+<translation id="7962410387636238736">‏لن يستلم جهاز الكمبيوتر هذا تحديثات Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
 <translation id="8005540215158006229">‏Chrome جاهز تقريبًا.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>

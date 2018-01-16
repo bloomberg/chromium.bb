@@ -752,6 +752,7 @@
 <translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
+<translation id="3577251398714997599">Postavke oglasa za web-lokacije s ometajućim oglasima</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
@@ -812,6 +813,7 @@
       Ako se to pravilo ne postavi, upotrebljavat će se zadani direktorij za preuzimanja i korisnik će ga moći promijeniti.</translation>
 <translation id="3805659594028420438">Omogući proširenje TLS certifikata vezanih uz domenu (zastarjelo)</translation>
 <translation id="3808945828600697669">Odredi popis onemogućenih dodataka</translation>
+<translation id="3811562426301733860">Dopusti oglase na svim web-lokacijama</translation>
 <translation id="3816312845600780067">Omogući tipkovni prečac za izbjegavanje automatske prijave</translation>
 <translation id="3820526221169548563">Omogućite značajku pristupačnosti tipkovnice na zaslonu.
 
@@ -929,6 +931,11 @@
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
 <translation id="4105989332710272578">Onemogući provedbu Transparentnosti certifikata za popis URL-ova</translation>
+<translation id="4111405663956464686">Upozorenje: pravilo o maksimalnoj verziji TLS-a u potpunosti će se ukloniti iz proizvoda <ph name="PRODUCT_NAME" /> oko verzije 72 (oko siječnja 2019.).
+
+      Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu maksimalnu verziju.
+
+      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="4157003184375321727">Izvješće o verziji OS-a i opreme</translation>
 <translation id="4183229833636799228">Zadana postavka za dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -987,6 +994,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
+<translation id="4346674324214534449">Omogućuje vam da postavite hoće li se oglasi blokirati na web-lokacijama s ometajućim oglasima.
+
+     Ako se to pravilo postavi na 2, oglasi će se blokirati na web-lokacijama s ometajućim oglasima.
+      No to se ponašanje neće aktivirati ako se pravilo SafeBrowsingEnabled postavi na netočno.
+      Ako se to pravilo postavi na 1, oglasi se neće blokirati na web-lokacijama s ometajućim oglasima.
+      Ako se to pravilo ne postavi, upotrebljavat će se 2.</translation>
 <translation id="4347908978527632940">Ako se pravilo postavi na "True" i korisnik je nadzirani korisnik, onda druge Androidove aplikacije mogu postaviti upit za korisnikova ograničenja za web putem davatelja sadržaja.
 
           Ako se pravilo postavi na "False" ili se ne postavi, onda davatelj sadržaja neće vraćati nikakve podatke.</translation>
@@ -1309,6 +1322,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5469484020713359236">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju postavljati kolačiće. Ako se ovo pravilo ne postavi, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultCookiesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="5469825884154817306">Blokiraj slike na ovim web-lokacijama</translation>
 <translation id="5475361623548884387">Omogući ispis</translation>
+<translation id="547601067149622666">Nemojte dopustiti oglase na web-lokacijama s ometajućim oglasima</translation>
 <translation id="5499375345075963939">To je pravilo aktivno samo u prodajnom načinu.
 
       Kada je vrijednost tog pravila postavljena i nije 0, trenutačno prijavljeni korisnik demo verzije automatski će biti odjavljen nakon isteka razdoblja neaktivnosti određenog trajanja.

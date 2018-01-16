@@ -56,7 +56,6 @@
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
 <translation id="1414981605391750300">Подключение к Google. Подождите…</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
-<translation id="1423209968422390786">На этом устройстве <ph name="BEGIN_LINK" />отключен<ph name="END_LINK" /> доступ к местоположению.</translation>
 <translation id="1430915738399379752">Печать</translation>
 <translation id="1445680696957526815">Компоненты Chrome несовместимы друг с другом. Возможно, выполняется обновление. Повторите попытку через несколько минут. Если проблема не исчезнет, переустановите браузер.</translation>
 <translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
@@ -84,6 +83,7 @@
 <translation id="1660204651932907780">Разрешить сайтам воспроизводить звуки (рекомендуется)</translation>
 <translation id="1670399744444387456">Основные настройки</translation>
 <translation id="1671236975893690980">Ожидание скачивания…</translation>
+<translation id="1674523662097951983">Интерфейс меняется. В следующий раз, чтобы увидеть "Закладки", потяните адресную строку вверх.</translation>
 <translation id="169033420419426091">Не удалось скачать файл <ph name="FILE_NAME" />, так как отсутствует SD-карта.</translation>
 <translation id="1709438864123551175">Экономия трафика</translation>
 <translation id="1718835860248848330">Последний час</translation>
@@ -116,6 +116,7 @@
 <translation id="1993768208584545658">Сайт <ph name="SITE" /> запрашивает подключение</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="200815880754187296">Другие приложения: <ph name="KILOBYTES" /> КБ</translation>
+<translation id="2015632741368427174">Заблокирована попытка переадресации на этот сайт:</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
@@ -413,6 +414,7 @@
 <translation id="4807963036345170158">Режим экономии трафика отключен</translation>
 <translation id="4811736444948656478">Панель навигации открыта наполовину</translation>
 <translation id="4816465935029283692">Типы данных</translation>
+<translation id="482201002591920174">Основное хранилище</translation>
 <translation id="4837753911714442426">Открыть параметры печати страницы</translation>
 <translation id="4842092870884894799">Открыто всплывающее окно создания пароля</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
@@ -472,7 +474,6 @@
 <translation id="5327248766486351172">Название</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
-<translation id="5345083863238459644">На этом устройстве также <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
 <translation id="5372829067651257087">URL скопирован.</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
@@ -554,6 +555,7 @@
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
 <translation id="5958275228015807058">Скачанные файлы и веб-страницы хранятся в одноименном разделе</translation>
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
+<translation id="5974562976030145789">Интерфейс меняется. В следующий раз, чтобы увидеть "Скачанные файлы", потяните адресную строку вверх.</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
 <translation id="6031101910111098835">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
@@ -652,7 +654,6 @@
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6856477143496886355">Банковские карты и адреса из Google Payments</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
@@ -664,6 +665,7 @@
 <translation id="6905163627763043954">Применить пароль</translation>
 <translation id="6910211073230771657">Удалено</translation>
 <translation id="6945221475159498467">Выбрать</translation>
+<translation id="6959661084585705671">Дополнительное хранилище</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
@@ -818,6 +820,7 @@
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
 <translation id="8489271220582375723">Открыть страницу "История"</translation>
 <translation id="8493948351860045254">Освободить место</translation>
+<translation id="8494508527479967437">Интерфейс меняется. В следующий раз, чтобы увидеть "Историю", потяните адресную строку вверх.</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="8514477925623180633">Экспорт паролей, сохраненных в Chrome</translation>
@@ -862,7 +865,6 @@
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
-<translation id="892369953214061711">Может отправлять уведомления. Определение местоположения отключено. Включите его в настройках Android.</translation>
 <translation id="8936297887573571433">Нажмите, чтобы увидеть закладки, загрузки и историю</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Открыть в новом окне</translation>

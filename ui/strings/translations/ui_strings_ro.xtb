@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Deschideți dosarul</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Acum 1 an}few{Acum # ani}other{Acum # de ani}}</translation>
 <translation id="2931838996092594335">dă clic</translation>
-<translation id="2983818520079887040">Setări...</translation>
 <translation id="3036649622769666520">Deschide fișierele</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Jos</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Virgulă</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Acum o sec.}few{Acum # sec}other{Acum # sec}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Acum 1 secundă}few{Acum # secunde}other{Acum # de secunde}}</translation>
+<translation id="654149438358937226">Blochează toate notificările</translation>
 <translation id="6567071839949112727">dă clic pe predecesor</translation>
 <translation id="6612467943526193239">Pentru a ieși din calibrare, apasă pe Esc.</translation>
 <translation id="6620110761915583480">Salvează fișierul</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="7814458197256864873">&amp;Copiază</translation>
+<translation id="7879499977785298635">Nu bloca</translation>
 <translation id="7907591526440419938">Deschide fișierul</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Acum o oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{O sec. rămasă}few{# sec. rămase}other{# sec. rămase}}</translation>

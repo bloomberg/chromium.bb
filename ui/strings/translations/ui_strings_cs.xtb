@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Otevřít složku</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{před 1 rokem}few{před # lety}many{před # roku}other{před # lety}}</translation>
 <translation id="2931838996092594335">kliknout</translation>
-<translation id="2983818520079887040">Nastavení...</translation>
 <translation id="3036649622769666520">Otevřít soubory</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Až dolů</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Čárka</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Před 1 s}few{Před # s}many{Před # s}other{Před # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{před sekundou}few{před # sekundami}many{před # sekundy}other{před # sekundami}}</translation>
+<translation id="654149438358937226">Blokovat všechna oznámení</translation>
 <translation id="6567071839949112727">kliknutí na nadřazený prvek</translation>
 <translation id="6612467943526193239">Kalibraci ukončíte stisknutím klávesy Esc.</translation>
 <translation id="6620110761915583480">Uložit soubor</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7814458197256864873">&amp;Kopírovat</translation>
+<translation id="7879499977785298635">Neblokovat</translation>
 <translation id="7907591526440419938">Otevřít soubor</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Před 1 hodinou}few{Před # hodinami}many{Před # hodiny}other{Před # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zbývá 1 s}few{Zbývají # s}many{Zbývá # s}other{Zbývá # s}}</translation>

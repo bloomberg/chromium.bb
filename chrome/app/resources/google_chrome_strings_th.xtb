@@ -148,7 +148,6 @@
 <translation id="5170938038195470297">โปรไฟล์ของคุณไม่สามารถใช้ได้เพราะมาจากรุ่นที่ใหม่กว่าของ Google Chrome ฟีเจอร์บางอย่างอาจจะไม่พร้อมใช้งาน โปรดระบุไดเรกทอรีของโปรไฟล์อื่นหรือใช้ Chrome รุ่นที่ใหม่กว่า</translation>
 <translation id="5193136243808726294">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (คัดลอกลงใน Chrome แล้ว)</translation>
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome จะรีสตาร์ทใน 1 วินาที}other{Google Chrome จะรีสตาร์ทใน # วินาที}}</translation>
 <translation id="532046782124376502">คำเตือน: Google Chrome ไม่สามารถป้องกันไม่ให้ส่วนขยายบันทึกประวัติการเข้าชม หากต้องการปิดใช้ส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
@@ -230,6 +229,7 @@
 <translation id="7896673875602241923">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก</translation>
 <translation id="7908168227788431038">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว เปิด Google Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="795025003224538582">ไม่ต้องรีสตาร์ท</translation>
+<translation id="7962410387636238736">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Windows XP และ Windows Vista แล้ว</translation>
 <translation id="8005540215158006229">Chrome ใกล้จะใช้งานได้แล้ว</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="8030318113982266900">กำลังอัปเดตอุปกรณ์ของคุณไปยังช่อง <ph name="CHANNEL_NAME" />...</translation>

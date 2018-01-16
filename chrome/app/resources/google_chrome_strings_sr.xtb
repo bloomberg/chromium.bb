@@ -153,7 +153,6 @@
 Неке функције су можда недоступне. Наведите други директоријум профила или користите новију верзију Chrome-а.</translation>
 <translation id="5193136243808726294">Google Chrome ОС не може да отвори ову страницу.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />услови коришћења услуге<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (копирано у Chrome)</translation>
 <translation id="5251420635869119124">Гости могу да користе Chrome а да не остављају никакве трагове.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ће се поново покренути за 1 секунду.}one{Google Chrome ће се поново покренути за # секунду.}few{Google Chrome ће се поново покренути за # секунде.}other{Google Chrome ће се поново покренути за # секунди.}}</translation>
 <translation id="532046782124376502">Упозорење: Google Chrome не може да спречи додатке да снимају вашу историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
@@ -237,6 +236,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7896673875602241923">Неко се претходно пријавио на Chrome на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Направите новог корисника Chrome-а да би информације биле раздвојене.</translation>
 <translation id="7908168227788431038">Ажурирање је скоро готово! Поново покрените Google Chrome да бисте довршили ажурирање.</translation>
 <translation id="795025003224538582">Не покрећи поново</translation>
+<translation id="7962410387636238736">Овај рачунар више неће добијати ажурирања за Google Chrome јер Windows XP и Windows Vista више нису подржани</translation>
 <translation id="8005540215158006229">Chrome је скоро спреман.</translation>
 <translation id="8008534537613507642">Поново инсталирај Chrome</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>

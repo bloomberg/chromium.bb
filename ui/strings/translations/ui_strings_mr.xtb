@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">फोल्डर उघडा</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्षापूर्वी}one{# वर्षापूर्वी}other{# वर्षांपूर्वी}}</translation>
 <translation id="2931838996092594335">क्लिक करा</translation>
-<translation id="2983818520079887040">सेटिंग्ज...</translation>
 <translation id="3036649622769666520">फायली उघडा</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">स्वल्पविराम</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंदापूर्वी}one{# सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंदापूर्वी}one{# सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
+<translation id="654149438358937226">सर्व सूचना ब्लॉक करा</translation>
 <translation id="6567071839949112727">पूर्वजवर क्लिक करा</translation>
 <translation id="6612467943526193239">कॅलिब्रेशनमधून बाहेर पडण्‍यासाठी Esc दाबा.</translation>
 <translation id="6620110761915583480">फाइल सेव्ह करा</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7781829728241885113">काल</translation>
 <translation id="7814458197256864873">&amp;कॉपी करा</translation>
+<translation id="7879499977785298635">ब्लॉक करू नका</translation>
 <translation id="7907591526440419938">फाइल उघडा</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 तासापूर्वी}one{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंद शिल्लक}one{# सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>

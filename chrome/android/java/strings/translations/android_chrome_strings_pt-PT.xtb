@@ -56,7 +56,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
 <translation id="1414981605391750300">A contactar a Google… Isto pode demorar um pouco…</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
-<translation id="1423209968422390786">O acesso à localização está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar a ser atualizado, tente novamente dentro de alguns minutos. Se o problema continuar, experimente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
@@ -84,6 +83,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1660204651932907780">Permitir que os sites reproduzam som (recomendado)</translation>
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1671236975893690980">Transferência pendente…</translation>
+<translation id="1674523662097951983">Vamos mudar o item "Marcadores" de localização. Da próxima vez que o quiser encontrar, puxe a barra de endereço para cima.</translation>
 <translation id="169033420419426091">A transferência de <ph name="FILE_NAME" /> falhou porque o cartão SD não está presente.</translation>
 <translation id="1709438864123551175">Poupança de dados</translation>
 <translation id="1718835860248848330">Última hora</translation>
@@ -116,6 +116,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1993768208584545658"><ph name="SITE" /> pretende sincronizar</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outras aplicações</translation>
+<translation id="2015632741368427174">Redirecionamento bloqueado para o site:</translation>
 <translation id="2017836877785168846">Limpa o histórico e os preenchimentos automáticos da barra de endereço.</translation>
 <translation id="2021896219286479412">Controlos de site em ecrã int.</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
@@ -413,6 +414,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4807963036345170158">Poupança de dados desativada</translation>
 <translation id="4811736444948656478">Painel de navegação aberto a meia altura</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
+<translation id="482201002591920174">Armazenamento principal</translation>
 <translation id="4837753911714442426">Abrir opções para imprimir página</translation>
 <translation id="4842092870884894799">A mostrar pop-up de geração de palavra-passe</translation>
 <translation id="4850886885716139402">Ver</translation>
@@ -472,7 +474,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
-<translation id="5345083863238459644">O acesso à localização também está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
@@ -554,6 +555,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
+<translation id="5974562976030145789">Vamos mudar o item "Transferências" de localização. Da próxima vez que o quiser encontrar, puxe a barra de endereço para cima.</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6031101910111098835">Reduzida – clicar para expandir</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
@@ -652,7 +654,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6846298663435243399">A carregar…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> separadores fechados</translation>
-<translation id="6856477143496886355">Cartões e endereços com o Google Payments</translation>
 <translation id="6864459304226931083">Transferir imagem</translation>
 <translation id="6865313869410766144">Dados de formulário de Preenchimento automático</translation>
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
@@ -664,6 +665,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6905163627763043954">Testar</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Selecionar</translation>
+<translation id="6959661084585705671">Armazenamento secundário</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Repor definições de tradução</translation>
@@ -818,6 +820,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8489271220582375723">Abrir a página do histórico</translation>
 <translation id="8493948351860045254">Libertar espaço</translation>
+<translation id="8494508527479967437">Vamos mudar o item "Histórico" de localização. Da próxima vez que o quiser encontrar, puxe a barra de endereço para cima.</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
@@ -862,7 +865,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8912362522468806198">Conta Google</translation>
 <translation id="8920114477895755567">A aguardar os detalhes dos pais.</translation>
 <translation id="8922289737868596582">Transfira páginas através do botão Mais opções para as utilizar offline.</translation>
-<translation id="892369953214061711">As notificações são permitidas. A localização está desativada; ative-a nas Definições do Android.</translation>
 <translation id="8936297887573571433">Toque para ver as transferências, os marcadores e o histórico</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir noutra janela</translation>

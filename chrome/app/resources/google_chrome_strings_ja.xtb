@@ -147,7 +147,6 @@
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google ペイメント（Chrome にコピー）</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome は 1 秒後に再起動します。}other{Google Chrome は # 秒後に再起動します。}}</translation>
 <translation id="532046782124376502">警告: 拡張機能による閲覧履歴の記録を Google Chrome で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
@@ -229,6 +228,7 @@
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
 <translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>
+<translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>

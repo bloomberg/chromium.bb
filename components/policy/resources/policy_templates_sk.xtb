@@ -778,6 +778,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3512226956150568738">Ak model klientskeho zariadenia podporoval ARC už predtým, ako bolo na spustenie ARC potrebné migrovať na ext4, a ak je pravidlo ArcEnabled nastavené na hodnotu True, táto možnosť sa bude správať ako parameter AskUser (hodnota 3). Vo všetkých ostatných prípadoch (ak model zariadenia predtým ARC nepodporoval alebo ak je pravidlo ArcEnabled nastavené na hodnotu False), táto hodnota sa bude zhodovať s parametrom DisallowArc (hodnota 0).</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
+<translation id="3577251398714997599">Nastavenie reklám pre weby s obťažujúcimi reklamami</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
@@ -838,6 +839,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, použije sa predvolený adresár pre stiahnuté súbory a používateľ ho bude môcť zmeniť.</translation>
 <translation id="3805659594028420438">Povolí rozšírenie pre certifikáty TLS typu domain-bound (ktorého podpora bola ukončená)</translation>
 <translation id="3808945828600697669">Určiť zoznam zakázaných doplnkov</translation>
+<translation id="3811562426301733860">Povoliť reklamy na všetkých weboch</translation>
 <translation id="3816312845600780067">Povoliť záchrannú klávesovú skratku pre automatické prihlásenie</translation>
 <translation id="3820526221169548563">Aktivuje funkciu zjednodušenia prístupu pomocou klávesnice na obrazovke.
 
@@ -959,6 +961,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
 <translation id="4105989332710272578">Zakázať vynucovanie pravidla transparentnosti certifikátov pre zoznam webových adries</translation>
+<translation id="4111405663956464686">Upozornenie: Pravidlo stanovujúce maximálnu verziu protokolu TLS bude úplne odstránené z prehliadača <ph name="PRODUCT_NAME" /> približne vo verzii 72 (okolo januára 2019).
+
+      Ak toto pravidlo nenakonfigurujete, <ph name="PRODUCT_NAME" /> bude používať predvolenú maximálnu verziu.
+
+      Inak ho môžete nastaviť na niektorú z nesledujúcich hodnôt: tls1.2 alebo tls1.3. Keď ho nastavíte, <ph name="PRODUCT_NAME" /> nebude používať verzie protokolu SSL/TLS vyššie ako stanovená verzia. Hodnota, ktorá sa nebude dať rozpoznať, bude ignorovaná.</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
 <translation id="4157003184375321727">Hlásiť verziu operačného systému a firmvéru</translation>
 <translation id="4183229833636799228">Predvolené nastavenie doplnku <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1017,6 +1024,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4322842393287974810">Povoliť verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
+<translation id="4346674324214534449">Umožňuje nastaviť, či by mali byť reklamy blokované na weboch s obťažujúcimi reklamami.
+
+      Ak toto pravidlo nastavíte na hodnotu 2, reklamy budú blokované na weboch s obťažujúcimi reklamami.
+      Toto nastavenie sa však nepoužije, ak je pravidlo SafeBrowsingEnabled nastavené na hodnotu False.
+      Ak toto pravidlo nastavíte na hodnotu 1, reklamy nebudú blokované na weboch s obťažujúcimi reklamami.
+      Ak toto pravidlo nenastavíte, použije sa hodnota 2.</translation>
 <translation id="4347908978527632940">Ak je nastavená hodnota True a ide o kontrolovaného používateľa, ďalšie aplikácie pre Android sa môžu dopytovať na webové obmedzenia používateľa prostredníctvom poskytovateľa obsahu.
 
           Ak je nastavená hodnota False alebo toto pravidlo nenastavíte, potom poskytovateľ obsahu nevráti žiadne informácie.</translation>
@@ -1367,6 +1380,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultCookiesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="5469825884154817306">Blokovať obrázky na týchto weboch</translation>
 <translation id="5475361623548884387">Povoliť tlač</translation>
+<translation id="547601067149622666">Zakázať reklamy na weboch s obťažujúcimi reklamami</translation>
 <translation id="5499375345075963939">Toto pravidlo je aktívne iba v režime predaja.
 
       Keď je hodnota pravidla nastavená a nerovná sa 0, aktuálne prihlásený používateľ ukážky bude automaticky odhlásený po uplynutí zadanej dĺžky nečinnosti.

@@ -153,7 +153,6 @@
 አንዳንድ ባሕሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም አዲሱን የChrome ስሪት ይጠቀሙ።</translation>
 <translation id="5193136243808726294">Google Chrome OS ይህን ገጽ መክፈት አይችልም።</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />የአገልግሎት ውል<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (ወደ Chrome ተቀድቷል)</translation>
 <translation id="5251420635869119124">እንግዳዎች ምንም ነገር ሳይተዉ Chromeን መጠቀም ይችላሉ።</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome በ1 ሰከንድ ውስጥ ዳግም ይጀምራል።}one{Google Chrome በ​​# ሰከንዶች ውስጥ ዳግም ይጀምራል።}other{Google Chrome በ​​# ሰከንዶች ውስጥ ዳግም ይጀምራል።}}</translation>
 <translation id="532046782124376502">ማስጠንቀቂያ፦ Google Chrome ቅጥያዎች የአሰሳ ታሪክዎን እንዳይመዘግቡ መከልከል አይችልም። ይህን ቅጥያ ማንነት በማያሳውቅ ሁነት ላይ ለማሰናከል ይህን አማራጭ አይምረጡ።</translation>
@@ -237,6 +236,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7896673875602241923">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST" /> ሆነው ወደ Chrome ገብተዋል። የእርስዎን መረጃ ለይተው ለማስቀመጥ እባክዎ አዲስ የChrome ተጠቃሚ ይፍጠሩ።</translation>
 <translation id="7908168227788431038">የተዘመነ ለመሆን ጥቂት ብቻ ቀርቷል! ዝማኔውን ለማጠናቀቅ Google Chromeን ዳግም ያስጀምሩት።</translation>
 <translation id="795025003224538582">ዳግም አታስጀምር</translation>
+<translation id="7962410387636238736">Windows XP እና Windows Vista ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
 <translation id="8005540215158006229">በቃ Chrome ዝግጁ ሊሆን ነው።</translation>
 <translation id="8008534537613507642">Chromeን ዳግም ጫነው</translation>
 <translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME" /> ሰርጥ በማዘመን ላይ...</translation>

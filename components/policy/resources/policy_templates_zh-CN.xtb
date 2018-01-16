@@ -730,6 +730,7 @@
 <translation id="3512226956150568738">如果客户端设备型号在需要迁移到 ext4 才能运行 ARC 之前就已支持 ARC，且 ArcEnabled 政策已设为 true，该选项的行为便会和 AskUser（值 3）的行为一样。在所有其他情形（如果相应的设备型号之前不支持 ARC，或者如果 ArcEnabled 政策被设为 false）下，此值将会等同于 DisallowArc（值 0）。</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
 <translation id="3547954654003013442">代理设置</translation>
+<translation id="3577251398714997599">针对展示侵扰性广告的网站指定广告设置</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
@@ -789,6 +790,7 @@
       如果此政策未设置，系统将使用默认的下载目录，并且用户可以更改此目录。</translation>
 <translation id="3805659594028420438">启用TLS网域绑定证书扩展程序（已弃用）</translation>
 <translation id="3808945828600697669">指定已停用插件的列表</translation>
+<translation id="3811562426301733860">允许在所有网站上显示广告</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
 <translation id="3820526221169548563">启用屏幕键盘辅助功能。
 
@@ -902,6 +904,11 @@
 
           指定的政策值应以毫秒为单位。</translation>
 <translation id="4105989332710272578">对于指定的一系列网址，不强制要求必须符合证书透明度政策</translation>
+<translation id="4111405663956464686">警告：大概从 72 版（将于 2019 年 1 月左右推出）开始，<ph name="PRODUCT_NAME" /> 中将会彻底移除用于指定最高 TLS 版本的政策。
+
+      如果您不配置此政策，<ph name="PRODUCT_NAME" /> 便会使用默认的最高版本。
+
+      如果您想配置此政策，则可将其设为“tls1.2”或“tls1.3”。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用任何高于指定版本的 SSL/TLS 版本。无法识别的值会被忽略。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
 <translation id="4157003184375321727">报告操作系统和固件版本</translation>
 <translation id="4183229833636799228">默认 <ph name="FLASH_PLUGIN_NAME" /> 设置</translation>
@@ -960,6 +967,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
 <translation id="4322842393287974810">允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本</translation>
 <translation id="4325690621216251241">向系统任务栏添加退出按钮</translation>
+<translation id="4346674324214534449">可让您设置是否应在展示侵扰性广告的网站上屏蔽广告。
+
+      如果此政策设为 2，系统将会在展示侵扰性广告的网站上屏蔽广告。
+      不过，如果 SafeBrowsingEnabled 政策设为 False，此行为便不会触发。
+      如果此政策设为 1，系统将不会在展示侵扰性广告的网站上屏蔽广告。
+      如果未设置此政策，系统的行为则会与将此政策设为 2 时一样。</translation>
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
           如果设为 false 或未设置，则内容提供方不会返回任何信息。</translation>
@@ -1261,6 +1274,7 @@
 <translation id="5469484020713359236">可让您设置网址格式的列表，这些网址格式用于指定允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
 <translation id="5475361623548884387">启用打印功能</translation>
+<translation id="547601067149622666">不允许在展示侵扰性广告的网站上显示广告</translation>
 <translation id="5499375345075963939">此策略仅在零售模式下有效。
 
       当该策略值已设置，且不为零，那么当不活动期达到指定的时间期间后，当前登录的演示用户就会自动退出。

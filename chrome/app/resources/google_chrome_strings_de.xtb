@@ -147,7 +147,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5170938038195470297">Ihr Profil kann nicht verwendet werden, da es von einer neueren Version von Google Chrome stammt. Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Google Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kann diese Seite nicht öffnen.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Google Chrome-Nutzungsbedingungen<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (in Chrome kopiert)</translation>
 <translation id="5251420635869119124">Gastnutzer können Chrome verwenden, ohne Daten zu hinterlassen.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome wird in 1 Sekunde neu gestartet.}other{Google Chrome wird in # Sekunden neu gestartet.}}</translation>
 <translation id="532046782124376502">Warnung: Google Chrome kann nicht verhindern, dass Ihr Suchverlauf von Erweiterungen protokolliert wird. Sie können diese Erweiterung für den Inkognitomodus deaktivieren, indem Sie das Häkchen aus dem Kästchen entfernen.</translation>
@@ -229,6 +228,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7896673875602241923">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chrome angemeldet. Erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.</translation>
 <translation id="7908168227788431038">Fast fertig! Starten Sie Google Chrome neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="795025003224538582">Nicht neu starten</translation>
+<translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
 <translation id="8005540215158006229">Chrome ist gleich bereit.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>

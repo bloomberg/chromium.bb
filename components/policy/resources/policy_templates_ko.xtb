@@ -785,6 +785,7 @@
 <translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 이전해야 했던 시점 전에 ARC를 이미 지원했으며 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
+<translation id="3577251398714997599">방해가 되는 광고가 포함된 사이트의 광고 설정</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
@@ -845,6 +846,7 @@
       이 정책을 설정하지 않는 경우 기본 다운로드 디렉토리가 사용되며 사용자는 해당 디렉토리를 변경할 수 있습니다.</translation>
 <translation id="3805659594028420438">TLS 도메인 바인딩 인증서 확장 프로그램 사용(지원 중단됨)</translation>
 <translation id="3808945828600697669">사용 중지된 플러그인 목록 지정</translation>
+<translation id="3811562426301733860">모든 사이트에서 광고 허용</translation>
 <translation id="3816312845600780067">자동 로그인 시 긴급용 단축키 사용</translation>
 <translation id="3820526221169548563">터치 키보드 접근성 기능을 사용하도록 설정합니다.
 
@@ -966,6 +968,11 @@
 
           정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
 <translation id="4105989332710272578">일부 URL 목록에는 인증서 투명성 시행 사용 중지</translation>
+<translation id="4111405663956464686">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 72쯤에서 완전히 삭제됩니다(2019년 1월경).
+
+      이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최대 버전이 사용됩니다.
+
+      정책을 설정하는 경우, 'tls1.2' 또는 'tls1.3' 중 하나로 설정될 수 있습니다. 설정되면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 높은 SSL/TLS 버전이 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="4121350739760194865">앱 프로모션이 새 탭 페이지에 표시되지 않도록 합니다.</translation>
 <translation id="4157003184375321727">OS 및 펌웨어 버전을 보고합니다.</translation>
 <translation id="4183229833636799228">기본 <ph name="FLASH_PLUGIN_NAME" /> 설정</translation>
@@ -1025,6 +1032,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 이상</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
+<translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
+
+      이 정책을 2로 설정하면 방해가 되는 광고가 포함된 사이트에서 광고가 차단됩니다.
+      하지만 이 동작은 SafeBrowsingEnabled 정책이 False로 설정된 경우 실행되지 않습니다.
+      이 정책을 1로 설정하면 방해가 되는 광고가 포함된 사이트에서 광고가 차단되지 않습니다.
+      이 정책을 설정하지 않으면 2가 적용됩니다.</translation>
 <translation id="4347908978527632940">true로 설정되어 있고 사용자가 관리 대상 사용자인 경우 다른 Android 앱에서 콘텐츠 제공업체를 통해 사용자의 웹 제한사항을 검색할 수 있습니다.
 
           false로 설정되어 있거나 설정되어 있지 않은 경우 콘텐츠 제공업체에서 정보를 제공하지 않습니다.</translation>
@@ -1375,6 +1388,7 @@
           이 정책을 설정하지 않은 경우 'DefaultCookiesSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="5469825884154817306">이 사이트의 이미지 차단</translation>
 <translation id="5475361623548884387">인쇄 사용</translation>
+<translation id="547601067149622666">방해가 되는 광고가 포함된 사이트에서 광고 허용 안 함</translation>
 <translation id="5499375345075963939">이 정책은 판매 모드일 때만 사용할 수 있습니다.
 
       이 정책 값이 설정되고 값이 0이 아니면 현재 로그인한 데모 사용자가 지정된 비활성화 시간 뒤에 자동으로 로그아웃됩니다.

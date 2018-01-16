@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Fungua folda</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Mwaka 1 uliopita}other{Miaka # iliyopita}}</translation>
 <translation id="2931838996092594335">bofya</translation>
-<translation id="2983818520079887040">Mipangilio...</translation>
 <translation id="3036649622769666520">Fungua Mafaili</translation>
 <translation id="3049748772180311791">MB <ph name="QUANTITY" /></translation>
 <translation id="3087734570205094154">Chini</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Koma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
+<translation id="654149438358937226">Zuia arifa zote</translation>
 <translation id="6567071839949112727">bofya kipengee</translation>
 <translation id="6612467943526193239">Ili kuacha kupima, bonyeza Esc.</translation>
 <translation id="6620110761915583480">Hifadhi Faili</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7781829728241885113">Jana</translation>
 <translation id="7814458197256864873">&amp;Nakili</translation>
+<translation id="7879499977785298635">Usizuie</translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Saa 1 iliyopita}other{Saa # zilizopita}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Imesalia sekunde 1}other{Zimesalia sekunde #}}</translation>

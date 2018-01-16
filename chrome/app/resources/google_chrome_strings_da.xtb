@@ -147,7 +147,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="5170938038195470297">Din profil kan ikke bruges, fordi den stammer fra en nyere version af Google Chrome. Nogle funktioner er muligvis ikke tilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan ikke åbne denne side.</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />Servicevilkår<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (kopieret til Chrome)</translation>
 <translation id="5251420635869119124">Gæster kan bruge Chrome uden at efterlade noget.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome genstarter om 1 sekund.}one{Google Chrome genstarter om # sekund.}other{Google Chrome genstarter om # sekunder.}}</translation>
 <translation id="532046782124376502">Advarsel! Google Chrome kan ikke forhindre udvidelser i at registrere din browserhistorik. Fravælg denne indstilling for at deaktivere udvidelsen i inkognitotilstand.</translation>
@@ -229,6 +228,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7896673875602241923">Nogen har tidligere logget ind på Chrome på denne computer som <ph name="ACCOUNT_EMAIL_LAST" />. Opret en ny Chrome-bruger for at holde dine oplysninger adskilt.</translation>
 <translation id="7908168227788431038">Næsten opdateret! Genstart Google Chrome for at gennemføre opdateringen.</translation>
 <translation id="795025003224538582">Genstart ikke</translation>
+<translation id="7962410387636238736">Denne computer modtager ikke længere Google Chrome-opdateringer, da Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="8005540215158006229">Chrome er næsten klar.</translation>
 <translation id="8008534537613507642">Geninstaller Chrome</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>

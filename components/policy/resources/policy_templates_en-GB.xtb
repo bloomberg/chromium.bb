@@ -787,6 +787,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
@@ -853,6 +854,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set the default download directory will be used and the user will be able to change it.</translation>
 <translation id="3805659594028420438">Enable TLS domain-bound certificates extension (deprecated)</translation>
 <translation id="3808945828600697669">Specify a list of disabled plug-ins</translation>
+<translation id="3811562426301733860">Allow ads on all sites</translation>
 <translation id="3816312845600780067">Enable bailout keyboard shortcut for auto-login</translation>
 <translation id="3820526221169548563">Enable the on-screen keyboard accessibility feature.
 
@@ -974,6 +976,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
+<translation id="4111405663956464686">Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME" /> around version 72 (around January 2019).
+
+      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses the default maximum version.
+
+      Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
@@ -1032,6 +1039,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
+<translation id="4346674324214534449">Allows you to set whether ads should be blocked on sites with intrusive ads.
+
+      If this policy is set to 2, ads will be blocked on sites with intrusive ads.
+      However, this behaviour will not trigger if SafeBrowsingEnabled policy is set to False.
+      If this policy is set to 1, ads will not be blocked on sites with intrusive ads.
+      If this policy is left not set, 2 will be used.</translation>
 <translation id="4347908978527632940">If true and the user is a supervised user, then other Android apps can query the user's web restrictions through a content provider.
 
           If false or unset, then the content provider returns no information.</translation>
@@ -1386,6 +1399,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="5475361623548884387">Enable printing</translation>
+<translation id="547601067149622666">Do not allow ads on sites with intrusive ads</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
 
       When the value of this policy is set and is not 0 then the currently logged in demo user will be logged out automatically after an inactivity time of the specified duration has elapsed.

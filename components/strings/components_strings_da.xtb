@@ -245,6 +245,7 @@
 <translation id="2738330467931008676">Vælg afhentningsadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
+<translation id="2744590937989388266">Fra en integreret side på denne side</translation>
 <translation id="277133753123645258">Forsendelsesmetode</translation>
 <translation id="277499241957683684">Manglende enhedsregistrering</translation>
 <translation id="2784949926578158345">Forbindelsen blev nulstillet.</translation>
@@ -321,7 +322,6 @@
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="3270847123878663523">&amp;Fortryd omarrangering</translation>
 <translation id="3282497668470633863">Tilføj navn på kort</translation>
-<translation id="3286538390144397061">Genstart nu</translation>
 <translation id="3287510313208355388">Download, når du er online</translation>
 <translation id="3293642807462928945">Få flere oplysninger om politikken <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Der blev ikke fundet nogen søgeresultater</translation>
@@ -350,7 +350,6 @@
 <translation id="3427092606871434483">Tillad (standardindstilling)</translation>
 <translation id="3427342743765426898">&amp;Annuller fortryd redigering</translation>
 <translation id="3431636764301398940">Gem dette kort på denne enhed</translation>
-<translation id="3435896845095436175">Aktivér</translation>
 <translation id="3447661539832366887">Ejeren af denne enhed har lukket dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis certifikat (udstedt af <ph name="ISSUER" />)</translation>
 <translation id="3452404311384756672">Hent interval:</translation>
@@ -404,7 +403,7 @@
 <translation id="3778403066972421603">Vil du gemme dette kort på din Google-konto og på denne enhed?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Udløber <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
-<translation id="3808375843007691220">Advarsel! Testfunktioner forude.</translation>
+<translation id="3800436529451849929">Fra <ph name="SITE" /></translation>
 <translation id="382518646247711829">Hvis du bruger en proxyserver...</translation>
 <translation id="3828924085048779000">Tomme adgangssætninger er ikke tilladt.</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -460,7 +459,6 @@
 <translation id="4269787794583293679">(Intet brugernavn)</translation>
 <translation id="4275830172053184480">Genstart din enhed</translation>
 <translation id="4280429058323657511">udløber <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4292213515608230699">Der er ingen matchende tests</translation>
 <translation id="4304224509867189079">Log ind</translation>
 <translation id="4312866146174492540">Bloker (standardindstilling)</translation>
 <translation id="4325863107915753736">Artiklen blev ikke fundet.</translation>
@@ -470,7 +468,6 @@
 <translation id="4356973930735388585">Hackere på dette website vil muligvis forsøge at installere skadelige programmer på din computer, som stjæler eller sletter dine oplysninger (f.eks. billeder, adgangskoder, beskeder og kreditkortoplysninger).</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-værdi.</translation>
 <translation id="4377125064752653719">Du har forsøgt at få fat på <ph name="DOMAIN" />, men serverens certifikat er blevet tilbagekaldt af udgiveren. Det betyder, at du bestemt ikke bør have tillid til serverens sikkerhedsoplysninger. Du kommunikerer muligvis med en hacker.</translation>
-<translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4406896451731180161">søgeresultater</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Afhentningsadresse</translation>
@@ -484,6 +481,7 @@
 <translation id="4515275063822566619">Kort og adresser er fra Chrome og din Google-konto (<ph name="ACCOUNT_EMAIL" />). Du kan administrere dem i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4552089082226364758">Flash</translation>
+<translation id="4554702541363482291">Fra en integreret side på <ph name="SITE" /></translation>
 <translation id="4558551763791394412">Prøv at deaktivere dine udvidelser.</translation>
 <translation id="457875822857220463">Levering</translation>
 <translation id="4582800630050655161">Du kan miste adgang til din Google-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
@@ -504,6 +502,7 @@
 <translation id="4726672564094551039">Opdater politikker</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Genstart Chromium</translation>
+<translation id="4737498291095696011">Fra denne side</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4749685221585524849">Sidst anvendt <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Dine oplysninger (f.eks. adgangskoder eller kreditkortnumre) er private, når de sendes til dette website.</translation>
@@ -522,6 +521,7 @@
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4854362297993841467">Denne leveringsmetode er ikke tilgængelig. Prøv en anden metode.</translation>
 <translation id="4858792381671956233">Du har spurgt dine forældre, om det er i orden at besøge dette website.</translation>
+<translation id="4871132632506079383">Fra en integreret side på <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Godkendelse er påkrævet</translation>
@@ -535,11 +535,11 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Udvid liste</translation>
 <translation id="4974590756084640048">Genaktiver advarsler</translation>
-<translation id="4989542687859782284">Ikke tilgængelige</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
+<translation id="5020990877659450221">Fra denne side</translation>
 <translation id="5023310440958281426">Læs din administrators politikker</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
 <translation id="503069730517007720">Et rodcertifikat for "<ph name="SOFTWARE_NAME" />" er påkrævet, men ikke installeret. Din IT-administrator bør kigge på konfigurationsvejledningen til "<ph name="SOFTWARE_NAME" />" for at løse dette problem. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -565,7 +565,6 @@
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
-<translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5205222826937269299">Navn påkrævet</translation>
 <translation id="5222812217790122047">E-mail påkrævet</translation>
 <translation id="522700295135997067">Dette website kan have stjålet din adgangskode</translation>
@@ -595,7 +594,6 @@
 <translation id="5355557959165512791">Du kan ikke besøge <ph name="SITE" /> lige nu, da dets certifikat er blevet tilbagekaldt. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5386426401304769735">Certifikatkæden for dette website indeholder et certifikat, der er signeret med SHA-1.</translation>
-<translation id="5401815295726769233">Søg efter funktioner, der kan slås til og fra</translation>
 <translation id="5402410679244714488">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />, sidst anvendt for mere end et år siden</translation>
 <translation id="540969355065856584">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat ikke er gyldigt i øjeblikket. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5421136146218899937">Ryd browserdata...</translation>
@@ -657,6 +655,7 @@
 <translation id="5786044859038896871">Skal dine kortoplysninger udfyldes?</translation>
 <translation id="5803412860119678065">Skal <ph name="CARD_DETAIL" /> udfyldes?</translation>
 <translation id="5810442152076338065">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en forældet krypteringspakke.</translation>
+<translation id="5810928923025889964">Fra en integreret side på denne side</translation>
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="5838278095973806738">Du bør ikke indtaste følsomme oplysninger på dette website (f.eks. adgangskoder eller kreditkortoplysninger), da de kan blive stjålet af hackere.</translation>
 <translation id="5866257070973731571">Tilføj telefonnummer</translation>
@@ -664,7 +663,6 @@
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
 <translation id="5893752035575986141">Kreditkort accepteres.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkroniseret)</translation>
-<translation id="5909194079078764042">Hvis du aktiverer disse funktioner, kan du miste browserdata eller kompromittere din sikkerhed eller dit privatliv. Aktiverede funktioner gælder for alle brugerne i denne browser.</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 i brug}one{# i brug}other{# i brug}}</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5959728338436674663">Send automatisk <ph name="BEGIN_WHITEPAPER_LINK" />nogle systemoplysninger og noget sideindhold<ph name="END_WHITEPAPER_LINK" /> til Google som en hjælp til at registrere skadelige apps og websites. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -713,7 +711,6 @@
 <translation id="6305205051461490394"><ph name="URL" /> kan ikke nås.</translation>
 <translation id="6319915415804115995">Sidst anvendt for mere end et år siden</translation>
 <translation id="6321917430147971392">Kontrollér dine DNS-indstillinger</translation>
-<translation id="6325286409953503969">Er du interesseret i nye, smarte Chrome-funktioner? Prøv vores <ph name="BEGIN_LINK" />udviklerkanal<ph name="END_LINK" />.</translation>
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
 <translation id="6328786501058569169">Dette website er vildledende</translation>
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
@@ -801,7 +798,6 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}one{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> andre}}</translation>
 <translation id="7155487117670177674">Betaling er ikke sikkert</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}one{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andre}}</translation>
-<translation id="7179921470347911571">Genstart nu</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7182878459783632708">Ingen politikker er indstillet</translation>
 <translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE" />til<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -820,7 +816,6 @@
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="7309308571273880165">Nedbrudsrapport registreret <ph name="CRASH_TIME" /> (upload, som brugeren anmodede om, er endnu ikke uploadet)</translation>
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
-<translation id="7337706099755338005">Ikke tilgængelig på din platform.</translation>
 <translation id="733923710415886693">Servercertifikatet blev ikke fremvist via Certifikatsgennemsigtighed.</translation>
 <translation id="7353601530677266744">Kommandolinje</translation>
 <translation id="7372973238305370288">søgeresultat</translation>
@@ -874,7 +869,6 @@
 <translation id="7668654391829183341">Ukendt enhed</translation>
 <translation id="7669271284792375604">Hackere på dette website kan forsøge at narre dig til at installere programmer, der skader din browseroplevelse (f.eks. ved at ændre din startside eller vise flere annoncer på de websites, du besøger).</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
-<translation id="7695552107151968219">Er du interesseret i nye, smarte Chrome-funktioner? Prøv vores <ph name="BEGIN_LINK" />betakanal<ph name="END_LINK" />.</translation>
 <translation id="7699293099605015246">Der er ingen tilgængelige artikler lige nu</translation>
 <translation id="7701040980221191251">Ingen</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsæt til <ph name="SITE" /> (usikkert)<ph name="END_LINK" /></translation>
@@ -993,10 +987,7 @@
 <translation id="8620436878122366504">Dine forældre har ikke godkendt det endnu</translation>
 <translation id="8625384913736129811">Gem dette kort på denne enhed</translation>
 <translation id="8639963783467694461">Indstillinger for AutoFyld</translation>
-<translation id="8647750283161643317">Nulstil alle til standard</translation>
-<translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
-<translation id="8688672835843460752">Tilgængelig</translation>
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
 <translation id="8718314106902482036">Betalingen blev ikke gennemført</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
@@ -1035,7 +1026,6 @@
 <translation id="9005998258318286617">PDF-dokumentet kunne ikke indlæses.</translation>
 <translation id="9008201768610948239">Ignorer</translation>
 <translation id="9011424611726486705">Åbn indstillinger for website</translation>
-<translation id="901974403500617787">Markeringer, der gælder for hele systemet, kan kun indstilles af ejeren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020200922353704812">Kortets faktureringsadresse er obligatorisk</translation>
 <translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9025348182339809926">(ugyldigt)</translation>

@@ -147,7 +147,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
 <translation id="5193136243808726294">OS Google Chrome tidak boleh membuka halaman ini.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome </translation>
-<translation id="5243785881901838525">Google Payments (disalin ke Chrome)</translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome akan dimulakan semula dalam 1 saat.}other{Google Chrome akan dimulakan semula dalam # saat.}}</translation>
 <translation id="532046782124376502">Amaran: Google Chrome tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
@@ -229,6 +228,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7896673875602241923">Sebelum ini, seseorang telah log masuk ke Chrome pada komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Sila buat pengguna Chrome baharu untuk mengasingkan maklumat anda.</translation>
 <translation id="7908168227788431038">Hampir terkini! Lancarkan semula Google Chrome untuk menyelesaikan kemas kini.</translation>
 <translation id="795025003224538582">Jangan mulakan semula</translation>
+<translation id="7962410387636238736">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana Windows XP dan Windows Vista sudah tidak disokong</translation>
 <translation id="8005540215158006229">Chrome hampir sedia.</translation>
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>

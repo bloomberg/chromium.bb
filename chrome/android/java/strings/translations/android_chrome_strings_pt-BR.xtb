@@ -56,7 +56,6 @@
 <translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
 <translation id="1414981605391750300">Entrando em contato com o Google. Isso pode levar um minuto…</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
-<translation id="1423209968422390786">O acesso a locais está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar fazendo um upgrade. Tente novamente em alguns minutos. Se o problema persistir, tente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
@@ -84,6 +83,7 @@
 <translation id="1660204651932907780">Permitir que os sites reproduzam sons (recomendado)</translation>
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="1671236975893690980">Download pendente…</translation>
+<translation id="1674523662097951983">O item “Favoritos” está mudando de lugar. Na próxima vez, puxe a barra de endereço para cima.</translation>
 <translation id="169033420419426091">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de cartão SD.</translation>
 <translation id="1709438864123551175">Economia de dados</translation>
 <translation id="1718835860248848330">Última hora</translation>
@@ -116,6 +116,7 @@
 <translation id="1993768208584545658">O <ph name="SITE" /> deseja realizar o pareamento</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outros apps</translation>
+<translation id="2015632741368427174">Redirecionamento bloqueado para este site:</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
 <translation id="2021896219286479412">Controles de site em tela cheia</translation>
 <translation id="2038563949887743358">Ativar "Ver versão para Web"</translation>
@@ -413,6 +414,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4807963036345170158">A Economia de dados está desativada</translation>
 <translation id="4811736444948656478">Painel de navegação aberto pela metade</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
+<translation id="482201002591920174">Armazenamento primário</translation>
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
 <translation id="4842092870884894799">Mostrando pop-up da criação de senhas</translation>
 <translation id="4850886885716139402">Visualizar</translation>
@@ -472,7 +474,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
-<translation id="5345083863238459644">O acesso a locais também está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
@@ -553,6 +554,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5956665950594638604">Abrir Central de Ajuda do Chrome em uma nova guia</translation>
 <translation id="5958275228015807058">Procure seus arquivos e páginas em Downloads</translation>
 <translation id="5962718611393537961">Toque para recolher</translation>
+<translation id="5974562976030145789">O item “Downloads” está mudando de lugar. Na próxima vez, puxe a barra de endereço para cima.</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
 <translation id="6031101910111098835">Visualização recolhida: clique para expandir</translation>
 <translation id="6039379616847168523">Ir para a próxima guia</translation>
@@ -651,7 +653,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6846298663435243399">Carregando…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> guias fechadas</translation>
-<translation id="6856477143496886355">Cartões e endereços que usam o Google Payments</translation>
 <translation id="6864459304226931083">Fazer o download da imagem</translation>
 <translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
@@ -663,6 +664,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6905163627763043954">Experimente</translation>
 <translation id="6910211073230771657">Excluído</translation>
 <translation id="6945221475159498467">Selecionar</translation>
+<translation id="6959661084585705671">Armazenamento secundário</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
@@ -817,6 +819,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8489271220582375723">Abrir a página Histórico</translation>
 <translation id="8493948351860045254">Liberar espaço</translation>
+<translation id="8494508527479967437">O item “Histórico” está mudando de lugar. Na próxima vez, puxe a barra de endereço para cima.</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8514477925623180633">Exportar senhas armazenadas com o Chrome</translation>
@@ -860,7 +863,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>
 <translation id="8922289737868596582">Use o botão Mais opções para fazer o download de páginas e usá-las off-line</translation>
-<translation id="892369953214061711">Notificações são permitidas. A Localização está desativada. Ative-a nas configurações do Android.</translation>
 <translation id="8936297887573571433">Toque para ver downloads, favoritos e histórico</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir em outra janela</translation>

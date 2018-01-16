@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Отваряне на папката</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Преди 1 година}other{Преди # години}}</translation>
 <translation id="2931838996092594335">кликвам</translation>
-<translation id="2983818520079887040">Настройки...</translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
 <translation id="3087734570205094154">Най-долу</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Запетая</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Преди 1 сек}other{Преди # сек}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Преди 1 секунда}other{Преди # секунди}}</translation>
+<translation id="654149438358937226">Блокиране на всички известия</translation>
 <translation id="6567071839949112727">кликване върху елемента предшественик</translation>
 <translation id="6612467943526193239">За изход от калибрирането натиснете Esc.</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7814458197256864873">&amp;Копиране</translation>
+<translation id="7879499977785298635">Без блокиране</translation>
 <translation id="7907591526440419938">Отваряне на файл</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Преди 1 час}other{Преди # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Остава 1 сек}other{Остават # сек}}</translation>

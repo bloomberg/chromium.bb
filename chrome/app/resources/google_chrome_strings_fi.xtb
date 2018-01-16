@@ -148,7 +148,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="5170938038195470297">Profiiliasi ei voi käyttää, koska se on peräisin uudemmasta Google Chromen versiosta. Kaikkia toimintoja ei välttämättä voi käyttää. Määritä toinen profiilihakemisto tai käytä uudempaa Chromen versiota.</translation>
 <translation id="5193136243808726294">Google Chrome ‑käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="5204098752394657250">Google Chromen <ph name="TERMS_OF_SERVICE_LINK" />käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (kopioitu Chromeen)</translation>
 <translation id="5251420635869119124">Vierailijat voivat käyttää Chromea jälkiä jättämättä.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome käynnistyy uudelleen 1 sekunnin kuluttua}other{Google Chrome käynnistyy uudelleen # sekunnin kuluttua}}</translation>
 <translation id="532046782124376502">Varoitus: Google Chrome ei voi estää laajennuksia tallentamasta selaushistoriaasi. Voit poistaa tämän laajennuksen käytöstä incognito-tilassa poistamalla tämän valinnan.</translation>
@@ -230,6 +229,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7896673875602241923">Joku on jo kirjautunut tällä tietokoneella Chromeen käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chrome-käyttäjä, jos haluat pitää tiedot erillään.</translation>
 <translation id="7908168227788431038">Lähes valmista. Viimeistele päivitys käynnistämällä Google Chrome uudelleen.</translation>
 <translation id="795025003224538582">Älä käynnistä uudelleen</translation>
+<translation id="7962410387636238736">Tämän tietokoneen Google Chromea ei enää päivitetä, koska Windows XP:tä ja Windows Vistaa ei enää tueta.</translation>
 <translation id="8005540215158006229">Chrome on melkein valmis.</translation>
 <translation id="8008534537613507642">Asenna Chrome uudelleen</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>

@@ -153,7 +153,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS ne peut pas ouvrir cette page</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Conditions d'utilisation<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (copiée vers Chrome)</translation>
 <translation id="5251420635869119124">Les invités peuvent utiliser Chrome sans laisser aucune trace.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome va redémarrer dans 1 seconde}one{Google Chrome va redémarrer dans # seconde}other{Google Chrome va redémarrer dans # secondes}}</translation>
 <translation id="532046782124376502">Avertissement : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
@@ -237,6 +236,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7896673875602241923">Un utilisateur s'est récemment connecté à Chrome sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chrome pour séparer vos informations.</translation>
 <translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
+<translation id="7962410387636238736">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista</translation>
 <translation id="8005540215158006229">Google Chrome est presque prêt</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>

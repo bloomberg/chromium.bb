@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">கோப்புறையைத் திற</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ஆண்டுக்கு முன்}other{# ஆண்டுகளுக்கு முன்}}</translation>
 <translation id="2931838996092594335">கிளிக் செய்க</translation>
-<translation id="2983818520079887040">அமைப்புகள்...</translation>
 <translation id="3036649622769666520">கோப்புகளைத் திற</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> மெ.பை</translation>
 <translation id="3087734570205094154">கீழே</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">கமா</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 நிமிடம் முன்பு}other{# நிமிடங்கள் முன்பு}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 வினாடிக்கு முன்பு}other{# வினாடிகளுக்கு முன்பு}}</translation>
+<translation id="654149438358937226">எல்லா அறிவிப்புகளையும் தடு</translation>
 <translation id="6567071839949112727">ஆன்செஸ்டரைக் கிளிக் செய்</translation>
 <translation id="6612467943526193239">அளவுத்திருத்தத்திலிருந்து வெளியேற, Esc எனும் விசையை அழுத்தவும்.</translation>
 <translation id="6620110761915583480">கோப்பைச் சேமி</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
+<translation id="7879499977785298635">தடுக்காதே</translation>
 <translation id="7907591526440419938">கோப்பைத் திற</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>

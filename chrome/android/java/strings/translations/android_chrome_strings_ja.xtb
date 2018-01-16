@@ -56,7 +56,6 @@
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> は既に存在しているためダウンロードできませんでした。</translation>
 <translation id="1414981605391750300">Google に問い合わせています。これには 1 分ほどかかる場合があります…</translation>
 <translation id="1416550906796893042">アプリケーションのバージョン</translation>
-<translation id="1423209968422390786">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でオフになっています<ph name="END_LINK" />。</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1445680696957526815">Chrome のコンポーネント同士に互換性がありません。Chrome が更新中の可能性があります。しばらくしてからもう一度お試しください。問題が続く場合は、Chrome をいったんアンインストールし、再インストールしてみてください。</translation>
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
@@ -84,6 +83,7 @@
 <translation id="1660204651932907780">音声の再生をサイトに許可する（推奨）</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
+<translation id="1674523662097951983">[ブックマーク] は移動しました。次回からはアドレスバーを上にスワイプしてください。</translation>
 <translation id="169033420419426091">SD カードがないため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1709438864123551175">データセーバー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
@@ -116,6 +116,7 @@
 <translation id="1993768208584545658"><ph name="SITE" /> がペア設定を要求しています</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
+<translation id="2015632741368427174">次のサイトへのリダイレクトがブロックされました。</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
@@ -413,6 +414,7 @@
 <translation id="4807963036345170158">データセーバー OFF</translation>
 <translation id="4811736444948656478">画面の下半分にナビゲーション パネルが開かれています</translation>
 <translation id="4816465935029283692">データタイプ</translation>
+<translation id="482201002591920174">メインの保存先</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
 <translation id="4850886885716139402">表示</translation>
@@ -472,7 +474,6 @@
 <translation id="5327248766486351172">名前</translation>
 <translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
-<translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
 <translation id="5372829067651257087">URL をコピーしました。</translation>
 <translation id="5400569084694353794">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="5403644198645076998">特定のサイトのみを許可</translation>
@@ -554,6 +555,7 @@
 <translation id="5956665950594638604">Chrome ヘルプセンターを新しいタブで開く</translation>
 <translation id="5958275228015807058">[ダウンロード] で自分のファイルやページを探すことができます</translation>
 <translation id="5962718611393537961">タップして折りたたむ</translation>
+<translation id="5974562976030145789">[ダウンロード] は移動しました。次回からはアドレスバーを上にスワイプしてください。</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
 <translation id="6031101910111098835">折りたたみ状態 - クリックして展開</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
@@ -652,7 +654,6 @@
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6846298663435243399">読み込み中...</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
-<translation id="6856477143496886355">Google Payments のカードと住所</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
@@ -664,6 +665,7 @@
 <translation id="6905163627763043954">使ってみる</translation>
 <translation id="6910211073230771657">削除済み</translation>
 <translation id="6945221475159498467">選択</translation>
+<translation id="6959661084585705671">予備の保存先</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
@@ -818,6 +820,7 @@
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8489271220582375723">履歴ページを開く</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
+<translation id="8494508527479967437">[履歴] は移動しました。次回からはアドレスバーを上にスワイプしてください。</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8514477925623180633">Chrome に保存されたパスワードをエクスポートします</translation>
@@ -862,7 +865,6 @@
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
 <translation id="8922289737868596582">[その他のオプション] からページをダウンロードするとオフラインで使用できるようになります</translation>
-<translation id="892369953214061711">通知が許可されています。位置情報が OFF になっているため、Android の設定で ON にしてください。</translation>
 <translation id="8936297887573571433">タップしてダウンロード、ブックマーク、履歴を表示</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>

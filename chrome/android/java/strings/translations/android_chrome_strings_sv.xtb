@@ -56,7 +56,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1409879593029778104">Nedladdningen av <ph name="FILE_NAME" /> hindrades eftersom filen redan finns.</translation>
 <translation id="1414981605391750300">Kontaktar Google. Det här kan ta någon minut …</translation>
 <translation id="1416550906796893042">Appversion</translation>
-<translation id="1423209968422390786">Platsåtkomst har <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Chromes komponenter är inte inbördes kompatibla. Kanske håller Chrome på att uppgraderas. Försök igen om några minuter. Om problemet kvarstår testar du att avinstallera och sedan installera om Chrome.</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
@@ -84,6 +83,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1660204651932907780">Tillåt att ljud spelas upp på webbplatser (rekommenderas)</translation>
 <translation id="1670399744444387456">Grunder</translation>
 <translation id="1671236975893690980">Nedladdning väntar …</translation>
+<translation id="1674523662097951983">Bokmärken har flyttat. Dra uppåt på adressfältet nästa gång.</translation>
 <translation id="169033420419426091">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom SD-kort saknas.</translation>
 <translation id="1709438864123551175">Databesparing</translation>
 <translation id="1718835860248848330">Senaste timmen</translation>
@@ -116,6 +116,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1993768208584545658"><ph name="SITE" /> vill kopplas</translation>
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB används av övriga appar</translation>
+<translation id="2015632741368427174">Omdirigering till den här sidan blockerades:</translation>
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
@@ -413,6 +414,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4807963036345170158">Databesparing är inaktiverat</translation>
 <translation id="4811736444948656478">Navigeringspanelen har öppnats och tar upp halva skärmen</translation>
 <translation id="4816465935029283692">Datatyper</translation>
+<translation id="482201002591920174">Primärt lagringsutrymme</translation>
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
 <translation id="4842092870884894799">Visar popupfönster för lösenordsgenerering</translation>
 <translation id="4850886885716139402">Visa</translation>
@@ -472,7 +474,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
-<translation id="5345083863238459644">Platsåtkomst har också <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Webbadress kopierad.</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
@@ -554,6 +555,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
+<translation id="5974562976030145789">Nedladdade filer har flyttat. Dra uppåt på adressfältet nästa gång.</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
 <translation id="6031101910111098835">Gruppvyn har komprimerats. Expandera vyn genom att klicka.</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
@@ -652,7 +654,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6846298663435243399">Läser in…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
-<translation id="6856477143496886355">Kort och adresser som används med Google Payments</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
@@ -664,6 +665,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6905163627763043954">Testa det</translation>
 <translation id="6910211073230771657">Borttagen</translation>
 <translation id="6945221475159498467">Välj</translation>
+<translation id="6959661084585705671">Sekundärt lagringsutrymme</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Återställ översättningsinställningar</translation>
@@ -818,6 +820,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8489271220582375723">Öppna historiksidan</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
+<translation id="8494508527479967437">Historik har flyttat. Dra uppåt på adressfältet nästa gång.</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
@@ -862,7 +865,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
 <translation id="8922289737868596582">Ladda ned sidor via knappen Fler alternativ så att du kan använda dem offline</translation>
-<translation id="892369953214061711">Aviseringar tillåts. Plats har inaktiverats. Aktivera det i Android-inställningarna.</translation>
 <translation id="8936297887573571433">Tryck för att visa nedladdningar, bokmärken och historik.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>

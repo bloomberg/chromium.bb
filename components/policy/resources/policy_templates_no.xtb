@@ -148,6 +148,7 @@
 
           Du finner mer detaljerte eksempler her:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="1503487916067509762">Aktiverer blokkering av innsetting fra tredjepartsprogramvare</translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
@@ -295,7 +296,7 @@
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="2075030897098958514">Kontrollerer om NTLMv2 er aktivert.
 
-          Alle nylige versjoner av Samba og Windows-tjenere støtter NTLMv2. Mv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
+          Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Mv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
 
           Standardverdien når denne regelen ikke er definert, er for øyeblikket «usann» for bakoverkompatibilitet, men skal endres til «sann» senere.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
@@ -758,6 +759,7 @@
 <translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-regelen er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-regelen er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
+<translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
@@ -770,6 +772,13 @@
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3732106275571017176">Med denne innstillingen kan brukere bytte mellom Google-kontoer i innholdsområdet til nettleservinduet etter at de har logget på <ph name="PRODUCT_OS_NAME" />-enheten sin.
+
+      Hvis denne regelen er satt til «usann», tillates det ikke å logge på en annen konto fra et innholdsområde i en nettleser som ikke er inkognito.
+
+      Hvis denne regelen ikke er spesifisert eller er satt til «sann», brukes standardatferden: Pålogging til en annen konto fra nettleserens innholdsområde tillates, med unntak av for underkontoer, der det blokkeres for innholdsområder som ikke er inkognito.
+
+      Hvis pålogging til en annen konto ikke skal tillates via inkognitomodus, bør du vurdere å blokkere modusen med IncognitoModeAvailability-regelen.</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
@@ -811,6 +820,7 @@
       Hvis du ikke angir denne regelen, brukes standardkatalogen for nedlasting. Brukeren kan i så fall endre denne katalogen.</translation>
 <translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="3808945828600697669">Angi en liste over deaktiverte programtillegg</translation>
+<translation id="3811562426301733860">Tillat annonser på alle nettsteder</translation>
 <translation id="3816312845600780067">Aktiver hurtigtasten for avbrytelse av automatisk pålogging</translation>
 <translation id="3820526221169548563">Slå på tilgjengelighetsfunksjonen for skjermtastaturet.
 
@@ -931,6 +941,11 @@
 
           Innstillingsverdien må angis i millisekunder.</translation>
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
+<translation id="4111405663956464686">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 72 (rundt januar 2019).
+
+      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> standarden for maksimumsversjon.
+
+      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
 <translation id="4183229833636799228">Standard <ph name="FLASH_PLUGIN_NAME" />-innstilling</translation>
@@ -989,6 +1004,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
+<translation id="4346674324214534449">Lar deg angi om annonser skal blokkeres på nettsteder med forstyrrende annonser.
+
+      Hvis denne regelen er satt til «2», blokkeres annonser på nettsteder med forstyrrende annonser.
+      Denne atferden utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til «Usann».
+      Hvis denne regelen er satt til «1», blokkeres ikke annonser på nettsteder med forstyrrende annonser.
+      Hvis denne regelen ikke er angitt, brukes «2».</translation>
 <translation id="4347908978527632940">Hvis verdien er «true» (sann) og brukeren er en administrert bruker, kan andre Android-apper sende forespørsler om brukerens nettbegrensninger gjennom en innholdsleverandør.
 
           Hvis verdien er «false» (usann) eller ikke spesifisert, returnerer innholdsleverandøren ingen informasjon.</translation>
@@ -1066,6 +1087,7 @@
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
+<translation id="4613508646038788144">Hvis regelen er satt til «usann», kan tredjepartsprogramvare sette inn kjørbar kode i Chromes prosesser. Hvis regelen ikke er spesifisert eller er satt til «sann», forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i Chromes prosesser.</translation>
 <translation id="4617338332148204752">Hopp over sjekk av metatag i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
 <translation id="4632343302005518762">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de oppførte innholdstypene</translation>
@@ -1079,10 +1101,10 @@
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
 <translation id="4665897631924472251">Innstillinger for administrasjon av utvidelser</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
-<translation id="4671708336564240458">Lar deg angi om nettsteder med krenkende opplevelser skal hindres i å åpne nye vinduer eller faner.
-      Hvis denne regelen er angitt som Sann, hindres nettsteder med krenkende opplevelser i å åpne nye vinduer og faner.
+<translation id="4671708336564240458">Lar deg angi om nettsteder med villedende innhold skal hindres i å åpne nye vinduer eller faner.
+      Hvis denne regelen er angitt som Sann, hindres nettsteder med villedende innhold i å åpne nye vinduer og faner.
       Denne virkemåten utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til Usann.
-      Hvis denne regelen er angitt som Usann, tillates nettsteder med krenkende opplevelser å åpne nye vinduer og faner.
+      Hvis denne regelen er angitt som Usann, tillates nettsteder med villedende innhold å åpne nye vinduer og faner.
       Hvis denne regelen ikke er angitt, brukes Sann.</translation>
 <translation id="467236746355332046">Støttede funksjoner:</translation>
 <translation id="4674167212832291997">Tilpass listen over nettadressemønstre som alltid skal gjengis av <ph name="PRODUCT_FRAME_NAME" />.
@@ -1316,6 +1338,7 @@
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="5475361623548884387">Aktiver utskrift</translation>
+<translation id="547601067149622666">Ikke tillat annonser på nettsteder med forstyrrende annonser</translation>
 <translation id="5499375345075963939">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Når verdien for denne retningslinjen er angitt og ikke er 0, blir demo-brukeren som for tiden er pålogget, automatisk logget av etter at angitt periode for inaktivitet er passert.
@@ -1722,6 +1745,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
+<translation id="6735701345096330595">Tving aktivering av språk med stavekontroll</translation>
 <translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -1755,7 +1779,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       tilgang til G Suite med hvilken som helst konto.
 
       Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
-      alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som beskrevet i
+      alle HTTP- og HTTPS-forespørsler for alle google.com-domener, som beskrevet i
       https://support.google.com/a/answer/1668854.
 
       Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
@@ -1942,6 +1966,10 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis du ikke spesifiserer denne regelen, eller hvis du setter den til false (usann), slås <ph name="TLS_FALSE_START" /> på. Hvis du setter den til true (sann), slås <ph name="TLS_FALSE_START" /> av.</translation>
 <translation id="7433714841194914373">Aktiver Instant</translation>
+<translation id="7443061725198440541">Hvis regelen ikke er spesifisert eller slått på, kan brukeren bruke stavekontroll.
+
+      Hvis regelen er slått av, kan ikke brukeren bruke stavekontroll. SpellcheckLanguage-regelen ignoreres også når denne regelen er slått av.
+      </translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
 <translation id="7469554574977894907">Aktiver søkeforslag</translation>
 <translation id="7474249562477552702">Hvorvidt SHA-1-signerte sertifikater som utstedes av lokale klareringsankre er tillatt eller ikke</translation>
@@ -2338,6 +2366,20 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen ikke angis, kan brukeren velge å bruke denne funksjonen eller ikke.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
+<translation id="8894962626537183708">
+      Regelen spesifiserer en liste over opprinnelser (nettadresser) som skal behandles som sikker kontekst. Hensikten er å la organisasjoner konfigurere en testtjener for intern nettutvikling, slik at utviklerne deres kan teste funksjoner som krever sikker kontekst, uten å måtte implementere TLS på testtjeneren.
+      Angivelse av en liste over nettadresser i denne regelen har samme effekt som å angi kommandolinjeflagget «--unsafely-treat-insecure-origin-as-secure» i en kommadelt liste over de samme nettadressene. Hvis regelen angis, overstyrer den kommandolinjeflagget.
+      Hvis du vil ha mer informasjon om sikker kontekst, kan du gå til https://www.w3.org/TR/secure-contexts/
+      </translation>
+<translation id="890403179930035128">Tvinger aktivering av språk med stavekontroll. Språk som ikke gjenkjennes i listen, blir ignorert.
+
+      Hvis du aktiverer denne regelen, aktiveres stavekontroll for de spesifiserte språkene, i tillegg til språkene brukeren har aktivert stavekontroll for.
+
+      Hvis du ikke spesifiserer denne regelen, eller hvis du deaktiverer den, blir det ingen endring av brukerens innstillinger for stavekontroll.
+
+      Hvis SpellcheckEnabled-regelen er satt til «deaktivert», har denne regelen ingen effekt.
+
+      Språkene som støttes foreløpig, er: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 
@@ -2425,6 +2467,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne retningslinjen ikke angis, vil dette aktiveres, og brukeren vil kunne bruke inkognitomodus.</translation>
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
+<translation id="9158929520101169054">Tillat multipålogging i nettleseren</translation>
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="9197740283131855199">Prosentandelen det skaleres etter for å justere forsinkelse i skjermdemping, hvis brukeren har blitt aktiv igjen etter demping</translation>
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>
@@ -2445,4 +2488,5 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
 <translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
+<translation id="982497069985795632">Aktiver stavekontrollen</translation>
 </translationbundle>

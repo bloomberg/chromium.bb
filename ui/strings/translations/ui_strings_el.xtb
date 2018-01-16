@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Άνοιγμα φακέλου</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Πριν από 1 χρόνο}other{Πριν από # χρόνια}}</translation>
 <translation id="2931838996092594335">κάνω κλικ</translation>
-<translation id="2983818520079887040">Ρυθμίσεις...</translation>
 <translation id="3036649622769666520">Άνοιγμα Αρχείων</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Κάτω</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Κόμμα</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
+<translation id="654149438358937226">Αποκλεισμός όλων των ειδοποιήσεων</translation>
 <translation id="6567071839949112727">γονικό κλικ</translation>
 <translation id="6612467943526193239">Για να εξέλθετε από τη βαθμονόμηση, πατήστε Esc.</translation>
 <translation id="6620110761915583480">Αποθήκευση Αρχείου</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7814458197256864873">&amp;Αντιγραφή</translation>
+<translation id="7879499977785298635">Να μην γίνει αποκλεισμός</translation>
 <translation id="7907591526440419938">Άνοιγμα αρχείου</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Πριν από 1 ώρα}other{Πριν από # ώρες}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>

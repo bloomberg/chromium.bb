@@ -56,7 +56,6 @@
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
 <translation id="1414981605391750300">‏جارٍ الاتصال بـ Google. قد يستغرق ذلك دقيقة واحدة...</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
-<translation id="1423209968422390786">الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1445680696957526815">‏مكونات Chrome غير متوافقة مع بعضها البعض. قد تتم ترقية Chrome؛ لذا يُرجى إعادة المحاولة بعد دقائق قليلة. وإذا استمرت المشكلة، فحاول إلغاء تثبيت Chrome وإعادة تثبيته.</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
@@ -84,6 +83,7 @@
 <translation id="1660204651932907780">السماح للمواقع بتشغيل الصوت (مُقترح)</translation>
 <translation id="1670399744444387456">الأساسية</translation>
 <translation id="1671236975893690980">التنزيل معلّق...</translation>
+<translation id="1674523662097951983">سيتم نقل "الإشارات المرجعية". في المرة القادمة، اسحب شريط العناوين للأعلى.</translation>
 <translation id="169033420419426091">‏تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب عدم وجود بطاقة SD.</translation>
 <translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
@@ -116,6 +116,7 @@
 <translation id="1993768208584545658">يريد <ph name="SITE" /> الاقتران</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="200815880754187296">تطبيقات أخرى بحجم <ph name="KILOBYTES" /> كيلوبايت</translation>
+<translation id="2015632741368427174">تم حظر إعادة التوجيه إلى الموقع:</translation>
 <translation id="2017836877785168846">مسح السجل وعمليات الإكمال التلقائي في شريط العناوين.</translation>
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
@@ -414,6 +415,7 @@
 <translation id="4807963036345170158">تم إيقاف توفير البيانات</translation>
 <translation id="4811736444948656478">لوحة التنقل مفتوحة بنصف ارتفاع</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
+<translation id="482201002591920174">سعة التخزين الأساسية</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
 <translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
 <translation id="4850886885716139402">عرض</translation>
@@ -473,7 +475,6 @@
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5335288049665977812">السماح للمواقع بتشغيل جافا سكريبت (موصى به)</translation>
 <translation id="5345040418939504969">تم حذف <ph name="BOOKMARK_TITLE" /></translation>
-<translation id="5345083863238459644">الوصول إلى الموقع أيضًا <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">‏تمّ نسح عنوان URL.</translation>
 <translation id="5400569084694353794">باستخدام هذا التطبيق، فإنك توافق على <ph name="BEGIN_LINK1" />شروط الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">السماح بمواقع ويب معيّنة فقط</translation>
@@ -555,6 +556,7 @@
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
 <translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
+<translation id="5974562976030145789">سيتم نقل "التنزيلات". في المرة القادمة، اسحب شريط العناوين للأعلى.</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6031101910111098835">تم التصغير - انقر للتوسيع</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
@@ -653,7 +655,6 @@
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6846298663435243399">جارٍ التحميل…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
-<translation id="6856477143496886355">‏البطاقات والعناوين باستخدام Google Payments</translation>
 <translation id="6864459304226931083">تنزيل الصورة</translation>
 <translation id="6865313869410766144">الملء التلقائي من البيانات</translation>
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
@@ -665,6 +666,7 @@
 <translation id="6905163627763043954">جرّبه</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
+<translation id="6959661084585705671">سعة التخزين الثانوية</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6978479750597523876">إعادة تعيين إعدادات الترجمة</translation>
@@ -820,6 +822,7 @@
 <translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
 <translation id="8489271220582375723">فتح صفحة السجل</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
+<translation id="8494508527479967437">سيتم نقل "السجل". في المرة القادمة، اسحب شريط العناوين للأعلى.</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8514477925623180633">‏تصدير كلمات المرور المخزنة من خلال Chrome</translation>
@@ -864,7 +867,6 @@
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>
 <translation id="8922289737868596582">تنزيل الصفحات من الزر "مزيد من الخيارات" لاستخدامها بلا اتصال بالإنترنت</translation>
-<translation id="892369953214061711">‏الإشعارات مسموح بها. تحديد الموقع الجغرافي متوقف، يمكنك تشغيله من "إعدادات Android".</translation>
 <translation id="8936297887573571433">انقر للاطّلاع على الإشارات المرجعية والتنزيلات والسجل</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">فتح في نافذة أخرى</translation>

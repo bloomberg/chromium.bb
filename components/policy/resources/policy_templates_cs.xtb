@@ -765,6 +765,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3512226956150568738">Pokud model zařízení klienta podporoval ARC již předtím, než kvůli spuštění ARC bylo potřeba migrovat na ext4, a zásada ArcEnabled je nastavena na hodnotu true, bude se tato možnost chovat jako AskUser (hodnota 3). Ve všech ostatních případech (model zařízení dříve ARC nepodporoval nebo je zásada ArcEnabled nastavena na hodnotu false) se tato možnost bude chovat jako DisallowArc (hodnota 0).</translation>
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
+<translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
@@ -831,6 +832,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tato zásada není nastavena, bude se používat výchozí adresář pro stažené soubory a uživatel jej bude moci změnit.</translation>
 <translation id="3805659594028420438">Povolit rozšíření certifikátů TLS vázaných na doménu (zastaralé)</translation>
 <translation id="3808945828600697669">Určit seznam deaktivovaných pluginů</translation>
+<translation id="3811562426301733860">Povolit reklamy na všech webech</translation>
 <translation id="3816312845600780067">Aktivovat nouzovou klávesovou zkratku pro automatické přihlášení</translation>
 <translation id="3820526221169548563">Povolí funkci usnadnění přístupu pomocí softwarové klávesnice. 
 
@@ -948,6 +950,11 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
 
           Hodnota zásady se zadává v milisekundách.</translation>
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
+<translation id="4111405663956464686">Upozornění: Přibližně od verze 72 (cca v lednu 2019) bude zásada maximální verze TLS z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněna.
+
+      Pokud tato zásada není nakonfigurována, použije <ph name="PRODUCT_NAME" /> výchozí maximální verzi.
+
+      Zásadu lze nastavit na jednu z následujících hodnot: tls1.2 nebo tls1.3. Když je nastavena, nebude <ph name="PRODUCT_NAME" /> používat verze SSL/TLS vyšší, než je zadaná verze. Nerozpoznané hodnoty budou ignorovány.</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
 <translation id="4157003184375321727">Hlásit verzi operačního systému a firmwaru</translation>
 <translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1005,6 +1012,12 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
+<translation id="4346674324214534449">Umožňuje nastavit, zda mají být blokovány reklamy na webech s rušivými reklamami.
+
+      Je-li tato zásada nastavena na hodnotu 2, budou reklamy na webech s rušivými reklamami blokovány.
+      Toto chování se však neprojeví v případě, že je zásada SafeBrowsingEnabled nastavena na hodnotu False.
+      Je-li tato zásada nastavena na hodnotu 1, reklamy na webech s rušivými reklamami blokovány nebudou.
+      Pokud tato zásada není nastavena, použije se hodnota 2.</translation>
 <translation id="4347908978527632940">Pokud je tato zásada nastavena na hodnotu true a jedná se o dozorovaného uživatele, ostatní aplikace pro Android mohou prostřednictvím poskytovatele obsahu zjišťovat, jaká omezení přístupu k webu se na uživatele vztahují.
 
           Pokud je nastavena na hodnotu false nebo nastavena není, poskytovatel obsahu nevrátí žádné informace.</translation>
@@ -1345,6 +1358,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultCookiesSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
 <translation id="5475361623548884387">Povolit tisk</translation>
+<translation id="547601067149622666">Nepovolovat reklamy na webech s rušivými reklamami</translation>
 <translation id="5499375345075963939">Tato zásada je aktivní pouze v režimu prodeje.
 
       Je-li hodnota zásady nastavena a nerovná se 0, aktuálně přihlášený uživatel ukázky bude automaticky odhlášen po uplynutí zadané délky nečinnosti.

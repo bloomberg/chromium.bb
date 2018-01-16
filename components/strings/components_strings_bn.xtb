@@ -246,6 +246,7 @@
 <translation id="2738330467931008676">পিক-আপের ঠিকানা বেছে নিন</translation>
 <translation id="2740531572673183784">ঠিক আছে</translation>
 <translation id="2742870351467570537">নির্বাচিত আইটেমগুলি সরান</translation>
+<translation id="2744590937989388266">এই পৃষ্ঠার এম্বেড করা একটি পৃষ্ঠা থেকে</translation>
 <translation id="277133753123645258">শিপিংয়ের পদ্ধতি</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
 <translation id="2784949926578158345">সংযোগ পুনঃসেট করা হয়েছে৷</translation>
@@ -322,7 +323,6 @@
 <translation id="3254409185687681395">এই পৃষ্ঠাটি বুকমার্ক করুন</translation>
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="3282497668470633863">কার্ডে থাকা নাম যোগ করুন</translation>
-<translation id="3286538390144397061">এখন পুর্নসূচনা করবেন</translation>
 <translation id="3287510313208355388">যখন অনলাইন হবেন তখন ডাউনলোড করবেন</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> নীতি সম্পর্কে আরও জানুন</translation>
 <translation id="3303855915957856445">কোনো অনুসন্ধান ফলাফল পাওয়া যায়নি</translation>
@@ -351,7 +351,6 @@
 <translation id="3427092606871434483">মঞ্জুরি দিন (ডিফল্ট)</translation>
 <translation id="3427342743765426898">&amp;সম্পাদনাকে আবার করুন</translation>
 <translation id="3431636764301398940">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
-<translation id="3435896845095436175">সক্ষম করুন</translation>
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="3447884698081792621">সার্টিফিকেট দেখান (<ph name="ISSUER" /> এর দ্বারা জারি করা)</translation>
 <translation id="3452404311384756672">বিরামকাল প্রাপ্ত করুন:</translation>
@@ -405,7 +404,7 @@
 <translation id="3778403066972421603">আপনি কি এই কার্ডটি আপনার Google অ্যাকাউন্টে ও এই ডিভাইসে সেভ করতে চান?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> এ মেয়াদ শেষ হবে</translation>
-<translation id="3808375843007691220">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্যটি চালু আছে!</translation>
+<translation id="3800436529451849929"><ph name="SITE" /> সাইট থেকে</translation>
 <translation id="382518646247711829">যদি আপনি একটি প্রক্সি সার্ভার ব্যবহার করেন...</translation>
 <translation id="3828924085048779000">ফাঁকা পাসফ্রেজের অনুমতি নেই৷</translation>
 <translation id="385051799172605136">ফিরুন</translation>
@@ -461,7 +460,6 @@
 <translation id="4269787794583293679">(কোনো ইউজারনেম নেই)</translation>
 <translation id="4275830172053184480">আপনার ডিভাইস বন্ধ করে চালু করুন</translation>
 <translation id="4280429058323657511">, মেয়াদ শেষ <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4292213515608230699">এইরকম কোনও পরীক্ষা নেই</translation>
 <translation id="4304224509867189079">লগ ইন</translation>
 <translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
 <translation id="4325863107915753736">নিবন্ধ খুঁজে পেতে ব্যর্থ হয়েছে</translation>
@@ -471,7 +469,6 @@
 <translation id="4356973930735388585">এই সাইটে আক্রমণকারীরা আপনার কম্পিউটারে ক্ষতিকারক প্রোগ্রাম ইনস্টল করতে পারে যা আপনার তথ্য (উদাহরণস্বরুপ, ফটো, পাসওয়ার্ড, বার্তা এবং ক্রেডিট কার্ড) চুরি করতে বা মুছে দিতে পারে।</translation>
 <translation id="4372948949327679948">প্রত্যাশিত <ph name="VALUE_TYPE" /> মান৷</translation>
 <translation id="4377125064752653719">আপনি <ph name="DOMAIN" />-এ পৌঁছানোর প্রচেষ্টা করেছেন, তবে সার্ভারটি যে শংসাপত্রটি উপস্থাপন করেছে সেটির জারিকর্তা সেটিকে প্রত্যাহার করেছে৷ এর অর্থ হ'ল সার্ভারটি যে সুরক্ষা প্রমানপত্র উপস্থাপন করেছে তা কোনওমতেই বিশ্বাসযোগ্য নয়৷ হতে পারে আপনি একজন আক্রমণকারীর সাথে যোগাযোগ করছেন৷</translation>
-<translation id="4394049700291259645">অক্ষম</translation>
 <translation id="4406896451731180161">অনুসন্ধানের ফলাফলগুলি</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />টি কুকিজ</translation>
 <translation id="4415426530740016218">পিক-আপের ঠিকানা</translation>
@@ -485,6 +482,7 @@
 <translation id="4515275063822566619">কার্ড ও ঠিকানাগুলি Chrome এবং আপনার Google অ্যাকাউন্ট (<ph name="ACCOUNT_EMAIL" />) থেকে এসেছে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> এ গিয়ে সেগুলি পরিচালনা করতে পারবেন।</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
 <translation id="4552089082226364758">ফ্ল্যাশ</translation>
+<translation id="4554702541363482291"><ph name="SITE" /> এ এম্বেড করা পৃষ্ঠায়</translation>
 <translation id="4558551763791394412">আপনার এক্সটেনশানগুলি অক্ষম করে দেখুন।</translation>
 <translation id="457875822857220463">পৌঁছে দেওয়া</translation>
 <translation id="4582800630050655161">আপনি নিজের Google অ্যাকাউন্টে অ্যাক্সেস হারাতে পারেন বা আপনার পরিচয় চুরি হতেই পারে। Chromium এখনই আপনার পাসওয়ার্ড পরিবর্তন করার আর্জি জানাচ্ছে।</translation>
@@ -505,6 +503,7 @@
 <translation id="4726672564094551039">নীতিগুলি পুনঃলোড করুন</translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="4736825316280949806">Chromium পুনরায় চালু করুন</translation>
+<translation id="4737498291095696011">এই পৃষ্ঠা থেকে</translation>
 <translation id="4744603770635761495">সম্পাদনযোগ্য পথ</translation>
 <translation id="4749685221585524849">শেষবার ব্যবহার করা হয়েছে <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">আপনার তথ্য (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড নম্বর) যখন এই সাইটে পাঠানো হয় তখন সেটি ব্যক্তিগত থাকে।</translation>
@@ -523,6 +522,7 @@
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4854362297993841467">এই পদ্ধতিতে ডেলিভারি করা যাবে না। অন্য পদ্ধতি ব্যবহার করুন।</translation>
 <translation id="4858792381671956233">এই সাইটটি দেখার জন্য উপযুক্ত কিনা তা আপনি আপনার পিতামাতাকে জিজ্ঞাসা করেছেন</translation>
+<translation id="4871132632506079383"><ph name="SITE" /> এ এম্বেড করা পৃষ্ঠায়</translation>
 <translation id="4880827082731008257">সার্চের ইতিহাস</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">প্রমাণীকরণ প্রয়োজন</translation>
@@ -536,11 +536,11 @@
 <translation id="495170559598752135">ক্রিয়াসমূহ</translation>
 <translation id="4958444002117714549">তালিকা প্রসারিত করুন</translation>
 <translation id="4974590756084640048">সতর্কবার্তাগুলি পুনঃসক্ষম করুন</translation>
-<translation id="4989542687859782284">উপলভ্য নেই</translation>
 <translation id="4989809363548539747">এই প্লাগ ইন সমর্থিত নয়</translation>
 <translation id="5002932099480077015">সক্রিয় করা হলে, ফর্ম পূরনের কাজ দ্রুত করতে Chrome এই ডিভাইসে আপনার কার্ডের একটি প্রতিলিপি সংরক্ষণ করবে।</translation>
 <translation id="5018422839182700155">এই পৃষ্ঠাটি খোলা যাচ্ছে না</translation>
 <translation id="5019198164206649151">ব্যাকিং স্টোরটি ত্রুটিপূর্ণ অবস্থায় আছে</translation>
+<translation id="5020990877659450221">এই পৃষ্ঠা থেকে</translation>
 <translation id="5023310440958281426">আপনার প্রশাসকের নীতিগুলি দেখুন</translation>
 <translation id="5029568752722684782">প্রতিলিপি সাফ করুন</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" এর জন্য একটি রুট সার্টিফিকেট প্রয়োজন কিন্তু সেটি ইনস্টল করা নেই। এই সমস্যাটি সমাধান করতে আপনার IT প্রশাসককে "<ph name="SOFTWARE_NAME" />" এর কনফিগারেশন নির্দেশ ভাল করে দেখে নিতে হবে। <ph name="FURTHER_EXPLANATION" /></translation>
@@ -566,7 +566,6 @@
 <translation id="5172758083709347301">যন্ত্র</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
-<translation id="5199729219167945352">পরীক্ষাদি</translation>
 <translation id="5205222826937269299">নাম প্রয়োজন</translation>
 <translation id="5222812217790122047">ইমেল প্রয়োজন</translation>
 <translation id="522700295135997067">এই সাইট হয়ত আপনার পাসওয়ার্ড চুরি করেছে</translation>
@@ -596,7 +595,6 @@
 <translation id="5355557959165512791">ওয়েবসাইটটির শংসাপত্র তুলে নেওয়ার কারণে আপনি এখন <ph name="SITE" /> এ যেতে পারবেন না। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে।</translation>
 <translation id="536296301121032821">নীতি সেটিংস সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
 <translation id="5386426401304769735">এই সাইটের শংসাপত্র শৃঙ্খলে SHA-1 ব্যবহার করে স্বাক্ষর করা একটি শংসাপত্র রয়েছে।</translation>
-<translation id="5401815295726769233">সার্চ ফ্ল্যাগ</translation>
 <translation id="5402410679244714488">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_DATE_ABBR" />, এক বছরেরও বেশি সময় পূর্বে সর্বশেষ ব্যবহার করা হয়েছে</translation>
 <translation id="540969355065856584">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্র এই সময়ে বৈধ নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="5421136146218899937">ব্রাউজিং ডেটা সাফ করুন...</translation>
@@ -658,6 +656,7 @@
 <translation id="5786044859038896871">আপনি কি আপনার কার্ডের তথ্য পূরণ করতে চান?</translation>
 <translation id="5803412860119678065">আপনি কি আপনার <ph name="CARD_DETAIL" /> এর তথ্য পূরণ করতে চান?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />-এ আপনার সংযোগ একটি অপ্রচলিত সাইফার স্যুট ব্যবহার করে এনক্রিপ্ট করা হয়েছে৷</translation>
+<translation id="5810928923025889964">এই পৃষ্ঠার এম্বেড করা একটি পৃষ্ঠা থেকে</translation>
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5838278095973806738">এই সাইটে আপনার কোনো সংবেদনশীল তথ্য দেওয়া উচিত হবে না (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড) কারণ আক্রমণকারীরা এগুলি চুরি করতে পারে।</translation>
 <translation id="5866257070973731571">ফোন নম্বর যোগ করুন</translation>
@@ -665,7 +664,6 @@
 <translation id="5869522115854928033">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="5893752035575986141">ক্রেডিট কার্ড গ্রহণ করা হয়।</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (সিঙ্ক হয়েছে)</translation>
-<translation id="5909194079078764042">এই বৈশিষ্ট্যগুলি সক্ষম করলে আপনি ব্রাউজার ডেটা হারাতে পারেন অথবা আপনার নিরাপত্তা বা গোপনীয়তা সংক্রান্ত বিষয়ে আপোষ করতে পারেন। সক্রিয় ব্রাউজারটি এই ব্রাউজারের সমস্ত ব্যবহারকারীদের কাছে প্রযোজ্য।</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{১টি ব্যবহৃত হচ্ছে}one{#টি ব্যবহৃত হচ্ছে}other{#টি ব্যবহৃত হচ্ছে}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5959728338436674663">বিপজ্জনক অ্যাপ্লিকেশান ও সাইটগুলি সনাক্ত করতে Google এর কাছে কিছু<ph name="BEGIN_WHITEPAPER_LINK" /> সিস্টেম তথ্য ও পৃষ্ঠার সামগ্রী<ph name="END_WHITEPAPER_LINK" /> স্বয়ংক্রিয়ভাবে পাঠান। <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -713,7 +711,6 @@
 <translation id="6305205051461490394"><ph name="URL" /> এ পৌঁছানো যাচ্ছে না</translation>
 <translation id="6319915415804115995">এক বছরেরও বেশি সময় পূর্বে সর্বশেষ ব্যবহার করা হয়েছে</translation>
 <translation id="6321917430147971392">আপনার DNS সেটিংস পরীক্ষা করুন</translation>
-<translation id="6325286409953503969">Chrome এর নতুন দুর্দান্ত বৈশিষ্ট্যগুলিতে আগ্রহী? আমাদের <ph name="BEGIN_LINK" />dev চ্যানেল ব্যবহার করে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="6328639280570009161">নেটওয়ার্ক পূর্বানুমান নিষ্ক্রিয় করার চেষ্টা করুন</translation>
 <translation id="6328786501058569169">এই সাইটটি প্রতারণামূলক</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> জায়গা খালি করে। পরের বার যখন দেখবেন তখন কিছু সাইট লোড হতে দেরি হতে পারে।</translation>
@@ -801,7 +798,6 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}one{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}other{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}}</translation>
 <translation id="7155487117670177674">পেমেন্ট সুরক্ষিত নয়</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}one{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}other{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}}</translation>
-<translation id="7179921470347911571">এখনই পুনঃলঞ্চ করুন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7182878459783632708">কোন নীতি সেট করা নেই</translation>
 <translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE" />থেকে<ph name="LANGUAGE_LANGUAGE" />তে অনুবাদ করা হয়েছে</translation>
@@ -820,7 +816,6 @@
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> এ ক্র্যাশ প্রতিবেদন ক্যাপচার করা হয়েছে (ব্যবহারকারী দ্বারা আপলোডের অনুরোধ করা হয়েছে, এখনও আপলোড করা হয়নি)</translation>
 <translation id="7334320624316649418">&amp;পুনর্বিন্যাসকে আবার করুন</translation>
-<translation id="7337706099755338005">আপনার প্ল্যাটফর্মে উপলভ্য নেই।</translation>
 <translation id="733923710415886693">সার্ভারের শংসাপত্রটি শংসাপত্রের স্বচ্ছতার মাধ্যমে প্রকাশ করা হয়নি।</translation>
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
 <translation id="7372973238305370288">ফলাফল খুঁজুন</translation>
@@ -874,7 +869,6 @@
 <translation id="7668654391829183341">অজানা ডিভাইস</translation>
 <translation id="7669271284792375604">এই সাইটে থাকা আক্রমণকারীরা কৌশলে আপনাকে দিয়ে এমন প্রোগ্রাম ইনস্টল করাতে পারে যা আপনার ব্রাউজিং অভিজ্ঞতার জন্য ক্ষতিকর হতে পারে (উদাহরণস্বরূপ, আপনার হোমপৃষ্ঠা পরিবর্তন করা বা আপনার পরিদর্শিত সাইটগুলিতে অতিরিক্ত বিজ্ঞাপন দেখানো)৷</translation>
 <translation id="7682287625158474539">শিপিং</translation>
-<translation id="7695552107151968219">Chrome এর নতুন দুর্দান্ত বৈশিষ্ট্যগুলিতে আগ্রহী? আমাদের <ph name="BEGIN_LINK" />beta চ্যানেল ব্যবহার করে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="7699293099605015246">নিবন্ধ এখন পাওয়া যাবে না</translation>
 <translation id="7701040980221191251">কিছুই নয়</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /> <ph name="SITE" /> এ এগিয়ে যান (নিরাপদ নয়) <ph name="END_LINK" /></translation>
@@ -992,10 +986,7 @@
 <translation id="8620436878122366504">আপনার পিতামাতা এখনও এটি অনুমোদন করেন নি</translation>
 <translation id="8625384913736129811">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
 <translation id="8639963783467694461">স্বতঃপূর্ণ সেটিংস</translation>
-<translation id="8647750283161643317">সবগুলিকে ডিফল্টে আবার সেট করুন</translation>
-<translation id="8660471606262461360">Google Payments থেকে</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, উত্তর, <ph name="ANSWER" /></translation>
-<translation id="8688672835843460752">উপলব্ধ</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
 <translation id="8718314106902482036">পেমেন্ট করা যায়নি</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
@@ -1034,7 +1025,6 @@
 <translation id="9005998258318286617">PDF ডকুমেন্ট লোড করা যায়নি।</translation>
 <translation id="9008201768610948239">উপেক্ষা করুন</translation>
 <translation id="9011424611726486705">সাইট সেটিংস খুলুন</translation>
-<translation id="901974403500617787">যে ফ্ল্যাগগুলি সমস্ত সিস্টেম জুড়ে প্রয়োগ করা হয় সেগুলি শুধুমাত্র মালিকের দ্বারা সেট করা যেতে পারে: <ph name="OWNER_EMAIL" />৷</translation>
 <translation id="9020200922353704812">কার্ডের বিলিং ঠিকানা প্রয়োজন</translation>
 <translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE" /> এ অনুবাদ করা হয়েছে</translation>
 <translation id="9025348182339809926">(সঠিক নয়)</translation>

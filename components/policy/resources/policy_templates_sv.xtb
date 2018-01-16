@@ -789,6 +789,7 @@
 <translation id="3512226956150568738">Om klientmodellen hade stöd för ARC redan innan det blev nödvändigt att migrera till ext4 för att köra ARC och om principen ArcEnabled är inställd på sant fungerar det här alternativet som AskUser (värde 3). I alla andra fall (om enhetsmodellen inte hade stöd för ARC tidigare eller om principen ArcEnabled är inställd på falskt) är det här värdet likvärdigt med DisallowArc (värde 0).</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
+<translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
@@ -855,6 +856,7 @@
       Om principen inte har ställts in används standardplatsen för nedladdningar och användaren kan ändra inställningen.</translation>
 <translation id="3805659594028420438">Aktivera domänbundna TLS-certifikattillägg (föråldrad)</translation>
 <translation id="3808945828600697669">Ange en lista med inaktiverade plugin-program</translation>
+<translation id="3811562426301733860">Tillåt annonser på alla webbplatser</translation>
 <translation id="3816312845600780067">Aktivera kortkommandot för räddning vid automatisk inloggning</translation>
 <translation id="3820526221169548563">Aktivera tillgänglighetsfunktionen för skärmtangentbord.
 
@@ -976,6 +978,11 @@
 
           Policyns värde anges i millisekunder.</translation>
 <translation id="4105989332710272578">Inaktivera tillämpning av Certifikattransparens för en lista med webbadresser</translation>
+<translation id="4111405663956464686">Varning! Principen för den högsta TLS-versionen tas bort helt från <ph name="PRODUCT_NAME" /> kring version 72 (runt januari 2019).
+
+      Om denna princip inte konfigureras använder <ph name="PRODUCT_NAME" /> den högsta standardversionen.
+
+      I annat fall kan den anges till värdena tls1.2 eller tls1.3. När ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="4157003184375321727">Rapportera version av operativsystem och fast programvara</translation>
 <translation id="4183229833636799228">Standardinställning för <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1034,6 +1041,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
 <translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
+<translation id="4346674324214534449">Ger dig möjlighet att ställa in om annonser ska blockeras på webbplatser med påträngande annonser.
+
+      Om värdet 2 har angetts för principen blockeras annonser på webbplatser med påträngande annonser.
+      Funktionen aktiveras dock inte om falskt har angetts för principen SafeBrowsingEnabled.
+      Om värdet 1 har angetts för principen blockeras inte annonser på webbplatser med påträngande annonser.
+      Om ett värde inte anges för principen används 2.</translation>
 <translation id="4347908978527632940">Om den här principen är inställd på sant och användaren är en kontrollerad användare så kan andra Android-appar fråga om användarens webbrestriktioner via en innehållsleverantör.
 
           Om den här principen är inställd på falskt eller om det inte angivet returnerar innehållsleverantören ingen information.</translation>
@@ -1387,6 +1400,7 @@
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
+<translation id="547601067149622666">Tillåt inte annonser på webbplatser med påträngande annonser</translation>
 <translation id="5499375345075963939">Policyn är endast aktiv i återförsäljarläge.
 
       När värdet för den här policyn är angiven och inte är 0 kommer den nuvarande inloggade demoanvändaren att loggas ut automatiskt när en viss tid av inaktivitet har gått.

@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">অবজেক্ট</translation>
 <translation id="2942448076852699108">হাইলাইট করা সামগ্রী</translation>
 <translation id="3040011195152428237">লিঙ্ক</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">দয়া করে একটি বৈধ মান লিখুন৷ ক্ষেত্রটি অসম্পূর্ণ অথবা একটি অবৈধ তারিখ আছে৷</translation>
 <translation id="3078740164268491126">সারণী</translation>
 <translation id="3086746722712840547">দ্রষ্টব্য</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">চলচ্চিত্রের অবশিষ্ট সেকেন্ড</translation>
 <translation id="3706100364254443312">পরিবর্তন করুন</translation>
 <translation id="3732799496749320381">মিমি</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3785482301506746191">চলচ্চিত্র সময় স্ক্রাবার</translation>
 <translation id="3808586225841795776">পদ</translation>
 <translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">পরবর্তী মাস দেখান</translation>
 <translation id="512758898067543763">সারি শিরোলেখ</translation>
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
 <translation id="5406322316791861025">আকার</translation>
 <translation id="5453733299334684579">ট্রি আইটেম</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">কলাম শিরোলেখ</translation>
 <translation id="7364796246159120393">ফাইল বেছে নিন</translation>
 <translation id="739024184232394898">অন্যান্য...</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">ট্যাব</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
 <translation id="7673697353781729403">ঘণ্টা</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">প্লেব্যাক শুরু করুন</translation>
 <translation id="8845239796550121995">এখন আপনার TV তে কাস্ট করা হচ্ছে</translation>
 <translation id="8851136666856101339">প্রধান</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">মাস</translation>
 <translation id="901493112792887934">সেকেন্ডে বর্তমান সময়</translation>
 <translation id="9048119486235211610">নেভিগেশন</translation>

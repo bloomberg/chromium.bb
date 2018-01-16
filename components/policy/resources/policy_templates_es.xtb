@@ -782,6 +782,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3512226956150568738">Si el modelo de dispositivo del cliente ya admitía ARC antes de que fuera necesario realizar la migración a ext4 para ejecutar ese formato y si se ha asignado el valor "True" a la política ArcEnabled, esta opción se comportará como AskUser (valor 3). En el resto de los casos (si el modelo de dispositivo no admitía ARC antes o si se ha asignado el valor "False" a la política ArcEnabled), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
+<translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
@@ -848,6 +849,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, se utilizará la ruta de descarga predeterminada, aunque el usuario podrá modificarla.</translation>
 <translation id="3805659594028420438">Habilita la extensión de certificados TLS limitados a dominios (obsoleta)</translation>
 <translation id="3808945828600697669">Especificar una lista de complementos inhabilitados</translation>
+<translation id="3811562426301733860">Permitir anuncios en todos los sitios web</translation>
 <translation id="3816312845600780067">Habilitar combinación de teclas de rescate para inicio de sesión automático</translation>
 <translation id="3820526221169548563">Habilita la función de accesibilidad del teclado en pantalla.
 
@@ -968,6 +970,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="4105989332710272578">No permite que se aplique la Transparencia en Certificados a una lista de URLs</translation>
+<translation id="4111405663956464686">Advertencia: La política de la versión máxima de TLS se retirará por completo de <ph name="PRODUCT_NAME" /> aproximadamente en la versión 72 (sobre enero del 2019).
+
+      Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa la versión máxima predeterminada.
+
+      En caso contrario, se le asignará uno de estos valores: "tls1.2" o "tls1.3". Si se habilita, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS superiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
 <translation id="4157003184375321727">Informar de la versión del firmware y del sistema operativo</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1026,6 +1033,12 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
+<translation id="4346674324214534449">Te permite decidir si se deberían bloquear los anuncios en los sitios web con anuncios invasivos.
+
+      Si se le asigna el valor 2 a esta política, se bloquearán los anuncios en los sitios web con anuncios invasivos.
+      No obstante, no se activará este comportamiento si se ha asignado el valor False a la política SafeBrowsingEnabled.
+      Si se le asigna el valor 1 a esta política, no se bloquearán los anuncios en los sitios web con anuncios invasivos.
+      Si no se asigna ningún valor a esta política, se usará el valor 2.</translation>
 <translation id="4347908978527632940">Si la política está activada y se trata de un usuario supervisado, otras aplicaciones de Android pueden consultar las restricciones web del usuario a través de un proveedor de contenido.
 
           Si está desactivada o no se ha establecido, el proveedor de contenido no devuelve ninguna información.</translation>
@@ -1379,6 +1392,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="5469825884154817306">Bloquear imágenes de estos sitios</translation>
 <translation id="5475361623548884387">Habilitar impresión</translation>
+<translation id="547601067149622666">No permitir anuncios en sitios web con anuncios invasivos</translation>
 <translation id="5499375345075963939">Esta política solo se encuentra activa en el modo comercial.
 
       Cuando el valor de esta política se establece en un número distinto de 0, la sesión del usuario que haya iniciado sesión en ese momento en modo de demostración se cerrará automáticamente una vez que haya transcurrido el periodo de inactividad especificado.

@@ -39,7 +39,6 @@
 <translation id="2803313416453193357">Odpri mapo</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Pred 1 letom}one{Pred # letom}two{Pred # letoma}few{Pred # leti}other{Pred # leti}}</translation>
 <translation id="2931838996092594335">klikniti</translation>
-<translation id="2983818520079887040">Nastavitve ...</translation>
 <translation id="3036649622769666520">Odpri datoteke</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Na dno</translation>
@@ -99,6 +98,7 @@
 <translation id="6394627529324717982">Vejica</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}one{Pred # s}two{Pred # s}few{Pred # s}other{Pred # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pred 1 sekundo}one{Pred # sekundo}two{Pred # sekundama}few{Pred # sekundami}other{Pred # sekundami}}</translation>
+<translation id="654149438358937226">Blokiraj vsa obvestila</translation>
 <translation id="6567071839949112727">kliknite prednika</translation>
 <translation id="6612467943526193239">Če želite zapustiti umerjanje, pritisnite tipko Esc.</translation>
 <translation id="6620110761915583480">Shrani datoteko</translation>
@@ -124,6 +124,7 @@
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
+<translation id="7879499977785298635">Ne blokiraj</translation>
 <translation id="7907591526440419938">Odpri datoteko</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 h}one{Pred # h}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>

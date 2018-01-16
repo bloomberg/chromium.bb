@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছর আগে}one{# বছর আগে}other{# বছর আগে}}</translation>
 <translation id="2931838996092594335">ক্লিক করুন</translation>
-<translation id="2983818520079887040">সেটিংস...</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">নিচে</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">কমা</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{১ সেকেন্ড পূর্বে}one{# সেকেন্ড পূর্বে}other{# সেকেন্ড পূর্বে}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{১ সেকেন্ড আগে}one{# সেকেন্ড আগে}other{# সেকেন্ড আগে}}</translation>
+<translation id="654149438358937226">সমস্ত বিজ্ঞপ্তি ব্লক করুন</translation>
 <translation id="6567071839949112727">এটি সম্পর্কিত একটি পুরানো আইটেমে ক্লিক করুন</translation>
 <translation id="6612467943526193239">ক্রমাঙ্কন থেকে বেরিয়ে যেতে Esc টিপুন।</translation>
 <translation id="6620110761915583480">ফাইল সেভ করুন</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7814458197256864873">&amp;কপি করুন</translation>
+<translation id="7879499977785298635">ব্লক করবেন না</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>

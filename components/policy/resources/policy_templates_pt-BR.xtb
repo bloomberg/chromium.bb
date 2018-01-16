@@ -748,6 +748,7 @@
 <translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeiro, esta opção vai se comportar como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falso), esse valor será equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
+<translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
@@ -808,6 +809,7 @@
       Se esta política não for definida, será usado o diretório de download padrão, e o usuário poderá alterá-lo.</translation>
 <translation id="3805659594028420438">Ativar extensão dos certificados vinculados ao domínio TLS (obsoleto)</translation>
 <translation id="3808945828600697669">Especificar uma lista de plug-ins desativados</translation>
+<translation id="3811562426301733860">Permitir anúncios em todos os sites</translation>
 <translation id="3816312845600780067">Ativar atalho do teclado dp plano de salvação para login automático</translation>
 <translation id="3820526221169548563">Ativa o recurso de acessibilidade ao teclado na tela.
 
@@ -925,6 +927,11 @@
 
           O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="4105989332710272578">Desativar a aplicação da Transparência dos certificados para uma lista de URLs</translation>
+<translation id="4111405663956464686">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 72 (aproximadamente em janeiro de 2019).
+
+      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará a versão máxima padrão.
+
+      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4183229833636799228">Configuração padrão de <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -983,6 +990,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
+<translation id="4346674324214534449">Permite que você determine se os anúncios devem ser bloqueados em sites com anúncios invasivos.
+
+      Se esta política for definida como 2, os anúncios serão bloqueados em sites com anúncios invasivos.
+      Porém, esse comportamento não será acionado se a política SafeBrowsingEnabled for definida como falsa.
+      Se esta política for definida como 1, os anúncios não serão bloqueados em sites com anúncios invasivos.
+      Se esta política for deixada sem definição, 2 será usado.</translation>
 <translation id="4347908978527632940">Se essa política for definida como "true", e o usuário for um usuário supervisionado, outros apps do Android poderão consultar restrições da Web do usuário por meio de um provedor de conteúdo.
 
           Se for definida como "false" ou não for definida, o provedor de conteúdo não retornará nenhuma informação.</translation>
@@ -1295,6 +1308,7 @@
 <translation id="5469484020713359236">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para definir cookies. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultCookiesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
 <translation id="5475361623548884387">Ativar impressão</translation>
+<translation id="547601067149622666">Não permitir anúncios em sites com anúncios invasivos</translation>
 <translation id="5499375345075963939">Esta política só fica ativada em modo de varejo.
 
       Quando o valor desta política está definido e não é 0, o usuário conectado no momento é desconectado automaticamente após um tempo de inatividade de duração especificada.

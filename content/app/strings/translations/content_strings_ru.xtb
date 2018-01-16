@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">объект</translation>
 <translation id="2942448076852699108">выделенный контент</translation>
 <translation id="3040011195152428237">ссылка</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
 <translation id="3075154866155599887">Введите верное значение. Поле не заполнено или введена недействительная дата.</translation>
 <translation id="3078740164268491126">таблица</translation>
 <translation id="3086746722712840547">note</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">оставшееся время до конца фильма в секундах</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3785482301506746191">полоса прокрутки</translation>
 <translation id="3808586225841795776">запрос</translation>
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="512758898067543763">заголовок строки</translation>
 <translation id="5164977714490026579">Значение должно быть больше или равно <ph name="MINIMUM" />.</translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Введите часть адреса до символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
 <translation id="5406322316791861025">фигура</translation>
 <translation id="5453733299334684579">элемент дерева</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">заголовок столбца</translation>
 <translation id="7364796246159120393">Выберите файл</translation>
 <translation id="739024184232394898">Другое…</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="7673697353781729403">Часы</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">начать воспроизведение</translation>
 <translation id="8845239796550121995">Транслируется на телевизор</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">текущее время в секундах</translation>
 <translation id="9048119486235211610">навигация</translation>

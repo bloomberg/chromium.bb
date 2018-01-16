@@ -147,7 +147,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
 <translation id="5193136243808726294">Google Chrome OS tidak dapat membuka halaman ini.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (disalin ke Chrome)</translation>
 <translation id="5251420635869119124">Tamu dapat menggunakan Chrome tanpa meninggalkan apa pun.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome akan dimulai ulang dalam 1 detik.}other{Google Chrome akan dimulai ulang dalam # detik.}}</translation>
 <translation id="532046782124376502">Peringatan: Google Chrome tidak dapat mencegah ekstensi merekam histori browsing Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, batalkan memilih opsi ini.</translation>
@@ -229,6 +228,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7896673875602241923">Seseorang telah masuk ke Chrome pada komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Harap buat pengguna Chrome baru untuk memisahkan informasi Anda.</translation>
 <translation id="7908168227788431038">Hampir selesai diperbarui! Luncurkan ulang Google Chrome untuk menyelesaikan pembaruan.</translation>
 <translation id="795025003224538582">Jangan memulai ulang</translation>
+<translation id="7962410387636238736">Komputer ini tidak akan menerima update Google Chrome lagi karena Windows XP dan Windows Vista sudah tidak didukung</translation>
 <translation id="8005540215158006229">Chrome hampir siap.</translation>
 <translation id="8008534537613507642">Instal Ulang Chrome</translation>
 <translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>

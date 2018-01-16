@@ -786,6 +786,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3512226956150568738">Ja klienta ierīces modelis jau atbalstīja ARC pirms migrācijas uz ext4, kas bija nepieciešama, lai izpildītu ARC, un ja politika ArcEnabled ir iestatīta kā “true”, šī opcija darbosies kā politikas AskUser vērtība (vērtība 3). Visos citos gadījumos (ja ierīces modelis iepriekš neatbalstīja ARC vai ja politika ArcEnabled ir iestatīta kā “false”), šī vērtība ir ekvivalenta politikas DisallowArc vērtībai (vērtība 0).</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
+<translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
 <translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
 <translation id="3627678165642179114">Pareizrakstības pārbaudes tīmekļa pakalpojuma iespējošana vai atspējošana</translation>
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
@@ -852,6 +853,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
       Ja šī politika nav iestatīta, tiek lietots noklusējuma lejupielādes direktorijs un lietotājs to var mainīt.</translation>
 <translation id="3805659594028420438">TLS domēnam piesaistīto sertifikātu paplašinājumu iespējošana (vairs netiek izmantota)</translation>
 <translation id="3808945828600697669">Norāda atspējoto spraudņu sarakstu</translation>
+<translation id="3811562426301733860">Atļaut reklāmu rādīšanu visās vietnēs</translation>
 <translation id="3816312845600780067">Glābšanas īsinājumtaustiņa iespējošana automātiskās pieteikšanās darbībai</translation>
 <translation id="3820526221169548563">Iespējot ekrāna tastatūras pieejamības funkciju.
 
@@ -970,6 +972,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
+<translation id="4111405663956464686">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 72, maksimālā TLS versijas politika tiks pilnībā noņemta (aptuveni 2019. gada janvārī).
+
+      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju.
+
+      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad tiks iestatīta attiecīgā politikas vērtība, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="4157003184375321727">Ziņošana par OS un programmaparatūras versiju</translation>
 <translation id="4183229833636799228">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> noklusējuma iestatījums</translation>
@@ -1028,6 +1035,12 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
+<translation id="4346674324214534449">Ļauj iestatīt, vai bloķēt reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas.
+
+      Ja politikai ir iestatīta vērtība “2”, reklāmu rādīšana tiks bloķēta vietnēs, kurās tiek rādītas traucējošas reklāmas.
+      Taču bloķēšana netiks aktivizēta, ja politikai SafeBrowsingEnabled ir iestatīta vērtība “False”.
+      Ja šai politikai ir iestatīta vērtība “1”, reklāmu rādīšana netiks bloķēta vietnēs, kurās tiek rādītas traucējošas reklāmas.
+      Ja politika nav iestatīta, tiks izmantota vērtība “2”.</translation>
 <translation id="4347908978527632940">Ja ir iestatīta vērtība “true” un lietotājs ir uzraudzīts lietotājs, citas Android lietotnes var nosūtīt vaicājumus par lietotāja tīmekļa ierobežojumiem, izmantojot satura nodrošinātāju.
 
           Ja ir iestatīta vērtība “false” vai vērtība nav iestatīta, satura nodrošinātājs neatgriež nekādu informāciju.</translation>
@@ -1382,6 +1395,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultCookiesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="5469825884154817306">Bloķē attēlus šajās vietnēs</translation>
 <translation id="5475361623548884387">Iespējo drukāšanu</translation>
+<translation id="547601067149622666">Neatļaut reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas</translation>
 <translation id="5499375345075963939">Šī politika ir aktīva tikai mazumtirdzniecības režīmā.
 
       Ja ir iestatīta šīs politikas vērtība un tā nav 0, lietotājam, kas pašlaik ir pieteicies demonstrācijā, automātiski tiks veikta atteikšanās, tiklīdz būs pagājis noteiktais neaktivitātes laiks.

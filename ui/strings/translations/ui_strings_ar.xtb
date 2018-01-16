@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">فتح المجلد</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{قبل عام واحد}zero{قبل # عام}two{قبل عامين (#)}few{قبل # أعوام}many{قبل # عامًا}other{قبل # عام}}</translation>
 <translation id="2931838996092594335">النقر</translation>
-<translation id="2983818520079887040">الإعدادات...</translation>
 <translation id="3036649622769666520">فتح الملفات</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ميغابايت</translation>
 <translation id="3087734570205094154">أسفل</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">فاصلة</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{قبل ثانية واحدة}zero{ قبل # من الثواني}two{ قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # من الثواني}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{قبل ثانية واحدة}zero{قبل # ثانية}two{قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # ثانية}}</translation>
+<translation id="654149438358937226">حظر جميع الإشعارات</translation>
 <translation id="6567071839949112727">النقر على العنصر الأصل</translation>
 <translation id="6612467943526193239">‏للخروج من المعايرة، اضغط على Esc.</translation>
 <translation id="6620110761915583480">حفظ الملف</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
+<translation id="7879499977785298635">عدم الحظر</translation>
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{قبل ساعة واحدة}zero{قبل # من الساعات}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # من الساعات}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>

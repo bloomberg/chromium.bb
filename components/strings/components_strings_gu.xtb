@@ -245,6 +245,7 @@
 <translation id="2738330467931008676">પિકઅપ માટેનું સરનામું પસંદ કરો</translation>
 <translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2742870351467570537">પસંદ કરેલી આઇટમ્સને દૂર કરો</translation>
+<translation id="2744590937989388266">આ પેજ પરના શામેલ કરેલ પેજ પરથી</translation>
 <translation id="277133753123645258">વિતરણ પદ્ધતિ</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
 <translation id="2784949926578158345">કનેક્શન ફરીથી સેટ થયું.</translation>
@@ -321,7 +322,6 @@
 <translation id="3254409185687681395">આ પૃષ્ઠને બુકમાર્ક કરો</translation>
 <translation id="3270847123878663523">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="3282497668470633863">કાર્ડ પર નામ ઉમેરો</translation>
-<translation id="3286538390144397061">હવે ફરીથી પ્રારંભ કરો</translation>
 <translation id="3287510313208355388">ઑનલાઇન હોય ત્યારે ડાઉનલોડ કરો</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> નીતિ વિશે વધુ જાણો</translation>
 <translation id="3303855915957856445">કોઈ શોધ પરિણામો મળ્યાં નથી</translation>
@@ -350,7 +350,6 @@
 <translation id="3427092606871434483">મંજૂરી આપો (ડિફૉલ્ટ)</translation>
 <translation id="3427342743765426898">&amp;સંપાદિત કરવું ફરી કરો</translation>
 <translation id="3431636764301398940">આ ઉપકરણ પર આ કાર્ડ સાચવો</translation>
-<translation id="3435896845095436175">સક્ષમ કરો</translation>
 <translation id="3447661539832366887">આ ઉપકરણના માલિકે ડાયનાસોર રમત બંધ કરી છે.</translation>
 <translation id="3447884698081792621">(<ph name="ISSUER" /> દ્વારા રજૂ થયેલ) પ્રમાણપત્ર બતાવો</translation>
 <translation id="3452404311384756672">આનયન અંતરાલ:</translation>
@@ -404,7 +403,7 @@
 <translation id="3778403066972421603">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટ અને આ ઉપકરણ પર સાચવવા માગો છો?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> માં સમાપ્ત થાય છે</translation>
-<translation id="3808375843007691220">ચેતવણી: આગળ પ્રાયોગિક સુવિધાઓ છે!</translation>
+<translation id="3800436529451849929"><ph name="SITE" />માંથી</translation>
 <translation id="382518646247711829">જો તમે કોઈ પ્રોક્સી સર્વરનો ઉપયોગ કરો છો...</translation>
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="385051799172605136">પાછળ</translation>
@@ -460,7 +459,6 @@
 <translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
 <translation id="4280429058323657511">, સમાપ્તિ તારીખ <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4292213515608230699">કોઈ મેળ ખાતા પ્રયોગો નથી</translation>
 <translation id="4304224509867189079">લૉગ ઇન કરો</translation>
 <translation id="4312866146174492540">અવરોધિત કરો (ડિફૉલ્ટ)</translation>
 <translation id="4325863107915753736">લેખ શોધવામાં નિષ્ફળ થયાં</translation>
@@ -470,7 +468,6 @@
 <translation id="4356973930735388585">આ સાઇટ પરના હુમલાખોરો તમારા કમ્પ્યુટર પર તમારી માહિતી (ઉદાહરણ તરીકે, ફોટો, પાસવર્ડ્સ, સંદેશા અને ક્રેડિટ કાર્ડ્સ) ને ચોરી શકે કે કાઢી નાખે તેવા જોખમી પ્રોગ્રામ્સને ઇન્સ્ટોલ કરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE" /> મૂલ્ય.</translation>
 <translation id="4377125064752653719">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પણ સર્વર દ્વારા પ્રસ્તુત કરવામાં આવેલું પ્રમાણપત્ર તેના રજૂકર્તા દ્વારા જ રદ કરવામાં આવ્યું છે. આનો અર્થ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો પૂર્ણપણે વિશ્વસનીય નથી. તમે કોઈ હુમલાખોર જોડે વાત કરતા હોઈ શકો છો.</translation>
-<translation id="4394049700291259645">અક્ષમ કરો</translation>
 <translation id="4406896451731180161">શોધ પરિણામો</translation>
 <translation id="4408413947728134509">કુકી <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">પિકઅપ માટેનું સરનામું</translation>
@@ -484,6 +481,7 @@
 <translation id="4515275063822566619">કાર્ડ અને સરનામા Chrome અને Google એકાઉન્ટ (<ph name="ACCOUNT_EMAIL" />)માંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં જઈને સંચાલિત કરી શકો છો.</translation>
 <translation id="4522570452068850558">વિગતો</translation>
 <translation id="4552089082226364758">ફ્લેશ</translation>
+<translation id="4554702541363482291"><ph name="SITE" /> પરના શામેલ કરેલ પેજ પરથી</translation>
 <translation id="4558551763791394412">તમારા એક્સ્ટેન્શન્સને અક્ષમ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="457875822857220463">વિતરણ</translation>
 <translation id="4582800630050655161">તમે તમારા Google એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
@@ -504,6 +502,7 @@
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4736825316280949806">Chromium ને પુનઃપ્રારંભ કરો</translation>
+<translation id="4737498291095696011">આ પેજ પરથી</translation>
 <translation id="4744603770635761495">અમલ કરવાયોગ્ય પાથ</translation>
 <translation id="4749685221585524849">છેલ્લે <ph name="LAST_USED_MONTH" /> ના રોજ ઉપયોગ કર્યો</translation>
 <translation id="4750917950439032686">તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ નંબર્સ) ખાનગી હોય છે જ્યારે તે આ સાઇટ પર મોકલવામાં આવે.</translation>
@@ -522,6 +521,7 @@
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4854362297993841467">વિતરણની આ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
 <translation id="4858792381671956233">તમે આ સાઇટની મુલાકાત લો છો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું</translation>
+<translation id="4871132632506079383"><ph name="SITE" /> પરના શામેલ કરેલ પેજ પરથી</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">પ્રમાણીકરણ આવશ્યક છે</translation>
@@ -535,11 +535,11 @@
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4958444002117714549">સૂચિ વિસ્તૃત કરો</translation>
 <translation id="4974590756084640048">ચેતવણીઓ ફરીથી સક્ષમ કરો</translation>
-<translation id="4989542687859782284">અનુપલબ્ધ</translation>
 <translation id="4989809363548539747">આ પ્લગ-ઇન સમર્થિત નથી</translation>
 <translation id="5002932099480077015">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="5018422839182700155">આ પૃષ્ઠ ખોલી શકતાં નથી</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
+<translation id="5020990877659450221">આ પેજ પરથી</translation>
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" માટેનું રૂટ પ્રમાણપત્ર આવશ્યક છે પરંતુ તે ઇન્સ્ટૉલ કરેલું નથી. આ સમસ્યાના નિવારણ માટે તમારા IT વ્યવસ્થાપકે "<ph name="SOFTWARE_NAME" />" ની ગોઠવણી માટેની સૂચના જોવી જરૂરી છે. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -565,7 +565,6 @@
 <translation id="5172758083709347301">મશીન</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> માં નથી? આ ભૂલની જાણ કરો </translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
-<translation id="5199729219167945352">પ્રયોગો</translation>
 <translation id="5205222826937269299">નામ આવશ્યક છે</translation>
 <translation id="5222812217790122047">ઇમેઇલ આવશ્યક છે</translation>
 <translation id="522700295135997067">આ સાઇટે હમણાં જ તમારો પાસવર્ડ ચોર્યો હોઈ શકે છે</translation>
@@ -595,7 +594,6 @@
 <translation id="5355557959165512791">તમે અત્યારે <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે તેનું પ્રમાણપત્ર રદબાતલ કરવામાં આવ્યું છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="5386426401304769735">આ સાઇટ માટેની પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
-<translation id="5401815295726769233">ફ્લૅગ શોધો</translation>
 <translation id="5402410679244714488">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, છેલ્લે એક વર્ષ પહેલાં ઉપયોગ કરેલ</translation>
 <translation id="540969355065856584">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર આ સમયે માન્ય નથી. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હોય અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો હોઇ શકે છે.</translation>
 <translation id="5421136146218899937">બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
@@ -657,6 +655,7 @@
 <translation id="5786044859038896871">શું તમે તમારી કાર્ડ માહિતી ભરવા માગો છો?</translation>
 <translation id="5803412860119678065">શું તમે તમારી <ph name="CARD_DETAIL" /> માહિતી ભરવા માગો છો?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> સાથેના તમારા કનેક્શનને ઑબ્સોલિટ સાઇફર સ્યૂટનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરાયું છે.</translation>
+<translation id="5810928923025889964">આ પેજ પરના શામેલ કરેલ પેજ પરથી</translation>
 <translation id="5813119285467412249">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="5838278095973806738">તમારે આ સાઇટ પર કોઈપણ સંવેદનશીલ માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ્સ) દાખલ કરવી જોઈએ નહીં, કારણ કે તે હુમલાખોર દ્વારા ચોરવામાં આવી શકે છે.</translation>
 <translation id="5866257070973731571">ફોન નંબર ઉમેરો</translation>
@@ -664,7 +663,6 @@
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5893752035575986141">ક્રેડિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (સમન્વયિત)</translation>
-<translation id="5909194079078764042">આ સુવિધાઓ ચાલુ કરીને, તમે બ્રાઉઝરનો ડેટા ગુમાવશો અથવા તમારી સુરક્ષા કે ગોપનીયતા સાથે સમાધાન કરશો. ચાલુ કરેલી સુવિધાઓ આ બ્રાઉઝરના બધા વપરાશકર્તાઓને લાગુ થાય છે.</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ઉપયોગમાં છે}one{# ઉપયોગમાં છે}other{# ઉપયોગમાં છે}}</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5959728338436674663">જોખમી અ‍ૅપ્લિકેશનો અને સાઇટ્સ શોધવામાં સહાય કરવા માટે Google ને કેટલીક <ph name="BEGIN_WHITEPAPER_LINK" />સિસ્ટમ માહિતી અને પૃષ્ઠ સામગ્રી<ph name="END_WHITEPAPER_LINK" /> આપમેળે મોકલો. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -713,7 +711,6 @@
 <translation id="6305205051461490394"><ph name="URL" />, પહોંચવા યોગ્ય નથી.</translation>
 <translation id="6319915415804115995">છેલ્લે એક વર્ષ પહેલાં ઉપયોગ કરેલ</translation>
 <translation id="6321917430147971392">તમારી DNS સેટિંગ્સ તપાસો</translation>
-<translation id="6325286409953503969">Chromeની નવી આકર્ષક સુવિધાઓમાં રસ છે? અમારી <ph name="BEGIN_LINK" />dev ચૅનલ<ph name="END_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="6328639280570009161">નેટવર્ક પૂર્વાનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો</translation>
 <translation id="6328786501058569169">આ સાઇટ ભ્રામક છે</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> કરતાં ઓછી જગ્યા ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટ વધુ ધીમે લોડ થઈ શકે છે.</translation>
@@ -801,7 +798,6 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}}</translation>
 <translation id="7155487117670177674">ચુકવણી સુરક્ષિત નથી</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
-<translation id="7179921470347911571">હમણાં ફરીથી લોંચ કરો</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
 <translation id="7182878459783632708">કોઈ નીતિઓ  સેટ નથી</translation>
 <translation id="7186367841673660872">આ પૃષ્ઠનું<ph name="ORIGINAL_LANGUAGE" />માંથી<ph name="LANGUAGE_LANGUAGE" />માં ભાષાંતર કરવામાં આવ્યું છે.</translation>
@@ -820,7 +816,6 @@
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="7309308571273880165">ક્રેશ રિપોર્ટ <ph name="CRASH_TIME" /> એ કૅપ્ચર કરવામાં આવી (વપરાશકર્તા દ્વારા અપલોડની વિનંતી કરવામાં આવી, હજી સુધી અપલોડ કરેલ નથી)</translation>
 <translation id="7334320624316649418">&amp;પુનઃક્રમાંકિત કરવું ફરી કરો</translation>
-<translation id="7337706099755338005">તમારા પ્લૅટફૉર્મ પર ઉપલબ્ધ નથી.</translation>
 <translation id="733923710415886693">પ્રમાણપત્ર પારદર્શિતા દ્વારા સર્વરનું પ્રમાણપત્ર જાહેર કરવામાં આવ્યું ન હતું.</translation>
 <translation id="7353601530677266744">આદેશ પંક્તિ</translation>
 <translation id="7372973238305370288">શોધ પરિણામ</translation>
@@ -874,7 +869,6 @@
 <translation id="7668654391829183341">અજ્ઞાત ઉપકરણ</translation>
 <translation id="7669271284792375604">આ સાઇટ પરના હુમલાખોરો તમને તમારા બ્રાઉઝિંગ અનુભવને નુકસાન પહોંચાડે એવા પ્રોગ્રામ્સ ઇન્સ્ટૉલ કરવા માટે છેતરવાનો પ્રયાસ કરી શકે છે (ઉદાહરણ તરીકે, તમારું હોમપેજ બદલીને અથવા તમે મુલાકાત લો છો તે સાઇટ્સ પર વધુ પડતી જાહેરાતો બતાવીને).</translation>
 <translation id="7682287625158474539">શિપિંગ</translation>
-<translation id="7695552107151968219">Chromeની નવી આકર્ષક સુવિધાઓમાં રસ છે? અમારી <ph name="BEGIN_LINK" />બીટા ચૅનલ<ph name="END_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="7699293099605015246">લેખો અત્યારે ઉપલબ્ધ નથી</translation>
 <translation id="7701040980221191251">કોઈ નહીં</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> પર આગળ વધો (અસલામત)<ph name="END_LINK" /></translation>
@@ -992,10 +986,7 @@
 <translation id="8620436878122366504">તમારા માતાપિતાએ તેને હજી સુધી મંજૂર કરેલ નથી</translation>
 <translation id="8625384913736129811">આ કાર્ડને આ ઉપકરણમાં સાચવો</translation>
 <translation id="8639963783467694461">સ્વતઃભરો સેટિંગ્સ</translation>
-<translation id="8647750283161643317">બધાને ડિફોલ્ટ પર ફરીથી સેટ કરો</translation>
-<translation id="8660471606262461360">Google Payments તરફથી</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, જવાબ, <ph name="ANSWER" /></translation>
-<translation id="8688672835843460752">ઉપલબ્ધ</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
 <translation id="8718314106902482036">ચુકવણી પૂર્ણ થઈ નથી</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
@@ -1034,7 +1025,6 @@
 <translation id="9005998258318286617">PDF દસ્તાવેજ લોડ કરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="9008201768610948239">અવગણો</translation>
 <translation id="9011424611726486705">સાઇટની સેટિંગ ખોલો</translation>
-<translation id="901974403500617787">ધ્વજો કે જે સિસ્ટમ-વ્યાપી લાગુ છે તે ફક્ત માલિક દ્વારા જ સેટ કરી શકાય છે: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020200922353704812">કાર્ડનું બિલિંગ સરનામું આવશ્યક છે</translation>
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરવામાં આવ્યો છે</translation>
 <translation id="9025348182339809926">(અમાન્ય)</translation>

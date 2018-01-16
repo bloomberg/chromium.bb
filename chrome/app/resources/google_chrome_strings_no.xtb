@@ -147,7 +147,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan ikke åpne denne siden</translation>
 <translation id="5204098752394657250">Google Chrome – <ph name="TERMS_OF_SERVICE_LINK" />vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (kopiert til Chrome)</translation>
 <translation id="5251420635869119124">Gjester kan bruke Chrome uten å etterlate seg spor.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome startes på nytt om ett sekund.}other{Google Chrome startes på nytt om # sekunder.}}</translation>
 <translation id="532046782124376502">Advarsel: Google Chrome kan ikke hindre utvidelser i å registrere nettlesingsloggen din. Du kan deaktivere utvidelsen i inkognitomodus ved å fjerne avmerkingen for dette alternativet.</translation>
@@ -229,6 +228,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7896673875602241923">Noen har tidligere logget på Chrome på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chrome-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="7908168227788431038">Nå er oppdateringen snart ferdig! Start Google Chrome på nytt for å fullføre oppdateringen.</translation>
 <translation id="795025003224538582">Ikke start på nytt</translation>
+<translation id="7962410387636238736">Denne datamaskinen kommer ikke lenger til å motta oppdateringer av Google Chrome, fordi Windows XP og Windows Vista ikke støttes lenger</translation>
 <translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>

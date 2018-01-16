@@ -153,7 +153,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali uporabite novejšo različico Google Chroma.</translation>
 <translation id="5193136243808726294">Googlov OS Chrome ne more odpreti te strani.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (kopirano v Chrome)</translation>
 <translation id="5251420635869119124">Gostje lahko uporabljajo Chrome, ne da bi za seboj pustili kar koli.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome se bo znova zagnal čez 1 sekundo.}one{Google Chrome se bo znova zagnal čez # sekundo.}two{Google Chrome se bo znova zagnal čez # sekundi.}few{Google Chrome se bo znova zagnal čez # sekunde.}other{Google Chrome se bo znova zagnal čez # sekund.}}</translation>
 <translation id="532046782124376502">Opozorilo: Google Chrome razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
@@ -237,6 +236,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7896673875602241923">Nekdo se je prijavil v Chrome v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Ustvarite nov uporabniški profil za Chrome, če želite, da bodo vaši podatki ločeni.</translation>
 <translation id="7908168227788431038">Samo še malo. Znova zaženite Google Chrome, da dokončate posodobitev.</translation>
 <translation id="795025003224538582">Ne zaženi znova</translation>
+<translation id="7962410387636238736">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista nista več podprta.</translation>
 <translation id="8005540215158006229">Chrome je skoraj pripravljen.</translation>
 <translation id="8008534537613507642">Vnovična namestitev Chroma</translation>
 <translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>

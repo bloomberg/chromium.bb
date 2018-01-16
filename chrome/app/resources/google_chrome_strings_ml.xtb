@@ -153,7 +153,6 @@
 ചില സവിശേഷതകൾ ലഭ്യമല്ലാതായിരിക്കാം. ദയവായി ഒരു വ്യത്യസ്തമായ പ്രൊഫൈൽ ഡയറക്ടറി വ്യക്തമാക്കുക അല്ലെങ്കിൽ Chrome-ന്റെ ഒരു പുതിയ പതിപ്പ് ഉപയോഗിക്കുക.</translation>
 <translation id="5193136243808726294">Google Chrome OS-ന് ഈ പേജ് തുറക്കാനാവില്ല.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />സേവനനിബന്ധനകൾ<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (Chrome-ലേക്ക് പകർത്തി)</translation>
 <translation id="5251420635869119124">അതിഥികൾക്ക് ഒന്നും ശേഷിപ്പിക്കാതെ തന്നെ Chrome ഉപയോഗിക്കാനാവും.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ഒരു സെക്കൻഡിനുള്ളിൽ പുനഃരാരംഭിക്കും.}other{Google Chrome # സെക്കൻഡിനുള്ളിൽ പുനഃരാരംഭിക്കും.}}</translation>
 <translation id="532046782124376502">മുന്നറിയിപ്പ്: നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം റെക്കോർഡ് ചെയ്യുന്നതിൽ നിന്ന് വിപുലീകരണങ്ങളെ തടയാൻ Google Chrome-ന് കഴിയില്ല. അദൃശ്യ മോഡിൽ ഈ വിപുലീകരണം പ്രവർത്തനരഹിതമാക്കാൻ, ഈ ഓപ്‌ഷൻ തിരഞ്ഞെടുത്തത് മാറ്റുക.</translation>
@@ -237,6 +236,7 @@
 <translation id="7896673875602241923">ഈ കമ്പ്യൂട്ടറിലെ Chrome-ൽ മുമ്പ് മറ്റാരോ <ph name="ACCOUNT_EMAIL_LAST" /> എന്നയാളായി സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നു. നിങ്ങളുടെ വിവരങ്ങൾ പ്രത്യേകം വേർതിരിച്ച് സൂക്ഷിക്കാൻ പുതിയ Chrome ഉപയോക്താവിനെ സൃഷ്‌ടിക്കുക.</translation>
 <translation id="7908168227788431038">മിക്കവാറും അപ്‌‌ടുഡേറ്റാണ്! അപ്‌ഡേറ്റുചെയ്യൽ പൂർത്തിയാക്കാൻ Google Chrome വീണ്ടും ആരംഭിക്കുക.</translation>
 <translation id="795025003224538582">പുനഃരാരംഭിക്കരുത്</translation>
+<translation id="7962410387636238736">Windows XP-ക്കും Windows Vista-യ്‌ക്കും ഇനിയങ്ങോട്ട് പിന്തുണ ഇല്ലാത്തതിനാൽ ഈ കമ്പ്യൂട്ടറിന് ഇനി Google Chrome അപ്‌ഡേറ്റുകൾ സ്വീകരിക്കാനാകില്ല</translation>
 <translation id="8005540215158006229">Chrome മിക്കവാറും തയാറായിക്കഴിഞ്ഞു.</translation>
 <translation id="8008534537613507642">Chrome വീണ്ടും ഇൻസ്റ്റാളുചെയ്യുക</translation>
 <translation id="8030318113982266900">നിങ്ങളുടെ ഉപകരണം <ph name="CHANNEL_NAME" /> ചാനലിലേയ്‌ക്ക് അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>

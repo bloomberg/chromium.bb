@@ -147,7 +147,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="5170938038195470297">El vostre perfil no es pot utilitzar perquè prové d'una versió més nova de Google Chrome. Pot ser que algunes funcions no estiguin disponibles. Especifiqueu un directori de perfil diferent o utilitzeu una versió més nova de Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS no pot obrir aquesta pàgina.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termes i condicions<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (copiada a Chrome)</translation>
 <translation id="5251420635869119124">Els convidats poden utilitzar Chrome sense deixar-hi rastre.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome es reiniciarà d'aquí a 1 segon.}other{Google Chrome es reiniciarà d'aquí a # segons.}}</translation>
 <translation id="532046782124376502">Advertiment: Google Chrome no pot impedir que les extensions registrin el teu historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, desselecciona aquesta opció.</translation>
@@ -229,6 +228,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7896673875602241923">Algú ha iniciat anteriorment la sessió a Chrome en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuari de Chrome per mantenir la informació separada.</translation>
 <translation id="7908168227788431038">Gairebé heu acabat. Reinicieu Google Chrome per completar l'actualització.</translation>
 <translation id="795025003224538582">No reiniciïs</translation>
+<translation id="7962410387636238736">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no són compatibles</translation>
 <translation id="8005540215158006229">Chrome ja està quasi llest</translation>
 <translation id="8008534537613507642">Torna a instal·lar Chrome</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>

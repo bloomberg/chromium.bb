@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">객체</translation>
 <translation id="2942448076852699108">강조표시된 콘텐츠</translation>
 <translation id="3040011195152428237">링크</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" />MB</translation>
 <translation id="3075154866155599887">유효한 값을 입력하세요. 입력을 완료하지 않았거나 날짜가 잘못되었습니다.</translation>
 <translation id="3078740164268491126">표</translation>
 <translation id="3086746722712840547">note</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">영화 남은 시간(초)</translation>
 <translation id="3706100364254443312">전환</translation>
 <translation id="3732799496749320381">월</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" />GB</translation>
 <translation id="3785482301506746191">영화 시간 스크러버</translation>
 <translation id="3808586225841795776">용어</translation>
 <translation id="3822383571486410024">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">다음 달 표시</translation>
 <translation id="512758898067543763">행 헤더</translation>
 <translation id="5164977714490026579">값은 <ph name="MINIMUM" /> 이상이어야 합니다.</translation>
+<translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
 <translation id="5406322316791861025">그림</translation>
 <translation id="5453733299334684579">트리 항목</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">열 헤더</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" />TB</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">다운로드</translation>
 <translation id="7673697353781729403">시간</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">재생 시작</translation>
 <translation id="8845239796550121995">TV로 전송 중</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>
 <translation id="9048119486235211610">탐색</translation>

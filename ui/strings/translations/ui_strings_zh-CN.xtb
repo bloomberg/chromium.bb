@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">打开文件夹</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
 <translation id="2931838996092594335">点击</translation>
-<translation id="2983818520079887040">设置...</translation>
 <translation id="3036649622769666520">打开文件</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">底部</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">逗号</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="654149438358937226">屏蔽所有通知</translation>
 <translation id="6567071839949112727">点击祖先实体</translation>
 <translation id="6612467943526193239">要退出校准模式，请按 Esc 键。</translation>
 <translation id="6620110761915583480">保存文件</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
+<translation id="7879499977785298635">不屏蔽</translation>
 <translation id="7907591526440419938">打开文件</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小时前}other{# 小时前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>

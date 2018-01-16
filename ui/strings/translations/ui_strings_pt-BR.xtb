@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Abrir pasta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ano atrás}one{# ano atrás}other{# anos atrás}}</translation>
 <translation id="2931838996092594335">clicar</translation>
-<translation id="2983818520079887040">Configurações...</translation>
 <translation id="3036649622769666520">Abrir arquivos</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Vírgula</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Um segundo atrás}one{# segundos atrás}other{# segundos atrás}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo atrás}one{# segundo atrás}other{# segundos atrás}}</translation>
+<translation id="654149438358937226">Bloquear todas as notificações</translation>
 <translation id="6567071839949112727">clicar no predecessor</translation>
 <translation id="6612467943526193239">Para sair da calibração pressione Esc.</translation>
 <translation id="6620110761915583480">Salvar arquivo</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
+<translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Uma hora atrás}one{# horas atrás}other{# horas atrás}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 segundo restante}one{# segundos restantes}other{# segundos restantes}}</translation>

@@ -749,6 +749,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
+<translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
@@ -809,6 +810,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Gdy ta zasada nie jest ustawiona, obowiązuje domyślny katalog pobierania, a użytkownik może go zmienić.</translation>
 <translation id="3805659594028420438">Włącz rozszerzenie certyfikatów TLS powiązanych z domeną (wycofana)</translation>
 <translation id="3808945828600697669">Określ listę wyłączonych wtyczek</translation>
+<translation id="3811562426301733860">Zezwól na wyświetlanie reklam na wszystkich stronach</translation>
 <translation id="3816312845600780067">Włącz automatyczne logowanie skrótem klawiszowym</translation>
 <translation id="3820526221169548563">Włącza funkcję dostępności klawiatury ekranowej.
 
@@ -925,6 +927,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
+<translation id="4111405663956464686">Ostrzeżenie: zasada najwyższej wersji TLS zostanie w całości usunięta z usługi <ph name="PRODUCT_NAME" /> prawdopodobnie w wersji 72 (mniej więcej w styczniu 2019 r.)
+
+      Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najwyższej wersji.
+
+      W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -983,6 +990,12 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
+<translation id="4346674324214534449">Umożliwia ustawienie blokowania reklam na stronach zawierających uciążliwe reklamy.
+
+      Jeśli zasada jest ustawiona na wartość 2, reklamy na stronach zawierających uciążliwe reklamy będą blokowane.
+      Takie działanie nie będzie jednak uruchamiane, jeśli zasada SafeBrowsingEnabled jest ustawiona na False.
+      Jeśli zasada jest ustawiona na wartość 1, reklamy na stronach zawierających uciążliwe reklamy nie będą blokowane.
+      Jeśli zasada nie jest ustawiona, zostanie użyta wartość 2.</translation>
 <translation id="4347908978527632940">Jeśli jest włączona i użytkownik jest nadzorowany, inne aplikacje na Androida mogą sprawdzać ograniczenia dostępu do internetu dla użytkownika za pośrednictwem dostawcy treści.
 
           Jeśli jest wyłączona lub nieskonfigurowana, dostawca treści nie zwraca żadnych informacji.</translation>
@@ -1291,6 +1304,7 @@ Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawien
 <translation id="5469484020713359236">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, którym wolno tworzyć pliki cookie. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
+<translation id="547601067149622666">Blokuj reklamy na stronach zawierających uciążliwe reklamy</translation>
 <translation id="5499375345075963939">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Gdy ta zasada zostanie ustawiona na wartość różną od 0, aktualnie zalogowany użytkownik demonstracyjny zostanie automatycznie wylogowany po upływie podanego okresu bezczynności.

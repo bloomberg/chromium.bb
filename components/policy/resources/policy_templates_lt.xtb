@@ -787,6 +787,7 @@
 <translation id="3512226956150568738">Jei kliento turimo modelio įrenginyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
+<translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
@@ -853,6 +854,7 @@
       Jei ši politika nenustatyta, bus naudojamas numatytasis atsisiuntimo katalogas ir naudotojas galės jį pakeisti.</translation>
 <translation id="3805659594028420438">Įgalinti TLS domenų sertifikatų plėtinį (nebenaudojamas)</translation>
 <translation id="3808945828600697669">Nurodyti neleidžiamų papildinių sąrašą</translation>
+<translation id="3811562426301733860">Leisti skelbimus visose svetainėse</translation>
 <translation id="3816312845600780067">Įgalinti laisvuosius sparčiuosius klavišus automatiškai prisijungiant</translation>
 <translation id="3820526221169548563">Įgalinti ekrano klaviatūros pasiekiamumo funkciją.
 
@@ -974,6 +976,11 @@
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="4105989332710272578">Sertifikato skaidrumo taikymo URL sąrašui išjungimas</translation>
+<translation id="4111405663956464686">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 72 versija (maždaug 2019 m. sausio mėn.).
+
+      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytąją didžiausią versiją.
+
+      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų, nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="4157003184375321727">Pranešti OS ir programinės aparatinės įrangos versiją</translation>
 <translation id="4183229833636799228">Numatytasis „<ph name="FLASH_PLUGIN_NAME" />“ nustatymas</translation>
@@ -1032,6 +1039,12 @@
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
 <translation id="4322842393287974810">Leisti automatiškai be delsos paleistai viešojo terminalo programai valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
+<translation id="4346674324214534449">Leidžiama nustatyti, ar skelbimai turėtų būti blokuojami svetainėse su nepageidaujamais skelbimais.
+
+      Jei bus nustatyta šios politikos parinktis 2, skelbimai bus blokuojami svetainėse su nepageidaujamais skelbimais.
+      Tačiau ši elgsena negalios, jei bus nustatyta politikos „SafeBrowsingEnabled“ parinktis „False“.
+      Jei bus nustatyta šios politikos parinktis 1, skelbimai nebus blokuojami svetainėse su nepageidaujamais skelbimais.
+      Jei ši politika bus palikta nenustatyta, bus naudojama parinktis 2.</translation>
 <translation id="4347908978527632940">Jei nustatyta „true“ ir naudotojas yra prižiūrimas naudotojas, tada kitos „Android“ programos gali teikti naudotojo žiniatinklio apribojimų užklausas per turinio teikėją.
 
           Jei nustatyta „false“ arba nenustatyta, turinio teikėjas nepateikia jokios informacijos.</translation>
@@ -1385,6 +1398,7 @@
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
 <translation id="5475361623548884387">Įgalinti spausdinimą</translation>
+<translation id="547601067149622666">Neleisti skelbimų svetainėje su nepageidaujamais skelbimais</translation>
 <translation id="5499375345075963939">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Kai šios politikos vertė nustatyta ir nėra 0, dabartinis prisijungęs demonstracinės versijos naudotojas (-a) automatiškai atjungiamas (-a) pasibaigus nurodytos trukmės neveiklos laikotarpiui.

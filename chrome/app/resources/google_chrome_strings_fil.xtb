@@ -153,7 +153,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chrome.</translation>
 <translation id="5193136243808726294">Hindi mabuksan ng Google Chrome OS ang page na ito.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome</translation>
-<translation id="5243785881901838525">Google Payments (kinopya sa Chrome)</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Magre-restart ang Google Chrome pagkalipas ng 1 segundo.}one{Magre-restart ang Google Chrome pagkalipas ng # segundo}other{Magre-restart ang Google Chrome pagkalipas ng # na segundo}}</translation>
 <translation id="532046782124376502">Babala: Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension sa iyong history ng pag-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.</translation>
@@ -237,6 +236,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7896673875602241923">May nag-sign in dati sa Chrome sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST" />. Mangyaring gumawa ng bagong user ng Chrome upang ihiwalay ang iyong impormasyon.</translation>
 <translation id="7908168227788431038">Halos napapanahon na! Muling ilunsad ang Google Chrome upang tapusin ang pag-a-update.</translation>
 <translation id="795025003224538582">Huwag i-restart</translation>
+<translation id="7962410387636238736">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Windows XP at Windows Vista</translation>
 <translation id="8005540215158006229">Halos handa na ang Chrome.</translation>
 <translation id="8008534537613507642">Muling i-install ang Chrome</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>

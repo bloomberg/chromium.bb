@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">objecte</translation>
 <translation id="2942448076852699108">contingut realçat</translation>
 <translation id="3040011195152428237">enllaç</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">Introduïu un valor vàlid. El camp està incomplet o conté una data no vàlida.</translation>
 <translation id="3078740164268491126">taula</translation>
 <translation id="3086746722712840547">nota</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">nombre de segons restants de la pel·lícula</translation>
 <translation id="3706100364254443312">commutador</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3785482301506746191">barra de moment de la pel·lícula</translation>
 <translation id="3808586225841795776">terme</translation>
 <translation id="3822383571486410024">Allargueu aquest text fins a un mínim de <ph name="MIN_CHARACTERS" /> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH" />).</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">Mostra el mes següent</translation>
 <translation id="512758898067543763">capçalera de la fila</translation>
 <translation id="5164977714490026579">El valor ha de ser més gran o igual que <ph name="MINIMUM" />.</translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Introduïu un nom d'usuari seguit de "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" no és una adreça completa.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5453733299334684579">element de l'arbre</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">capçalera de columna</translation>
 <translation id="7364796246159120393">Tria un fitxer</translation>
 <translation id="739024184232394898">Altres...</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">pestanya</translation>
 <translation id="7514365320538308">Baixa</translation>
 <translation id="7673697353781729403">Hores</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">inicia la reproducció</translation>
 <translation id="8845239796550121995">S'està emetent al televisor</translation>
 <translation id="8851136666856101339">principal</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">temps actual en segons</translation>
 <translation id="9048119486235211610">navegació</translation>

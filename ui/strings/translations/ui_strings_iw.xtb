@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">פתח את התיקייה</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{לפני שנה אחת}two{לפני שנתיים}many{לפני # שנים}other{לפני # שנים}}</translation>
 <translation id="2931838996092594335">לחץ</translation>
-<translation id="2983818520079887040">הגדרות...</translation>
 <translation id="3036649622769666520">פתח קבצים</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">תחתית</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">פסיק</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{לפני שנ‘ אחת}two{לפני # שנ‘}many{לפני # שנ‘}other{לפני # שנ‘}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{לפני שנייה אחת}two{לפני # שניות}many{לפני # שניות}other{לפני # שניות}}</translation>
+<translation id="654149438358937226">חסימת כל ההודעות</translation>
 <translation id="6567071839949112727">לחיצה על אב</translation>
 <translation id="6612467943526193239">‏הקש על Esc כדי לצאת מהכיול.</translation>
 <translation id="6620110761915583480">שמור קובץ</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7814458197256864873">&amp;העתק</translation>
+<translation id="7879499977785298635">ללא חסימה</translation>
 <translation id="7907591526440419938">פתח קובץ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{לפני שעה אחת}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{נותרה שנ‘ אחת}two{נותרו # שנ‘}many{נותרו # שנ‘}other{נותרו # שנ‘}}</translation>

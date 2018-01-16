@@ -758,6 +758,7 @@
 <translation id="3512226956150568738">Dacă modelul de dispozitiv al clientului era compatibil deja cu ARC înainte ca migrarea la ext4 să fie necesară pentru rularea ARC și dacă politica ArcEnabled este activată, această opțiune va funcționa ca AskUser (valoarea 3). În restul cazurilor (dacă modelul de dispozitiv nu era compatibil cu ARC înainte sau dacă politica ArcEnabled este dezactivată), această valoare este echivalentă cu DisallowArc (valoarea 0).</translation>
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
+<translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
@@ -824,6 +825,7 @@
       Dacă această politică nu este configurată, va fi folosit directorul prestabilit pentru descărcare, iar utilizatorul îl va putea modifica.</translation>
 <translation id="3805659594028420438">Activați extensia pentru certificatele TLS legate la domeniu (învechită)</translation>
 <translation id="3808945828600697669">Specifică o listă cu pluginuri dezactivate</translation>
+<translation id="3811562426301733860">Permite anunțurile pe toate site-urile</translation>
 <translation id="3816312845600780067">Activați comanda rapidă de la tastatură de rezervă pentru conectarea automată</translation>
 <translation id="3820526221169548563">Activează funcția de accesibilitate cu tastatura pe ecran.
 
@@ -941,6 +943,11 @@
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
 <translation id="4105989332710272578">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de adrese URL</translation>
+<translation id="4111405663956464686">Avertisment: politica privind versiunea TLS maximă va fi eliminată complet din <ph name="PRODUCT_NAME" /> începând cu versiunea 72 (aproximativ în luna ianuarie 2019).
+
+      Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea maximă prestabilită.
+
+      În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1.2” sau „tls1.3”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS superioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
 <translation id="4157003184375321727">Raportați versiunea sistemului de operare și versiunea firmware</translation>
 <translation id="4183229833636799228">Setarea prestabilită pentru <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -999,6 +1006,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
+<translation id="4346674324214534449">Îți permite să setezi dacă anunțurile trebuie blocate pe site-urile cu anunțuri deranjante.
+
+      Dacă această valoare este setată la 2, anunțurile vor fi blocate pe site-urile cu anunțuri deranjante.
+      Totuși, acest comportament nu va fi declanșat, dacă valoarea SafeBrowsingEnabled este setată la False.
+      Dacă această valoare este setată la 1, anunțurile nu vor fi blocate pe site-urile cu anunțuri deranjante.
+      Dacă această valoare nu este setată, se va considera că este 2.</translation>
 <translation id="4347908978527632940">Dacă este activată, iar utilizatorul este unul monitorizat, alte aplicații Android pot interoga restricțiile web ale utilizatorului printr-un furnizor de conținut.
 
           Dacă este dezactivată sau nu este configurată, furnizorul de conținut nu va returna informații.</translation>
@@ -1320,6 +1333,7 @@
 <translation id="5469484020713359236">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu sunt autorizate să seteze cookie-uri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5469825884154817306">Blochează imagini de pe aceste site-uri</translation>
 <translation id="5475361623548884387">Activează printarea</translation>
+<translation id="547601067149622666">Nu permite anunțurile pe site-urile cu anunțuri deranjante</translation>
 <translation id="5499375345075963939">Această politică este activă numai în modul Vânzare.
 
       Dacă valoarea acestei politici este configurată și diferă de 0, atunci utilizatorul demonstrativ conectat în prezent va fi deconectat automat după o perioadă de inactivitate specificată.

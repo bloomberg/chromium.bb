@@ -56,7 +56,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1409879593029778104">No s'ha baixat el fitxer <ph name="FILE_NAME" /> perquè ja existeix.</translation>
 <translation id="1414981605391750300">S'està contactant amb Google. Aquest procés pot trigar una estona…</translation>
 <translation id="1416550906796893042">Versió de l'aplicació</translation>
-<translation id="1423209968422390786">L'accés a la ubicació <ph name="BEGIN_LINK" />està desactivat per a aquest dispositiu<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1445680696957526815">Els components de Chrome no són compatibles entre ells. És possible que Chrome s'estigui actualitzant. Torneu-ho a provar d'aquí a uns quants minuts. Si el problema continua, desinstal·leu Chrome i torneu-lo a instal·lar.</translation>
 <translation id="1446450296470737166">Permet control total disp. MIDI</translation>
@@ -84,6 +83,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1660204651932907780">Permet que els llocs web reprodueixin so (opció recomanada)</translation>
 <translation id="1670399744444387456">Opcions bàsiques</translation>
 <translation id="1671236975893690980">Baixada pendent…</translation>
+<translation id="1674523662097951983">L'opció Adreces d'interès canvia de lloc. La propera vegada, fes lliscar la barra d'adreces cap amunt per trobar-la.</translation>
 <translation id="169033420419426091">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè no s'ha trobat la targeta SD.</translation>
 <translation id="1709438864123551175">Economitzador de dades</translation>
 <translation id="1718835860248848330">Darrera hora</translation>
@@ -116,6 +116,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1993768208584545658"><ph name="SITE" /> es vol vincular</translation>
 <translation id="1994173015038366702">URL del lloc</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB en altres aplicacions</translation>
+<translation id="2015632741368427174">S'ha bloquejat la redirecció al lloc web següent:</translation>
 <translation id="2017836877785168846">Esborra l'historial i les complecions automàtiques a la barra d'adreces.</translation>
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
@@ -413,6 +414,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4807963036345170158">L'extensió Economitzador de dades està desactivada</translation>
 <translation id="4811736444948656478">El tauler de navegació ocupa la meitat inferior de la pantalla</translation>
 <translation id="4816465935029283692">Tipus de dades</translation>
+<translation id="482201002591920174">Emmagatzematge principal</translation>
 <translation id="4837753911714442426">Obre les opcions per imprimir la pàgina</translation>
 <translation id="4842092870884894799">Es mostra la finestra emergent de generació de contrasenyes</translation>
 <translation id="4850886885716139402">Mostra</translation>
@@ -472,7 +474,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5335288049665977812">Permet que els llocs executin JavaScript (opció recomanada)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> s'ha suprimit</translation>
-<translation id="5345083863238459644">L'accés a la ubicació <ph name="BEGIN_LINK" />està desactivat també per a aquest dispositiu<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">S'ha copiat l'URL.</translation>
 <translation id="5400569084694353794">En fer servir aquesta aplicació, accepteu les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">Permet només certs llocs</translation>
@@ -554,6 +555,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5956665950594638604">Obre Centre d'ajuda de Chrome en una pestanya nova</translation>
 <translation id="5958275228015807058">Trobaràs els teus fitxers i les teves pàgines a Baixades</translation>
 <translation id="5962718611393537961">Toca per replegar</translation>
+<translation id="5974562976030145789">L'opció Baixades canvia de lloc. La propera vegada, fes lliscar la barra d'adreces cap amunt per trobar-la.</translation>
 <translation id="6000066717592683814">Continua amb Google</translation>
 <translation id="6031101910111098835">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="6039379616847168523">Ves a la pestanya següent</translation>
@@ -652,7 +654,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="6846298663435243399">S'està carregant…</translation>
 <translation id="6850830437481525139">S'han tancat <ph name="TAB_COUNT" /> pestanyes</translation>
-<translation id="6856477143496886355">Targetes i adreces que fan servir Google Payments</translation>
 <translation id="6864459304226931083">Baixa la imatge</translation>
 <translation id="6865313869410766144">Dades d'Emplenament automàtic de formularis</translation>
 <translation id="6868088497967843822">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius</translation>
@@ -664,6 +665,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6905163627763043954">Prova-la</translation>
 <translation id="6910211073230771657">Suprimit</translation>
 <translation id="6945221475159498467">Selecciona</translation>
+<translation id="6959661084585705671">Emmagatzematge secundari</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6978479750597523876">Restableix la configuració del Traductor</translation>
@@ -818,6 +820,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8487700953926739672">Disponible sense connexió</translation>
 <translation id="8489271220582375723">Obre la pàgina de l'historial</translation>
 <translation id="8493948351860045254">Allibera espai</translation>
+<translation id="8494508527479967437">L'opció Historial canvia de lloc. La propera vegada, fes lliscar la barra d'adreces cap amunt per trobar-la.</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8514477925623180633">Exporta les contrasenyes emmagatzemades a Chrome</translation>
@@ -862,7 +865,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8920114477895755567">S'està esperant la informació parental.</translation>
 <translation id="8922289737868596582">Baixa pàgines amb el botó Més opcions per utilitzar-les sense connexió</translation>
-<translation id="892369953214061711">Es permeten les notificacions. La ubicació està desactivada; activa-la a la configuració d'Android.</translation>
 <translation id="8936297887573571433">Toca per veure les baixades, les adreces d'interès i l'historial</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Obre en una altra finestra</translation>

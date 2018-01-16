@@ -56,7 +56,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1409879593029778104">Đã ngăn tải xuống <ph name="FILE_NAME" /> do tệp này đã tồn tại.</translation>
 <translation id="1414981605391750300">Đang liên hệ với Google. Quá trình này có thể mất ít phút…</translation>
 <translation id="1416550906796893042">Phiên bản ứng dụng</translation>
-<translation id="1423209968422390786">Truy cập vị trí đã được <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="1445680696957526815">Các cấu phần của Chrome không tương thích với nhau. Chrome có thể đang nâng cấp, vui lòng thử lại sau ít phút. Nếu sự cố vẫn tiếp diễn, hãy thử gỡ cài đặt và cài đặt lại Chrome.</translation>
 <translation id="1446450296470737166">Cho phép kiểm soát hoàn toàn thiết bị MIDI</translation>
@@ -84,6 +83,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1660204651932907780">Cho phép các trang web phát âm thanh (được đề xuất)</translation>
 <translation id="1670399744444387456">Cơ bản</translation>
 <translation id="1671236975893690980">Đang chờ tải xuống...</translation>
+<translation id="1674523662097951983">“Dấu trang” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
 <translation id="169033420419426091">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu thẻ SD.</translation>
 <translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
@@ -116,6 +116,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1993768208584545658"><ph name="SITE" /> muốn ghép nối</translation>
 <translation id="1994173015038366702">URL trang web</translation>
 <translation id="200815880754187296">Các ứng dụng khác chiếm <ph name="KILOBYTES" /> KB</translation>
+<translation id="2015632741368427174">Đã chặn chuyển hướng đến trang web:</translation>
 <translation id="2017836877785168846">Xóa lịch sử và tự động hoàn thành trong thanh địa chỉ.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
@@ -413,6 +414,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4807963036345170158">Trình tiết kiệm dữ liệu tắt</translation>
 <translation id="4811736444948656478">Đã mở bảng điều hướng cao bằng nửa màn hình</translation>
 <translation id="4816465935029283692">Loại dữ liệu</translation>
+<translation id="482201002591920174">Bộ nhớ chính</translation>
 <translation id="4837753911714442426">Mở tùy chọn để in trang</translation>
 <translation id="4842092870884894799">Hiển thị cửa sổ bật lên tạo mật khẩu</translation>
 <translation id="4850886885716139402">Xem</translation>
@@ -472,7 +474,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5335288049665977812">Cho phép các trang web chạy JavaScript (được đề xuất)</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE" /></translation>
-<translation id="5345083863238459644">Truy cập vị trí cũng đã được <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Đã sao chép URL.</translation>
 <translation id="5400569084694353794">Bằng cách sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="5403644198645076998">Chỉ cho phép một số trang web</translation>
@@ -554,6 +555,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
 <translation id="5958275228015807058">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
+<translation id="5974562976030145789">“Tài nguyên đã tải xuống” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
 <translation id="6031101910111098835">Đã thu gọn - Nhấp để mở rộng</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
@@ -652,7 +654,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6846298663435243399">Đang tải…</translation>
 <translation id="6850830437481525139">Đã đóng <ph name="TAB_COUNT" /> tab</translation>
-<translation id="6856477143496886355">Thẻ và địa chỉ sử dụng Google Payments</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu biểu mẫu tự động điền</translation>
 <translation id="6868088497967843822">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn</translation>
@@ -664,6 +665,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6905163627763043954">Dùng thử</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
 <translation id="6945221475159498467">Chọn</translation>
+<translation id="6959661084585705671">Bộ nhớ phụ</translation>
 <translation id="6963766334940102469">Xóa dấu trang</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Đặt lại cài đặt dịch</translation>
@@ -818,6 +820,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8489271220582375723">Mở trang lịch sử</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
+<translation id="8494508527479967437">“Lịch sử” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8514477925623180633">Xuất mật khẩu đã lưu trữ với Chrome</translation>
@@ -862,7 +865,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
-<translation id="892369953214061711">Cho phép thông báo. Đã tắt vị trí, hãy bật vị trí trong mục Cài đặt Android.</translation>
 <translation id="8936297887573571433">Nhấn để xem tài nguyên đã tải xuống, dấu trang và lịch sử</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>

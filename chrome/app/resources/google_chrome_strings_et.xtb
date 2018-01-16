@@ -151,7 +151,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või kasutage Chrome'i uuemat versiooni.</translation>
 <translation id="5193136243808726294">Google'i Chrome OS ei saa seda lehte avada.</translation>
 <translation id="5204098752394657250">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK" />teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (Chrome'i kopeeritud)</translation>
 <translation id="5251420635869119124">Külastajad saavad kasutada Chrome'i jälgi jätmata.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome taaskäivitub 1 sekundi pärast.}other{Google Chrome taaskäivitub # sekundi pärast.}}</translation>
 <translation id="532046782124376502">Hoiatus: Google Chrome ei saa laiendustel teie sirvimisajaloo salvestamist takistada. Selle laienduse keelamiseks inkognito režiimis tühistage see valik.</translation>
@@ -233,6 +232,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7896673875602241923">Keegi on varem selles arvutis Chrome'i sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Looge uus Chrome'i kasutaja, et oma teave eraldi hoida.</translation>
 <translation id="7908168227788431038">Rakendus on peaaegu ajakohane! Värskenduse lõpuleviimiseks taaskäivitage Google Chrome.</translation>
 <translation id="795025003224538582">Ära taaskäivita</translation>
+<translation id="7962410387636238736">See arvuti ei saa enam Google Chrome'i värskendusi, kuna Windows XP-d ja Windows Vistat enam ei toetata</translation>
 <translation id="8005540215158006229">Chrome on peaaegu valmis.</translation>
 <translation id="8008534537613507642">Installi Chrome uuesti</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>

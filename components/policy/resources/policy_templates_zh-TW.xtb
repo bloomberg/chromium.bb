@@ -146,7 +146,7 @@
 
           如需參考更具體的設定範例，請造訪以下網址：
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1503487916067509762">啟用禁止置入第三方軟體政策可執行的程式碼</translation>
+<translation id="1503487916067509762">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
@@ -755,6 +755,7 @@
 <translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 Ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 True，這個選項的行為會與 AskUser 相同 (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 False)，這個值會等同於 DisallowArc (值 0)。</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
+<translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
@@ -815,6 +816,7 @@
       如未設定這項政策，系統會使用預設的下載目錄，日後使用者可以自行變更這個目錄。</translation>
 <translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="3808945828600697669">指定停用的外掛程式清單</translation>
+<translation id="3811562426301733860">允許所有網站顯示廣告</translation>
 <translation id="3816312845600780067">啟用停止自動登入的鍵盤快速鍵</translation>
 <translation id="3820526221169548563">啟用螢幕小鍵盤這項協助工具功能。
 
@@ -931,6 +933,11 @@
 
           指定政策值時需以毫秒為單位。</translation>
 <translation id="4105989332710272578">不針對列出的網址強制執行憑證透明化政策</translation>
+<translation id="4111405663956464686">警告：自 <ph name="PRODUCT_NAME" /> 版本 72 (2019 年 1 月左右推出) 起，我們將全面停止支援 TLS 最高版本政策。
+
+      如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最高版本。
+
+      這項政策可使用的設定值包括：「tls1.2」或「tls1.3」。設定時，<ph name="PRODUCT_NAME" /> 不會使用高於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" /> 預設設定</translation>
@@ -989,6 +996,12 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
+<translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
+
+      如果將這項政策的值設為 2，含侵入式廣告的網站將無法顯示廣告。
+      不過，在 SafeBrowsingEnabled 政策設為 False 的情況下不會觸發這項行為。
+      如果將這項政策的值設為 1，則不會禁止含侵入式廣告的網站顯示廣告。
+      如果不設定這項政策，系統會將政策值視為 2。</translation>
 <translation id="4347908978527632940">如果設為 true，且使用者是受監管的使用者，其他 Android 應用程式即可透過內容提供者查詢使用者的網路限制。
 
           如果設為 false 或沒有設定，內容提供者將不會傳回任何資訊。</translation>
@@ -1306,6 +1319,7 @@
 <translation id="5469484020713359236">允許你設定網址模式清單，指定可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
 <translation id="5475361623548884387">啟用列印功能</translation>
+<translation id="547601067149622666">禁止含侵入式廣告的網站顯示廣告</translation>
 <translation id="5499375345075963939">這項政策僅於零售模式中有效。
 
       如果這項政策設為 0 以外的值，則系統會在指定的閒置時間過後，自動登出目前登入示範模式的使用者。

@@ -56,7 +56,6 @@
 <translation id="1409879593029778104">파일이 이미 존재하여 <ph name="FILE_NAME" /> 다운로드가 중지되었습니다.</translation>
 <translation id="1414981605391750300">Google에 연결하는 중입니다. 잠시만 기다려 주세요...</translation>
 <translation id="1416550906796893042">애플리케이션 버전</translation>
-<translation id="1423209968422390786">위치 정보 액세스가 <ph name="BEGIN_LINK" />이 기기에서 사용 중지되었습니다<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1445680696957526815">Chrome의 구성요소가 서로 호환되지 않습니다. Chrome이 업그레이드 중일 수 있으니 몇 분 후에 다시 시도하세요. 문제가 계속되면 Chrome을 제거하고 다시 설치해 보세요.</translation>
 <translation id="1446450296470737166">MIDI 기기의 전체 제어 허용</translation>
@@ -84,6 +83,7 @@
 <translation id="1660204651932907780">사이트에서 소리를 재생하도록 허용(권장)</translation>
 <translation id="1670399744444387456">기본</translation>
 <translation id="1671236975893690980">다운로드 대기 중...</translation>
+<translation id="1674523662097951983">'북마크'의 위치가 변경됩니다. 다음에는 검색주소창을 위로 당기세요.</translation>
 <translation id="169033420419426091">SD 카드가 없어서 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1709438864123551175">데이터 절약 모드</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
@@ -116,6 +116,7 @@
 <translation id="1993768208584545658"><ph name="SITE" />에서 페어링하려고 함</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
 <translation id="200815880754187296">기타 앱 <ph name="KILOBYTES" />KB</translation>
+<translation id="2015632741368427174">다음 사이트로의 리디렉션이 차단되었습니다.</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
@@ -413,6 +414,7 @@
 <translation id="4807963036345170158">데이터 절약 모드 사용 안함</translation>
 <translation id="4811736444948656478">중간 높이로 탐색 패널이 열림</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
+<translation id="482201002591920174">기본 저장소</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
 <translation id="4842092870884894799">비밀번호 생성 팝업 표시</translation>
 <translation id="4850886885716139402">보기</translation>
@@ -472,7 +474,6 @@
 <translation id="5327248766486351172">이름</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트 실행 허용(권장)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
-<translation id="5345083863238459644">위치 정보 액세스 또한 <ph name="BEGIN_LINK" />이 기기에서 사용 중지되었습니다<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL이 복사되었습니다.</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
 <translation id="5403644198645076998">특정 사이트만 허용</translation>
@@ -554,6 +555,7 @@
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
 <translation id="5958275228015807058">다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5962718611393537961">탭하여 접기</translation>
+<translation id="5974562976030145789">'다운로드'의 위치가 변경됩니다. 다음에는 검색주소창을 위로 당기세요.</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
 <translation id="6031101910111098835">접힘 - 펼치려면 클릭</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
@@ -652,7 +654,6 @@
 <translation id="6831043979455480757">번역</translation>
 <translation id="6846298663435243399">로드 중...</translation>
 <translation id="6850830437481525139">탭 <ph name="TAB_COUNT" />개를 닫았습니다.</translation>
-<translation id="6856477143496886355">Google Payments를 사용하는 카드 및 주소</translation>
 <translation id="6864459304226931083">이미지 다운로드</translation>
 <translation id="6865313869410766144">양식 데이터 자동완성</translation>
 <translation id="6868088497967843822">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
@@ -664,6 +665,7 @@
 <translation id="6905163627763043954">사용해 보기</translation>
 <translation id="6910211073230771657">삭제됨</translation>
 <translation id="6945221475159498467">선택</translation>
+<translation id="6959661084585705671">보조 저장소</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6978479750597523876">번역 설정 재설정</translation>
@@ -818,6 +820,7 @@
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
 <translation id="8489271220582375723">방문 기록 페이지 열기</translation>
 <translation id="8493948351860045254">저장 공간 확보하기</translation>
+<translation id="8494508527479967437">'방문 기록'의 위치가 변경됩니다. 다음에는 검색주소창을 위로 당기세요.</translation>
 <translation id="8497726226069778601">아직 표시할 내용 없음</translation>
 <translation id="8503813439785031346">사용자이름</translation>
 <translation id="8514477925623180633">Chrome으로 저장한 비밀번호 내보내기</translation>
@@ -862,7 +865,6 @@
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>
 <translation id="8922289737868596582">옵션 더보기 버튼을 눌러 페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
-<translation id="892369953214061711">알림이 허용되었습니다. 위치가 사용 중지되었습니다. Android 설정에서 사용 설정하세요.</translation>
 <translation id="8936297887573571433">다운로드 항목, 북마크, 방문 기록을 보려면 탭하세요</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">다른 창에서 열기</translation>
