@@ -96,7 +96,8 @@ CU_BOOL suite_deadlock_tests_enable(void)
 					     &minor_version, &device_handle))
 		return CU_FALSE;
 
-	if (device_handle->info.family_id == AMDGPU_FAMILY_AI) {
+	if (device_handle->info.family_id == AMDGPU_FAMILY_AI ||
+	    device_handle->info.family_id == AMDGPU_FAMILY_SI) {
 		printf("\n\nCurrently hangs the CP on this ASIC, deadlock suite disabled\n");
 		enable = CU_FALSE;
 	}
