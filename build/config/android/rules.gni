@@ -1729,7 +1729,6 @@ if (enable_java_templates) {
     _lib_dex_path = "$_base_path.dex.jar"
     _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
     _template_name = target_name
-    _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
 
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
@@ -1791,9 +1790,6 @@ if (enable_java_templates) {
             "Possible manifest-generating dep found in deps. Use android_manifest_dep for this instead. Found: $_bad_deps")
       }
       sources = []
-    }
-    if (emma_coverage && !_emma_never_instrument) {
-      _deps += [ "//third_party/android_tools:emma_device_java" ]
     }
 
     _srcjar_deps = []
@@ -2157,6 +2153,7 @@ if (enable_java_templates) {
                                "apk_under_test",
                                "chromium_code",
                                "classpath_deps",
+                               "emma_never_instrument",
                                "java_files",
                                "no_build_hooks",
                                "javac_args",
@@ -2171,7 +2168,6 @@ if (enable_java_templates) {
       final_jar_path = _jar_path
       dex_path = _lib_dex_path
       apk_path = _final_apk_path
-      emma_never_instrument = _emma_never_instrument
 
       if (defined(invoker.apk_under_test)) {
         deps += [ "${invoker.apk_under_test}" ]

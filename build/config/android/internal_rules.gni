@@ -1106,6 +1106,60 @@ if (enable_java_templates) {
     }
   }
 
+  template("emma_instr") {
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "testonly",
+                             ])
+
+      _coverage_file = "$target_out_dir/${target_name}.em"
+      _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
+      _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
+
+      script = "//build/android/gyp/emma_instr.py"
+      depfile = "${target_gen_dir}/${target_name}.d"
+      inputs = invoker.java_files + [
+                 _emma_jar,
+                 invoker.input_jar_path,
+               ]
+      outputs = [
+        _coverage_file,
+        _source_dirs_listing_file,
+        invoker.output_jar_path,
+      ]
+      args = [
+        "instrument_jar",
+        "--input-path",
+        rebase_path(invoker.input_jar_path, root_build_dir),
+        "--output-path",
+        rebase_path(invoker.output_jar_path, root_build_dir),
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--coverage-file",
+        rebase_path(_coverage_file, root_build_dir),
+        "--sources-list-file",
+        rebase_path(_source_dirs_listing_file, root_build_dir),
+        "--src-root",
+        rebase_path("//", root_build_dir),
+        "--emma-jar",
+        rebase_path(_emma_jar, root_build_dir),
+      ]
+      _rebased_java_sources_file =
+          rebase_path(invoker.java_sources_file, root_build_dir)
+      args += [ "--java-sources-file=$_rebased_java_sources_file" ]
+
+      if (emma_filter != "") {
+        args += [
+          "--filter-string",
+          emma_filter,
+        ]
+      }
+    }
+  }
+
   template("process_java_prebuilt") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
@@ -1126,6 +1180,7 @@ if (enable_java_templates) {
                                invoker.enable_build_hooks_android
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
+    _emma_instrument = invoker.emma_instrument
 
     _jar_excluded_patterns = []
     if (defined(invoker.jar_excluded_patterns)) {
@@ -1290,6 +1345,36 @@ if (enable_java_templates) {
       _previous_output_jar = _filter_output_jar
     }
 
+    if (_emma_instrument) {
+      # Emma must run after desugar (or else desugar sometimes fails).
+      _emma_target = "${target_name}__emma"
+      _emma_input_jar = _previous_output_jar
+      _emma_output_jar = "$target_out_dir/$target_name-instrumented.jar"
+
+      emma_instr(_emma_target) {
+        deps = _deps
+        if (defined(invoker.deps)) {
+          deps += invoker.deps
+        }
+        if (defined(invoker.public_deps)) {
+          public_deps = invoker.public_deps
+        }
+
+        forward_variables_from(invoker,
+                               [
+                                 "java_files",
+                                 "java_sources_file",
+                               ])
+
+        input_jar_path = _emma_input_jar
+        output_jar_path = _emma_output_jar
+      }
+
+      _deps = []
+      _deps = [ ":$_emma_target" ]
+      _previous_output_jar = _emma_output_jar
+    }
+
     _output_jar_target = "${target_name}__copy"
 
     # This is copy_ex rather than copy to ensure that JARs (rather than
@@ -1321,60 +1406,6 @@ if (enable_java_templates) {
       public_deps = [
         ":$_output_jar_target",
       ]
-    }
-  }
-
-  template("emma_instr") {
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "public_deps",
-                               "testonly",
-                             ])
-
-      _coverage_file = "$target_out_dir/${target_name}.em"
-      _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
-      _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
-
-      script = "//build/android/gyp/emma_instr.py"
-      depfile = "${target_gen_dir}/${target_name}.d"
-      inputs = invoker.java_files + [
-                 _emma_jar,
-                 invoker.input_jar_path,
-               ]
-      outputs = [
-        _coverage_file,
-        _source_dirs_listing_file,
-        invoker.output_jar_path,
-      ]
-      args = [
-        "instrument_jar",
-        "--input-path",
-        rebase_path(invoker.input_jar_path, root_build_dir),
-        "--output-path",
-        rebase_path(invoker.output_jar_path, root_build_dir),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--coverage-file",
-        rebase_path(_coverage_file, root_build_dir),
-        "--sources-list-file",
-        rebase_path(_source_dirs_listing_file, root_build_dir),
-        "--src-root",
-        rebase_path("//", root_build_dir),
-        "--emma-jar",
-        rebase_path(_emma_jar, root_build_dir),
-      ]
-      _rebased_java_sources_file =
-          rebase_path(invoker.java_sources_file, root_build_dir)
-      args += [ "--java-sources-file=$_rebased_java_sources_file" ]
-
-      if (emma_filter != "") {
-        args += [
-          "--filter-string",
-          emma_filter,
-        ]
-      }
     }
   }
 
@@ -2122,12 +2153,7 @@ if (enable_java_templates) {
       _javac_args = invoker.javac_args
     }
 
-    _javac_target_name = target_name
-    if (defined(invoker.instrumented_jar_path)) {
-      _javac_target_name = "${target_name}__javac"
-    }
-
-    action(_javac_target_name) {
+    action(target_name) {
       script = "//build/android/gyp/javac.py"
       depfile = "$target_gen_dir/$target_name.d"
       deps = _srcjar_deps
@@ -2215,23 +2241,6 @@ if (enable_java_templates) {
       }
       foreach(e, _javac_args) {
         args += [ "--javac-arg=" + e ]
-      }
-    }
-
-    if (defined(invoker.instrumented_jar_path)) {
-      emma_instr(target_name) {
-        forward_variables_from(invoker,
-                               [
-                                 "deps",
-                                 "java_files",
-                                 "java_sources_file",
-                               ])
-
-        input_jar_path = invoker.javac_jar_path
-        output_jar_path = invoker.instrumented_jar_path
-        public_deps = [
-          ":$_javac_target_name",
-        ]
       }
     }
   }
@@ -2364,13 +2373,15 @@ if (enable_java_templates) {
       sources = []
     }
 
-    _emma_instrument = emma_coverage && !_chromium_code && _java_files != []
-    if (defined(invoker.emma_never_instrument)) {
-      _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
-    }
-    if (_emma_instrument) {
-      _instrumented_jar_path =
-          "$target_gen_dir/$_main_target_name.instrumented.jar"
+    if (defined(_final_jar_path)) {
+      _emma_instrument = emma_coverage && _chromium_code && _java_files != [] &&
+                         (!defined(invoker.testonly) || !invoker.testonly)
+      if (defined(invoker.emma_never_instrument)) {
+        _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
+      }
+      if (_emma_instrument) {
+        _accumulated_deps += [ "//third_party/android_tools:emma_device_java" ]
+      }
     }
 
     if (_java_files != []) {
@@ -2488,9 +2499,6 @@ if (enable_java_templates) {
         requires_android = _requires_android
         deps = _accumulated_deps
         javac_jar_path = _javac_jar_path
-        if (_emma_instrument) {
-          instrumented_jar_path = _instrumented_jar_path
-        }
       }
       _accumulated_deps += [ ":$_compile_java_target" ]
 
@@ -2510,13 +2518,6 @@ if (enable_java_templates) {
           }
           if (defined(invoker.lint_suppressions_file)) {
             lint_suppressions_file = invoker.lint_suppressions_file
-          }
-          if (_emma_instrument) {
-            # Disable the NewApi lint warning when building with coverage
-            # enabled. Coverage seems to mess with how the linter detects
-            # the usages of a new API within a conditional. See
-            # crbug.com/677320 for more.
-            disable = [ "NewApi" ]
           }
         }
 
@@ -2546,8 +2547,10 @@ if (enable_java_templates) {
         enable_build_hooks_android = _enable_build_hooks_android
         build_config = _build_config
         input_jar_path = _unprocessed_jar_path
-        if (defined(_instrumented_jar_path)) {
-          input_jar_path = _instrumented_jar_path
+        emma_instrument = _emma_instrument
+        if (_emma_instrument) {
+          java_files = _java_files
+          java_sources_file = _java_sources_file
         }
         output_jar_path = _final_jar_path
         deps = _accumulated_deps
