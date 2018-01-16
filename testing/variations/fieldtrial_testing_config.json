@@ -3406,12 +3406,13 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledForPhishingSites",
+                    "name": "LiveRun_BAS_Phishing",
                     "params": {
-                        "enable_presets": "liverun_on_phishing_sites"
+                        "enable_presets": "liverun_on_phishing_sites,liverun_on_better_ads_violating_sites"
                     },
                     "enable_features": [
-                        "SubresourceFilter"
+                        "SubresourceFilter",
+                        "SubresourceFilterExperimentalUI"
                     ]
                 },
                 {

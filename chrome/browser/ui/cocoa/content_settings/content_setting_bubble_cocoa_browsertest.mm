@@ -170,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
   EXPECT_NSEQ([[filterController learnMoreLink] title], link);
 
   EXPECT_TRUE([filterController manageCheckbox]);
-  label = base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_ALLOW_ADS));
+  label =
+      base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_ALWAYS_ALLOW_ADS));
   EXPECT_NSEQ([[filterController manageCheckbox] title], label);
 
   EXPECT_TRUE([filterController doneButton]);

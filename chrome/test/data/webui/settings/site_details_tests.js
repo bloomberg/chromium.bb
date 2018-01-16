@@ -127,7 +127,6 @@ suite('SiteDetails', function() {
     // Add ContentsSettingsTypes which are not supposed to be shown on the Site
     // Details page here.
     const nonSiteDetailsContentSettingsTypes = [
-      settings.ContentSettingsTypes.ADS,
       settings.ContentSettingsTypes.COOKIES,
       settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
       settings.ContentSettingsTypes.USB_DEVICES,
