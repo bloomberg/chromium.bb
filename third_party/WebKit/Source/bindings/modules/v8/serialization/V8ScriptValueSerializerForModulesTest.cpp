@@ -22,6 +22,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebRTCCertificateGenerator.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -303,7 +304,8 @@ T SubtleCryptoSync(ScriptState* script_state, PMF func, Args&&... args) {
                                             *out = result;
                                             testing::ExitRunLoop();
                                           },
-                                          WTF::Unretained(&result))));
+                                          WTF::Unretained(&result))),
+      scheduler::GetSingleThreadTaskRunnerForTesting());
   testing::EnterRunLoop();
   return result;
 }

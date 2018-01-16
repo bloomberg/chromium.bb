@@ -22,52 +22,63 @@ class MockWebCrypto : public WebCrypto {
         new ::testing::StrictMock<MockWebCrypto>());
   }
 
-  MOCK_METHOD4(Encrypt,
+  MOCK_METHOD5(Encrypt,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     WebVector<unsigned char>,
-                    WebCryptoResult));
-  MOCK_METHOD4(Decrypt,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD5(Decrypt,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     WebVector<unsigned char>,
-                    WebCryptoResult));
-  MOCK_METHOD4(Sign,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD5(Sign,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     WebVector<unsigned char>,
-                    WebCryptoResult));
-  MOCK_METHOD5(VerifySignature,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD6(VerifySignature,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     WebVector<unsigned char>,
                     WebVector<unsigned char>,
-                    WebCryptoResult));
-  MOCK_METHOD3(Digest,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD4(Digest,
                void(const WebCryptoAlgorithm&,
                     WebVector<unsigned char>,
-                    WebCryptoResult));
-  MOCK_METHOD4(GenerateKey,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD5(GenerateKey,
                void(const WebCryptoAlgorithm&,
                     bool,
                     WebCryptoKeyUsageMask,
-                    WebCryptoResult));
-  MOCK_METHOD6(ImportKey,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD7(ImportKey,
                void(WebCryptoKeyFormat,
                     WebVector<unsigned char>,
                     const WebCryptoAlgorithm&,
                     bool,
                     WebCryptoKeyUsageMask,
-                    WebCryptoResult));
-  MOCK_METHOD3(ExportKey,
-               void(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult));
-  MOCK_METHOD5(WrapKey,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD4(ExportKey,
+               void(WebCryptoKeyFormat,
+                    const WebCryptoKey&,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD6(WrapKey,
                void(WebCryptoKeyFormat,
                     const WebCryptoKey&,
                     const WebCryptoKey&,
                     const WebCryptoAlgorithm&,
-                    WebCryptoResult));
-  MOCK_METHOD8(UnwrapKey,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD9(UnwrapKey,
                void(WebCryptoKeyFormat,
                     WebVector<unsigned char>,
                     const WebCryptoKey&,
@@ -75,20 +86,23 @@ class MockWebCrypto : public WebCrypto {
                     const WebCryptoAlgorithm&,
                     bool,
                     WebCryptoKeyUsageMask,
-                    WebCryptoResult));
-  MOCK_METHOD4(DeriveBits,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD5(DeriveBits,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     unsigned,
-                    WebCryptoResult));
-  MOCK_METHOD7(DeriveKey,
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD8(DeriveKey,
                void(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     const WebCryptoAlgorithm&,
                     const WebCryptoAlgorithm&,
                     bool,
                     WebCryptoKeyUsageMask,
-                    WebCryptoResult));
+                    WebCryptoResult,
+                    scoped_refptr<base::SingleThreadTaskRunner>));
   MOCK_METHOD1(CreateDigestorProxy, WebCryptoDigestor*(WebCryptoAlgorithmId));
   MOCK_METHOD7(DeserializeKeyForClone,
                bool(const WebCryptoKeyAlgorithm&,
