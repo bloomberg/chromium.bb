@@ -69,9 +69,6 @@ void Connector::QueryService(const Identity& identity,
 void Connector::BindInterface(const Identity& target,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (!BindConnectorIfNecessary())
-    return;
-
   auto service_overrides_iter = local_binder_overrides_.find(target.name());
   if (service_overrides_iter != local_binder_overrides_.end()) {
     auto override_iter = service_overrides_iter->second.find(interface_name);
@@ -80,6 +77,9 @@ void Connector::BindInterface(const Identity& target,
       return;
     }
   }
+
+  if (!BindConnectorIfNecessary())
+    return;
 
   connector_->BindInterface(target, interface_name, std::move(interface_pipe),
                             base::Bind(&Connector::RunStartServiceCallback,

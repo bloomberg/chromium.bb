@@ -1,0 +1,64 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
+import("//testing/test.gni")
+
+service_manifest("manifest") {
+  name = "audio"
+  source = "manifest.json"
+}
+
+source_set("lib") {
+  sources = [
+    "in_process_audio_manager_accessor.cc",
+    "in_process_audio_manager_accessor.h",
+    "service.cc",
+    "service.h",
+    "system_info.cc",
+    "system_info.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//media",
+    "//services/audio/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "test/audio_system_to_service_adapter_test.cc",
+    "test/in_process_service_test.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//services/audio/public/cpp",
+    "//services/audio/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+service_manifest("unittest_manifest") {
+  name = "audio_unittests"
+  source = "test/service_unittest_manifest.json"
+  packaged_services = [ ":manifest" ]
+}
+
+catalog("tests_catalog") {
+  testonly = true
+  embedded_services = [ ":unittest_manifest" ]
+}
