@@ -383,10 +383,6 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
     # Make sure the anchor functions are located in the right place, here and
     # after everything else.
     # See the comment in //base/android/library_loader/anchor_functions.cc.
-    #
-    # Note that since wildcards are not supported by lld, the section at the
-    # end of .text will not be there, likely triggering an assert in the file
-    # above.
     for prefix in _PREFIXES:
       f.write(prefix + 'dummy_function_to_anchor_text\n')
 
@@ -397,8 +393,12 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
     f.write('.text\n')  # gets methods not in a section, such as assembly
     f.write('.text.*\n')  # gets everything else
 
+    # Since wildcards are not supported by lld, the "end of text" anchor symbol
+    # is not emitted, a different mechanism is used instead. See comments in the
+    # file above.
     for prefix in _PREFIXES:
-      f.write(prefix + 'dummy_function_at_the_end_of_text\n')
+      if prefix:
+        f.write(prefix + 'dummy_function_at_the_end_of_text\n')
 
 
 def _CreateArgumentParser():
