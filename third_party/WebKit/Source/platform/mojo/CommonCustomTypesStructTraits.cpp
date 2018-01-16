@@ -6,6 +6,10 @@
 
 #include <cstring>
 
+#include "base/containers/span.h"
+#include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/base/big_buffer_struct_traits.h"
+
 namespace mojo {
 
 // static
@@ -20,6 +24,13 @@ void* StructTraits<common::mojom::String16DataView, WTF::String>::SetUpContext(
 
   return new base::string16(input.Characters8(),
                             input.Characters8() + input.length());
+}
+
+// static
+void StructTraits<common::mojom::String16DataView,
+                  WTF::String>::TearDownContext(const WTF::String& input,
+                                                void* context) {
+  delete static_cast<base::string16*>(context);
 }
 
 // static
@@ -47,6 +58,44 @@ bool StructTraits<common::mojom::String16DataView, WTF::String>::Read(
   ArrayDataView<uint16_t> view;
   data.GetDataDataView(&view);
   *out = WTF::String(reinterpret_cast<const UChar*>(view.data()), view.size());
+  return true;
+}
+
+// static
+mojo_base::BigBuffer StructTraits<common::mojom::BigString16DataView,
+                                  WTF::String>::data(const WTF::String& input) {
+  if (input.Is8Bit()) {
+    base::string16 input16(input.Characters8(),
+                           input.Characters8() + input.length());
+    return mojo_base::BigBuffer(
+        base::make_span(reinterpret_cast<const uint8_t*>(input16.data()),
+                        input16.size() * sizeof(UChar)));
+  }
+
+  return mojo_base::BigBuffer(
+      base::make_span(reinterpret_cast<const uint8_t*>(input.Characters16()),
+                      input.length() * sizeof(UChar)));
+}
+
+// static
+bool StructTraits<common::mojom::BigString16DataView, WTF::String>::Read(
+    common::mojom::BigString16DataView data,
+    WTF::String* out) {
+  mojo_base::BigBuffer buffer;
+  if (!data.ReadData(&buffer))
+    return false;
+  size_t size = buffer.size();
+  if (size % sizeof(UChar))
+    return false;
+
+  // An empty |mojo_base::BigBuffer| may have a null |data()| if empty.
+  if (!size) {
+    *out = g_empty_string;
+  } else {
+    *out = WTF::String(reinterpret_cast<const UChar*>(buffer.data()),
+                       size / sizeof(UChar));
+  }
+
   return true;
 }
 

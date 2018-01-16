@@ -9,7 +9,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/common/process_id.mojom.h"
@@ -141,21 +140,6 @@ class TestValueImpl : public TestValue {
 
  private:
   mojo::Binding<TestValue> binding_;
-};
-
-class TestString16Impl : public TestString16 {
- public:
-  explicit TestString16Impl(TestString16Request request)
-      : binding_(this, std::move(request)) {}
-
-  // TestString16 implementation:
-  void BounceString16(const base::string16& in,
-                      BounceString16Callback callback) override {
-    std::move(callback).Run(in);
-  }
-
- private:
-  mojo::Binding<TestString16> binding_;
 };
 
 class TestFileImpl : public TestFile {
@@ -351,32 +335,6 @@ TEST_F(CommonCustomTypesTest, Value) {
   input = std::move(list);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
   ASSERT_EQ(*input, *output);
-}
-
-TEST_F(CommonCustomTypesTest, String16) {
-  base::RunLoop run_loop;
-
-  TestString16Ptr ptr;
-  TestString16Impl impl(MakeRequest(&ptr));
-
-  base::string16 str16 = base::ASCIIToUTF16("hello world");
-
-  ptr->BounceString16(str16, ExpectResponse(&str16, run_loop.QuitClosure()));
-
-  run_loop.Run();
-}
-
-TEST_F(CommonCustomTypesTest, EmptyString16) {
-  base::RunLoop run_loop;
-
-  TestString16Ptr ptr;
-  TestString16Impl impl(MakeRequest(&ptr));
-
-  base::string16 str16;
-
-  ptr->BounceString16(str16, ExpectResponse(&str16, run_loop.QuitClosure()));
-
-  run_loop.Run();
 }
 
 TEST_F(CommonCustomTypesTest, File) {

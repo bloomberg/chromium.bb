@@ -16,7 +16,7 @@
 #include "content/common/unique_name_helper.h"
 #include "content/public/common/referrer_struct_traits.h"
 #include "ipc/ipc_message_utils.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/common/string16_struct_traits.h"
 #include "mojo/common/time_struct_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"

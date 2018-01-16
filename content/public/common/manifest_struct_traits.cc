@@ -4,7 +4,7 @@
 
 #include "content/public/common/manifest_struct_traits.h"
 
-#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/common/string16_struct_traits.h"
 #include "third_party/WebKit/public/platform/WebDisplayModeStructTraits.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationEnumTraits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"

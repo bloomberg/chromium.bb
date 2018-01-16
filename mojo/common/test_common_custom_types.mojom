@@ -6,7 +6,6 @@ module mojo.common.test;
 
 import "mojo/common/file.mojom";
 import "mojo/common/file_path.mojom";
-import "mojo/common/string16.mojom";
 import "mojo/common/text_direction.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
@@ -40,12 +39,6 @@ interface TestValue {
   [Sync]
   BounceValue(mojo.common.mojom.Value? in)
       => (mojo.common.mojom.Value? out);
-};
-
-interface TestString16 {
-  [Sync]
-  BounceString16(mojo.common.mojom.String16 in)
-      => (mojo.common.mojom.String16 out);
 };
 
 interface TestFile {

@@ -4,6 +4,8 @@
 
 module mojo.common.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
+
 // Corresponds to |base::string16| in base/strings/string16.h
 // Corresponds to |WTF::String| in
 // third_party/WebKit/Source/platform/wtf/text/WTFString.h.
@@ -13,4 +15,13 @@ module mojo.common.mojom;
 // page state serialization owners before making such a change.
 struct String16 {
   array<uint16> data;
+};
+
+// This type should be used in place of String16 whenever the contents of the
+// string may realistically exceed 64 kB in size. This string is safe to store
+// an arbitrarily large amount of data (available memory permitting) without
+// negatively impacting IPC performance or hitting hard message size
+// boundaries.
+struct BigString16 {
+  mojo_base.mojom.BigBuffer data;
 };
