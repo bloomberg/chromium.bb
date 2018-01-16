@@ -29,6 +29,7 @@
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -41,20 +42,25 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
@@ -70,8 +76,11 @@
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -794,12 +803,13 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     pm->AddGetFullHashResponse(full_hash);
   }
 
-  bool ShowingInterstitialPage() {
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+  bool ShowingInterstitialPage(Browser* browser) {
+    WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
     InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != nullptr;
   }
+
+  bool ShowingInterstitialPage() { return ShowingInterstitialPage(browser()); }
 
   void IntroduceGetHashDelay(const base::TimeDelta& delay) {
     pm_factory_.GetProtocolManager()->IntroduceDelay(delay);
@@ -925,6 +935,83 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
   EXPECT_EQ(url, hit_report().page_url);
   EXPECT_EQ(GURL(), hit_report().referrer_url);
   EXPECT_FALSE(hit_report().is_subresource);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrameInApp) {
+  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+  GURL url = embedded_test_server()->GetURL(kEmptyPage);
+
+  // After adding the url to safebrowsing database and getfullhash result,
+  // we should see the interstitial page.
+  SBFullHashResult malware_full_hash;
+  GenUrlFullHashResultWithMetadata(url, &malware_full_hash);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
+  SetupResponseForUrl(url, malware_full_hash);
+
+  // Install app.
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  web_app_info.scope = embedded_test_server()->GetURL("/");
+  web_app_info.title = base::UTF8ToUTF16("Test app");
+  web_app_info.description = base::UTF8ToUTF16("Test description");
+
+  Profile* profile = browser()->profile();
+  const extensions::Extension* app =
+      extensions::browsertest_util::InstallBookmarkApp(profile, web_app_info);
+
+  // Launch app and wait for it to load.
+  ui_test_utils::UrlLoadObserver url_observer(
+      web_app_info.app_url, content::NotificationService::AllSources());
+  Browser* app_browser =
+      extensions::browsertest_util::LaunchAppBrowser(profile, app);
+  url_observer.Wait();
+
+  // All types should show the interstitial.
+  EXPECT_TRUE(ShowingInterstitialPage(app_browser));
+
+  EXPECT_TRUE(got_hit_report());
+  EXPECT_EQ(url, hit_report().malicious_url);
+  EXPECT_EQ(url, hit_report().page_url);
+  EXPECT_EQ(GURL(), hit_report().referrer_url);
+  EXPECT_FALSE(hit_report().is_subresource);
+
+  size_t num_browsers = chrome::GetBrowserCount(profile);
+  EXPECT_EQ(app_browser, chrome::FindLastActive());
+  int num_tabs = browser()->tab_strip_model()->count();
+
+  // Get SafeBrowsingBlockingPage.
+  content::WebContents* app_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  InterstitialPage* interstitial_page = app_contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  SafeBrowsingBlockingPage* safe_browsing_interstitial =
+      static_cast<SafeBrowsingBlockingPage*>(
+          interstitial_page->GetDelegateForTesting());
+
+  // Dispatch "Proceed" command on SafeBrowsingBlockingPage.
+  //
+  // We dispatch "Proceed" on SafeBrowsingBlockingPage instead of calling
+  // InterstitialPage::Proceed() because SafeBrowsingBlockingPage calls into
+  // SafeBrowsingControllerClient which is where the code we want to test is.
+  // InterstitialPage::Proceed() bypasses SafeBrowsingControllerClient.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &app_contents->GetController()));
+  safe_browsing_interstitial->CommandReceived(
+      base::IntToString(security_interstitials::CMD_PROCEED));
+  observer.Wait();
+
+  // After proceeding through an interstitial, the app window should be closed,
+  // and a new tab should be opened with the target URL and there should no
+  // longer be an interstitial.
+  EXPECT_EQ(--num_browsers, chrome::GetBrowserCount(profile));
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {

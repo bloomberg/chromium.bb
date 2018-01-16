@@ -12,6 +12,7 @@
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/safe_browsing/safe_browsing_controller_client.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -281,7 +282,7 @@ SafeBrowsingBlockingPage::CreateControllerClient(
           GetReportingInfo(unsafe_resources),
           GetSamplingEventName(GetInterstitialReason(unsafe_resources)));
 
-  return base::MakeUnique<SecurityInterstitialControllerClient>(
+  return base::MakeUnique<SafeBrowsingControllerClient>(
       web_contents, std::move(metrics_helper), profile->GetPrefs(),
       ui_manager->app_locale(), ui_manager->default_safe_page());
 }
