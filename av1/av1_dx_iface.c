@@ -212,6 +212,9 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   }
 #endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
+#if CONFIG_MONO_VIDEO
+  if (is_monochrome) return 1;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (color_primaries == AOM_CICP_CP_BT_709 &&
       transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -225,10 +228,6 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
           (profile == PROFILE_2 && bit_depth == AOM_BITS_12))) {
       return 0;
     }
-#if CONFIG_MONO_VIDEO
-  } else if (is_monochrome) {
-    return 1;
-#endif  // CONFIG_MONO_VIDEO
   } else {
     rb->bit_offset += 1;  // [16,235] (including xvycc) vs [0,255] range.
 

@@ -3282,6 +3282,9 @@ static void write_bitdepth_colorspace_sampling(
   if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 4);
 #endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
+#if CONFIG_MONO_VIDEO
+  if (is_monochrome) return;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -3294,10 +3297,6 @@ static void write_bitdepth_colorspace_sampling(
     assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
     assert(cm->profile == PROFILE_1 ||
            (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12));
-#if CONFIG_MONO_VIDEO
-  } else if (is_monochrome) {
-    return;
-#endif  // CONFIG_MONO_VIDEO
   } else {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
     aom_wb_write_bit(wb, cm->color_range);
