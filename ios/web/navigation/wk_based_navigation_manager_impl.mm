@@ -15,6 +15,7 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
+#include "ios/web/navigation/placeholder_navigation_util.h"
 #include "ios/web/navigation/wk_based_restore_session_util.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
@@ -124,6 +125,10 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
       last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
       &transient_url_rewriters_);
   RemoveTransientURLRewriters();
+  // Ignore URL rewrite if this is a placeholder URL
+  if (placeholder_navigation_util::IsPlaceholderUrl(url)) {
+    pending_item_->SetURL(url);
+  }
   UpdatePendingItemUserAgentType(user_agent_override_option,
                                  GetLastCommittedNonAppSpecificItem(),
                                  pending_item_.get());
