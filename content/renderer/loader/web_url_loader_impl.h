@@ -44,8 +44,6 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   std::vector<ResourceResponseInfo> redirect_responses;
   std::vector<net::RedirectInfo> redirect_infos;
 
-  int total_transferred = 0;
-
   // Called when this struct is deleted. Used to notify the browser that it can
   // release its associated StreamHandle.
   base::OnceCallback<void(const GURL&)> on_delete;

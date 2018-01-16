@@ -880,13 +880,6 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   if (!client_)
     return;
 
-  if (stream_override_ && stream_override_->stream_url.is_empty()) {
-    // Since ResourceDispatcher::ContinueForNavigation called OnComplete
-    // immediately, it didn't have the size of the resource immediately. So as
-    // data is read off the data pipe, keep track of how much we're reading.
-    stream_override_->total_transferred += data_length;
-  }
-
   TRACE_EVENT_WITH_FLOW0(
       "loading", "WebURLLoaderImpl::Context::OnReceivedData",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -927,12 +920,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
   int64_t total_transfer_size = status.encoded_data_length;
   int64_t encoded_body_size = status.encoded_body_length;
-
-  if (stream_override_ && stream_override_->stream_url.is_empty()) {
-    // TODO(kinuko|scottmg|jam): This is wrong. https://crbug.com/705744.
-    total_transfer_size = stream_override_->total_transferred;
-    encoded_body_size = stream_override_->total_transferred;
-  }
 
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
