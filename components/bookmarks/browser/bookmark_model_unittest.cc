@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -132,7 +131,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // in debugging.
       static int next_folder_id = 1;
       TestNode* new_node = parent->Add(
-          base::MakeUnique<TestNode>(base::IntToString16(next_folder_id++),
+          std::make_unique<TestNode>(base::IntToString16(next_folder_id++),
                                      BookmarkNode::FOLDER),
           parent->child_count());
       PopulateNodeImpl(description, index, new_node);
@@ -146,7 +145,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // likely means a space was forgotten.
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
-      parent->Add(base::MakeUnique<TestNode>(base::UTF8ToUTF16(element),
+      parent->Add(std::make_unique<TestNode>(base::UTF8ToUTF16(element),
                                              BookmarkNode::URL),
                   parent->child_count());
     }
@@ -428,7 +427,7 @@ class BookmarkModelTest : public testing::Test,
     model_->RemoveObserver(this);
 
     BookmarkPermanentNodeList extra_nodes;
-    extra_nodes.push_back(base::MakeUnique<BookmarkPermanentNode>(100));
+    extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
     BookmarkPermanentNode* extra_node = extra_nodes.back().get();
 
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
