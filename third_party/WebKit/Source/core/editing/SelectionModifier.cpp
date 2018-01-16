@@ -28,6 +28,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/InlineBoxPosition.h"
 #include "core/editing/LocalCaretRect.h"
 #include "core/editing/SelectionTemplate.h"
@@ -179,33 +180,30 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
   return true;
 }
 
-// This function returns |SelectionInDOMTree| from start and end position of
-// |visibleSelection| with |direction| and ordering of base and extent to
-// handle base/extent don't match to start/end, e.g. granularity != character,
-// and start/end adjustment in |visibleSelection::validate()| for range
-// selection.
-static SelectionInDOMTree PrepareToExtendSelection(
-    const SelectionInDOMTree& selection,
-    SelectionModifyDirection direction) {
-  const VisibleSelection& visible_selection = CreateVisibleSelection(selection);
-  if (visible_selection.Start().IsNull())
-    return visible_selection.AsSelection();
-  const bool base_is_start = IsBaseStart(visible_selection, direction);
-  return SelectionInDOMTree::Builder(visible_selection.AsSelection())
-      .Collapse(base_is_start ? visible_selection.Start()
-                              : visible_selection.End())
-      .Extend(base_is_start ? visible_selection.End()
-                            : visible_selection.Start())
-      .Build();
-}
-
-static SelectionInDOMTree PrepareToModifySelection(
-    const SelectionInDOMTree& selection,
+// This function returns |VisibleSelection| from start and end position of
+// current_selection_'s |VisibleSelection| with |direction| and ordering of base
+// and extent to handle base/extent don't match to start/end, e.g. granularity
+// != character, and start/end adjustment in |visibleSelection::validate()| for
+// range selection.
+VisibleSelection SelectionModifier::PrepareToModifySelection(
     SelectionModifyAlteration alter,
-    SelectionModifyDirection direction) {
-  return alter == SelectionModifyAlteration::kExtend
-             ? PrepareToExtendSelection(selection, direction)
-             : CreateVisibleSelection(selection).AsSelection();
+    SelectionModifyDirection direction) const {
+  const VisibleSelection& visible_selection =
+      CreateVisibleSelection(current_selection_);
+  if (alter != SelectionModifyAlteration::kExtend)
+    return visible_selection;
+  if (visible_selection.IsNone())
+    return visible_selection;
+
+  const EphemeralRange& range = visible_selection.AsSelection().ComputeRange();
+  if (range.IsCollapsed())
+    return visible_selection;
+  SelectionInDOMTree::Builder builder;
+  if (IsBaseStart(visible_selection, direction))
+    builder.SetAsForwardSelection(range);
+  else
+    builder.SetAsBackwardSelection(range);
+  return CreateVisibleSelection(builder.Build());
 }
 
 VisiblePosition SelectionModifier::PositionForPlatform(
@@ -640,8 +638,7 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame().GetDocument()->Lifecycle());
 
-  selection_ = CreateVisibleSelection(
-      PrepareToModifySelection(current_selection_, alter, direction));
+  selection_ = PrepareToModifySelection(alter, direction);
 
   bool was_range = selection_.IsRange();
   VisiblePosition original_start_position = selection_.VisibleStart();
@@ -765,11 +762,10 @@ bool SelectionModifier::ModifyWithPageGranularity(
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame().GetDocument()->Lifecycle());
 
-  selection_ = CreateVisibleSelection(PrepareToModifySelection(
-      current_selection_, alter,
-      direction == SelectionModifyVerticalDirection::kUp
-          ? SelectionModifyDirection::kBackward
-          : SelectionModifyDirection::kForward));
+  selection_ = PrepareToModifySelection(
+      alter, direction == SelectionModifyVerticalDirection::kUp
+                 ? SelectionModifyDirection::kBackward
+                 : SelectionModifyDirection::kForward);
 
   VisiblePosition pos;
   LayoutUnit x_pos;
