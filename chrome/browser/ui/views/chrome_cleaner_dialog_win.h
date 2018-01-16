@@ -55,7 +55,6 @@ class ChromeCleanerDialog
   bool ShouldShowCloseButton() const override;
 
   // views::DialogDelegate overrides.
-  views::View* CreateFootnoteView() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
   bool Accept() override;
