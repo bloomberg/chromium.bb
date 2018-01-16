@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -492,6 +491,10 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, CleanupNeeded) {
     EXPECT_EQ(invocation_type_ ==
                   SwReporterInvocationType::kUserInitiatedWithLogsAllowed,
               scan_invocation.cleaner_logs_upload_enabled());
+    EXPECT_EQ(invocation_type_ == SwReporterInvocationType::kPeriodicRun
+                  ? chrome_cleaner::ChromePromptValue::kPrompted
+                  : chrome_cleaner::ChromePromptValue::kUserInitiated,
+              scan_invocation.chrome_prompt());
   }
 }
 

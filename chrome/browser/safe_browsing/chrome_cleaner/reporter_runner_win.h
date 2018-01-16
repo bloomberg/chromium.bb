@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 
 namespace base {
 class TaskRunner;
@@ -118,6 +119,9 @@ class SwReporterInvocation {
   bool cleaner_logs_upload_enabled() const;
   void set_cleaner_logs_upload_enabled(bool cleaner_logs_upload_enabled);
 
+  chrome_cleaner::ChromePromptValue chrome_prompt() const;
+  void set_chrome_prompt(chrome_cleaner::ChromePromptValue chrome_prompt);
+
  private:
   base::CommandLine command_line_;
 
@@ -127,6 +131,9 @@ class SwReporterInvocation {
 
   bool reporter_logs_upload_enabled_ = false;
   bool cleaner_logs_upload_enabled_ = false;
+
+  chrome_cleaner::ChromePromptValue chrome_prompt_ =
+      chrome_cleaner::ChromePromptValue::kUnspecified;
 };
 
 enum class SwReporterInvocationResult {

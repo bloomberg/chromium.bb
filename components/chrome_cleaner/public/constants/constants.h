@@ -105,10 +105,17 @@ constexpr int kSwReporterTimeoutWithUwS = 35;
 // Values to be passed to the kChromePromptSwitch of the Chrome Cleanup Tool to
 // indicate how the user interacted with the accept button.
 enum class ChromePromptValue {
+  // Value not set.
+  kUnspecified = 0,
   // The user accepted the prompt when the prompt was first shown.
   kPrompted = 3,
-  // The user accepted the prompt after navigating to it from the menu.
-  kShownFromMenu = 4
+  // The user started the cleanup from the Settings page.
+  kUserInitiated = 5,
+
+  // Legacy values that shouldn't be used in Chromium code.
+  kLegacyNotPrompted = 1,
+  kLegacyUnknown = 2,
+  kLegacyShownFromMenu = 4,
 };
 
 // Values to be passed to the kExecutionModeSwitch for the Chrome Cleanup Tool
