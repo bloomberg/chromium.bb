@@ -1146,6 +1146,7 @@ jumbo_component("base") {
   ]
 
   public_deps = [
+    ":anchor_functions_flags",
     ":base_static",
     ":build_date",
     ":cfi_flags",
@@ -1770,6 +1771,15 @@ buildflag_header("synchronization_flags") {
 
   flags =
       [ "ENABLE_MUTEX_PRIORITY_INHERITANCE=$enable_mutex_priority_inheritance" ]
+}
+
+buildflag_header("anchor_functions_flags") {
+  header = "anchor_functions_flags.h"
+  header_dir = "base/android/library_loader"
+
+  # buildflag entries added to this header must also must be manually added to
+  # tools/gn/bootstrap/bootstrap.py
+  flags = [ "USE_LLD=$use_lld" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic

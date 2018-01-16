@@ -4,7 +4,9 @@
 
 #include "base/android/library_loader/anchor_functions.h"
 
+#include "base/android/library_loader/anchor_functions_flags.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 
 // asm() macros below don't compile on x86, and haven't been validated outside
 // ARM.
@@ -40,6 +42,17 @@ void dummy_function_to_anchor_text() {
   asm(".word 0xd5190cda");
 }
 
+#if BUILDFLAG(USE_LLD)
+// LLD doesn't support wildcards in the symbol ordering file, meaning that
+// using the --symbol-ordering-file doesn't work, as the ordering would have
+// to be  exhaustive (cannot be, as the ordering is generated offline).
+//
+// However, LLD will place custom sections after the main .text section, meaning
+// that the code below will be in the same segment as .text, only after it. In
+// this case, lld will also provide a __start_[section name], but the section
+// must not be empty, so we can use the same function.
+__attribute__((section("sentinel_section_after_text")))
+#endif
 void dummy_function_at_the_end_of_text() {
   asm(".word 0x133b9613");
   asm(".word 0xdcd8c46a");
