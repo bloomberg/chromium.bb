@@ -17,7 +17,8 @@ class WebrtcLoggingPrivateApiBrowserTest
   ~WebrtcLoggingPrivateApiBrowserTest() override = default;
 
   base::FilePath webrtc_logs_path() {
-    return WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile()->GetPath());
+    return WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+        profile()->GetPath());
   }
 
  private:

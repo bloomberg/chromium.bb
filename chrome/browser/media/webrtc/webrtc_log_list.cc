@@ -7,9 +7,8 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/upload_list/text_log_upload_list.h"
+#include "content/public/browser/browser_context.h"
 
 namespace {
 
@@ -19,17 +18,18 @@ const char kWebRtcLogListFilename[] = "Log List";
 }  // namespace
 
 // static
-UploadList* WebRtcLogList::CreateWebRtcLogList(Profile* profile) {
+UploadList* WebRtcLogList::CreateWebRtcLogList(
+    content::BrowserContext* browser_context) {
   base::FilePath log_list_path = GetWebRtcLogListFileForDirectory(
-      GetWebRtcLogDirectoryForProfile(profile->GetPath()));
+      GetWebRtcLogDirectoryForBrowserContextPath(browser_context->GetPath()));
   return new TextLogUploadList(log_list_path);
 }
 
 // static
-base::FilePath WebRtcLogList::GetWebRtcLogDirectoryForProfile(
-    const base::FilePath& profile_path) {
-  DCHECK(!profile_path.empty());
-  return profile_path.AppendASCII(kWebRtcLogDirectory);
+base::FilePath WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+    const base::FilePath& browser_context_path) {
+  DCHECK(!browser_context_path.empty());
+  return browser_context_path.AppendASCII(kWebRtcLogDirectory);
 }
 
 // static

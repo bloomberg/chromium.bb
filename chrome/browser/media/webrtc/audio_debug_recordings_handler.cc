@@ -14,8 +14,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_manager.h"
@@ -37,9 +36,11 @@ base::FilePath GetAudioDebugRecordingsPrefixPath(
                                base::Int64ToString(audio_debug_recordings_id));
 }
 
-base::FilePath GetLogDirectoryAndEnsureExists(Profile* profile) {
+base::FilePath GetLogDirectoryAndEnsureExists(
+    content::BrowserContext* browser_context) {
   base::FilePath log_dir_path =
-      WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile->GetPath());
+      WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+          browser_context->GetPath());
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
     DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
@@ -51,14 +52,14 @@ base::FilePath GetLogDirectoryAndEnsureExists(Profile* profile) {
 }  // namespace
 
 AudioDebugRecordingsHandler::AudioDebugRecordingsHandler(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     media::AudioManager* audio_manager)
-    : profile_(profile),
+    : browser_context_(browser_context),
       is_audio_debug_recordings_in_progress_(false),
       current_audio_debug_recordings_id_(0),
       audio_manager_(audio_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(profile_);
+  DCHECK(browser_context_);
   DCHECK(audio_manager_);
 }
 
@@ -73,9 +74,9 @@ void AudioDebugRecordingsHandler::StartAudioDebugRecordings(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&GetLogDirectoryAndEnsureExists, profile_),
-      base::Bind(&AudioDebugRecordingsHandler::DoStartAudioDebugRecordings,
-                 this, host, delay, callback, error_callback));
+      base::BindOnce(&GetLogDirectoryAndEnsureExists, browser_context_),
+      base::BindOnce(&AudioDebugRecordingsHandler::DoStartAudioDebugRecordings,
+                     this, host, delay, callback, error_callback));
 }
 
 void AudioDebugRecordingsHandler::StopAudioDebugRecordings(
@@ -86,10 +87,11 @@ void AudioDebugRecordingsHandler::StopAudioDebugRecordings(
   const bool is_manual_stop = true;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&GetLogDirectoryAndEnsureExists, profile_),
-      base::Bind(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings, this,
-                 host, is_manual_stop, current_audio_debug_recordings_id_,
-                 callback, error_callback));
+      base::BindOnce(&GetLogDirectoryAndEnsureExists, browser_context_),
+      base::BindOnce(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings,
+                     this, host, is_manual_stop,
+                     current_audio_debug_recordings_id_, callback,
+                     error_callback));
 }
 
 void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(

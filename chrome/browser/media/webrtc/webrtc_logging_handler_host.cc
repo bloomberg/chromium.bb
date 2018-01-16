@@ -14,13 +14,11 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -38,17 +36,17 @@ const char WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey[] =
 
 WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
     int render_process_id,
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebRtcLogUploader* log_uploader)
     : BrowserMessageFilter(WebRtcLoggingMsgStart),
       render_process_id_(render_process_id),
-      profile_(profile),
+      browser_context_(browser_context),
       upload_log_on_render_close_(false),
       text_log_handler_(new WebRtcTextLogHandler(render_process_id)),
       rtp_dump_handler_(),
       stop_rtp_dump_callback_(),
       log_uploader_(log_uploader) {
-  DCHECK(profile_);
+  DCHECK(browser_context_);
   DCHECK(log_uploader_);
 }
 
@@ -404,7 +402,8 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
 base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
   DCHECK(log_uploader_->background_task_runner()->RunsTasksInCurrentSequence());
   base::FilePath log_dir_path =
-      WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath());
+      WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+          browser_context_->GetPath());
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
     DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
