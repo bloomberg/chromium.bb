@@ -735,7 +735,7 @@ CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(
 
 ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {
   DCHECK(host);
-  return &host->EnsureLegacyUserAgentShadowRootV0();
+  return &host->EnsureUserAgentShadowRootV1();
 }
 
 void Internals::setBrowserControlsState(float top_height,
