@@ -43091,6 +43091,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="89771989" label="asset_links"/>
   <int value="91597383" label="gaia_auth_login"/>
   <int value="93232258" label="mojo_context_state"/>
+  <int value="94099818" label="bluetooth_socket"/>
   <int value="95588446" label="payments_sync_cards"/>
   <int value="95682324" label="ranker_url_fetcher"/>
   <int value="95711309" label="ntp_contextual_suggestions_fetch"/>

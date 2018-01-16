@@ -23,6 +23,7 @@ Refer to README.md for content description and update process.
  <item id="blink_resource_loader" hash_code="101845102" type="0" content_hash_code="75331172" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="blob_read" hash_code="112303907" type="0" content_hash_code="135449692" os_list="linux,windows" file_path="storage/browser/blob/blob_url_request_job_factory.cc"/>
  <item id="blob_reader" hash_code="5154306" type="0" content_hash_code="39702178" os_list="linux,windows" file_path="extensions/browser/blob_reader.cc"/>
+ <item id="bluetooth_socket" hash_code="94099818" type="0" content_hash_code="30932349" os_list="linux,windows" file_path="device/bluetooth/bluetooth_socket_net.cc"/>
  <item id="brandcode_config" hash_code="109679553" type="0" content_hash_code="128843792" os_list="linux,windows" file_path="chrome/browser/profile_resetter/brandcode_config_fetcher.cc"/>
  <item id="captive_portal_service" hash_code="88754904" type="0" content_hash_code="70737580" os_list="linux,windows" file_path="chrome/browser/captive_portal/captive_portal_service.cc"/>
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport.cc"/>

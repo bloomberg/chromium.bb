@@ -260,10 +260,33 @@ void BluetoothSocketNet::SendFrontWriteRequest() {
                  this,
                  request->success_callback,
                  request->error_callback);
-  // TODO(crbug.com/656607): Add proper annotation.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("bluetooth_socket", R"(
+        semantics {
+          sender: "Bluetooth Socket"
+          description:
+            "This socket connects to a bluetooth device for local data "
+            "transfer."
+          trigger:
+            "When user selects to connect to a bluetooth device or communicate "
+            "with it."
+          data:
+            "Any data that needs to be sent to a bluetooth device."
+          destination: OTHER
+          destination_other: "Data is sent to a bluetooth device."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature cannot be disabled in settings, but it will not be "
+            "used if bluetooth connections are not made."
+          policy_exception_justification:
+            "DeviceAllowBluetooth policy can disable Bluetooth for ChromeOS, "
+            "not implemented for other platforms."
+        })");
   int send_result =
       tcp_socket_->Write(request->buffer.get(), request->buffer_size, callback,
-                         NO_TRAFFIC_ANNOTATION_BUG_656607);
+                         traffic_annotation);
   if (send_result != net::ERR_IO_PENDING) {
     callback.Run(send_result);
   }
