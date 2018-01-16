@@ -315,7 +315,7 @@ class ContentSuggestionsService : public KeyedService,
   // Fires the OnCategoryStatusChanged event for the given |category|.
   void NotifyCategoryStatusChanged(Category category);
 
-  void OnSignInStateChanged();
+  void OnSignInStateChanged(bool has_signed_in);
 
   // Re-enables a dismissed category, making querying its provider possible.
   void RestoreDismissedCategory(Category category);

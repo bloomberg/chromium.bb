@@ -36,7 +36,7 @@ class RemoteSuggestionsStatusService {
   // To be called when the signin state changed. Will compute the new
   // state considering the initialisation configuration and the preferences,
   // and notify via the registered callback if appropriate.
-  virtual void OnSignInStateChanged() = 0;
+  virtual void OnSignInStateChanged(bool has_signed_in) = 0;
 };
 
 }  // namespace ntp_snippets

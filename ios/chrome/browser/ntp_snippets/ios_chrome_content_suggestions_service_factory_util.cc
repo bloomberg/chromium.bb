@@ -193,8 +193,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::MakeUnique<ImageFetcherImpl>(CreateIOSImageDecoder(),
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
-      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(signin_manager,
-                                                           prefs, pref_name),
+      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
+          signin_manager->IsAuthenticated(), prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
       /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger(),
       std::make_unique<base::OneShotTimer>());

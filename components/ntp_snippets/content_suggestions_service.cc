@@ -526,12 +526,12 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
 void ContentSuggestionsService::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username) {
-  OnSignInStateChanged();
+  OnSignInStateChanged(/*has_signed_in=*/true);
 }
 
 void ContentSuggestionsService::GoogleSignedOut(const std::string& account_id,
                                                 const std::string& username) {
-  OnSignInStateChanged();
+  OnSignInStateChanged(/*has_signed_in=*/false);
 }
 
 // history::HistoryServiceObserver implementation.
@@ -659,10 +659,10 @@ void ContentSuggestionsService::NotifyCategoryStatusChanged(Category category) {
   }
 }
 
-void ContentSuggestionsService::OnSignInStateChanged() {
+void ContentSuggestionsService::OnSignInStateChanged(bool has_signed_in) {
   // First notify the providers, so they can make the required changes.
   for (const auto& provider : providers_) {
-    provider->OnSignInStateChanged();
+    provider->OnSignInStateChanged(has_signed_in);
   }
 
   // Finally notify the observers so they refresh only after the backend is

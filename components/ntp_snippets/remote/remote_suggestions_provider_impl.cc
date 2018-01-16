@@ -726,14 +726,14 @@ void RemoteSuggestionsProviderImpl::ClearHistory(
   ClearHistoryDependentState();
 }
 
-void RemoteSuggestionsProviderImpl::OnSignInStateChanged() {
+void RemoteSuggestionsProviderImpl::OnSignInStateChanged(bool has_signed_in) {
   // Make sure the status service is registered and we already initialised its
   // start state.
   if (!initialized()) {
     return;
   }
 
-  status_service_->OnSignInStateChanged();
+  status_service_->OnSignInStateChanged(has_signed_in);
 }
 
 void RemoteSuggestionsProviderImpl::GetDismissedSuggestionsForDebugging(

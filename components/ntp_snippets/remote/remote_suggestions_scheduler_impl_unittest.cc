@@ -152,7 +152,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   }
   MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
                void(Category category, DismissedSuggestionsCallback* callback));
-  MOCK_METHOD0(OnSignInStateChanged, void());
+  MOCK_METHOD1(OnSignInStateChanged, void(bool));
 };
 
 class FakeOfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {

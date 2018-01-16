@@ -397,7 +397,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
-          signin_manager, pref_service, additional_toggle_pref),
+          signin_manager->IsAuthenticated(), pref_service,
+          additional_toggle_pref),
       std::move(prefetched_pages_tracker),
       std::move(breaking_news_raw_data_provider), debug_logger,
       std::make_unique<base::OneShotTimer>());

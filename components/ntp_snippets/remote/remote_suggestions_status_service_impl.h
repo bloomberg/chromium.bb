@@ -13,14 +13,13 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class SigninManagerBase;
 
 namespace ntp_snippets {
 
 class RemoteSuggestionsStatusServiceImpl
     : public RemoteSuggestionsStatusService {
  public:
-  RemoteSuggestionsStatusServiceImpl(SigninManagerBase* signin_manager,
+  RemoteSuggestionsStatusServiceImpl(bool is_signed_in,
                                      PrefService* pref_service,
                                      const std::string& additional_toggle_pref);
 
@@ -30,7 +29,7 @@ class RemoteSuggestionsStatusServiceImpl
 
   // RemoteSuggestionsStatusService implementation.
   void Init(const StatusChangeCallback& callback) override;
-  void OnSignInStateChanged() override;
+  void OnSignInStateChanged(bool has_signed_in) override;
 
  private:
   // TODO(jkrcal): Rewrite the tests using the public API - observing status
@@ -62,7 +61,7 @@ class RemoteSuggestionsStatusServiceImpl
   // remote suggestions provider.
   std::string additional_toggle_pref_;
 
-  SigninManagerBase* signin_manager_;
+  bool is_signed_in_;
   PrefService* pref_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
