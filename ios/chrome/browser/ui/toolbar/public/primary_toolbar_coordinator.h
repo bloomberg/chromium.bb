@@ -12,7 +12,6 @@
 
 @protocol ActivityServicePositioner;
 @protocol QRScannerResultLoading;
-@protocol TabHistoryPositioner;
 @protocol TabHistoryUIUpdater;
 @protocol VoiceSearchControllerDelegate;
 @protocol WebToolbarDelegate;
@@ -30,7 +29,6 @@
 // internal ViewController.
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate;
 - (id<QRScannerResultLoading>)QRScannerResultLoader;
-- (id<TabHistoryPositioner>)tabHistoryPositioner;
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 - (id<ActivityServicePositioner>)activityServicePositioner;
 
