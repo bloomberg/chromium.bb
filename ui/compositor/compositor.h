@@ -268,10 +268,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetLatencyInfo(const LatencyInfo& latency_info);
 
   // Sets the compositor's device scale factor and size.
-  void SetScaleAndSize(
-      float scale,
-      const gfx::Size& size_in_pixel,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
+  void SetScaleAndSize(float scale,
+                       const gfx::Size& size_in_pixel,
+                       const viz::LocalSurfaceId& local_surface_id);
 
   // Set the output color profile into which this compositor should render.
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);

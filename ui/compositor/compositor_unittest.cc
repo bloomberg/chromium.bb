@@ -124,7 +124,7 @@ TEST_F(CompositorTestWithMessageLoop, OutputColorMatrix) {
   auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
-  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10), viz::LocalSurfaceId());
   DCHECK(compositor()->IsVisible());
 
   // Set a non-identity color matrix on the compistor display, and expect it to
@@ -203,7 +203,7 @@ TEST_F(CompositorTestWithMessageLoop, MAYBE_CreateAndReleaseOutputSurface) {
   std::unique_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
-  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10), viz::LocalSurfaceId());
   DCHECK(compositor()->IsVisible());
   compositor()->ScheduleDraw();
   DrawWaiterForTest::WaitForCompositingEnded(compositor());

@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/hit_test.h"
@@ -1413,8 +1414,11 @@ void BridgedNativeWidget::InitCompositor() {
   DCHECK(layer());
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   gfx::Size size_in_dip = GetClientAreaSize();
+  // TODO(fsamuel): A valid viz::LocalSurfaceId() likely needs to be plumbed
+  // here to properly enable surface synchronization.
   compositor_->SetScaleAndSize(scale_factor,
-                               ConvertSizeToPixel(scale_factor, size_in_dip));
+                               ConvertSizeToPixel(scale_factor, size_in_dip),
+                               viz::LocalSurfaceId());
   compositor_->SetRootLayer(layer());
 }
 
@@ -1491,8 +1495,11 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   layer()->SetBounds(gfx::Rect(size_in_dip));
 
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
+  // TODO(fsamuel): A valid viz::LocalSurfaceId() likely needs to be plumbed
+  // here to properly enable surface synchronization.
   compositor_->SetScaleAndSize(scale_factor,
-                               ConvertSizeToPixel(scale_factor, size_in_dip));
+                               ConvertSizeToPixel(scale_factor, size_in_dip),
+                               viz::LocalSurfaceId());
 
   // For a translucent window, the shadow calculation needs to be carried out
   // after the frame from the compositor arrives.
