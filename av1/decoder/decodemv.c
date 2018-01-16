@@ -473,7 +473,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
   const int max_depths = bsize_to_max_depth(bsize, 0);
-  const int ctx = get_tx_size_context(xd);
+  const int ctx = get_tx_size_context(xd, is_inter);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 

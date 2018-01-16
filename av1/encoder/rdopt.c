@@ -2125,7 +2125,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int is_inter = is_inter_block(mbmi);
     const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
     const int depth = tx_size_to_depth(tx_size, bsize, is_inter);
-    const int tx_size_ctx = get_tx_size_context(xd);
+    const int tx_size_ctx = get_tx_size_context(xd, is_inter);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
     return r_tx_size;
   } else {

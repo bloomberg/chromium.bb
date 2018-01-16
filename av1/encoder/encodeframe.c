@@ -775,7 +775,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
       allow_update_cdf) {
     const TX_SIZE tx_size = mbmi->tx_size;
-    const int tx_size_ctx = get_tx_size_context(xd);
+    const int tx_size_ctx = get_tx_size_context(xd, 0);
     const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
     const int depth = tx_size_to_depth(tx_size, bsize, 0);
     const int max_depths = bsize_to_max_depth(bsize, 0);
