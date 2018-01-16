@@ -3970,6 +3970,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 // Set delta_q_present_flag before it is used for the first time
 #if CONFIG_EXT_DELTA_Q
   cm->delta_lf_res = DEFAULT_DELTA_LF_RES;
+  cm->delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
+  cm->delta_lf_present_flag = cpi->oxcf.deltaq_mode == DELTA_Q_LF;
+#if CONFIG_LOOPFILTER_LEVEL
+  cm->delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
+#endif  // CONFIG_LOOPFILTER_LEVEL
   // update delta_q_present_flag and delta_lf_present_flag based on base_qindex
   cm->delta_q_present_flag &= cm->base_qindex > 0;
   cm->delta_lf_present_flag &= cm->base_qindex > 0;
