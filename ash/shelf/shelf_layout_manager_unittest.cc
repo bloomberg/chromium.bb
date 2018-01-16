@@ -1503,9 +1503,6 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Note: A window must be visible in order to hide the shelf.
-  views::Widget* widget = CreateTestWidget();
-
   app_list::test::TestAppListPresenter test_app_list_presenter;
   shell->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
@@ -1546,35 +1543,12 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
             test_app_list_presenter.app_list_state());
 
-  // Swiping down on the shelf should hide it.
+  // Swiping down on the shelf should do nothing in tablet mode.
   end = start + delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-
-  // Swiping up should show the shelf but not the app list if shelf is hidden.
-  generator.GestureScrollSequence(end, start, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
-            test_app_list_presenter.app_list_state());
-
-  // Swiping down should hide the shelf.
-  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-
-  // Minimize the visible window, the shelf should be shown if there are no
-  // visible windows, even in auto-hide mode.
-  widget->Minimize();
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Swiping up on the shelf in this state should open the app list.
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToFullscreenThreshold + 10);

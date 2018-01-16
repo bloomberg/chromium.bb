@@ -86,6 +86,12 @@ bool IsAppListWindow(const aura::Window* window) {
   return parent && parent->id() == kShellWindowId_AppListContainer;
 }
 
+bool IsTabletModeEnabled() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
 }  // namespace
 
 // ShelfLayoutManager::UpdateShelfObserver -------------------------------------
@@ -1100,10 +1106,14 @@ void ShelfLayoutManager::StartGestureDrag(
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - gesture_in_screen.location().y();
   } else {
-    // Disable the shelf dragging if the fullscreen app list is opened.
-    if (is_app_list_visible_) {
+    // Only app list drags are allowed in tablet mode.
+    if (IsTabletModeEnabled())
       return;
-    }
+
+    // Disable the shelf dragging if the fullscreen app list is opened.
+    if (is_app_list_visible_)
+      return;
+
     gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
     gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
                                         ? auto_hide_state()
@@ -1131,6 +1141,10 @@ void ShelfLayoutManager::UpdateGestureDrag(
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - gesture_in_screen.location().y();
   } else {
+    // Only app list drags are allowed in tablet mode.
+    if (IsTabletModeEnabled())
+      return;
+
     gesture_drag_amount_ +=
         PrimaryAxisValue(gesture_in_screen.details().scroll_y(),
                          gesture_in_screen.details().scroll_x());
@@ -1140,6 +1154,10 @@ void ShelfLayoutManager::UpdateGestureDrag(
 
 void ShelfLayoutManager::CompleteGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
+  // Only app list drags are allowed in tablet mode.
+  if (IsTabletModeEnabled())
+    return;
+
   bool should_change = false;
   if (gesture_in_screen.type() == ui::ET_GESTURE_SCROLL_END) {
     // The visibility of the shelf changes only if the shelf was dragged X%
@@ -1212,9 +1230,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled()) {
+    if (IsTabletModeEnabled()) {
       app_list_state = launcher_above_shelf_bottom_amount_ >
                                kAppListDragSnapToFullscreenThreshold
                            ? AppListState::FULLSCREEN_ALL_APPS
