@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -200,7 +199,7 @@ void AccountFetcherService::StartFetchingUserInfo(
   if (!request) {
     DVLOG(1) << "StartFetching " << account_id;
     std::unique_ptr<AccountInfoFetcher> fetcher =
-        base::MakeUnique<AccountInfoFetcher>(
+        std::make_unique<AccountInfoFetcher>(
             token_service_, signin_client_->GetURLRequestContext(), this,
             account_id);
     request = std::move(fetcher);

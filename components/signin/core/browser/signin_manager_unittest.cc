@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -437,7 +436,7 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
@@ -467,7 +466,7 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
@@ -497,7 +496,7 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));

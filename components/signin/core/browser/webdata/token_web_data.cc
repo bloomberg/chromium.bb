@@ -4,8 +4,9 @@
 
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -51,7 +52,7 @@ class TokenWebDataBackend
     TokenResult result;
     result.db_result =
         TokenServiceTable::FromWebDatabase(db)->GetAllTokens(&result.tokens);
-    return base::MakeUnique<WDResult<TokenResult>>(TOKEN_RESULT, result);
+    return std::make_unique<WDResult<TokenResult>>(TOKEN_RESULT, result);
   }
 
  protected:

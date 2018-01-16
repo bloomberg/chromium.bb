@@ -4,9 +4,10 @@
 
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -20,7 +21,7 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
     : FakeProfileOAuth2TokenService(
-          base::MakeUnique<FakeOAuth2TokenServiceDelegate>(nullptr)) {}
+          std::make_unique<FakeOAuth2TokenServiceDelegate>(nullptr)) {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
