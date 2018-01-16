@@ -465,6 +465,13 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ C
 ### Crash site: PaintController.cpp
 crbug.com/714962 virtual/layout_ng/fast/inline//continuation-outlines-with-layers-2.html [ Crash Failure ]
 
+# Needs rebase line for LayoutInline 0x0
+crbug.com/714962 virtual/layout_ng/fast/inline/002.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/long-wrapped-line.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/percentage-margins.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-text-bottom.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-with-fallback-fonts.html [ Failure ]
+
 ### Image/text failures only on LayoutNGPaintFragments
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/br-text-decoration.html [ Crash Failure ]

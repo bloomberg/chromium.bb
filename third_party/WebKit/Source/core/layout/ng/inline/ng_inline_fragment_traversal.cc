@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
@@ -51,6 +52,45 @@ class AddAllFilter {
  public:
   bool AddOnEnter(const NGPhysicalFragment*) const { return true; }
   bool RemoveOnExit(const NGPhysicalFragment*) const { return false; }
+};
+
+// The filter for CollectInlineFragments() collecting fragments generated from
+// the given LayoutInline with supporting culled inline.
+// Note: Since we apply culled inline per line, we have a fragment for
+// LayoutInline in second line but not in first line in
+// "t0803-c5502-imrgn-r-01-b-ag.html".
+class LayoutInlineFilter {
+ public:
+  explicit LayoutInlineFilter(const LayoutInline& container) {
+    CollectInclusiveDescendnats(container);
+  }
+
+  bool AddOnEnter(const NGPhysicalFragment* fragment) {
+    if (fragment->IsLineBox())
+      return false;
+    return inclusive_descendants_.Contains(fragment->GetLayoutObject());
+  }
+
+  bool RemoveOnExit(const NGPhysicalFragment*) const { return false; }
+
+ private:
+  void CollectInclusiveDescendnats(const LayoutInline& container) {
+    inclusive_descendants_.insert(&container);
+    for (const LayoutObject* node = container.FirstChild(); node;
+         node = node->NextSibling()) {
+      if (node->IsFloatingOrOutOfFlowPositioned())
+        continue;
+      if (node->IsBox() || node->IsText()) {
+        inclusive_descendants_.insert(node);
+        continue;
+      }
+      if (!node->IsLayoutInline())
+        continue;
+      CollectInclusiveDescendnats(ToLayoutInline(*node));
+    }
+  }
+
+  HashSet<const LayoutObject*> inclusive_descendants_;
 };
 
 // The filter for CollectInlineFragments() collecting fragments generated from
@@ -116,6 +156,12 @@ class InclusiveAncestorFilter {
 Vector<Result, 1> NGInlineFragmentTraversal::SelfFragmentsOf(
     const NGPhysicalContainerFragment& container,
     const LayoutObject* layout_object) {
+  if (layout_object->IsLayoutInline()) {
+    LayoutInlineFilter filter(*ToLayoutInline(layout_object));
+    Vector<Result, 1> results;
+    CollectInlineFragments(container, {}, filter, &results);
+    return results;
+  }
   LayoutObjectFilter filter(layout_object);
   Vector<Result, 1> results;
   CollectInlineFragments(container, {}, filter, &results);
