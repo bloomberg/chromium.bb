@@ -110,8 +110,8 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler {
 };
 
 WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
-    : log_dir_(
-          WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile->GetPath())),
+    : log_dir_(WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+          profile->GetPath())),
       list_available_(false),
       js_request_pending_(false) {
   upload_list_ = WebRtcLogList::CreateWebRtcLogList(profile);

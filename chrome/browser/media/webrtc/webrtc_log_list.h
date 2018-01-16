@@ -7,21 +7,26 @@
 
 #include "base/files/file_path.h"
 
-class Profile;
 class UploadList;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 class WebRtcLogList {
  public:
   // Creates the upload list with the given callback delegate for a
-  // profile. The upload list loads and parses a text file list of WebRTC
-  // logs stored locally and/or uploaded.
-  static UploadList* CreateWebRtcLogList(Profile* profile);
+  // browser context. The upload list loads and parses a text file list of
+  // WebRTC logs stored locally and/or uploaded.
+  static UploadList* CreateWebRtcLogList(
+      content::BrowserContext* browser_context);
 
-  // Get the file path for the log directory for a profile.
-  static base::FilePath GetWebRtcLogDirectoryForProfile(
-      const base::FilePath& profile_path);
+  // Gets the file path for the log directory in a browser context's directory.
+  // The directory name will be appended to |browser_context_path| and returned.
+  static base::FilePath GetWebRtcLogDirectoryForBrowserContextPath(
+      const base::FilePath& browser_context_path);
 
-  // Get the file path for the log list file in a directory. The log list file
+  // Gets the file path for the log list file in a directory. The log list file
   // name will be appended to |dir| and returned.
   static base::FilePath GetWebRtcLogListFileForDirectory(
       const base::FilePath& dir);

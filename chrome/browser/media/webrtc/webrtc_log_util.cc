@@ -121,6 +121,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(
             &DeleteOldWebRtcLogFiles,
-            WebRtcLogList::GetWebRtcLogDirectoryForProfile(entry->GetPath())));
+            WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+                entry->GetPath())));
   }
 }

@@ -16,14 +16,13 @@
 #include "base/time/time.h"
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 }
 
 namespace media {
 class AudioManager;
 }
-
-class Profile;
 
 // AudioDebugRecordingsHandler provides an interface to start and stop
 // AudioDebugRecordings, including WebRTC AEC dumps. Lives on the UI thread.
@@ -38,7 +37,7 @@ class AudioDebugRecordingsHandler
   // Key used to attach the handler to the RenderProcessHost
   static const char kAudioDebugRecordingsHandlerKey[];
 
-  AudioDebugRecordingsHandler(Profile* profile,
+  AudioDebugRecordingsHandler(content::BrowserContext* browser_context,
                               media::AudioManager* audio_manager);
 
   // Starts an audio debug recording. The recording lasts the given |delay|,
@@ -80,8 +79,8 @@ class AudioDebugRecordingsHandler
                                   const RecordingErrorCallback& error_callback,
                                   const base::FilePath& log_directory);
 
-  // The profile associated with our renderer process.
-  Profile* const profile_;
+  // The browser context associated with our renderer process.
+  content::BrowserContext* const browser_context_;
 
   // Set if recordings are in progress.
   bool is_audio_debug_recordings_in_progress_;
