@@ -20,7 +20,7 @@ struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;
 
 namespace blink {
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 }
 
 namespace gfx {
@@ -123,7 +123,7 @@ class RenderFrameProxyHost
   // the frame's current process. |rect_to_scroll| is with respect to the
   // coordinates of the originating frame in OOPIF process.
   void ScrollRectToVisible(const gfx::Rect& rect_to_scroll,
-                           const blink::WebRemoteScrollProperties properties);
+                           const blink::WebScrollIntoViewParams& params);
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;

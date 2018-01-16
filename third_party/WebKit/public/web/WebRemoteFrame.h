@@ -22,7 +22,7 @@ class WebRemoteFrameClient;
 class WebString;
 class WebView;
 struct WebRect;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 
 class WebRemoteFrame : public WebFrame {
  public:
@@ -112,7 +112,7 @@ class WebRemoteFrame : public WebFrame {
   // OOPIF process. The parameters are sent by the OOPIF local root and can be
   // used to properly chain the recursive scrolling between the two processes.
   virtual void ScrollRectToVisible(const WebRect&,
-                                   const WebRemoteScrollProperties&) = 0;
+                                   const WebScrollIntoViewParams&) = 0;
 
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}

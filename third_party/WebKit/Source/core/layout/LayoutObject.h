@@ -37,7 +37,6 @@
 #include "core/html_names.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/MapCoordinatesFlags.h"
-#include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/api/HitTestAction.h"
 #include "core/layout/api/SelectionState.h"
@@ -79,6 +78,7 @@ class PseudoStyleRequest;
 
 struct PaintInfo;
 struct PaintInvalidatorContext;
+struct WebScrollIntoViewParams;
 
 enum VisualRectFlags { kDefaultVisualRectFlags = 0, kEdgeInclusive = 1 };
 
@@ -292,13 +292,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Scrolling is a LayoutBox concept, however some code just cares about
   // recursively scrolling our enclosing ScrollableArea(s).
-  bool ScrollRectToVisible(
-      const LayoutRect&,
-      const ScrollAlignment& align_x = ScrollAlignment::kAlignCenterIfNeeded,
-      const ScrollAlignment& align_y = ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollType = kProgrammaticScroll,
-      bool make_visible_in_visual_viewport = true,
-      ScrollBehavior = kScrollBehaviorAuto);
+  bool ScrollRectToVisible(const LayoutRect&, const WebScrollIntoViewParams&);
 
   // Convenience function for getting to the nearest enclosing box of a
   // LayoutObject.

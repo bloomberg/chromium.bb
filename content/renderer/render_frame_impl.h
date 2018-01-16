@@ -119,7 +119,7 @@ struct WebFindOptions;
 class WebLayerTreeView;
 class WebRelatedAppsFetcher;
 struct FramePolicy;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 }  // namespace blink
 
 namespace gfx {
@@ -742,7 +742,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // continuing recursive scrolling in the parent frame's process.
   void ScrollRectToVisibleInParentFrame(
       const blink::WebRect& rect_to_scroll,
-      const blink::WebRemoteScrollProperties& properties) override;
+      const blink::WebScrollIntoViewParams& params) override;
 
   // WebFrameSerializerClient implementation:
   void DidSerializeDataForFrame(

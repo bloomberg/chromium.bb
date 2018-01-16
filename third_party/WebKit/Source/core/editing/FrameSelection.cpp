@@ -84,6 +84,7 @@
 #include "platform/text/UnicodeUtilities.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 
 #define EDIT_DEBUG 0
 
@@ -972,8 +973,8 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   // sticky offset info available before the computation.
   GetDocument().EnsurePaintLocationDataValidForNode(start.AnchorNode());
   if (!start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-          LayoutRect(ComputeRectToScroll(reveal_extent_option)), alignment,
-          alignment))
+          LayoutRect(ComputeRectToScroll(reveal_extent_option)),
+          WebScrollIntoViewParams(alignment, alignment)))
     return;
 
   UpdateAppearance();

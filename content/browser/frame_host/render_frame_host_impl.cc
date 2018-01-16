@@ -2756,12 +2756,12 @@ void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
 
 void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(
     const gfx::Rect& rect_to_scroll,
-    const blink::WebRemoteScrollProperties& properties) {
+    const blink::WebScrollIntoViewParams& params) {
   RenderFrameProxyHost* proxy =
       frame_tree_node_->render_manager()->GetProxyToParent();
   if (!proxy)
     return;
-  proxy->ScrollRectToVisible(rect_to_scroll, properties);
+  proxy->ScrollRectToVisible(rect_to_scroll, params);
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

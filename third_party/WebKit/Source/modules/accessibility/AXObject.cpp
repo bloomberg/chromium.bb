@@ -52,10 +52,12 @@
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXSparseAttributeSetter.h"
+#include "platform/scroll/ScrollAlignment.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 
 using blink::WebLocalizedString;
 
@@ -2218,9 +2220,10 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
     return false;
   LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
-      target_rect, ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
-      kScrollBehaviorAuto);
+      target_rect,
+      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                              ScrollAlignment::kAlignCenterIfNeeded,
+                              kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
@@ -2243,9 +2246,10 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   // is the default behavior of element.scrollIntoView.
   ScrollAlignment scroll_alignment = {
       kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
-  layout_object->ScrollRectToVisible(target_rect, scroll_alignment,
-                                     scroll_alignment, kProgrammaticScroll,
-                                     false, kScrollBehaviorAuto);
+  layout_object->ScrollRectToVisible(
+      target_rect,
+      WebScrollIntoViewParams(scroll_alignment, scroll_alignment,
+                              kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
@@ -2261,9 +2265,10 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   target_rect.MoveBy(-global_point);
   layout_object->ScrollRectToVisible(
-      target_rect, ScrollAlignment::kAlignLeftAlways,
-      ScrollAlignment::kAlignTopAlways, kProgrammaticScroll, false,
-      kScrollBehaviorAuto);
+      target_rect,
+      WebScrollIntoViewParams(ScrollAlignment::kAlignLeftAlways,
+                              ScrollAlignment::kAlignTopAlways,
+                              kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);

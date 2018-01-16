@@ -508,8 +508,8 @@ void RenderFrameProxy::OnSetHasReceivedUserGesture() {
 
 void RenderFrameProxy::OnScrollRectToVisible(
     const gfx::Rect& rect_to_scroll,
-    const blink::WebRemoteScrollProperties& properties) {
-  web_frame_->ScrollRectToVisible(rect_to_scroll, properties);
+    const blink::WebScrollIntoViewParams& params) {
+  web_frame_->ScrollRectToVisible(rect_to_scroll, params);
 }
 
 void RenderFrameProxy::OnResizeDueToAutoResize(uint64_t sequence_number) {

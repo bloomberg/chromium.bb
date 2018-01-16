@@ -34,10 +34,10 @@
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/Forward.h"
 #include "core/editing/SetSelectionOptions.h"
-#include "core/layout/ScrollAlignment.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollAlignment.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
