@@ -73,9 +73,7 @@ void ApplyLanguageCodeCorrection(std::string* code) {
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
 std::string DetermineTextLanguage(const base::string16& text,
-                                  bool* is_cld_reliable,
-                                  std::string& code,
-                                  std::string& html_lang) {
+                                  bool* is_cld_reliable) {
   std::string language = translate::kUnknownLanguageCode;
   const std::string utf8_text(base::UTF16ToUTF8(text));
 
@@ -175,8 +173,7 @@ std::string DeterminePageLanguage(const std::string& code,
     translate::ReportContentLanguage(code, modified_code);
   }
 
-  std::string cld_language = DetermineTextLanguage(
-      contents, &is_cld_reliable, modified_code, modified_html_lang);
+  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
   translate::ReportLanguageDetectionTime(begin_time, base::TimeTicks::Now());
 
   if (cld_language_p != nullptr)
