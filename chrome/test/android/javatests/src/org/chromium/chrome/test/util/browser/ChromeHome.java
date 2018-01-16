@@ -9,6 +9,9 @@ import static junit.framework.Assert.assertNotNull;
 
 import android.os.StrictMode;
 
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -50,6 +53,12 @@ public interface ChromeHome {
 
         public Processor() {
             super(ChromeHome.Enable.class, ChromeHome.Disable.class);
+        }
+
+        @Override
+        public Statement apply(Statement base, Description description) {
+            Statement wrappedStatement = super.apply(base, description);
+            return getAnnotations().isEmpty() ? base : wrappedStatement;
         }
 
         @Override

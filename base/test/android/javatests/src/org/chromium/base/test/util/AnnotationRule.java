@@ -4,6 +4,9 @@
 
 package org.chromium.base.test.util;
 
+import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
+
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -16,9 +19,11 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Test rule that is activated when a test or its class has a specific annotation.
- * It allows to run some code before the test (and the {@link org.junit.Before}) runs,
- * and guarantees to also run code after.
+ * Test rule that collects specific annotations to help with test set up and tear down. It is set up
+ * with a list of annotations to look for and exposes the ones picked up on the test through
+ * {@link #getAnnotations()} and related methods.
+ *
+ * Note: The rule always apply, whether it picked up annotations or not.
  *
  * Usage:
  *
@@ -86,12 +91,12 @@ public abstract class AnnotationRule extends ExternalResource {
         mAnnotationExtractor = new AnnotationProcessingUtils.AnnotationExtractor(mAnnotationTypes);
     }
 
+    @CallSuper
     @Override
     public Statement apply(Statement base, Description description) {
         mTestDescription = description;
 
         mCollectedAnnotations = mAnnotationExtractor.getMatchingAnnotations(description);
-        if (mCollectedAnnotations.isEmpty()) return base;
 
         // Return the wrapped statement to execute before() and after().
         return super.apply(base, description);
@@ -115,7 +120,7 @@ public abstract class AnnotationRule extends ExternalResource {
      * @return The closest annotation matching the provided type, or {@code null} if there is none.
      */
     @SuppressWarnings("unchecked")
-    protected <A extends Annotation> A getAnnotation(Class<A> annnotationType) {
+    protected @Nullable <A extends Annotation> A getAnnotation(Class<A> annnotationType) {
         ListIterator<Annotation> iteratorFromEnd =
                 mCollectedAnnotations.listIterator(mCollectedAnnotations.size());
         while (iteratorFromEnd.hasPrevious()) {
@@ -127,8 +132,8 @@ public abstract class AnnotationRule extends ExternalResource {
         return null;
     }
 
-    protected Annotation getClosestAnnotation() {
-        assert !mCollectedAnnotations.isEmpty() : "The rule should not trigger without match.";
+    protected @Nullable Annotation getClosestAnnotation() {
+        if (mCollectedAnnotations.isEmpty()) return null;
         return mCollectedAnnotations.get(mCollectedAnnotations.size() - 1);
     }
 }
