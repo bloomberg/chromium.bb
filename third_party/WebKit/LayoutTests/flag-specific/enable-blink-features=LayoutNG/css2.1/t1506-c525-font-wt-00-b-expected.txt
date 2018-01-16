@@ -19,7 +19,7 @@ layer at (0,0) size 800x464
         LayoutText {#text} at (0,0) size 290x19
           text run at (0,0) width 290: "...this line should look bolder (or the same)."
       LayoutNGBlockFlow {P} at (0,195.80) size 784x20 [color=#000080]
-        LayoutInline {B} at (0,0) size 0x0
+        LayoutInline {B} at (0,0) size 203x19
           LayoutText {#text} at (0,0) size 203x19
             text run at (0,0) width 203: "This sentence should be normal."
         LayoutText {#text} at (0,0) size 0x0
@@ -41,7 +41,7 @@ layer at (0,0) size 800x464
       LayoutNGBlockFlow {P} at (0,411.80) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 202x19
           text run at (0,0) width 202: "This sentence should be bold. "
-        LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutInline {SPAN} at (0,0) size 203x19
           LayoutText {#text} at (202,0) size 203x19
             text run at (202,0) width 203: "This sentence should be normal."
         LayoutText {#text} at (0,0) size 0x0

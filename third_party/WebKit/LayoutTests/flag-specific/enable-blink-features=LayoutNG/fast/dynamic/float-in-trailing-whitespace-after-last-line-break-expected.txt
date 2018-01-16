@@ -6,8 +6,8 @@ layer at (0,0) size 800x204
       LayoutNGBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 52x19
           text run at (0,0) width 52: "Test for "
-        LayoutInline {I} at (0,0) size 0x0
-          LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
+        LayoutInline {I} at (0,0) size 1098x39
+          LayoutInline {A} at (0,0) size 308x19 [color=#0000EE]
             LayoutText {#text} at (51,0) size 308x19
               text run at (51,0) width 308: "https://bugs.webkit.org/show_bug.cgi?id=19278"
           LayoutText {#text} at (358,0) size 739x39

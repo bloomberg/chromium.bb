@@ -6,8 +6,8 @@ layer at (0,0) size 800x248
       LayoutNGBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 52x19
           text run at (0,0) width 52: "Test for "
-        LayoutInline {I} at (0,0) size 0x0
-          LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
+        LayoutInline {I} at (0,0) size 1134x39
+          LayoutInline {A} at (0,0) size 302x19 [color=#0000EE]
             LayoutText {#text} at (51,0) size 302x19
               text run at (51,0) width 302: "http://bugs.webkit.org/show_bug.cgi?id=14134"
           LayoutText {#text} at (352,0) size 782x39
@@ -39,46 +39,46 @@ layer at (0,0) size 800x248
           LayoutTableRow {TR} at (0,29) size 196x45
             LayoutNGTableCell {TD} at (0,29) size 98x45 [border: (1px solid #000000)] [r=1 c=0 rs=1 cs=1]
               LayoutNGBlockFlow {UL} at (5,5) size 89x20
-                LayoutInline {LI} at (0,0) size 0x0
+                LayoutInline {LI} at (0,0) size 23x19
                   LayoutText {#text} at (40,0) size 23x19
                     text run at (40,0) width 23: "wet"
                 LayoutText {#text} at (63,0) size 4x19
                   text run at (63,0) width 4: " "
-                LayoutInline {LI} at (0,0) size 0x0
+                LayoutInline {LI} at (0,0) size 22x19
                   LayoutText {#text} at (67,0) size 22x19
                     text run at (67,0) width 22: "suit"
                 LayoutText {#text} at (0,0) size 0x0
             LayoutNGTableCell {TD} at (98,29) size 98x45 [border: (1px solid #000000)] [r=1 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {UL} at (5,5) size 89x20
-                LayoutInline {LI} at (0,0) size 0x0
+                LayoutInline {LI} at (0,0) size 23x19
                   LayoutText {#text} at (40,0) size 23x19
                     text run at (40,0) width 23: "wet"
                 LayoutText {#text} at (63,0) size 4x19
                   text run at (63,0) width 4: " "
-                LayoutInline {LI} at (0,0) size 0x0
+                LayoutInline {LI} at (0,0) size 22x19
                   LayoutText {#text} at (67,0) size 22x19
                     text run at (67,0) width 22: "suit"
                 LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,74) size 196x29
             LayoutNGTableCell {TD} at (0,74) size 98x29 [border: (1px solid #000000)] [r=2 c=0 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (5,5) size 89x20
-                LayoutInline {DIV} at (0,0) size 0x0
+                LayoutInline {DIV} at (0,0) size 23x19
                   LayoutText {#text} at (0,0) size 23x19
                     text run at (0,0) width 23: "wet"
                 LayoutText {#text} at (23,0) size 4x19
                   text run at (23,0) width 4: " "
-                LayoutInline {DIV} at (0,0) size 0x0
+                LayoutInline {DIV} at (0,0) size 22x19
                   LayoutText {#text} at (27,0) size 22x19
                     text run at (27,0) width 22: "suit"
                 LayoutText {#text} at (0,0) size 0x0
             LayoutNGTableCell {TD} at (98,74) size 98x29 [border: (1px solid #000000)] [r=2 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (5,5) size 89x20
-                LayoutInline {DIV} at (0,0) size 0x0
+                LayoutInline {DIV} at (0,0) size 23x19
                   LayoutText {#text} at (0,0) size 23x19
                     text run at (0,0) width 23: "wet"
                 LayoutText {#text} at (23,0) size 4x19
                   text run at (23,0) width 4: " "
-                LayoutInline {DIV} at (0,0) size 0x0
+                LayoutInline {DIV} at (0,0) size 22x19
                   LayoutText {#text} at (27,0) size 22x19
                     text run at (27,0) width 22: "suit"
                 LayoutText {#text} at (0,0) size 0x0
