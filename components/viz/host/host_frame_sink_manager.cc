@@ -91,6 +91,12 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
 void HostFrameSinkManager::SetFrameSinkDebugLabel(
     const FrameSinkId& frame_sink_id,
     const std::string& debug_label) {
+  DCHECK(frame_sink_id.is_valid());
+
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(data.IsFrameSinkRegistered());
+
+  data.debug_label = debug_label;
   frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id, debug_label);
 }
 
@@ -303,6 +309,10 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
     FrameSinkData& data = map_entry.second;
     if (data.client)
       frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+    if (!data.debug_label.empty()) {
+      frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id,
+                                                  data.debug_label);
+    }
   }
 
   // Register FrameSink hierarchy second.
