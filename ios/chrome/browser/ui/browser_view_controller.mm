@@ -2074,7 +2074,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                     browserState:_browserState];
   _tabHistoryCoordinator.dispatcher = _dispatcher;
   _tabHistoryCoordinator.positionProvider =
-      [self.primaryToolbarCoordinator tabHistoryPositioner];
+      [self.legacyToolbarCoordinator tabHistoryPositioner];
   _tabHistoryCoordinator.tabModel = _model;
   _tabHistoryCoordinator.presentationProvider = self;
   _tabHistoryCoordinator.tabHistoryUIUpdater =

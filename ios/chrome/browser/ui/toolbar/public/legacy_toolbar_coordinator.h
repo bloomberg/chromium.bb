@@ -7,11 +7,15 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 
+@protocol TabHistoryPositioner;
+
 // TODO(crbug.com/788705): Remove this protocol during old toolbar cleanup.
 // This protocol is containing the legacy methods implemented by the
 // LegacyToolbarCoordinator. It is used to separate those methods from the ones
 // used in the refactored toolbar.
 @protocol LegacyToolbarCoordinator<BubbleViewAnchorPointProvider, NSObject>
+
+- (id<TabHistoryPositioner>)tabHistoryPositioner;
 
 - (void)selectedTabChanged;
 - (void)setTabCount:(NSInteger)tabCount;

@@ -115,11 +115,6 @@
   return nil;
 }
 
-- (id<TabHistoryPositioner>)tabHistoryPositioner {
-  // TODO(crbug.com/799438): Implement that.
-  return nil;
-}
-
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
   // TODO(crbug.com/799438): Implement that.
   return nil;
