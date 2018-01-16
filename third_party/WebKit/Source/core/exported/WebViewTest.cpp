@@ -4546,31 +4546,6 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
   frame->SetAutofillClient(nullptr);
 }
 
-TEST_P(WebViewTest, FieldValueChangeNotifiesAutofillClient) {
-  RegisterMockedHttpURLLoad("input_field_password.html");
-  MockAutofillClient client;
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "input_field_password.html");
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  frame->SetAutofillClient(&client);
-  web_view->SetInitialFocus(false);
-  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
-
-  HTMLInputElement* input_element =
-      ToHTMLInputElement(document->getElementById("psw"));
-  ASSERT_TRUE(input_element);
-
-  // Any value change should trigger |WebAutofillClient::TextFieldDidChange|.
-  input_element->setValue("secret");
-  EXPECT_EQ(1, client.TextChanges());
-  input_element->setValue("secret");
-  EXPECT_EQ(1, client.TextChanges());
-  input_element->setValue("new_secret");
-  EXPECT_EQ(2, client.TextChanges());
-
-  frame->SetAutofillClient(nullptr);
-}
-
 // Verify that a WebView created with a ScopedPagePauser already on the
 // stack defers its loads.
 TEST_P(WebViewTest, CreatedDuringPagePause) {
