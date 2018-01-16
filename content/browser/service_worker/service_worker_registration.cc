@@ -109,7 +109,9 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
                   : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
       GetVersionInfo(active_version_.get()),
       GetVersionInfo(waiting_version_.get()),
-      GetVersionInfo(installing_version_.get()), resources_total_size_bytes_);
+      GetVersionInfo(installing_version_.get()), resources_total_size_bytes_,
+      navigation_preload_state_.enabled,
+      navigation_preload_state_.header.length());
 }
 
 void ServiceWorkerRegistration::SetActiveVersion(
