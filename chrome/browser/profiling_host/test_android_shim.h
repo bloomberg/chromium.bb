@@ -19,7 +19,9 @@ class TestAndroidShim {
 
   jboolean RunTestForMode(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
-                          const base::android::JavaParamRef<jstring>&);
+                          const base::android::JavaParamRef<jstring>& mode,
+                          jboolean dynamically_start_profiling,
+                          jboolean pseudo_stacks);
 
  private:
   ~TestAndroidShim();

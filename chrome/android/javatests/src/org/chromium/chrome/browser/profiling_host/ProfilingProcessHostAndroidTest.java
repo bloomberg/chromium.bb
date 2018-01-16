@@ -39,6 +39,35 @@ public class ProfilingProcessHostAndroidTest {
     @CommandLineFlags.Add({"memlog=browser"})
     public void testModeBrowser() throws Exception {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
-        Assert.assertTrue(profilingProcessHost.runTestForMode("browser"));
+        Assert.assertTrue(profilingProcessHost.runTestForMode("browser", false, false));
+    }
+
+    @Test
+    @MediumTest
+    public void testModeBrowserDynamic() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("browser", true, false));
+    }
+
+    @Test
+    @MediumTest
+    public void testModeBrowserDynamicPseudo() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("browser", true, true));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
+    public void testModeRendererPseudo() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("all-renderers", false, true));
+    }
+
+    @Test
+    @MediumTest
+    public void testModeGpuDynamicPseudo() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("gpu", true, true));
     }
 }

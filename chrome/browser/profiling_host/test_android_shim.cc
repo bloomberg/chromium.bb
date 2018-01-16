@@ -29,12 +29,15 @@ void TestAndroidShim::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 jboolean TestAndroidShim::RunTestForMode(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& mode) {
+    const base::android::JavaParamRef<jstring>& mode,
+    jboolean dynamically_start_profiling,
+    jboolean pseudo_stacks) {
   profiling::ProfilingTestDriver driver;
   profiling::ProfilingTestDriver::Options options;
   options.mode = profiling::ProfilingProcessHost::ConvertStringToMode(
       base::android::ConvertJavaStringToUTF8(mode));
-  options.stack_mode = profiling::mojom::StackMode::NATIVE;
-  options.profiling_already_started = true;
+  options.stack_mode = pseudo_stacks ? profiling::mojom::StackMode::PSEUDO
+                                     : profiling::mojom::StackMode::NATIVE;
+  options.profiling_already_started = !dynamically_start_profiling;
   return driver.RunTest(options);
 }
