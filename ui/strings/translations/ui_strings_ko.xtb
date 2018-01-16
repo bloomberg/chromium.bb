@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">폴더 열기</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1년 전}other{#년 전}}</translation>
 <translation id="2931838996092594335">클릭</translation>
-<translation id="2983818520079887040">설정...</translation>
 <translation id="3036649622769666520">파일 열기</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" />MB</translation>
 <translation id="3087734570205094154">맨 아래</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">콤마</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1초 전}other{#초 전}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1초 전}other{#초 전}}</translation>
+<translation id="654149438358937226">모든 알림 차단</translation>
 <translation id="6567071839949112727">상위 개체 클릭</translation>
 <translation id="6612467943526193239">보정을 종료하려면 Esc를 누르세요.</translation>
 <translation id="6620110761915583480">파일 저장</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7814458197256864873">복사(&amp;C)</translation>
+<translation id="7879499977785298635">차단하지 않음</translation>
 <translation id="7907591526440419938">파일 열기</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1시간 전}other{#시간 전}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>

@@ -147,7 +147,6 @@
 <translation id="5170938038195470297">Google Chrome இன் புத்தம் புதிய பதிப்பு என்பதால், உங்கள் சுயவிவரத்தைப் பயன்படுத்த முடியாது. சில அம்சங்கள் கிடைக்காமல் போகலாம். வேறு சுயவிவர கோப்பகத்தைக் குறிப்பிடுக அல்லது Chrome இன் புதிய பதிப்பைப் பயன்படுத்துக.</translation>
 <translation id="5193136243808726294">Google Chrome OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />சேவை விதிமுறைகள்<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
-<translation id="5243785881901838525">Google Payments (Chromeக்கு நகலெடுக்கப்பட்டது)</translation>
 <translation id="5251420635869119124">எதையும் விட்டுசெல்லாமல் விருந்தினர்கள் Chrome ஐப் பயன்படுத்தலாம்.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 1 வினாடியில் மீண்டும் தொடங்கும்.}other{Google Chrome # வினாடிகளில் மீண்டும் தொடங்கும்.}}</translation>
 <translation id="532046782124376502">எச்சரிக்கை: நீட்டிப்புகள் உங்கள் உலாவல் வரலாற்றைப் பதிவுசெய்வதை Google Chrome ஆல் தடுக்க முடியவில்லை. மறைநிலையில் இந்த நீட்டிப்பை முடக்க, இந்த விருப்பத்தைத் தேர்வுநீக்கவும்.</translation>
@@ -229,6 +228,7 @@
 <translation id="7896673875602241923">இதற்கு முன்னர் ஒருவர் இந்தக் கணினியிலுள்ள Chrome இல் <ph name="ACCOUNT_EMAIL_LAST" /> எனும் முகவரியைப் பயன்படுத்தி உள்நுழைந்திருந்தார். உங்கள் தகவலைத் தனிப்பட்டதாக வைத்திருக்க, புதிய Chrome பயனரை உருவாக்கவும்.</translation>
 <translation id="7908168227788431038">கிட்டத்தட்ட புதுப்பிக்கப்பட்டது! புதுப்பிப்பதை முடிக்க, Google Chromeஐ மீண்டும் தொடங்கவும்.</translation>
 <translation id="795025003224538582">மறுதொடக்கம் வேண்டாம்</translation>
+<translation id="7962410387636238736">Windows XP மற்றும் Windows Vista ஆகியவை இனி ஆதரிக்கப்படாது என்பதால் இந்தக் கணினி இனி Google Chrome புதுப்பிப்புகளைப் பெறாது</translation>
 <translation id="8005540215158006229">Chrome தயாராகிவிட்டது.</translation>
 <translation id="8008534537613507642">Chrome ஐ மீண்டும்நிறுவு</translation>
 <translation id="8030318113982266900">உங்கள் சாதனத்தை <ph name="CHANNEL_NAME" /> சேனலுக்குப் புதுப்பிக்கிறது...</translation>

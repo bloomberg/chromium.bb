@@ -56,7 +56,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1409879593029778104">Download di <ph name="FILE_NAME" /> impedito perché il file esiste già.</translation>
 <translation id="1414981605391750300">Connessione a Google in corso. L'operazione potrebbe richiedere un minuto…</translation>
 <translation id="1416550906796893042">Versione applicazione</translation>
-<translation id="1423209968422390786">L'accesso alla posizione è stato <ph name="BEGIN_LINK" />disattivato per il dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1445680696957526815">I componenti di Chrome non sono compatibili tra loro. Potrebbe essere in corso l'upgrade di Chrome, riprova tra qualche minuto. Se il problema persiste, prova a disinstallare e reinstallare Chrome.</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
@@ -84,6 +83,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1660204651932907780">Consenti ai siti di riprodurre l'audio (opzione consigliata)</translation>
 <translation id="1670399744444387456">Di base</translation>
 <translation id="1671236975893690980">Download in attesa...</translation>
+<translation id="1674523662097951983">La voce "Preferiti" verrà spostata. La prossima volta dovrai trascinare verso l'alto la barra degli indirizzi.</translation>
 <translation id="169033420419426091">Download di <ph name="FILE_NAME" /> non riuscito a causa dell'assenza di scheda SD.</translation>
 <translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
@@ -116,6 +116,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1993768208584545658">Il sito <ph name="SITE" /> desidera accoppiarsi</translation>
 <translation id="1994173015038366702">URL sito</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB per altre app</translation>
+<translation id="2015632741368427174">Reindirizzamento al sito bloccato:</translation>
 <translation id="2017836877785168846">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi.</translation>
 <translation id="2021896219286479412">Controlli sito a schermo intero</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
@@ -413,6 +414,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4807963036345170158">Risparmio dati disattivato</translation>
 <translation id="4811736444948656478">Riquadro di navigazione aperto nella metà inferiore dello schermo</translation>
 <translation id="4816465935029283692">Tipi di dati</translation>
+<translation id="482201002591920174">Archiviazione principale</translation>
 <translation id="4837753911714442426">Apri la pagina delle opzioni di stampa</translation>
 <translation id="4842092870884894799">È mostrato il popup di generazione della password</translation>
 <translation id="4850886885716139402">Visualizza</translation>
@@ -472,7 +474,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminato</translation>
-<translation id="5345083863238459644">L'accesso alla posizione è stato <ph name="BEGIN_LINK" />disattivato anche per il dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL copiato.</translation>
 <translation id="5400569084694353794">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="5403644198645076998">Consenti solo siti specifici</translation>
@@ -554,6 +555,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
 <translation id="5958275228015807058">Puoi trovare i tuoi file e le tue pagine nella cartella Download</translation>
 <translation id="5962718611393537961">Tocca per comprimere</translation>
+<translation id="5974562976030145789">La voce "Download" verrà spostata. La prossima volta dovrai trascinare verso l'alto la barra degli indirizzi.</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6031101910111098835">Visualizzazione compressa. Fai clic per espandere</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
@@ -652,7 +654,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6846298663435243399">Caricamento in corso…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> schede chiuse</translation>
-<translation id="6856477143496886355">Carte e indirizzi che utilizzano Google Payments</translation>
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della Compilazione automatica dei moduli</translation>
 <translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
@@ -664,6 +665,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6905163627763043954">Prova</translation>
 <translation id="6910211073230771657">Eliminato</translation>
 <translation id="6945221475159498467">Seleziona</translation>
+<translation id="6959661084585705671">Archiviazione secondaria</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reimposta impostazioni traduzione</translation>
@@ -818,6 +820,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8489271220582375723">Apri la pagina Cronologia</translation>
 <translation id="8493948351860045254">Libera spazio</translation>
+<translation id="8494508527479967437">La voce "Cronologia" verrà spostata. La prossima volta dovrai trascinare verso l'alto la barra degli indirizzi.</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="8514477925623180633">Esporta le password memorizzate su Chrome</translation>
@@ -862,7 +865,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="8922289737868596582">Usa il pulsante Altre opzioni per scaricare le pagine da usare offline</translation>
-<translation id="892369953214061711">Le notifiche sono consentite. La geolocalizzazione non è attiva; attivala nelle Impostazioni Android.</translation>
 <translation id="8936297887573571433">Tocca per visualizzare download, preferiti e cronologia</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>

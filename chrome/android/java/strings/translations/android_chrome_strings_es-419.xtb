@@ -56,7 +56,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1409879593029778104">Se impidió la descarga de <ph name="FILE_NAME" /> porque el archivo ya existe.</translation>
 <translation id="1414981605391750300">Se está estableciendo la comunicación con Google. Esta acción puede demorar unos minutos…</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
-<translation id="1423209968422390786">El acceso a la ubicación se <ph name="BEGIN_LINK" />desactivó para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome esté actualizándose. Espera unos minutos y vuelve a intentarlo. Si el problema continúa, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control de dispositivos MIDI</translation>
@@ -84,6 +83,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1660204651932907780">Permitir que los sitios reproduzcan sonido (recomendado)</translation>
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="1671236975893690980">Descarga pendiente…</translation>
+<translation id="1674523662097951983">Estamos moviendo "Favoritos". La próxima vez, desliza la barra de direcciones hacia arriba.</translation>
 <translation id="169033420419426091"><ph name="FILE_NAME" /> no se pudo descargar porque falta la tarjeta SD.</translation>
 <translation id="1709438864123551175">Reducir datos</translation>
 <translation id="1718835860248848330">Última hora</translation>
@@ -116,6 +116,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1993768208584545658"><ph name="SITE" /> desea sincronizarse</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="200815880754187296">Otras apps: <ph name="KILOBYTES" /> kilobytes</translation>
+<translation id="2015632741368427174">Se bloqueó el redireccionamiento al siguiente sitio:</translation>
 <translation id="2017836877785168846">Borra el historial y las opciones de autocompletado en la barra de direcciones.</translation>
 <translation id="2021896219286479412">Controles en pantalla completa</translation>
 <translation id="2038563949887743358">Activar la opción para solicitar versión de escritorio</translation>
@@ -413,6 +414,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4807963036345170158">Reducir datos está desactivada</translation>
 <translation id="4811736444948656478">Se abrió el panel de navegación a media altura</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
+<translation id="482201002591920174">Almacenamiento principal</translation>
 <translation id="4837753911714442426">Abrir opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando mensaje emergente de generación de contraseña</translation>
 <translation id="4850886885716139402">Ver</translation>
@@ -472,7 +474,6 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios ejecuten JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> borrado</translation>
-<translation id="5345083863238459644">El acceso a la ubicación también se <ph name="BEGIN_LINK" />desactivó para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Se copió la URL.</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">Permitir solo algunos sitios</translation>
@@ -554,6 +555,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5956665950594638604">Abrir Centro de ayuda de Chrome en pestaña nueva</translation>
 <translation id="5958275228015807058">Encuentra tus archivos y páginas en Descargas</translation>
 <translation id="5962718611393537961">Presiona para contraer</translation>
+<translation id="5974562976030145789">Estamos moviendo "Descargas". La próxima vez, desliza la barra de direcciones hacia arriba.</translation>
 <translation id="6000066717592683814">Seguir usando Google</translation>
 <translation id="6031101910111098835">Contraído (hacer clic para expandir)</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
@@ -652,7 +654,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
-<translation id="6856477143496886355">Tarjetas y direcciones que usan Google Payments</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los favoritos, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
@@ -664,6 +665,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6905163627763043954">Probar la contraseña</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6959661084585705671">Almacenamiento secundario</translation>
 <translation id="6963766334940102469">Borrar favoritos</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6978479750597523876">Restablecer la configuración de traducción</translation>
@@ -818,6 +820,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8489271220582375723">Abrir la página del historial</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
+<translation id="8494508527479967437">Estamos moviendo "Historial". La próxima vez, desliza la barra de direcciones hacia arriba.</translation>
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514477925623180633">Exportar las contraseñas almacenadas con Chrome</translation>
@@ -862,7 +865,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
 <translation id="8922289737868596582">Descarga páginas desde el botón Más opciones para usarlas sin conexión</translation>
-<translation id="892369953214061711">Las notificaciones están habilitadas. La ubicación está desactivada; actívala en Configuración de Android.</translation>
 <translation id="8936297887573571433">Presiona para ver las descargas, los favoritos y el historial</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>

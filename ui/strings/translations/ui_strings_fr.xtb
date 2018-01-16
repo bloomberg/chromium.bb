@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Ouvrir le dossier</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Il y a 1 an}one{Il y a # an}other{Il y a # ans}}</translation>
 <translation id="2931838996092594335">cliquer</translation>
-<translation id="2983818520079887040">Paramètres...</translation>
 <translation id="3036649622769666520">Ouvrir les fichiers</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> Mo</translation>
 <translation id="3087734570205094154">Bas</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Virgule</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Il y a 1 s}one{Il y a # s}other{Il y a # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Il y a une seconde}one{Il y a # seconde}other{Il y a # secondes}}</translation>
+<translation id="654149438358937226">Bloquer toutes les notifications</translation>
 <translation id="6567071839949112727">cliquer sur l'ancêtre</translation>
 <translation id="6612467943526193239">Pour quitter le mode Étalonnage, appuyez sur Échap.</translation>
 <translation id="6620110761915583480">Enregistrer le fichier</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7781829728241885113">Hier</translation>
 <translation id="7814458197256864873">&amp;Copier</translation>
+<translation id="7879499977785298635">Ne pas bloquer</translation>
 <translation id="7907591526440419938">Ouvrir le fichier</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Il y a 1 heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restante}one{# s restante}other{# s restantes}}</translation>

@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">オブジェクト</translation>
 <translation id="2942448076852699108">ハイライト表示されたコンテンツ</translation>
 <translation id="3040011195152428237">リンク</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">有効な値を入力してください。フィールドの入力が不完全か、日付が無効です。</translation>
 <translation id="3078740164268491126">表</translation>
 <translation id="3086746722712840547">注記</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">残りの再生時間（秒）</translation>
 <translation id="3706100364254443312">切り替え</translation>
 <translation id="3732799496749320381">月</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3785482301506746191">シークバー</translation>
 <translation id="3808586225841795776">用語</translation>
 <translation id="3822383571486410024">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在は <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">次の月を表示</translation>
 <translation id="512758898067543763">行見出し</translation>
 <translation id="5164977714490026579">値は <ph name="MINIMUM" /> 以上にする必要があります。</translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">「<ph name="ATSIGN" />」の前の文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
 <translation id="5406322316791861025">図</translation>
 <translation id="5453733299334684579">ツリー項目</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">列見出し</translation>
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="739024184232394898">その他...</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">タブ</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7673697353781729403">時間</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">再生を開始</translation>
 <translation id="8845239796550121995">テレビにキャストしています</translation>
 <translation id="8851136666856101339">本文</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">現在の時間（秒単位）</translation>
 <translation id="9048119486235211610">ナビゲーション</translation>

@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">kitu</translation>
 <translation id="2942448076852699108">maudhui yaliyoangaziwa</translation>
 <translation id="3040011195152428237">kiungo</translation>
+<translation id="3049748772180311791">MB <ph name="QUANTITY" /></translation>
 <translation id="3075154866155599887">Tafadhali ingiza thamani halali. Uga umekamilika au una tarehe batili.</translation>
 <translation id="3078740164268491126">jedwali</translation>
 <translation id="3086746722712840547">dokezo</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">sekunde zinazosalia za filamu</translation>
 <translation id="3706100364254443312">badilisha</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3757388668994797779">GB <ph name="QUANTITY" /></translation>
 <translation id="3785482301506746191">kitelezi cha muda cha filamu</translation>
 <translation id="3808586225841795776">neno</translation>
 <translation id="3822383571486410024">Tafadhali refusha maandishi haya hadi herufi <ph name="MIN_CHARACTERS" /> au zaidi (kwa sasa unatumia herufi <ph name="CURRENT_LENGTH" />).</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">Onyesha mwezi unaofuata</translation>
 <translation id="512758898067543763">kichwa cha safu mlalo</translation>
 <translation id="5164977714490026579">Lazima thamani iwe kubwa kuliko au sawa na <ph name="MINIMUM" />.</translation>
+<translation id="520299402983819650">PB <ph name="QUANTITY" /></translation>
 <translation id="5307600278924710095">Tafadhali ingiza sehemu ikifuatiwa na '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' haijakamilika.</translation>
 <translation id="5406322316791861025">umbo</translation>
 <translation id="5453733299334684579">kipengee cha mti</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">kijajuu cha safu wima</translation>
 <translation id="7364796246159120393">Chagua Faili</translation>
 <translation id="739024184232394898">Nyingine...</translation>
+<translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>
 <translation id="7491962110804786152">kichupo</translation>
 <translation id="7514365320538308">Pakua</translation>
 <translation id="7673697353781729403">Saa</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">anza kucheza</translation>
 <translation id="8845239796550121995">Sasa inatuma kwenye TV yako</translation>
 <translation id="8851136666856101339">kuu</translation>
+<translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="901493112792887934">muda wa sasa kwa sekunde</translation>
 <translation id="9048119486235211610">kuvinjari</translation>

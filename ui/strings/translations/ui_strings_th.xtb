@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">เปิดโฟลเดอร์</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ปีที่ผ่านมา}other{# ปีที่ผ่านมา}}</translation>
 <translation id="2931838996092594335">คลิก</translation>
-<translation id="2983818520079887040">การตั้งค่า...</translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">จุลภาค</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ 1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
+<translation id="654149438358937226">บล็อกการแจ้งเตือนทั้งหมด</translation>
 <translation id="6567071839949112727">คลิกต้นตระกูล</translation>
 <translation id="6612467943526193239">หากต้องการออกจากการปรับเทียบ ให้กด Esc</translation>
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="7814458197256864873">&amp;คัดลอก</translation>
+<translation id="7879499977785298635">ไม่ต้องบล็อก</translation>
 <translation id="7907591526440419938">เปิดไฟล์</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ชั่วโมงที่ผ่านมา}other{# ชั่วโมงที่ผ่านมา}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>

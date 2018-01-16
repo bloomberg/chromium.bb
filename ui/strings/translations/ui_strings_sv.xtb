@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Öppna mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 år sedan}other{# år sedan}}</translation>
 <translation id="2931838996092594335">klicka</translation>
-<translation id="2983818520079887040">Inställningar...</translation>
 <translation id="3036649622769666520">Öppna filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Nederst</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{för 1 sek sedan}other{för # sek sedan}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekund sedan}other{# sekunder sedan}}</translation>
+<translation id="654149438358937226">Blockera alla aviseringar</translation>
 <translation id="6567071839949112727">klicka på det överordnade objektet</translation>
 <translation id="6612467943526193239">Tryck på Esc för att avsluta kalibreringen.</translation>
 <translation id="6620110761915583480">Spara fil</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">Igår</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
+<translation id="7879499977785298635">Blockera inte</translation>
 <translation id="7907591526440419938">Öppna fil</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{för 1 timme sedan}other{för # timmar sedan}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek kvar}other{# sek kvar}}</translation>

@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Atvērt mapi</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Pirms 1 gada}zero{Pirms # gadiem}one{Pirms # gada}other{Pirms # gadiem}}</translation>
 <translation id="2931838996092594335">noklikšķināt</translation>
-<translation id="2983818520079887040">Iestatījumi...</translation>
 <translation id="3036649622769666520">Atvērt failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Apakšā</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Komats</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pirms 1 s}zero{Pirms # s}one{Pirms # s}other{Pirms # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pirms 1 sekundes}zero{Pirms # sekundēm}one{Pirms # sekundes}other{Pirms # sekundēm}}</translation>
+<translation id="654149438358937226">Bloķēt visus paziņojumus</translation>
 <translation id="6567071839949112727">noklikšķināt uz priekšteča</translation>
 <translation id="6612467943526193239">Lai izietu no kalibrēšanas, nospiediet Esc.</translation>
 <translation id="6620110761915583480">Saglabāt failu</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
+<translation id="7879499977785298635">Nebloķēt</translation>
 <translation id="7907591526440419938">Atvērt failu</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pirms 1 stundas}zero{Pirms # stundām}one{Pirms # stundas}other{Pirms # stundām}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Atlikusi 1 s}zero{Atlikušas # s}one{Atlikusi # s}other{Atlikušas # s}}</translation>

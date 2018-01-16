@@ -50,6 +50,7 @@
 <translation id="2940813599313844715">ออบเจ็กต์</translation>
 <translation id="2942448076852699108">เนื้อหาที่ไฮไลต์</translation>
 <translation id="3040011195152428237">ลิงก์</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">โปรดป้อนค่าที่ถูกต้อง ฟิลด์นี้ไม่สมบูรณ์หรือมีวันที่ที่ไม่ถูกต้อง</translation>
 <translation id="3078740164268491126">ตาราง</translation>
 <translation id="3086746722712840547">หมายเหตุ</translation>
@@ -62,6 +63,7 @@
 <translation id="3639613635497528239">จำนวนวินาทีที่เหลือของภาพยนตร์</translation>
 <translation id="3706100364254443312">สวิตช์</translation>
 <translation id="3732799496749320381">ดด</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3785482301506746191">ตัวควบคุมเวลาของภาพยนตร์</translation>
 <translation id="3808586225841795776">คำหลัก</translation>
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
@@ -92,6 +94,7 @@
 <translation id="5117590920725113268">แสดงเดือนถัดไป</translation>
 <translation id="512758898067543763">ส่วนหัวของแถว</translation>
 <translation id="5164977714490026579">ค่าต้องมากกว่าหรือเท่ากับ <ph name="MINIMUM" /></translation>
+<translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">โปรดป้อนส่วนหนึ่งโดยตามด้วย "<ph name="ATSIGN" />" "<ph name="INVALIDADDRESS" />" นั้นไม่สมบูรณ์</translation>
 <translation id="5406322316791861025">ตัวเลข</translation>
 <translation id="5453733299334684579">รายการแบบต้นไม้</translation>
@@ -140,6 +143,7 @@
 <translation id="727747134524199931">ส่วนหัวคอลัมน์</translation>
 <translation id="7364796246159120393">เลือกไฟล์</translation>
 <translation id="739024184232394898">อื่นๆ...</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">แท็บ</translation>
 <translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="7673697353781729403">ชั่วโมง</translation>
@@ -172,6 +176,7 @@
 <translation id="8785498733064193001">เริ่มเล่น</translation>
 <translation id="8845239796550121995">ตอนนี้กำลังแคสต์ไปยัง TV</translation>
 <translation id="8851136666856101339">หลัก</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="901493112792887934">เวลาปัจจุบันเป็นวินาที</translation>
 <translation id="9048119486235211610">การนำทาง</translation>

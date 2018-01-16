@@ -43,7 +43,6 @@
 <translation id="2803313416453193357">Otvori mapu</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Prije godinu dana}one{Prije # godine}few{Prije # godine}other{Prije # godina}}</translation>
 <translation id="2931838996092594335">klikanje</translation>
-<translation id="2983818520079887040">Postavke...</translation>
 <translation id="3036649622769666520">Otvori datoteke</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Donji</translation>
@@ -105,6 +104,7 @@
 <translation id="6394627529324717982">Zarez</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prije 1 s}one{Prije # s}few{Prije # s}other{Prije # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prije 1 sekunde}one{Prije # sekunde}few{Prije # sekunde}other{Prije # sekundi}}</translation>
+<translation id="654149438358937226">Blokiraj sve obavijesti</translation>
 <translation id="6567071839949112727">klikni nadređeni element</translation>
 <translation id="6612467943526193239">Za izlaz iz kalibracije pritisnite Esc.</translation>
 <translation id="6620110761915583480">Spremi datoteku</translation>
@@ -131,6 +131,7 @@
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7781829728241885113">Danas</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
+<translation id="7879499977785298635">Ne blokiraj</translation>
 <translation id="7907591526440419938">Otvori datoteku</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prije 1 sat}one{Prije # sat}few{Prije # sata}other{Prije # sati}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Još 1 s}one{Još # s}few{Još # s}other{Još # s}}</translation>
