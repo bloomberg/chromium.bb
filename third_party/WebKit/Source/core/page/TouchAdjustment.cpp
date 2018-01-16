@@ -236,26 +236,6 @@ static inline void AppendContextSubtargetsForNode(
   }
 }
 
-static inline void AppendZoomableSubtargets(Node* node,
-                                            SubtargetGeometryList& subtargets) {
-  LayoutBox* layout_object = ToLayoutBox(node->GetLayoutObject());
-  DCHECK(layout_object);
-
-  Vector<FloatQuad> quads;
-  FloatRect border_box_rect(layout_object->BorderBoxRect());
-  FloatRect content_box_rect(layout_object->ContentBoxRect());
-  quads.push_back(layout_object->LocalToAbsoluteQuad(border_box_rect));
-  if (border_box_rect != content_box_rect)
-    quads.push_back(layout_object->LocalToAbsoluteQuad(content_box_rect));
-  // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for
-  // floats.
-
-  Vector<FloatQuad>::const_iterator it = quads.begin();
-  const Vector<FloatQuad>::const_iterator end = quads.end();
-  for (; it != end; ++it)
-    subtargets.push_back(SubtargetGeometry(node, *it));
-}
-
 static inline Node* ParentShadowHostOrOwner(const Node* node) {
   if (Node* ancestor = node->ParentOrShadowHostNode())
     return ancestor;
@@ -347,17 +327,6 @@ void CompileSubtargetList(const HeapVector<Member<Node>>& intersected_nodes,
     }
     if (candidate)
       append_subtargets_for_node(candidate, subtargets);
-  }
-}
-
-// Compiles a list of zoomable subtargets.
-void CompileZoomableSubtargets(
-    const HeapVector<Member<Node>>& intersected_nodes,
-    SubtargetGeometryList& subtargets) {
-  for (unsigned i = 0; i < intersected_nodes.size(); ++i) {
-    Node* candidate = intersected_nodes[i].Get();
-    if (NodeIsZoomTarget(candidate))
-      AppendZoomableSubtargets(candidate, subtargets);
   }
 }
 
@@ -559,19 +528,6 @@ bool FindBestContextMenuCandidate(Node*& target_node,
   return TouchAdjustment::FindNodeWithLowestDistanceMetric(
       target_node, target_point, target_area, touch_hotspot, touch_area,
       subtargets, TouchAdjustment::HybridDistanceFunction);
-}
-
-bool FindBestZoomableArea(Node*& target_node,
-                          IntRect& target_area,
-                          const IntPoint& touch_hotspot,
-                          const IntRect& touch_area,
-                          const HeapVector<Member<Node>>& nodes) {
-  IntPoint target_point;
-  TouchAdjustment::SubtargetGeometryList subtargets;
-  TouchAdjustment::CompileZoomableSubtargets(nodes, subtargets);
-  return TouchAdjustment::FindNodeWithLowestDistanceMetric(
-      target_node, target_point, target_area, touch_hotspot, touch_area,
-      subtargets, TouchAdjustment::ZoomableIntersectionQuotient);
 }
 
 }  // namespace blink

@@ -1620,36 +1620,6 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
   return target_node;
 }
 
-DOMRectReadOnly* Internals::bestZoomableAreaForTouchPoint(
-    long x,
-    long y,
-    long width,
-    long height,
-    Document* document,
-    ExceptionState& exception_state) {
-  DCHECK(document);
-  if (!document->GetFrame()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
-                                      "The document provided is invalid.");
-    return nullptr;
-  }
-
-  document->UpdateStyleAndLayout();
-
-  IntSize radius(width / 2, height / 2);
-  IntPoint point(x + radius.Width(), y + radius.Height());
-
-  Node* target_node = nullptr;
-  IntRect zoomable_area;
-  bool found_node =
-      document->GetFrame()->GetEventHandler().BestZoomableAreaForTouchPoint(
-          point, radius, zoomable_area, target_node);
-  if (found_node)
-    return DOMRectReadOnly::FromIntRect(zoomable_area);
-
-  return nullptr;
-}
-
 int Internals::lastSpellCheckRequestSequence(Document* document,
                                              ExceptionState& exception_state) {
   SpellCheckRequester* requester = GetSpellCheckRequester(document);
