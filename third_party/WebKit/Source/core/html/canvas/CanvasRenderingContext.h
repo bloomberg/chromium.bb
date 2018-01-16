@@ -28,8 +28,8 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/CanvasColorParams.h"

@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/html/HTMLCanvasElement.h"
-#include "core/html/ImageData.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/CrossThreadFunctional.h"

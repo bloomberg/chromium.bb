@@ -4,12 +4,12 @@
 
 #include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
 
-#include "core/html/HTMLCanvasElement.h"
+#include <memory>
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 #include "platform/mediastream/MediaStreamCenter.h"
-#include <memory>
 
 namespace blink {
 

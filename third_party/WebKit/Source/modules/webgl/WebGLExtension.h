@@ -26,7 +26,7 @@
 #ifndef WebGLExtension_h
 #define WebGLExtension_h
 
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "modules/webgl/WebGLExtensionName.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "platform/bindings/ScriptWrappable.h"

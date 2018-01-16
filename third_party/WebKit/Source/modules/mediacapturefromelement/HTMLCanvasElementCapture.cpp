@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "core/dom/ExceptionCode.h"
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
 #include "modules/mediastream/MediaStream.h"
 #include "public/platform/Platform.h"

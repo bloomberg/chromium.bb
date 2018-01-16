@@ -4,7 +4,7 @@
 
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"

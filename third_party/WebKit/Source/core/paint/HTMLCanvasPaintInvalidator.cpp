@@ -4,7 +4,7 @@
 
 #include "core/paint/HTMLCanvasPaintInvalidator.h"
 
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/BoxPaintInvalidator.h"
 #include "core/paint/PaintInvalidator.h"

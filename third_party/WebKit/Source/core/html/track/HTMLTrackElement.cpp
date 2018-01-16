@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLTrackElement.h"
+#include "core/html/track/HTMLTrackElement.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"

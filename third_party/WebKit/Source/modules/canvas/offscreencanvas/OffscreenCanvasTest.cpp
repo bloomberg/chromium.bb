@@ -5,7 +5,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/testing/PageTestBase.h"
