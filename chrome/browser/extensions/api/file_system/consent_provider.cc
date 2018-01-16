@@ -198,8 +198,8 @@ void ConsentProviderDelegate::ShowNotification(
     const Extension& extension,
     const base::WeakPtr<file_manager::Volume>& volume,
     bool writable) {
-  RequestFileSystemNotification::ShowAutoGrantedNotification(
-      profile_, extension, volume, writable);
+  ShowNotificationForAutoGrantedRequestFileSystem(profile_, extension, volume,
+                                                  writable);
 }
 
 bool ConsentProviderDelegate::IsAutoLaunched(const Extension& extension) {
