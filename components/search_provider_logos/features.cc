@@ -7,12 +7,6 @@
 namespace search_provider_logos {
 namespace features {
 
-const base::Feature kThirdPartyDoodles{"ThirdPartyDoodles",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kThirdPartyDoodlesOverrideUrlParam[] =
-    "third-party-doodles-override-url";
-
 const base::Feature kDoodleLogging{"DoodleLogging",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 

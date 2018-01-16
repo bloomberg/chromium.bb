@@ -1127,19 +1127,16 @@ const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
 };
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kThirdPartyDoodlesTestSimple[] = {
-    {search_provider_logos::features::kThirdPartyDoodlesOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/third_party_simple.json"}};
-const FeatureEntry::FeatureParam kThirdPartyDoodlesTestAnimated[] = {
-    {search_provider_logos::features::kThirdPartyDoodlesOverrideUrlParam,
+const FeatureEntry::Choice kThirdPartyDoodlesChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {"(force simple test doodle)",
+     search_provider_logos::switches::kThirdPartyDoodleURL,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/third_party_simple.json"},
+    {"(force animated test doodle)",
+     search_provider_logos::switches::kThirdPartyDoodleURL,
      "https://www.gstatic.com/chrome/ntp/doodle_test/"
-     "third_party_animated.json"}};
-
-const FeatureEntry::FeatureVariation kThirdPartyDoodlesVariations[] = {
-    {"(force simple test doodle)", kThirdPartyDoodlesTestSimple,
-     arraysize(kThirdPartyDoodlesTestSimple), nullptr},
-    {"(force animated test doodle)", kThirdPartyDoodlesTestAnimated,
-     arraysize(kThirdPartyDoodlesTestAnimated), nullptr}};
+     "third_party_animated.json"},
+};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kSpeculativePreconnectPreconnect[] = {
@@ -3468,10 +3465,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"third-party-doodles", flag_descriptions::kThirdPartyDoodlesName,
      flag_descriptions::kThirdPartyDoodlesDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         search_provider_logos::features::kThirdPartyDoodles,
-         kThirdPartyDoodlesVariations,
-         "NTPThirdPartyDoodles")},
+     MULTI_VALUE_TYPE(kThirdPartyDoodlesChoices)},
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
