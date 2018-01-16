@@ -45,6 +45,8 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "core/layout/ng/inline/ng_text_fragment.h"
 #include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInline.h"
@@ -443,6 +445,26 @@ static void WriteTextRun(TextStream& ts,
   ts << "\n";
 }
 
+static void WriteTextFragment(TextStream& ts,
+                              const NGPhysicalFragment& physical_fragment,
+                              NGPhysicalOffset offset_to_container_box) {
+  if (!physical_fragment.IsText())
+    return;
+  const NGPhysicalTextFragment& physical_text_fragment =
+      ToNGPhysicalTextFragment(physical_fragment);
+  NGTextFragment fragment(physical_fragment.Style().GetWritingMode(),
+                          physical_text_fragment);
+  // See WriteTextRun() for why we convert to int.
+  int x = offset_to_container_box.left.ToInt();
+  int y = offset_to_container_box.top.ToInt();
+  int logical_width =
+      (offset_to_container_box.left + fragment.InlineSize()).Ceil() - x;
+  ts << "text run at (" << x << "," << y << ") width " << logical_width;
+  ts << ": "
+     << QuoteAndEscapeNonPrintables(physical_text_fragment.Text().ToString());
+  ts << "\n";
+}
+
 void Write(TextStream& ts,
            const LayoutObject& o,
            int indent,
@@ -491,10 +513,19 @@ void Write(TextStream& ts,
 
   if (o.IsText() && !o.IsBR()) {
     const LayoutText& text = ToLayoutText(o);
-    for (InlineTextBox* box = text.FirstTextBox(); box;
-         box = box->NextTextBox()) {
-      WriteIndent(ts, indent + 1);
-      WriteTextRun(ts, text, *box);
+    if (const NGPhysicalBoxFragment* box_fragment =
+            text.EnclosingBlockFlowFragment()) {
+      for (const auto& child :
+           NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, &text)) {
+        WriteIndent(ts, indent + 1);
+        WriteTextFragment(ts, *child.fragment, child.offset_to_container_box);
+      }
+    } else {
+      for (InlineTextBox* box = text.FirstTextBox(); box;
+           box = box->NextTextBox()) {
+        WriteIndent(ts, indent + 1);
+        WriteTextRun(ts, text, *box);
+      }
     }
   }
 
