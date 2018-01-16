@@ -11579,6 +11579,7 @@
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
         "afdo_generate": true,
+        "archive_build_debug": true,
         "boards": [
             "chell"
         ],
@@ -11598,6 +11599,7 @@
         "_template": "chrome_pfq",
         "active_waterfall": "chromiumos.tryserver",
         "afdo_generate": true,
+        "archive_build_debug": true,
         "boards": [
             "chell"
         ],
@@ -50112,6 +50114,7 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "archive_build_debug": true,
         "boards": [
             "samus"
         ],
@@ -50135,6 +50138,7 @@
         "active_waterfall": "chromiumos.tryserver",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "archive_build_debug": true,
         "boards": [
             "samus"
         ],

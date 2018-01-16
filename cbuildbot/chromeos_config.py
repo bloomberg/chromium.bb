@@ -3632,6 +3632,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'chell-chrome-pfq': {
           'afdo_generate': True,
+          'archive_build_debug': True,
           # Disable hugepages before collecting AFDO profile.
           # Disable debug fission before collecting AFDO profile.
           # Disable thinlto before collecting AFDO profile.
@@ -3857,6 +3858,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
                                 '-debug_fission',
                                 '-thinlto']),
       prebuilts=constants.PRIVATE,
+      archive_build_debug=True,
   )
 
   site_config.Add(
