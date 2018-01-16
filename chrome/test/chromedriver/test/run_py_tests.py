@@ -79,6 +79,8 @@ _NEGATIVE_FILTER = [
     'MobileEmulationCapabilityTest.testClickElement',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -1598,6 +1600,41 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load('about:blank')
     self._driver.ExecuteScript('Object.prototype.$family = undefined;')
     self.assertEquals(1, self._driver.ExecuteScript('return 1;'))
+
+
+class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
+  """Tests for ChromeDriver with the new Site Isolation Chrome feature.
+
+  This feature can be turned on using the --site-per-process flag.
+
+  In order to trick the test into thinking that we are on two separate origins,
+  the cross_domain_iframe.html code points to localhost instead of 127.0.0.1.
+
+  Note that Chrome does not allow "localhost" to be passed to --isolate-origins
+  for fixable technical reasons related to subdomain matching.
+  """
+
+  def setUp(self):
+    self._driver = self.CreateDriver(chrome_switches=['--site-per-process'])
+
+  def testCanClickOOPIF(self):
+    """Test that you can click into an Out of Process I-Frame (OOPIF).
+
+    Note that the Iframe will not be out-of-process if the correct
+    flags are not passed into Chrome.
+    """
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/cross_domain_iframe.html'))
+    a_outer = self._driver.FindElement('tag name', 'a')
+    a_outer.Click()
+    frame_url = self._driver.ExecuteScript('return window.location.href')
+    self.assertTrue(frame_url.endswith('#one'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    a_inner = self._driver.FindElement('tag name', 'a')
+    a_inner.Click()
+    frame_url = self._driver.ExecuteScript('return window.location.href')
+    self.assertTrue(frame_url.endswith('#two'))
 
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
