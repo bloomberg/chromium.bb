@@ -2752,29 +2752,6 @@
             ]
         }
     ],
-    "RendererSideResourceScheduler": [
-        {
-            "platforms": [
-                "win",
-                "mac",
-                "linux",
-                "chromeos",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_3_16",
-                    "params": {
-                        "limit": "16",
-                        "tight_limit": "3"
-                    },
-                    "enable_features": [
-                        "RendererSideResourceScheduler"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
