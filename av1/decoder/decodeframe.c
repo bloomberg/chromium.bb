@@ -2175,6 +2175,98 @@ void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   return;
 }
 
+#if CONFIG_FILM_GRAIN
+void av1_read_film_grain_params(AV1_COMMON *cm,
+                                struct aom_read_bit_buffer *rb) {
+  aom_film_grain_t *pars = &cm->film_grain_params;
+
+  pars->apply_grain = aom_rb_read_bit(rb);
+  if (!pars->apply_grain) return;
+
+  pars->random_seed = aom_rb_read_literal(rb, 16);
+
+  pars->update_parameters = aom_rb_read_bit(rb);
+  if (!pars->update_parameters) return;
+
+  // Scaling functions parameters
+
+  pars->num_y_points = aom_rb_read_literal(rb, 4);  // max 14
+  for (int i = 0; i < pars->num_y_points; i++) {
+    pars->scaling_points_y[i][0] = aom_rb_read_literal(rb, 8);
+    pars->scaling_points_y[i][1] = aom_rb_read_literal(rb, 8);
+  }
+
+  pars->chroma_scaling_from_luma = aom_rb_read_bit(rb);
+
+  if (!pars->chroma_scaling_from_luma) {
+    pars->num_cb_points = aom_rb_read_literal(rb, 4);  // max 10
+    for (int i = 0; i < pars->num_cb_points; i++) {
+      pars->scaling_points_cb[i][0] = aom_rb_read_literal(rb, 8);
+      pars->scaling_points_cb[i][1] = aom_rb_read_literal(rb, 8);
+    }
+
+    pars->num_cr_points = aom_rb_read_literal(rb, 4);  // max 10
+    for (int i = 0; i < pars->num_cr_points; i++) {
+      pars->scaling_points_cr[i][0] = aom_rb_read_literal(rb, 8);
+      pars->scaling_points_cr[i][1] = aom_rb_read_literal(rb, 8);
+    }
+  }
+
+  pars->scaling_shift = aom_rb_read_literal(rb, 2) + 8;  // 8 + value
+
+  // AR coefficients
+  // Only sent if the corresponsing scaling function has
+  // more than 0 points
+
+  pars->ar_coeff_lag = aom_rb_read_literal(rb, 2);
+
+  int num_pos_luma = 2 * pars->ar_coeff_lag * (pars->ar_coeff_lag + 1);
+  int num_pos_chroma = num_pos_luma + 1;
+
+  if (pars->num_y_points)
+    for (int i = 0; i < num_pos_luma; i++)
+      pars->ar_coeffs_y[i] = aom_rb_read_literal(rb, 8) - 128;
+
+  if (pars->num_cb_points || pars->chroma_scaling_from_luma)
+    for (int i = 0; i < num_pos_chroma; i++)
+      pars->ar_coeffs_cb[i] = aom_rb_read_literal(rb, 8) - 128;
+
+  if (pars->num_cr_points || pars->chroma_scaling_from_luma)
+    for (int i = 0; i < num_pos_chroma; i++)
+      pars->ar_coeffs_cr[i] = aom_rb_read_literal(rb, 8) - 128;
+
+  pars->ar_coeff_shift = aom_rb_read_literal(rb, 2) + 6;  // 6 + value
+
+  if (pars->num_cb_points) {
+    pars->cb_mult = aom_rb_read_literal(rb, 8);
+    pars->cb_luma_mult = aom_rb_read_literal(rb, 8);
+    pars->cb_offset = aom_rb_read_literal(rb, 9);
+  }
+
+  if (pars->num_cr_points) {
+    pars->cr_mult = aom_rb_read_literal(rb, 8);
+    pars->cr_luma_mult = aom_rb_read_literal(rb, 8);
+    pars->cr_offset = aom_rb_read_literal(rb, 9);
+  }
+
+  pars->overlap_flag = aom_rb_read_bit(rb);
+
+  pars->clip_to_restricted_range = aom_rb_read_bit(rb);
+}
+
+static void av1_read_film_grain(AV1_COMMON *cm,
+                                struct aom_read_bit_buffer *rb) {
+  if (cm->film_grain_params_present) {
+    av1_read_film_grain_params(cm, rb);
+  } else {
+    memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
+  }
+  cm->film_grain_params.bit_depth = cm->bit_depth;
+  memcpy(&cm->cur_frame->film_grain_params, &cm->film_grain_params,
+         sizeof(aom_film_grain_t));
+}
+#endif
+
 void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            struct aom_read_bit_buffer *rb,
                                            int allow_lowbitdepth) {
@@ -2594,6 +2686,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
     cm->show_frame = 1;
 
+#if CONFIG_FILM_GRAIN
+    av1_read_film_grain(cm, rb);
+#endif
+
 #if CONFIG_FWD_KF
     cm->reset_decoder_state = aom_rb_read_bit(rb);
     if (cm->reset_decoder_state) {
@@ -2688,7 +2784,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #if !CONFIG_OBU
     av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-    av1_read_time_info_header(cm, rb);
+    av1_read_timing_info_header(cm, rb);
+#endif
+#if CONFIG_FILM_GRAIN
+    cm->film_grain_params_present = aom_rb_read_bit(rb);
 #endif
 #endif
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
@@ -2759,6 +2858,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
       av1_read_timing_info_header(cm, rb);
+#endif
+#if CONFIG_FILM_GRAIN
+      cm->film_grain_params_present = aom_rb_read_bit(rb);
 #endif
 #endif
 
@@ -3180,6 +3282,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_TEMPMV_SIGNALING
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
+
+#if CONFIG_FILM_GRAIN
+  if (cm->show_frame) {
+    av1_read_film_grain(cm, rb);
+  }
+#endif
 
 #if !CONFIG_TILE_INFO_FIRST
   read_tile_info(pbi, rb);

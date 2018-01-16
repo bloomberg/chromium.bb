@@ -293,6 +293,12 @@ if (CONFIG_AV1_DECODER)
       "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
       "${AOM_ROOT}/aom_dsp/entdec.c"
       "${AOM_ROOT}/aom_dsp/entdec.h")
+
+  set(AOM_DSP_DECODER_SOURCES
+      ${AOM_DSP_DECODER_SOURCES}
+      "${AOM_ROOT}/aom_dsp/grain_synthesis.c"
+      "${AOM_ROOT}/aom_dsp/grain_synthesis.h")
+
 endif ()
 
 if (CONFIG_AV1_ENCODER)

@@ -33,6 +33,9 @@
 // TODO(youzhou@microsoft.com): Encoder only. Move it out of common
 #include "av1/encoder/hash_motion.h"
 #endif
+#if CONFIG_FILM_GRAIN
+#include "aom_dsp/grain_synthesis.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -156,6 +159,9 @@ typedef struct {
   int width;
   int height;
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+#if CONFIG_FILM_GRAIN
+  aom_film_grain_t film_grain_params;
+#endif
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
 #if CONFIG_HASH_ME
@@ -547,6 +553,10 @@ typedef struct AV1Common {
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
   int above_context_alloc_cols;
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+#if CONFIG_FILM_GRAIN
+  int film_grain_params_present;
+  aom_film_grain_t film_grain_params;
+#endif
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.

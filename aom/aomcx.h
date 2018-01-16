@@ -689,6 +689,13 @@ enum aome_enc_control_id {
    * EQUAL
    */
   AV1E_SET_TIMING_INFO,
+
+  /*!\brief Codec control function to add film grain parameters (one of several
+   * preset types) info in the bitstream.
+   * \note Valid ranges: 0..11, default is "0". 0 = UNKNOWN,
+   * 1..16 = different test vectors for grain
+   */
+  AV1E_SET_FILM_GRAIN_TEST_VECTOR,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -944,6 +951,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SINGLE_TILE_DECODING, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 #define AOM_CTRL_AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST
+
+AOM_CTRL_USE_TYPE(AV1E_SET_FILM_GRAIN_TEST_VECTOR, unsigned int)
+#define AOM_CTRL_AV1E_SET_FILM_GRAIN_TEST_VECTOR
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

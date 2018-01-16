@@ -38,6 +38,9 @@
 typedef struct cache_frame {
   int fb_idx;
   aom_image_t img;
+#if CONFIG_FILM_GRAIN
+  aom_film_grain_t film_grain_params;
+#endif
 } cache_frame;
 
 struct aom_codec_alg_priv {
@@ -66,6 +69,9 @@ struct aom_codec_alg_priv {
   int next_output_worker_id;
   int available_threads;
   cache_frame frame_cache[FRAME_CACHE_SIZE];
+#if CONFIG_FILM_GRAIN
+  aom_image_t *image_with_grain;
+#endif
   int frame_cache_write;
   int frame_cache_read;
   int num_cache_frames;
@@ -111,6 +117,9 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
       priv->cfg = *ctx->config.dec;
       ctx->config.dec = &priv->cfg;
     }
+#if CONFIG_FILM_GRAIN
+    priv->image_with_grain = NULL;
+#endif
   }
 
   return AOM_CODEC_OK;
@@ -152,6 +161,9 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
 
   aom_free(ctx->frame_workers);
   aom_free(ctx->buffer_pool);
+#if CONFIG_FILM_GRAIN
+  if (ctx->image_with_grain) aom_img_free(ctx->image_with_grain);
+#endif
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
@@ -723,6 +735,10 @@ static void wait_worker_and_cache_frame(aom_codec_alg_priv_t *ctx) {
                     frame_worker_data->user_priv);
     ctx->frame_cache[ctx->frame_cache_write].img.fb_priv =
         frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
+#if CONFIG_FILM_GRAIN
+    memcpy(&ctx->frame_cache[ctx->frame_cache_write].film_grain_params,
+           &cm->film_grain_params, sizeof(aom_film_grain_t));
+#endif
     ctx->frame_cache_write = (ctx->frame_cache_write + 1) % FRAME_CACHE_SIZE;
     ++ctx->num_cache_frames;
   }
@@ -856,6 +872,28 @@ static void release_last_output_frame(aom_codec_alg_priv_t *ctx) {
   }
 }
 
+#if CONFIG_FILM_GRAIN
+aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
+                                 aom_film_grain_t *grain_params) {
+  if (!grain_params->apply_grain) return img;
+
+  if (grain_img_buf &&
+      (img->d_w != grain_img_buf->d_w || img->d_h != grain_img_buf->d_h ||
+       img->fmt != grain_img_buf->fmt)) {
+    aom_img_free(grain_img_buf);
+    grain_img_buf = NULL;
+  }
+  if (!grain_img_buf) {
+    grain_img_buf = aom_img_alloc(NULL, img->fmt, img->d_w, img->d_h, 16);
+    grain_img_buf->bit_depth = img->bit_depth;
+  }
+
+  av1_add_film_grain(grain_params, img, grain_img_buf);
+
+  return grain_img_buf;
+}
+#endif
+
 static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                                       aom_codec_iter_t *iter) {
   aom_image_t *img = NULL;
@@ -875,7 +913,13 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
     img = &ctx->frame_cache[ctx->frame_cache_read].img;
     ctx->frame_cache_read = (ctx->frame_cache_read + 1) % FRAME_CACHE_SIZE;
     --ctx->num_cache_frames;
+#if CONFIG_FILM_GRAIN
+    return add_grain_if_needed(
+        img, ctx->image_with_grain,
+        &ctx->frame_cache[ctx->frame_cache_read].film_grain_params);
+#else
     return img;
+#endif
   }
 
   // iter acts as a flip flop, so an image is only returned on the first
@@ -945,7 +989,13 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
 
           ctx->img.fb_priv = frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
           img = &ctx->img;
+#if CONFIG_FILM_GRAIN
+          return add_grain_if_needed(
+              img, ctx->image_with_grain,
+              &frame_worker_data->pbi->common.film_grain_params);
+#else
           return img;
+#endif
         }
       } else {
         // Decoding failed. Release the worker thread.

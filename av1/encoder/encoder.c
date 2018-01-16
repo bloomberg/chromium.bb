@@ -62,6 +62,9 @@
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
 #endif
+#if CONFIG_FILM_GRAIN
+#include "av1/encoder/grain_test_vectors.h"
+#endif
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
 #include "aom_ports/aom_timer.h"
@@ -478,6 +481,31 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
                   aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
+
+#if CONFIG_FILM_GRAIN
+static void update_film_grain_parameters(struct AV1_COMP *cpi,
+                                         const AV1EncoderConfig *oxcf) {
+  AV1_COMMON *const cm = &cpi->common;
+  cpi->oxcf = *oxcf;
+
+  if (oxcf->film_grain_test_vector) {
+    cm->film_grain_params_present = 1;
+    if (cm->frame_type == KEY_FRAME) {
+      memcpy(&cm->film_grain_params,
+             film_grain_test_vectors + oxcf->film_grain_test_vector - 1,
+             sizeof(cm->film_grain_params));
+
+      cm->film_grain_params.bit_depth = cm->bit_depth;
+      if (cm->color_range == AOM_CR_FULL_RANGE) {
+        cm->film_grain_params.clip_to_restricted_range = 0;
+      }
+    }
+  } else {
+    cm->film_grain_params_present = 0;
+    memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
+  }
+}
+#endif
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1079,6 +1107,9 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->height = oxcf->height;
   set_sb_size(cm, select_sb_size(cpi));  // set sb size before allocations
   alloc_compressor_data(cpi);
+#if CONFIG_FILM_GRAIN
+  update_film_grain_parameters(cpi, oxcf);
+#endif
 
   // Single thread case: use counts in common.
   cpi->td.counts = &cm->counts;
@@ -3115,6 +3146,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->time_scale = oxcf->time_scale;
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
+#endif
+
+#if CONFIG_FILM_GRAIN
+  update_film_grain_parameters(cpi, oxcf);
 #endif
 
   cpi->oxcf = *oxcf;

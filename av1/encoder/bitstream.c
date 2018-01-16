@@ -3311,6 +3311,90 @@ static void write_timing_info_header(AV1_COMMON *const cm,
 }
 #endif  // CONFIG_TIMING_INFO_IN_SEQ_HEADERS
 
+#if CONFIG_FILM_GRAIN
+static void write_film_grain_params(AV1_COMMON *const cm,
+                                    struct aom_write_bit_buffer *wb) {
+  aom_film_grain_t *pars = &cm->film_grain_params;
+
+  aom_wb_write_bit(wb, pars->apply_grain);
+  if (!pars->apply_grain) return;
+
+  aom_wb_write_literal(wb, pars->random_seed, 16);
+
+  pars->random_seed += 3245;  // For film grain test vectors purposes
+  if (!pars->random_seed)     // Random seed should not be zero
+    pars->random_seed += 1735;
+
+  aom_wb_write_bit(wb, pars->update_parameters);
+  if (!pars->update_parameters) return;
+
+  // Scaling functions parameters
+
+  aom_wb_write_literal(wb, pars->num_y_points, 4);  // max 14
+  for (int i = 0; i < pars->num_y_points; i++) {
+    aom_wb_write_literal(wb, pars->scaling_points_y[i][0], 8);
+    aom_wb_write_literal(wb, pars->scaling_points_y[i][1], 8);
+  }
+
+  aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
+
+  if (!pars->chroma_scaling_from_luma) {
+    aom_wb_write_literal(wb, pars->num_cb_points, 4);  // max 10
+    for (int i = 0; i < pars->num_cb_points; i++) {
+      aom_wb_write_literal(wb, pars->scaling_points_cb[i][0], 8);
+      aom_wb_write_literal(wb, pars->scaling_points_cb[i][1], 8);
+    }
+
+    aom_wb_write_literal(wb, pars->num_cr_points, 4);  // max 10
+    for (int i = 0; i < pars->num_cr_points; i++) {
+      aom_wb_write_literal(wb, pars->scaling_points_cr[i][0], 8);
+      aom_wb_write_literal(wb, pars->scaling_points_cr[i][1], 8);
+    }
+  }
+
+  aom_wb_write_literal(wb, pars->scaling_shift - 8, 2);  // 8 + value
+
+  // AR coefficients
+  // Only sent if the corresponsing scaling function has
+  // more than 0 points
+
+  aom_wb_write_literal(wb, pars->ar_coeff_lag, 2);
+
+  int num_pos_luma = 2 * pars->ar_coeff_lag * (pars->ar_coeff_lag + 1);
+  int num_pos_chroma = num_pos_luma + 1;
+
+  if (pars->num_y_points)
+    for (int i = 0; i < num_pos_luma; i++)
+      aom_wb_write_literal(wb, pars->ar_coeffs_y[i] + 128, 8);
+
+  if (pars->num_cb_points || pars->chroma_scaling_from_luma)
+    for (int i = 0; i < num_pos_chroma; i++)
+      aom_wb_write_literal(wb, pars->ar_coeffs_cb[i] + 128, 8);
+
+  if (pars->num_cr_points || pars->chroma_scaling_from_luma)
+    for (int i = 0; i < num_pos_chroma; i++)
+      aom_wb_write_literal(wb, pars->ar_coeffs_cr[i] + 128, 8);
+
+  aom_wb_write_literal(wb, pars->ar_coeff_shift - 6, 2);  // 8 + value
+
+  if (pars->num_cb_points) {
+    aom_wb_write_literal(wb, pars->cb_mult, 8);
+    aom_wb_write_literal(wb, pars->cb_luma_mult, 8);
+    aom_wb_write_literal(wb, pars->cb_offset, 9);
+  }
+
+  if (pars->num_cr_points) {
+    aom_wb_write_literal(wb, pars->cr_mult, 8);
+    aom_wb_write_literal(wb, pars->cr_luma_mult, 8);
+    aom_wb_write_literal(wb, pars->cr_offset, 9);
+  }
+
+  aom_wb_write_bit(wb, pars->overlap_flag);
+
+  aom_wb_write_bit(wb, pars->clip_to_restricted_range);
+}
+#endif  // CONFIG_FILM_GRAIN
+
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3515,6 +3599,10 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     }
 #endif  // CONFIG_REFERENCE_BUFFER
 
+#if CONFIG_FILM_GRAIN
+    if (cm->film_grain_params_present) write_film_grain_params(cm, wb);
+#endif
+
 #if CONFIG_FWD_KF
     if (cm->reset_decoder_state && !frame_bufs[frame_to_show].intra_only) {
       aom_internal_error(
@@ -3573,6 +3661,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     // timing_info
     write_timing_info_header(cm, wb);
 #endif
+#if CONFIG_FILM_GRAIN
+    aom_wb_write_bit(wb, cm->film_grain_params_present);
+#endif
 #if CONFIG_FRAME_SIZE
     write_frame_size(cm, frame_size_override_flag, wb);
 #else
@@ -3617,6 +3708,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       write_timing_info_header(cm, wb);
 #endif
 
+#if CONFIG_FILM_GRAIN
+      aom_wb_write_bit(wb, cm->film_grain_params_present);
+#endif
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
 #if CONFIG_FRAME_SIZE
       write_frame_size(cm, frame_size_override_flag, wb);
@@ -3805,6 +3899,11 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
+#if CONFIG_FILM_GRAIN
+  if (cm->film_grain_params_present && cm->show_frame)
+    write_film_grain_params(cm, wb);
+#endif
+
 #if !CONFIG_TILE_INFO_FIRST
   write_tile_info(cm, wb);
 #endif
@@ -3848,6 +3947,21 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_literal(wb, 0, 8);
     }
 #endif  // CONFIG_REFERENCE_BUFFER
+
+#if CONFIG_FILM_GRAIN
+    if (cm->film_grain_params_present && cm->show_frame) {
+      int flip_back_update_parameters_flag = 0;
+      if (cm->frame_type == KEY_FRAME &&
+          cm->film_grain_params.update_parameters == 0) {
+        cm->film_grain_params.update_parameters = 1;
+        flip_back_update_parameters_flag = 1;
+      }
+      write_film_grain_params(cm, wb);
+
+      if (flip_back_update_parameters_flag)
+        cm->film_grain_params.update_parameters = 0;
+    }
+#endif
 
 #if CONFIG_FWD_KF
     if (cm->reset_decoder_state && !frame_bufs[frame_to_show].intra_only) {
@@ -4186,6 +4300,21 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
+#if CONFIG_FILM_GRAIN
+  if (cm->film_grain_params_present && cm->show_frame) {
+    int flip_back_update_parameters_flag = 0;
+    if (cm->frame_type == KEY_FRAME &&
+        cm->film_grain_params.update_parameters == 0) {
+      cm->film_grain_params.update_parameters = 1;
+      flip_back_update_parameters_flag = 1;
+    }
+    write_film_grain_params(cm, wb);
+
+    if (flip_back_update_parameters_flag)
+      cm->film_grain_params.update_parameters = 0;
+  }
+#endif
+
 #if !CONFIG_TILE_INFO_FIRST
   write_tile_info(cm, wb);
 
@@ -4400,6 +4529,10 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   // timing_info
   write_timing_info_header(cm, &wb);
+#endif
+
+#if CONFIG_FILM_GRAIN
+  aom_wb_write_bit(&wb, cm->film_grain_params_present);
 #endif
 
   size = aom_wb_bytes_written(&wb);

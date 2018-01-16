@@ -302,6 +302,9 @@ typedef struct AV1EncoderConfig {
   int equal_picture_interval;
   uint32_t num_ticks_per_picture;
 #endif
+#if CONFIG_FILM_GRAIN
+  int film_grain_test_vector;
+#endif
 
 #if CONFIG_EXT_PARTITION
   aom_superblock_size_t superblock_size;

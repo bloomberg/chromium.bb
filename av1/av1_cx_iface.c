@@ -102,6 +102,9 @@ struct av1_extracfg {
   unsigned int single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_FILM_GRAIN
+  int film_grain_test_vector;
+#endif
   unsigned int motion_vector_unit_test;
 };
 
@@ -178,6 +181,9 @@ static struct av1_extracfg default_extra_cfg = {
   0,    // Single tile decoding is off by default.
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_FILM_GRAIN
+  0,
+#endif
   0,  // motion_vector_unit_test
 };
 
@@ -434,6 +440,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, timing_info, AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL);
 #endif
 
+#if CONFIG_FILM_GRAIN
+  RANGE_CHECK(extra_cfg, film_grain_test_vector, 0, 16);
+#endif
+
   if (extra_cfg->lossless) {
     if (extra_cfg->aq_mode != 0)
       ERROR("Only --aq_mode=0 can be used with --lossless=1.");
@@ -671,6 +681,9 @@ static aom_codec_err_t set_encoder_config(
   oxcf->superblock_size = extra_cfg->superblock_size;
 #endif  // CONFIG_EXT_PARTITION
 
+#if CONFIG_FILM_GRAIN
+  oxcf->film_grain_test_vector = extra_cfg->film_grain_test_vector;
+#endif
 #if CONFIG_EXT_TILE
   oxcf->large_scale_tile = cfg->large_scale_tile;
   oxcf->single_tile_decoding =
@@ -1048,6 +1061,16 @@ static aom_codec_err_t ctrl_set_aq_mode(aom_codec_alg_priv_t *ctx,
   extra_cfg.aq_mode = CAST(AV1E_SET_AQ_MODE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+#if CONFIG_FILM_GRAIN
+static aom_codec_err_t ctrl_set_film_grain_test_vector(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.film_grain_test_vector =
+      CAST(AV1E_SET_FILM_GRAIN_TEST_VECTOR, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif
 
 #if CONFIG_EXT_DELTA_Q
 static aom_codec_err_t ctrl_set_deltaq_mode(aom_codec_alg_priv_t *ctx,
@@ -1755,6 +1778,10 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #if CONFIG_EXT_TILE
   { AV1E_SET_SINGLE_TILE_DECODING, ctrl_set_single_tile_decoding },
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_FILM_GRAIN
+  { AV1E_SET_FILM_GRAIN_TEST_VECTOR, ctrl_set_film_grain_test_vector },
+#endif  // CONFIG_FILM_GRAIN
+
   { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
 
   // Getters

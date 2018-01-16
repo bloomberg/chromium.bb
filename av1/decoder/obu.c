@@ -60,6 +60,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   av1_read_timing_info_header(cm, rb);
 #endif
 
+#if CONFIG_FILM_GRAIN
+  cm->film_grain_params_present = aom_rb_read_bit(rb);
+#endif
+
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
 
