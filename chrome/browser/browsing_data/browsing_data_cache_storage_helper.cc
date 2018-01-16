@@ -18,7 +18,7 @@ using content::CacheStorageUsageInfo;
 
 namespace {
 
-void GetAllOriginsInfoCallback(
+void GetAllOriginsInfoForCacheStorageCallback(
     const BrowsingDataCacheStorageHelper::FetchCallback& callback,
     const std::vector<CacheStorageUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -70,7 +70,7 @@ void BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
   cache_storage_context_->GetAllOriginsInfo(
-      base::Bind(&GetAllOriginsInfoCallback, callback));
+      base::Bind(&GetAllOriginsInfoForCacheStorageCallback, callback));
 }
 
 void BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread(

@@ -19,7 +19,7 @@ using content::ServiceWorkerUsageInfo;
 
 namespace {
 
-void GetAllOriginsInfoCallback(
+void GetAllOriginsInfoForServiceWorkerCallback(
     const BrowsingDataServiceWorkerHelper::FetchCallback& callback,
     const std::vector<ServiceWorkerUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -74,7 +74,7 @@ void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread(
   DCHECK(!callback.is_null());
 
   service_worker_context_->GetAllOriginsInfo(
-      base::BindOnce(&GetAllOriginsInfoCallback, callback));
+      base::BindOnce(&GetAllOriginsInfoForServiceWorkerCallback, callback));
 }
 
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkersOnIOThread(
