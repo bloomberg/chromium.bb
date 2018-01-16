@@ -3673,6 +3673,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Hardware accelerated"/>
 </enum>
 
+<enum name="BooleanHasCert">
+  <int value="0" label="Certificate absent"/>
+  <int value="1" label="Certificate present"/>
+</enum>
+
 <enum name="BooleanHasCollapseKey">
   <int value="0" label="No collapse_key"/>
   <int value="1" label="Has collapse_key"/>
@@ -3736,6 +3741,11 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="BooleanInForeground">
   <int value="0" label="Background"/>
   <int value="1" label="Foreground"/>
+</enum>
+
+<enum name="BooleanInstalled">
+  <int value="0" label="Not installed"/>
+  <int value="1" label="Installed"/>
 </enum>
 
 <enum name="BooleanInvalid">
@@ -8670,6 +8680,11 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="BOTH_NONEMPTY"/>
   <int value="1" label="SYNC_EMPTY"/>
   <int value="2" label="PREF_EMPTY"/>
+</enum>
+
+<enum name="DeviceOrientation">
+  <int value="0" label="Landscape"/>
+  <int value="1" label="Portrait"/>
 </enum>
 
 <enum name="DeviceOrientationSensorTypeAndroid">
@@ -15092,6 +15107,11 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="UNINSTALLED (not in webstore)"/>
 </enum>
 
+<enum name="ExternalLauncherOption">
+  <int value="0" label="Cancel"/>
+  <int value="1" label="Open"/>
+</enum>
+
 <enum name="ExternallyConditionalizedType">
   <int value="0" label="Cache entry requires validation"/>
   <int value="1" label="Cache entry usable"/>
@@ -18628,6 +18648,25 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="User left the page before network stable"/>
   <int value="3" label="Not recorded because of user interaction"/>
   <int value="4" label="User left the page before first contentful paint"/>
+</enum>
+
+<enum name="FirstRunLaunchSource">
+  <summary>
+    External applications/promotions that triggered Chrome launch and First Run.
+  </summary>
+  <int value="0" label="Smart App Banner"/>
+  <int value="1" label="Mobile Safari"/>
+  <int value="2" label="Others"/>
+</enum>
+
+<enum name="FirstRunSignInResult">
+  <summary>Result states for the first-run sign-in flow.</summary>
+  <int value="0" label="Skipped Immediately"/>
+  <int value="1" label="Successful"/>
+  <int value="2" label="Gave Up"/>
+  <int value="3" label="Have SSO account, Skipped Immediately"/>
+  <int value="4" label="Have SSO account, Successful"/>
+  <int value="5" label="Have SSO account, Gave Up"/>
 </enum>
 
 <enum name="FlashNavigateUsageType">
@@ -23090,6 +23129,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="SubframeBlocked"/>
 </enum>
 
+<enum name="IOSHandoffOrigin">
+  <int value="0" label="Unknown Origin"/>
+  <int value="1" label="Chrome on iOS"/>
+  <int value="2" label="Chrome on Mac"/>
+</enum>
+
 <enum name="IOSNTPImpression">
   <int value="0" label="Local suggestions"/>
   <int value="1" label="Remote suggestions"/>
@@ -23132,11 +23177,30 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Bookmark item"/>
 </enum>
 
+<enum name="iOSSizeClassForReporting">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Compact"/>
+  <int value="2" label="Regular"/>
+</enum>
+
 <enum name="IOSSpotlightAction">
   <int value="0" label="New Tab"/>
   <int value="1" label="New Incognito Tab"/>
   <int value="2" label="Voice Search"/>
   <int value="3" label="QR Code Scanner"/>
+</enum>
+
+<enum name="IOSSpotlightAvailability">
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="Unavailable"/>
+  <int value="2" label="Available"/>
+</enum>
+
+<enum name="IOSSpotlightOrigin">
+  <int value="0" label="Unknown Origin"/>
+  <int value="1" label="Bookmark"/>
+  <int value="2" label="Top Sites"/>
+  <int value="3" label="Actions"/>
 </enum>
 
 <enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError">
@@ -34591,6 +34655,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="VERSION_LATEST"/>
 </enum>
 
+<enum name="PrefServiceReadError">
+  <int value="0" label="PREF_READ_ERROR_NONE"/>
+  <int value="1" label="PREF_READ_ERROR_JSON_PARSE"/>
+  <int value="2" label="PREF_READ_ERROR_JSON_TYPE"/>
+  <int value="3" label="PREF_READ_ERROR_ACCESS_DENIED"/>
+  <int value="4" label="PREF_READ_ERROR_FILE_OTHER"/>
+  <int value="5" label="PREF_READ_ERROR_FILE_LOCKED"/>
+  <int value="6" label="PREF_READ_ERROR_NO_FILE"/>
+  <int value="7" label="PREF_READ_ERROR_JSON_REPEAT"/>
+  <int value="8" label="PREF_READ_ERROR_OTHER"/>
+  <int value="9" label="PREF_READ_ERROR_FILE_NOT_SPECIFIED"/>
+</enum>
+
 <enum name="PreloadedListCheckResult">
   <int value="0" label="origin was found and allowed https only"/>
   <int value="1" label="origin was not found"/>
@@ -44606,6 +44683,12 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebpDecodedFormat">
+  <int value="1" label="JPEG"/>
+  <int value="2" label="PNG"/>
+  <int value="3" label="TIFF"/>
 </enum>
 
 <enum name="WebRTCAecDelayEstimateReliability">
