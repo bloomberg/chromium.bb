@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "jni/CronetTestUtil_jni.h"
 #include "net/url_request/url_request.h"
@@ -65,7 +66,7 @@ void TestUtil::RunAfterContextInit(jlong jcontext_adapter,
 net::URLRequest* TestUtil::GetURLRequest(jlong jrequest_adapter) {
   CronetURLRequestAdapter* request_adapter =
       reinterpret_cast<CronetURLRequestAdapter*>(jrequest_adapter);
-  return request_adapter->url_request_.get();
+  return request_adapter->request_->network_tasks_.url_request_.get();
 }
 
 static void PrepareNetworkThreadOnNetworkThread(jlong jcontext_adapter) {

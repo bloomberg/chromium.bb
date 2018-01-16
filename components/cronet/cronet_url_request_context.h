@@ -161,19 +161,20 @@ class CronetURLRequestContext {
  private:
   friend class TestUtil;
 
-  // Network Thread performs tasks on Network Thread and owns objects that
-  // live on network thread.
+  // NetworkTasks performs tasks on the network thread and owns objects that
+  // live on the network thread.
   class NetworkTasks : public net::EffectiveConnectionTypeObserver,
                        public net::RTTAndThroughputEstimatesObserver,
                        public net::NetworkQualityEstimator::RTTObserver,
                        public net::NetworkQualityEstimator::ThroughputObserver {
    public:
+    // Invoked off the network thread.
     NetworkTasks(std::unique_ptr<URLRequestContextConfig> config,
                  std::unique_ptr<CronetURLRequestContext::Callback> callback);
-    // Invoked on network thread.
+    // Invoked on the network thread.
     ~NetworkTasks() override;
 
-    // Initializes |context_| on the Network thread.
+    // Initializes |context_| on the network thread.
     void Initialize(
         scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
         scoped_refptr<base::SequencedTaskRunner> file_task_runner,

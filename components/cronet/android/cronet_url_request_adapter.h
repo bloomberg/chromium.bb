@@ -14,35 +14,29 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/callback.h"
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "net/base/request_priority.h"
-#include "net/url_request/url_request.h"
+#include "components/cronet/cronet_url_request.h"
 #include "url/gurl.h"
 
 namespace net {
-class HttpRequestHeaders;
-class SSLCertRequestInfo;
-class SSLInfo;
+enum LoadState;
 class UploadDataStream;
 }  // namespace net
 
 namespace cronet {
 
 class CronetURLRequestContextAdapter;
-class IOBufferWithByteBuffer;
 class TestUtil;
 
-// An adapter from Java CronetUrlRequest object to net::URLRequest.
+// An adapter from Java CronetUrlRequest object to native CronetURLRequest.
 // Created and configured from a Java thread. Start, ReadData, and Destroy are
 // posted to network thread and all callbacks into the Java CronetUrlRequest are
 // done on the network thread. Java CronetUrlRequest is expected to initiate the
 // next step like FollowDeferredRedirect, ReadData or Destroy. Public methods
 // can be called on any thread.
-class CronetURLRequestAdapter : public net::URLRequest::Delegate {
+class CronetURLRequestAdapter : public CronetURLRequest::Callback {
  public:
   // Bypasses cache if |jdisable_cache| is true. If context is not set up to
   // use cache, |jdisable_cache| has no effect. |jdisable_connection_migration|
@@ -78,10 +72,9 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Starts the request.
   void Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& jcaller);
 
-  void GetStatus(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jobject>& jstatus_listener) const;
+  void GetStatus(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& jcaller,
+                 const base::android::JavaParamRef<jobject>& jstatus_listener);
 
   // Follows redirect.
   void FollowDeferredRedirect(
@@ -102,60 +95,61 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
                const base::android::JavaParamRef<jobject>& jcaller,
                jboolean jsend_on_canceled);
 
-  // net::URLRequest::Delegate implementations:
+  // CronetURLRequest::Callback implementations:
+  void OnReceivedRedirect(const std::string& new_location,
+                          int http_status_code,
+                          const std::string& http_status_text,
+                          const net::HttpResponseHeaders* headers,
+                          bool was_cached,
+                          const std::string& negotiated_protocol,
+                          const std::string& proxy_server,
+                          int64_t received_byte_count) override;
+  void OnResponseStarted(int http_status_code,
+                         const std::string& http_status_text,
+                         const net::HttpResponseHeaders* headers,
+                         bool was_cached,
+                         const std::string& negotiated_protocol,
+                         const std::string& proxy_server) override;
+  void OnReadCompleted(scoped_refptr<net::IOBuffer> buffer,
+                       int bytes_read,
+                       int64_t received_byte_count) override;
+  void OnSucceeded(int64_t received_byte_count) override;
+  void OnError(int net_error,
+               int quic_error,
+               const std::string& error_string,
+               int64_t received_byte_count) override;
+  void OnCanceled() override;
+  void OnDestroyed() override;
+  void OnMetricsCollected(const base::Time& request_start_time,
+                          const base::TimeTicks& request_start,
+                          const base::TimeTicks& dns_start,
+                          const base::TimeTicks& dns_end,
+                          const base::TimeTicks& connect_start,
+                          const base::TimeTicks& connect_end,
+                          const base::TimeTicks& ssl_start,
+                          const base::TimeTicks& ssl_end,
+                          const base::TimeTicks& send_start,
+                          const base::TimeTicks& send_end,
+                          const base::TimeTicks& push_start,
+                          const base::TimeTicks& push_end,
+                          const base::TimeTicks& receive_headers_end,
+                          const base::TimeTicks& request_end,
+                          bool socket_reused,
+                          int64_t sent_bytes_count,
+                          int64_t received_bytes_count) override;
 
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override;
-  void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) override;
-  void OnSSLCertificateError(net::URLRequest* request,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal) override;
-  void OnResponseStarted(net::URLRequest* request, int net_error) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnStatus(
+      const base::android::ScopedJavaGlobalRef<jobject>& status_listener_ref,
+      net::LoadState load_status);
 
  private:
   friend class TestUtil;
 
-  void StartOnNetworkThread();
-  void GetStatusOnNetworkThread(
-      const base::android::ScopedJavaGlobalRef<jobject>& jstatus_listener_ref)
-      const;
-  // Gets response headers on network thread.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetResponseHeaders(
-      JNIEnv* env);
-  void FollowDeferredRedirectOnNetworkThread();
-  void ReadDataOnNetworkThread(
-      scoped_refptr<IOBufferWithByteBuffer> read_buffer,
-      int buffer_size);
-  void DestroyOnNetworkThread(bool jsend_on_canceled);
-
-  // Report error and cancel request_adapter.
-  void ReportError(net::URLRequest* request, int net_error);
-  // Reports metrics collected to the Java layer
-  void MaybeReportMetrics(JNIEnv* env);
-
-  CronetURLRequestContextAdapter* context_;
+  // Native Cronet URL Request that owns |this|.
+  CronetURLRequest* request_;
 
   // Java object that owns this CronetURLRequestContextAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
-
-  const GURL initial_url_;
-  const net::RequestPriority initial_priority_;
-  std::string initial_method_;
-  int load_flags_;
-  net::HttpRequestHeaders initial_request_headers_;
-  std::unique_ptr<net::UploadDataStream> upload_;
-
-  scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
-  std::unique_ptr<net::URLRequest> url_request_;
-
-  // Whether detailed metrics should be collected and reported to Java.
-  const bool enable_metrics_;
-  // Whether metrics have been reported to Java.
-  bool metrics_reported_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestAdapter);
 };

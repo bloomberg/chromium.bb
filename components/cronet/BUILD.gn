@@ -24,6 +24,8 @@ source_set("cronet_common") {
     "cronet_global_state.h",
     "cronet_prefs_manager.cc",
     "cronet_prefs_manager.h",
+    "cronet_url_request.cc",
+    "cronet_url_request.h",
     "cronet_url_request_context.cc",
     "cronet_url_request_context.h",
     "histogram_manager.cc",
