@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -26,7 +26,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -127,6 +126,10 @@ constexpr int kOldHorizontalLabelPaddingDp = 8;
 
 constexpr int kCloseButtonInkDropInsetDp = 2;
 
+// Shift the close button by |kCloseButtonOffsetDp| so that its image aligns
+// with the overview window, but its hit bounds exceeds.
+constexpr int kCloseButtonOffsetDp = 8;
+
 // The colors of the close button ripple.
 constexpr SkColor kCloseButtonInkDropRippleColor =
     SkColorSetARGBMacro(0x0F, 0xFF, 0xFF, 0xFF);
@@ -135,11 +138,6 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
 
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
-
-bool IsNewOverviewUi() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableNewOverviewUi);
-}
 
 // Convenience method to fade in a Window with predefined animation settings.
 // Note: The fade in animation will occur after a delay where the delay is how
@@ -548,8 +546,12 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     }
 
     bounds = background_bounds;
-    bounds.set_x(bounds.width() - visible_height +
-                 (IsNewOverviewUi() ? 8 + kWindowSelectorMargin : 0));
+    // Align the close button so that the right edge of its image is aligned
+    // with the right edge of the overview window, but the right edge of its
+    // touch target exceeds it.
+    bounds.set_x(
+        bounds.width() - visible_height +
+        (IsNewOverviewUi() ? kCloseButtonOffsetDp + kWindowSelectorMargin : 0));
     if (IsNewOverviewUi())
       bounds.set_y(kWindowSelectorMargin);
     bounds.set_width(visible_height);
@@ -878,13 +880,12 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
         kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   }
 
-  cannot_snap_label_view_ = new views::Label(title);
+  cannot_snap_label_view_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
   cannot_snap_label_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   cannot_snap_label_view_->SetAutoColorReadabilityEnabled(false);
   cannot_snap_label_view_->SetEnabledColor(kSplitviewLabelEnabledColor);
   cannot_snap_label_view_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
-  cannot_snap_label_view_->SetText(
-      l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
 
   caption_container_view_ = new CaptionContainerView(
       this, image_view, label_view_, cannot_snap_label_view_, close_button_,
