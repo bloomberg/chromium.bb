@@ -78,46 +78,36 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
 
 static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
                                 int is_leaf) {
-#if CONFIG_EXT_PARTITION_TYPES
   alloc_mode_context(cm, num_pix, &tree->none);
 
   if (is_leaf) return;
 
   alloc_mode_context(cm, num_pix / 2, &tree->horizontal[0]);
   alloc_mode_context(cm, num_pix / 2, &tree->vertical[0]);
+
   alloc_mode_context(cm, num_pix / 2, &tree->horizontal[1]);
   alloc_mode_context(cm, num_pix / 2, &tree->vertical[1]);
 
+#if CONFIG_EXT_PARTITION_TYPES
   alloc_mode_context(cm, num_pix / 4, &tree->horizontala[0]);
   alloc_mode_context(cm, num_pix / 4, &tree->horizontala[1]);
   alloc_mode_context(cm, num_pix / 2, &tree->horizontala[2]);
+
   alloc_mode_context(cm, num_pix / 2, &tree->horizontalb[0]);
   alloc_mode_context(cm, num_pix / 4, &tree->horizontalb[1]);
   alloc_mode_context(cm, num_pix / 4, &tree->horizontalb[2]);
+
   alloc_mode_context(cm, num_pix / 4, &tree->verticala[0]);
   alloc_mode_context(cm, num_pix / 4, &tree->verticala[1]);
   alloc_mode_context(cm, num_pix / 2, &tree->verticala[2]);
+
   alloc_mode_context(cm, num_pix / 2, &tree->verticalb[0]);
   alloc_mode_context(cm, num_pix / 4, &tree->verticalb[1]);
   alloc_mode_context(cm, num_pix / 4, &tree->verticalb[2]);
+
   for (int i = 0; i < 4; ++i) {
     alloc_mode_context(cm, num_pix / 4, &tree->horizontal4[i]);
     alloc_mode_context(cm, num_pix / 4, &tree->vertical4[i]);
-  }
-#else
-  alloc_mode_context(cm, num_pix, &tree->none);
-
-  if (is_leaf) return;
-
-  alloc_mode_context(cm, num_pix / 2, &tree->horizontal[0]);
-  alloc_mode_context(cm, num_pix / 2, &tree->vertical[0]);
-
-  if (num_pix > 16) {
-    alloc_mode_context(cm, num_pix / 2, &tree->horizontal[1]);
-    alloc_mode_context(cm, num_pix / 2, &tree->vertical[1]);
-  } else {
-    memset(&tree->horizontal[1], 0, sizeof(tree->horizontal[1]));
-    memset(&tree->vertical[1], 0, sizeof(tree->vertical[1]));
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 }
