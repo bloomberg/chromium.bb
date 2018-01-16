@@ -68,7 +68,7 @@ class U2fBleDeviceTest : public Test {
     EXPECT_CALL(*connection(), ReadControlPointLengthPtr(_))
         .WillOnce(Invoke([length](auto* cb) { std::move(*cb).Run(length); }));
 
-    device()->TransitionForTesting();
+    device()->Connect();
   }
 
  protected:
@@ -84,7 +84,7 @@ TEST_F(U2fBleDeviceTest, ConnectionFailureTest) {
   EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
     connection()->connection_status_callback().Run(false);
   }));
-  device()->TransitionForTesting();
+  device()->Connect();
 }
 
 TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Callback) {

@@ -19,13 +19,21 @@ U2fBleDevice::U2fBleDevice(std::string address) : weak_factory_(this) {
                           base::Unretained(this)),
       base::BindRepeating(&U2fBleDevice::OnStatusMessage,
                           base::Unretained(this)));
-  Transition();
 }
 
 U2fBleDevice::U2fBleDevice(std::unique_ptr<U2fBleConnection> connection)
     : connection_(std::move(connection)), weak_factory_(this) {}
 
 U2fBleDevice::~U2fBleDevice() = default;
+
+void U2fBleDevice::Connect() {
+  if (state_ != State::INIT)
+    return;
+
+  StartTimeout();
+  state_ = State::BUSY;
+  connection_->Connect();
+}
 
 void U2fBleDevice::SendPing(std::vector<uint8_t> data,
                             MessageCallback callback) {
@@ -66,10 +74,6 @@ U2fBleConnection::ReadCallback U2fBleDevice::GetReadCallbackForTesting() {
                              base::Unretained(this));
 }
 
-void U2fBleDevice::TransitionForTesting() {
-  Transition();
-}
-
 void U2fBleDevice::DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                                   DeviceCallback callback) {
   pending_frames_.emplace(
@@ -92,9 +96,7 @@ base::WeakPtr<U2fDevice> U2fBleDevice::GetWeakPtr() {
 void U2fBleDevice::Transition() {
   switch (state_) {
     case State::INIT:
-      StartTimeout();
-      state_ = State::BUSY;
-      connection_->Connect();
+      Connect();
       break;
     case State::CONNECTED:
       StartTimeout();
