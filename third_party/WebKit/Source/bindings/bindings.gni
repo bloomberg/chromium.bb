@@ -34,7 +34,6 @@ bindings_core_v8_files =
                     "core/v8/CallbackPromiseAdapter.h",
                     "core/v8/Dictionary.cpp",
                     "core/v8/Dictionary.h",
-                    "core/v8/DictionaryHelperForBindings.h",
                     "core/v8/DictionaryHelperForCore.cpp",
                     "core/v8/DictionaryIterator.cpp",
                     "core/v8/DictionaryIterator.h",

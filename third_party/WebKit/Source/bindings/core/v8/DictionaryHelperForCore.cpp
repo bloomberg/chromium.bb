@@ -24,7 +24,6 @@
  */
 
 #include "bindings/core/v8/ArrayValue.h"
-#include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
