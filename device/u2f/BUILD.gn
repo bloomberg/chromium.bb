@@ -157,6 +157,19 @@ fuzzer_test("sign_response_data_fuzzer") {
   libfuzzer_options = [ "max_len=65537" ]
 }
 
+fuzzer_test("register_response_data_fuzzer") {
+  sources = [
+    "register_response_data_fuzzer.cc",
+  ]
+  deps = [
+    ":u2f",
+    "//net",
+  ]
+
+  seed_corpus = "response_data_fuzzer_corpus/"
+  libfuzzer_options = [ "max_len=65537" ]
+}
+
 is_linux_without_udev = is_linux && !use_udev
 
 source_set("test_support") {

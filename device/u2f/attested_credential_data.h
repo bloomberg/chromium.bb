@@ -11,6 +11,7 @@
 
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace device {
 
@@ -19,7 +20,7 @@ class PublicKey;
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-attestation-data
 class AttestedCredentialData {
  public:
-  static AttestedCredentialData CreateFromU2fRegisterResponse(
+  static base::Optional<AttestedCredentialData> CreateFromU2fRegisterResponse(
       base::span<const uint8_t> u2f_data,
       std::vector<uint8_t> aaguid,
       std::unique_ptr<PublicKey> public_key);

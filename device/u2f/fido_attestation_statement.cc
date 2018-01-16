@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "device/u2f/u2f_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 
@@ -31,8 +32,9 @@ FidoAttestationStatement::CreateFromU2fRegisterResponse(
       !CBS_get_u8(&response, &credential_length) ||
       !CBS_skip(&response, credential_length) ||
       !CBS_get_asn1_element(&response, &cert, CBS_ASN1_SEQUENCE)) {
-    // TODO(https://crbug.com/796581): Handle errors in a more civilized way.
-    CHECK(false) << "Invalid U2F response";
+    DLOG(ERROR)
+        << "Invalid U2F response. Unable to unpack attestation statement.";
+    return nullptr;
   }
 
   std::vector<std::vector<uint8_t>> x509_certificates;
