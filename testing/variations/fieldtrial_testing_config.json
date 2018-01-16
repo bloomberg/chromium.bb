@@ -931,22 +931,6 @@
             ]
         }
     ],
-    "DataCompressionProxyDevRollout": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Control"
-                },
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "DataCompressionProxyLoFi": [
         {
             "platforms": [
@@ -1315,21 +1299,6 @@
             ]
         }
     ],
-    "EnableGoogleCachedCopyTextExperiment": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Button"
-                }
-            ]
-        }
-    ],
     "EnableMediaRemoting": [
         {
             "platforms": [
@@ -1585,21 +1554,6 @@
                     "name": "TombstoneMetrics",
                     "enable_features": [
                         "IDBTombstoneStatistics"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSurfaceClearYosemite": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IOSurfaceClearYosemite"
                     ]
                 }
             ]
@@ -2145,18 +2099,6 @@
                         "throughput_hanging_requests_cwnd_size_multiplier": "1",
                         "upper_bound_http_rtt_transport_rtt_multiplier": "5"
                     }
-                }
-            ]
-        }
-    ],
-    "NewProfileManagement": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }
@@ -2792,21 +2734,6 @@
                 },
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "ReaderModeUIFeedback": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Show"
-                },
-                {
-                    "name": "DoNotShow"
                 }
             ]
         }
@@ -3765,21 +3692,6 @@
                     "enable_features": [
                         "TranslateUI2016Q2"
                     ]
-                }
-            ]
-        }
-    ],
-    "TranslateUiLangTrial": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "DefaultTranslateLanguage"
-                },
-                {
-                    "name": "EnabledTranslateLanguage"
                 }
             ]
         }
