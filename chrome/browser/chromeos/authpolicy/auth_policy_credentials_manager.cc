@@ -194,38 +194,44 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
     }
     return;
   }
-  CHECK(user_status.account_info().account_id() == account_id_.GetObjGuid());
   rerun_get_status_on_error_ = false;
-  if (user_status.has_account_info())
-    UpdateDisplayAndGivenName(user_status.account_info());
 
-  DCHECK(user_status.has_password_status());
-  switch (user_status.password_status()) {
-    case authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID:
-      // do nothing
-      break;
-    case authpolicy::ActiveDirectoryUserStatus::PASSWORD_EXPIRED:
-      ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED);
-      break;
-    case authpolicy::ActiveDirectoryUserStatus::PASSWORD_CHANGED:
-      ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED);
-      break;
+  // user_status.account_info() is missing if the TGT is invalid.
+  if (user_status.has_account_info()) {
+    CHECK(user_status.account_info().account_id() == account_id_.GetObjGuid());
+    UpdateDisplayAndGivenName(user_status.account_info());
   }
 
+  // user_status.password_status() is missing if the TGT is invalid.
+  bool password_ok = false;
+  if (user_status.has_password_status()) {
+    switch (user_status.password_status()) {
+      case authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID:
+        password_ok = true;
+        break;
+      case authpolicy::ActiveDirectoryUserStatus::PASSWORD_EXPIRED:
+        ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED);
+        break;
+      case authpolicy::ActiveDirectoryUserStatus::PASSWORD_CHANGED:
+        ShowNotification(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED);
+        break;
+    }
+  }
+
+  // user_status.tgt_status() is always present.
+  bool tgt_ok = false;
   DCHECK(user_status.has_tgt_status());
   switch (user_status.tgt_status()) {
     case authpolicy::ActiveDirectoryUserStatus::TGT_VALID:
-      // do nothing
+      tgt_ok = true;
       break;
     case authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED:
     case authpolicy::ActiveDirectoryUserStatus::TGT_NOT_FOUND:
       ShowNotification(IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN);
       break;
   }
-  const bool ok = user_status.tgt_status() ==
-                      authpolicy::ActiveDirectoryUserStatus::TGT_VALID &&
-                  user_status.password_status() ==
-                      authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
+
+  const bool ok = password_ok && tgt_ok;
   user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id_, !ok);
 }
 
