@@ -153,9 +153,9 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapterMap
   // Pointer to a |PeerConnectionDependencyFactory| owned by the |RenderThread|.
   // It's valid for the lifetime of |RenderThread|.
   PeerConnectionDependencyFactory* const factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   // Takes care of creating and owning track adapters, used by stream adapters.
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
+  const scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
 
   mutable base::Lock lock_;
   LocalStreamAdapterMap local_stream_adapters_;
