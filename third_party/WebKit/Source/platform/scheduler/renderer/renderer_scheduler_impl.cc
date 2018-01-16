@@ -170,6 +170,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "Unthrottled";
     case TaskType::kInternalTest:
       return "InternalTest";
+    case TaskType::kInternalWebCrypto:
+      return "InternalWebCrypto";
     case TaskType::kCount:
       return "Count";
   }

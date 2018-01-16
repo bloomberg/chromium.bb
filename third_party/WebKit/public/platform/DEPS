@@ -10,6 +10,7 @@ include_rules = [
     "+base/memory/weak_ptr.h",
     "+base/metrics",
     "+base/optional.h",
+    "+base/single_thread_task_runner.h",
     "+base/strings",
     "+base/time",
     "+base/trace_event",

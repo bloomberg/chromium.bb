@@ -37,6 +37,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 #include "WebVector.h"
+#include "base/single_thread_task_runner.h"
 
 #include <memory>
 
@@ -150,7 +151,7 @@ class WebCrypto {
   // The result can be set either synchronously while handling the request,
   // or asynchronously after the method has returned. When completing
   // asynchronously make a copy of the WebCryptoResult and call it from the
-  // same thread that started the request.
+  // |result_task_runner| TaskRunner.
   //
   // If the request was cancelled it is not necessary for implementations to
   // set the result.
@@ -160,13 +161,14 @@ class WebCrypto {
   // -----------------------
   //
   // The WebCrypto interface will be called from blink threads (main or
-  // web worker). All communication back to Blink must be on this same thread.
+  // web worker). All communication back to Blink must be on this same thread
+  // (|result_task_runner|).
   //
   // Notably:
   //
   //   * The WebCryptoResult can be copied between threads, however all
   //     methods other than the destructor must be called from the origin
-  //     Blink thread.
+  //     Blink thread (|result_task_runner|).
   //
   //   * WebCryptoKey and WebCryptoAlgorithm ARE threadsafe. They can be
   //     safely copied between threads and accessed. Copying is cheap because
@@ -202,85 +204,107 @@ class WebCrypto {
   //  * The key usages permit the operation being requested.
   //  * The key's algorithm matches that of the requested operation.
   //
-  virtual void Encrypt(const WebCryptoAlgorithm&,
-                       const WebCryptoKey&,
-                       WebVector<unsigned char> data,
-                       WebCryptoResult result) {
+  virtual void Encrypt(
+      const WebCryptoAlgorithm&,
+      const WebCryptoKey&,
+      WebVector<unsigned char> data,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void Decrypt(const WebCryptoAlgorithm&,
-                       const WebCryptoKey&,
-                       WebVector<unsigned char> data,
-                       WebCryptoResult result) {
+  virtual void Decrypt(
+      const WebCryptoAlgorithm&,
+      const WebCryptoKey&,
+      WebVector<unsigned char> data,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
   virtual void Sign(const WebCryptoAlgorithm&,
                     const WebCryptoKey&,
                     WebVector<unsigned char> data,
-                    WebCryptoResult result) {
+                    WebCryptoResult result,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void VerifySignature(const WebCryptoAlgorithm&,
-                               const WebCryptoKey&,
-                               WebVector<unsigned char> signature,
-                               WebVector<unsigned char> data,
-                               WebCryptoResult result) {
+  virtual void VerifySignature(
+      const WebCryptoAlgorithm&,
+      const WebCryptoKey&,
+      WebVector<unsigned char> signature,
+      WebVector<unsigned char> data,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
   virtual void Digest(const WebCryptoAlgorithm&,
                       WebVector<unsigned char> data,
-                      WebCryptoResult result) {
+                      WebCryptoResult result,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void GenerateKey(const WebCryptoAlgorithm&,
-                           bool extractable,
-                           WebCryptoKeyUsageMask,
-                           WebCryptoResult result) {
+  virtual void GenerateKey(
+      const WebCryptoAlgorithm&,
+      bool extractable,
+      WebCryptoKeyUsageMask,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void ImportKey(WebCryptoKeyFormat,
-                         WebVector<unsigned char> key_data,
-                         const WebCryptoAlgorithm&,
-                         bool extractable,
-                         WebCryptoKeyUsageMask,
-                         WebCryptoResult result) {
+  virtual void ImportKey(
+      WebCryptoKeyFormat,
+      WebVector<unsigned char> key_data,
+      const WebCryptoAlgorithm&,
+      bool extractable,
+      WebCryptoKeyUsageMask,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void ExportKey(WebCryptoKeyFormat,
-                         const WebCryptoKey&,
-                         WebCryptoResult result) {
+  virtual void ExportKey(
+      WebCryptoKeyFormat,
+      const WebCryptoKey&,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void WrapKey(WebCryptoKeyFormat,
-                       const WebCryptoKey& key,
-                       const WebCryptoKey& wrapping_key,
-                       const WebCryptoAlgorithm&,
-                       WebCryptoResult result) {
+  virtual void WrapKey(
+      WebCryptoKeyFormat,
+      const WebCryptoKey& key,
+      const WebCryptoKey& wrapping_key,
+      const WebCryptoAlgorithm&,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void UnwrapKey(WebCryptoKeyFormat,
-                         WebVector<unsigned char> wrapped_key,
-                         const WebCryptoKey&,
-                         const WebCryptoAlgorithm& unwrap_algorithm,
-                         const WebCryptoAlgorithm& unwrapped_key_algorithm,
-                         bool extractable,
-                         WebCryptoKeyUsageMask,
-                         WebCryptoResult result) {
+  virtual void UnwrapKey(
+      WebCryptoKeyFormat,
+      WebVector<unsigned char> wrapped_key,
+      const WebCryptoKey&,
+      const WebCryptoAlgorithm& unwrap_algorithm,
+      const WebCryptoAlgorithm& unwrapped_key_algorithm,
+      bool extractable,
+      WebCryptoKeyUsageMask,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void DeriveBits(const WebCryptoAlgorithm&,
-                          const WebCryptoKey&,
-                          unsigned length,
-                          WebCryptoResult result) {
+  virtual void DeriveBits(
+      const WebCryptoAlgorithm&,
+      const WebCryptoKey&,
+      unsigned length,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
-  virtual void DeriveKey(const WebCryptoAlgorithm& algorithm,
-                         const WebCryptoKey& base_key,
-                         const WebCryptoAlgorithm& import_algorithm,
-                         const WebCryptoAlgorithm& key_length_algorithm,
-                         bool extractable,
-                         WebCryptoKeyUsageMask,
-                         WebCryptoResult result) {
+  virtual void DeriveKey(
+      const WebCryptoAlgorithm& algorithm,
+      const WebCryptoKey& base_key,
+      const WebCryptoAlgorithm& import_algorithm,
+      const WebCryptoAlgorithm& key_length_algorithm,
+      bool extractable,
+      WebCryptoKeyUsageMask,
+      WebCryptoResult result,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     result.CompleteWithError(kWebCryptoErrorTypeNotSupported, "");
   }
 

@@ -41,8 +41,10 @@
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/crypto/CryptoUtilities.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/json/JSONValues.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 
@@ -190,8 +192,12 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
 
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->Encrypt(normalized_algorithm, key->Key(),
-                                         std::move(data), result->Result());
+                                         std::move(data), result->Result(),
+                                         std::move(task_runner));
   return promise;
 }
 
@@ -228,8 +234,12 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
 
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->Decrypt(normalized_algorithm, key->Key(),
-                                         std::move(data), result->Result());
+                                         std::move(data), result->Result(),
+                                         std::move(task_runner));
   return promise;
 }
 
@@ -266,8 +276,12 @@ ScriptPromise SubtleCrypto::sign(ScriptState* script_state,
 
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->Sign(normalized_algorithm, key->Key(),
-                                      std::move(data), result->Result());
+                                      std::move(data), result->Result(),
+                                      std::move(task_runner));
   return promise;
 }
 
@@ -310,9 +324,12 @@ ScriptPromise SubtleCrypto::verifySignature(
 
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->VerifySignature(
       normalized_algorithm, key->Key(), std::move(signature), std::move(data),
-      result->Result());
+      result->Result(), std::move(task_runner));
   return promise;
 }
 
@@ -338,8 +355,12 @@ ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
 
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_algorithm);
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->Digest(normalized_algorithm, std::move(data),
-                                        result->Result());
+                                        result->Result(),
+                                        std::move(task_runner));
   return promise;
 }
 
@@ -372,8 +393,12 @@ ScriptPromise SubtleCrypto::generateKey(
 
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_algorithm);
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->GenerateKey(normalized_algorithm, extractable,
-                                             key_usages, result->Result());
+                                             key_usages, result->Result(),
+                                             std::move(task_runner));
   return promise;
 }
 
@@ -456,9 +481,12 @@ ScriptPromise SubtleCrypto::importKey(
 
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_algorithm);
-  Platform::Current()->Crypto()->ImportKey(format, std::move(key_data),
-                                           normalized_algorithm, extractable,
-                                           key_usages, result->Result());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
+  Platform::Current()->Crypto()->ImportKey(
+      format, std::move(key_data), normalized_algorithm, extractable,
+      key_usages, result->Result(), std::move(task_runner));
   return promise;
 }
 
@@ -484,8 +512,11 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* script_state,
   }
 
   HistogramKey(ExecutionContext::From(script_state), key->Key());
-  Platform::Current()->Crypto()->ExportKey(format, key->Key(),
-                                           result->Result());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
+  Platform::Current()->Crypto()->ExportKey(format, key->Key(), result->Result(),
+                                           std::move(task_runner));
   return promise;
 }
 
@@ -542,9 +573,12 @@ ScriptPromise SubtleCrypto::wrapKey(
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, wrapping_key->Key());
   HistogramKey(ExecutionContext::From(script_state), key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->WrapKey(
       format, key->Key(), wrapping_key->Key(), normalized_algorithm,
-      result->Result());
+      result->Result(), std::move(task_runner));
   return promise;
 }
 
@@ -615,10 +649,13 @@ ScriptPromise SubtleCrypto::unwrapKey(
                            normalized_algorithm, unwrapping_key->Key());
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_key_algorithm);
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->UnwrapKey(
       format, std::move(wrapped_key), unwrapping_key->Key(),
       normalized_algorithm, normalized_key_algorithm, extractable, key_usages,
-      result->Result());
+      result->Result(), std::move(task_runner));
   return promise;
 }
 
@@ -652,8 +689,12 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* script_state,
 
   HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
                            normalized_algorithm, base_key->Key());
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->DeriveBits(
-      normalized_algorithm, base_key->Key(), length_bits, result->Result());
+      normalized_algorithm, base_key->Key(), length_bits, result->Result(),
+      std::move(task_runner));
   return promise;
 }
 
@@ -721,9 +762,13 @@ ScriptPromise SubtleCrypto::deriveKey(
                            normalized_algorithm, base_key->Key());
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_derived_key_algorithm);
+  scoped_refptr<blink::WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kInternalWebCrypto);
   Platform::Current()->Crypto()->DeriveKey(
       normalized_algorithm, base_key->Key(), normalized_derived_key_algorithm,
-      key_length_algorithm, extractable, key_usages, result->Result());
+      key_length_algorithm, extractable, key_usages, result->Result(),
+      std::move(task_runner));
   return promise;
 }
 
