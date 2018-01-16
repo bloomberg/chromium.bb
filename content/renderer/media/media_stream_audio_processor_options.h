@@ -43,7 +43,7 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   ~AudioProcessingProperties();
 
   // Disables properties that are enabled by default.
-  void DisableDefaultPropertiesForTesting();
+  void DisableDefaultProperties();
 
   bool enable_sw_echo_cancellation = true;
   bool disable_hw_echo_cancellation = false;

@@ -102,7 +102,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
         MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id",
                           "Mock audio device", kSampleRate, kChannelLayout,
                           kRequestedBufferSize),
-        properties,
+        false /* hotword_enabled */, false /* disable_local_echo */, properties,
         base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                    base::Unretained(this)),
         &mock_dependency_factory_);
@@ -162,7 +162,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   // Turn off the default constraints so the sink will get audio in chunks of
   // the native buffer size.
   AudioProcessingProperties properties;
-  properties.DisableDefaultPropertiesForTesting();
+  properties.DisableDefaultProperties();
   CreateProcessedLocalAudioSource(properties);
 
   // Connect the track, and expect the MockCapturerSource to be initialized and

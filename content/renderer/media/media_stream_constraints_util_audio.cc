@@ -9,9 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "content/common/media/media_stream_controls.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "media/base/limits.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -36,6 +39,13 @@ class AudioDeviceInfo {
   // audio parameters are not supported.
   explicit AudioDeviceInfo(std::string device_id)
       : device_id_(std::move(device_id)) {}
+
+  // This constructor is intended to aid in the implementation of
+  // applyConstraints(), where the source/device is already set and cannot be
+  // changed.
+  AudioDeviceInfo(std::string device_id,
+                  const media::AudioParameters& parameters)
+      : device_id_(std::move(device_id)), parameters_(parameters) {}
 
   bool operator==(const AudioDeviceInfo& other) const {
     return device_id_ == other.device_id_;
@@ -105,6 +115,57 @@ AudioDeviceSet AudioDeviceSetForContentCapture(
   return AudioDeviceSet(std::move(result));
 }
 
+// This function returns a set that contains the intersection of the device
+// associated to |source| and the set of devices allowed by the device_id
+// property of |constraint_set|. Therefore, the return value of this function
+// is either an empty set or a set containing only the |source|'s device.
+AudioDeviceSet AudioDeviceSetFromSource(
+    const blink::WebMediaTrackConstraintSet& constraint_set,
+    MediaStreamAudioSource* source,
+    const char** failed_constraint_name) {
+  std::vector<AudioDeviceInfo> result;
+  *failed_constraint_name = "";
+  if (constraint_set.device_id.Matches(
+          blink::WebString::FromASCII(source->device().id))) {
+    result.push_back(
+        AudioDeviceInfo(source->device().id, source->device().input));
+  } else {
+    if (failed_constraint_name)
+      *failed_constraint_name = constraint_set.device_id.GetName();
+  }
+
+  if (!result.empty())
+    *failed_constraint_name = nullptr;
+
+  return AudioDeviceSet(std::move(result));
+}
+
+// TODO(guidou): Remove this function. http://crbug.com/796955
+std::string MediaPointToString(const media::Point& point) {
+  std::string point_string;
+  point_string.append(base::NumberToString(point.x()));
+  point_string.append(" ");
+  point_string.append(base::NumberToString(point.y()));
+  point_string.append(" ");
+  point_string.append(base::NumberToString(point.z()));
+
+  return point_string;
+}
+
+// TODO(guidou): Remove this function. http://crbug.com/796955
+std::string MediaPointsToString(const std::vector<media::Point>& points) {
+  std::string points_string;
+  if (!points.empty()) {
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+      points_string.append(MediaPointToString(points[i]));
+      points_string.append("  ");
+    }
+    points_string.append(MediaPointToString(points.back()));
+  }
+
+  return points_string;
+}
+
 // This class represents a set of possible candidate settings.
 // The SelectSettings algorithm starts with a set containing all possible
 // candidates based on hardware capabilities and/or allowed values for supported
@@ -148,6 +209,11 @@ class AudioCaptureCandidates {
       const blink::WebMediaTrackConstraintSet& constraint_set,
       const AudioDeviceCaptureCapabilities& capabilities,
       bool is_device_capture);
+
+  // Returns a set of candidates compatible with |source|'s settings.
+  AudioCaptureCandidates(
+      const blink::WebMediaTrackConstraintSet& constraint_set,
+      MediaStreamAudioSource* source);
 
   // Set operations.
   bool IsEmpty() const { return failed_constraint_name_ != nullptr; }
@@ -220,6 +286,42 @@ const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*
         &blink::WebMediaTrackConstraintSet::
             goog_experimental_auto_gain_control};
 
+// This struct groups related fields or entries from AudioProcessingProperties,
+// AudioCaptureCandidates::bool_sets_ and blink::WebMediaTrackConstraintSet.
+struct AudioPropertyConstraintTuple {
+  bool AudioProcessingProperties::* audio_property;
+  AudioCaptureCandidates::BoolConstraint bool_set_index;
+  blink::BooleanConstraint blink::WebMediaTrackConstraintSet::* constraint;
+};
+
+// Boolean audio properties that are mapped directly to a boolean constraint
+// and which are subject to the same processing.
+const AudioPropertyConstraintTuple kAudioPropertyConstraintMap[] = {
+    {&AudioProcessingProperties::goog_auto_gain_control,
+     AudioCaptureCandidates::GOOG_AUTO_GAIN_CONTROL,
+     &blink::WebMediaTrackConstraintSet::goog_auto_gain_control},
+    {&AudioProcessingProperties::goog_experimental_echo_cancellation,
+     AudioCaptureCandidates::GOOG_EXPERIMENTAL_ECHO_CANCELLATION,
+     &blink::WebMediaTrackConstraintSet::goog_experimental_echo_cancellation},
+    {&AudioProcessingProperties::goog_typing_noise_detection,
+     AudioCaptureCandidates::GOOG_TYPING_NOISE_DETECTION,
+     &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection},
+    {&AudioProcessingProperties::goog_noise_suppression,
+     AudioCaptureCandidates::GOOG_NOISE_SUPPRESSION,
+     &blink::WebMediaTrackConstraintSet::goog_noise_suppression},
+    {&AudioProcessingProperties::goog_experimental_noise_suppression,
+     AudioCaptureCandidates::GOOG_EXPERIMENTAL_NOISE_SUPPRESSION,
+     &blink::WebMediaTrackConstraintSet::goog_experimental_noise_suppression},
+    {&AudioProcessingProperties::goog_beamforming,
+     AudioCaptureCandidates::GOOG_BEAMFORMING,
+     &blink::WebMediaTrackConstraintSet::goog_beamforming},
+    {&AudioProcessingProperties::goog_highpass_filter,
+     AudioCaptureCandidates::GOOG_HIGHPASS_FILTER,
+     &blink::WebMediaTrackConstraintSet::goog_highpass_filter},
+    {&AudioProcessingProperties::goog_experimental_auto_gain_control,
+     AudioCaptureCandidates::GOOG_EXPERIMENTAL_AUTO_GAIN_CONTROL,
+     &blink::WebMediaTrackConstraintSet::goog_experimental_auto_gain_control}};
+
 // directly mapped boolean sets to audio properties
 struct BoolSetPropertyEntry {
   DiscreteSet<bool> AudioCaptureCandidates::*bool_set;
@@ -248,6 +350,83 @@ AudioCaptureCandidates::AudioCaptureCandidates(
     bool_sets_[i] =
         BoolSetFromConstraint(constraint_set.*kBlinkBoolConstraintFields[i]);
   }
+  MaybeUpdateFailedNonDeviceConstraintName();
+}
+
+AudioCaptureCandidates::AudioCaptureCandidates(
+    const blink::WebMediaTrackConstraintSet& constraint_set,
+    MediaStreamAudioSource* source)
+    : failed_constraint_name_(nullptr),
+      audio_device_set_(AudioDeviceSetFromSource(constraint_set,
+                                                 source,
+                                                 &failed_constraint_name_)),
+      goog_array_geometry_set_(
+          StringSetFromConstraint(constraint_set.goog_array_geometry)) {
+  for (size_t i = 0; i < NUM_BOOL_CONSTRAINTS; ++i) {
+    bool_sets_[i] =
+        BoolSetFromConstraint(constraint_set.*kBlinkBoolConstraintFields[i]);
+  }
+
+  // |audio_device_set_| contains, at most, the device ID of |source|, but
+  // |bool_sets_| and |goog_array_geometry_set_| are constrained by
+  // |constraint_set| but not by |source|'s settings. To ensure that only
+  // values compatible with |source| are allowed, each of these sets has to be
+  // intersected with the values allowed by |source| for each property.
+
+  // Properties not related to audio processing.
+  bool_sets_[HOTWORD_ENABLED] = bool_sets_[HOTWORD_ENABLED].Intersection(
+      DiscreteSet<bool>({source->hotword_enabled()}));
+  bool_sets_[DISABLE_LOCAL_ECHO] = bool_sets_[DISABLE_LOCAL_ECHO].Intersection(
+      DiscreteSet<bool>({source->disable_local_echo()}));
+  bool_sets_[RENDER_TO_ASSOCIATED_SINK] =
+      bool_sets_[RENDER_TO_ASSOCIATED_SINK].Intersection(
+          DiscreteSet<bool>({source->RenderToAssociatedSinkEnabled()}));
+
+  // Properties related with audio processing.
+  AudioProcessingProperties properties;
+  if (ProcessedLocalAudioSource* processed_source =
+          ProcessedLocalAudioSource::From(source)) {
+    properties = processed_source->audio_processing_properties();
+  } else {
+    properties.DisableDefaultProperties();
+  }
+
+  bool echo_cancellation_enabled = false;
+  if (properties.enable_sw_echo_cancellation) {
+    echo_cancellation_enabled = true;
+  } else if (properties.disable_hw_echo_cancellation) {
+    // Software and hardware echo cancellation disabled.
+    echo_cancellation_enabled = false;
+  } else {
+    // Software echo cancellation disabled, but hardware echo cancellation
+    // allowed. In this case, look at device parameters.
+    echo_cancellation_enabled = source->device().input.effects() &
+                                media::AudioParameters::ECHO_CANCELLER;
+  }
+  bool_sets_[ECHO_CANCELLATION] = bool_sets_[ECHO_CANCELLATION].Intersection(
+      DiscreteSet<bool>({echo_cancellation_enabled}));
+  bool_sets_[GOOG_ECHO_CANCELLATION] = bool_sets_[ECHO_CANCELLATION];
+
+  bool_sets_[GOOG_AUDIO_MIRRORING] =
+      bool_sets_[GOOG_AUDIO_MIRRORING].Intersection(
+          DiscreteSet<bool>({properties.goog_audio_mirroring}));
+
+  for (auto& entry : kAudioPropertyConstraintMap) {
+    bool_sets_[entry.bool_set_index] =
+        bool_sets_[entry.bool_set_index].Intersection(
+            DiscreteSet<bool>({properties.*entry.audio_property}));
+  }
+
+  // This fails with input strings that are equivalent to
+  // |properties.goog_array_geometry|, but not exactly equal to the string
+  // returned by MediaPointsToString().
+  // TODO(guidou): Change |goog_array_geometry_set_| to be a set of vectors of
+  // points instead of a set of strings. http://crbug.com/796955
+  std::string mic_positions =
+      MediaPointsToString(properties.goog_array_geometry);
+  goog_array_geometry_set_ = goog_array_geometry_set_.Intersection(
+      DiscreteSet<std::string>({mic_positions}));
+
   MaybeUpdateFailedNonDeviceConstraintName();
 }
 
@@ -304,7 +483,7 @@ void AudioCaptureCandidates::CheckContradictoryEchoCancellation() {
 // Fitness function for constraints involved in device selection.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
 // TODO(guidou): Add support for sampleRate, sampleSize and channelCount
-// constraints. http://crbug.com/
+// constraints. http://crbug.com/731170
 double DeviceInfoFitness(
     bool is_device_capture,
     const AudioDeviceInfo& device_info,
@@ -419,40 +598,6 @@ bool SelectEnableSwEchoCancellation(
 
   return default_audio_processing_value;
 }
-
-struct AudioPropertyConstraintPair {
-  bool AudioProcessingProperties::*audio_property;
-  AudioCaptureCandidates::BoolConstraint bool_set_index;
-  blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*constraint;
-};
-
-// Boolean audio properties that are mapped directly to a boolean constraint
-// and which are subject to the same processing.
-const AudioPropertyConstraintPair kAudioPropertyConstraintMap[] = {
-    {&AudioProcessingProperties::goog_auto_gain_control,
-     AudioCaptureCandidates::GOOG_AUTO_GAIN_CONTROL,
-     &blink::WebMediaTrackConstraintSet::goog_auto_gain_control},
-    {&AudioProcessingProperties::goog_experimental_echo_cancellation,
-     AudioCaptureCandidates::GOOG_EXPERIMENTAL_ECHO_CANCELLATION,
-     &blink::WebMediaTrackConstraintSet::goog_experimental_echo_cancellation},
-    {&AudioProcessingProperties::goog_typing_noise_detection,
-     AudioCaptureCandidates::GOOG_TYPING_NOISE_DETECTION,
-     &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection},
-    {&AudioProcessingProperties::goog_noise_suppression,
-     AudioCaptureCandidates::GOOG_NOISE_SUPPRESSION,
-     &blink::WebMediaTrackConstraintSet::goog_noise_suppression},
-    {&AudioProcessingProperties::goog_experimental_noise_suppression,
-     AudioCaptureCandidates::GOOG_EXPERIMENTAL_NOISE_SUPPRESSION,
-     &blink::WebMediaTrackConstraintSet::goog_experimental_noise_suppression},
-    {&AudioProcessingProperties::goog_beamforming,
-     AudioCaptureCandidates::GOOG_BEAMFORMING,
-     &blink::WebMediaTrackConstraintSet::goog_beamforming},
-    {&AudioProcessingProperties::goog_highpass_filter,
-     AudioCaptureCandidates::GOOG_HIGHPASS_FILTER,
-     &blink::WebMediaTrackConstraintSet::goog_highpass_filter},
-    {&AudioProcessingProperties::goog_experimental_auto_gain_control,
-     AudioCaptureCandidates::GOOG_EXPERIMENTAL_AUTO_GAIN_CONTROL,
-     &blink::WebMediaTrackConstraintSet::goog_experimental_auto_gain_control}};
 
 AudioProcessingProperties SelectAudioProcessingProperties(
     const AudioCaptureCandidates& candidates,
@@ -577,6 +722,59 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     default_device_id = (*capabilities.begin())->device_id;
 
   return SelectResult(candidates, constraints.Basic(), default_device_id,
+                      media_stream_source,
+                      should_disable_hardware_noise_suppression);
+}
+
+AudioCaptureSettings CONTENT_EXPORT
+SelectSettingsAudioCapture(MediaStreamAudioSource* source,
+                           const blink::WebMediaConstraints& constraints) {
+  DCHECK(source);
+  if (source->device().type != MEDIA_DEVICE_AUDIO_CAPTURE &&
+      source->device().type != MEDIA_TAB_AUDIO_CAPTURE &&
+      source->device().type != MEDIA_DESKTOP_AUDIO_CAPTURE) {
+    return AudioCaptureSettings();
+  }
+
+  std::string media_stream_source = GetMediaStreamSource(constraints);
+  if (source->device().type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+      !media_stream_source.empty()) {
+    return AudioCaptureSettings(
+        constraints.Basic().media_stream_source.GetName());
+  }
+
+  if (source->device().type == MEDIA_TAB_AUDIO_CAPTURE &&
+      !media_stream_source.empty() &&
+      media_stream_source != kMediaStreamSourceTab) {
+    return AudioCaptureSettings(
+        constraints.Basic().media_stream_source.GetName());
+  }
+  if (source->device().type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
+      !media_stream_source.empty() &&
+      media_stream_source != kMediaStreamSourceSystem &&
+      media_stream_source != kMediaStreamSourceDesktop) {
+    return AudioCaptureSettings(
+        constraints.Basic().media_stream_source.GetName());
+  }
+
+  AudioCaptureCandidates candidates(constraints.Basic(), source);
+  if (candidates.IsEmpty()) {
+    return AudioCaptureSettings(candidates.failed_constraint_name());
+  }
+
+  for (const auto& advanced_set : constraints.Advanced()) {
+    AudioCaptureCandidates advanced_candidates(advanced_set, source);
+    AudioCaptureCandidates intersection =
+        candidates.Intersection(advanced_candidates);
+    if (!intersection.IsEmpty())
+      candidates = std::move(intersection);
+  }
+  DCHECK(!candidates.IsEmpty());
+
+  bool should_disable_hardware_noise_suppression =
+      !(source->device().input.effects() &
+        media::AudioParameters::NOISE_SUPPRESSION);
+  return SelectResult(candidates, constraints.Basic(), source->device().id,
                       media_stream_source,
                       should_disable_hardware_noise_suppression);
 }

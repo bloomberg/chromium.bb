@@ -13,14 +13,23 @@
 
 namespace content {
 
-MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
+MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source,
+                                               bool hotword_enabled,
+                                               bool disable_local_echo)
     : is_local_source_(is_local_source),
+      hotword_enabled_(hotword_enabled),
+      disable_local_echo_(disable_local_echo),
       is_stopped_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::MediaStreamAudioSource("
            << (is_local_source_ ? "local" : "remote") << " source)";
 }
+
+MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
+    : MediaStreamAudioSource(is_local_source,
+                             false /* hotword_enabled */,
+                             false /* disable_local_echo */) {}
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -83,6 +92,11 @@ bool MediaStreamAudioSource::ConnectToTrack(
 
 media::AudioParameters MediaStreamAudioSource::GetAudioParameters() const {
   return deliverer_.GetAudioParameters();
+}
+
+bool MediaStreamAudioSource::RenderToAssociatedSinkEnabled() const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  return device().matched_output_device_id.has_value();
 }
 
 void* MediaStreamAudioSource::GetClassIdentifier() const {
