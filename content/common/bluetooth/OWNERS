@@ -1,6 +1,5 @@
 jyasskin@chromium.org
 ortuno@chromium.org
-scheib@chromium.org
 
 # Changes to IPC serialization require a security review to avoid introducing
 # new sandbox escapes.
