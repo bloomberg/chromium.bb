@@ -908,33 +908,6 @@ message TPMFirmwareUpdateSettingsProto {
   optional bool allow_user_initiated_powerwash = 1;
 }
 
-message ForcedReenrollmentProto {
-  // Keep in sync with the backend enum (chrome_service_settings.proto).
-  enum ForcedReenrollmentMode {
-    // Default value if the mode cannot be parsed.
-    FORCED_REENROLLMENT_MODE_UNSPECIFIED = 0;
-
-    // Force user to re-enroll into the same domain that the device
-    // was enrolled in before the wipe. The device will use attestation-
-    // based enrollment if possible.
-    FORCED = 1;
-
-    // Suggest user to re-enroll into the same domain the device was
-    // enrolled in before the wipe. User can opt to enroll this device
-    // as consumer device instead, or enroll to another domain.
-    SUGGESTED = 2;
-
-    // No forced re-enrollment.
-    NONE = 3;
-  }
-
-  optional ForcedReenrollmentMode forced_reenrollment_mode = 1;
-
-  // Indicate whether the server needs an enrollment ID for attestation-based
-  // enrollment.
-  optional bool enrollment_id_needed = 2;
-}
-
 // Settings to control the minimum version that is allowed to sign in / stay
 // in session.
 message MinimumRequiredVersionProto {
@@ -966,6 +939,7 @@ message UnaffiliatedArcAllowedProto {
 }
 
 message ChromeDeviceSettingsProto {
+  reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
@@ -1038,7 +1012,6 @@ message ChromeDeviceSettingsProto {
       58;
   optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
   optional MinimumRequiredVersionProto minimum_required_version = 60;
-  optional ForcedReenrollmentProto forced_reenrollment = 61;
   optional DeviceLoginScreenAutoSelectCertificateForUrls
       device_login_screen_auto_select_certificate_for_urls = 62;
   optional UnaffiliatedArcAllowedProto unaffiliated_arc_allowed = 63;
