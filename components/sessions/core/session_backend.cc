@@ -11,7 +11,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -148,7 +147,7 @@ std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
   // NOTE: command_size includes the size of the id, which is not part of
   // the contents of the SessionCommand.
   std::unique_ptr<sessions::SessionCommand> command =
-      base::MakeUnique<sessions::SessionCommand>(
+      std::make_unique<sessions::SessionCommand>(
           command_id, command_size - sizeof(id_type));
   if (command_size > sizeof(id_type)) {
     memcpy(command->contents(),

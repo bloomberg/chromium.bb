@@ -9,9 +9,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -89,7 +89,7 @@ void TabRestoreServiceHelper::CreateHistoricalTab(LiveTab* live_tab,
   if (closing_contexts_.find(context) != closing_contexts_.end())
     return;
 
-  auto local_tab = base::MakeUnique<Tab>();
+  auto local_tab = std::make_unique<Tab>();
   PopulateTab(local_tab.get(), index, context, live_tab);
   if (local_tab->navigations.empty())
     return;
@@ -100,7 +100,7 @@ void TabRestoreServiceHelper::CreateHistoricalTab(LiveTab* live_tab,
 void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   closing_contexts_.insert(context);
 
-  auto window = base::MakeUnique<Window>();
+  auto window = std::make_unique<Window>();
   window->selected_tab_index = context->GetSelectedIndex();
   window->timestamp = TimeNow();
   window->app_name = context->GetAppName();
@@ -109,7 +109,7 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   window->workspace = context->GetWorkspace();
 
   for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
-    auto tab = base::MakeUnique<Tab>();
+    auto tab = std::make_unique<Tab>();
     PopulateTab(tab.get(), tab_index, context,
                 context->GetLiveTabAt(tab_index));
     if (!tab->navigations.empty()) {
