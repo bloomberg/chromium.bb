@@ -142,11 +142,12 @@ var FilesMetadataBox = Polymer({
    * Converts the duration into human friendly string.
    * @param {number} time the duration in seconds.
    * @return {string} String representation of the given duration.
-   **/
+   */
   time2string_: function(time) {
     if (!time)
       return '';
 
+    time = parseInt(time, 10);
     var seconds = time % 60;
     var minutes = Math.floor(time / 60) % 60;
     var hours = Math.floor(time / 60 / 60);
