@@ -153,7 +153,7 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
       params->wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-  start_data.devtools_frame_token =
+  start_data.instrumentation_token =
       blink::WebString::FromUTF8(params->devtools_worker_token.ToString());
   start_data.v8_cache_options =
       static_cast<blink::WebSettings::V8CacheOptions>(params->v8_cache_options);

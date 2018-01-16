@@ -251,7 +251,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void DidBlockFramebust(const KURL&) override;
 
-  String GetDevToolsFrameToken() const override;
+  String GetInstrumentationToken() override;
 
   void ScrollRectToVisibleInParentFrame(
       const WebRect&,

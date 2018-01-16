@@ -71,7 +71,6 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
   proxy->unique_name_ = frame_to_replace->unique_name();
-  proxy->devtools_frame_token_ = frame_to_replace->GetDevToolsFrameToken();
 
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
@@ -703,10 +702,6 @@ void RenderFrameProxy::AdvanceFocus(blink::WebFocusType type,
 
 void RenderFrameProxy::FrameFocused() {
   Send(new FrameHostMsg_FrameFocused(routing_id_));
-}
-
-blink::WebString RenderFrameProxy::GetDevToolsFrameToken() {
-  return devtools_frame_token_;
 }
 
 #if defined(USE_AURA)

@@ -504,7 +504,7 @@ class BLINK_EXPORT WebFrameClient {
   // Returns string to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
   // defined by the browser and passed into Blink upon frame creation.
-  virtual WebString GetDevToolsFrameToken() { return WebString(); }
+  virtual WebString GetInstrumentationToken() { return WebString(); }
 
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
