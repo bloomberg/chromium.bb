@@ -53,6 +53,7 @@
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
+#include "platform/scroll/ScrollSnapData.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/HashMap.h"
@@ -147,6 +148,10 @@ void GraphicsLayer::SetHasWillChangeTransformHint(
 void GraphicsLayer::SetOverscrollBehavior(
     const WebOverscrollBehavior& behavior) {
   layer_->Layer()->SetOverscrollBehavior(behavior);
+}
+
+void GraphicsLayer::SetSnapContainerData(Optional<SnapContainerData> data) {
+  layer_->Layer()->SetSnapContainerData(std::move(data));
 }
 
 void GraphicsLayer::SetIsResizedByBrowserControls(

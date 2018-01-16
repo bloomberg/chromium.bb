@@ -280,6 +280,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetHasWillChangeTransformHint(bool);
 
   void SetOverscrollBehavior(const WebOverscrollBehavior&);
+
+  void SetSnapContainerData(Optional<cc::SnapContainerData>);
+
   void SetIsResizedByBrowserControls(bool);
   void SetIsContainerForFixedPositionLayers(bool);
 

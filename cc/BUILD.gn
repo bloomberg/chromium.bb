@@ -590,6 +590,7 @@ cc_test("cc_unittests") {
     "benchmarks/micro_benchmark_controller_unittest.cc",
     "debug/rendering_stats_unittest.cc",
     "input/browser_controls_offset_manager_unittest.cc",
+    "input/scroll_snap_data_unittest.cc",
     "input/scroll_state_unittest.cc",
     "input/scrollbar_animation_controller_unittest.cc",
     "input/single_scrollbar_animation_controller_thinning_unittest.cc",

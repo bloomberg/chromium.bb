@@ -170,8 +170,8 @@ class CC_EXPORT InputHandler {
   virtual void MouseLeave() = 0;
 
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
-  // returned SCROLL_STARTED.
-  virtual void ScrollEnd(ScrollState* scroll_state) = 0;
+  // returned SCROLL_STARTED. Snap to a snap position if |should_snap| is true.
+  virtual void ScrollEnd(ScrollState* scroll_state, bool should_snap) = 0;
 
   // Requests a callback to UpdateRootLayerStateForSynchronousInputHandler()
   // giving the current root scroll and page scale information.

@@ -22,6 +22,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/touch_action_region.h"
@@ -121,6 +122,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetOverscrollBehavior(const OverscrollBehavior& behavior);
   OverscrollBehavior overscroll_behavior() const {
     return inputs_.overscroll_behavior;
+  }
+
+  void SetSnapContainerData(base::Optional<SnapContainerData> data);
+  const base::Optional<SnapContainerData>& snap_container_data() const {
+    return inputs_.snap_container_data;
   }
 
   void SetMasksToBounds(bool masks_to_bounds);
@@ -627,6 +633,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
 
     OverscrollBehavior overscroll_behavior;
+
+    base::Optional<SnapContainerData> snap_container_data;
   };
 
   Layer* parent_;

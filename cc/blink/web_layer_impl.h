@@ -130,6 +130,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetHasWillChangeTransformHint(bool has_will_change) override;
   void ShowScrollbars() override;
   void SetOverscrollBehavior(const blink::WebOverscrollBehavior&) override;
+  void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
 
   void SetScrollParent(blink::WebLayer* parent) override;
   void SetClipParent(blink::WebLayer* parent) override;
