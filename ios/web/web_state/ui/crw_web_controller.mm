@@ -553,6 +553,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Updates the WKBackForwardListItemHolder navigation item.
 - (void)updateCurrentBackForwardListItemHolder;
 
+// Presents native content using the native controller for |item| and notifies
+// WebStateObservers the completion of this navigation. This method does not
+// modify the underlying web view. It simply covers the web view with the native
+// content.
+- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item;
 // Loads a blank page directly into WKWebView as a placeholder for a Native View
 // or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
 // The completion handler is called in the |webView:didFinishNavigation|
@@ -1081,7 +1086,10 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (void)requirePageReconstruction {
-  [self removeWebView];
+  // TODO(crbug.com/736103): Removing web view will destroy session history for
+  // WKBasedNavigationManager.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    [self removeWebView];
 }
 
 - (void)resetContainerView {
@@ -1742,38 +1750,35 @@ registerLoadRequestForURL:(const GURL&)requestURL
 // into the web view, upon the completion of which the native controller will
 // be triggered.
 - (void)loadCurrentURLInNativeView {
-  ProceduralBlock finishLoadCurrentURLInNativeView = ^{
-    web::NavigationItem* item = self.currentNavItem;
-    const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
-    const web::Referrer referrer;
-    id<CRWNativeContent> nativeContent =
-        [_nativeProvider controllerForURL:targetURL webState:self.webState];
-    // Unlike the WebView case, always create a new controller and view.
-    // TODO(crbug.com/759178): What to do if this does return nil?
-    [self setNativeController:nativeContent];
-    if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
-      item->SetVirtualURL([nativeContent virtualURL]);
-    }
-
-    std::unique_ptr<web::NavigationContextImpl> navigationContext =
-        [self registerLoadRequestForURL:targetURL
-                               referrer:referrer
-                             transition:self.currentTransition
-                 sameDocumentNavigation:NO];
-    [self loadNativeViewWithSuccess:YES
-                  navigationContext:navigationContext.get()];
-  };
-
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // Free the web view.
     [self removeWebView];
-    finishLoadCurrentURLInNativeView();
+    [self loadNativeContentForNavigationItem:self.currentNavItem];
   } else {
-    web::NavigationItem* item = self.currentNavItem;
-    DCHECK(item);
-    [self loadPlaceholderInWebViewForURL:item->GetVirtualURL()
-                       completionHandler:finishLoadCurrentURLInNativeView];
+    [self loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()
+                       completionHandler:nil];
   }
+}
+
+- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item {
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+  const web::Referrer referrer;
+  id<CRWNativeContent> nativeContent =
+      [_nativeProvider controllerForURL:targetURL webState:self.webState];
+  // Unlike the WebView case, always create a new controller and view.
+  // TODO(crbug.com/759178): What to do if this does return nil?
+  [self setNativeController:nativeContent];
+  if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
+    item->SetVirtualURL([nativeContent virtualURL]);
+  }
+
+  std::unique_ptr<web::NavigationContextImpl> navigationContext =
+      [self registerLoadRequestForURL:targetURL
+                             referrer:referrer
+                           transition:self.currentTransition
+               sameDocumentNavigation:NO];
+  [self loadNativeViewWithSuccess:YES
+                navigationContext:navigationContext.get()];
 }
 
 - (void)loadPlaceholderInWebViewForURL:(const GURL&)originalURL
@@ -4503,14 +4508,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self updateSSLStatusForCurrentNavigationItem];
 
-  // Attempt to update the HTML5 history state if this is a normal web page.
+  // Do not update the HTML5 history state or last committed item title for
+  // placeholder page because the actual navigation item will not be committed
+  // until the native content or WebUI is shown.
   if (!IsPlaceholderUrl(context->GetUrl())) {
     [self updateHTML5HistoryState];
+    [self setNavigationItemTitle:[_webView title]];
   }
-
-  // This is the point where pending entry has been committed, and navigation
-  // item title should be updated.
-  [self setNavigationItemTitle:[_webView title]];
 
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {
@@ -4569,15 +4573,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
 
     if (IsPlaceholderUrl(webViewURL)) {
-      CRWPlaceholderNavigationInfo* placeholderNavigationInfo =
-          [CRWPlaceholderNavigationInfo infoForNavigation:navigation];
-      if (placeholderNavigationInfo) {
-        web::NavigationItem* item = self.currentNavItem;
-        // The |didFinishNavigation| callback can arrive after another
-        // navigation has started. Abort in this case.
-        if (CreatePlaceholderUrlForUrl(item->GetVirtualURL()) != webViewURL)
-          return;
-        [placeholderNavigationInfo runCompletionHandler];
+      web::NavigationItem* item = self.currentNavItem;
+      // The |didFinishNavigation| callback can arrive after another
+      // navigation has started. Abort in this case.
+      if (CreatePlaceholderUrlForUrl(item->GetVirtualURL()) != webViewURL)
+        return;
+
+      if ([self shouldLoadURLInNativeView:item->GetURL()]) {
+        [self loadNativeContentForNavigationItem:item];
+      } else {
+        CRWPlaceholderNavigationInfo* placeholderNavigationInfo =
+            [CRWPlaceholderNavigationInfo infoForNavigation:navigation];
+        if (placeholderNavigationInfo) {
+          [placeholderNavigationInfo runCompletionHandler];
+        }
       }
     }
   }

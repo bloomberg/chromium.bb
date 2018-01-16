@@ -60,6 +60,9 @@ using web::test::HttpServer;
   [ChromeEarlGrey goBack];
 
   chrome_test_util::OpenNewTab();
+  // New tab page is not loaded within a single tick so wait before assert.
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title1")]
       assertWithMatcher:grey_notNil()];
