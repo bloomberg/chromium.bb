@@ -31,8 +31,8 @@
 
 #include "bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
 #include "core/CoreExport.h"
-#include "core/html/ImageDataColorSettings.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/ImageDataColorSettings.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"

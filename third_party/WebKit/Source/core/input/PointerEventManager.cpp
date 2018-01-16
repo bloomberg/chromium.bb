@@ -11,7 +11,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/input/MouseEventManager.h"

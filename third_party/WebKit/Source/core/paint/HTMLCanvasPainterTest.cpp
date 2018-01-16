@@ -5,9 +5,9 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/StubChromeClientForSPv2.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"

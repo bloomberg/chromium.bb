@@ -5,7 +5,7 @@
 #ifndef HTMLCanvasElementModule_h
 #define HTMLCanvasElementModule_h
 
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/text/WTFString.h"
 

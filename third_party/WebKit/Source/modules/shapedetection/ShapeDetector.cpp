@@ -10,7 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/loader/resource/ImageResourceContent.h"

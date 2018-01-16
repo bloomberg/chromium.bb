@@ -26,7 +26,7 @@
 #include "core/html/track/LoadableTextTrack.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLTrackElement.h"
+#include "core/html/track/HTMLTrackElement.h"
 
 namespace blink {
 

@@ -11,7 +11,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestCanvasResult.h"

@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
 #include "core/dom/DOMException.h"

@@ -32,7 +32,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "modules/canvas/canvas2d/CanvasGradient.h"
 #include "modules/canvas/canvas2d/CanvasPattern.h"

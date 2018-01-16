@@ -4,8 +4,8 @@
 
 #include "core/paint/HTMLCanvasPainter.h"
 
-#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"

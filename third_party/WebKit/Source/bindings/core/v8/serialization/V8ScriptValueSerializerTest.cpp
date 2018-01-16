@@ -39,7 +39,7 @@
 #include "core/geometry/DOMQuad.h"
 #include "core/geometry/DOMRect.h"
 #include "core/geometry/DOMRectReadOnly.h"
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/messaging/MessagePort.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/StaticBitmapImage.h"

@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 
 #include <math.h>
 
@@ -48,12 +48,12 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -324,8 +324,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 }
 
 bool HTMLCanvasElement::ShouldBeDirectComposited() const {
-  return (context_ && context_->IsComposited()) ||
-         (!!surface_layer_bridge_);
+  return (context_ && context_->IsComposited()) || (!!surface_layer_bridge_);
 }
 
 bool HTMLCanvasElement::IsAccelerated() const {

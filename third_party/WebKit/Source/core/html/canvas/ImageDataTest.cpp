@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "platform/geometry/IntSize.h"
@@ -542,5 +542,5 @@ TEST_F(ImageDataTest, ImageDataTooBigToAllocateDoesNotCrash) {
 }
 
 #undef MAYBE_CreateImageDataTooBig
-}  // namspace
+}  // namespace
 }  // namespace blink

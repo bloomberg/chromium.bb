@@ -5,7 +5,7 @@
 #ifndef HTMLCanvasElementCapture_h
 #define HTMLCanvasElementCapture_h
 
-#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 

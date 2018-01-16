@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/TextMetrics.h"
+#include "core/html/canvas/TextMetrics.h"
 
 namespace blink {
 

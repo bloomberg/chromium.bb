@@ -5,7 +5,7 @@
 #ifndef SerializedColorParams_h
 #define SerializedColorParams_h
 
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 #include "platform/graphics/CanvasColorParams.h"
 
 namespace blink {

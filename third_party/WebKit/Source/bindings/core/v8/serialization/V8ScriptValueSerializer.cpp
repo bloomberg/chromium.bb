@@ -28,7 +28,7 @@
 #include "core/geometry/DOMQuad.h"
 #include "core/geometry/DOMRect.h"
 #include "core/geometry/DOMRectReadOnly.h"
-#include "core/html/ImageData.h"
+#include "core/html/canvas/ImageData.h"
 #include "core/typed_arrays/DOMArrayBufferBase.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/DateMath.h"
