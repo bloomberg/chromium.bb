@@ -42,23 +42,24 @@ namespace printing {
 
 namespace {
 
-class ShutdownNotifierFactory
+class PrintingMessageFilterShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
-  static ShutdownNotifierFactory* GetInstance() {
-    return base::Singleton<ShutdownNotifierFactory>::get();
+  static PrintingMessageFilterShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<PrintingMessageFilterShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PrintingMessageFilterShutdownNotifierFactory>;
 
-  ShutdownNotifierFactory()
+  PrintingMessageFilterShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
-          "PrintingMessageFilter") {}
+            "PrintingMessageFilter") {}
 
-  ~ShutdownNotifierFactory() override {}
+  ~PrintingMessageFilterShutdownNotifierFactory() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+  DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilterShutdownNotifierFactory);
 };
 
 #if defined(OS_ANDROID) || (defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW))
@@ -101,9 +102,10 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
   printing_shutdown_notifier_ =
-      ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
-          base::Bind(&PrintingMessageFilter::ShutdownOnUIThread,
-                     base::Unretained(this)));
+      PrintingMessageFilterShutdownNotifierFactory::GetInstance()
+          ->Get(profile)
+          ->Subscribe(base::Bind(&PrintingMessageFilter::ShutdownOnUIThread,
+                                 base::Unretained(this)));
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
   is_printing_enabled_.MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));

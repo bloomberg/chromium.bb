@@ -155,24 +155,25 @@ constexpr int AvatarButtonThemedBorder::kStrokeWidth;
 constexpr gfx::Insets AvatarButtonThemedBorder::kBorderStrokeInsets;
 constexpr float AvatarButtonThemedBorder::kCornerRadius;
 
-class ShutdownNotifierFactory
+class AvatarButtonShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
-  static ShutdownNotifierFactory* GetInstance() {
-    return base::Singleton<ShutdownNotifierFactory>::get();
+  static AvatarButtonShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<AvatarButtonShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<
+      AvatarButtonShutdownNotifierFactory>;
 
-  ShutdownNotifierFactory()
+  AvatarButtonShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "AvatarButtonShutdownNotifierFactory") {
     DependsOn(SigninManagerFactory::GetInstance());
   }
-  ~ShutdownNotifierFactory() override {}
+  ~AvatarButtonShutdownNotifierFactory() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+  DISALLOW_COPY_AND_ASSIGN(AvatarButtonShutdownNotifierFactory);
 };
 
 }  // namespace
@@ -263,8 +264,10 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
   }
 
   profile_shutdown_notifier_ =
-      ShutdownNotifierFactory::GetInstance()->Get(profile_)->Subscribe(
-          base::Bind(&AvatarButton::OnProfileShutdown, base::Unretained(this)));
+      AvatarButtonShutdownNotifierFactory::GetInstance()
+          ->Get(profile_)
+          ->Subscribe(base::Bind(&AvatarButton::OnProfileShutdown,
+                                 base::Unretained(this)));
 }
 
 AvatarButton::~AvatarButton() {}

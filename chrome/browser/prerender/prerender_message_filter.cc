@@ -22,24 +22,26 @@ namespace prerender {
 
 namespace {
 
-class ShutdownNotifierFactory
+class PrerenderMessageFilterShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
-  static ShutdownNotifierFactory* GetInstance() {
-    return base::Singleton<ShutdownNotifierFactory>::get();
+  static PrerenderMessageFilterShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<
+        PrerenderMessageFilterShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PrerenderMessageFilterShutdownNotifierFactory>;
 
-  ShutdownNotifierFactory()
+  PrerenderMessageFilterShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "PrerenderMessageFilter") {
     DependsOn(PrerenderLinkManagerFactory::GetInstance());
   }
-  ~ShutdownNotifierFactory() override {}
+  ~PrerenderMessageFilterShutdownNotifierFactory() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+  DISALLOW_COPY_AND_ASSIGN(PrerenderMessageFilterShutdownNotifierFactory);
 };
 
 }  // namespace
@@ -53,9 +55,10 @@ PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
       prerender_link_manager_(
           PrerenderLinkManagerFactory::GetForProfile(profile)) {
   shutdown_notifier_ =
-      ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
-          base::Bind(&PrerenderMessageFilter::ShutdownOnUIThread,
-                     base::Unretained(this)));
+      PrerenderMessageFilterShutdownNotifierFactory::GetInstance()
+          ->Get(profile)
+          ->Subscribe(base::Bind(&PrerenderMessageFilter::ShutdownOnUIThread,
+                                 base::Unretained(this)));
 }
 
 PrerenderMessageFilter::~PrerenderMessageFilter() {
@@ -64,7 +67,7 @@ PrerenderMessageFilter::~PrerenderMessageFilter() {
 
 // static
 void PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt() {
-  ShutdownNotifierFactory::GetInstance();
+  PrerenderMessageFilterShutdownNotifierFactory::GetInstance();
 }
 
 bool PrerenderMessageFilter::OnMessageReceived(const IPC::Message& message) {

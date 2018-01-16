@@ -19,24 +19,25 @@
 namespace {
 const int kMaxRetries = 3;
 
-class ShutdownNotifierFactory
+class TokenHandleFetcherShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
-  static ShutdownNotifierFactory* GetInstance() {
-    return base::Singleton<ShutdownNotifierFactory>::get();
+  static TokenHandleFetcherShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<TokenHandleFetcherShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<
+      TokenHandleFetcherShutdownNotifierFactory>;
 
-  ShutdownNotifierFactory()
+  TokenHandleFetcherShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "TokenHandleFetcher") {
     DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   }
-  ~ShutdownNotifierFactory() override {}
+  ~TokenHandleFetcherShutdownNotifierFactory() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+  DISALLOW_COPY_AND_ASSIGN(TokenHandleFetcherShutdownNotifierFactory);
 };
 
 }  // namespace
@@ -64,9 +65,10 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   if (!token_service_->RefreshTokenIsAvailable(user_email)) {
     account_without_token_ = user_email;
     profile_shutdown_notification_ =
-        ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
-            base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
-                       base::Unretained(this)));
+        TokenHandleFetcherShutdownNotifierFactory::GetInstance()
+            ->Get(profile)
+            ->Subscribe(base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
+                                   base::Unretained(this)));
 
     token_service_->AddObserver(this);
     waiting_for_refresh_token_ = true;
