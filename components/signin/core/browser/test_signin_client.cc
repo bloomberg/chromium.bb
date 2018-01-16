@@ -58,7 +58,7 @@ void TestSigninClient::LoadTokenDatabase() {
   scoped_refptr<WebDatabaseService> web_database =
       new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
-  web_database->AddTable(base::MakeUnique<TokenServiceTable>());
+  web_database->AddTable(std::make_unique<TokenServiceTable>());
   web_database->LoadDatabase();
   database_ =
       new TokenWebData(web_database, base::ThreadTaskRunnerHandle::Get(),
@@ -107,7 +107,7 @@ std::unique_ptr<GaiaAuthFetcher> TestSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* getter) {
-  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, getter);
+  return std::make_unique<GaiaAuthFetcher>(consumer, source, getter);
 }
 
 void TestSigninClient::PreGaiaLogout(base::OnceClosure callback) {

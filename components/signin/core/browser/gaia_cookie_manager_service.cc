@@ -10,7 +10,6 @@
 
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -430,7 +429,7 @@ void GaiaCookieManagerService::TriggerListAccounts(const std::string& source) {
 void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   std::unique_ptr<net::CanonicalCookie> cookie(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), false, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));

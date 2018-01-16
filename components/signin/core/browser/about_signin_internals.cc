@@ -15,7 +15,6 @@
 #include "base/hash.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -43,11 +42,11 @@ std::string GetTimeStr(base::Time time) {
 
 base::ListValue* AddSection(base::ListValue* parent_list,
                             const std::string& title) {
-  auto section = base::MakeUnique<base::DictionaryValue>();
+  auto section = std::make_unique<base::DictionaryValue>();
 
   section->SetString("title", title);
   base::ListValue* section_contents =
-      section->SetList("data", base::MakeUnique<base::ListValue>());
+      section->SetList("data", std::make_unique<base::ListValue>());
   parent_list->Append(std::move(section));
   return section_contents;
 }
@@ -337,7 +336,7 @@ void AboutSigninInternals::OnAccessTokenRequested(
     *token = TokenInfo(consumer_id, scopes);
   } else {
     signin_status_.token_info_map[account_id].push_back(
-        base::MakeUnique<TokenInfo>(consumer_id, scopes));
+        std::make_unique<TokenInfo>(consumer_id, scopes));
   }
 
   NotifyObservers();
@@ -416,7 +415,7 @@ void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
   if (error.state() != GoogleServiceAuthError::NONE)
     return;
 
-  auto cookie_info = base::MakeUnique<base::ListValue>();
+  auto cookie_info = std::make_unique<base::ListValue>();
 
   for (size_t i = 0; i < gaia_accounts.size(); ++i) {
     AddCookieEntry(cookie_info.get(), gaia_accounts[i].raw_email,
@@ -526,8 +525,8 @@ AboutSigninInternals::SigninStatus::ToValue(
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* cookie_manager_service,
     SigninClient* signin_client) {
-  auto signin_status = base::MakeUnique<base::DictionaryValue>();
-  auto signin_info = base::MakeUnique<base::ListValue>();
+  auto signin_status = std::make_unique<base::DictionaryValue>();
+  auto signin_info = std::make_unique<base::ListValue>();
 
   // A summary of signin related info first.
   base::ListValue* basic_info =
@@ -624,7 +623,7 @@ AboutSigninInternals::SigninStatus::ToValue(
 #endif  // !defined(OS_CHROMEOS)
 
   // Token information for all services.
-  auto token_info = base::MakeUnique<base::ListValue>();
+  auto token_info = std::make_unique<base::ListValue>();
   for (auto it = token_info_map.begin(); it != token_info_map.end(); ++it) {
     base::ListValue* token_details = AddSection(token_info.get(), it->first);
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
@@ -633,18 +632,18 @@ AboutSigninInternals::SigninStatus::ToValue(
   }
   signin_status->Set("token_info", std::move(token_info));
 
-  auto account_info = base::MakeUnique<base::ListValue>();
+  auto account_info = std::make_unique<base::ListValue>();
   const std::vector<std::string>& accounts_in_token_service =
       token_service->GetAccounts();
 
   if (accounts_in_token_service.size() == 0) {
-    auto no_token_entry = base::MakeUnique<base::DictionaryValue>();
+    auto no_token_entry = std::make_unique<base::DictionaryValue>();
     no_token_entry->SetString("accountId", "No token in Token Service.");
     account_info->Append(std::move(no_token_entry));
   }
 
   for (const std::string& account_id : accounts_in_token_service) {
-    auto entry = base::MakeUnique<base::DictionaryValue>();
+    auto entry = std::make_unique<base::DictionaryValue>();
     entry->SetString("accountId", account_id);
     entry->SetBoolean("hasRefreshToken",
                       token_service->RefreshTokenIsAvailable(account_id));
@@ -657,7 +656,7 @@ AboutSigninInternals::SigninStatus::ToValue(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (signin::IsDiceEnabledForProfile(signin_client->GetPrefs())) {
-    auto dice_info = base::MakeUnique<base::DictionaryValue>();
+    auto dice_info = std::make_unique<base::DictionaryValue>();
     dice_info->SetBoolean("isSignedIn", signin_manager->IsAuthenticated());
     signin_status->Set("dice", std::move(dice_info));
   }

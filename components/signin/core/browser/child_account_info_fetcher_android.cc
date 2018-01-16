@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/child_account_info_fetcher_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -22,7 +24,7 @@ std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcherAndroid::Create(
   if (account_name.empty())
     return nullptr;
 
-  // Call the constructor directly instead of using base::MakeUnique because the
+  // Call the constructor directly instead of using std::make_unique because the
   // constructor is private. Also, use the std::unique_ptr<> constructor instead
   // of base::WrapUnique because the _destructor_ of the subclass is private.
   return std::unique_ptr<ChildAccountInfoFetcher>(
