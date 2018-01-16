@@ -13,6 +13,14 @@ namespace net {
 
 const char kForceEffectiveConnectionType[] = "force_effective_connection_type";
 const char kEffectiveConnectionTypeSlow2GOnCellular[] = "Slow-2G-On-Cellular";
+const base::TimeDelta
+    kHttpRttEffectiveConnectionTypeThresholds[EFFECTIVE_CONNECTION_TYPE_LAST] =
+        {base::TimeDelta::FromMilliseconds(0),
+         base::TimeDelta::FromMilliseconds(0),
+         base::TimeDelta::FromMilliseconds(2010),
+         base::TimeDelta::FromMilliseconds(1420),
+         base::TimeDelta::FromMilliseconds(272),
+         base::TimeDelta::FromMilliseconds(0)};
 
 namespace {
 
@@ -288,24 +296,35 @@ void ObtainConnectionThresholds(
   nqe::internal::NetworkQuality default_effective_connection_type_thresholds
       [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
 
+  DCHECK_LT(base::TimeDelta(), kHttpRttEffectiveConnectionTypeThresholds
+                                   [EFFECTIVE_CONNECTION_TYPE_SLOW_2G]);
   default_effective_connection_type_thresholds
       [EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = nqe::internal::NetworkQuality(
           // Set to the 66th percentile of 2G RTT observations on Android.
-          base::TimeDelta::FromMilliseconds(2010),
+          kHttpRttEffectiveConnectionTypeThresholds
+              [EFFECTIVE_CONNECTION_TYPE_SLOW_2G],
           base::TimeDelta::FromMilliseconds(1870),
           nqe::internal::INVALID_RTT_THROUGHPUT);
 
+  DCHECK_LT(
+      base::TimeDelta(),
+      kHttpRttEffectiveConnectionTypeThresholds[EFFECTIVE_CONNECTION_TYPE_2G]);
   default_effective_connection_type_thresholds[EFFECTIVE_CONNECTION_TYPE_2G] =
       nqe::internal::NetworkQuality(
           // Set to the 50th percentile of RTT observations on Android.
-          base::TimeDelta::FromMilliseconds(1420),
+          kHttpRttEffectiveConnectionTypeThresholds
+              [EFFECTIVE_CONNECTION_TYPE_2G],
           base::TimeDelta::FromMilliseconds(1280),
           nqe::internal::INVALID_RTT_THROUGHPUT);
 
+  DCHECK_LT(
+      base::TimeDelta(),
+      kHttpRttEffectiveConnectionTypeThresholds[EFFECTIVE_CONNECTION_TYPE_3G]);
   default_effective_connection_type_thresholds[EFFECTIVE_CONNECTION_TYPE_3G] =
       nqe::internal::NetworkQuality(
           // Set to the 50th percentile of 3G RTT observations on Android.
-          base::TimeDelta::FromMilliseconds(272),
+          kHttpRttEffectiveConnectionTypeThresholds
+              [EFFECTIVE_CONNECTION_TYPE_3G],
           base::TimeDelta::FromMilliseconds(204),
           nqe::internal::INVALID_RTT_THROUGHPUT);
 
