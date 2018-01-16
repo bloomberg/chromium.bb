@@ -63,12 +63,8 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   double ConvertAngle(CSSPrimitiveValue::UnitType) const;
 
   // From CSSNumericValue
-  CSSNumericValue* Negate() final {
-    return CSSUnitValue::Create(-value_, unit_);
-  }
-  CSSNumericValue* Invert() final {
-    return CSSUnitValue::Create(1.0 / value_, unit_);
-  }
+  CSSNumericValue* Negate() final;
+  CSSNumericValue* Invert() final;
 
   double value_;
   CSSPrimitiveValue::UnitType unit_;
