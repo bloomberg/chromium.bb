@@ -41,7 +41,7 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "core/layout/ScrollAlignment.h"
+#include "platform/scroll/ScrollAlignment.h"
 
 #include "platform/geometry/LayoutRect.h"
 
@@ -119,15 +119,16 @@ LayoutRect ScrollAlignment::GetRectToExpose(const LayoutRect& visible_rect,
 
   // Given the X behavior, compute the X coordinate.
   LayoutUnit x;
-  if (scroll_x == kScrollAlignmentNoScroll)
+  if (scroll_x == kScrollAlignmentNoScroll) {
     x = non_zero_visible_rect.X();
-  else if (scroll_x == kScrollAlignmentRight)
+  } else if (scroll_x == kScrollAlignmentRight) {
     x = expose_rect.MaxX() - non_zero_visible_rect.Width();
-  else if (scroll_x == kScrollAlignmentCenter)
+  } else if (scroll_x == kScrollAlignmentCenter) {
     x = expose_rect.X() +
         (expose_rect.Width() - non_zero_visible_rect.Width()) / 2;
-  else
+  } else {
     x = expose_rect.X();
+  }
 
   // Determine the appropriate Y behavior.
   ScrollAlignmentBehavior scroll_y;
@@ -165,15 +166,16 @@ LayoutRect ScrollAlignment::GetRectToExpose(const LayoutRect& visible_rect,
 
   // Given the Y behavior, compute the Y coordinate.
   LayoutUnit y;
-  if (scroll_y == kScrollAlignmentNoScroll)
+  if (scroll_y == kScrollAlignmentNoScroll) {
     y = non_zero_visible_rect.Y();
-  else if (scroll_y == kScrollAlignmentBottom)
+  } else if (scroll_y == kScrollAlignmentBottom) {
     y = expose_rect.MaxY() - non_zero_visible_rect.Height();
-  else if (scroll_y == kScrollAlignmentCenter)
+  } else if (scroll_y == kScrollAlignmentCenter) {
     y = expose_rect.Y() +
         (expose_rect.Height() - non_zero_visible_rect.Height()) / 2;
-  else
+  } else {
     y = expose_rect.Y();
+  }
 
   return LayoutRect(LayoutPoint(x, y), non_zero_visible_rect.Size());
 }

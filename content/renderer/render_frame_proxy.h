@@ -26,7 +26,7 @@
 namespace blink {
 struct FramePolicy;
 struct WebRect;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 }
 
 namespace viz {
@@ -227,9 +227,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();
   void OnSetHasReceivedUserGesture();
-  void OnScrollRectToVisible(
-      const gfx::Rect& rect_to_scroll,
-      const blink::WebRemoteScrollProperties& properties);
+  void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
+                             const blink::WebScrollIntoViewParams& params);
   void OnResizeDueToAutoResize(uint64_t sequence_number);
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
 

@@ -21,7 +21,7 @@ class RemoteFrameClientImpl;
 enum class WebFrameLoadType;
 class WebView;
 struct WebRect;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 
 class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
@@ -77,7 +77,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void WillEnterFullscreen() override;
   void SetHasReceivedUserGesture() override;
   void ScrollRectToVisible(const WebRect&,
-                           const WebRemoteScrollProperties&) override;
+                           const WebScrollIntoViewParams&) override;
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
 

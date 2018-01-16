@@ -217,8 +217,6 @@ blink_core_sources("layout") {
     "OverflowModel.h",
     "PointerEventsHitRules.cpp",
     "PointerEventsHitRules.h",
-    "ScrollAlignment.cpp",
-    "ScrollAlignment.h",
     "ScrollAnchor.cpp",
     "ScrollAnchor.h",
     "SubtreeLayoutScope.cpp",

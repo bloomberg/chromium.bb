@@ -70,7 +70,6 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/ScrollAlignment.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TracedLayoutObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -121,6 +120,7 @@
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/scroll/ScrollAlignment.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
@@ -130,7 +130,7 @@
 #include "public/platform/TaskType.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebRect.h"
-#include "public/platform/WebRemoteScrollProperties.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
@@ -156,28 +156,6 @@ constexpr int kLetterPortraitPageHeight = 792;
 }  // namespace
 
 namespace blink {
-namespace {
-using WebRemoteScrollAlignment = WebRemoteScrollProperties::Alignment;
-WebRemoteScrollAlignment ToWebRemoteScrollAlignment(
-    const ScrollAlignment& alignment) {
-  if (alignment == ScrollAlignment::kAlignCenterIfNeeded)
-    return WebRemoteScrollAlignment::kCenterIfNeeded;
-  if (alignment == ScrollAlignment::kAlignToEdgeIfNeeded)
-    return WebRemoteScrollAlignment::kToEdgeIfNeeded;
-  if (alignment == ScrollAlignment::kAlignTopAlways)
-    return WebRemoteScrollAlignment::kTopAlways;
-  if (alignment == ScrollAlignment::kAlignBottomAlways)
-    return WebRemoteScrollAlignment::kBottomAlways;
-  if (alignment == ScrollAlignment::kAlignLeftAlways)
-    return WebRemoteScrollAlignment::kLeftAlways;
-  if (alignment == ScrollAlignment::kAlignRightAlways)
-    return WebRemoteScrollAlignment::kRightAlways;
-  NOTREACHED();
-  return WebRemoteScrollAlignment::kCenterIfNeeded;
-}
-
-}  // namespace
-
 using namespace HTMLNames;
 
 // The maximum number of updatePlugins iterations that should be done before
@@ -2444,8 +2422,8 @@ void LocalFrameView::ScrollToFragmentAnchor() {
     // Scroll nested layers and frames to reveal the anchor.
     // Align to the top and to the closest side (this matches other browsers).
     anchor_node->GetLayoutObject()->ScrollRectToVisible(
-        rect, ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignTopAlways);
+        rect, WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
+                                      ScrollAlignment::kAlignTopAlways));
 
     if (boundary_frame && boundary_frame->IsLocalFrame()) {
       ToLocalFrame(boundary_frame)
@@ -4569,12 +4547,7 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
 
 void LocalFrameView::ScrollRectToVisibleInRemoteParent(
     const LayoutRect& rect_to_scroll,
-    const ScrollAlignment& align_x,
-    const ScrollAlignment& align_y,
-    ScrollType scroll_type,
-    bool make_visible_in_visual_viewport,
-    ScrollBehavior scroll_behavior,
-    bool is_for_scroll_sequence) {
+    const WebScrollIntoViewParams& params) {
   DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
          safe_to_propagate_scroll_to_parent_);
   // Find the coordinates of the |rect_to_scroll| after removing all transforms
@@ -4591,10 +4564,7 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
   GetFrame().Client()->ScrollRectToVisibleInParentFrame(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),
-      WebRemoteScrollProperties(ToWebRemoteScrollAlignment(align_x),
-                                ToWebRemoteScrollAlignment(align_y),
-                                scroll_type, make_visible_in_visual_viewport,
-                                scroll_behavior, is_for_scroll_sequence));
+      params);
 }
 
 void LocalFrameView::ScrollContentsIfNeeded() {
@@ -4852,17 +4822,15 @@ bool LocalFrameView::ShouldPlaceVerticalScrollbarOnLeft() const {
   return false;
 }
 
-LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
-                                          const ScrollAlignment& align_x,
-                                          const ScrollAlignment& align_y,
-                                          bool is_smooth,
-                                          ScrollType scroll_type,
-                                          bool is_for_scroll_sequence) {
+LayoutRect LocalFrameView::ScrollIntoView(
+    const LayoutRect& rect_in_content,
+    const WebScrollIntoViewParams& params) {
   GetLayoutBox()->SetPendingOffsetToScroll(LayoutSize());
 
   LayoutRect view_rect(VisibleContentRect());
   LayoutRect expose_rect = ScrollAlignment::GetRectToExpose(
-      view_rect, rect_in_content, align_x, align_y);
+      view_rect, rect_in_content, params.GetScrollAlignmentX(),
+      params.GetScrollAlignmentY());
   ScrollOffset old_scroll_offset = GetScrollOffset();
   if (expose_rect != view_rect) {
     ScrollOffset target_offset(expose_rect.X().ToFloat(),
@@ -4871,17 +4839,18 @@ LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
                         ? ScrollOffset(FlooredIntSize(target_offset))
                         : target_offset;
 
-    if (is_for_scroll_sequence) {
-      DCHECK(scroll_type == kProgrammaticScroll);
+    if (params.is_for_scroll_sequence) {
+      DCHECK(params.GetScrollType() == kProgrammaticScroll);
       ScrollBehavior behavior =
-          is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
+          DetermineScrollBehavior(params.GetScrollBehavior(),
+                                  GetLayoutBox()->Style()->GetScrollBehavior());
       GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
       ScrollOffset scroll_offset_difference =
           ClampScrollOffset(target_offset) - old_scroll_offset;
       GetLayoutBox()->SetPendingOffsetToScroll(
           -LayoutSize(scroll_offset_difference));
     } else {
-      SetScrollOffset(target_offset, scroll_type);
+      SetScrollOffset(target_offset, params.GetScrollType());
     }
   }
 

@@ -234,9 +234,8 @@ void RenderFrameProxyHost::SetFocusedFrame() {
 
 void RenderFrameProxyHost::ScrollRectToVisible(
     const gfx::Rect& rect_to_scroll,
-    const blink::WebRemoteScrollProperties properties) {
-  Send(new FrameMsg_ScrollRectToVisible(routing_id_, rect_to_scroll,
-                                        properties));
+    const blink::WebScrollIntoViewParams& params) {
+  Send(new FrameMsg_ScrollRectToVisible(routing_id_, rect_to_scroll, params));
 }
 
 void RenderFrameProxyHost::SetDestructionCallback(

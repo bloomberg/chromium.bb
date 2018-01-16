@@ -94,9 +94,11 @@
 #include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/scroll/ScrollAlignment.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CharacterNames.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 
 namespace blink {
 
@@ -1556,8 +1558,9 @@ Range* Editor::FindStringAndScrollToVisible(const String& target,
   Node* first_node = next_match->FirstNode();
   first_node->GetLayoutObject()->ScrollRectToVisible(
       LayoutRect(next_match->BoundingBox()),
-      ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded, kUserScroll);
+      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                              ScrollAlignment::kAlignCenterIfNeeded,
+                              kUserScroll));
   first_node->GetDocument().SetSequentialFocusNavigationStartingPoint(
       first_node);
 

@@ -97,6 +97,7 @@ class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct CompositedSelection;
 struct IntrinsicSizingInfo;
+struct WebScrollIntoViewParams;
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -487,11 +488,7 @@ class CORE_EXPORT LocalFrameView final
   scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final;
 
   LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
-                            const ScrollAlignment& align_x,
-                            const ScrollAlignment& align_y,
-                            bool is_smooth,
-                            ScrollType = kProgrammaticScroll,
-                            bool is_for_scroll_sequence = false) override;
+                            const WebScrollIntoViewParams& params) override;
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -926,12 +923,7 @@ class CORE_EXPORT LocalFrameView final
   // When the frame is a local root and not a main frame, any recursive
   // scrolling should continue in the parent process.
   void ScrollRectToVisibleInRemoteParent(const LayoutRect&,
-                                         const ScrollAlignment&,
-                                         const ScrollAlignment&,
-                                         ScrollType,
-                                         bool,
-                                         ScrollBehavior,
-                                         bool);
+                                         const WebScrollIntoViewParams&);
 
   PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());

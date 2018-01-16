@@ -148,6 +148,7 @@
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebMenuSourceType.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 #include "public/platform/WebTextInputInfo.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
@@ -2461,7 +2462,8 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
     LayoutObject* layout_object = element->GetLayoutObject();
     if (!layout_object)
       return false;
-    layout_object->ScrollRectToVisible(element->BoundingBox());
+    layout_object->ScrollRectToVisible(element->BoundingBox(),
+                                       WebScrollIntoViewParams());
     return true;
   }
 

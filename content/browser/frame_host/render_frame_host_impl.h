@@ -94,7 +94,7 @@ class ListValue;
 
 namespace blink {
 struct FramePolicy;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 }
 
 namespace gfx {
@@ -819,7 +819,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
   void OnScrollRectToVisibleInParentFrame(
       const gfx::Rect& rect_to_scroll,
-      const blink::WebRemoteScrollProperties& properties);
+      const blink::WebScrollIntoViewParams& params);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

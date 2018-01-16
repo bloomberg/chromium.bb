@@ -74,6 +74,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/MathExtras.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 
 namespace blink {
 
@@ -314,8 +315,10 @@ void HTMLInputElement::UpdateFocusAppearanceWithOptions(
     // case of RangeSelection. crbug.com/443061.
     GetDocument().EnsurePaintLocationDataValidForNode(this);
     if (!options.preventScroll()) {
-      if (GetLayoutObject())
-        GetLayoutObject()->ScrollRectToVisible(BoundingBox());
+      if (GetLayoutObject()) {
+        GetLayoutObject()->ScrollRectToVisible(BoundingBox(),
+                                               WebScrollIntoViewParams());
+      }
       if (GetDocument().GetFrame())
         GetDocument().GetFrame()->Selection().RevealSelection();
     }

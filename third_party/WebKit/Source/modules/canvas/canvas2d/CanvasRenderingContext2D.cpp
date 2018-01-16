@@ -62,12 +62,14 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/scroll/ScrollAlignment.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 
 namespace blink {
 
@@ -364,11 +366,12 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
 
   renderer->ScrollRectToVisible(
       path_rect,
-      is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                 : ScrollAlignment::kAlignLeftAlways,
-      !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                  : ScrollAlignment::kAlignTopAlways,
-      kProgrammaticScroll, false, kScrollBehaviorAuto);
+      WebScrollIntoViewParams(
+          is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
+                                     : ScrollAlignment::kAlignLeftAlways,
+          !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
+                                      : ScrollAlignment::kAlignTopAlways,
+          kProgrammaticScroll, false, kScrollBehaviorAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

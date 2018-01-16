@@ -118,7 +118,7 @@ struct WebContextMenuData;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
-struct WebRemoteScrollProperties;
+struct WebScrollIntoViewParams;
 struct WebURLError;
 
 class BLINK_EXPORT WebFrameClient {
@@ -682,7 +682,7 @@ class BLINK_EXPORT WebFrameClient {
   // of a local frame only.
   virtual void ScrollRectToVisibleInParentFrame(
       const WebRect&,
-      const WebRemoteScrollProperties&) {}
+      const WebScrollIntoViewParams&) {}
 
   // Find-in-page notifications ------------------------------------------
 
