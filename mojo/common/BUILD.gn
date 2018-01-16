@@ -31,6 +31,10 @@ mojom("common_custom_types") {
   if (is_win) {
     sources += [ "logfont_win.mojom" ]
   }
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
 }
 
 mojom("read_only_buffer") {
@@ -86,6 +90,7 @@ test("mojo_common_unittests") {
 
   sources = [
     "common_custom_types_unittest.cc",
+    "string16_unittest.cc",
     "struct_traits_unittest.cc",
   ]
 }

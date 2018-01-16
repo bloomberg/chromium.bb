@@ -5,7 +5,6 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
-#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/i18n/rtl.h"
 #include "base/process/process_handle.h"
@@ -17,31 +16,12 @@
 #include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
-#include "mojo/common/string16.mojom-shared.h"
 #include "mojo/common/text_direction.mojom-shared.h"
 #include "mojo/common/thread_priority.mojom-shared.h"
 #include "mojo/common/unguessable_token.mojom-shared.h"
 #include "mojo/common/version.mojom-shared.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<common::mojom::String16DataView, base::StringPiece16> {
-  static base::span<const uint16_t> data(base::StringPiece16 str) {
-    return base::make_span(reinterpret_cast<const uint16_t*>(str.data()),
-                           str.size());
-  }
-};
-
-template <>
-struct StructTraits<common::mojom::String16DataView, base::string16> {
-  static base::span<const uint16_t> data(const base::string16& str) {
-    return StructTraits<common::mojom::String16DataView,
-                        base::StringPiece16>::data(str);
-  }
-
-  static bool Read(common::mojom::String16DataView data, base::string16* out);
-};
 
 template <>
 struct StructTraits<common::mojom::VersionDataView, base::Version> {
