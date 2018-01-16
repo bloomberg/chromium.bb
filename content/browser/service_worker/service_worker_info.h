@@ -82,7 +82,9 @@ struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {
       const ServiceWorkerVersionInfo& active_version,
       const ServiceWorkerVersionInfo& waiting_version,
       const ServiceWorkerVersionInfo& installing_version,
-      int64_t active_version_total_size_bytes);
+      int64_t stored_version_size_bytes,
+      bool navigation_preload_enabled,
+      size_t navigation_preload_header_length);
   ServiceWorkerRegistrationInfo(const ServiceWorkerRegistrationInfo& other);
   ~ServiceWorkerRegistrationInfo();
 
@@ -94,6 +96,8 @@ struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {
   ServiceWorkerVersionInfo installing_version;
 
   int64_t stored_version_size_bytes;
+  bool navigation_preload_enabled;
+  size_t navigation_preload_header_length;
 };
 
 }  // namespace content

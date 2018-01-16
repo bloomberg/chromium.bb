@@ -75,7 +75,9 @@ ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
     : registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
       delete_flag(IS_NOT_DELETED),
-      stored_version_size_bytes(0) {}
+      stored_version_size_bytes(0),
+      navigation_preload_enabled(false),
+      navigation_preload_header_length(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
@@ -84,7 +86,9 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     : pattern(pattern),
       registration_id(registration_id),
       delete_flag(delete_flag),
-      stored_version_size_bytes(0) {}
+      stored_version_size_bytes(0),
+      navigation_preload_enabled(false),
+      navigation_preload_header_length(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
@@ -93,14 +97,18 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const ServiceWorkerVersionInfo& active_version,
     const ServiceWorkerVersionInfo& waiting_version,
     const ServiceWorkerVersionInfo& installing_version,
-    int64_t stored_version_size_bytes)
+    int64_t stored_version_size_bytes,
+    bool navigation_preload_enabled,
+    size_t navigation_preload_header_length)
     : pattern(pattern),
       registration_id(registration_id),
       delete_flag(delete_flag),
       active_version(active_version),
       waiting_version(waiting_version),
       installing_version(installing_version),
-      stored_version_size_bytes(stored_version_size_bytes) {}
+      stored_version_size_bytes(stored_version_size_bytes),
+      navigation_preload_enabled(navigation_preload_enabled),
+      navigation_preload_header_length(navigation_preload_header_length) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const ServiceWorkerRegistrationInfo& other) = default;

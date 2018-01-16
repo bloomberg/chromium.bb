@@ -70,6 +70,14 @@
         <span jscontent="registration_id"></span>
         <span jsdisplay="$this.unregistered">(unregistered)</span>
       </div>
+      <div class="serviceworker-navigation-preload-enabled">
+        <span>Navigation preload enabled:</span>
+        <span jscontent="$this.navigation_preload_enabled"></span>
+      </div>
+      <div class="serviceworker-navigation-preload-header-length">
+        <span>Navigation preload header length:</span>
+        <span jscontent="$this.navigation_preload_header_length"></span>
+      </div>
       <div jsselect="$this.active">
         Active worker:
         <div transclude="serviceworker-version-template"></div>
