@@ -754,6 +754,9 @@ bool ContentSecurityPolicy::AllowRequest(
     case WebURLRequest::kRequestContextObject:
       return AllowObjectFromSource(url, redirect_status, reporting_policy,
                                    check_header_type);
+    case WebURLRequest::kRequestContextPrefetch:
+      return AllowPrefetchFromSource(url, redirect_status, reporting_policy,
+                                     check_header_type);
     case WebURLRequest::kRequestContextFavicon:
     case WebURLRequest::kRequestContextImage:
     case WebURLRequest::kRequestContextImageSet:
@@ -792,7 +795,6 @@ bool ContentSecurityPolicy::AllowRequest(
     case WebURLRequest::kRequestContextInternal:
     case WebURLRequest::kRequestContextLocation:
     case WebURLRequest::kRequestContextPlugin:
-    case WebURLRequest::kRequestContextPrefetch:
     case WebURLRequest::kRequestContextUnspecified:
       return true;
   }
@@ -822,6 +824,25 @@ bool ContentSecurityPolicy::AllowObjectFromSource(
       continue;
     is_allowed &=
         policy->AllowObjectFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
+}
+
+bool ContentSecurityPolicy::AllowPrefetchFromSource(
+    const KURL& url,
+    RedirectStatus redirect_status,
+    SecurityViolationReportingPolicy reporting_policy,
+    CheckHeaderType check_header_type) const {
+  if (ShouldBypassContentSecurityPolicy(url, execution_context_))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowPrefetchFromSource(url, redirect_status, reporting_policy);
   }
 
   return is_allowed;
@@ -1678,6 +1699,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "media-src";
     case DirectiveType::kObjectSrc:
       return "object-src";
+    case DirectiveType::kPrefetchSrc:
+      return "prefetch-src";
     case DirectiveType::kPluginTypes:
       return "plugin-types";
     case DirectiveType::kReportURI:
@@ -1739,6 +1762,8 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kObjectSrc;
   if (name == "plugin-types")
     return DirectiveType::kPluginTypes;
+  if (name == "prefetch-src")
+    return DirectiveType::kPrefetchSrc;
   if (name == "report-uri")
     return DirectiveType::kReportURI;
   if (name == "require-sri-for")
