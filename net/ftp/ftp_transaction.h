@@ -11,6 +11,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -42,7 +43,8 @@ class NET_EXPORT_PRIVATE FtpTransaction {
   // Profiling information for the request is saved to |net_log| if non-NULL.
   virtual int Start(const FtpRequestInfo* request_info,
                     const CompletionCallback& callback,
-                    const NetLogWithSource& net_log) = 0;
+                    const NetLogWithSource& net_log,
+                    const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Restarts the FTP transaction with authentication credentials.
   virtual int RestartWithAuth(const AuthCredentials& credentials,

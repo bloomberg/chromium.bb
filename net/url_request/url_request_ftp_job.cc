@@ -172,9 +172,8 @@ void URLRequestFtpJob::StartFtpTransaction() {
   if (ftp_transaction_) {
     rv = ftp_transaction_->Start(
         &ftp_request_info_,
-        base::Bind(&URLRequestFtpJob::OnStartCompleted,
-                   base::Unretained(this)),
-        request_->net_log());
+        base::Bind(&URLRequestFtpJob::OnStartCompleted, base::Unretained(this)),
+        request_->net_log(), request_->traffic_annotation());
     if (rv == ERR_IO_PENDING)
       return;
   } else {
