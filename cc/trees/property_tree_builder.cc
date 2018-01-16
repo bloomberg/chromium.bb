@@ -1057,6 +1057,16 @@ static inline OverscrollBehavior GetOverscrollBehavior(LayerImpl* layer) {
   return layer->test_properties()->overscroll_behavior;
 }
 
+static inline const base::Optional<SnapContainerData>& GetSnapContainerData(
+    Layer* layer) {
+  return layer->snap_container_data();
+}
+
+static inline const base::Optional<SnapContainerData>& GetSnapContainerData(
+    LayerImpl* layer) {
+  return layer->test_properties()->snap_container_data;
+}
+
 template <typename LayerType>
 void SetHasTransformNode(LayerType* layer, bool val) {
   layer->SetHasTransformNode(val);
@@ -1115,6 +1125,7 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     node.element_id = layer->element_id();
     node.transform_id = data_for_children->transform_tree_parent;
     node.overscroll_behavior = GetOverscrollBehavior(layer);
+    node.snap_container_data = GetSnapContainerData(layer);
 
     node_id = scroll_tree_.Insert(node, parent_id);
     data_for_children->scroll_tree_parent = node_id;

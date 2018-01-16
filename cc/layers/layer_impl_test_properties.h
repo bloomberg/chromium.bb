@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
@@ -64,6 +65,7 @@ struct CC_EXPORT LayerImplTestProperties {
   bool user_scrollable_horizontal = true;
   bool user_scrollable_vertical = true;
   OverscrollBehavior overscroll_behavior;
+  base::Optional<SnapContainerData> snap_container_data;
 };
 
 }  // namespace cc

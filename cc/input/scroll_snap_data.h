@@ -93,6 +93,14 @@ struct SnapAreaData {
   SnapAreaData(SnapAxis axis, gfx::ScrollOffset position, bool msnap)
       : snap_axis(axis), snap_position(position), must_snap(msnap) {}
 
+  bool operator==(const SnapAreaData& other) const {
+    return (other.snap_axis == snap_axis) &&
+           (other.snap_position == snap_position) &&
+           (other.must_snap == must_snap);
+  }
+
+  bool operator!=(const SnapAreaData& other) const { return !(*this == other); }
+
   // The axes along which the area has specified snap positions.
   SnapAxis snap_axis;
 
@@ -116,28 +124,58 @@ struct SnapAreaData {
 // happens.
 // This data structure describes the data needed for SnapCoordinator to perform
 // snapping in the snap container.
-struct CC_EXPORT SnapContainerData {
+class CC_EXPORT SnapContainerData {
+ public:
   SnapContainerData();
   explicit SnapContainerData(ScrollSnapType type);
   SnapContainerData(ScrollSnapType type, gfx::ScrollOffset max);
   SnapContainerData(const SnapContainerData& other);
+  SnapContainerData(SnapContainerData&& other);
   ~SnapContainerData();
 
-  void AddSnapAreaData(SnapAreaData snap_area_data);
+  SnapContainerData& operator=(const SnapContainerData& other);
+  SnapContainerData& operator=(SnapContainerData&& other);
 
+  bool operator==(const SnapContainerData& other) const {
+    return (other.scroll_snap_type_ == scroll_snap_type_) &&
+           (other.max_position_ == max_position_) &&
+           (other.snap_area_list_ == snap_area_list_);
+  }
+
+  bool operator!=(const SnapContainerData& other) const {
+    return !(*this == other);
+  }
+
+  gfx::ScrollOffset FindSnapPosition(const gfx::ScrollOffset& current_position,
+                                     bool should_snap_on_x,
+                                     bool should_snap_on_y) const;
+
+  void AddSnapAreaData(SnapAreaData snap_area_data);
+  size_t size() const { return snap_area_list_.size(); }
+  const SnapAreaData& at(int index) const { return snap_area_list_[index]; }
+
+  void set_scroll_snap_type(ScrollSnapType type) { scroll_snap_type_ = type; }
+  ScrollSnapType scroll_snap_type() const { return scroll_snap_type_; }
+
+  void set_max_position(gfx::ScrollOffset position) {
+    max_position_ = position;
+  }
+  gfx::ScrollOffset max_position() const { return max_position_; }
+
+ private:
   // Specifies whether a scroll container is a scroll snap container, how
   // strictly it snaps, and which axes are considered.
   // See https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-type for details.
-  ScrollSnapType scroll_snap_type;
+  ScrollSnapType scroll_snap_type_;
 
   // The maximal scroll position of the SnapContainer, in the same coordinate
   // with blink's scroll position.
-  gfx::ScrollOffset max_position;
+  gfx::ScrollOffset max_position_;
 
   // The SnapAreaData for the snap areas in this snap container. When a scroll
   // happens, we iterate through the snap_area_list to find the best snap
   // position.
-  std::vector<SnapAreaData> snap_area_list;
+  std::vector<SnapAreaData> snap_area_list_;
 };
 
 CC_EXPORT std::ostream& operator<<(std::ostream&, const SnapAreaData&);

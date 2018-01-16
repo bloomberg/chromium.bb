@@ -325,6 +325,25 @@ void Layer::SetOverscrollBehavior(const OverscrollBehavior& behavior) {
   SetNeedsCommit();
 }
 
+void Layer::SetSnapContainerData(base::Optional<SnapContainerData> data) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (snap_container_data() == data)
+    return;
+  inputs_.snap_container_data = std::move(data);
+  if (!layer_tree_host_)
+    return;
+
+  if (scrollable()) {
+    auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
+    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
+      scroll_node->snap_container_data = inputs_.snap_container_data;
+    else
+      SetPropertyTreesNeedRebuild();
+  }
+
+  SetNeedsCommit();
+}
+
 Layer* Layer::RootLayer() {
   Layer* layer = this;
   while (layer->parent())

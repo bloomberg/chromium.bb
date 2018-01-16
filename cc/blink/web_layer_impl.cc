@@ -515,4 +515,9 @@ void WebLayerImpl::SetOverscrollBehavior(
   layer_->SetOverscrollBehavior(static_cast<cc::OverscrollBehavior>(behavior));
 }
 
+void WebLayerImpl::SetSnapContainerData(
+    base::Optional<cc::SnapContainerData> data) {
+  layer_->SetSnapContainerData(std::move(data));
+}
+
 }  // namespace cc_blink

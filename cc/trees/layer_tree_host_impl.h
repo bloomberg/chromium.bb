@@ -194,7 +194,7 @@ class CC_EXPORT LayerTreeHostImpl
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
-  void ScrollEnd(ScrollState* scroll_state) override;
+  void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
   InputHandler::ScrollStatus FlingScrollBegin() override;
 
   void MouseDown() override;
@@ -763,6 +763,12 @@ class CC_EXPORT LayerTreeHostImpl
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
 
+  void ScrollEndImpl(ScrollState* scroll_state);
+
+  // Creates an animation curve and returns true if we need to update the
+  // scroll position to a snap point. Otherwise returns false.
+  bool SnapAtScrollEnd();
+
   void SetContextVisibility(bool is_visible);
   void ImageDecodeFinished(int request_id, bool decode_succeeded);
 
@@ -856,6 +862,11 @@ class CC_EXPORT LayerTreeHostImpl
   DecodedImageTracker decoded_image_tracker_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
+
+  // True iff some of the delta has been consumed for the current scroll
+  // sequence on the specific axis.
+  bool did_scroll_x_for_scroll_gesture_;
+  bool did_scroll_y_for_scroll_gesture_;
 
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_node_;

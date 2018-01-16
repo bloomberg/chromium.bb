@@ -51,6 +51,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/FramePaintTiming.h"
 #include "core/paint/LayerClipRecorder.h"
@@ -1234,6 +1235,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateChildrenTransform();
   UpdateScrollParent(ScrollParent());
   UpdateOverscrollBehavior();
+  UpdateSnapContainerData();
   RegisterScrollingLayers();
 
   UpdateCompositingReasons();
@@ -1250,6 +1252,19 @@ void CompositedLayerMapping::UpdateOverscrollBehavior() {
         static_cast<WebOverscrollBehavior::OverscrollBehaviorType>(
             behavior_y)));
   }
+}
+
+void CompositedLayerMapping::UpdateSnapContainerData() {
+  if (!GetLayoutObject().IsBox() || !scrolling_contents_layer_)
+    return;
+
+  SnapCoordinator* snap_coordinator =
+      GetLayoutObject().GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+
+  scrolling_contents_layer_->SetSnapContainerData(
+      snap_coordinator->GetSnapContainerData(ToLayoutBox(GetLayoutObject())));
 }
 
 void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(

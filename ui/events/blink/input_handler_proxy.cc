@@ -799,7 +799,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     // generate the ScrollEnd when it is done.
   } else {
     cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-    input_handler_->ScrollEnd(&scroll_state);
+    input_handler_->ScrollEnd(&scroll_state, true);
   }
 
   if (scroll_sequence_ignored_)
@@ -1191,7 +1191,7 @@ bool InputHandlerProxy::CancelCurrentFlingWithoutNotifyingClient() {
     cc::ScrollStateData scroll_state_data;
     scroll_state_data.is_ending = true;
     cc::ScrollState scroll_state(scroll_state_data);
-    input_handler_->ScrollEnd(&scroll_state);
+    input_handler_->ScrollEnd(&scroll_state, false);
     TRACE_EVENT_ASYNC_END0(
         "input",
         "InputHandlerProxy::HandleGestureFling::started",
