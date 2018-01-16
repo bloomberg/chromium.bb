@@ -72,9 +72,11 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
   return CreateStyleValue(value);
 }
 
-CSSStyleValueVector UnsupportedCSSValue(const CSSValue& value) {
+CSSStyleValueVector UnsupportedCSSValue(CSSPropertyID property_id,
+                                        const CSSValue& value) {
   CSSStyleValueVector style_value_vector;
-  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(value));
+  style_value_vector.push_back(
+      CSSUnsupportedStyleValue::Create(property_id, value));
   return style_value_vector;
 }
 
@@ -135,7 +137,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
   }
 
   if (!css_value.IsValueList()) {
-    return UnsupportedCSSValue(css_value);
+    return UnsupportedCSSValue(property_id, css_value);
   }
 
   // If it's a list, we can try it as a list valued property.
@@ -143,7 +145,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
   for (const CSSValue* inner_value : css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
     if (!style_value)
-      return UnsupportedCSSValue(css_value);
+      return UnsupportedCSSValue(property_id, css_value);
     style_value_vector.push_back(style_value);
   }
   return style_value_vector;
