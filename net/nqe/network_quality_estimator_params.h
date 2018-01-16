@@ -23,6 +23,10 @@ namespace net {
 NET_EXPORT extern const char kForceEffectiveConnectionType[];
 NET_EXPORT extern const char kEffectiveConnectionTypeSlow2GOnCellular[];
 
+// HTTP RTT thresholds for different effective connection types.
+NET_EXPORT extern const base::TimeDelta
+    kHttpRttEffectiveConnectionTypeThresholds[EFFECTIVE_CONNECTION_TYPE_LAST];
+
 // NetworkQualityEstimatorParams computes the configuration parameters for
 // the network quality estimator.
 class NET_EXPORT NetworkQualityEstimatorParams {
