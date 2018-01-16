@@ -26209,6 +26209,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="FirstRun.LaunchSource" enum="FirstRunLaunchSource">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Counts the number of times First Run experience was triggered by another
+    application launching Chrome. This metric measures the effectiveness of
+    Smart App Banner promotions on installation of Chrome.
+  </summary>
+</histogram>
+
+<histogram name="FirstRun.SignIn" enum="FirstRunSignInResult">
+  <owner>msarda@chromium.org</owner>
+  <summary>Result of the sign in flow during Mobile first run.</summary>
+</histogram>
+
 <histogram base="true" name="FirstUserAction.BackgroundTime.MainIntent"
     units="minutes">
   <owner>tedchoc@chromium.org</owner>
@@ -31282,6 +31296,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.Handoff.Origin" enum="IOSHandoffOrigin">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event is recorded each time a Handoff is received by Chrome on iOS. The
+    enumeration indicates the source of the Handoff.
+  </summary>
+</histogram>
+
 <histogram name="IOS.IPHBubbleDismissalReason" enum="BubbleDismissalReason">
   <owner>gchatz@chromium.org</owner>
   <summary>
@@ -31403,6 +31425,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="IOS.Spotlight.Action" enum="IOSSpotlightAction">
   <owner>olivierrobin@chromium.org</owner>
   <summary>The Spotlight Action pressed by the user.</summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.Availability" enum="IOSSpotlightAvailability">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Tracks the availability of the Spotlight indexation on the device. It is
+    logged once at each cold start. Note: Spotlight may be available on the
+    device but disabled by the user.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.BookmarksIndexingDuration" units="ms">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>Time spent in Spotlight initial indexation of bookmarks.</summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.BookmarksInitialIndexSize">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>Number of bookmarks indexed during initial indexation.</summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.Origin" enum="IOSSpotlightOrigin">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    This event is recorded each time a Chrome Spotlight entry is selected by the
+    user. The enumeration indicates the nature of the Spotlight entry.
+  </summary>
 </histogram>
 
 <histogram name="IPC.AttachmentBrokerPrivileged.BrokerAttachmentError"
@@ -38355,6 +38404,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MemoryWarning.OccurrencesPerSession">
+  <owner>justincohen@chromium.org</owner>
+  <summary>
+    The number of memory warnings during a given foreground session.
+  </summary>
+</histogram>
+
 <histogram name="MemoryWarning.ProtectedTabTimeSinceActive" units="ms">
   <obsolete>
     Deprecated as of 10/2016.
@@ -39763,6 +39819,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bradnelson@chromium.org</owner>
   <summary>
     Was the validation cache updated with a new validation result?
+  </summary>
+</histogram>
+
+<histogram name="NativeAppLauncher.InstallationDetected"
+    enum="BooleanInstalled">
+  <owner>jif@chromium.org</owner>
+  <summary>
+    The number of times that Chrome detected that a request to download and
+    install another Google iOS app completed successfully.
   </summary>
 </histogram>
 
@@ -66412,6 +66477,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The status when loading PersistedLogs from Prefs.</summary>
 </histogram>
 
+<histogram name="PrefService.ReadError" enum="PrefServiceReadError">
+  <owner>csharp@chromium.org</owner>
+  <summary>
+    Enumeration of errors that happened when reading Preferences files.
+  </summary>
+</histogram>
+
 <histogram name="PreloadScanner.Counts" units="preloads">
   <obsolete>
     Deprecated 5/25/2016 in favor of PreloadScanner.Counts2
@@ -84616,6 +84688,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.ColdStartWithExternalURLTime" units="ms">
+  <owner>jif@chromium.org</owner>
+  <summary>
+    The duration of all initializations in a cold start triggered by an external
+    URL.
+  </summary>
+</histogram>
+
+<histogram name="Startup.ColdStartWithoutExternalURLTime" units="ms">
+  <owner>jif@chromium.org</owner>
+  <summary>
+    The duration of all initializations in a cold start not triggered by an
+    external URL.
+  </summary>
+</histogram>
+
 <histogram name="Startup.CreateFirstProfile" units="ms">
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -88431,6 +88519,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.ExternalApplicationOpened" enum="ExternalLauncherOption">
+  <owner>mrefaat@chromium.org</owner>
+  <summary>
+    Used on External App launcher Prompt to determine if the user clicked open
+    or cancel.
+  </summary>
+</histogram>
+
 <histogram name="Tab.FormActivityCountEvictedHistogram">
   <obsolete>
     Deprecated as of 10/2016.
@@ -88440,6 +88536,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     A count of form activity (e.g. fields selected, characters typed) in a tab.
     Recorded only for tabs that are evicted due to memory pressure and then
     selected again.
+  </summary>
+</histogram>
+
+<histogram name="Tab.HorizontalSizeClassUsed" enum="iOSSizeClassForReporting">
+  <owner>lpromero@chromium.org</owner>
+  <summary>
+    Used on iOS 9+ iPad to report the usage of Compact or Regular horizontal
+    size class. This is logged at startup and on each size class change.
   </summary>
 </histogram>
 
@@ -88513,6 +88617,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     must have opened a popup (as classified by the popup blocker) before the
     navigation.
   </summary>
+</histogram>
+
+<histogram name="Tab.PageLoadInHorizontalSizeClass"
+    enum="iOSSizeClassForReporting">
+  <owner>lpromero@chromium.org</owner>
+  <summary>
+    Used on iOS 9+ iPad to report the usage of Compact or Regular horizontal
+    size class. Recorded on page load.
+  </summary>
+</histogram>
+
+<histogram name="Tab.PageLoadInPortrait" enum="DeviceOrientation">
+  <owner>jif@chromium.org</owner>
+  <summary>The orientation of the device. Recorded on page load.</summary>
 </histogram>
 
 <histogram name="Tab.PerceivedRestoreTime" units="ms">
@@ -95961,6 +96079,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebController.WKWebViewHasCertForSecureConnection"
+    enum="BooleanHasCert">
+  <owner>eugenebut@google.com</owner>
+  <summary>
+    Whether or not WKWebView has provided a valid -certificateChain when loaded
+    a page over a secure connection.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.Animation.CSSProperties" enum="MappedCSSProperties">
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -97359,6 +97486,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time it took for the web history to reply. Recorded when the web history API
     call triggered by visiting chrome://history receives the data, measuring how
     much time it took for the server to reply.
+  </summary>
+</histogram>
+
+<histogram name="WebP.DecodedImageFormat" enum="WebpDecodedFormat">
+  <owner>droger@chromium.org</owner>
+  <summary>
+    Histogram for the format of decoded WebP images on iOS, as Chrome re-encodes
+    WebP images on that platform.
   </summary>
 </histogram>
 
