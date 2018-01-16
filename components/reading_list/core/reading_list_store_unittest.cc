@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -91,14 +90,14 @@ class ReadingListStoreTest : public testing::Test,
   ReadingListStoreTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     ClearState();
-    reading_list_store_ = base::MakeUnique<ReadingListStore>(
+    reading_list_store_ = std::make_unique<ReadingListStore>(
         base::Bind(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
                    base::Passed(&store_)),
         base::Bind(&ReadingListStoreTest::CreateModelTypeChangeProcessor,
                    base::Unretained(this)));
-    auto clock = base::MakeUnique<base::SimpleTestClock>();
+    auto clock = std::make_unique<base::SimpleTestClock>();
     clock_ = clock.get();
-    model_ = base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr,
+    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr,
                                                     std::move(clock));
     reading_list_store_->SetReadingListModel(model_.get(), this, clock_);
 
@@ -108,7 +107,7 @@ class ReadingListStoreTest : public testing::Test,
   std::unique_ptr<syncer::ModelTypeChangeProcessor>
   CreateModelTypeChangeProcessor(syncer::ModelType type,
                                  syncer::ModelTypeSyncBridge* service) {
-    auto processor = base::MakeUnique<TestModelTypeChangeProcessor>();
+    auto processor = std::make_unique<TestModelTypeChangeProcessor>();
     processor->SetObserver(this);
     return std::move(processor);
   }
