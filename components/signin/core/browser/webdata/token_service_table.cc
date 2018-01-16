@@ -68,7 +68,7 @@ bool TokenServiceTable::RemoveAllTokens() {
   sql::Statement s(db_->GetUniqueStatement("DELETE FROM token_service"));
 
   bool result = s.Run();
-  LOG_IF(ERROR, result) << "Failed to remove all tokens";
+  LOG_IF(ERROR, !result) << "Failed to remove all tokens";
   return result;
 }
 
@@ -78,7 +78,7 @@ bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
   s.BindString(0, service);
 
   bool result = s.Run();
-  LOG_IF(ERROR, result) << "Failed to remove token for " << service;
+  LOG_IF(ERROR, !result) << "Failed to remove token for " << service;
   return result;
 }
 
@@ -101,7 +101,7 @@ bool TokenServiceTable::SetTokenForService(const std::string& service,
              static_cast<int>(encrypted_token.length()));
 
   bool result = s.Run();
-  LOG_IF(ERROR, result) << "Failed to insert or replace token for " << service;
+  LOG_IF(ERROR, !result) << "Failed to insert or replace token for " << service;
   return result;
 }
 
