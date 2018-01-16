@@ -17,10 +17,13 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
     Profile* profile,
-    GURL target)
+    GURL target,
+    PaymentHandlerOpenWindowCallback first_navigation_complete_callback)
     : PaymentRequestSheetController(spec, state, dialog),
       profile_(profile),
-      target_(target) {}
+      target_(target),
+      first_navigation_complete_callback_(
+          std::move(first_navigation_complete_callback)) {}
 
 PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
 
@@ -38,6 +41,16 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // TODO(anthonyvd): Size to the actual available size in the dialog.
   web_view->SetPreferredSize(gfx::Size(100, 300));
   content_view->AddChildView(web_view.release());
+}
+
+void PaymentHandlerWebFlowViewController::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // TODO(crbug.com/802261): Investigate failure cases (for example, what
+  // happens when the first navigation ends on a 404?)
+  if (first_navigation_complete_callback_) {
+    std::move(first_navigation_complete_callback_).Run(true);
+    first_navigation_complete_callback_ = base::OnceCallback<void(bool)>();
+  }
 }
 
 }  // namespace payments

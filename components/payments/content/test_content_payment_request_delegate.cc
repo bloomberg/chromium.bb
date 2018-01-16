@@ -96,7 +96,8 @@ PrefService* TestContentPaymentRequestDelegate::GetPrefService() {
 }
 
 void TestContentPaymentRequestDelegate::EmbedPaymentHandlerWindow(
-    const GURL& url) {}
+    const GURL& url,
+    PaymentHandlerOpenWindowCallback callback) {}
 
 autofill::TestAddressNormalizer*
 TestContentPaymentRequestDelegate::test_address_normalizer() {

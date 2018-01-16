@@ -32,9 +32,10 @@ void PaymentRequestDisplayManager::DisplayHandle::Show(
 }
 
 void PaymentRequestDisplayManager::DisplayHandle::DisplayPaymentHandlerWindow(
-    const GURL& url) {
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(delegate_);
-  delegate_->EmbedPaymentHandlerWindow(url);
+  delegate_->EmbedPaymentHandlerWindow(url, std::move(callback));
 }
 
 PaymentRequestDisplayManager::PaymentRequestDisplayManager()
@@ -56,13 +57,11 @@ PaymentRequestDisplayManager::TryShow(ContentPaymentRequestDelegate* delegate) {
 void PaymentRequestDisplayManager::ShowPaymentHandlerWindow(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  bool success = false;
   if (current_handle_) {
-    current_handle_->DisplayPaymentHandlerWindow(url);
-    success = true;
+    current_handle_->DisplayPaymentHandlerWindow(url, std::move(callback));
+  } else {
+    std::move(callback).Run(false);
   }
-  std::move(callback).Run(
-      success);  // TODO(anthonyvd): Run this after the page has loaded.
 }
 
 }  // namespace payments

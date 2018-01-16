@@ -6,6 +6,7 @@
 #define COMPONENTS_PAYMENTS_CONTENT_TEST_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 
 #include "components/payments/content/content_payment_request_delegate.h"
+#include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/core/test_payment_request_delegate.h"
 
 namespace autofill {
@@ -43,7 +44,9 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
-  void EmbedPaymentHandlerWindow(const GURL& url) override;
+  void EmbedPaymentHandlerWindow(
+      const GURL& url,
+      PaymentHandlerOpenWindowCallback callback) override;
 
   autofill::TestAddressNormalizer* test_address_normalizer();
   void DelayFullCardRequestCompletion();
