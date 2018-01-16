@@ -828,10 +828,14 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // We do not measure movement as the delta from cursor to center because
   // we may receive more mouse movement events before our warp has taken
   // effect.
-  event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x -
-                                        global_mouse_position_.x());
-  event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y -
-                                        global_mouse_position_.y());
+  // TODO(crbug.com/802067): We store event coordinates as pointF but
+  // movement_x/y are integer. In order not to lose fractional part, we need
+  // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
+  // Remove the floor here when movement_x/y is changed to double.
+  event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
+                      gfx::ToFlooredInt(global_mouse_position_.x());
+  event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
+                      gfx::ToFlooredInt(global_mouse_position_.y());
 
   global_mouse_position_.SetPoint(event->PositionInScreen().x,
                                   event->PositionInScreen().y);

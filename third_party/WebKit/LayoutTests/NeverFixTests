@@ -940,7 +940,6 @@ external/wpt/payment-request/updateWith-method-pmi-handling-manual.https.html [ 
 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ WontFix ]
 external/wpt/payment-request/user-accepts-payment-request-algo-manual.https.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_click_during_capture-manual.html [ WontFix ]
-external/wpt/pointerlock/movementX_Y_basic-manual.html [ WontFix ]
 external/wpt/pointerlock/movementX_Y_no-jumps-manual.html [ WontFix ]
 external/wpt/pointerlock/pointerlock_basic-manual.html [ WontFix ]
 external/wpt/pointerlock/pointerlock_fullscreen-manual.html [ WontFix ]
