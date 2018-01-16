@@ -49,10 +49,8 @@ class Speedometer2Measurement(legacy_page_test.LegacyPageTest):
         var iterationCount = {{ count }};
         var benchmarkClient = {};
         var suiteValues = [];
-        var totalValues = [];
         benchmarkClient.didRunSuites = function(measuredValues) {
           suiteValues.push(measuredValues);
-          totalValues.push(measuredValues.total);
         };
         benchmarkClient.didFinishLastIteration = function () {
           testDone = true;
@@ -64,7 +62,11 @@ class Speedometer2Measurement(legacy_page_test.LegacyPageTest):
     tab.WaitForJavaScriptCondition('testDone', timeout=600)
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
         page, 'Total', 'ms',
-        tab.EvaluateJavaScript('totalValues'),
+        tab.EvaluateJavaScript('suiteValues.map(each => each.total)'),
+        important=True))
+    results.AddValue(list_of_scalar_values.ListOfScalarValues(
+        page, 'RunsPerMinute', 'score',
+        tab.EvaluateJavaScript('suiteValues.map(each => each.score)'),
         important=True))
 
     # Extract the timings for each suite
