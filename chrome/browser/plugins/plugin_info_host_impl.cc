@@ -73,23 +73,24 @@ using content::WebPluginInfo;
 
 namespace {
 
-class ShutdownNotifierFactory
+class PluginInfoHostImplShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
-  static ShutdownNotifierFactory* GetInstance() {
-    return base::Singleton<ShutdownNotifierFactory>::get();
+  static PluginInfoHostImplShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<PluginInfoHostImplShutdownNotifierFactory>::get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+  friend struct base::DefaultSingletonTraits<
+      PluginInfoHostImplShutdownNotifierFactory>;
 
-  ShutdownNotifierFactory()
+  PluginInfoHostImplShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "PluginInfoHostImpl") {}
 
-  ~ShutdownNotifierFactory() override {}
+  ~PluginInfoHostImplShutdownNotifierFactory() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+  DISALLOW_COPY_AND_ASSIGN(PluginInfoHostImplShutdownNotifierFactory);
 };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -160,9 +161,10 @@ PluginInfoHostImpl::PluginInfoHostImpl(int render_process_id, Profile* profile)
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this) {
   shutdown_notifier_ =
-      ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
-          base::Bind(&PluginInfoHostImpl::ShutdownOnUIThread,
-                     base::Unretained(this)));
+      PluginInfoHostImplShutdownNotifierFactory::GetInstance()
+          ->Get(profile)
+          ->Subscribe(base::Bind(&PluginInfoHostImpl::ShutdownOnUIThread,
+                                 base::Unretained(this)));
 }
 
 void PluginInfoHostImpl::ShutdownOnUIThread() {
