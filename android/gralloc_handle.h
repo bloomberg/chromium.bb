@@ -27,6 +27,7 @@
 #define __ANDROID_GRALLOC_HANDLE_H__
 
 #include <cutils/native_handle.h>
+#include <stdint.h>
 
 /* support users of drm_gralloc/gbm_gralloc */
 #define gralloc_gbm_handle_t gralloc_handle_t
@@ -49,7 +50,9 @@ struct gralloc_handle_t {
 	 */
 	int prime_fd;
 
+	/* api variables */
 	int magic; /* differentiate between allocator impls */
+	const uint32_t version; /* api version */
 
 	int width; /* width of buffer in pixels */
 	int height; /* height of buffer in pixels */
@@ -67,6 +70,7 @@ struct gralloc_handle_t {
 	} __attribute__((aligned(8)));
 };
 
+#define GRALLOC_HANDLE_VERSION 1
 #define GRALLOC_HANDLE_MAGIC 0x60585350
 #define GRALLOC_HANDLE_NUM_FDS 1
 #define GRALLOC_HANDLE_NUM_INTS (	\
@@ -79,7 +83,9 @@ struct gralloc_handle_t {
 static struct gralloc_handle_t gralloc_handle_create(int width, int height,
                                                      int format, int usage)
 {
-	struct gralloc_handle_t handle = { .magic = GRALLOC_HANDLE_MAGIC };
+	struct alloc_handle_t handle = {
+		.magic = GRALLOC_HANDLE_MAGIC,
+		.version = GRALLOC_HANDLE_VERSION };
 
 	native_handle_t *nhandle = native_handle_create(GRALLOC_HANDLE_NUM_FDS,
 		                                            GRALLOC_HANDLE_NUM_INTS);
