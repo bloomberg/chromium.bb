@@ -35,9 +35,12 @@ class ConnectionFilter;
 class CONTENT_EXPORT ServiceManagerConnection {
  public:
   using ServiceRequestHandler =
-      base::Callback<void(service_manager::mojom::ServiceRequest)>;
+      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>;
+  using ServiceRequestHandlerWithPID =
+      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest,
+                                   service_manager::mojom::PIDReceiverPtr)>;
   using Factory =
-      base::Callback<std::unique_ptr<ServiceManagerConnection>(void)>;
+      base::RepeatingCallback<std::unique_ptr<ServiceManagerConnection>(void)>;
 
   // Stores an instance of |connection| in TLS for the current process. Must be
   // called on the thread the connection was created on.
@@ -116,6 +119,12 @@ class CONTENT_EXPORT ServiceManagerConnection {
   virtual void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) = 0;
+
+  // Similar to above but for registering handlers which want to communicate
+  // additional information the process hosting the new service.
+  virtual void AddServiceRequestHandlerWithPID(
+      const std::string& name,
+      const ServiceRequestHandlerWithPID& handler) = 0;
 };
 
 }  // namespace content

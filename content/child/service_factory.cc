@@ -18,7 +18,8 @@ ServiceFactory::~ServiceFactory() {}
 
 void ServiceFactory::CreateService(
     service_manager::mojom::ServiceRequest request,
-    const std::string& name) {
+    const std::string& name,
+    service_manager::mojom::PIDReceiverPtr pid_receiver) {
   // Only register services on first run.
   if (!has_registered_services_) {
     DCHECK(services_.empty());

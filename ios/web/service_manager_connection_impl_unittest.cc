@@ -57,7 +57,10 @@ TEST_F(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
                            mojo::MakeRequest(&factory).PassMessagePipe(),
                            base::Bind(&base::DoNothing));
   service_manager::mojom::ServicePtr created_service;
-  factory->CreateService(mojo::MakeRequest(&created_service), kTestServiceName);
+  service_manager::mojom::PIDReceiverPtr pid_receiver;
+  mojo::MakeRequest(&pid_receiver);
+  factory->CreateService(mojo::MakeRequest(&created_service), kTestServiceName,
+                         std::move(pid_receiver));
   event.Wait();
 }
 

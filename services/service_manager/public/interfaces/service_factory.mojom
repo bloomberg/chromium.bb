@@ -4,10 +4,17 @@
 
 module service_manager.mojom;
 
+import "services/service_manager/public/interfaces/connector.mojom";
 import "services/service_manager/public/interfaces/service.mojom";
 
 // Implemented by a package containing multiple services identified by
 // unique names.
 interface ServiceFactory {
-  CreateService(Service& service, string name);
+  // Sent by the Service Manager to delegate the creation of a new instance of
+  // service |name|. |service| is the Service pipe to which the new instance
+  // should bind.
+  //
+  // The ServiceFactory implementation should use |pid_receiver| to communicate
+  // the PID of the process in which the new service instance is running.
+  CreateService(Service& service, string name, PIDReceiver pid_receiver);
 };

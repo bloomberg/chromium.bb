@@ -63,8 +63,10 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override {
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     if (name == device::mojom::kServiceName) {
 #if defined(OS_ANDROID)
       device_service_context_.reset(new service_manager::ServiceContext(

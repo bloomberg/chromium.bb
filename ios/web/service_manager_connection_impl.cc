@@ -212,8 +212,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // service_manager::mojom::ServiceFactory:
 
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override {
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto it = request_handlers_.find(name);
     if (it == request_handlers_.end()) {

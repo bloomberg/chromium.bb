@@ -33,8 +33,10 @@ class ServiceFactory : public service_manager::mojom::ServiceFactory {
   virtual void OnServiceQuit() {}
 
   // service_manager::mojom::ServiceFactory:
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override;
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override;
 
  private:
   // Called if CreateService fails to find a registered service.

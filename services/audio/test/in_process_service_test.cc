@@ -92,8 +92,10 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   }
 
   // service_manager::mojom::ServiceFactory:
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override {
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     if (name == mojom::kServiceName)
       audio_thread_context_->CreateServiceOnAudioThread(std::move(request));
   }

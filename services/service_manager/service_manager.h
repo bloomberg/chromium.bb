@@ -138,7 +138,8 @@ class ServiceManager {
 
   void CreateServiceWithFactory(const Identity& service_factory,
                                 const std::string& name,
-                                mojom::ServiceRequest request);
+                                mojom::ServiceRequest request,
+                                mojom::PIDReceiverPtr pid_receiver);
   // Returns a running ServiceFactory for |service_factory_identity|.
   // If there is not one running one is started for |source_identity|.
   mojom::ServiceFactory* GetServiceFactory(

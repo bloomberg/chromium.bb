@@ -115,8 +115,10 @@ class Package : public service_manager::ForwardingService,
   }
 
   // service_manager::mojom::ServiceFactory:
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override {
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     ++service_manager_connection_refcount_;
     int id = next_id_++;
     std::unique_ptr<service_manager::ServiceContext> context =
