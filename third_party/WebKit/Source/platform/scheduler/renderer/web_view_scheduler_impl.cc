@@ -193,6 +193,10 @@ void WebViewSchedulerImpl::GrantVirtualTimeBudget(
     base::OnceClosure budget_exhausted_callback) {
   renderer_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
       FROM_HERE, std::move(budget_exhausted_callback), budget);
+  // This can shift time forwards if there's a pending MaybeAdvanceVirtualTime,
+  // so it's important this is called second.
+  renderer_scheduler_->GetVirtualTimeDomain()->SetVirtualTimeFence(
+      renderer_scheduler_->GetVirtualTimeDomain()->Now() + budget);
 }
 
 void WebViewSchedulerImpl::AddVirtualTimeObserver(

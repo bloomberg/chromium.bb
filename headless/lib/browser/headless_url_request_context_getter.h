@@ -52,6 +52,8 @@ class HeadlessURLRequestContextGetter
   // HeadlessBrowserContext::Observer implementation:
   void OnHeadlessBrowserContextDestruct() override;
 
+  void NotifyContextShuttingDown();
+
  protected:
   ~HeadlessURLRequestContextGetter() override;
 
@@ -74,6 +76,8 @@ class HeadlessURLRequestContextGetter
 
   base::Lock lock_;  // Protects |headless_browser_context_|.
   HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.
+
+  bool shut_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessURLRequestContextGetter);
 };

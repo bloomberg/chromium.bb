@@ -6,6 +6,7 @@
 #define HEADLESS_PUBLIC_UTIL_MANAGED_DISPATCH_URL_REQUEST_JOB_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "headless/public/headless_export.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
@@ -35,6 +36,10 @@ class HEADLESS_EXPORT ManagedDispatchURLRequestJob : public net::URLRequestJob {
   // Virtual for FakeManagedDispatchURLRequestJob.
   virtual void OnStartError(net::Error error);
 
+  base::WeakPtr<ManagedDispatchURLRequestJob> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   // net::URLRequestJob implementation:
   void Kill() override;
@@ -53,6 +58,8 @@ class HEADLESS_EXPORT ManagedDispatchURLRequestJob : public net::URLRequestJob {
   // DispatchStartError.
   using URLRequestJob::NotifyHeadersComplete;
   using URLRequestJob::NotifyStartError;
+
+  base::WeakPtrFactory<ManagedDispatchURLRequestJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedDispatchURLRequestJob);
 };

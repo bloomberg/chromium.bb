@@ -13,7 +13,8 @@ ManagedDispatchURLRequestJob::ManagedDispatchURLRequestJob(
     net::NetworkDelegate* network_delegate,
     URLRequestDispatcher* url_request_dispatcher)
     : net::URLRequestJob(request, network_delegate),
-      url_request_dispatcher_(url_request_dispatcher) {
+      url_request_dispatcher_(url_request_dispatcher),
+      weak_ptr_factory_(this) {
   url_request_dispatcher_->JobCreated(this);
 }
 

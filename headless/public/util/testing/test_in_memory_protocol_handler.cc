@@ -32,7 +32,9 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
     }
 
     std::string devtools_frame_id = request->GetDevToolsFrameId();
-    DCHECK_NE(devtools_frame_id, "") << " For url " << url;
+    // Note |devtools_frame_id| can sometimes be empty if called during context
+    // shutdown. This isn't a big deal because code should avoid performing net
+    // operations during shutdown.
     protocol_handler_->methods_requested_.push_back(method);
     protocol_handler_->RegisterUrl(url.spec(), devtools_frame_id);
 

@@ -1770,6 +1770,10 @@ base::TimeTicks RendererSchedulerImpl::EnableVirtualTime() {
   return main_thread_only().initial_virtual_time;
 }
 
+bool RendererSchedulerImpl::IsVirualTimeEnabled() const {
+  return main_thread_only().use_virtual_time;
+}
+
 void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
   if (!main_thread_only().use_virtual_time)
     return;
@@ -1836,9 +1840,13 @@ bool RendererSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return !main_thread_only().virtual_time_stopped;
 }
 
-void RendererSchedulerImpl::IncrementVirtualTimePauseCount() {
+base::TimeTicks RendererSchedulerImpl::IncrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count++;
   ApplyVirtualTimePolicy();
+
+  if (virtual_time_domain_)
+    return virtual_time_domain_->Now();
+  return tick_clock()->NowTicks();
 }
 
 void RendererSchedulerImpl::DecrementVirtualTimePauseCount() {
@@ -1847,22 +1855,15 @@ void RendererSchedulerImpl::DecrementVirtualTimePauseCount() {
   ApplyVirtualTimePolicy();
 }
 
+void RendererSchedulerImpl::MaybeAdvanceVirtualTime(
+    base::TimeTicks new_virtual_time) {
+  if (virtual_time_domain_)
+    virtual_time_domain_->MaybeAdvanceVirtualTime(new_virtual_time);
+}
+
 void RendererSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   main_thread_only().virtual_time_policy = policy;
-
-  switch (policy) {
-    case VirtualTimePolicy::kAdvance:
-      SetVirtualTimeStopped(false);
-      break;
-
-    case VirtualTimePolicy::kPause:
-      SetVirtualTimeStopped(true);
-      break;
-
-    case VirtualTimePolicy::kDeterministicLoading:
-      ApplyVirtualTimePolicy();
-      break;
-  }
+  ApplyVirtualTimePolicy();
 }
 
 void RendererSchedulerImpl::AddVirtualTimeObserver(
@@ -1876,8 +1877,6 @@ void RendererSchedulerImpl::RemoveVirtualTimeObserver(
 }
 
 void RendererSchedulerImpl::OnVirtualTimeAdvanced() {
-  DCHECK(!main_thread_only().virtual_time_stopped);
-
   for (auto& observer : main_thread_only().virtual_time_observers) {
     observer.OnVirtualTimeAdvanced(virtual_time_domain_->Now() -
                                    main_thread_only().initial_virtual_time);
@@ -1892,12 +1891,15 @@ void RendererSchedulerImpl::ApplyVirtualTimePolicy() {
             main_thread_only().nested_runloop
                 ? 0
                 : main_thread_only().max_virtual_time_task_starvation_count);
+        virtual_time_domain_->SetVirtualTimeFence(base::TimeTicks());
       }
       SetVirtualTimeStopped(false);
       break;
     case VirtualTimePolicy::kPause:
-      if (virtual_time_domain_)
+      if (virtual_time_domain_) {
         virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
+        virtual_time_domain_->SetVirtualTimeFence(virtual_time_domain_->Now());
+      }
       SetVirtualTimeStopped(true);
       break;
     case VirtualTimePolicy::kDeterministicLoading:

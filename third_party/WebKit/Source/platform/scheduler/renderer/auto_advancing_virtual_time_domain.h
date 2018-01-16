@@ -53,11 +53,18 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   // TaskQueueManager runs out of immediate work to do.
   void SetCanAdvanceVirtualTime(bool can_advance_virtual_time);
 
+  // If non-null, virtual time may not advance past |virtual_time_fence|.
+  void SetVirtualTimeFence(base::TimeTicks virtual_time_fence);
+
   // The maximum number amount of delayed task starvation we will allow.
   // NB a value of 0 allows infinite starvation. A reasonable value for this in
   // practice is around 1000 tasks, which should only affect rendering of the
   // heaviest pages.
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
+
+  // Updates to min(NextDelayedTaskTime, |new_virtual_time|) if thats ahead of
+  // the current virtual time.  Returns true if time was advanced.
+  bool MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
 
   // base::PendingTask implementation:
   void WillProcessTask(const base::PendingTask& pending_task) override;
@@ -77,6 +84,14 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   bool can_advance_virtual_time_;
   Observer* observer_;       // NOT OWNED
   SchedulerHelper* helper_;  // NOT OWNED
+
+  // VirtualTime is usually doled out in 100ms intervals using fences and this
+  // variable let us honor a request to MaybeAdvanceVirtualTime that straddles
+  // one of these boundaries.
+  base::TimeTicks requested_next_virtual_time_;
+
+  // Upper limit on how far virtual time is allowed to advance.
+  base::TimeTicks virtual_time_fence_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoAdvancingVirtualTimeDomain);
 };
