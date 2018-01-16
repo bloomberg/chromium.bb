@@ -167,7 +167,7 @@ static Suites_Active_Status suites_active_stat[] = {
 		},
 		{
 			.pName = VM_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_vm_tests_enable,
 		},
 };
 

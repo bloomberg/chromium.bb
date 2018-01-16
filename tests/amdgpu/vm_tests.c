@@ -25,6 +25,7 @@
 
 #include "amdgpu_test.h"
 #include "amdgpu_drm.h"
+#include "amdgpu_internal.h"
 
 static  amdgpu_device_handle device_handle;
 static  uint32_t  major_version;
@@ -32,6 +33,25 @@ static  uint32_t  minor_version;
 
 
 static void amdgpu_vmid_reserve_test(void);
+
+CU_BOOL suite_vm_tests_enable(void)
+{
+    CU_BOOL enable = CU_TRUE;
+
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+				     &minor_version, &device_handle))
+		return CU_FALSE;
+
+	if (device_handle->info.family_id == AMDGPU_FAMILY_SI) {
+		printf("\n\nCurrently hangs the CP on this ASIC, VM suite disabled\n");
+		enable = CU_FALSE;
+	}
+
+	if (amdgpu_device_deinitialize(device_handle))
+		return CU_FALSE;
+
+	return enable;
+}
 
 int suite_vm_tests_init(void)
 {

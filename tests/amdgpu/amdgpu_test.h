@@ -185,6 +185,11 @@ int suite_vm_tests_init();
 int suite_vm_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_vm_tests_enable(void);
+
+/**
  * Tests in vm test suite
  */
 extern CU_TestInfo vm_tests[];
