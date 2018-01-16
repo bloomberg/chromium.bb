@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -187,6 +188,17 @@ UI_BASE_X_EXPORT void SetWindowClassHint(XDisplay* display,
 UI_BASE_X_EXPORT void SetWindowRole(XDisplay* display,
                                     XID window,
                                     const std::string& role);
+
+// Sends a message to the x11 window manager, enabling or disabling the
+// states |state1| and |state2|.
+UI_BASE_X_EXPORT void SetWMSpecState(XID window,
+                                     bool enabled,
+                                     XAtom state1,
+                                     XAtom state2);
+
+// Checks if the window manager has set a specific state.
+UI_BASE_X_EXPORT bool HasWMSpecProperty(const base::flat_set<XAtom>& properties,
+                                        XAtom atom);
 
 // Determine whether we should default to native decorations or the custom
 // frame based on the currently-running window manager.

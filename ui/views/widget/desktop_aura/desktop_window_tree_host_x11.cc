@@ -77,10 +77,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 
 namespace {
 
-// Constants that are part of EWMH.
-const int k_NET_WM_STATE_ADD = 1;
-const int k_NET_WM_STATE_REMOVE = 0;
-
 // Special value of the _NET_WM_DESKTOP property which indicates that the window
 // should appear on all desktops.
 const int kAllDesktops = 0xFFFFFFFF;
@@ -805,9 +801,11 @@ bool DesktopWindowTreeHostX11::IsActive() const {
 }
 
 void DesktopWindowTreeHostX11::Maximize() {
-  if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN")) {
+  if (ui::HasWMSpecProperty(window_properties_,
+                            gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"))) {
     // Unfullscreen the window if it is fullscreen.
-    SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);
+    ui::SetWMSpecState(xwindow_, false,
+                       gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);
 
     // Resize the window so that it does not have the same size as a monitor.
     // (Otherwise, some window managers immediately put the window back in
@@ -827,8 +825,9 @@ void DesktopWindowTreeHostX11::Maximize() {
   // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
   restored_bounds_in_pixels_ = bounds_in_pixels_;
 
-  SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
-                 gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
+  ui::SetWMSpecState(xwindow_, true,
+                     gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
+                     gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
   if (IsMinimized())
     ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
@@ -840,19 +839,23 @@ void DesktopWindowTreeHostX11::Minimize() {
 
 void DesktopWindowTreeHostX11::Restore() {
   should_maximize_after_map_ = false;
-  SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
-                 gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
+  ui::SetWMSpecState(xwindow_, false,
+                     gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
+                     gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
   if (IsMinimized())
     ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
 
 bool DesktopWindowTreeHostX11::IsMaximized() const {
-  return (HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_VERT") &&
-          HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_HORZ"));
+  return (ui::HasWMSpecProperty(window_properties_,
+                                gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")) &&
+          ui::HasWMSpecProperty(window_properties_,
+                                gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ")));
 }
 
 bool DesktopWindowTreeHostX11::IsMinimized() const {
-  return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
+  return ui::HasWMSpecProperty(window_properties_,
+                               gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
 }
 
 bool DesktopWindowTreeHostX11::HasCapture() const {
@@ -861,7 +864,8 @@ bool DesktopWindowTreeHostX11::HasCapture() const {
 
 void DesktopWindowTreeHostX11::SetAlwaysOnTop(bool always_on_top) {
   is_always_on_top_ = always_on_top;
-  SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
+  ui::SetWMSpecState(xwindow_, always_on_top,
+                     gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
 }
 
 bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
@@ -869,8 +873,8 @@ bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
 }
 
 void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
-  SetWMSpecState(always_visible, gfx::GetAtom("_NET_WM_STATE_STICKY"),
-                 x11::None);
+  ui::SetWMSpecState(xwindow_, always_visible,
+                     gfx::GetAtom("_NET_WM_STATE_STICKY"), x11::None);
 
   int new_desktop = 0;
   if (always_visible) {
@@ -1007,8 +1011,8 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
 
   if (unmaximize_and_remaximize)
     Restore();
-  SetWMSpecState(fullscreen, gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"),
-                 x11::None);
+  ui::SetWMSpecState(xwindow_, fullscreen,
+                     gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);
   if (unmaximize_and_remaximize)
     Maximize();
 
@@ -1028,7 +1032,9 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   OnHostMovedInPixels(bounds_in_pixels_.origin());
   OnHostResizedInPixels(bounds_in_pixels_.size());
 
-  if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN") == fullscreen) {
+  if (ui::HasWMSpecProperty(window_properties_,
+                            gfx::GetAtom("_NET_WM_STATE_FULLSCREEN")) ==
+      fullscreen) {
     Relayout();
     ResetWindowRegion();
   }
@@ -1628,7 +1634,8 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // handle window manager initiated fullscreen. In particular, Chrome needs to
   // do preprocessing before the x window's fullscreen state is toggled.
 
-  is_always_on_top_ = HasWMSpecProperty("_NET_WM_STATE_ABOVE");
+  is_always_on_top_ = ui::HasWMSpecProperty(
+      window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
   if (was_maximized != is_maximized)
     OnMaximizedStateChanged();
@@ -1704,31 +1711,6 @@ void DesktopWindowTreeHostX11::UpdateWMUserTime(
                     reinterpret_cast<const unsigned char*>(&wm_user_time_ms),
                     1);
   }
-}
-
-void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
-                                              ::Atom state1,
-                                              ::Atom state2) {
-  XEvent xclient;
-  memset(&xclient, 0, sizeof(xclient));
-  xclient.type = ClientMessage;
-  xclient.xclient.window = xwindow_;
-  xclient.xclient.message_type = gfx::GetAtom("_NET_WM_STATE");
-  xclient.xclient.format = 32;
-  xclient.xclient.data.l[0] =
-      enabled ? k_NET_WM_STATE_ADD : k_NET_WM_STATE_REMOVE;
-  xclient.xclient.data.l[1] = state1;
-  xclient.xclient.data.l[2] = state2;
-  xclient.xclient.data.l[3] = 1;
-  xclient.xclient.data.l[4] = 0;
-
-  XSendEvent(xdisplay_, x_root_window_, x11::False,
-             SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
-}
-
-bool DesktopWindowTreeHostX11::HasWMSpecProperty(const char* property) const {
-  return window_properties_.find(gfx::GetAtom(property)) !=
-         window_properties_.end();
 }
 
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
