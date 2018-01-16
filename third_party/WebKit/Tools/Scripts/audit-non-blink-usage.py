@@ -88,7 +88,10 @@ _CONFIG = [
 
             # Blink uses Mojo, so it needs mojo::Binding, mojo::InterfacePtr, et
             # cetera, as well as generated Mojo bindings.
-            'mojo::.+',
+            # Note that the Mojo callback helpers are explicitly forbidden:
+            # Blink already has a signal for contexts being destroyed, and
+            # other types of failures should be explicitly signalled.
+            'mojo::(?!WrapCallback).+',
             '(?:.+::)?mojom::.+',
             "service_manager::BinderRegistry",
             # TODO(dcheng): Remove this once Connector isn't needed in Blink
