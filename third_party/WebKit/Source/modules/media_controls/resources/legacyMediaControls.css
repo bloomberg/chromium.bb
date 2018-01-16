@@ -784,3 +784,8 @@ video::cue(i) {
 .state-no-source input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
     display: none;
 }
+
+.state-no-metadata input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+    background-image: -webkit-image-set(
+      url(default_100_percent/legacy/mediaplayer_slider_thumb_grey.png) 1x);
+}
