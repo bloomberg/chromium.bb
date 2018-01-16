@@ -4,8 +4,6 @@ layer at (0,0) size 800x75
   LayoutNGBlockFlow {HTML} at (0,0) size 800x75
     LayoutNGBlockFlow {BODY} at (8,8) size 784x59
       LayoutNGBlockFlow {DIV} at (0,0) size 784x59 [border: (2px solid #FF0000)]
-        LayoutText {#text} at (2,37) size 158x19
-          text run at (2,37) width 158: "This image has a margin "
+        LayoutText {#text} at (0,0) size 158x19
         LayoutImage {IMG} at (209.72,2) size 50x50 [bgcolor=#008000]
-        LayoutText {#text} at (309,37) size 37x19
-          text run at (309,37) width 37: " on it."
+        LayoutText {#text} at (0,0) size 37x19

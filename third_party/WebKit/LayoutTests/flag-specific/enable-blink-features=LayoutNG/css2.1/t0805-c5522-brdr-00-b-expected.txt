@@ -1,0 +1,23 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x406
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x406
+    LayoutNGBlockFlow {BODY} at (8,16) size 784x374
+      LayoutNGBlockFlow {P} at (0,0) size 784x20 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 226x19
+      LayoutNGBlockFlow {P} at (0,36) size 784x26 [color=#0000FF] [border: (3px solid #FFA500)]
+        LayoutText {#text} at (0,0) size 112x19
+      LayoutNGBlockFlow {P} at (0,78) size 784x30 [color=#0000FF] [border: (5px outset #FFA500)]
+        LayoutText {#text} at (0,0) size 119x19
+      LayoutNGBlockFlow {P} at (0,124) size 784x30 [color=#0000FF] [border: (5px inset #FFA500)]
+        LayoutText {#text} at (0,0) size 111x19
+      LayoutNGBlockFlow {P} at (0,170) size 784x40 [color=#0000FF] [border: (10px ridge #FFA500)]
+        LayoutText {#text} at (0,0) size 122x19
+      LayoutNGBlockFlow {P} at (0,226) size 784x40 [color=#0000FF] [border: (10px double #FFA500)]
+        LayoutText {#text} at (0,0) size 125x19
+      LayoutNGBlockFlow {P} at (0,282) size 784x20 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 69x19
+      LayoutNGBlockFlow {P} at (0,318) size 784x20 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 69x19
+      LayoutNGBlockFlow {P} at (0,354) size 784x20 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 69x19
