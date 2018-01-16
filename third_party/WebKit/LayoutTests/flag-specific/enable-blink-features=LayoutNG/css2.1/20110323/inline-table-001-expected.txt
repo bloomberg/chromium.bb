@@ -7,7 +7,7 @@ layer at (0,0) size 800x148
         LayoutText {#text} at (0,0) size 375x19
           text run at (0,0) width 375: "Test passes if the \"Filler Text\" below is all on the same line."
       LayoutNGBlockFlow {DIV} at (0,36) size 784x96
-        LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutInline {SPAN} at (0,0) size 65x19
           LayoutText {#text} at (0,0) size 65x19
             text run at (0,0) width 65: "Filler Text"
         LayoutText {#text} at (64,0) size 5x19

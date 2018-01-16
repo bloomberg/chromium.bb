@@ -6,8 +6,8 @@ layer at (0,0) size 800x248
       LayoutNGBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 52x19
           text run at (0,0) width 52: "Test for "
-        LayoutInline {I} at (0,0) size 0x0
-          LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
+        LayoutInline {I} at (0,0) size 1001x19
+          LayoutInline {A} at (0,0) size 349x19 [color=#0000EE]
             LayoutText {#text} at (51,0) size 349x19
               text run at (51,0) width 349: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7761"
           LayoutText {#text} at (399,0) size 306x19

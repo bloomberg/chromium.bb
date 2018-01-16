@@ -32,7 +32,7 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutNGBlockFlow {P} at (0,267) size 769x20 [color=#0000FF]
         LayoutText {#text} at (0,0) size 200x19
           text run at (0,0) width 200: "This paragraph should be blue ["
-        LayoutInline {TT} at (0,0) size 0x0
+        LayoutInline {TT} at (0,0) size 64x16
           LayoutText {#text} at (200,3) size 64x16
             text run at (200,3) width 64: "ID=\"two\""
         LayoutText {#text} at (264,0) size 9x19
@@ -56,7 +56,7 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 420x241
           LayoutTableRow {TR} at (0,0) size 420x28
             LayoutNGTableCell {TD} at (0,0) size 420x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 0x0
+              LayoutInline {STRONG} at (0,0) size 161x19
                 LayoutText {#text} at (4,4) size 161x19
                   text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 420x213
@@ -73,7 +73,7 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutNGBlockFlow {P} at (4,76) size 400x20 [color=#0000FF]
                 LayoutText {#text} at (0,0) size 200x19
                   text run at (0,0) width 200: "This paragraph should be blue ["
-                LayoutInline {TT} at (0,0) size 0x0
+                LayoutInline {TT} at (0,0) size 72x16
                   LayoutText {#text} at (200,3) size 72x16
                     text run at (200,3) width 72: "ID=\"five\""
                 LayoutText {#text} at (272,0) size 9x19
