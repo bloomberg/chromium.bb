@@ -2682,9 +2682,6 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openK
 # Temporarily disabled due to conflicting NeedsManualRebaseline below
 # crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
-crbug.com/801341 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
-crbug.com/801341 [ Win ] http/tests/misc/webtiming-resolution.html [ Failure Pass ]
-
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
@@ -3504,9 +3501,7 @@ crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-
 
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
-crbug.com/799127 [ Mac Linux ] external/wpt/resource-timing/test_resource_timing.html [ Failure ]
 crbug.com/799127 [ Mac Linux ] external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Failure ]
-crbug.com/799127 [ Mac ] external/wpt/dom/events/Event-timestamp-high-resolution.html [ Failure ]
 crbug.com/799137 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
