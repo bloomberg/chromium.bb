@@ -10,14 +10,6 @@
 namespace search_provider_logos {
 namespace features {
 
-// If enabled, Doodles are fetched for third-party search engines that specify
-// a doodle_url in prepopulated_engines.json.
-extern const base::Feature kThirdPartyDoodles;
-
-// This parameter can be used to override the URL of the doodle API for
-// third-party search engines. Useful for testing.
-extern const char kThirdPartyDoodlesOverrideUrlParam[];
-
 extern const base::Feature kDoodleLogging;
 
 }  // namespace features

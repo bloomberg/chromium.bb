@@ -202,21 +202,12 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
     base_url =
         GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
     doodle_url = search_provider_logos::GetGoogleDoodleURL(base_url);
-  } else if (base::FeatureList::IsEnabled(features::kThirdPartyDoodles)) {
-    // First try to get the Doodle URL from the command line, then from a
-    // feature param, and finally the "real" one from TemplateURL.
+  } else {
     if (command_line->HasSwitch(switches::kThirdPartyDoodleURL)) {
       doodle_url = GURL(
           command_line->GetSwitchValueASCII(switches::kThirdPartyDoodleURL));
     } else {
-      std::string override_url = base::GetFieldTrialParamValueByFeature(
-          features::kThirdPartyDoodles,
-          features::kThirdPartyDoodlesOverrideUrlParam);
-      if (!override_url.empty()) {
-        doodle_url = GURL(override_url);
-      } else {
-        doodle_url = template_url->doodle_url();
-      }
+      doodle_url = template_url->doodle_url();
     }
     base_url = doodle_url.GetOrigin();
   }

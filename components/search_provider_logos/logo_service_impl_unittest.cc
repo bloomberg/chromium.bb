@@ -22,7 +22,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -282,8 +281,6 @@ class LogoServiceImplTest : public ::testing::Test {
             base::Bind(&LogoServiceImplTest::CapturingFakeURLFetcherCreator,
                        base::Unretained(this))),
         use_gray_background_(false) {
-    feature_list_.InitAndEnableFeature(features::kThirdPartyDoodles);
-
     // Default search engine with logo. All 3P doodle_urls use ddljson API.
     AddSearchEngine("ex", "Logo Example",
                     "https://example.com/?q={searchTerms}",
@@ -351,7 +348,6 @@ class LogoServiceImplTest : public ::testing::Test {
 
   bool use_gray_background() const { return use_gray_background_; }
 
-  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   TemplateURLService template_url_service_;
   base::SimpleTestClock* test_clock_;
