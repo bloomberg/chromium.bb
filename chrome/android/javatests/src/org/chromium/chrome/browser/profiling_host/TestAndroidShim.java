@@ -16,8 +16,16 @@ public class TestAndroidShim {
         mNativeTestAndroidShim = nativeInit();
     }
 
-    public boolean runTestForMode(String mode) {
-        return nativeRunTestForMode(mNativeTestAndroidShim, mode);
+    /**
+     *  When |dynamicallyStartProfiling| is true, the test harness is
+     *  responsible for starting profiling for the relevant processes.
+     *  When |pseudoStacks| is true, the stacks use trace-event based stacks
+     *  rather than native stacks.
+     */
+    public boolean runTestForMode(
+            String mode, boolean dynamicallyStartProfiling, boolean pseudoStacks) {
+        return nativeRunTestForMode(
+                mNativeTestAndroidShim, mode, dynamicallyStartProfiling, pseudoStacks);
     }
 
     /**
@@ -34,5 +42,6 @@ public class TestAndroidShim {
     private long mNativeTestAndroidShim;
     private native long nativeInit();
     private native void nativeDestroy(long nativeTestAndroidShim);
-    private native boolean nativeRunTestForMode(long nativeTestAndroidShim, String mode);
+    private native boolean nativeRunTestForMode(long nativeTestAndroidShim, String mode,
+            boolean dynamicallyStartProfiling, boolean pseudoStacks);
 }
