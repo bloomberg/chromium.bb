@@ -85,7 +85,7 @@ void TestCompositorHostX11::Show() {
       break;
   }
   compositor_.SetAcceleratedWidget(window_);
-  compositor_.SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetScaleAndSize(1.0f, bounds_.size(), viz::LocalSurfaceId());
   compositor_.SetVisible(true);
 }
 

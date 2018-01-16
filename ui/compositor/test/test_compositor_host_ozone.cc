@@ -97,7 +97,7 @@ void TestCompositorHostOzone::Show() {
   DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
 
   compositor_.SetAcceleratedWidget(window_delegate_.widget());
-  compositor_.SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetScaleAndSize(1.0f, bounds_.size(), viz::LocalSurfaceId());
   compositor_.SetVisible(true);
 }
 

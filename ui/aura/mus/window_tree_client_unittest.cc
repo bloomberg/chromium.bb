@@ -2907,8 +2907,8 @@ TEST_F(WindowTreeClientWmTest, ObservedPointerEvents) {
   gfx::Transform scale_transform;
   scale_transform.Scale(ui_scale_factor, ui_scale_factor);
   window_tree_host.window()->SetTransform(scale_transform);
-  window_tree_host.compositor()->SetScaleAndSize(device_scale_factor,
-                                                 bounds.size());
+  window_tree_host.compositor()->SetScaleAndSize(
+      device_scale_factor, bounds.size(), viz::LocalSurfaceId());
 
   // Start a pointer watcher for all events excluding move events.
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
