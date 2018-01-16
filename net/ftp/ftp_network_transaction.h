@@ -22,6 +22,7 @@
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction.h"
 #include "net/log/net_log_with_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -39,7 +40,8 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   // FtpTransaction methods:
   int Start(const FtpRequestInfo* request_info,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override;
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int RestartWithAuth(const AuthCredentials& credentials,
                       const CompletionCallback& callback) override;
   int Read(IOBuffer* buf,
@@ -204,6 +206,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
 
   NetLogWithSource net_log_;
   const FtpRequestInfo* request_;
+  MutableNetworkTrafficAnnotationTag traffic_annotation_;
   FtpResponseInfo response_;
 
   // Cancels the outstanding request on destruction.
