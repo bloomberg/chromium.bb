@@ -39,7 +39,7 @@ class Identity;
 // Note: Does not currently work on Windows before Vista.
 class ServiceProcessLauncher {
  public:
-  using ProcessReadyCallback = base::Callback<void(base::ProcessId)>;
+  using ProcessReadyCallback = base::OnceCallback<void(base::ProcessId)>;
 
   // |name| is just for debugging ease. We will spawn off a process so that it
   // can be sandboxed if |start_sandboxed| is true. |service_path| is a path to
@@ -52,13 +52,13 @@ class ServiceProcessLauncher {
   // |Start()| was called) when the child has been started (or failed to start).
   mojom::ServicePtr Start(const Identity& target,
                           SandboxType sandbox_type,
-                          const ProcessReadyCallback& callback);
+                          ProcessReadyCallback callback);
 
   // Waits for the child process to terminate.
   void Join();
 
  private:
-  void DidStart(const ProcessReadyCallback& callback);
+  void DidStart(ProcessReadyCallback callback);
   void DoLaunch(std::unique_ptr<base::CommandLine> child_command_line);
 
   ServiceProcessLauncherDelegate* delegate_ = nullptr;

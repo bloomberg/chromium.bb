@@ -56,10 +56,9 @@ ServiceProcessLauncher::~ServiceProcessLauncher() {
   Join();
 }
 
-mojom::ServicePtr ServiceProcessLauncher::Start(
-    const Identity& target,
-    SandboxType sandbox_type,
-    const ProcessReadyCallback& callback) {
+mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
+                                                SandboxType sandbox_type,
+                                                ProcessReadyCallback callback) {
   DCHECK(!child_process_.IsValid());
 
   sandbox_type_ = sandbox_type;
@@ -94,7 +93,7 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
       base::BindOnce(&ServiceProcessLauncher::DoLaunch, base::Unretained(this),
                      base::Passed(&child_command_line)),
       base::BindOnce(&ServiceProcessLauncher::DidStart,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 
   return client;
 }
@@ -111,13 +110,13 @@ void ServiceProcessLauncher::Join() {
   }
 }
 
-void ServiceProcessLauncher::DidStart(const ProcessReadyCallback& callback) {
+void ServiceProcessLauncher::DidStart(ProcessReadyCallback callback) {
   if (child_process_.IsValid()) {
-    callback.Run(child_process_.Pid());
+    std::move(callback).Run(child_process_.Pid());
   } else {
     LOG(ERROR) << "Failed to start child process";
     mojo_ipc_channel_.reset();
-    callback.Run(base::kNullProcessId);
+    std::move(callback).Run(base::kNullProcessId);
   }
 }
 
