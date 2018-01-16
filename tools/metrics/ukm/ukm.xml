@@ -477,7 +477,7 @@ be describing additional metrics about the same event.
       DPs.
     </summary>
   </metric>
-  <metric name="TapDuration">
+  <metric name="TapDurationMs">
     <summary>
       The duration of the tap gesture expressed in milliseconds.
     </summary>

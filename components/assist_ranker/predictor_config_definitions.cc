@@ -53,7 +53,7 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "PreviousWeekCtrPercent",
                                        "PreviousWeekImpressionsCount",
                                        "ScreenTopDps",
-                                       "TapDuration",
+                                       "TapDurationMs",
                                        "WasScreenBottom"});
   return kContextualSearchFeatureWhitelist;
 }
