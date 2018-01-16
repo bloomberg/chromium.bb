@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 static_library("cpp") {
   sources = [
+    "cors/cors.cc",
+    "cors/cors.h",
     "data_element.cc",
     "data_element.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",
@@ -36,8 +38,8 @@ static_library("cpp") {
 
 static_library("typemap_dependencies") {
   sources = [
-    "cors_error_status.cc",
-    "cors_error_status.h",
+    "cors_error_status.cc",  # TODO(toyoshim): Move into cors/ directory.
+    "cors_error_status.h",  # TODO(toyoshim): Move into cors/ directory.
     "http_raw_request_response_info.cc",
     "http_raw_request_response_info.h",
     "network_param_ipc_traits.cc",
@@ -69,6 +71,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "cors/cors_unittest.cc",
     "mutable_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "network_struct_traits_unittest.cc",
