@@ -3303,7 +3303,12 @@ static void write_bitdepth_colorspace_sampling(
       if (cm->bit_depth == AOM_BITS_12) {
         // 420, 444 or 422
         aom_wb_write_bit(wb, cm->subsampling_x);
-        aom_wb_write_bit(wb, cm->subsampling_y);
+        if (cm->subsampling_x == 0) {
+          assert(cm->subsampling_y == 0 &&
+                 "4:4:0 subsampling not allowed in AV1");
+        } else {
+          aom_wb_write_bit(wb, cm->subsampling_y);
+        }
       } else {
         // 422 only
         assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);

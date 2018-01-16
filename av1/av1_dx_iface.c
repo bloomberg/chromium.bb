@@ -240,7 +240,10 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
     } else if (profile == PROFILE_2) {
       if (bit_depth == AOM_BITS_12) {
         subsampling_x = aom_rb_read_bit(rb);
-        subsampling_y = aom_rb_read_bit(rb);
+        if (subsampling_x == 0)
+          subsampling_y = 0;
+        else
+          subsampling_y = aom_rb_read_bit(rb);
       } else {
         subsampling_x = 1;
         subsampling_y = 0;

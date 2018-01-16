@@ -2237,7 +2237,10 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     } else if (cm->profile == PROFILE_2) {
       if (cm->bit_depth == AOM_BITS_12) {
         cm->subsampling_x = aom_rb_read_bit(rb);
-        cm->subsampling_y = aom_rb_read_bit(rb);
+        if (cm->subsampling_x == 0)
+          cm->subsampling_y = 0;  // 444
+        else
+          cm->subsampling_y = aom_rb_read_bit(rb);  // 422 or 420
       } else {
         // 422
         cm->subsampling_x = 1;
