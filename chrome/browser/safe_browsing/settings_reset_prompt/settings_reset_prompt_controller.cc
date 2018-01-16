@@ -166,30 +166,22 @@ void SettingsResetPromptController::InitMainText() {
   size_t offset = 0U;
   if (ResetSearchEnabled(*model_)) {
     main_text_ = l10n_util::GetStringFUTF16(
-        model_->extensions_to_disable().empty()
-            ? IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE_NO_EXTENSIONS
-            : IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE_WITH_EXTENSIONS,
+        IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE_NO_EXTENSIONS,
         url_string, &offset);
   } else if (ResetStartupUrlsEnabled(*model_)) {
     DCHECK(!model_->startup_urls().empty());
     if (model_->startup_urls().size() == 1) {
       main_text_ = l10n_util::GetStringFUTF16(
-          model_->extensions_to_disable().empty()
-              ? IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_SINGLE_NO_EXTENSIONS
-              : IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_SINGLE_WITH_EXTENSIONS,
+          IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_SINGLE_NO_EXTENSIONS,
           url_string, &offset);
     } else {  // model_->startup_urls().size() > 1
       main_text_ = l10n_util::GetStringFUTF16(
-          model_->extensions_to_disable().empty()
-              ? IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_MULTIPLE_NO_EXTENSIONS
-              : IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_MULTIPLE_WITH_EXTENSIONS,
+          IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_MULTIPLE_NO_EXTENSIONS,
           url_string, &offset);
     }
   } else if (ResetHomepageEnabled(*model_)) {
     main_text_ = l10n_util::GetStringFUTF16(
-        model_->extensions_to_disable().empty()
-            ? IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_HOMEPAGE_NO_EXTENSIONS
-            : IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_HOMEPAGE_WITH_EXTENSIONS,
+        IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_HOMEPAGE_NO_EXTENSIONS,
         url_string, &offset);
   } else {
     NOTREACHED();
