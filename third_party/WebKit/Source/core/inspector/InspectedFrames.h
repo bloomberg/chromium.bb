@@ -36,10 +36,10 @@ class CORE_EXPORT InspectedFrames final
     Member<LocalFrame> current_;
   };
 
-  InspectedFrames(LocalFrame*, const String& devtools_frame);
+  InspectedFrames(LocalFrame*, const String& instrumentation_token);
 
   LocalFrame* Root() { return root_; }
-  const String& GetDevToolsFrameToken() const { return devtools_frame_token_; }
+  const String& InstrumentationToken() const { return instrumentation_token_; }
   bool Contains(LocalFrame*) const;
   LocalFrame* FrameWithSecurityOrigin(const String& origin_raw_string);
   Iterator begin();
@@ -49,7 +49,7 @@ class CORE_EXPORT InspectedFrames final
 
  private:
   Member<LocalFrame> root_;
-  String devtools_frame_token_;
+  String instrumentation_token_;
   DISALLOW_COPY_AND_ASSIGN(InspectedFrames);
 };
 
