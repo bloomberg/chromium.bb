@@ -651,6 +651,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records that a specific background task has been canceled.</summary>
 </histogram>
 
+<histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
+    enum="BackgroundTaskId">
+  <owner>fgorski@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>Records that a specific background task has loaded native.</summary>
+</histogram>
+
 <histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Failure"
     enum="BackgroundTaskId">
   <owner>fgorski@chromium.org</owner>

@@ -28,6 +28,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskReflection.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskScheduler.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerDelegate.java",
+      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerExternalUma.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerFactory.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManager.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImpl.java",
