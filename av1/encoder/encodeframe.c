@@ -4082,6 +4082,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_INTRABC
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
   if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
+#if CONFIG_EXT_DELTA_Q
+  if (cm->allow_intrabc) cm->delta_lf_present_flag = 0;
+#endif  // CONFIG_EXT_DELTA_Q
 #endif  // CONFIG_INTRABC
 }
 
