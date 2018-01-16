@@ -3631,7 +3631,7 @@ void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
 }
 
 TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
-  ShadowRoot& shadow_root = EnsureLegacyUserAgentShadowRootV0();
+  ShadowRoot& shadow_root = EnsureUserAgentShadowRootV1();
   AssertShadowRootChildren(shadow_root);
 
   Node* first_child = shadow_root.firstChild();
@@ -3760,7 +3760,7 @@ void HTMLMediaElement::EnsureMediaControls() {
   if (GetMediaControls())
     return;
 
-  ShadowRoot& shadow_root = EnsureLegacyUserAgentShadowRootV0();
+  ShadowRoot& shadow_root = EnsureUserAgentShadowRootV1();
   media_controls_ =
       CoreInitializer::GetInstance().CreateMediaControls(*this, shadow_root);
 
