@@ -2258,8 +2258,23 @@ void LayoutText::InvalidateDisplayItemClients(
 // the first run's x and y, but that would involve updating many test results.
 LayoutRect LayoutText::DebugRect() const {
   IntRect lines_box = EnclosingIntRect(LinesBoundingBox());
-  LayoutRect rect = LayoutRect(
-      IntRect(FirstRunX(), FirstRunY(), lines_box.Width(), lines_box.Height()));
+  FloatPoint first_run_offset;
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragment()) {
+    NGPhysicalOffsetRect bounding_box;
+    const auto fragments =
+        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
+    if (fragments.size()) {
+      const auto& child = fragments[0];
+      first_run_offset = {child.offset_to_container_box.left.ToFloat(),
+                          child.offset_to_container_box.top.ToFloat()};
+    }
+  } else {
+    first_run_offset = {FirstRunX(), FirstRunY()};
+  }
+  LayoutRect rect =
+      LayoutRect(IntRect(first_run_offset.X(), first_run_offset.Y(),
+                         lines_box.Width(), lines_box.Height()));
   LayoutBlock* block = ContainingBlock();
   if (block && HasTextBoxes())
     block->AdjustChildDebugRect(rect);
