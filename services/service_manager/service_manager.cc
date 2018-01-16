@@ -1016,11 +1016,16 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     packaged_service_target.set_user_id(original_target.user_id());
     instance->set_identity(packaged_service_target);
 
-    mojom::ServicePtr service;
     Identity factory(entry->parent()->name(), *target_user_id,
                      factory_instance_name);
+
+    mojom::PIDReceiverPtr pid_receiver;
+    instance->BindPIDReceiver(mojo::MakeRequest(&pid_receiver));
+
+    mojom::ServicePtr service;
     CreateServiceWithFactory(factory, target.name(),
-                             mojo::MakeRequest(&service));
+                             mojo::MakeRequest(&service),
+                             std::move(pid_receiver));
     instance->StartWithService(std::move(service));
   } else {
     base::FilePath package_path = entry->path();
@@ -1211,11 +1216,13 @@ void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
   listeners_.AddPtr(std::move(listener));
 }
 
-void ServiceManager::CreateServiceWithFactory(const Identity& service_factory,
-                                              const std::string& name,
-                                              mojom::ServiceRequest request) {
+void ServiceManager::CreateServiceWithFactory(
+    const Identity& service_factory,
+    const std::string& name,
+    mojom::ServiceRequest request,
+    mojom::PIDReceiverPtr pid_receiver) {
   mojom::ServiceFactory* factory = GetServiceFactory(service_factory);
-  factory->CreateService(std::move(request), name);
+  factory->CreateService(std::move(request), name, std::move(pid_receiver));
 }
 
 mojom::ServiceFactory* ServiceManager::GetServiceFactory(

@@ -64,12 +64,18 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
 
+  // Sets a single callback that will be invoked exactly once after process
+  // launch. If the process has already launched, the callback will not be
+  // called.
+  void SetLaunchCallback(base::OnceCallback<void(base::ProcessId)> callback);
+
  private:
   // Starts the child process if needed, returns true on success.
   bool StartProcess();
 
-  // BrowserChildProcessHost:
+  // BrowserChildProcessHostDelegate:
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
@@ -114,6 +120,12 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // If this has a value it indicates the process is going to host a mojo
   // service.
   base::Optional<service_manager::Identity> service_identity_;
+
+  // Indicates whether the process has been successfully launched yet.
+  bool launched_ = false;
+
+  // A callback to invoke on successful process launch.
+  base::OnceCallback<void(base::ProcessId)> launch_callback_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHostImpl> weak_ptr_factory_;

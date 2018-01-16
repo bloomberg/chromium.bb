@@ -207,7 +207,8 @@ class ConnectTestService : public Service,
 
   // mojom::ServiceFactory:
   void CreateService(mojom::ServiceRequest request,
-                     const std::string& name) override {
+                     const std::string& name,
+                     mojom::PIDReceiverPtr pid_receiver) override {
     if (name == "connect_test_a") {
       provided_services_.emplace_back(
           std::make_unique<ProvidedService>("A", std::move(request)));

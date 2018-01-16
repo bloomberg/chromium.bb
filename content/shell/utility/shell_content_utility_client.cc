@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/test/echo/echo_service.h"
 
 namespace content {
 
@@ -90,11 +91,12 @@ ShellContentUtilityClient::~ShellContentUtilityClient() {
 
 void ShellContentUtilityClient::UtilityThreadStarted() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(base::Bind(&TestServiceImpl::Create),
+  registry->AddInterface(base::BindRepeating(&TestServiceImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface<mojom::PowerMonitorTest>(
-      base::Bind(&PowerMonitorTestImpl::MakeStrongBinding,
-                 base::Passed(std::make_unique<PowerMonitorTestImpl>())),
+      base::BindRepeating(
+          &PowerMonitorTestImpl::MakeStrongBinding,
+          base::Passed(std::make_unique<PowerMonitorTestImpl>())),
       base::ThreadTaskRunnerHandle::Get());
   content::ChildThread::Get()
       ->GetServiceManagerConnection()
@@ -103,9 +105,17 @@ void ShellContentUtilityClient::UtilityThreadStarted() {
 }
 
 void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&CreateTestService);
-  services->insert(std::make_pair(kTestServiceUrl, info));
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&CreateTestService);
+    services->insert(std::make_pair(kTestServiceUrl, info));
+  }
+
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&echo::CreateEchoService);
+    services->insert(std::make_pair(echo::mojom::kServiceName, info));
+  }
 }
 
 void ShellContentUtilityClient::RegisterNetworkBinders(

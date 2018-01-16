@@ -221,6 +221,12 @@ void UtilityProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   process_->AddFilter(filter);
 }
 
+void UtilityProcessHostImpl::SetLaunchCallback(
+    base::OnceCallback<void(base::ProcessId)> callback) {
+  DCHECK(!launched_);
+  launch_callback_ = std::move(callback);
+}
+
 bool UtilityProcessHostImpl::StartProcess() {
   if (started_)
     return true;
@@ -356,6 +362,12 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
           client_.get(), message));
 
   return true;
+}
+
+void UtilityProcessHostImpl::OnProcessLaunched() {
+  launched_ = true;
+  if (launch_callback_)
+    std::move(launch_callback_).Run(process_->GetProcess().Pid());
 }
 
 void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {

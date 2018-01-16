@@ -4,6 +4,7 @@
 
 #include "content/common/service_manager/service_manager_connection_impl.h"
 
+#include <map>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -116,6 +117,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void AddServiceRequestHandler(const std::string& name,
                                 const ServiceRequestHandler& handler) {
+    AddServiceRequestHandlerWithPID(
+        name, base::BindRepeating(&WrapServiceRequestHandlerNoPID, handler));
+  }
+
+  void AddServiceRequestHandlerWithPID(
+      const std::string& name,
+      const ServiceRequestHandlerWithPID& handler) {
     io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
@@ -163,6 +171,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
   };
 
   ~IOThreadContext() override {}
+
+  static void WrapServiceRequestHandlerNoPID(
+      const ServiceRequestHandler& handler,
+      service_manager::mojom::ServiceRequest request,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) {
+    handler.Run(std::move(request));
+  }
 
   void StartOnIOThread() {
     // Should bind |io_thread_checker_| to the context's thread.
@@ -227,8 +242,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
         new service_manager::EmbeddedServiceRunner(name, info));
     AddServiceRequestHandlerOnIoThread(
         name,
-        base::Bind(&service_manager::EmbeddedServiceRunner::BindServiceRequest,
-                   base::Unretained(service.get())));
+        base::BindRepeating(
+            &WrapServiceRequestHandlerNoPID,
+            base::BindRepeating(
+                &service_manager::EmbeddedServiceRunner::BindServiceRequest,
+                base::Unretained(service.get()))));
     auto result =
         embedded_services_.insert(std::make_pair(name, std::move(service)));
     DCHECK(result.second);
@@ -236,7 +254,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void AddServiceRequestHandlerOnIoThread(
       const std::string& name,
-      const ServiceRequestHandler& handler) {
+      const ServiceRequestHandlerWithPID& handler) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto result = request_handlers_.insert(std::make_pair(name, handler));
     DCHECK(result.second) << "ServiceRequestHandler for " << name
@@ -281,15 +299,17 @@ class ServiceManagerConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // service_manager::mojom::ServiceFactory:
 
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name) override {
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto it = request_handlers_.find(name);
     if (it == request_handlers_.end()) {
       LOG(ERROR) << "Can't create service " << name << ". No handler found.";
       return;
     }
-    it->second.Run(std::move(request));
+    it->second.Run(std::move(request), std::move(pid_receiver));
   }
 
   base::ThreadChecker io_thread_checker_;
@@ -320,10 +340,9 @@ class ServiceManagerConnectionImpl::IOThreadContext
   base::Lock lock_;
   std::map<int, std::unique_ptr<ConnectionFilter>> connection_filters_;
 
-  std::unordered_map<std::string,
-                     std::unique_ptr<service_manager::EmbeddedServiceRunner>>
+  std::map<std::string, std::unique_ptr<service_manager::EmbeddedServiceRunner>>
       embedded_services_;
-  std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
+  std::map<std::string, ServiceRequestHandlerWithPID> request_handlers_;
 
   mojo::Binding<mojom::Child> child_binding_;
 
@@ -429,6 +448,12 @@ void ServiceManagerConnectionImpl::AddServiceRequestHandler(
     const std::string& name,
     const ServiceRequestHandler& handler) {
   context_->AddServiceRequestHandler(name, handler);
+}
+
+void ServiceManagerConnectionImpl::AddServiceRequestHandlerWithPID(
+    const std::string& name,
+    const ServiceRequestHandlerWithPID& handler) {
+  context_->AddServiceRequestHandlerWithPID(name, handler);
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {

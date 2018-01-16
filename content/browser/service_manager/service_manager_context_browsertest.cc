@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/test_launcher.h"
@@ -14,7 +15,10 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/test/echo/public/interfaces/echo.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +32,62 @@ namespace {
 bool ShouldTerminateOnServiceQuit(const service_manager::Identity& id) {
   return id.name() == echo::mojom::kServiceName;
 }
+
+class ServiceInstanceListener
+    : public service_manager::mojom::ServiceManagerListener {
+ public:
+  explicit ServiceInstanceListener(
+      service_manager::mojom::ServiceManagerListenerRequest request)
+      : binding_(this, std::move(request)) {}
+  ~ServiceInstanceListener() override = default;
+
+  void WaitForInit() {
+    base::RunLoop loop;
+    init_wait_loop_ = &loop;
+    loop.Run();
+    init_wait_loop_ = nullptr;
+  }
+
+  uint32_t WaitForServicePID(const std::string& service_name) {
+    base::RunLoop loop;
+    pid_wait_loop_ = &loop;
+    service_expecting_pid_ = service_name;
+    loop.Run();
+    pid_wait_loop_ = nullptr;
+    return pid_received_;
+  }
+
+ private:
+  // service_manager::mojom::ServiceManagerListener:
+  void OnInit(std::vector<service_manager::mojom::RunningServiceInfoPtr>
+                  instances) override {
+    if (init_wait_loop_)
+      init_wait_loop_->Quit();
+  }
+
+  void OnServiceCreated(
+      service_manager::mojom::RunningServiceInfoPtr instance) override {}
+  void OnServiceStarted(const service_manager::Identity&,
+                        uint32_t pid) override {}
+  void OnServiceFailedToStart(const service_manager::Identity&) override {}
+  void OnServiceStopped(const service_manager::Identity&) override {}
+
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {
+    if (identity.name() == service_expecting_pid_ && pid_wait_loop_) {
+      pid_received_ = pid;
+      pid_wait_loop_->Quit();
+    }
+  }
+
+  base::RunLoop* init_wait_loop_ = nullptr;
+  base::RunLoop* pid_wait_loop_ = nullptr;
+  std::string service_expecting_pid_;
+  uint32_t pid_received_ = 0;
+  mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceInstanceListener);
+};
 
 }  // namespace
 
@@ -73,6 +133,26 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest, TerminateOnServiceQuit) {
   // test runner does logs collection after the program has exited.
   EXPECT_THAT(output, HasSubstr("Terminating because service 'echo' quit"));
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest, ServiceProcessReportsPID) {
+  service_manager::mojom::ServiceManagerListenerPtr listener_proxy;
+  ServiceInstanceListener listener(mojo::MakeRequest(&listener_proxy));
+
+  auto* connector = ServiceManagerConnection::GetForProcess()->GetConnector();
+
+  service_manager::mojom::ServiceManagerPtr service_manager;
+  connector->BindInterface(service_manager::mojom::kServiceName,
+                           &service_manager);
+  service_manager->AddListener(std::move(listener_proxy));
+  listener.WaitForInit();
+
+  echo::mojom::EchoPtr echo_ptr;
+  connector->BindInterface(echo::mojom::kServiceName, &echo_ptr);
+
+  // PID should be non-zero, confirming that it was indeed properly reported to
+  // the Service Manager. If not reported at all, this will hang.
+  EXPECT_GT(listener.WaitForServicePID(echo::mojom::kServiceName), 0u);
 }
 
 }  // namespace content
