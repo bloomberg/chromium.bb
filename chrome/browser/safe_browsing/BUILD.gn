@@ -58,8 +58,6 @@ static_library("safe_browsing") {
       "chrome_cleaner/chrome_cleaner_dialog_controller_win.h",
       "settings_reset_prompt/default_settings_fetcher.cc",
       "settings_reset_prompt/default_settings_fetcher.h",
-      "settings_reset_prompt/extension_info.cc",
-      "settings_reset_prompt/extension_info.h",
       "settings_reset_prompt/settings_reset_prompt_config.cc",
       "settings_reset_prompt/settings_reset_prompt_config.h",
       "settings_reset_prompt/settings_reset_prompt_controller.cc",

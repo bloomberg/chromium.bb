@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
-#include "chrome/browser/safe_browsing/settings_reset_prompt/extension_info.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "extensions/common/extension_id.h"
@@ -47,11 +46,9 @@ class SettingsResetPromptModel {
     NO_RESET_REQUIRED_DUE_TO_RECENTLY_PROMPTED = 4,
     NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 5,
     NO_RESET_REQUIRED_DUE_TO_POLICY = 6,
-    RESET_STATE_MAX = 7
+    NO_RESET_REQUIRED_DUE_TO_EXTENSION_OVERRIDE = 7,
+    RESET_STATE_MAX = 8
   };
-
-  using ExtensionMap =
-      std::unordered_map<extensions::ExtensionId, ExtensionInfo>;
 
   SettingsResetPromptModel(
       Profile* profile,
@@ -91,10 +88,6 @@ class SettingsResetPromptModel {
   virtual const std::vector<GURL>& startup_urls_to_reset() const;
   virtual ResetState startup_urls_reset_state() const;
 
-  // Returns a map of extension ID -> ExtensionInfo for all extensions that will
-  // be disabled.
-  virtual const ExtensionMap& extensions_to_disable() const;
-
   void ReportUmaMetrics() const;
 
  private:
@@ -105,7 +98,7 @@ class SettingsResetPromptModel {
   void InitDefaultSearchData();
   void InitStartupUrlsData();
   void InitHomepageData();
-  void InitExtensionData();
+  void BlockResetForSettingOverridenByExtension();
 
   // Helper function for the Init* functions above to determine the reset state
   // of settings that have a match in the config.
@@ -116,7 +109,6 @@ class SettingsResetPromptModel {
   bool SomeSettingRequiresReset() const;
 
   bool SomeSettingIsManaged() const;
-  bool SomeExtensionMustRemainEnabled() const;
 
   Profile* const profile_;
 
@@ -151,8 +143,6 @@ class SettingsResetPromptModel {
   std::unordered_set<int> domain_ids_for_startup_urls_to_reset_;
   ResetState startup_urls_reset_state_ =
       NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED;
-
-  ExtensionMap extensions_to_disable_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptModel);
 };

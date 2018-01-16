@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
@@ -25,10 +24,8 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
-#include "extensions/common/extension_set.h"
 
 namespace safe_browsing {
 
@@ -88,7 +85,7 @@ SettingsResetPromptModel::SettingsResetPromptModel(
   InitHomepageData();
   DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
 
-  InitExtensionData();
+  BlockResetForSettingOverridenByExtension();
 
   if (!SomeSettingRequiresReset())
     return;
@@ -100,7 +97,7 @@ SettingsResetPromptModel::SettingsResetPromptModel(
   //
   // TODO(alito): Consider how clients with policies should be prompted for
   // reset.
-  if (SomeSettingIsManaged() || SomeExtensionMustRemainEnabled()) {
+  if (SomeSettingIsManaged()) {
     if (homepage_reset_state_ == RESET_REQUIRED)
       homepage_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
     if (default_search_reset_state_ == RESET_REQUIRED)
@@ -129,18 +126,6 @@ void SettingsResetPromptModel::PerformReset(
     const base::Closure& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(default_settings);
-
-  // Disable all extensions that override settings that need to be reset.
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
-  for (const auto& item : extensions_to_disable()) {
-    const extensions::ExtensionId& extension_id = item.first;
-    extension_service->DisableExtension(
-        extension_id, extensions::disable_reason::DISABLE_USER_ACTION);
-  }
-  UMA_HISTOGRAM_COUNTS_100("SettingsResetPrompt.NumberOfExtensionsDisabled",
-                           extensions_to_disable().size());
 
   // Disable all the settings that need to be reset.
   ProfileResetter::ResettableFlags reset_flags = 0;
@@ -214,11 +199,6 @@ SettingsResetPromptModel::startup_urls_reset_state() const {
   return startup_urls_reset_state_;
 }
 
-const SettingsResetPromptModel::ExtensionMap&
-SettingsResetPromptModel::extensions_to_disable() const {
-  return extensions_to_disable_;
-}
-
 void SettingsResetPromptModel::ReportUmaMetrics() const {
   UMA_HISTOGRAM_BOOLEAN("SettingsResetPrompt.PromptRequired",
                         ShouldPromptForReset());
@@ -228,8 +208,6 @@ void SettingsResetPromptModel::ReportUmaMetrics() const {
                             startup_urls_reset_state(), RESET_STATE_MAX);
   UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ResetState_Homepage",
                             homepage_reset_state(), RESET_STATE_MAX);
-  UMA_HISTOGRAM_COUNTS_100("SettingsResetPrompt.NumberOfExtensionsToDisable",
-                           extensions_to_disable().size());
   base::UmaHistogramSparse("SettingsResetPrompt.DelayBeforePromptParam",
                            prompt_config_->delay_before_prompt().InSeconds());
 }
@@ -306,23 +284,13 @@ void SettingsResetPromptModel::InitHomepageData() {
       GetResetStateForSetting(prefs_manager_.LastTriggeredPromptForHomepage());
 }
 
-// Populate |extensions_to_disable_| with all enabled extensions that override
-// the settings whose values were determined to need resetting. Note that all
-// extensions that override such settings are included in the list, not just the
-// one that is currently actively overriding the setting, in order to ensure
-// that default values can be restored. This function should be called after
-// other Init*() functions.
-void SettingsResetPromptModel::InitExtensionData() {
+// Reverts the decision to reset some setting if it's overriden by an extension.
+// This function should be called after other Init*() functions.
+void SettingsResetPromptModel::BlockResetForSettingOverridenByExtension() {
   DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
 
   // |enabled_extensions()| is a container of [id, name] pairs.
   for (const auto& id_name : settings_snapshot_->enabled_extensions()) {
-    // Just in case there are duplicates in the list of enabled extensions.
-    if (extensions_to_disable_.find(id_name.first) !=
-        extensions_to_disable_.end()) {
-      continue;
-    }
-
     const extensions::Extension* extension =
         GetExtension(profile_, id_name.first);
     if (!extension)
@@ -333,14 +301,15 @@ void SettingsResetPromptModel::InitExtensionData() {
     if (!overrides)
       continue;
 
-    if ((homepage_reset_state_ == RESET_REQUIRED && overrides->homepage) ||
-        (default_search_reset_state_ == RESET_REQUIRED &&
-         overrides->search_engine) ||
-        (startup_urls_reset_state_ == RESET_REQUIRED &&
-         !overrides->startup_pages.empty())) {
-      ExtensionInfo extension_info(extension);
-      extensions_to_disable_.insert(
-          std::make_pair(extension_info.id, extension_info));
+    if (homepage_reset_state_ == RESET_REQUIRED && overrides->homepage)
+      homepage_reset_state_ = NO_RESET_REQUIRED_DUE_TO_EXTENSION_OVERRIDE;
+    if (default_search_reset_state_ == RESET_REQUIRED &&
+        overrides->search_engine) {
+      default_search_reset_state_ = NO_RESET_REQUIRED_DUE_TO_EXTENSION_OVERRIDE;
+    }
+    if (startup_urls_reset_state_ == RESET_REQUIRED &&
+        !overrides->startup_pages.empty()) {
+      startup_urls_reset_state_ = NO_RESET_REQUIRED_DUE_TO_EXTENSION_OVERRIDE;
     }
   }
 }
@@ -387,23 +356,6 @@ bool SettingsResetPromptModel::SomeSettingIsManaged() const {
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (service && service->is_default_search_managed())
     return true;
-
-  return false;
-}
-
-bool SettingsResetPromptModel::SomeExtensionMustRemainEnabled() const {
-  extensions::ManagementPolicy* management_policy =
-      extensions::ExtensionSystem::Get(profile_)->management_policy();
-
-  if (management_policy) {
-    for (const auto& item : extensions_to_disable()) {
-      const extensions::ExtensionId& extension_id = item.first;
-      const extensions::Extension* extension =
-          GetExtension(profile_, extension_id);
-      if (extension && management_policy->MustRemainEnabled(extension, nullptr))
-        return true;
-    }
-  }
 
   return false;
 }

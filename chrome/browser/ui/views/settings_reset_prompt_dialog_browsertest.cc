@@ -55,15 +55,13 @@ enum class SettingType {
 struct ModelParams {
   SettingType setting_to_reset;
   size_t startup_pages;
-  size_t extensions_to_disable;
 };
 
 class MockSettingsResetPromptModel
     : public safe_browsing::SettingsResetPromptModel {
  public:
   // Create a mock model that pretends that the settings passed in via
-  // |settings_to_reset| require resetting. |settings_to_reset| must not be
-  // empty or have |EXTENSIONS| as the only member.
+  // |settings_to_reset| require resetting.
   explicit MockSettingsResetPromptModel(Profile* profile,
                                         const ModelParams& params)
       : SettingsResetPromptModel(
@@ -72,8 +70,8 @@ class MockSettingsResetPromptModel
             base::MakeUnique<NiceMock<MockProfileResetter>>(profile)) {
     EXPECT_LE(params.startup_pages, arraysize(kStartupUrls));
 
-    // Set up startup URLs and extensions to be returned by member functions
-    // based on the constructor arguments.
+    // Set up startup URLs to be returned by member functions based on the
+    // constructor arguments.
     for (size_t i = 0;
          i < std::min(arraysize(kStartupUrls), params.startup_pages); ++i) {
       startup_urls_.push_back(GURL(kStartupUrls[i]));
@@ -81,13 +79,6 @@ class MockSettingsResetPromptModel
 
     if (params.setting_to_reset == SettingType::STARTUP_PAGE)
       startup_urls_to_reset_ = startup_urls_;
-
-    for (size_t i = 0; i < params.extensions_to_disable; ++i) {
-      std::string id = "id" + base::IntToString(i);
-      extensions_.insert(
-          std::make_pair(id, safe_browsing::ExtensionInfo(
-                                 id, "Extension " + base::IntToString(i))));
-    }
 
     ON_CALL(*this, ShouldPromptForReset()).WillByDefault(Return(true));
     ON_CALL(*this, MockPerformReset(_, _)).WillByDefault(Return());
@@ -115,9 +106,6 @@ class MockSettingsResetPromptModel
             Return(params.setting_to_reset == SettingType::STARTUP_PAGE
                        ? RESET_REQUIRED
                        : NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED));
-
-    ON_CALL(*this, extensions_to_disable())
-        .WillByDefault(ReturnRef(extensions_));
   }
   ~MockSettingsResetPromptModel() override {}
 
@@ -136,12 +124,10 @@ class MockSettingsResetPromptModel
   MOCK_CONST_METHOD0(startup_urls, const std::vector<GURL>&());
   MOCK_CONST_METHOD0(startup_urls_to_reset, const std::vector<GURL>&());
   MOCK_CONST_METHOD0(startup_urls_reset_state, ResetState());
-  MOCK_CONST_METHOD0(extensions_to_disable, const ExtensionMap&());
 
  private:
   std::vector<GURL> startup_urls_;
   std::vector<GURL> startup_urls_to_reset_;
-  ExtensionMap extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSettingsResetPromptModel);
 };
@@ -150,25 +136,10 @@ class SettingsResetPromptDialogTest : public DialogBrowserTest {
  public:
   void ShowUi(const std::string& name) override {
     const std::map<std::string, ModelParams> name_to_model_params = {
-        {"DefaultSearchEngineChanged",
-         {SettingType::DEFAULT_SEARCH_ENGINE, 0, 0}},
-        {"SingleStartupPageChanged", {SettingType::STARTUP_PAGE, 1, 0}},
-        {"MultipleStartupPagesChanged", {SettingType::STARTUP_PAGE, 2, 0}},
-        {"HomePageChanged", {SettingType::HOMEPAGE, 0, 0}},
-        {"DefaultSearchEngineChangedByExtension",
-         {SettingType::DEFAULT_SEARCH_ENGINE, 0, 1}},
-        {"SingleStartupPageChangedByExtension",
-         {SettingType::STARTUP_PAGE, 1, 1}},
-        {"MultipleStartupPagesChangedByExtension",
-         {SettingType::STARTUP_PAGE, 2, 1}},
-        {"HomePageChangedByExtension", {SettingType::HOMEPAGE, 0, 1}},
-        {"DefaultSearchEngineChangedByMultipleExtensions",
-         {SettingType::DEFAULT_SEARCH_ENGINE, 0, 2}},
-        {"SingleStartupPageChangedByMultipleExtensions",
-         {SettingType::STARTUP_PAGE, 1, 2}},
-        {"MultipleStartupPagesChangedByMultipleExtensions",
-         {SettingType::STARTUP_PAGE, 2, 2}},
-        {"HomePageChangedByMultipleExtensions", {SettingType::HOMEPAGE, 0, 2}},
+        {"DefaultSearchEngineChanged", {SettingType::DEFAULT_SEARCH_ENGINE, 0}},
+        {"SingleStartupPageChanged", {SettingType::STARTUP_PAGE, 1}},
+        {"MultipleStartupPagesChanged", {SettingType::STARTUP_PAGE, 2}},
+        {"HomePageChanged", {SettingType::HOMEPAGE, 0}},
     };
 
     ASSERT_NE(name_to_model_params.find(name), name_to_model_params.end());
@@ -196,40 +167,6 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
 }
 IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
                        InvokeUi_HomePageChanged) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_DefaultSearchEngineChangedByExtension) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_SingleStartupPageChangedByExtension) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_MultipleStartupPagesChangedByExtension) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_HomePageChangedByExtension) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(
-    SettingsResetPromptDialogTest,
-    InvokeUi_DefaultSearchEngineChangedByMultipleExtensions) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_SingleStartupPageChangedByMultipleExtensions) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(
-    SettingsResetPromptDialogTest,
-    InvokeUi_MultipleStartupPagesChangedByMultipleExtensions) {
-  ShowAndVerifyUi();
-}
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptDialogTest,
-                       InvokeUi_HomePageChangedByMultipleExtensions) {
   ShowAndVerifyUi();
 }
 
