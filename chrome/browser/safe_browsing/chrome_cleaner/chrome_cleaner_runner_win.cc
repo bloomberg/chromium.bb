@@ -128,6 +128,10 @@ ChromeCleanerRunner::ChromeCleanerRunner(
         chrome_cleaner::kWithScanningModeLogsSwitch);
   }
 
+  cleaner_command_line_.AppendSwitchASCII(
+      chrome_cleaner::kChromePromptSwitch,
+      base::IntToString(static_cast<int>(reporter_invocation.chrome_prompt())));
+
   // If metrics is enabled, we can enable crash reporting in the Chrome Cleaner
   // process.
   if (metrics_status == ChromeMetricsStatus::kEnabled) {
