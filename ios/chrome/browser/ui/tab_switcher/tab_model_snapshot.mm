@@ -5,17 +5,25 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_model_snapshot.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 TabModelSnapshot::TabModelSnapshot(TabModel* tab_model) {
-  for (Tab* tab in tab_model) {
-    hashes_.push_back(HashOfTheVisiblePropertiesOfATab(tab));
-    tabs_.push_back(tab);
+  if (tab_model) {
+    DCHECK(tab_model.webStateList);
+    WebStateList* web_state_list = tab_model.webStateList;
+    for (int index = 0; index < web_state_list->count(); ++index) {
+      web::WebState* web_state = web_state_list->GetWebStateAt(index);
+      Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
+      hashes_.push_back(HashOfTheVisiblePropertiesOfATab(tab));
+      tabs_.push_back(tab);
+    }
   }
 }
 

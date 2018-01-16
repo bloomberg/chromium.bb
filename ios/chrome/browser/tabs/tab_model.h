@@ -45,7 +45,7 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // The model knows about the currently selected tab in order to maintain
 // consistency between multiple views that need the current tab to be
 // synchronized.
-@interface TabModel : NSObject<NSFastEnumeration>
+@interface TabModel : NSObject
 
 // Currently active tab.
 @property(nonatomic, weak) Tab* currentTab;

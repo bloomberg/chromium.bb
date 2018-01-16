@@ -222,6 +222,7 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -2932,8 +2933,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // keep a reference to the previous tab, just turn off preview mode for all
     // tabs (since doing so is a no-op for the tabs that don't have it set).
     _expectingForegroundTab = NO;
-    for (Tab* tab in _model) {
-      PagePlaceholderTabHelper::FromWebState(tab.webState)
+
+    WebStateList* webStateList = _model.webStateList;
+    for (int index = 0; index < webStateList->count(); ++index) {
+      web::WebState* webState = webStateList->GetWebStateAt(index);
+      PagePlaceholderTabHelper::FromWebState(webState)
           ->CancelPlaceholderForNextNavigation();
     }
   }
@@ -3872,12 +3876,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)dialogPresenter:(DialogPresenter*)presenter
     willShowDialogForWebState:(web::WebState*)webState {
-  for (Tab* iteratedTab in self.tabModel) {
-    if ([iteratedTab webState] == webState) {
-      self.tabModel.currentTab = iteratedTab;
-      DCHECK([[iteratedTab view] isDescendantOfView:self.contentArea]);
-      break;
-    }
+  WebStateList* webStateList = self.tabModel.webStateList;
+  int indexOfWebState = webStateList->GetIndexOfWebState(webState);
+  if (indexOfWebState != WebStateList::kInvalidIndex) {
+    webStateList->ActivateWebStateAt(indexOfWebState);
+    DCHECK([webState->GetView() isDescendantOfView:self.contentArea]);
   }
 }
 
@@ -5057,11 +5060,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)showUpgrade:(UpgradeCenter*)center {
   // Add an infobar on all the open tabs.
-  for (Tab* tab in _model) {
-    NSString* tabId = tab.tabId;
-    DCHECK(tab.webState);
+  WebStateList* webStateList = _model.webStateList;
+  for (int index = 0; index < webStateList->count(); ++index) {
+    web::WebState* webState = webStateList->GetWebStateAt(index);
+    NSString* tabId = TabIdTabHelper::FromWebState(webState)->tab_id();
     infobars::InfoBarManager* infoBarManager =
-        InfoBarManagerImpl::FromWebState(tab.webState);
+        InfoBarManagerImpl::FromWebState(webState);
     DCHECK(infoBarManager);
     [center addInfoBarToManager:infoBarManager forTabId:tabId];
   }
