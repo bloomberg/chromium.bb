@@ -388,6 +388,12 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         depth_to_tx_size(MAX_TX_DEPTH, bsize, is_inter_block(mbmi));
     mbmi->tx_size = (TX_SIZE)TXSIZEMAX(mbmi->tx_size, min_tx_size);
   }
+  if (is_inter_block(mbmi)) {
+    for (int idy = 0; idy < xd->n8_h; ++idy) {
+      for (int idx = 0; idx < xd->n8_w; ++idx)
+        mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+    }
+  }
 }
 
 static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
