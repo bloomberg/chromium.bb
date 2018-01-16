@@ -51,15 +51,15 @@ struct gralloc_handle_t {
 	int prime_fd;
 
 	/* api variables */
-	const int magic; /* differentiate between allocator impls */
+	const uint32_t magic; /* differentiate between allocator impls */
 	const uint32_t version; /* api version */
 
-	int width; /* width of buffer in pixels */
-	int height; /* height of buffer in pixels */
-	int format; /* pixel format (Android) */
-	int usage; /* android libhardware usage flags */
+	uint32_t width; /* width of buffer in pixels */
+	uint32_t height; /* height of buffer in pixels */
+	uint32_t format; /* pixel format (Android) */
+	uint32_t usage; /* android libhardware usage flags */
 
-	int stride; /* the stride in bytes */
+	uint32_t stride; /* the stride in bytes */
 	uint64_t modifier; /* buffer modifiers */
 
 	int data_owner; /* owner of data (for validation) */
@@ -69,7 +69,7 @@ struct gralloc_handle_t {
 	} __attribute__((aligned(8)));
 };
 
-#define GRALLOC_HANDLE_VERSION 2
+#define GRALLOC_HANDLE_VERSION 3
 #define GRALLOC_HANDLE_MAGIC 0x60585350
 #define GRALLOC_HANDLE_NUM_FDS 1
 #define GRALLOC_HANDLE_NUM_INTS (	\
@@ -79,8 +79,10 @@ struct gralloc_handle_t {
 /**
  * Create a buffer handle.
  */
-static struct gralloc_handle_t gralloc_handle_create(int width, int height,
-                                                     int format, int usage)
+static struct gralloc_handle_t gralloc_handle_create(int32_t width,
+                                                     int32_t height,
+                                                     int32_t format,
+                                                     int32_t usage)
 {
 	struct alloc_handle_t handle = {
 		.magic = GRALLOC_HANDLE_MAGIC,
