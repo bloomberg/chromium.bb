@@ -23,13 +23,21 @@ class FileHelper {
   // FileHelper.
   virtual std::string GetMimeTypeForUriList() const = 0;
 
-  // Convert natife file path to URL which can be used in container.  We don't
-  // expose enter file system to a container directly.  Instead we mount
-  // specific directory in the containers' namespace.  Thus we need to convert
-  // native path to file URL which points mount point in containers.  The
-  // conversion should be container specific, now we only have ARC container
-  // though.
-  virtual bool ConvertPathToUrl(const base::FilePath& path, GURL* out) = 0;
+  // Converts native file path to URL which can be used by application with
+  // |app_id|.  We don't expose enter file system to a container directly.
+  // Instead we mount specific directory in the containers' namespace.  Thus we
+  // need to convert native path to file URL which points mount point in
+  // containers.  The conversion should be container specific, now we only have
+  // ARC container though.
+  virtual bool GetUrlFromPath(const std::string& app_id,
+                              const base::FilePath& path,
+                              GURL* out) = 0;
+
+  // Converts filesystem:// URL to something that applications can understand.
+  // e.g. content:// URI for Android apps.
+  virtual bool GetUrlFromFileSystemUrl(const std::string& app_id,
+                                       const GURL& file_system_url,
+                                       GURL* out) = 0;
 };
 
 }  // namespace exo
