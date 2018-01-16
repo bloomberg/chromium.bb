@@ -39,6 +39,7 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
                        const TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end) override;
+  void SetThreadType(ThreadType thread_type) override;
 
   // ChildScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;

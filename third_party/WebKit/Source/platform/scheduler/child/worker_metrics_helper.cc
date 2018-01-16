@@ -8,7 +8,7 @@ namespace blink {
 namespace scheduler {
 
 WorkerMetricsHelper::WorkerMetricsHelper()
-    : MetricsHelper(ThreadType::kWorkerThread) {}
+    : MetricsHelper(ThreadType::kUnspecifiedWorkerThread) {}
 
 WorkerMetricsHelper::~WorkerMetricsHelper() {}
 

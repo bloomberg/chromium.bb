@@ -13,6 +13,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "platform/scheduler/child/worker_task_queue.h"
+#include "platform/scheduler/util/thread_type.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
@@ -32,6 +33,8 @@ class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
   // Must be called before the scheduler can be used. Does any post construction
   // initialization needed such as initializing idle period detection.
   virtual void Init() = 0;
+
+  virtual void SetThreadType(ThreadType thread_type) = 0;
 
   virtual void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                                const TaskQueue::Task& task,

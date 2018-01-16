@@ -46,6 +46,10 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
       std::unique_ptr<GlobalScopeCreationParams>) final;
 
   bool IsOwningBackingThread() const override { return false; }
+
+  scheduler::ThreadType GetThreadType() const override {
+    return scheduler::ThreadType::kAnimationWorkletThread;
+  }
 };
 
 }  // namespace blink

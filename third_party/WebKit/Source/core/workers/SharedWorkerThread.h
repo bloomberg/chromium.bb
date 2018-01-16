@@ -55,6 +55,10 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
+  scheduler::ThreadType GetThreadType() const override {
+    return scheduler::ThreadType::kSharedWorkerThread;
+  }
+
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   String name_;
 };

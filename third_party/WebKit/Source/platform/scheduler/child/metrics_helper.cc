@@ -22,5 +22,9 @@ void MetricsHelper::RecordCommonTaskMetrics(TaskQueue* queue,
                                             end_time - start_time);
 }
 
+void MetricsHelper::SetThreadType(ThreadType thread_type) {
+  thread_type_ = thread_type;
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -97,5 +97,7 @@ base::TimeTicks CompositorWorkerScheduler::NowTicks() {
   return base::TimeTicks::Now();
 }
 
+void CompositorWorkerScheduler::SetThreadType(ThreadType thread_type) {}
+
 }  // namespace scheduler
 }  // namespace blink

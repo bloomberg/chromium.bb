@@ -56,6 +56,8 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
+  void SetThreadType(ThreadType thread_type) override;
+
  protected:
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(

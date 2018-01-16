@@ -10,9 +10,14 @@ namespace scheduler {
 
 enum class ThreadType {
   kMainThread = 0,
-  kWorkerThread = 1,
+  kUnspecifiedWorkerThread = 1,
   kCompositorThread = 2,
-  kCount = 3
+  kDedicatedWorkerThread = 3,
+  kSharedWorkerThread = 4,
+  kAnimationWorkletThread = 5,
+  kServiceWorkerThread = 6,
+  kAudioWorkletThread = 7,
+  kCount = 8
 };
 
 }  // namespace scheduler

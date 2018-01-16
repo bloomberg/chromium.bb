@@ -129,6 +129,10 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
  private:
+  scheduler::ThreadType GetThreadType() const override {
+    return scheduler::ThreadType::kUnspecifiedWorkerThread;
+  }
+
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
 };
 

@@ -154,6 +154,10 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   }
 
   bool IsOwningBackingThread() const final { return false; }
+
+  scheduler::ThreadType GetThreadType() const override {
+    return scheduler::ThreadType::kUnspecifiedWorkerThread;
+  }
 };
 
 class ThreadedWorkletMessagingProxyForTest
