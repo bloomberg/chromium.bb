@@ -729,9 +729,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
       mode == NGLineBreakerMode::kMaxContent ? LayoutUnit::Max() : LayoutUnit();
 
   scoped_refptr<NGConstraintSpace> space =
-      NGConstraintSpaceBuilder(
-          writing_mode,
-          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+      NGConstraintSpaceBuilder(writing_mode, node.InitialContainingBlockSize())
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);

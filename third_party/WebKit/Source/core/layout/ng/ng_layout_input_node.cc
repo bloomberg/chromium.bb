@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_layout_input_node.h"
 
 #include "core/layout/LayoutReplaced.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -147,6 +148,12 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
 
 Document& NGLayoutInputNode::GetDocument() const {
   return box_->GetDocument();
+}
+
+NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
+  LayoutView* view = GetDocument().GetLayoutView();
+  FloatSize size = view->ViewportSizeForViewportUnits();
+  return NGPhysicalSize{LayoutUnit(size.Width()), LayoutUnit(size.Height())};
 }
 
 LayoutObject* NGLayoutInputNode::GetLayoutObject() const {
