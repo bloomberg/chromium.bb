@@ -253,7 +253,6 @@ if (is_android) {
 
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.
-  # If you raise this, reevaluate the snprintf=snprintf in ./BUILD.gn.
   _android_api_level = 16
   x86_android_sysroot_subdir =
       "platforms/android-${_android_api_level}/arch-x86"
@@ -262,7 +261,6 @@ if (is_android) {
   mips_android_sysroot_subdir =
       "platforms/android-${_android_api_level}/arch-mips"
 
-  # If you raise this, reevaluate the snprintf=snprintf in ./BUILD.gn.
   _android64_api_level = 21
   x86_64_android_sysroot_subdir =
       "platforms/android-${_android64_api_level}/arch-x86_64"

@@ -170,13 +170,6 @@ config("runtime_library") {
     libs += [ "atomic" ]
   }
 
-  # Work around incompatibilities between bionic and clang headers.
-  # TODO(thakis): Check if we still need this.
-  defines += [
-    "__compiler_offsetof=__builtin_offsetof",
-    "nan=__builtin_nan",
-  ]
-
   # TODO(jdduke) Re-enable on mips after resolving linking
   # issues with libc++ (crbug.com/456380).
   if (current_cpu != "mipsel" && current_cpu != "mips64el") {
