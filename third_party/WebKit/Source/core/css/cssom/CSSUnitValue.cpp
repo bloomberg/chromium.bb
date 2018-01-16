@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSResolutionUnits.h"
+#include "core/css/cssom/CSSMathInvert.h"
 #include "core/css/cssom/CSSMathMax.h"
 #include "core/css/cssom/CSSMathMin.h"
 #include "core/css/cssom/CSSMathProduct.h"
@@ -147,6 +148,16 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
 CSSCalcExpressionNode* CSSUnitValue::ToCalcExpressionNode() const {
   return CSSCalcValue::CreateExpressionNode(
       CSSPrimitiveValue::Create(value_, unit_));
+}
+
+CSSNumericValue* CSSUnitValue::Negate() {
+  return CSSUnitValue::Create(-value_, unit_);
+}
+
+CSSNumericValue* CSSUnitValue::Invert() {
+  if (unit_ == CSSPrimitiveValue::UnitType::kNumber)
+    return CSSUnitValue::Create(1.0 / value_, unit_);
+  return CSSMathInvert::Create(this);
 }
 
 }  // namespace blink
