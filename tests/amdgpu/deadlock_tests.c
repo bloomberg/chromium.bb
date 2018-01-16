@@ -90,20 +90,21 @@ static void amdgpu_deadlock_compute(void);
 
 CU_BOOL suite_deadlock_tests_enable(void)
 {
+	CU_BOOL enable = CU_TRUE;
+
 	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
 					     &minor_version, &device_handle))
 		return CU_FALSE;
 
+	if (device_handle->info.family_id == AMDGPU_FAMILY_AI) {
+		printf("\n\nCurrently hangs the CP on this ASIC, deadlock suite disabled\n");
+		enable = CU_FALSE;
+	}
+
 	if (amdgpu_device_deinitialize(device_handle))
 		return CU_FALSE;
 
-
-	if (device_handle->info.family_id == AMDGPU_FAMILY_AI) {
-		printf("\n\nCurrently hangs the CP on this ASIC, deadlock suite disabled\n");
-		return CU_FALSE;
-	}
-
-	return CU_TRUE;
+	return enable;
 }
 
 int suite_deadlock_tests_init(void)
