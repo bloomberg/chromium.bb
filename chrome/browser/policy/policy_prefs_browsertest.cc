@@ -342,7 +342,7 @@ class PolicyTestCases {
                                      &indicator_test_setup_js);
         std::string indicator_selector;
         pref_mapping_dict->GetString("indicator_selector", &indicator_selector);
-        auto pref_mapping = base::MakeUnique<PrefMapping>(
+        auto pref_mapping = std::make_unique<PrefMapping>(
             pref, is_local_state, check_for_mandatory, check_for_recommended,
             indicator_test_url, indicator_test_setup_js, indicator_selector);
         const base::ListValue* indicator_tests = NULL;
@@ -361,7 +361,7 @@ class PolicyTestCases {
             bool readonly = false;
             indicator_test_dict->GetBoolean("readonly", &readonly);
             pref_mapping->AddIndicatorTestCase(
-                base::MakeUnique<IndicatorTestCase>(*policy, value, readonly));
+                std::make_unique<IndicatorTestCase>(*policy, value, readonly));
           }
         }
         policy_test_case->AddPrefMapping(std::move(pref_mapping));

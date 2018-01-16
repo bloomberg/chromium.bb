@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -89,7 +88,7 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return base::MakeUnique<invalidation::ProfileInvalidationProvider>(
+  return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::unique_ptr<invalidation::InvalidationService>(
           new invalidation::FakeInvalidationService));
 }
@@ -156,11 +155,11 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   GetExpectedDefaultPolicy(expected);
 
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
                 nullptr);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::Value>(4), nullptr);
+                std::make_unique<base::Value>(4), nullptr);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
@@ -168,10 +167,10 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   expected->Set(key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::Value>(1000), nullptr);
+                std::make_unique<base::Value>(1000), nullptr);
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::Value>(homepage), nullptr);
+                std::make_unique<base::Value>(homepage), nullptr);
 }
 
 }  // namespace

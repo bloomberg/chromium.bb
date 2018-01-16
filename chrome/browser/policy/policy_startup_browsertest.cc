@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -35,7 +34,7 @@ class PolicyMakeDefaultBrowserTest : public InProcessBrowserTest {
     values.Set(policy::key::kDefaultBrowserSettingEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(false), nullptr);
+               std::make_unique<base::Value>(false), nullptr);
     provider_.UpdateChromePolicy(values);
   }
 

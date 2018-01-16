@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -116,7 +115,7 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 #endif
 
   std::unique_ptr<PolicyHeaderService> service =
-      base::MakeUnique<PolicyHeaderService>(
+      std::make_unique<PolicyHeaderService>(
           connector->device_management_service()->GetServerUrl(),
           kPolicyVerificationKeyHash, user_store);
   return new PolicyHeaderServiceWrapper(std::move(service));

@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -178,7 +177,7 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
                 nullptr);
   }
 
@@ -200,7 +199,7 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
                 nullptr);
   }
 
@@ -301,7 +300,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
                             bool value) {
     PolicyMap policy_map;
     policy_map.Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                   POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(value),
+                   POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(value),
                    nullptr);
     provider->UpdateChromePolicy(policy_map);
     base::RunLoop().RunUntilIdle();

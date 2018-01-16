@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -249,7 +249,7 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
     arguments->SetString("policy-key", policy_key_.AsUTF8Unsafe());
   if (automatic_rotation_of_signing_keys_enabled_) {
     arguments->Set("rotate-policy-keys-automatically",
-                   base::MakeUnique<base::Value>());
+                   std::make_unique<base::Value>());
   }
   if (server_data_dir_.IsValid()) {
     arguments->SetString("data-dir", server_data_dir_.GetPath().AsUTF8Unsafe());

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/javascript_policy_handler.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -28,11 +30,11 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   PolicyMap policy;
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
@@ -45,7 +47,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   PolicyMap policy;
   policy.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
@@ -55,7 +57,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   // DefaultJavaScriptSetting overrides JavascriptEnabled.
   policy.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
+             std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,
                                &value));

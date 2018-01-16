@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
@@ -32,7 +32,7 @@ TEST_F(LocalSyncPolicyTest, Default) {
 TEST_F(LocalSyncPolicyTest, SetPolicyInvalid) {
   policy_.Set(key::kRoamingProfileLocation, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(false), nullptr);
+              std::make_unique<base::Value>(false), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
   EXPECT_FALSE(prefs_.GetValue(syncer::prefs::kLocalSyncBackendDir, nullptr));
 }
@@ -42,7 +42,7 @@ TEST_F(LocalSyncPolicyTest, SetPolicyValid) {
   const std::string in = "${user_name}/foo";
   policy_.Set(key::kRoamingProfileLocation, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(in), nullptr);
+              std::make_unique<base::Value>(in), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* value;
