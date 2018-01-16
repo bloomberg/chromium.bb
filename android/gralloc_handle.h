@@ -59,7 +59,6 @@ struct gralloc_handle_t {
 	int format; /* pixel format (Android) */
 	int usage; /* android libhardware usage flags */
 
-	int name;   /* the name of the bo */
 	int stride; /* the stride in bytes */
 	uint64_t modifier; /* buffer modifiers */
 
@@ -70,7 +69,7 @@ struct gralloc_handle_t {
 	} __attribute__((aligned(8)));
 };
 
-#define GRALLOC_HANDLE_VERSION 1
+#define GRALLOC_HANDLE_VERSION 2
 #define GRALLOC_HANDLE_MAGIC 0x60585350
 #define GRALLOC_HANDLE_NUM_FDS 1
 #define GRALLOC_HANDLE_NUM_INTS (	\
