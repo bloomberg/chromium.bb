@@ -42,7 +42,7 @@ class SVGStopElement final : public SVGElement {
   virtual void Trace(blink::Visitor*);
 
  protected:
-  void DidRecalcStyle() override;
+  void DidRecalcStyle(StyleRecalcChange) override;
 
  private:
   explicit SVGStopElement(Document&);

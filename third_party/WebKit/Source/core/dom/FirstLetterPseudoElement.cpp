@@ -351,7 +351,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
   next_layout_object->Destroy();
 }
 
-void FirstLetterPseudoElement::DidRecalcStyle() {
+void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return;

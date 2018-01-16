@@ -168,7 +168,7 @@ bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   return PseudoElementLayoutObjectIsNeeded(&style);
 }
 
-void PseudoElement::DidRecalcStyle() {
+void PseudoElement::DidRecalcStyle(StyleRecalcChange) {
   if (!GetLayoutObject())
     return;
 

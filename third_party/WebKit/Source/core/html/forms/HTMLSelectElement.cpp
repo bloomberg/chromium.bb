@@ -1968,8 +1968,8 @@ void HTMLSelectElement::HidePopup() {
     popup_->Hide();
 }
 
-void HTMLSelectElement::DidRecalcStyle() {
-  HTMLFormControlElementWithState::DidRecalcStyle();
+void HTMLSelectElement::DidRecalcStyle(StyleRecalcChange change) {
+  HTMLFormControlElementWithState::DidRecalcStyle(change);
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }

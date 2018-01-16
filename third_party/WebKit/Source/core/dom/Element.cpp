@@ -2077,7 +2077,7 @@ void Element::RecalcStyle(StyleRecalcChange change) {
   }
 
   if (HasCustomStyleCallbacks())
-    DidRecalcStyle();
+    DidRecalcStyle(change);
 }
 
 scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties(
@@ -4309,7 +4309,7 @@ void Element::WillRecalcStyle(StyleRecalcChange) {
   DCHECK(HasCustomStyleCallbacks());
 }
 
-void Element::DidRecalcStyle() {
+void Element::DidRecalcStyle(StyleRecalcChange) {
   DCHECK(HasCustomStyleCallbacks());
 }
 
