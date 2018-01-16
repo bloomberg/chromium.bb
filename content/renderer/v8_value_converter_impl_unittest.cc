@@ -401,8 +401,10 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
 
-  v8::Local<v8::RegExp> regex(v8::RegExp::New(
-      v8::String::NewFromUtf8(isolate_, "."), v8::RegExp::kNone));
+  v8::Local<v8::RegExp> regex(
+      v8::RegExp::New(context, v8::String::NewFromUtf8(isolate_, "."),
+                      v8::RegExp::kNone)
+          .ToLocalChecked());
 
   V8ValueConverterImpl converter;
   TestWeirdType(converter, v8::Undefined(isolate_),
