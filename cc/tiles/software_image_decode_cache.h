@@ -132,11 +132,6 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   void UnrefImage(const CacheKey& key);
 
-  std::unordered_map<CacheKey, scoped_refptr<TileTask>, CacheKeyHash>
-      pending_in_raster_image_tasks_;
-  std::unordered_map<CacheKey, scoped_refptr<TileTask>, CacheKeyHash>
-      pending_out_of_raster_image_tasks_;
-
   // The members below this comment can only be accessed if the lock is held to
   // ensure that they are safe to access on multiple threads.
   // The exception is accessing |locked_images_budget_.total_limit_bytes()|,
