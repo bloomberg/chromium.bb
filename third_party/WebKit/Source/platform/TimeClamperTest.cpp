@@ -27,6 +27,7 @@ TEST(TimeClamperTest, TimeStampsIncreaseByFixedAmount) {
        time_seconds += kInterval * 0.1) {
     double clamped_time = clamper.ClampTimeResolution(time_seconds);
     double delta = clamped_time - prev;
+    ASSERT_GE(delta, 0);
     if (delta > kEpsilon) {
       ASSERT_TRUE(std::fabs(delta - kInterval) < kEpsilon);
       prev = clamped_time;

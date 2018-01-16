@@ -18,12 +18,12 @@ TimeClamper::TimeClamper() {
 
 double TimeClamper::ClampTimeResolution(double time_seconds) const {
   DCHECK_GE(time_seconds, 0);
-  double clamped_time =
-      floor(time_seconds / kResolutionSeconds) * kResolutionSeconds;
+  double interval = floor(time_seconds / kResolutionSeconds);
+  double clamped_time = interval * kResolutionSeconds;
   double tick_threshold = ThresholdFor(clamped_time);
 
   if (time_seconds >= tick_threshold)
-    return clamped_time + kResolutionSeconds;
+    return (interval + 1) * kResolutionSeconds;
   return clamped_time;
 }
 

@@ -114,12 +114,12 @@ class TimeClamper {
     // For each clamped time interval, compute a pseudorandom transition
     // threshold. The reported time will either be the start of that interval or
     // the next one depending on which side of the threshold |time_seconds| is.
-    double clamped_time =
-        floor(time_seconds / kResolutionSeconds) * kResolutionSeconds;
+    double interval = floor(time_seconds / kResolutionSeconds);
+    double clamped_time = interval * kResolutionSeconds;
     double tick_threshold = ThresholdFor(clamped_time);
 
     if (time_seconds >= tick_threshold)
-      return clamped_time + kResolutionSeconds;
+      return (interval + 1) * kResolutionSeconds;
     return clamped_time;
   }
 
