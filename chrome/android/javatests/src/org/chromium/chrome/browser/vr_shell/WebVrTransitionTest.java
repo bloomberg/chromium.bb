@@ -232,6 +232,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_window_raf_stops_firing_while_presenting"),
