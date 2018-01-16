@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -217,6 +218,7 @@ public class ModalDialogManagerTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/802254")
     public void testShow_UrlBarFocused() throws Exception {
         // Show a dialog. The dialog should be shown on top of the toolbar.
         showDialog(0, ModalDialogManager.TAB_MODAL);
