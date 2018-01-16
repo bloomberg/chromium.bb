@@ -10,6 +10,7 @@
 #include "core/css/cssom/CSSOMKeywords.h"
 #include "core/css/cssom/CSSKeywordValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/properties/CSSProperty.h"
 
 namespace blink {
@@ -25,8 +26,7 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
     return false;
   }
   if (styleValue.GetType() == CSSStyleValue::kUnknownType) {
-    // The check happens later in this case.
-    return true;
+    return ToCSSUnsupportedStyleValue(styleValue).GetProperty() == id;
   }
 
   return CSSOMTypes::PropertyCanTakeType(id, styleValue.GetType());
