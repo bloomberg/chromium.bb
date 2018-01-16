@@ -386,10 +386,12 @@ void ResourceDispatcher::StartSync(
   // this thread may block on a waitable event. It is safe to pass raw
   // pointers to |sync_load_response| and |event| as this stack frame will
   // survive until the request is complete.
-  base::CreateSingleThreadTaskRunnerWithTraits({})->PostTask(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits({});
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
-                     std::move(request), routing_id, frame_origin,
+                     std::move(request), routing_id, task_runner, frame_origin,
                      traffic_annotation, std::move(url_loader_factory_copy),
                      std::move(throttles), base::Unretained(response),
                      base::Unretained(&event)));
@@ -417,14 +419,12 @@ int ResourceDispatcher::StartAsync(
       request->render_frame_id, frame_origin, request->url, request->method,
       request->referrer, request->download_to_file);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      loading_task_runner ? loading_task_runner : thread_task_runner_;
-
   if (url_loader_client_endpoints) {
     pending_requests_[request_id]->url_loader_client =
-        std::make_unique<URLLoaderClientImpl>(request_id, this, task_runner);
+        std::make_unique<URLLoaderClientImpl>(request_id, this,
+                                              loading_task_runner);
 
-    task_runner->PostTask(
+    loading_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
                                   weak_factory_.GetWeakPtr(), request_id,
                                   std::move(url_loader_client_endpoints)));
@@ -433,7 +433,7 @@ int ResourceDispatcher::StartAsync(
   }
 
   std::unique_ptr<URLLoaderClientImpl> client(
-      new URLLoaderClientImpl(request_id, this, task_runner));
+      new URLLoaderClientImpl(request_id, this, loading_task_runner));
 
   uint32_t options = mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
@@ -452,7 +452,7 @@ int ResourceDispatcher::StartAsync(
       ThrottlingURLLoader::CreateLoaderAndStart(
           url_loader_factory, std::move(throttles), routing_id, request_id,
           options, request.get(), client.get(), traffic_annotation,
-          std::move(task_runner));
+          std::move(loading_task_runner));
   pending_requests_[request_id]->url_loader = std::move(url_loader);
   pending_requests_[request_id]->url_loader_client = std::move(client);
 

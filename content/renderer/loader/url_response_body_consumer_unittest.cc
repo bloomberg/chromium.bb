@@ -21,6 +21,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -149,7 +150,8 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
   int SetUpRequestPeer(std::unique_ptr<network::ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        std::move(request), 0, nullptr, url::Origin(),
+        std::move(request), 0,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         &factory_, std::vector<std::unique_ptr<URLLoaderThrottle>>(),

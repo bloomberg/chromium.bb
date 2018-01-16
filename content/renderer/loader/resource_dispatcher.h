@@ -99,8 +99,8 @@ class CONTENT_EXPORT ResourceDispatcher {
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
   //
-  // You can pass an optional argument |loading_task_runner| to specify task
-  // queue to execute loading tasks on.
+  // You need to pass a non-null |loading_task_runner| to specify task queue to
+  // execute loading tasks on.
   virtual int StartAsync(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,

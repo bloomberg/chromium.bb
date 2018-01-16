@@ -20,6 +20,7 @@ namespace content {
 void SyncLoadContext::StartAsyncWithWaitableEvent(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactoryPtrInfo url_loader_factory_pipe,
@@ -30,10 +31,10 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       request.get(), std::move(url_loader_factory_pipe), response, event);
 
   context->request_id_ = context->resource_dispatcher_->StartAsync(
-      std::move(request), routing_id, nullptr, frame_origin, traffic_annotation,
-      true /* is_sync */, base::WrapUnique(context),
-      context->url_loader_factory_.get(), std::move(throttles),
-      mojom::URLLoaderClientEndpointsPtr());
+      std::move(request), routing_id, std::move(loading_task_runner),
+      frame_origin, traffic_annotation, true /* is_sync */,
+      base::WrapUnique(context), context->url_loader_factory_.get(),
+      std::move(throttles), mojom::URLLoaderClientEndpointsPtr());
 }
 
 SyncLoadContext::SyncLoadContext(
