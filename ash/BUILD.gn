@@ -846,6 +846,8 @@ component("ash") {
     "wm/overview/cleanup_animation_observer.cc",
     "wm/overview/cleanup_animation_observer.h",
     "wm/overview/overview_animation_type.h",
+    "wm/overview/overview_utils.cc",
+    "wm/overview/overview_utils.h",
     "wm/overview/overview_window_drag_controller.cc",
     "wm/overview/overview_window_drag_controller.h",
     "wm/overview/rounded_rect_view.cc",
