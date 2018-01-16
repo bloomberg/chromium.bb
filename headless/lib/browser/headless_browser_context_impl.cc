@@ -102,11 +102,19 @@ HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   // Destroy all web contents before shutting down storage partitions.
   web_contents_map_.clear();
 
-  ShutdownStoragePartitions();
-
   if (resource_context_) {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        resource_context_.release());
+  }
+
+  ShutdownStoragePartitions();
+
+  if (url_request_getter_) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &HeadlessURLRequestContextGetter::NotifyContextShuttingDown,
+            url_request_getter_));
   }
 }
 
@@ -274,15 +282,14 @@ HeadlessBrowserContextImpl::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  scoped_refptr<HeadlessURLRequestContextGetter> url_request_context_getter(
-      new HeadlessURLRequestContextGetter(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO),
-          protocol_handlers, context_options_->TakeProtocolHandlers(),
-          std::move(request_interceptors), context_options_.get(),
-          browser_->net_log(), this));
-  resource_context_->set_url_request_context_getter(url_request_context_getter);
-  return url_request_context_getter.get();
+  url_request_getter_ = base::MakeRefCounted<HeadlessURLRequestContextGetter>(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      protocol_handlers, context_options_->TakeProtocolHandlers(),
+      std::move(request_interceptors), context_options_.get(),
+      browser_->net_log(), this);
+  resource_context_->set_url_request_context_getter(url_request_getter_);
+  return url_request_getter_.get();
 }
 
 net::URLRequestContextGetter*

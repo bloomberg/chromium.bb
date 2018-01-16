@@ -133,6 +133,7 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   HeadlessBrowserImpl* browser_;  // Not owned.
   std::unique_ptr<HeadlessBrowserContextOptions> context_options_;
   std::unique_ptr<HeadlessResourceContext> resource_context_;
+  scoped_refptr<HeadlessURLRequestContextGetter> url_request_getter_;
   base::FilePath path_;
   base::Lock observers_lock_;
   base::ObserverList<Observer> observers_;

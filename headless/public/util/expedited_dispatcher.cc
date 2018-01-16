@@ -26,13 +26,13 @@ void ExpeditedDispatcher::JobFailed(ManagedDispatchURLRequestJob* job,
                                     net::Error error) {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnStartError,
-                            base::Unretained(job), error));
+                            job->GetWeakPtr(), error));
 }
 
 void ExpeditedDispatcher::DataReady(ManagedDispatchURLRequestJob* job) {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnHeadersComplete,
-                            base::Unretained(job)));
+                            job->GetWeakPtr()));
 }
 
 void ExpeditedDispatcher::JobDeleted(ManagedDispatchURLRequestJob*) {}

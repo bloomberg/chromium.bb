@@ -201,6 +201,11 @@ TEST_F(VirtualTimeTest,
   // Finished loading, virtual time should be able to advance.
   main_resource.Finish();
   EXPECT_TRUE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
+
+  // The loading events are delayed for 10 virtual ms after they have run, we
+  // let tasks run for a little while to ensure we don't get any asserts on
+  // teardown as a result.
+  RunTasksForPeriod(10);
 }
 
 // http://crbug.com/633321

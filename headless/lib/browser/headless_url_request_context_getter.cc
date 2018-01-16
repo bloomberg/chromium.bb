@@ -87,6 +87,10 @@ HeadlessURLRequestContextGetter::~HeadlessURLRequestContextGetter() {
 net::URLRequestContext*
 HeadlessURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (shut_down_)
+    return nullptr;
+
   if (!url_request_context_) {
     net::URLRequestContextBuilder builder;
 
@@ -213,6 +217,13 @@ net::HostResolver* HeadlessURLRequestContextGetter::host_resolver() const {
 void HeadlessURLRequestContextGetter::OnHeadlessBrowserContextDestruct() {
   base::AutoLock lock(lock_);
   headless_browser_context_ = nullptr;
+}
+
+void HeadlessURLRequestContextGetter::NotifyContextShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  shut_down_ = true;
+  net::URLRequestContextGetter::NotifyContextShuttingDown();
+  url_request_context_ = nullptr;  // deletes it
 }
 
 }  // namespace headless
