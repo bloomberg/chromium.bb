@@ -5,6 +5,7 @@ layer at (0,0) size 800x176
     LayoutNGBlockFlow {BODY} at (8,16) size 784x152
       LayoutNGBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 300x19
+          text run at (0,0) width 300: "Test passes if the \"Filler Text\" is above the box."
       LayoutTable {DIV} at (0,36) size 96x116
         LayoutBlockFlow {DIV} at (0,0) size 96x20
           LayoutText {#text} at (0,0) size 65x19
