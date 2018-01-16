@@ -175,8 +175,9 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
       .Set("dataGenerationTime",
            mv_item.data_generation_time.is_null()
                ? v8::Local<v8::Value>(v8::Null(isolate))
-               : v8::Date::New(isolate,
-                               mv_item.data_generation_time.ToJsTime()));
+               : v8::Date::New(isolate->GetCurrentContext(),
+                               mv_item.data_generation_time.ToJsTime())
+                     .ToLocalChecked());
 
   // If the suggestion already has a favicon, we populate the element with it.
   if (!mv_item.favicon.spec().empty())
