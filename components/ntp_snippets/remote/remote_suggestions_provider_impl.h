@@ -111,7 +111,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       base::Time end,
       const base::Callback<bool(const GURL& url)>& filter) override;
   void ClearCachedSuggestions() override;
-  void OnSignInStateChanged() override;
+  void OnSignInStateChanged(bool has_signed_in) override;
   void GetDismissedSuggestionsForDebugging(
       Category category,
       DismissedSuggestionsCallback callback) override;
