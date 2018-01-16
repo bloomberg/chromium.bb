@@ -194,8 +194,6 @@ DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x8_8x4[32]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x4[16]);
 
 DECLARE_ALIGNED(16, extern const uint16_t, band_count_table[TX_SIZES_ALL][8]);
-DECLARE_ALIGNED(16, extern const uint16_t,
-                band_cum_count_table[TX_SIZES_ALL][8]);
 
 static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
   switch (tx_size) {
