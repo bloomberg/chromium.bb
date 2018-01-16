@@ -66,6 +66,10 @@ namespace ui {
 
 namespace {
 
+// Constants that are part of EWMH.
+constexpr int kNetWMStateAdd = 1;
+constexpr int kNetWMStateRemove = 0;
+
 int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
   if (base::MessageLoop::current()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -900,6 +904,29 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
                     8, PropModeReplace,
                     reinterpret_cast<unsigned char*>(role_c), role.size());
   }
+}
+
+void SetWMSpecState(XID window, bool enabled, XAtom state1, XAtom state2) {
+  XEvent xclient;
+  memset(&xclient, 0, sizeof(xclient));
+  xclient.type = ClientMessage;
+  xclient.xclient.window = window;
+  xclient.xclient.message_type = gfx::GetAtom("_NET_WM_STATE");
+  // The data should be viewed as a list of longs, because XAtom is a typedef of
+  // long.
+  xclient.xclient.format = 32;
+  xclient.xclient.data.l[0] = enabled ? kNetWMStateAdd : kNetWMStateRemove;
+  xclient.xclient.data.l[1] = state1;
+  xclient.xclient.data.l[2] = state2;
+  xclient.xclient.data.l[3] = 1;
+  xclient.xclient.data.l[4] = 0;
+
+  XSendEvent(gfx::GetXDisplay(), GetX11RootWindow(), x11::False,
+             SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
+}
+
+bool HasWMSpecProperty(const base::flat_set<XAtom>& properties, XAtom atom) {
+  return properties.find(atom) != properties.end();
 }
 
 bool GetCustomFramePrefDefault() {
