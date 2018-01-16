@@ -71,9 +71,16 @@ class TestFileHelper : public FileHelper {
 
   // Overridden from FileHelper:
   std::string GetMimeTypeForUriList() const override { return "text/uri-list"; }
-  bool ConvertPathToUrl(const base::FilePath& path, GURL* out) override {
+  bool GetUrlFromPath(const std::string& app_id,
+                      const base::FilePath& path,
+                      GURL* out) override {
     *out = GURL("file://" + path.AsUTF8Unsafe());
     return true;
+  }
+  bool GetUrlFromFileSystemUrl(const std::string& app_id,
+                               const GURL& url,
+                               GURL* out) override {
+    return false;
   }
 
  private:
