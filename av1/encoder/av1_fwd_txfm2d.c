@@ -631,7 +631,7 @@ static const int8_t fwd_shift_16x32[3] = { 2, -4, 0 };
 static const int8_t fwd_shift_32x16[3] = { 2, -4, 0 };
 #if CONFIG_TX64X64
 static const int8_t fwd_shift_32x64[3] = { 0, -2, -2 };
-static const int8_t fwd_shift_64x32[3] = { 0, -2, -2 };
+static const int8_t fwd_shift_64x32[3] = { 2, -4, -2 };
 #endif
 static const int8_t fwd_shift_4x16[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_16x4[3] = { 2, -1, 0 };
@@ -639,7 +639,7 @@ static const int8_t fwd_shift_8x32[3] = { 2, -2, 0 };
 static const int8_t fwd_shift_32x8[3] = { 2, -2, 0 };
 #if CONFIG_TX64X64
 static const int8_t fwd_shift_16x64[3] = { 0, -2, 0 };
-static const int8_t fwd_shift_64x16[3] = { 0, -2, 0 };
+static const int8_t fwd_shift_64x16[3] = { 2, -4, 0 };
 #endif  // CONFIG_TX64X64
 
 const int8_t *fwd_txfm_shift_ls[TX_SIZES_ALL] = {
