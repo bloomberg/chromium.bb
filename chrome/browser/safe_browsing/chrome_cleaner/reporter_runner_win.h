@@ -38,6 +38,9 @@ const int kDaysBetweenReporterLogsSent = 7;
 // or because the user explicitly initiated a cleanup. The invocation type
 // controls whether a prompt dialog will be shown to the user and under what
 // conditions logs may be uploaded to Google.
+//
+// These values are used to send UMA information and are replicated in the
+// enums.xml file, so the order MUST NOT CHANGE.
 enum class SwReporterInvocationType {
   // Default value that should never be used for valid invocations.
   kUnspecified,
@@ -62,6 +65,8 @@ enum class SwReporterInvocationType {
   // the reporter and the cleaner in scanning mode (which will only run if
   // unwanted software is found by the reporter).
   kUserInitiatedWithLogsAllowed,
+
+  kMax,
 };
 
 bool IsUserInitiated(SwReporterInvocationType invocation_type);
@@ -136,6 +141,8 @@ class SwReporterInvocation {
       chrome_cleaner::ChromePromptValue::kUnspecified;
 };
 
+// These values are used to send UMA information and are replicated in the
+// enums.xml file, so the order MUST NOT CHANGE.
 enum class SwReporterInvocationResult {
   kUnspecified,
   // Tried to start a new run, but a user-initiated run was already
@@ -159,6 +166,8 @@ enum class SwReporterInvocationResult {
   // a cleanup should be offered. A notification with this result should be
   // immediately followed by an attempt to run the cleaner in scanning mode.
   kCleanupToBeOffered,
+
+  kMax,
 };
 
 // Called when all reporter invocations have completed, with a result parameter

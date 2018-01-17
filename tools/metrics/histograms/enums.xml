@@ -39838,6 +39838,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="On browser window available"/>
 </enum>
 
+<enum name="SoftwareReporterSequenceResult">
+  <int value="1" label="Not scheduled"/>
+  <int value="2" label="Timed-out"/>
+  <int value="3" label="Component not available"/>
+  <int value="4" label="Process failed to launch"/>
+  <int value="5" label="General failure"/>
+  <int value="6" label="Nothing found"/>
+  <int value="7" label="Cleanup not offered"/>
+  <int value="8" label="Cleanup to be offered"/>
+</enum>
+
+<enum name="SoftwareReporterSequenceType">
+  <int value="1" label="Periodic run"/>
+  <int value="2" label="User-initiated with logs disabled"/>
+  <int value="3" label="User-initiated with logs enabled"/>
+</enum>
+
 <enum name="SpareWebContentsStatus">
   <int value="0" label="Created"/>
   <int value="1" label="Used"/>
