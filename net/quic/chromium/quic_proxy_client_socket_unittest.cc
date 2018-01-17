@@ -449,9 +449,8 @@ class QuicProxyClientSocketTest
   void AssertSyncWriteSucceeds(const char* data, int len) {
     scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
     memcpy(buf->data(), data, len);
-    EXPECT_THAT(sock_->Write(buf.get(), buf->size(), CompletionCallback(),
-                             TRAFFIC_ANNOTATION_FOR_TESTS),
-                IsOk());
+    EXPECT_EQ(len, sock_->Write(buf.get(), buf->size(), CompletionCallback(),
+                                TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   void AssertSyncReadEquals(const char* data, int len) {
@@ -1118,7 +1117,7 @@ TEST_P(QuicProxyClientSocketTest, AsyncWriteAroundReads) {
   // asynchronous starting with the second time it's called while the UDP socket
   // is write-blocked. Therefore, at least two writes need to be called on
   // |sock_| to get an asynchronous one.
-  AssertWriteReturns(kMsg2, kLen2, OK);
+  AssertWriteReturns(kMsg2, kLen2, kLen2);
   AssertWriteReturns(kMsg2, kLen2, ERR_IO_PENDING);
 
   AssertAsyncReadEquals(kMsg3, kLen3);
@@ -1127,7 +1126,7 @@ TEST_P(QuicProxyClientSocketTest, AsyncWriteAroundReads) {
 
   // Now the write will complete
   ResumeAndRun();
-  EXPECT_EQ(OK, write_callback_.WaitForResult());
+  EXPECT_EQ(kLen2, write_callback_.WaitForResult());
 }
 
 // ----------- Reading/Writing on Closed socket
@@ -1274,7 +1273,7 @@ TEST_P(QuicProxyClientSocketTest, WritePendingOnClose) {
   // asynchronous starting with the second time it's called while the UDP socket
   // is write-blocked. Therefore, at least two writes need to be called on
   // |sock_| to get an asynchronous one.
-  AssertWriteReturns(kMsg1, kLen1, OK);
+  AssertWriteReturns(kMsg1, kLen1, kLen1);
 
   // This second write will be async. This is the pending write that's being
   // tested.
@@ -1303,7 +1302,7 @@ TEST_P(QuicProxyClientSocketTest, DisconnectWithWritePending) {
   // asynchronous starting with the second time it's called while the UDP socket
   // is write-blocked. Therefore, at least two writes need to be called on
   // |sock_| to get an asynchronous one.
-  AssertWriteReturns(kMsg1, kLen1, OK);
+  AssertWriteReturns(kMsg1, kLen1, kLen1);
 
   // This second write will be async. This is the pending write that's being
   // tested.
@@ -1377,7 +1376,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePending) {
   // asynchronous starting with the second time it's called while the UDP socket
   // is write-blocked. Therefore, at least two writes need to be called on
   // |sock_| to get an asynchronous one.
-  AssertWriteReturns(kMsg2, kLen2, OK);
+  AssertWriteReturns(kMsg2, kLen2, kLen2);
   AssertWriteReturns(kMsg2, kLen2, ERR_IO_PENDING);
 
   ResumeAndRun();
@@ -1497,7 +1496,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   // asynchronous starting with the second time it's called while the UDP socket
   // is write-blocked. Therefore, at least two writes need to be called on
   // |sock_| to get an asynchronous one.
-  AssertWriteReturns(kMsg1, kLen1, OK);
+  AssertWriteReturns(kMsg1, kLen1, kLen1);
   AssertWriteReturns(kMsg1, kLen1, ERR_IO_PENDING);
 
   ResumeAndRun();
