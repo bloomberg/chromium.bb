@@ -120,7 +120,7 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
 
   void LoadBlackList(LoadBlackListCallback callback) override {
     if (!black_list_item_map_) {
-      black_list_item_map_ = base::MakeUnique<BlackListItemMap>();
+      black_list_item_map_ = std::make_unique<BlackListItemMap>();
     }
     if (!host_indifferent_black_list_item_) {
       host_indifferent_black_list_item_ =
@@ -158,9 +158,9 @@ class PreviewsBlackListTest : public testing::Test {
       params_.clear();
     }
     std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-        null_opt_out ? nullptr : base::MakeUnique<TestPreviewsOptOutStore>();
+        null_opt_out ? nullptr : std::make_unique<TestPreviewsOptOutStore>();
     opt_out_store_ = opt_out_store.get();
-    black_list_ = base::MakeUnique<PreviewsBlackList>(
+    black_list_ = std::make_unique<PreviewsBlackList>(
         std::move(opt_out_store), &test_clock_, &blacklist_delegate_);
     start_ = test_clock_.Now();
 
@@ -857,12 +857,12 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
   }
 
   std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-      base::MakeUnique<TestPreviewsOptOutStore>();
+      std::make_unique<TestPreviewsOptOutStore>();
   opt_out_store->SetHostIndifferentBlacklistItem(
       std::move(host_indifferent_item));
 
   EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
-  auto black_list = base::MakeUnique<PreviewsBlackList>(
+  auto black_list = std::make_unique<PreviewsBlackList>(
       std::move(opt_out_store), &test_clock, &blacklist_delegate_);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blacklist_delegate_.user_blacklisted());
@@ -912,15 +912,15 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
   item_b->AddPreviewNavigation(true, test_clock.Now());
 
   std::unique_ptr<BlackListItemMap> item_map =
-      base::MakeUnique<BlackListItemMap>();
+      std::make_unique<BlackListItemMap>();
   item_map->emplace(url_a.host(), base::WrapUnique(item_a));
   item_map->emplace(url_b.host(), base::WrapUnique(item_b));
 
   std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-      base::MakeUnique<TestPreviewsOptOutStore>();
+      std::make_unique<TestPreviewsOptOutStore>();
   opt_out_store->SetBlacklistItemMap(std::move(item_map));
 
-  auto black_list = base::MakeUnique<PreviewsBlackList>(
+  auto black_list = std::make_unique<PreviewsBlackList>(
       std::move(opt_out_store), &test_clock, &blacklist_delegate_);
   base::RunLoop().RunUntilIdle();
 

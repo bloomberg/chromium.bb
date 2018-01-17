@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
@@ -65,7 +64,7 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
 
   // Creates a store that operates on one thread.
   void Create(std::unique_ptr<PreviewsTypeList> enabled_previews) {
-    store_ = base::MakeUnique<PreviewsOptOutStoreSQL>(
+    store_ = std::make_unique<PreviewsOptOutStoreSQL>(
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         temp_dir_.GetPath().Append(kOptOutFilename),

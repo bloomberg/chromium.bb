@@ -5,10 +5,10 @@
 #include "components/previews/core/previews_experiments.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
@@ -30,7 +30,7 @@ TEST(PreviewsExperimentsTest, TestCommandLineOfflinePage) {
   EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
 
   std::unique_ptr<base::FeatureList> feature_list =
-      base::MakeUnique<base::FeatureList>();
+      std::make_unique<base::FeatureList>();
 
   // The feature is explicitly enabled on the command-line.
   feature_list->InitializeFromCommandLine("", "OfflinePreviews");
@@ -161,7 +161,7 @@ TEST(PreviewsExperimentsTest, TestCommandLineClientLoFi) {
   EXPECT_FALSE(params::IsClientLoFiEnabled());
 
   std::unique_ptr<base::FeatureList> feature_list =
-      base::MakeUnique<base::FeatureList>();
+      std::make_unique<base::FeatureList>();
 
   // The feature is explicitly enabled on the command-line.
   feature_list->InitializeFromCommandLine("ClientLoFi", "");

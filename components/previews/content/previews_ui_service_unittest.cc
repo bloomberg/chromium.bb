@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -189,14 +188,14 @@ class PreviewsUIServiceTest : public testing::Test {
 
   void SetUp() override {
     std::unique_ptr<TestPreviewsLogger> logger =
-        base::MakeUnique<TestPreviewsLogger>();
+        std::make_unique<TestPreviewsLogger>();
 
     // Use to testing logger data.
     logger_ptr_ = logger.get();
 
-    io_data_ = base::MakeUnique<TestPreviewsIOData>(loop_.task_runner(),
+    io_data_ = std::make_unique<TestPreviewsIOData>(loop_.task_runner(),
                                                     loop_.task_runner());
-    ui_service_ = base::MakeUnique<TestPreviewsUIService>(
+    ui_service_ = std::make_unique<TestPreviewsUIService>(
         io_data(), loop_.task_runner(), nullptr /* previews_opt_out_store */,
         nullptr /* previews_opt_guide */, std::move(logger));
     base::RunLoop().RunUntilIdle();
