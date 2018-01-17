@@ -153,10 +153,10 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   EXPECT_FALSE(source.IsEmpty());
 
   gin::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script = v8::Script::Compile(source);
-  EXPECT_FALSE(script.IsEmpty());
-  v8::Local<v8::Value> val = script->Run();
-  EXPECT_FALSE(val.IsEmpty());
+  v8::Local<v8::Script> script =
+      v8::Script::Compile(context_.Get(isolate), source).ToLocalChecked();
+  v8::Local<v8::Value> val =
+      script->Run(context_.Get(isolate)).ToLocalChecked();
   v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
   v8::Local<v8::Value> argv[] = {
@@ -180,8 +180,10 @@ TEST_F(WrappableTest, CallAsFunction) {
                                              "obj(42, 2, 5);"
                                              "})");
   gin::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script = v8::Script::Compile(source);
-  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Script> script =
+      v8::Script::Compile(context_.Get(isolate), source).ToLocalChecked();
+  v8::Local<v8::Value> val =
+      script->Run(context_.Get(isolate)).ToLocalChecked();
   v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
   v8::Local<v8::Value> argv[] = {
@@ -203,8 +205,10 @@ TEST_F(WrappableTest, CallAsConstructor) {
                                              "new obj(42, 2, 5);"
                                              "})");
   gin::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script = v8::Script::Compile(source);
-  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Script> script =
+      v8::Script::Compile(context_.Get(isolate), source).ToLocalChecked();
+  v8::Local<v8::Value> val =
+      script->Run(context_.Get(isolate)).ToLocalChecked();
   v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
   v8::Local<v8::Value> argv[] = {

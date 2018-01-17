@@ -239,14 +239,14 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
                               script_name.size());
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script = v8::Script::Compile(source, name);
+  v8::ScriptOrigin origin(name);
+  v8::Local<v8::Script> script;
   // Ensure the script compiled without errors.
-  if (script.IsEmpty())
+  if (!v8::Script::Compile(context, source, &origin).ToLocal(&script))
     FAIL() << ExceptionToString(try_catch);
 
-  v8::Local<v8::Value> result = script->Run();
   // Ensure the script ran without errors.
-  if (result.IsEmpty())
+  if (script->Run(context).IsEmpty())
     FAIL() << ExceptionToString(try_catch);
 }
 

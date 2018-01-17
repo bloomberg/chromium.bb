@@ -97,7 +97,7 @@ v8::Local<v8::Value> V8ValueFromScriptSource(v8::Local<v8::Context> context,
   v8::Local<v8::Script> script;
   if (!maybe_script.ToLocal(&script))
     return v8::Local<v8::Value>();
-  return script->Run();
+  return script->Run(context).ToLocalChecked();
 }
 
 v8::Local<v8::Function> FunctionFromString(v8::Local<v8::Context> context,
