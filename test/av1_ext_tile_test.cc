@@ -188,7 +188,7 @@ class AV1ExtTileTest
   std::vector<std::string> tile_md5_;
 };
 
-TEST_P(AV1ExtTileTest, DecoderResultTest) {
+TEST_P(AV1ExtTileTest, DISABLED_DecoderResultTest) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", kImgWidth,
                                        kImgHeight, 30, 1, 0, kLimit);
   cfg_.rc_target_bitrate = 500;

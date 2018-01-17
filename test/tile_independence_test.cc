@@ -157,7 +157,7 @@ AV1_INSTANTIATE_TEST_CASE(TileIndependenceTestLarge, ::testing::Values(0, 1),
 #if CONFIG_EXT_TILE
 class TileIndependenceLSTest : public TileIndependenceTest {};
 
-TEST_P(TileIndependenceLSTest, MD5Match) {
+TEST_P(TileIndependenceLSTest, DISABLED_MD5Match) {
   cfg_.large_scale_tile = 1;
   fw_dec_->Control(AV1_SET_TILE_MODE, 1);
   inv_dec_->Control(AV1_SET_TILE_MODE, 1);
@@ -166,7 +166,7 @@ TEST_P(TileIndependenceLSTest, MD5Match) {
 
 class TileIndependenceLSTestLarge : public TileIndependenceTestLarge {};
 
-TEST_P(TileIndependenceLSTestLarge, MD5Match) {
+TEST_P(TileIndependenceLSTestLarge, DISABLED_MD5Match) {
   cfg_.large_scale_tile = 1;
   fw_dec_->Control(AV1_SET_TILE_MODE, 1);
   inv_dec_->Control(AV1_SET_TILE_MODE, 1);
