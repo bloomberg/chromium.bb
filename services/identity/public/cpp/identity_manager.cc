@@ -81,6 +81,17 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
+void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
+    std::string gaia_id,
+    std::string email_address,
+    std::string refresh_token) {
+  signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
+  primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
+
+  token_service_->UpdateCredentials(primary_account_info_.account_id,
+                                    refresh_token);
+}
+
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   // Fire observer callbacks asynchronously to mimic this callback itself coming
   // in asynchronously from the Identity Service rather than synchronously from
