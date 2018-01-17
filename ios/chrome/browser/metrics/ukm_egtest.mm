@@ -44,11 +44,16 @@ using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsAccountButton;
+using chrome_test_util::SettingsMenuPrivacyButton;
+using chrome_test_util::ClearBrowsingHistoryButton;
+using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::SyncSwitchCell;
 using chrome_test_util::TabletTabSwitcherCloseButton;
 using chrome_test_util::TabletTabSwitcherOpenTabsPanelButton;
 using chrome_test_util::TurnSyncSwitchOn;
+using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::NavigationBarDoneButton;
 
 namespace metrics {
 
@@ -65,6 +70,17 @@ class UkmEGTestHelper {
   static uint64_t client_id() {
     auto* service = ukm_service();
     return service ? service->client_id_ : 0;
+  }
+
+  static bool HasDummySource(ukm::SourceId source_id) {
+    auto* service = ukm_service();
+    return service ? !!service->sources().count(source_id) : false;
+  }
+
+  static void RecordDummySource(ukm::SourceId source_id) {
+    auto* service = ukm_service();
+    if (service)
+      service->UpdateSourceURL(source_id, GURL("http://example.com"));
   }
 
  private:
@@ -102,6 +118,35 @@ void AssertUKMEnabled(bool is_enabled) {
   GREYAssert(testing::WaitUntilConditionOrTimeout(kSyncUKMOperationsTimeout,
                                                   condition),
              @"Failed to assert whether UKM was enabled or not.");
+}
+
+// Matcher for the Clear Browsing Data cell on the Privacy screen.
+id<GREYMatcher> ClearBrowsingDataCell() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
+}
+// Matcher for the clear browsing data button on the clear browsing data panel.
+id<GREYMatcher> ClearBrowsingDataButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
+}
+// Matcher for the clear browsing data action sheet item.
+id<GREYMatcher> ConfirmClearBrowsingDataButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CONFIRM_CLEAR_BUTTON);
+}
+
+void ClearBrowsingData() {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
+  [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
+  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
+      performAction:grey_tap()];
+
+  // Before returning, make sure that the top of the Clear Browsing Data
+  // settings screen is visible to match the state at the start of the method.
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 void OpenNewIncognitoTab() {
@@ -331,6 +376,25 @@ void SignOut() {
   // Client ID should have been reset.
   GREYAssert(original_client_id != metrics::UkmEGTestHelper::client_id(),
              @"Client ID was not reset.");
+}
+
+- (void)testHistoryDelete {
+  uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
+
+  const ukm::SourceId kDummySourceId = 0x54321;
+  metrics::UkmEGTestHelper::RecordDummySource(kDummySourceId);
+  GREYAssert(metrics::UkmEGTestHelper::HasDummySource(kDummySourceId),
+             @"Dummy source failed to record.");
+
+  ClearBrowsingData();
+
+  // Other sources may already have been recorded since the data was cleared,
+  // but the dummy source should be gone.
+  GREYAssert(!metrics::UkmEGTestHelper::HasDummySource(kDummySourceId),
+             @"Dummy source was not purged.");
+  GREYAssert(original_client_id == metrics::UkmEGTestHelper::client_id(),
+             @"Client ID was reset.");
+  AssertUKMEnabled(true);
 }
 
 @end
