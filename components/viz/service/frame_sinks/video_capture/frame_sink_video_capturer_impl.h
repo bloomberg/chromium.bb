@@ -10,6 +10,7 @@
 #include <array>
 #include <queue>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -209,15 +210,11 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   mojom::FrameSinkVideoConsumerPtr consumer_;
 
   // A cache of recently-recorded future frame display times, according to the
-  // BeginFrameArgs passed to OnBeginFrame() calls. This array is a ring buffer
-  // mapping BeginFrameArgs::sequence_number to the expected display time.
-  std::array<base::TimeTicks, kDesignLimitMaxFrames> frame_display_times_;
-
-  // The following is used to track when the BeginFrameSource changes, to
-  // determine whether the |frame_display_times_| are valid for the current
-  // source.
-  BeginFrameSourceId current_begin_frame_source_id_ =
-      BeginFrameArgs::kStartingSourceId;
+  // BeginFrameArgs passed to OnBeginFrame() calls. There is one TimeRingBuffer
+  // per BeginFrameSource. TimeRingBuffer is an array mapping
+  // BeginFrameArgs::sequence_number to the expected display time.
+  using TimeRingBuffer = std::array<base::TimeTicks, kDesignLimitMaxFrames>;
+  base::flat_map<BeginFrameSourceId, TimeRingBuffer> frame_display_times_;
 
   // These are sequence counters used to ensure that the frames are being
   // delivered in the same order they are captured.
@@ -266,6 +263,11 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // A weak pointer factory used for cancelling the results from any in-flight
   // copy output requests.
   base::WeakPtrFactory<FrameSinkVideoCapturerImpl> capture_weak_factory_;
+
+  // Retain entries in |frame_display_times_| that contain timestamps newer than
+  // this long ago.
+  static constexpr base::TimeDelta kDisplayTimeCacheKeepAliveInterval =
+      base::TimeDelta::FromMilliseconds(500);
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkVideoCapturerImpl);
 };

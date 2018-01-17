@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -51,6 +52,10 @@ constexpr media::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 // static
 constexpr base::TimeDelta
     FrameSinkVideoCapturerImpl::kRefreshFrameRetryInterval;
+
+// static
+constexpr base::TimeDelta
+    FrameSinkVideoCapturerImpl::kDisplayTimeCacheKeepAliveInterval;
 
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager,
@@ -246,9 +251,32 @@ void FrameSinkVideoCapturerImpl::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(args.IsValid());
   DCHECK(resolved_target_);
 
-  frame_display_times_[args.sequence_number % frame_display_times_.size()] =
-      args.frame_time + args.interval;
-  current_begin_frame_source_id_ = args.source_id;
+  // Note: It's possible that there are multiple BeginFrameSources that may call
+  // this method. It's not possible to know which one will be associated with a
+  // later OnFrameDamaged() call, so all recent timestamps must be cached.
+
+  const size_t prior_source_count = frame_display_times_.size();
+  TimeRingBuffer& ring_buffer = frame_display_times_[args.source_id];
+  const base::TimeTicks display_time = args.frame_time + args.interval;
+  DCHECK(!display_time.is_null());
+  ring_buffer[args.sequence_number % ring_buffer.size()] = display_time;
+
+  // Garbage-collect |frame_display_times_| entries that are no longer being
+  // actively updated. This only runs when this method is being called with an
+  // as-yet-unseen |args.source_id|. An entry is pruned only if all of its
+  // timestamps are older than a reasonable threshold.
+  if (frame_display_times_.size() != prior_source_count) {
+    const base::TimeTicks threshold =
+        display_time - kDisplayTimeCacheKeepAliveInterval;
+    using KeyValuePair = decltype(frame_display_times_)::value_type;
+    base::EraseIf(frame_display_times_, [&threshold](const KeyValuePair& p) {
+      const TimeRingBuffer& ring_buffer = p.second;
+      return std::all_of(ring_buffer.begin(), ring_buffer.end(),
+                         [&threshold](base::TimeTicks t) {
+                           return t.is_null() || t < threshold;
+                         });
+    });
+  }
 }
 
 void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
@@ -259,8 +287,16 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
   DCHECK(!damage_rect.IsEmpty());
   DCHECK(resolved_target_);
 
-  if (ack.source_id != current_begin_frame_source_id_ ||
-      ack.sequence_number < BeginFrameArgs::kStartingFrameNumber) {
+  base::TimeTicks display_time;
+  const auto it = frame_display_times_.find(ack.source_id);
+  if (it != frame_display_times_.end()) {
+    const TimeRingBuffer& ring_buffer = it->second;
+    display_time = ring_buffer[ack.sequence_number % ring_buffer.size()];
+  }
+  if (display_time.is_null()) {
+    // This can sometimes occur for the first few frames when capture starts,
+    // but should not happen thereafter.
+    DLOG(WARNING) << "OnFrameDamaged() called without prior OnBeginFrame().";
     return;
   }
 
@@ -268,9 +304,8 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
     oracle_.SetSourceSize(frame_size);
   }
 
-  MaybeCaptureFrame(
-      VideoCaptureOracle::kCompositorUpdate, damage_rect,
-      frame_display_times_[ack.sequence_number % frame_display_times_.size()]);
+  MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
+                    display_time);
 }
 
 void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
