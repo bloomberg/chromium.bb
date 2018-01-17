@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../vr/resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../vr/resources/mock-vr-service.js"></script>
+<script src="../vr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../vr/resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+xr_session_test( (t, session, mockService) => {
+  t.step( () => {
+    try {
+      let webglLayerGood = new XRWebGLLayer(session, gl);
+    } catch (err) {
+      assert_unreached("XRWebGLLayer should not fail with valid arguments");
+    }
+  });
+
+  let lose_context_ext = gl.getExtension('WEBGL_lose_context');
+
+  webglCanvas.addEventListener('webglcontextlost', (ev) => {
+    ev.preventDefault();
+
+    t.step( () => {
+      try {
+        let webglLayerBadContext = new XRWebGLLayer(session, gl);
+        assert_unreached("XRWebGLLayer should fail when created with a lost context");
+        t.done();
+      } catch (err) {
+        assert_equals(err.name, 'InvalidStateError');
+        setTimeout(() => { lose_context_ext.restoreContext(); }, 100);
+      }
+    });
+  });
+
+  webglCanvas.addEventListener('webglcontextrestored', (ev) => {
+    session.end().then(() => {
+      t.step( () => {
+        try {
+          let webglLayerBadSession = new XRWebGLLayer(session, gl);
+          assert_unreached("XRWebGLLayer should fail when created with an ended session");
+        } catch (err) {
+          assert_equals(err.name, 'InvalidStateError');
+        }
+
+        t.done();
+      });
+    });
+  });
+
+  lose_context_ext.loseContext();
+
+}, fakeDisplays["Pixel"], { exclusive: true },
+"Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame");
+
+</script>

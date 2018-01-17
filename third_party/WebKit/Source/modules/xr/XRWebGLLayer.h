@@ -6,12 +6,15 @@
 #define XRWebGLLayer_h
 
 #include "bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
+#include "modules/webgl/WebGL2RenderingContext.h"
+#include "modules/webgl/WebGLRenderingContext.h"
 #include "modules/xr/XRLayer.h"
-#include "modules/xr/XRWebGLDrawingBuffer.h"
 #include "modules/xr/XRWebGLLayerInit.h"
+#include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
 
 namespace blink {
 
+class ExceptionState;
 class WebGLFramebuffer;
 class WebGLRenderingContextBase;
 class XRSession;
@@ -20,20 +23,19 @@ class XRWebGLLayer final : public XRLayer {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  virtual ~XRWebGLLayer();
+
   static XRWebGLLayer* Create(
       XRSession*,
       const WebGLRenderingContextOrWebGL2RenderingContext&,
-      const XRWebGLLayerInit&);
+      const XRWebGLLayerInit&,
+      ExceptionState&);
 
-  WebGLRenderingContextBase* context() const {
-    return drawing_buffer_->webgl_context();
-  }
+  WebGLRenderingContextBase* context() const { return webgl_context_; }
   void getXRWebGLRenderingContext(
       WebGLRenderingContextOrWebGL2RenderingContext&) const;
 
-  WebGLFramebuffer* framebuffer() const {
-    return drawing_buffer_->framebuffer();
-  }
+  WebGLFramebuffer* framebuffer() const { return framebuffer_; }
   unsigned long framebufferWidth() const {
     return drawing_buffer_->size().Width();
   }
@@ -53,18 +55,30 @@ class XRWebGLLayer final : public XRLayer {
 
   void UpdateViewports();
 
-  virtual void OnFrameStart();
-  virtual void OnFrameEnd();
+  void OnFrameStart() override;
+  void OnFrameEnd() override;
+  void OnResize() override;
+
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   virtual void Trace(blink::Visitor*);
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  XRWebGLLayer(XRSession*, XRWebGLDrawingBuffer*);
+  XRWebGLLayer(XRSession*,
+               WebGLRenderingContextBase*,
+               XRWebGLDrawingBuffer*,
+               WebGLFramebuffer*,
+               double framebuffer_scale);
 
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
-  Member<XRWebGLDrawingBuffer> drawing_buffer_;
 
+  TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
+  std::unique_ptr<XRWebGLDrawingBuffer> drawing_buffer_;
+  Member<WebGLFramebuffer> framebuffer_;
+
+  double framebuffer_scale_ = 1.0;
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
 };

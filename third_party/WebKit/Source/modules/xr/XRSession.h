@@ -57,6 +57,8 @@ class XRSession final : public EventTargetWithInlineData {
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);
 
+  bool ended() { return ended_; }
+
   // Called when the session is ended, either via calling the "end" function or
   // when the presentation service connection is closed.
   void ForceEnd();
@@ -94,7 +96,7 @@ class XRSession final : public EventTargetWithInlineData {
   double depth_near_ = 0.1;
   double depth_far_ = 1000.0;
   bool blurred_ = false;
-  bool detached_ = false;
+  bool ended_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
   bool views_dirty_ = true;

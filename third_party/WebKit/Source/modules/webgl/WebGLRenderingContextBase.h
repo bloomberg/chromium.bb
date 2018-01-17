@@ -575,6 +575,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Returns the drawing buffer size after it is, probably, has scaled down
   // to the maximum supported canvas size.
   IntSize DrawingBufferSize() const override;
+  DrawingBuffer* GetDrawingBuffer() const;
 
   class TextureUnitState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -695,7 +696,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Structure for rendering to a DrawingBuffer, instead of directly
   // to the back-buffer of m_context.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
-  DrawingBuffer* GetDrawingBuffer() const;
 
   TraceWrapperMember<WebGLContextGroup> context_group_;
 
