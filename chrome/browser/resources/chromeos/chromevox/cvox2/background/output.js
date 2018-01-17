@@ -87,7 +87,7 @@ Output = function() {
    * @type {cvox.QueueMode}
    * @private
    */
-  this.queueMode_ = cvox.QueueMode.QUEUE;
+  this.queueMode_;
 
   /**
    * @type {boolean}
@@ -844,7 +844,7 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var queueMode = cvox.QueueMode.FLUSH;
+    var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
     if (this.queueMode_ !== undefined) {
       queueMode = /** @type{cvox.QueueMode} */ (this.queueMode_);
     } else if (Output.forceModeForNextSpeechUtterance_ !== undefined) {

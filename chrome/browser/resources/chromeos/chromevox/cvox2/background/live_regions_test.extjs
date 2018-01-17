@@ -184,7 +184,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionThenFocus', function() {
       var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
           .expectCategoryFlushSpeech('Live')
-          .expectQueuedSpeech('Focus');
+          .expectCategoryFlushSpeech('Focus');
       mockFeedback.replay();
     });
 });
@@ -208,7 +208,7 @@ TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
     function(rootNode) {
       var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(go.doDefault.bind(go))
-          .expectQueuedSpeech('Focus')
+          .expectCategoryFlushSpeech('Focus')
           .expectCategoryFlushSpeech('Live');
       mockFeedback.replay();
     });
