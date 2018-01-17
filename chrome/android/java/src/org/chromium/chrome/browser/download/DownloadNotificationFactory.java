@@ -84,8 +84,8 @@ public final class DownloadNotificationFactory {
                 boolean indeterminate = downloadUpdate.getProgress().isIndeterminate()
                         || downloadUpdate.getIsDownloadPending();
                 if (downloadUpdate.getIsDownloadPending()) {
-                    contentText = context.getResources().getString(
-                            R.string.download_notification_pending);
+                    contentText =
+                            DownloadUtils.getPendingStatusString(downloadUpdate.getPendingState());
                 } else if (indeterminate || downloadUpdate.getTimeRemainingInMillis() < 0) {
                     // TODO(dimich): Enable the byte count back in M59. See bug 704049 for more info
                     // and details of what was temporarily reverted (for M58).
