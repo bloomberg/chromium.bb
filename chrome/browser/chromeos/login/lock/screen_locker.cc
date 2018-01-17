@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -54,6 +56,7 @@
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -327,6 +330,7 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
           user_context.GetAccountId());
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
+  SaveSyncPasswordHash(user_context);
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
@@ -566,6 +570,18 @@ void ScreenLocker::ScheduleDeletion() {
   screen_locker_ = nullptr;
 }
 
+void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
+  if (!user_context.GetSyncPasswordData().has_value())
+    return;
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
+  if (!user || !user->is_active())
+    return;
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  if (profile)
+    login::SaveSyncPasswordDataToProfile(user_context, profile);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, private:
 

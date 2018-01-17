@@ -13,9 +13,11 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -293,6 +295,10 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
   std::string hashed_password = CalculateHash(
       password, system_salt, chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF);
 
+  // Used for GAIA password reuse detection.
+  password_manager::SyncPasswordData sync_password_data(
+      base::UTF8ToUTF16(password), /*force_update=*/false);
+
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   if (is_pin && prefs) {
@@ -315,7 +321,7 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
       is_pin ? LoginMetricsRecorder::AuthMethod::kPin
              : LoginMetricsRecorder::AuthMethod::kPassword);
   login_screen_client_->AuthenticateUser(
-      account_id, hashed_password, is_pin,
+      account_id, hashed_password, sync_password_data, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }

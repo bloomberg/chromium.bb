@@ -46,10 +46,12 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   bool IsVoiceInteractionOobe() override;
 
   // LoginScreenClient::Delegate:
-  void HandleAuthenticateUser(const AccountId& account_id,
-                              const std::string& hashed_password,
-                              bool authenticated_by_pin,
-                              AuthenticateUserCallback callback) override;
+  void HandleAuthenticateUser(
+      const AccountId& account_id,
+      const std::string& hashed_password,
+      const password_manager::SyncPasswordData& sync_password_data,
+      bool authenticated_by_pin,
+      AuthenticateUserCallback callback) override;
   void HandleAttemptUnlock(const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
   void HandleRecordClickOnLockIcon(const AccountId& account_id) override;

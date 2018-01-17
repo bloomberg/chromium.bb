@@ -51,7 +51,7 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
 
   // Verify AuthenticateUser mojo call is run with the same account id, a
   // (hashed) password, and the correct PIN state.
-  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_password, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_password, _, false, _));
   base::Optional<bool> callback_result;
   base::RunLoop run_loop1;
   controller->AuthenticateUser(
@@ -81,7 +81,7 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   EXPECT_NE(pin, hashed_pin);
 
   base::RunLoop run_loop2;
-  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_pin, true, _));
+  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_pin, _, true, _));
   controller->AuthenticateUser(
       id, pin, true,
       base::BindOnce(

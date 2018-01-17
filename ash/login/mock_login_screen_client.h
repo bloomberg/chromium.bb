@@ -6,6 +6,7 @@
 #define ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
 
 #include "ash/public/interfaces/login_screen.mojom.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,11 +19,13 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
 
   mojom::LoginScreenClientPtr CreateInterfacePtrAndBind();
 
-  MOCK_METHOD4(AuthenticateUser_,
-               void(const AccountId& account_id,
-                    const std::string& password,
-                    bool authenticated_by_pin,
-                    AuthenticateUserCallback& callback));
+  MOCK_METHOD5(
+      AuthenticateUser_,
+      void(const AccountId& account_id,
+           const std::string& password,
+           const password_manager::SyncPasswordData& sync_password_data_unused,
+           bool authenticated_by_pin,
+           AuthenticateUserCallback& callback));
 
   // Set the result that should be passed to |callback| in |AuthenticateUser|.
   void set_authenticate_user_callback_result(bool value) {
@@ -37,10 +40,12 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   }
 
   // mojom::LoginScreenClient:
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& password,
-                        bool authenticated_by_pin,
-                        AuthenticateUserCallback callback) override;
+  void AuthenticateUser(
+      const AccountId& account_id,
+      const std::string& password,
+      const password_manager::SyncPasswordData& sync_password_data,
+      bool authenticated_by_pin,
+      AuthenticateUserCallback callback) override;
   MOCK_METHOD1(AttemptUnlock, void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
   MOCK_METHOD1(RecordClickOnLockIcon, void(const AccountId& account_id));

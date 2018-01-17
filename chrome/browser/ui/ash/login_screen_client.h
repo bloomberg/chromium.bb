@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
+#include "components/password_manager/public/interfaces/sync_password_data.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -25,10 +26,12 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
    public:
     Delegate();
     virtual ~Delegate();
-    virtual void HandleAuthenticateUser(const AccountId& account_id,
-                                        const std::string& hashed_password,
-                                        bool authenticated_by_pin,
-                                        AuthenticateUserCallback callback) = 0;
+    virtual void HandleAuthenticateUser(
+        const AccountId& account_id,
+        const std::string& hashed_password,
+        const password_manager::SyncPasswordData& sync_password_data,
+        bool authenticated_by_pin,
+        AuthenticateUserCallback callback) = 0;
     virtual void HandleAttemptUnlock(const AccountId& account_id) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
     virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
@@ -48,10 +51,12 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   static LoginScreenClient* Get();
 
   // ash::mojom::LoginScreenClient:
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& hashed_password,
-                        bool authenticated_by_pin,
-                        AuthenticateUserCallback callback) override;
+  void AuthenticateUser(
+      const AccountId& account_id,
+      const std::string& hashed_password,
+      const password_manager::SyncPasswordData& sync_password_data,
+      bool authenticated_by_pin,
+      AuthenticateUserCallback callback) override;
   void AttemptUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
   void RecordClickOnLockIcon(const AccountId& account_id) override;

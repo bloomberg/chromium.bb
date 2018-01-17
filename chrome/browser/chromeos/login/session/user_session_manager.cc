@@ -1339,21 +1339,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   // Save sync password hash and salt to profile prefs if they are available.
   // These will be used to detect Gaia password reuses.
-  password_manager::metrics_util::IsSyncPasswordHashSaved hash_password_state(
-      password_manager::metrics_util::IsSyncPasswordHashSaved::NOT_SAVED);
   if (user_context_.GetSyncPasswordData().has_value()) {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile,
-                                            ServiceAccessType::EXPLICIT_ACCESS);
-    if (password_store) {
-      password_store->SaveSyncPasswordHash(
-          user_context_.GetSyncPasswordData().value());
-      hash_password_state =
-          password_manager::metrics_util::IsSyncPasswordHashSaved::SAVED;
-    }
+    login::SaveSyncPasswordDataToProfile(user_context_, profile);
   }
-  password_manager::metrics_util::LogIsSyncPasswordHashSaved(
-      hash_password_state);
 
   user_context_.ClearSecrets();
   if (TokenHandlesEnabled()) {
