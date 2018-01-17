@@ -2004,6 +2004,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network.">
         Download pending…
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING_NETWORK" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network because there is no network connection.">
+        Waiting for network…
+      </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING_ANOTHER_DOWNLOAD" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network because another download is currently being downloaded.">
+        Waiting for another download…
+      </message>
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can’t open file
       </message>

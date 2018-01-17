@@ -29,6 +29,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.DownloadUpdate.PendingState;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -451,7 +452,8 @@ public class DownloadManagerService
                 mDownloadNotifier.notifyDownloadCanceled(item.getContentId());
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
-                mDownloadNotifier.notifyDownloadInterrupted(info, progress.mIsAutoResumable);
+                mDownloadNotifier.notifyDownloadInterrupted(
+                        info, progress.mIsAutoResumable, PendingState.PENDING_NETWORK);
                 removeFromDownloadProgressMap = !progress.mIsAutoResumable;
                 break;
             default:

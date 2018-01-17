@@ -17,22 +17,33 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.DownloadUpdate.PendingState;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Tests of {@link DownloadNotificationService2}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 public class DownloadNotificationService2Test {
     private static final ContentId ID1 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
@@ -40,6 +51,14 @@ public class DownloadNotificationService2Test {
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
     private static final ContentId ID3 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
+
+    @ClassParameter
+    private static List<ParameterSet> sClassParams = Arrays.asList(
+            new ParameterSet().value(false).name("DisableOfflinePagesDescriptivePendingStatus"),
+            new ParameterSet().value(true).name("EnableOfflinePagesDescriptivePendingStatus"));
+
+    @Rule
+    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Rule
     public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
@@ -49,6 +68,12 @@ public class DownloadNotificationService2Test {
             .MockDownloadForegroundServiceManager mDownloadForegroundServiceManager;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
 
+    private final boolean mEnableOfflinePagesDescriptivePendingStatus;
+
+    public DownloadNotificationService2Test(boolean enableOfflinePagesDescriptivePendingStatus) {
+        mEnableOfflinePagesDescriptivePendingStatus = enableOfflinePagesDescriptivePendingStatus;
+    }
+
     private static DownloadSharedPreferenceEntry buildEntryStringWithGuid(ContentId contentId,
             int notificationId, String fileName, boolean metered, boolean autoResume) {
         return new DownloadSharedPreferenceEntry(
@@ -57,6 +82,13 @@ public class DownloadNotificationService2Test {
 
     @Before
     public void setUp() {
+        if (mEnableOfflinePagesDescriptivePendingStatus) {
+            Features.getInstance().enable(
+                    ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS);
+        } else {
+            Features.getInstance().disable(
+                    ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS);
+        }
         DownloadNotificationService2.clearResumptionAttemptLeft();
         mDownloadNotificationService = new MockDownloadNotificationService2();
         mDownloadForegroundServiceManager =
@@ -94,7 +126,8 @@ public class DownloadNotificationService2Test {
 
         // Download is paused.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable*/,
-                false /* isAutoResumable */, true, false, null, false, false);
+                false /* isAutoResumable */, true, false, null, false, false,
+                PendingState.NOT_PENDING);
 
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
@@ -140,7 +173,8 @@ public class DownloadNotificationService2Test {
 
         // Download is interrupted and now is pending.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable */,
-                true /* isAutoResumable */, true, false, null, false, false);
+                true /* isAutoResumable */, true, false, null, false, false,
+                PendingState.PENDING_NETWORK);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertTrue(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
@@ -174,7 +208,8 @@ public class DownloadNotificationService2Test {
 
         // Download is interrupted but because it is not resumable, fails.
         mDownloadNotificationService.notifyDownloadPaused(ID1, "test", false /* isResumable*/,
-                true /* isAutoResumable */, true, false, null, false, false);
+                true /* isAutoResumable */, true, false, null, false, false,
+                PendingState.PENDING_NETWORK);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
