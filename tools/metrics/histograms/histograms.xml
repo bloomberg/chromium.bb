@@ -17679,12 +17679,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.IOSDownloadedFileAction" enum="DownloadedFileAction">
+  <owner>bdibello@chromium.org</owner>
+  <summary>
+    The action that a user takes on a file after it has been successfully
+    downloaded on iOS.
+  </summary>
+</histogram>
+
 <histogram name="Download.IOSDownloadedFileNetError" enum="NetErrorCodes">
   <owner>mrefaat@chromium.org</owner>
   <summary>
     Positive net error codes that happens in the case of download content fetch
     failure.
   </summary>
+</histogram>
+
+<histogram name="Download.IOSDownloadedFileStatusCode">
+  <owner>stkhapugin@chromium.org</owner>
+  <owner>eugenebut@chromium.org</owner>
+  <owner>stuartmorgan@chromium.org</owner>
+  <summary>
+    HTTP status code returned when file download completes on iOS.
+  </summary>
+</histogram>
+
+<histogram name="Download.IOSDownloadFileResult" enum="DownloadFileResult">
+  <owner>bdibello@chromium.org</owner>
+  <summary>Result when a user attempts to download a file on iOS.</summary>
 </histogram>
 
 <histogram name="Download.IOSDownloadPassKitResult"
@@ -26235,6 +26257,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of the sign in flow during Mobile first run.</summary>
 </histogram>
 
+<histogram name="FirstUserAction.BackgroundTime" units="minutes">
+<!-- Name completed by histogram_suffixes name="FirstUserActionType" and name="FirstUserActionTypeDevice" -->
+
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    WARNING: The list of actions used to identify new tasks hasn't been
+    attentively updated for several years (as of 2017).  Some actions that
+    should likely be considered new tasks are probably missing.  Take this
+    histogram with a grain of salt.
+
+    The amount of time (in seconds) that the app was in the background before
+    the user started it
+  </summary>
+</histogram>
+
 <histogram base="true" name="FirstUserAction.BackgroundTime.MainIntent"
     units="minutes">
   <owner>tedchoc@chromium.org</owner>
@@ -26244,6 +26281,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     that describes the intent of resuming the app.  Only recorded if the action
     took place within the first 10 seconds of starting Chrome.  The actions are
     further described in the FirstUserActionTypes suffix.
+  </summary>
+</histogram>
+
+<histogram name="FirstUserAction.HandsetUserActionType"
+    enum="FirstUserActionType">
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    WARNING: The list of actions used to identify new tasks hasn't been
+    attentively updated for several years (as of 2017).  Some actions that
+    should likely be considered new tasks are probably missing.  Take this
+    histogram with a grain of salt.
+
+    On handsets, the type of the first user action performed after the app was
+    started or unbackgrounded.
+  </summary>
+</histogram>
+
+<histogram name="FirstUserAction.TabletUserActionType"
+    enum="FirstUserActionType">
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    WARNING: The list of actions used to identify new tasks hasn't been
+    attentively updated for several years (as of 2017).  Some actions that
+    should likely be considered new tasks are probably missing.  Take this
+    histogram with a grain of salt.
+
+    On tablets, the type of the first user action performed after the app was
+    started or unbackgrounded.
   </summary>
 </histogram>
 
@@ -26751,6 +26816,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Geolocation.AuthorizationActionExistingUser"
+    enum="GeolocationAuthorizationAction">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Records the action performed by an existing user when prompted to authorize
+    the use of location by Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Geolocation.AuthorizationActionNewUser"
+    enum="GeolocationAuthorizationAction">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Records the action performed by a new user when prompted to authorize the
+    use of location by Chrome.
+  </summary>
+</histogram>
+
 <histogram name="Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy"
     enum="BooleanEnabled">
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -26787,6 +26870,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     For Geolocation requests from the omnibox on Android, the time since the
     location was first acquired. If no location has been acquired, the minimum
     bucket is incremented.
+  </summary>
+</histogram>
+
+<histogram name="Geolocation.HeaderSentOrNot" enum="GeolocationHeaderSentOrNot">
+  <owner>kiyun@chromium.org</owner>
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>newt@chromium.org</owner>
+  <summary>
+    Reason why the X-Geo header was or was not included in a Google search from
+    the omnibox.
   </summary>
 </histogram>
 
@@ -56289,6 +56382,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.QueryGeolocationAcquisitionTime" units="ms">
+  <owner>stkhapugin@chromium.org</owner>
+  <summary>
+    The elapsed time to acquire the location sent in the X-Geo header for an
+    Omnibox query.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.QueryGeolocationHorizontalAccuracy" units="meters">
+  <owner>stkhapugin@chromium.org</owner>
+  <summary>
+    The estimated horizontal accuracy of the location sent in the X-Geo header
+    for an Omnibox query.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.QueryIosLocationAuthorizationStatus"
+    enum="IosLocationAuthorizationStatus">
+  <owner>kiyun@chromium.org</owner>
+  <summary>
+    For iOS, whether the application is authorized to use location services when
+    the user enters a search query into the Omnibox.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.QueryTime" units="ms">
   <obsolete>
     Deprecated 2015-06-12. Replaced by Omnibox.QueryTime2.
@@ -68186,6 +68304,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Errors returned while launching lowbox enabled sandboxed process on Windows.
     For decoding error code please refer to http://goo.gl/fJJiAv.
   </summary>
+</histogram>
+
+<histogram name="ProductTour.IOSScreens" units="ms">
+<!-- Name completed by histogram_suffixes name="IOSProductTourScreens" -->
+
+  <owner>mrefaat@google.com</owner>
+  <summary>The time spent in product tour screens for ios.</summary>
 </histogram>
 
 <histogram name="Profile.AddNewUser" enum="ProfileAddNewUser">
@@ -84235,6 +84360,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SSORecallPromo.AccountsAvailable">
+  <owner>msarda@chromium.org</owner>
+  <summary>
+    Number of accounts available for Single Sign On with the current device,
+    recorded at the time the SSO Promo is shown.
+  </summary>
+</histogram>
+
+<histogram name="SSORecallPromo.PromoAction" enum="SSOPromoUserAction">
+  <owner>msarda@chromium.org</owner>
+  <summary>
+    Action the user takes when the Single Sign On promotion is shown.
+  </summary>
+</histogram>
+
+<histogram name="SSORecallPromo.PromoSeenCount">
+  <owner>msarda@chromium.org</owner>
+  <summary>
+    Number of times the promotion has been seen on the current device.
+  </summary>
+</histogram>
+
 <histogram name="Stability.Android.PendingMinidumpsOnStartup" units="minidumps">
   <obsolete>
     Deprecated in M60. Roughly 50% of Chrome startups that had *any* pending
@@ -85134,6 +85281,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time from the process creation to executing the main() function in
     chrome.exe.
   </summary>
+</histogram>
+
+<histogram name="Startup.MobileSessionStartAction"
+    enum="MobileSessionStartAction">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The action requested on the application startup when called from another app
+    or the OS.
+  </summary>
+</histogram>
+
+<histogram name="Startup.MobileSessionStartFromApps"
+    enum="MobileSessionCallerApp">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>The calling application (if any).</summary>
 </histogram>
 
 <histogram name="Startup.OSX.AwakeFromNib" units="ms">
@@ -88709,12 +88871,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The orientation of the device. Recorded on page load.</summary>
 </histogram>
 
+<histogram name="Tab.PageLoadsSinceLastSwitchToEvictedTab">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    The number of page loads since the last switch to an evicted tab on Android.
+    This was sampled each time an evicted tab was reloaded.
+  </summary>
+</histogram>
+
 <histogram name="Tab.PerceivedRestoreTime" units="ms">
   <owner>lliabraa@chromium.org</owner>
   <summary>
     User-perceived load time for a successful tab restore, measured from the
     first time the user sees the tab being restored until the load completes.
   </summary>
+</histogram>
+
+<histogram name="Tab.PullDownGesture" enum="PullDownGestureAction">
+  <owner>jbbegue@google.com</owner>
+  <summary>
+    Record the action executed when the user performs a pull down gesture. This
+    feature is currently iOS only.
+  </summary>
+  <details>
+    A pull down gesture is an action completed when the user scrolls past the
+    edge of the web page and continues scrolling in the same direction revealing
+    a specific UI on the header with multiple actions icons. The user can then
+    choose an action by scrolling left or right and lift the finger or cancel by
+    scrolling back up. This is currently an iOS specific feature.
+  </details>
 </histogram>
 
 <histogram name="Tab.Reactivation.Bookmarked" enum="Boolean">
@@ -88781,6 +88966,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.RendererTermination.AliveRenderersCount" units="renderers">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    [iOS] A count of the number of alive renderers when a renderer termination
+    occurs.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RendererTermination.RecentlyAliveRenderersCount"
+    units="renderers">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    [iOS] The number of renderers which are either currently alive or recently
+    terminated at the time of a renderer termination.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RendererTermination.RecentlyReceivedMemoryWarning"
+    enum="BooleanWarningReceived">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    [iOS] Records whether a memory warning had recently been received before a
+    renderer termination.
+  </summary>
+</histogram>
+
 <histogram name="Tab.RestoreResult" enum="TabRestoreResult">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -88800,6 +89011,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     When the browser restores a tab, whether the user waits for completion of
     the load or if the user gives up by switching to another tab or leaving
     Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Tab.StateAtRendererTermination" enum="TabForegroundState">
+  <owner>stuartmorgan@chromium.org</owner>
+  <summary>
+    The state (foreground/background) of a tab when its renderer is terminated.
   </summary>
 </histogram>
 
@@ -89640,6 +89858,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     loaded and their pages rendered, or tab loading needs to be deferred in
     cases where the system is under memory pressure. The metric is not recorded
     when the session overlaps with background tab opening session.
+  </summary>
+</histogram>
+
+<histogram name="TabRestore.error_move_session_at_path_to_backup"
+    enum="FoundationFileSystemError">
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Error code returned by [moveItemAtPath:toPath:error:] when moving previous
+    session file to backup file before restoring. 0 in case of success.
+  </summary>
+</histogram>
+
+<histogram name="TabRestore.error_remove_backup_at_path"
+    enum="FoundationFileSystemError">
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Error code returned by [removeItemAtPath:error:] when removing previous
+    session backup file. 0 in case of success.
+  </summary>
+</histogram>
+
+<histogram name="TabRestore.error_remove_session_at_path"
+    enum="FoundationFileSystemError">
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Error code returned by [removeItemAtPath:error:] when removing previous
+    session file. 0 in case of success.
   </summary>
 </histogram>
 
@@ -103561,6 +103806,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Renderer4.LoadType"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="FirstUserActionType" separator="">
+  <suffix name="Continuation"
+      label="and performed an user action indicating that they were
+             continuing a task from the last time they used the app"/>
+  <suffix name="Expiration"
+      label="and did not perform any user actions that indicate either a new
+             task or a continued task before some timeout expired"/>
+  <suffix name="NewTask"
+      label="and performed an user action indicating that they were beginning
+             a new task from the last time they used the app"/>
+  <affected-histogram name="FirstUserAction.BackgroundTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="FirstUserActionTypeDevice" separator="">
+  <suffix name="Handset" label="(handset only)"/>
+  <suffix name="Tablet" label="(tablet only)"/>
+  <affected-histogram name="FirstUserAction.BackgroundTimeContinuation"/>
+  <affected-histogram name="FirstUserAction.BackgroundTimeExpiration"/>
+  <affected-histogram name="FirstUserAction.BackgroundTimeNewTask"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="FirstUserActionTypes" separator=".">
   <suffix name="Backgrounded" label="The user sent Chrome to the background"/>
   <suffix name="Continuation"
@@ -104189,6 +104455,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="" label="not using Data Reduction Proxy"/>
   <suffix name="_DataReductionProxy" label="using Data Reduction Proxy"/>
   <affected-histogram name="Tabs.iOS_PostRedirectPLT"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="IOSProductTourScreens" separator="">
+  <suffix name="VoiceSearch"/>
+  <suffix name="Sync"/>
+  <suffix name="Incognito"/>
+  <suffix name="Unknown"/>
+  <affected-histogram name="ProductTour.IOSScreens"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPHDatabase" separator=".">

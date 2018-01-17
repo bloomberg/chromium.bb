@@ -4154,6 +4154,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Waited"/>
 </enum>
 
+<enum name="BooleanWarningReceived">
+  <int value="0" label="Warning Not Received"/>
+  <int value="1" label="Warning Received"/>
+</enum>
+
 <enum name="BooleanWasFast">
   <int value="0" label="Slow"/>
   <int value="1" label="Fast"/>
@@ -9726,11 +9731,24 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Resume"/>
 </enum>
 
+<enum name="DownloadedFileAction">
+  <int value="0" label="Opened in Drive"/>
+  <int value="1" label="Opened in another app"/>
+  <int value="2" label="No action"/>
+</enum>
+
 <enum name="DownloadFilePickerResult">
   <int value="0" label="SAME"/>
   <int value="1" label="DIFFERENT_DIR"/>
   <int value="2" label="DIFFERENT_NAME"/>
   <int value="3" label="CANCEL"/>
+</enum>
+
+<enum name="DownloadFileResult">
+  <int value="0" label="Completed"/>
+  <int value="1" label="Canceled"/>
+  <int value="2" label="Failure"/>
+  <int value="3" label="Other"/>
 </enum>
 
 <enum name="DownloadFunctions">
@@ -18670,6 +18688,16 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Have SSO account, Gave Up"/>
 </enum>
 
+<enum name="FirstUserActionType">
+  <summary>
+    Types of actions a user can perform upon startup or unbackgrounding.
+  </summary>
+  <int value="0" label="New Task"/>
+  <int value="1" label="Continuation"/>
+  <int value="2" label="Expiration"/>
+  <int value="3" label="Start on NTP"/>
+</enum>
+
 <enum name="FlashNavigateUsageType">
   <int value="0" label="Rejected because of Authorization header."/>
   <int value="1" label="Rejected because of Cache-Control header."/>
@@ -18726,6 +18754,29 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Libsecret failure"/>
   <int value="4" label="GNOME success"/>
   <int value="5" label="GNOME failure"/>
+</enum>
+
+<enum name="FoundationFileSystemError">
+  <int value="0" label="NSNoError"/>
+  <int value="4" label="NSFileNoSuchFileError"/>
+  <int value="255" label="NSFileLockingError"/>
+  <int value="256" label="NSFileReadUnknownError"/>
+  <int value="257" label="NSFileReadNoPermissionError"/>
+  <int value="258" label="NSFileReadInvalidFileNameError"/>
+  <int value="259" label="NSFileReadCorruptFileError"/>
+  <int value="260" label="NSFileReadNoSuchFileError"/>
+  <int value="261" label="NSFileReadInapplicableStringEncodingError"/>
+  <int value="262" label="NSFileReadUnsupportedSchemeError"/>
+  <int value="263" label="NSFileReadTooLargeError"/>
+  <int value="264" label="NSFileReadUnknownStringEncodingError"/>
+  <int value="512" label="NSFileWriteUnknownError"/>
+  <int value="513" label="NSFileWriteNoPermissionError"/>
+  <int value="514" label="NSFileWriteInvalidFileNameError"/>
+  <int value="516" label="NSFileWriteFileExistsError"/>
+  <int value="517" label="NSFileWriteInapplicableStringEncodingError"/>
+  <int value="518" label="NSFileWriteUnsupportedSchemeError"/>
+  <int value="640" label="NSFileWriteOutOfSpaceError"/>
+  <int value="642" label="NSFileWriteVolumeReadOnlyError"/>
 </enum>
 
 <enum name="FramebustPermissions">
@@ -20098,6 +20149,12 @@ Called by update_net_error_codes.py.-->
   <int value="32770" label="PDF"/>
 </enum>
 
+<enum name="GeolocationAuthorizationAction">
+  <int value="0" label="Location authorized"/>
+  <int value="1" label="Location permanently denied (Don't Allow)"/>
+  <int value="2" label="Location denied at this prompt (Not Now)"/>
+</enum>
+
 <enum name="GeolocationDisclosureResult">
   <int value="0" label="Ignored"/>
   <int value="1" label="Settings clicked"/>
@@ -20158,6 +20215,17 @@ Called by update_net_error_codes.py.-->
   <int value="42" label="Location off, app denied, domain denied"/>
   <int value="43" label="Unsuitable URL"/>
   <int value="44" label="Not using HTTPS"/>
+</enum>
+
+<enum name="GeolocationHeaderSentOrNot">
+  <int value="0" label="Location disabled for Google domain"/>
+  <int value="1" label="Location preference not set for Google domain"/>
+  <int value="2" label="Location not available"/>
+  <int value="3" label="Location stale"/>
+  <int value="4" label="Header sent"/>
+  <int value="5" label="Location disabled for Chrome app"/>
+  <int value="6" label="iOS: Location disabled for Omnibox query"/>
+  <int value="7" label="Google domain does not accept locations"/>
 </enum>
 
 <enum name="GeolocationInfoBarDelegateAndroidEvent">
@@ -23134,6 +23202,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Unknown Origin"/>
   <int value="1" label="Chrome on iOS"/>
   <int value="2" label="Chrome on Mac"/>
+</enum>
+
+<enum name="IosLocationAuthorizationStatus">
+  <int value="0" label="NotDetermined"/>
+  <int value="1" label="Restricted"/>
+  <int value="2" label="Denied"/>
+  <int value="3" label="Authorized"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -28610,6 +28685,22 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Infobar dismissed after tab closed"/>
 </enum>
 
+<enum name="MobileSessionCallerApp">
+  <int value="0" label="Google Search"/>
+  <int value="1" label="Gmail"/>
+  <int value="2" label="Google+"/>
+  <int value="3" label="Google Drive"/>
+  <int value="4" label="Google Earth"/>
+  <int value="5" label="Other Google Apps"/>
+  <int value="6" label="Other"/>
+  <int value="7" label="Mobile Safari"/>
+  <int value="8" label="Other Apple Apps"/>
+  <int value="9" label="YouTube"/>
+  <int value="10" label="Google Maps"/>
+  <int value="11" label="Information not available"/>
+  <int value="12" label="Chrome Today Extension"/>
+</enum>
+
 <enum name="MobileSessionShutdownType">
   <int value="0" label="Shutdown in background"/>
   <int value="1" label="Shutdown in foreground; no log; no memory warning"/>
@@ -28617,6 +28708,16 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Shutdown in foreground; no log; with memory warning"/>
   <int value="4" label="Shutdown in foreground; with log; with memory warning"/>
   <int value="5" label="First launch after upgrade"/>
+</enum>
+
+<enum name="MobileSessionStartAction">
+  <int value="0" label="Open http"/>
+  <int value="1" label="Open https"/>
+  <int value="2" label="Open file"/>
+  <int value="3" label="x-callback-url open"/>
+  <int value="4" label="x-callback-url other"/>
+  <int value="5" label="Other"/>
+  <int value="6" label="x-callback-url app-group-command"/>
 </enum>
 
 <enum name="MobileStartingAction">
@@ -36073,6 +36174,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="254" label="DOMAIN_SPIDEROAK_COM"/>
 </enum>
 
+<enum name="PullDownGestureAction">
+  <summary>The type of action performed on the overscroll UI.</summary>
+  <int value="0" label="NewTab">The user selected the new tab action.</int>
+  <int value="1" label="Refresh">The user selected the refresh action.</int>
+  <int value="2" label="CloseTab">The user selected the close tab action.</int>
+  <int value="3" label="Canceled">
+    The user canceled the action by scrolling back up.
+  </int>
+</enum>
+
 <enum name="PushDeliveryStatus">
   <int value="0" label="Successful"/>
   <int value="1" label="Message was invalid"/>
@@ -40729,6 +40840,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Protocol error"/>
 </enum>
 
+<enum name="SSOPromoUserAction">
+  <int value="0" label="ACTION_DISMISSED"/>
+  <int value="1" label="ACTION_ENABLED_SSO_ACCOUNT"/>
+  <int value="2" label="ACTION_ADDED_ANOTHER_ACCOUNT"/>
+</enum>
+
 <enum name="StarsLaunchLocation">
   <int value="0" label="All Items"/>
   <int value="1" label="Uncategorized"/>
@@ -41672,6 +41789,13 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Discarded a tab"/>
   <int value="3"
       label="Discarded a tab playing audio (included in the previous one)"/>
+</enum>
+
+<enum name="TabForegroundState">
+  <int value="0" label="Foreground (app in foreground)"/>
+  <int value="1" label="Background (app in foreground)"/>
+  <int value="2" label="Foreground (app in background)"/>
+  <int value="3" label="Background (app in background)"/>
 </enum>
 
 <enum name="TabLoadingState">
