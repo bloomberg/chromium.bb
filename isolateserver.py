@@ -1083,6 +1083,11 @@ class CachePolicies(object):
     self.min_free_space = min_free_space
     self.max_items = max_items
 
+  def __str__(self):
+    return (
+        'CachePolicies(cache=%dbytes, %d items; min_free_space=%d)') % (
+            self.max_cache_size, self.max_items, self.min_free_space)
+
 
 class DiskCache(LocalCache):
   """Stateful LRU cache in a flat hash table in a directory.
@@ -1390,9 +1395,12 @@ class DiskCache(LocalCache):
     try:
       digest, (size, _) = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
-        raise Error(
-            'Not enough space to fetch the whole isolated tree; %sb free, min '
-            'is %sb' % (self._free_disk, self.policies.min_free_space))
+        total_size = sum(self._lru.itervalues())+size
+        msg = (
+            'Not enough space to fetch the whole isolated tree.\n'
+            '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
+              self.policies, total_size, len(self._lru)+1, self._free_disk)
+        raise Error(msg)
     except KeyError:
       raise Error('Nothing to remove')
     digest, (size, _) = self._lru.pop_oldest()

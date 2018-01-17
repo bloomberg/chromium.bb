@@ -1310,8 +1310,13 @@ class DiskCacheTest(TestCase):
     for i in ('a', 'b', 'c', 'd'):
       cache.write(*self.to_hash(i))
     # Mapping more content than the amount of free disk required.
-    with self.assertRaises(isolateserver.Error):
+    with self.assertRaises(isolateserver.Error) as cm:
       cache.write(*self.to_hash('e'))
+    expected = (
+        'Not enough space to fetch the whole isolated tree.\n'
+        '  CachePolicies(cache=100bytes, 2 items; min_free_space=1000)\n'
+        '  cache=6bytes, 6 items; 999b free_space')
+    self.assertEqual(expected, cm.exception.message)
 
   def test_cleanup(self):
     # Inject an item without a state.json, one is lost. Both will be deleted on
