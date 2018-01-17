@@ -92,7 +92,6 @@ CONTENT_EXPORT extern const base::Feature kTopDocumentIsolation;
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
 CONTENT_EXPORT extern const base::Feature
     kTurnOff2DAndOpacityCompositorAnimations;
-CONTENT_EXPORT extern const base::Feature kEnablePreventLayerSquashing;
 CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioInputStreamFactory;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioOutputStreamFactory;

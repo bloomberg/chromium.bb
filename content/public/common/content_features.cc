@@ -365,9 +365,6 @@ const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
     "TurnOff2DAndOpacityCompositorAnimations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnablePreventLayerSquashing{
-    "EnablePreventLayerSquashing", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.
 const base::Feature kUseFeaturePolicyForPermissions{

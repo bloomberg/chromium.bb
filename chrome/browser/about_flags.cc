@@ -1233,10 +1233,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
      flag_descriptions::kUiPartialSwapDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
-    {"enable-prevent-layer-squashing",
-     flag_descriptions::kEnablePreventLayerSquashingName,
-     flag_descriptions::kEnablePreventLayerSquashingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnablePreventLayerSquashing)},
 #if BUILDFLAG(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding", flag_descriptions::kWebrtcHwDecodingName,
      flag_descriptions::kWebrtcHwDecodingDescription, kOsAndroid | kOsCrOS,
