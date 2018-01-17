@@ -66,8 +66,7 @@ class MainThreadWorkletTest : public ::testing::Test {
         OriginTrialContext::GetTokens(document).get(),
         nullptr /* worker_settings */, kV8CacheOptionsDefault);
     global_scope_ = new MainThreadWorkletGlobalScope(
-        &page_->GetFrame(), std::move(creation_params), ToIsolate(document),
-        *reporting_proxy_);
+        &page_->GetFrame(), std::move(creation_params), *reporting_proxy_);
   }
 
   void TearDown() override { global_scope_->Terminate(); }
