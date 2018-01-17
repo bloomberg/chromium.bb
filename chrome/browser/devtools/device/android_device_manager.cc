@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 using content::BrowserThread;
 
@@ -33,6 +34,30 @@ const int kBufferSize = 16 * 1024;
 static const char kModelOffline[] = "Offline";
 
 static const char kRequestLineFormat[] = "GET %s HTTP/1.1";
+
+net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("android_device_manager_socket", R"(
+        semantics {
+          sender: "Android Device Manager"
+          description:
+            "Remote debugging is supported over existing ADB (Android Debug "
+            "Bridge) connection, in addition to raw USB connection. This "
+            "socket talks to the local ADB daemon which routes debugging "
+            "traffic to a remote device."
+          trigger:
+            "A user connects to an Android device using remote debugging."
+          data: "Any data required for remote debugging."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "To use ADB with a device connected over USB, you must enable USB "
+            "debugging in the device system settings, under Developer options."
+          policy_exception_justification:
+            "This is not a network request and is only used for remote "
+            "debugging."
+        })");
 
 static void PostDeviceInfoCallback(
     scoped_refptr<base::SingleThreadTaskRunner> response_task_runner,
@@ -140,9 +165,9 @@ class HttpRequest {
       }
 
       result = socket_->Write(
-          request_.get(),
-          request_->BytesRemaining(),
-          base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)));
+          request_.get(), request_->BytesRemaining(),
+          base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)),
+          kTrafficAnnotation);
     }
   }
 

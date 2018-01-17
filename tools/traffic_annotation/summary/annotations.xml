@@ -13,6 +13,8 @@ Refer to README.md for content description and update process.
  <item id="CRD_telemetry_log" hash_code="18670926" type="0" content_hash_code="49025478" os_list="linux,windows" file_path="remoting/base/telemetry_log_writer.cc"/>
  <item id="adb_client_socket" hash_code="87775794" type="0" content_hash_code="56654828" os_list="linux,windows" file_path="chrome/browser/devtools/device/adb/adb_client_socket.cc"/>
  <item id="affiliation_lookup" hash_code="111904019" type="0" content_hash_code="81061452" os_list="linux,windows" file_path="components/password_manager/core/browser/android_affiliation/affiliation_fetcher.cc"/>
+ <item id="android_device_manager_socket" hash_code="37249086" type="0" content_hash_code="6436865" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_device_manager.cc"/>
+ <item id="android_web_socket" hash_code="39356976" type="0" content_hash_code="12310113" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_web_socket.cc"/>
  <item id="appcache_update_job" hash_code="25790702" type="0" content_hash_code="27424887" os_list="linux,windows" file_path="content/browser/appcache/appcache_update_request_base.cc"/>
  <item id="asset_links" hash_code="89771989" type="0" content_hash_code="72216357" os_list="linux,windows" file_path="components/password_manager/core/browser/site_affiliation/asset_link_retriever.cc"/>
  <item id="autofill_query" hash_code="88863520" type="0" content_hash_code="15563339" os_list="linux,windows" file_path="components/autofill/core/browser/autofill_download_manager.cc"/>
@@ -152,6 +154,7 @@ Refer to README.md for content description and update process.
  <item id="persist_blob_to_indexed_db" hash_code="32030464" type="0" content_hash_code="35410079" os_list="linux,windows" file_path="content/browser/indexed_db/indexed_db_backing_store.cc"/>
  <item id="plugins_resource_service" hash_code="49601082" type="0" content_hash_code="6877335" os_list="linux,windows" file_path="chrome/browser/plugins/plugins_resource_service.cc"/>
  <item id="popular_sites_fetch" hash_code="50755044" type="0" content_hash_code="6910083" os_list="linux,windows" file_path="components/ntp_tiles/popular_sites_impl.cc"/>
+ <item id="port_forwarding_controller_socket" hash_code="95075845" type="0" content_hash_code="122163428" os_list="linux,windows" file_path="chrome/browser/devtools/device/port_forwarding_controller.cc"/>
  <item id="ppapi_download_request" hash_code="135967426" type="0" content_hash_code="110461402" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc"/>
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="100587691" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
@@ -205,6 +208,7 @@ Refer to README.md for content description and update process.
  <item id="sync_stop_reporter" hash_code="5021348" type="0" content_hash_code="56902850" os_list="linux,windows" file_path="components/sync/driver/sync_stopped_reporter.cc"/>
  <item id="test" hash_code="3556498" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="test_partial" hash_code="22096011" type="0" reserved="1" os_list="linux,windows" file_path=""/>
+ <item id="tethering_handler_socket" hash_code="113065062" type="0" content_hash_code="986296" os_list="linux,windows" file_path="content/browser/devtools/protocol/tethering_handler.cc"/>
  <item id="thumbnail_source" hash_code="135251783" type="0" content_hash_code="31086298" os_list="linux,windows" file_path="chrome/browser/search/thumbnail_source.cc"/>
  <item id="translate_url_fetcher" hash_code="137116619" type="0" content_hash_code="104217506" os_list="linux,windows" file_path="components/translate/core/browser/translate_url_fetcher.cc"/>
  <item id="undefined" hash_code="45578882" type="0" reserved="1" os_list="linux,windows" file_path=""/>
