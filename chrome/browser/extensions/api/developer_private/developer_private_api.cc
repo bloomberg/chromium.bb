@@ -731,7 +731,7 @@ DeveloperPrivateGetProfileConfigurationFunction::
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetProfileConfigurationFunction::Run() {
   std::unique_ptr<developer::ProfileInfo> info =
-      CreateProfileInfo(GetProfile());
+      CreateProfileInfo(Profile::FromBrowserContext(browser_context()));
 
   // If this is called from the chrome://extensions page, we use this as a
   // heuristic that it's a good time to verify installs. We do this on startup,
@@ -754,9 +754,10 @@ DeveloperPrivateUpdateProfileConfigurationFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const developer::ProfileConfigurationUpdate& update = params->update;
-  PrefService* prefs = GetProfile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  PrefService* prefs = profile->GetPrefs();
   if (update.in_developer_mode) {
-    if (GetProfile()->IsSupervised())
+    if (profile->IsSupervised())
       return RespondNow(Error(kCannotUpdateSupervisedProfileSettingsError));
     prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode,
                       *update.in_developer_mode);
@@ -1223,7 +1224,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &directory_url_str));
 
   context_ = content::BrowserContext::GetStoragePartition(
-                 GetProfile(), render_frame_host()->GetSiteInstance())
+                 browser_context(), render_frame_host()->GetSiteInstance())
                  ->GetFileSystemContext();
 
   // Directory url is non empty only for syncfilesystem.
@@ -1290,7 +1291,7 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
   project_name = directory_url_str.substr(pos + 1);
   project_base_url_ = directory_url_str.substr(0, pos + 1);
 
-  base::FilePath project_path(GetProfile()->GetPath());
+  base::FilePath project_path(browser_context()->GetPath());
   project_path = project_path.AppendASCII(kUnpackedAppsFolder);
   project_path = project_path.Append(
       base::FilePath::FromUTF8Unsafe(project_name));
@@ -1307,7 +1308,7 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
 }
 
 void DeveloperPrivateLoadDirectoryFunction::Load() {
-  ExtensionService* service = GetExtensionService(GetProfile());
+  ExtensionService* service = GetExtensionService(browser_context());
   UnpackedInstaller::Create(service)->Load(project_base_path_);
 
   // TODO(grv) : The unpacked installer should fire an event when complete
@@ -1599,7 +1600,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
     if (!extension)
       return RespondNow(Error(kNoSuchExtensionError));
 
-    Profile* profile = GetProfile();
+    Profile* profile = Profile::FromBrowserContext(browser_context());
     if (properties.incognito && *properties.incognito)
       profile = profile->GetOffTheRecordProfile();
 
@@ -1662,7 +1663,7 @@ DeveloperPrivateDeleteExtensionErrorsFunction::Run() {
   const developer::DeleteExtensionErrorsProperties& properties =
       params->properties;
 
-  ErrorConsole* error_console = ErrorConsole::Get(GetProfile());
+  ErrorConsole* error_console = ErrorConsole::Get(browser_context());
   int type = -1;
   if (properties.type != developer::ERROR_TYPE_NONE) {
     type = properties.type == developer::ERROR_TYPE_MANIFEST ?
@@ -1763,8 +1764,9 @@ ExtensionFunction::ResponseAction DeveloperPrivateShowPathFunction::Run() {
 
   // We explicitly show manifest.json in order to work around an issue in OSX
   // where opening the directory doesn't focus the Finder.
-  platform_util::ShowItemInFolder(GetProfile(),
-                                  extension->path().Append(kManifestFilename));
+  platform_util::ShowItemInFolder(
+      Profile::FromBrowserContext(browser_context()),
+      extension->path().Append(kManifestFilename));
   return RespondNow(NoArguments());
 }
 
@@ -1776,8 +1778,8 @@ DeveloperPrivateSetShortcutHandlingSuspendedFunction::Run() {
   std::unique_ptr<developer::SetShortcutHandlingSuspended::Params> params(
       developer::SetShortcutHandlingSuspended::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  ExtensionCommandsGlobalRegistry::Get(GetProfile())->
-      SetShortcutHandlingSuspended(params->is_suspended);
+  ExtensionCommandsGlobalRegistry::Get(browser_context())
+      ->SetShortcutHandlingSuspended(params->is_suspended);
   return RespondNow(NoArguments());
 }
 
@@ -1791,7 +1793,7 @@ DeveloperPrivateUpdateExtensionCommandFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   const developer::ExtensionCommandUpdate& update = params->update;
 
-  CommandService* command_service = CommandService::Get(GetProfile());
+  CommandService* command_service = CommandService::Get(browser_context());
 
   if (update.scope != developer::COMMAND_SCOPE_NONE) {
     command_service->SetScope(update.extension_id, update.command_name,
