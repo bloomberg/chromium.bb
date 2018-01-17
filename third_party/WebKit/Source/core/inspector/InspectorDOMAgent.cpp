@@ -299,11 +299,12 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   id_to_node_.erase(id);
   id_to_nodes_map_.erase(id);
 
+  if (node->IsDocumentNode() && dom_listener_)
+    dom_listener_->DidRemoveDocument(ToDocument(node));
+
   if (node->IsFrameOwnerElement()) {
     Document* content_document =
         ToHTMLFrameOwnerElement(node)->contentDocument();
-    if (dom_listener_)
-      dom_listener_->DidRemoveDocument(content_document);
     if (content_document)
       Unbind(content_document, nodes_map);
   }
@@ -1786,8 +1787,8 @@ void InspectorDOMAgent::DomContentLoadedEventFired(LocalFrame* frame) {
     GetFrontend()->documentUpdated();
 }
 
-void InspectorDOMAgent::InvalidateFrameOwnerElement(LocalFrame* frame) {
-  HTMLFrameOwnerElement* frame_owner = frame->GetDocument()->LocalOwner();
+void InspectorDOMAgent::InvalidateFrameOwnerElement(
+    HTMLFrameOwnerElement* frame_owner) {
   if (!frame_owner)
     return;
 
@@ -1815,7 +1816,8 @@ void InspectorDOMAgent::DidCommitLoad(LocalFrame*, DocumentLoader* loader) {
 
   LocalFrame* inspected_frame = inspected_frames_->Root();
   if (loader->GetFrame() != inspected_frame) {
-    InvalidateFrameOwnerElement(loader->GetFrame());
+    InvalidateFrameOwnerElement(
+        loader->GetFrame()->GetDocument()->LocalOwner());
     return;
   }
 
@@ -2020,6 +2022,15 @@ void InspectorDOMAgent::FrameDocumentUpdated(LocalFrame* frame) {
   // Only update the main frame document, nested frame document updates are not
   // required (will be handled by invalidateFrameOwnerElement()).
   SetDocument(document);
+}
+
+void InspectorDOMAgent::FrameDisconnected(LocalFrame* frame,
+                                          HTMLFrameOwnerElement* frame_owner) {
+  // frame_owner does not point to frame at this point, so Unbind it explicitly.
+  Unbind(frame->GetDocument(), document_node_to_id_map_.Get());
+  // Revalidating owner will serialize empty frame owner - that's what we are
+  // looking for when disconnecting.
+  InvalidateFrameOwnerElement(frame_owner);
 }
 
 void InspectorDOMAgent::PseudoElementCreated(PseudoElement* pseudo_element) {
