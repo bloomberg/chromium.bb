@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
@@ -20,6 +21,7 @@
 @interface LegacyToolbarCoordinator
     : ChromeCoordinator<PrimaryToolbarCoordinator,
                         LegacyToolbarCoordinator,
+                        ToolbarCoordinating,
                         ToolbarSnapshotProviding,
                         ToolsMenuPresentationStateProvider>
 

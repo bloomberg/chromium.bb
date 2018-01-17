@@ -7,26 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
-@class ToolbarButton;
-@class ToolbarButtonFactory;
-@class ToolbarToolsMenuButton;
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 
-// View for the secondary toolbar.
-@interface SecondaryToolbarView : UIView
-
-// Factory used to create the buttons.
-@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
-
-// Button to display the tools menu.
-@property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
-// Button to display the tab grid.
-@property(nonatomic, strong, readonly) ToolbarButton* tabGridButton;
-// Button to display the share menu.
-@property(nonatomic, strong, readonly) ToolbarButton* shareButton;
-// Button to focus the omnibox.
-@property(nonatomic, strong, readonly) ToolbarButton* omniboxButton;
-// Button to manage the bookmarks of this page.
-@property(nonatomic, strong, readonly) ToolbarButton* bookmarksButton;
+// View for the secondary part of the adaptive toolbar. It is the part
+// containing the controls displayed only on specific size classes.
+@interface SecondaryToolbarView : UIView<AdaptiveToolbarView>
 
 @end
 

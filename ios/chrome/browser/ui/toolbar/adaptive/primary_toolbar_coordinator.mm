@@ -9,15 +9,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+protected.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -34,11 +32,8 @@
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
 }
 
-// Whether this coordinator has been started.
-@property(nonatomic, assign) BOOL started;
-// The Toolbar view controller owned by this coordinator.
-@property(nonatomic, strong)
-    PrimaryToolbarViewController* toolbarViewController;
+// Redefined as PrimaryToolbarViewController.
+@property(nonatomic, strong) PrimaryToolbarViewController* viewController;
 // The coordinator for the location bar in the toolbar.
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 // Coordinator for the omnibox popup.
@@ -47,71 +42,23 @@
 @end
 
 @implementation PrimaryToolbarCoordinator
-@synthesize delegate = _delegate;
-@synthesize dispatcher = _dispatcher;
+
+@dynamic viewController;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
 @synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
-@synthesize started = _started;
-@synthesize toolbarViewController = _toolbarViewController;
+@synthesize delegate = _delegate;
 @synthesize URLLoader = _URLLoader;
-@synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  return [super initWithBaseViewController:nil browserState:browserState];
-}
-
 - (void)start {
-  if (self.started)
-    return;
+  self.viewController = [[PrimaryToolbarViewController alloc] init];
+  self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
 
-  self.started = YES;
-  BOOL isIncognito = self.browserState->IsOffTheRecord();
-
-  self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
-  self.locationBarCoordinator.browserState = self.browserState;
-  self.locationBarCoordinator.dispatcher = self.dispatcher;
-  self.locationBarCoordinator.URLLoader = self.URLLoader;
-  self.locationBarCoordinator.delegate = self.delegate;
-  [self.locationBarCoordinator start];
-
-  // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
-  // created.
-  _locationBar = std::make_unique<LocationBarControllerImpl>(
-      self.locationBarCoordinator.locationBarView, self.browserState, self,
-      self.dispatcher);
-  self.locationBarCoordinator.locationBarController = _locationBar.get();
-  _locationBar->SetURLLoader(self.locationBarCoordinator);
-  self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
-  [self.omniboxPopupCoordinator start];
-  // End of TODO(crbug.com/785253):.
-
-  ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
-  ToolbarButtonFactory* buttonFactory =
-      [[ToolbarButtonFactory alloc] initWithStyle:style];
-  buttonFactory.dispatcher = self.dispatcher;
-  buttonFactory.visibilityConfiguration =
-      [[ToolbarButtonVisibilityConfiguration alloc] initWithType:PRIMARY];
-
-  self.toolbarViewController = [[PrimaryToolbarViewController alloc]
-      initWithButtonFactory:buttonFactory];
-  self.toolbarViewController.dispatcher = self.dispatcher;
-  self.toolbarViewController.locationBarView =
+  [self setUpLocationBar];
+  self.viewController.locationBarView =
       self.locationBarCoordinator.locationBarView;
-}
-
-- (void)stop {
-  self.started = NO;
-  self.toolbarViewController = nil;
-  [self.omniboxPopupCoordinator stop];
-  [self.locationBarCoordinator stop];
-}
-
-#pragma mark - Property Accessors
-
-- (UIViewController*)viewController {
-  return self.toolbarViewController;
+  [super start];
 }
 
 #pragma mark - PrimaryToolbarCoordinator
@@ -151,28 +98,6 @@
   return omniboxViewIOS->IsPopupOpen();
 }
 
-#pragma mark - ToolbarCoordinating
-
-- (void)updateToolbarState {
-}
-
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-}
-
-#pragma mark - ToolbarCommands
-
-- (void)contractToolbar {
-  // TODO(crbug.com/801082): Implement that.
-}
-
-- (void)triggerToolsMenuButtonAnimation {
-  // TODO(crbug.com/801083): Implement that.
-}
-
-- (void)navigateToMemexTabSwitcher {
-  // TODO(crbug.com/799601): Delete this once it is not needed.
-}
-
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
@@ -193,30 +118,6 @@
 
 - (void)onFakeboxAnimationComplete {
   // TODO(crbug.com/799438): Implement that.
-}
-
-#pragma mark - SideSwipeToolbarInteracting
-
-- (UIView*)toolbarView {
-  return self.viewController.view;
-}
-
-- (BOOL)canBeginToolbarSwipe {
-  return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
-}
-
-- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
-  // TODO(crbug.com/799438): Implement that.
-  return nil;
-}
-
-// TODO(crbug.com/786940): This protocol should move to the ViewController
-// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
-// is more advanced.
-#pragma mark OmniboxPopupPositioner methods.
-
-- (UIView*)popupAnchorView {
-  return self.toolbarViewController.view;
 }
 
 #pragma mark - LocationBarDelegate
@@ -270,6 +171,53 @@
 - (ToolbarModel*)toolbarModel {
   ToolbarModelIOS* toolbarModelIOS = [self.delegate toolbarModelIOS];
   return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
+}
+
+// TODO(crbug.com/786940): This protocol should move to the ViewController
+// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
+// is more advanced.
+#pragma mark OmniboxPopupPositioner methods.
+
+- (UIView*)popupAnchorView {
+  return self.viewController.view;
+}
+
+#pragma mark - SideSwipeToolbarInteracting
+
+- (UIView*)toolbarView {
+  return self.viewController.view;
+}
+
+- (BOOL)canBeginToolbarSwipe {
+  return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
+}
+
+- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
+  // TODO(crbug.com/799438): Implement that.
+  return nil;
+}
+
+#pragma mark - Private
+
+// Sets the location bar up.
+- (void)setUpLocationBar {
+  self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
+  self.locationBarCoordinator.browserState = self.browserState;
+  self.locationBarCoordinator.dispatcher = self.dispatcher;
+  self.locationBarCoordinator.URLLoader = self.URLLoader;
+  self.locationBarCoordinator.delegate = self.delegate;
+  [self.locationBarCoordinator start];
+
+  // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
+  // created.
+  _locationBar = std::make_unique<LocationBarControllerImpl>(
+      self.locationBarCoordinator.locationBarView, self.browserState, self,
+      self.dispatcher);
+  self.locationBarCoordinator.locationBarController = _locationBar.get();
+  _locationBar->SetURLLoader(self.locationBarCoordinator);
+  self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
+  [self.omniboxPopupCoordinator start];
+  // End of TODO(crbug.com/785253):.
 }
 
 @end

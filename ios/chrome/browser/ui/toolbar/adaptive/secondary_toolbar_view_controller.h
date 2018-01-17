@@ -5,19 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_SECONDARY_TOOLBAR_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_SECONDARY_TOOLBAR_VIEW_CONTROLLER_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
 
-@class ToolbarButtonFactory;
-
-// The ViewController for the secondary toolbar.
-@interface SecondaryToolbarViewController : UIViewController
-
-- (instancetype)initWithButtonFactory:(ToolbarButtonFactory*)buttonFactory;
-
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(NSString*)nibNameOrNil
-                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+// ViewController for the secondary part of the adaptive toolbar. It is the part
+// containing the controls displayed only on specific size classes.
+@interface SecondaryToolbarViewController : AdaptiveToolbarViewController
 
 @end
 

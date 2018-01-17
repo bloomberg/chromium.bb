@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
 
 @protocol ActivityServicePositioner;
 @protocol QRScannerResultLoading;
@@ -20,8 +19,7 @@
 // split between primary and secondary.
 @protocol PrimaryToolbarCoordinator<OmniboxFocuser,
                                     FakeboxFocuser,
-                                    SideSwipeToolbarInteracting,
-                                    ToolbarCoordinating>
+                                    SideSwipeToolbarInteracting>
 
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
