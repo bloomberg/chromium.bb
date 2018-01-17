@@ -10,6 +10,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -109,8 +110,10 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     // Advance the clock by an arbitrary value to ensure that when Now() is
     // called, the Unix epoch will not be returned.
     test_clock_->Advance(base::TimeDelta::FromSeconds(10));
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     host_scan_scheduler_->SetTestDoubles(base::WrapUnique(mock_timer_),
-                                         base::WrapUnique(test_clock_));
+                                         base::WrapUnique(test_clock_),
+                                         test_task_runner_);
   }
 
   void TearDown() override {
@@ -131,6 +134,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     SetServiceProperty(ethernet_service_path_,
                        std::string(shill::kStateProperty),
                        base::Value(shill::kStateIdle));
+    test_task_runner_->RunUntilIdle();
     if (new_default_service_path.empty())
       return;
 
@@ -142,6 +146,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     SetServiceProperty(ethernet_service_path_,
                        std::string(shill::kStateProperty),
                        base::Value(shill::kStateAssociation));
+    test_task_runner_->RunUntilIdle();
     test_manager_client()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
@@ -150,6 +155,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     SetServiceProperty(ethernet_service_path_,
                        std::string(shill::kStateProperty),
                        base::Value(shill::kStateReady));
+    test_task_runner_->RunUntilIdle();
     test_manager_client()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
@@ -181,6 +187,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
 
   base::MockTimer* mock_timer_;
   base::SimpleTestClock* test_clock_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
