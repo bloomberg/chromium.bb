@@ -4485,6 +4485,225 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
   session->CloseAllConnections();
 }
 
+// Proxy resolver that returns a proxy with the same host and port for different
+// schemes, based on the path of the URL being requests.
+class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
+ public:
+  SameProxyWithDifferentSchemesProxyResolver() {}
+  ~SameProxyWithDifferentSchemesProxyResolver() override {}
+
+  static std::string ProxyHostPortPairAsString() { return "proxy.test:10000"; }
+
+  static HostPortPair ProxyHostPortPair() {
+    return HostPortPair::FromString(ProxyHostPortPairAsString());
+  }
+
+  // ProxyResolver implementation.
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& callback,
+                     std::unique_ptr<Request>* request,
+                     const NetLogWithSource& /*net_log*/) override {
+    *results = ProxyInfo();
+    if (url.path() == "/socks4") {
+      results->UsePacString("SOCKS " + ProxyHostPortPairAsString());
+      return OK;
+    }
+    if (url.path() == "/socks5") {
+      results->UsePacString("SOCKS5 " + ProxyHostPortPairAsString());
+      return OK;
+    }
+    if (url.path() == "/http") {
+      results->UsePacString("PROXY " + ProxyHostPortPairAsString());
+      return OK;
+    }
+    if (url.path() == "/https") {
+      results->UsePacString("HTTPS " + ProxyHostPortPairAsString());
+      return OK;
+    }
+    NOTREACHED();
+    return ERR_NOT_IMPLEMENTED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SameProxyWithDifferentSchemesProxyResolver);
+};
+
+class SameProxyWithDifferentSchemesProxyResolverFactory
+    : public ProxyResolverFactory {
+ public:
+  SameProxyWithDifferentSchemesProxyResolverFactory()
+      : ProxyResolverFactory(false) {}
+
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      std::unique_ptr<ProxyResolver>* resolver,
+      const CompletionCallback& callback,
+      std::unique_ptr<Request>* request) override {
+    *resolver = std::make_unique<SameProxyWithDifferentSchemesProxyResolver>();
+    return OK;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SameProxyWithDifferentSchemesProxyResolverFactory);
+};
+
+// Check that when different proxy schemes are all applied to a proxy at the
+// same address, the sonnections are not grouped together.  i.e., a request to
+// foo.com using proxy.com as an HTTPS proxy won't use the same socket as a
+// request to foo.com using proxy.com as an HTTP proxy.
+TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
+  session_deps_.proxy_service = std::make_unique<ProxyService>(
+      std::make_unique<ProxyConfigServiceFixed>(
+          ProxyConfig::CreateAutoDetect()),
+      std::make_unique<SameProxyWithDifferentSchemesProxyResolverFactory>(),
+      nullptr);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  MockWrite socks_writes[] = {
+      MockWrite(SYNCHRONOUS, kSOCKS4OkRequestLocalHostPort80,
+                kSOCKS4OkRequestLocalHostPort80Length),
+      MockWrite(SYNCHRONOUS,
+                "GET /socks4 HTTP/1.1\r\n"
+                "Host: test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead socks_reads[] = {
+      MockRead(SYNCHRONOUS, kSOCKS4OkReply, kSOCKS4OkReplyLength),
+      MockRead("HTTP/1.0 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 15\r\n\r\n"
+               "SOCKS4 Response"),
+  };
+  StaticSocketDataProvider socks_data(socks_reads, arraysize(socks_reads),
+                                      socks_writes, arraysize(socks_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&socks_data);
+
+  const char kSOCKS5Request[] = {
+      0x05,                  // Version
+      0x01,                  // Command (CONNECT)
+      0x00,                  // Reserved
+      0x03,                  // Address type (DOMAINNAME)
+      0x04,                  // Length of domain (4)
+      't',  'e',  's', 't',  // Domain string
+      0x00, 0x50,            // 16-bit port (80)
+  };
+  MockWrite socks5_writes[] = {
+      MockWrite(ASYNC, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
+      MockWrite(ASYNC, kSOCKS5Request, arraysize(kSOCKS5Request)),
+      MockWrite(SYNCHRONOUS,
+                "GET /socks5 HTTP/1.1\r\n"
+                "Host: test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead socks5_reads[] = {
+      MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
+      MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength),
+      MockRead("HTTP/1.0 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 15\r\n\r\n"
+               "SOCKS5 Response"),
+  };
+  StaticSocketDataProvider socks5_data(socks5_reads, arraysize(socks5_reads),
+                                       socks5_writes, arraysize(socks5_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&socks5_data);
+
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS,
+                "GET http://test/http HTTP/1.1\r\n"
+                "Host: test\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Content-Length: 13\r\n\r\n"
+               "HTTP Response"),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  MockWrite https_writes[] = {
+      MockWrite(SYNCHRONOUS,
+                "GET http://test/https HTTP/1.1\r\n"
+                "Host: test\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead https_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Content-Length: 14\r\n\r\n"
+               "HTTPS Response"),
+  };
+  StaticSocketDataProvider https_data(https_reads, arraysize(https_reads),
+                                      https_writes, arraysize(https_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&https_data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  struct TestCase {
+    GURL url;
+    std::string expected_response;
+    // How many idle sockets there should be in the SOCKS proxy socket pool
+    // after the test.
+    int expected_idle_socks_sockets;
+    // How many idle sockets there should be in the HTTP proxy socket pool after
+    // the test.
+    int expected_idle_http_sockets;
+  } const kTestCases[] = {
+      {GURL("http://test/socks4"), "SOCKS4 Response", 1, 0},
+      {GURL("http://test/socks5"), "SOCKS5 Response", 2, 0},
+      {GURL("http://test/http"), "HTTP Response", 2, 1},
+      {GURL("http://test/https"), "HTTPS Response", 2, 2},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = test_case.url;
+    std::unique_ptr<HttpNetworkTransaction> trans =
+        std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                 session.get());
+    TestCompletionCallback callback;
+    int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+    const HttpResponseInfo* response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_EQ(200, response->headers->response_code());
+    std::string response_data;
+    EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+    EXPECT_EQ(test_case.expected_response, response_data);
+
+    // Return the socket to the socket pool, so can make sure it's not used for
+    // the next requests.
+    trans.reset();
+    base::RunLoop().RunUntilIdle();
+
+    // Check the number of idle sockets in the pool, to make sure that used
+    // sockets are indeed being returned to the socket pool.  If each request
+    // doesn't return an idle socket to the pool, the test would incorrectly
+    // pass.
+    EXPECT_EQ(
+        test_case.expected_idle_socks_sockets,
+        session
+            ->GetSocketPoolForSOCKSProxy(
+                HttpNetworkSession::NORMAL_SOCKET_POOL,
+                SameProxyWithDifferentSchemesProxyResolver::ProxyHostPortPair())
+            ->IdleSocketCount());
+    EXPECT_EQ(
+        test_case.expected_idle_http_sockets,
+        session
+            ->GetSocketPoolForHTTPProxy(
+                HttpNetworkSession::NORMAL_SOCKET_POOL,
+                SameProxyWithDifferentSchemesProxyResolver::ProxyHostPortPair())
+            ->IdleSocketCount());
+  }
+}
+
 // Test the load timing for HTTPS requests with an HTTP proxy.
 TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   HttpRequestInfo request1;
@@ -9734,32 +9953,24 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
 TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
   const GroupNameTest tests[] = {
       {
-       "http_proxy",
-       "http://www.example.org/http_proxy_normal",
-       "www.example.org:80",
-       false,
+          "http_proxy", "http://www.example.org/http_proxy_normal",
+          "http_proxy/www.example.org:80", false,
       },
 
       // SSL Tests
       {
-       "http_proxy",
-       "https://www.example.org/http_connect_ssl",
-       "ssl/www.example.org:443",
-       true,
+          "http_proxy", "https://www.example.org/http_connect_ssl",
+          "http_proxy/ssl/www.example.org:443", true,
       },
 
       {
-       "http_proxy",
-       "https://host.with.alternate/direct",
-       "ssl/host.with.alternate:443",
-       true,
+          "http_proxy", "https://host.with.alternate/direct",
+          "http_proxy/ssl/host.with.alternate:443", true,
       },
 
       {
-       "http_proxy",
-       "ftp://ftp.google.com/http_proxy_normal",
-       "ftp/ftp.google.com:21",
-       false,
+          "http_proxy", "ftp://ftp.google.com/http_proxy_normal",
+          "http_proxy/ftp/ftp.google.com:21", false,
       },
   };
 
