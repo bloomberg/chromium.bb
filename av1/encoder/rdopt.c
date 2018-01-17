@@ -3185,7 +3185,7 @@ static void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
     // not the tokenonly rate.
     this_rate_tokenonly -= tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
   }
-  int this_rate = this_rate_tokenonly + bmode_costs[mbmi->mode];
+  int this_rate = rd_stats.rate + bmode_costs[mbmi->mode];
   const int use_palette = mbmi->palette_mode_info.palette_size[0] > 0;
 #if CONFIG_FILTER_INTRA
   const int use_filter_intra = mbmi->filter_intra_mode_info.use_filter_intra;
@@ -3439,6 +3439,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_FILTER_INTRA
 
+  // If previous searches use only the default tx type, do an extra search for
+  // the best tx type.
   if (x->use_default_intra_tx_type) {
     *mbmi = best_mbmi;
     x->use_default_intra_tx_type = 0;
