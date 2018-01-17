@@ -174,6 +174,9 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS =
             "enable-incognito-snapshots-in-android-recents";
 
+    /** Open all custom tabs in a new task. Used only for experimental purposes. */
+    public static final String OPEN_CUSTOM_TABS_IN_NEW_TASK = "open-custom-tabs-in-new-task";
+
     /**
      * Don't crash on undispatched VIEW intents sent to .Main.
      * See ChromeTabbedActivity.maybeDispatchExplicitMainViewIntent() for more info.
