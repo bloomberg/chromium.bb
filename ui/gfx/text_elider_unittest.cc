@@ -693,72 +693,6 @@ TEST(TextEliderTest, MAYBE_ElideRectangleText) {
 }
 
 // TODO(crbug.com/338784): Enable this on android.
-#if defined(OS_ANDROID)
-#define MAYBE_ElideRectangleTextFirstWordTruncated \
-  DISABLED_ElideRectangleTextFirstWordTruncated
-#else
-#define MAYBE_ElideRectangleTextFirstWordTruncated \
-  ElideRectangleTextFirstWordTruncated
-#endif
-TEST(TextEliderTest, MAYBE_ElideRectangleTextFirstWordTruncated) {
-  const FontList font_list;
-  const int line_height = font_list.GetHeight();
-
-  // TOOD(tapted): Remove HARFBUZZ from these when default.
-  // See http://crbug.com/798927.
-  static_assert(Typesetter::DEFAULT != Typesetter::HARFBUZZ,
-                "Typesetter arg is redundant.");
-
-  const float test_width =
-      GetStringWidthF(ASCIIToUTF16("Test"), font_list, Typesetter::HARFBUZZ);
-  const float tes_width =
-      GetStringWidthF(ASCIIToUTF16("Tes"), font_list, Typesetter::HARFBUZZ);
-
-  std::vector<base::string16> lines;
-
-  auto result_for_width = [&](const char* input, float width) {
-    lines.clear();
-    return ElideRectangleText(ASCIIToUTF16(input), font_list, width,
-                              line_height * 4, WRAP_LONG_WORDS, &lines);
-  };
-
-  // Test base case.
-  EXPECT_EQ(0, result_for_width("Test", test_width));
-  EXPECT_EQ(1u, lines.size());
-  EXPECT_EQ(ASCIIToUTF16("Test"), lines[0]);
-
-  // First word truncated.
-  EXPECT_EQ(INSUFFICIENT_SPACE_FOR_FIRST_WORD,
-            result_for_width("Test", tes_width));
-  EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ(ASCIIToUTF16("Tes"), lines[0]);
-  EXPECT_EQ(ASCIIToUTF16("t"), lines[1]);
-
-  // Two words truncated.
-  EXPECT_EQ(INSUFFICIENT_SPACE_FOR_FIRST_WORD,
-            result_for_width("Test\nTest", tes_width));
-  EXPECT_EQ(4u, lines.size());
-  EXPECT_EQ(ASCIIToUTF16("Tes"), lines[0]);
-  EXPECT_EQ(ASCIIToUTF16("t"), lines[1]);
-  EXPECT_EQ(ASCIIToUTF16("Tes"), lines[2]);
-  EXPECT_EQ(ASCIIToUTF16("t"), lines[3]);
-
-  // Word truncated, but not the first.
-  EXPECT_EQ(0, result_for_width("T Test", tes_width));
-  EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ(ASCIIToUTF16("T"), lines[0]);
-  EXPECT_EQ(ASCIIToUTF16("Tes"), lines[1]);
-  EXPECT_EQ(ASCIIToUTF16("t"), lines[2]);
-
-  // Leading \n.
-  EXPECT_EQ(0, result_for_width("\nTest", tes_width));
-  EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ(ASCIIToUTF16(""), lines[0]);
-  EXPECT_EQ(ASCIIToUTF16("Tes"), lines[1]);
-  EXPECT_EQ(ASCIIToUTF16("t"), lines[2]);
-}
-
-// TODO(crbug.com/338784): Enable this on android.
 // Disabled on Mac: fails on 10.11. http://crbug.com/801029
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ElideRectangleTextPunctuation \
@@ -771,8 +705,6 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
   const int line_height = font_list.GetHeight();
   const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
   const float test_t_width = GetStringWidthF(ASCIIToUTF16("Test T"), font_list);
-  constexpr int kResultMask =
-      INSUFFICIENT_SPACE_HORIZONTAL | INSUFFICIENT_SPACE_VERTICAL;
 
   struct TestData {
     const char* input;
@@ -793,11 +725,12 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
     const WordWrapBehavior wrap_behavior =
         (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
-              ElideRectangleText(UTF8ToUTF16(cases[i].input), font_list,
+              ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                                 font_list,
                                  cases[i].available_pixel_width,
-                                 cases[i].available_pixel_height, wrap_behavior,
-                                 &lines) &
-                  kResultMask);
+                                 cases[i].available_pixel_height,
+                                 wrap_behavior,
+                                 &lines));
     if (cases[i].output) {
       const std::string result =
           UTF16ToUTF8(base::JoinString(lines, base::ASCIIToUTF16("|")));
@@ -822,8 +755,6 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
       UTF8ToUTF16(std::string("Tes") + kEllipsis);
   const float elided_width = GetStringWidthF(kElidedTesting, font_list);
   const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
-  constexpr int kResultMask =
-      INSUFFICIENT_SPACE_HORIZONTAL | INSUFFICIENT_SPACE_VERTICAL;
 
   struct TestData {
     const char* input;
@@ -863,12 +794,13 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::vector<base::string16> lines;
-    EXPECT_EQ(
-        cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
-        ElideRectangleText(UTF8ToUTF16(cases[i].input), font_list,
-                           cases[i].available_pixel_width, kAvailableHeight,
-                           cases[i].wrap_behavior, &lines) &
-            kResultMask);
+    EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
+              ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                                 font_list,
+                                 cases[i].available_pixel_width,
+                                 kAvailableHeight,
+                                 cases[i].wrap_behavior,
+                                 &lines));
     std::string expected_output(cases[i].output);
     base::ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
     const std::string result =

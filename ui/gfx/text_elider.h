@@ -123,7 +123,6 @@ GFX_EXPORT bool ElideRectangleString(const base::string16& input,
 enum ReformattingResultFlags {
   INSUFFICIENT_SPACE_HORIZONTAL = 1 << 0,
   INSUFFICIENT_SPACE_VERTICAL = 1 << 1,
-  INSUFFICIENT_SPACE_FOR_FIRST_WORD = 1 << 2,
 };
 
 // Reformats |text| into output vector |lines| so that the resulting text fits
