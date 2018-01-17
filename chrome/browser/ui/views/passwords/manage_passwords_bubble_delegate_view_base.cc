@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
@@ -86,6 +87,9 @@ ManagePasswordsBubbleDelegateViewBase::CreateBubble(
   if (model_state == password_manager::ui::MANAGE_STATE) {
     view = new ManagePasswordItemsView(web_contents, anchor_view, anchor_point,
                                        reason);
+  } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
+    view = new ManagePasswordAutoSignInView(web_contents, anchor_view,
+                                            anchor_point, reason);
   } else {
     // TODO(crbug.com/654115): Get rid of the one-bubble-for-everything
     // BubbleView.

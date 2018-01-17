@@ -40,7 +40,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubbleDelegateViewBase,
   // TODO(pbos): Friend access here is only provided as an interrim while the
   // dialogs need to access their parent, as the dialogs become truly separate
   // this should go away on its own.
-  friend class ManagePasswordAutoSignInView;
   friend class ManagePasswordPendingView;
   friend class ManagePasswordSaveConfirmationView;
   friend class ManagePasswordSignInPromoView;
