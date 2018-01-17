@@ -112,6 +112,11 @@ class PLATFORM_EXPORT WorkQueue {
   // Returns true if any tasks where unblocked, returns false otherwise.
   bool InsertFence(EnqueueOrder fence);
 
+  // Submit a fence without triggering a WorkQueueSets notification.
+  // Caller must ensure that WorkQueueSets are properly updated.
+  // This method should not be called when a fence is already present.
+  void InsertFenceSilently(EnqueueOrder fence);
+
   // Removes any fences that where added and if WorkQueue was pretending to be
   // empty, then the real value is reported to WorkQueueSets. Returns true if
   // any tasks where unblocked.
@@ -126,6 +131,8 @@ class PLATFORM_EXPORT WorkQueue {
   void PopTaskForTesting();
 
  private:
+  bool InsertFenceImpl(EnqueueOrder fence);
+
   TaskQueueImpl::TaskDeque work_queue_;
   WorkQueueSets* work_queue_sets_ = nullptr;  // NOT OWNED.
   TaskQueueImpl* const task_queue_;           // NOT OWNED.

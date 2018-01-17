@@ -857,6 +857,14 @@ void RecordTimeTask(std::vector<base::TimeTicks>* run_times,
   run_times->push_back(clock->NowTicks());
 }
 
+void RecordTimeAndQueueTask(
+    std::vector<std::pair<scoped_refptr<TestTaskQueue>, base::TimeTicks>>*
+        run_times,
+    scoped_refptr<TestTaskQueue> task_queue,
+    base::SimpleTestTickClock* clock) {
+  run_times->emplace_back(task_queue, clock->NowTicks());
+}
+
 }  // namespace
 
 TEST_F(TaskQueueManagerTest, DelayedFence_DelayedTasks) {
@@ -959,6 +967,53 @@ TEST_F(TaskQueueManagerTest, DelayedFence_RemovedFenceDoesNotActivate) {
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(201),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(301),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(401)));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedFence_TakeIncomingImmediateQueue) {
+  // This test checks that everything works correctly when a work queue
+  // is swapped with an immediate incoming queue and a delayed fence
+  // is activated, forcing a different queue to become active.
+  Initialize(2u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  scoped_refptr<TestTaskQueue> queue1 = runners_[0];
+  scoped_refptr<TestTaskQueue> queue2 = runners_[1];
+
+  std::vector<std::pair<scoped_refptr<TestTaskQueue>, base::TimeTicks>>
+      run_times;
+
+  // Fence ensures that the task posted after advancing time is blocked.
+  queue1->InsertFenceAt(Now() + base::TimeDelta::FromMilliseconds(250));
+
+  // This task should not be blocked and should run immediately after
+  // advancing time at 301ms.
+  queue1->PostTask(FROM_HERE,
+                   base::BindRepeating(&RecordTimeAndQueueTask, &run_times,
+                                       queue1, &now_src_));
+  // Force reload of immediate work queue. In real life the same effect can be
+  // achieved with cross-thread posting.
+  queue1->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+
+  now_src_.Advance(base::TimeDelta::FromMilliseconds(300));
+
+  // This task should be blocked.
+  queue1->PostTask(FROM_HERE,
+                   base::BindRepeating(&RecordTimeAndQueueTask, &run_times,
+                                       queue1, &now_src_));
+  // This task on a different runner should run as expected.
+  queue2->PostTask(FROM_HERE,
+                   base::BindRepeating(&RecordTimeAndQueueTask, &run_times,
+                                       queue2, &now_src_));
+
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(
+          std::make_pair(queue1, base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(301)),
+          std::make_pair(queue2, base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(301))));
 }
 
 namespace {

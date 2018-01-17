@@ -381,9 +381,6 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Activate a delayed fence if a time has come.
   void ActivateDelayedFenceIfNeeded(base::TimeTicks now);
 
-  // Returns true if new work has been unblocked.
-  bool InsertFenceImpl(EnqueueOrder enqueue_order);
-
   const char* name_;
 
   const base::PlatformThreadId thread_id_;
