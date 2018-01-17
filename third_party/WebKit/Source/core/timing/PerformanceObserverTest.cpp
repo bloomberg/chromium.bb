@@ -65,7 +65,9 @@ TEST_F(PerformanceObserverTest, Enqueue) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  ScriptValue empty_value;
+  Persistent<PerformanceEntry> entry =
+      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -76,7 +78,9 @@ TEST_F(PerformanceObserverTest, Deliver) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  ScriptValue empty_value;
+  Persistent<PerformanceEntry> entry =
+      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -90,7 +94,9 @@ TEST_F(PerformanceObserverTest, Disconnect) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  ScriptValue empty_value;
+  Persistent<PerformanceEntry> entry =
+      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);

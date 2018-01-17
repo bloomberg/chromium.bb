@@ -27,28 +27,41 @@
 #define PerformanceMark_h
 
 #include "core/timing/PerformanceEntry.h"
-#include "platform/heap/Handle.h"
+#include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+
+class ScriptWrappableVisitor;
 
 class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMark* Create(const String& name, double start_time) {
-    return new PerformanceMark(name, start_time);
+  static PerformanceMark* Create(ScriptState* script_state,
+                                 const String& name,
+                                 double start_time,
+                                 const ScriptValue& detail) {
+    return new PerformanceMark(script_state, name, start_time, detail);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
-    PerformanceEntry::Trace(visitor);
-  }
+  ScriptValue detail(ScriptState*) const;
+
+  void Trace(blink::Visitor*);
+
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  PerformanceMark(const String& name, double start_time)
-      : PerformanceEntry(name, "mark", start_time, start_time) {}
+  PerformanceMark(ScriptState*,
+                  const String& name,
+                  double start_time,
+                  const ScriptValue& detail);
 
   ~PerformanceMark() override = default;
+
+  scoped_refptr<DOMWrapperWorld> world_;
+  TraceWrapperV8Reference<v8::Value> detail_;
 };
 
 }  // namespace blink
