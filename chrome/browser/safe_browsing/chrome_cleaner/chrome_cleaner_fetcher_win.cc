@@ -33,7 +33,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/version_info/version_info.h"
 #include "net/base/load_flags.h"
-#include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -43,8 +42,6 @@
 #include "url/gurl.h"
 
 namespace safe_browsing {
-
-const int kMaxCleanerDownloadAttempts = 3;
 
 namespace {
 
@@ -113,20 +110,10 @@ void RecordCleanerDownloadStatusHistogram(
 // Class that will attempt to download the Chrome Cleaner executable and call a
 // given callback when done. Instances of ChromeCleanerFetcher own themselves
 // and will self-delete if they encounter an error or when the network request
-// has completed. On network errors due to connection not available, will retry
-// once connectivity is restablished.
-// NOTE: What we really want is to check if internet connectivity exists, but
-// since this information is not available, listening to network changes is
-// best we can do.
-class ChromeCleanerFetcher
-    : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+// has completed.
+class ChromeCleanerFetcher : public net::URLFetcherDelegate {
  public:
   explicit ChromeCleanerFetcher(ChromeCleanerFetchedCallback fetched_callback);
-
-  // NetworkChangeObserver overrides.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
 
  protected:
   ~ChromeCleanerFetcher() override;
@@ -139,18 +126,11 @@ class ChromeCleanerFetcher
   void PostCallbackAndDeleteSelf(base::FilePath path,
                                  ChromeCleanerFetchStatus fetch_status);
 
-  // Retries up to |kMaxCleanerDownloadAttempts| times to download the cleaner
-  // when a network error prevents the connection to succeed.
-  void MaybeRetryDownloadingCleaner(int net_error);
-
   // Sends a histogram indicating an error and invokes the fetch callback if
   // the cleaner binary can't be downloaded or saved to the disk.
   void RecordDownloadStatusAndPostCallback(
       CleanerDownloadStatusHistogramValue histogram_value,
       ChromeCleanerFetchStatus fetch_status);
-
-  void RecordNumberOfDownloadAttempts(
-      FetchCompletedReasonHistogramSuffix suffix);
 
   void RecordTimeToCompleteDownload(FetchCompletedReasonHistogramSuffix suffix);
 
@@ -171,8 +151,6 @@ class ChromeCleanerFetcher
   std::unique_ptr<base::ScopedTempDir, base::OnTaskRunnerDeleter>
       scoped_temp_dir_;
   base::FilePath temp_file_;
-
-  int attempts_to_download_ = 0;
 
   // For metrics reporting.
   base::Time time_fetching_started_;
@@ -199,23 +177,6 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
                  base::Unretained(this)),
       base::Bind(&ChromeCleanerFetcher::OnTemporaryDirectoryCreated,
                  base::Unretained(this)));
-}
-
-void ChromeCleanerFetcher::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  DCHECK_GT(kMaxCleanerDownloadAttempts, attempts_to_download_);
-
-  // When network is reconnected, OnNetworkChanged will always be called
-  // with CONNECTION_NONE immediately prior to being called with an online
-  // state.
-  if (type == net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)
-    return;
-
-  // Prevent from getting notified again of network changes unless needed.
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-
-  // Retry to download the cleaner with the same parameters as before.
-  url_fetcher_->Start();
 }
 
 ChromeCleanerFetcher::~ChromeCleanerFetcher() = default;
@@ -271,23 +232,6 @@ void ChromeCleanerFetcher::PostCallbackAndDeleteSelf(
   delete this;
 }
 
-void ChromeCleanerFetcher::MaybeRetryDownloadingCleaner(int net_error) {
-  ++attempts_to_download_;
-  base::UmaHistogramSparse(kDownloadStatusErrorCodeHistogramName, net_error);
-  if (attempts_to_download_ == kMaxCleanerDownloadAttempts) {
-    RecordTimeToCompleteDownload(
-        FetchCompletedReasonHistogramSuffix::kNetworkError);
-    RecordNumberOfDownloadAttempts(
-        FetchCompletedReasonHistogramSuffix::kNetworkError);
-    RecordDownloadStatusAndPostCallback(
-        CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE,
-        ChromeCleanerFetchStatus::kOtherFailure);
-    return;
-  }
-
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-}
-
 void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Take ownership of the fetcher in this scope (source == url_fetcher_).
   DCHECK_EQ(url_fetcher_.get(), source);
@@ -295,9 +239,13 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(fetched_callback_);
 
   if (!source->GetStatus().is_success()) {
-    // In case of network errors that prevent the connection to complete, retry
-    // to download once a connection becomes available.
-    MaybeRetryDownloadingCleaner(source->GetStatus().error());
+    base::UmaHistogramSparse(kDownloadStatusErrorCodeHistogramName,
+                             source->GetStatus().error());
+    RecordTimeToCompleteDownload(
+        FetchCompletedReasonHistogramSuffix::kNetworkError);
+    RecordDownloadStatusAndPostCallback(
+        CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE,
+        ChromeCleanerFetchStatus::kOtherFailure);
     return;
   }
 
@@ -309,7 +257,6 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
           ? FetchCompletedReasonHistogramSuffix::kDownloadSuccess
           : FetchCompletedReasonHistogramSuffix::kDownloadFailure;
   RecordTimeToCompleteDownload(suffix);
-  RecordNumberOfDownloadAttempts(suffix);
 
   if (response_code == net::HTTP_NOT_FOUND) {
     RecordDownloadStatusAndPostCallback(
@@ -349,29 +296,6 @@ void ChromeCleanerFetcher::RecordDownloadStatusAndPostCallback(
     ChromeCleanerFetchStatus fetch_status) {
   RecordCleanerDownloadStatusHistogram(histogram_value);
   PostCallbackAndDeleteSelf(base::FilePath(), fetch_status);
-}
-
-void ChromeCleanerFetcher::RecordNumberOfDownloadAttempts(
-    FetchCompletedReasonHistogramSuffix suffix) {
-  switch (suffix) {
-    case FetchCompletedReasonHistogramSuffix::kDownloadFailure:
-      UMA_HISTOGRAM_COUNTS_100(
-          "SoftwareReporter.Cleaner.NumberOfDownloadAttempts_DownloadFailure",
-          attempts_to_download_);
-      break;
-
-    case FetchCompletedReasonHistogramSuffix::kDownloadSuccess:
-      UMA_HISTOGRAM_COUNTS_100(
-          "SoftwareReporter.Cleaner.NumberOfDownloadAttempts_DownloadSuccess",
-          attempts_to_download_);
-      break;
-
-    case FetchCompletedReasonHistogramSuffix::kNetworkError:
-      UMA_HISTOGRAM_COUNTS_100(
-          "SoftwareReporter.Cleaner.NumberOfDownloadAttempts_NetworkError",
-          attempts_to_download_);
-      break;
-  }
 }
 
 void ChromeCleanerFetcher::RecordTimeToCompleteDownload(
