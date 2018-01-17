@@ -9,12 +9,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -36,6 +38,8 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -57,6 +61,42 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     static final long ONE_WEEK_IN_MILLIS = 604800000L;
     static final String DATE_LAST_ROLLED_KEY = "chrome_home_date_last_rolled_for_survey";
+
+    /**
+     * Reasons that the user was rejected from being selected for a survey
+     *  Note: these values must match the SurveyFilteringResult enum in enums.xml.
+     */
+    @IntDef({FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED,
+            FilteringResult.CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK,
+            FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT,
+            FilteringResult.USER_ALREADY_SAMPLED_TODAY, FilteringResult.MAX_NUMBER_MISSING,
+            FilteringResult.ROLLED_NON_ZERO_NUMBER, FilteringResult.USER_SELECTED_FOR_SURVEY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FilteringResult {
+        int SURVEY_INFOBAR_ALREADY_DISPLAYED = 0;
+        int CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK = 1;
+        int FORCE_SURVEY_ON_COMMAND_PRESENT = 2;
+        int USER_ALREADY_SAMPLED_TODAY = 3;
+        int MAX_NUMBER_MISSING = 4;
+        int ROLLED_NON_ZERO_NUMBER = 5;
+        int USER_SELECTED_FOR_SURVEY = 6;
+        int ENUM_BOUNDARY = 7;
+    }
+
+    /**
+     * How the infobar was closed and its visibility status when it was closed.
+     * Note: these values must match the InfoBarClosingStates enum in enums.xml.
+     */
+    @IntDef({InfoBarClosingState.ACCEPTED_SURVEY, InfoBarClosingState.CLOSE_BUTTON,
+            InfoBarClosingState.VISIBLE_INDIRECT, InfoBarClosingState.HIDDEN_INDIRECT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InfoBarClosingState {
+        int ACCEPTED_SURVEY = 0;
+        int CLOSE_BUTTON = 1;
+        int VISIBLE_INDIRECT = 2;
+        int HIDDEN_INDIRECT = 3;
+        int ENUM_BOUNDARY = 4;
+    }
 
     private TabModelSelector mTabModelSelector;
     private Handler mLoggingHandler;
@@ -180,6 +220,8 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         SurveyInfoBar.showSurveyInfoBar(tab.getWebContents(), siteId, true,
                 R.drawable.chrome_sync_logo, getSurveyInfoBarDelegate());
 
+        RecordUserAction.record("Android.ChromeHome.Survey.ShowSurveyInfoBar");
+
         mTabModelSelector.removeObserver(mTabModelObserver);
     }
 
@@ -230,7 +272,12 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     @VisibleForTesting
     boolean hasInfoBarBeenDisplayed() {
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        return sharedPreferences.getLong(SURVEY_INFO_BAR_DISPLAYED_KEY, -1L) != -1L;
+        if (sharedPreferences.getLong(SURVEY_INFO_BAR_DISPLAYED_KEY, -1L) != -1L) {
+            recordSurveyFilteringResult(FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** @return If it has been over a week since ChromeHome was enabled. */
@@ -239,8 +286,12 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
         long earliestLoggedDate = sharedPreferences.getLong(
                 ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY, Long.MAX_VALUE);
-        if (System.currentTimeMillis() - earliestLoggedDate >= ONE_WEEK_IN_MILLIS) return true;
-        return false;
+        if (System.currentTimeMillis() - earliestLoggedDate >= ONE_WEEK_IN_MILLIS) {
+            return true;
+        } else {
+            recordSurveyFilteringResult(FilteringResult.CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK);
+            return false;
+        }
     }
 
     /**
@@ -286,13 +337,25 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         int lastDate = preferences.getInt(DATE_LAST_ROLLED_KEY, -1);
         int today = getDayOfYear();
-        if (lastDate == today) return false;
+        if (lastDate == today) {
+            recordSurveyFilteringResult(FilteringResult.USER_ALREADY_SAMPLED_TODAY);
+            return false;
+        }
 
         int maxNumber = getMaxNumber();
-        if (maxNumber == -1) return false;
+        if (maxNumber == -1) {
+            recordSurveyFilteringResult(FilteringResult.MAX_NUMBER_MISSING);
+            return false;
+        }
 
         preferences.edit().putInt(DATE_LAST_ROLLED_KEY, today).apply();
-        return getRandomNumberUpTo(maxNumber) == 0;
+        if (getRandomNumberUpTo(maxNumber) == 0) {
+            recordSurveyFilteringResult(FilteringResult.USER_SELECTED_FOR_SURVEY);
+            return true;
+        } else {
+            recordSurveyFilteringResult(FilteringResult.ROLLED_NON_ZERO_NUMBER);
+            return false;
+        }
     }
 
     /**
@@ -349,14 +412,22 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
             }
 
             @Override
-            public void onSurveyInfoBarCloseButtonClicked() {
-                RecordUserAction.record("Android.ChromeHome.ClickedSurveyInfoBarCloseButton");
-                recordInfoBarDisplayed();
+            public void onSurveyInfoBarClosed(boolean viaCloseButton, boolean visibleWhenClosed) {
+                if (viaCloseButton) {
+                    recordInfoBarClosingState(InfoBarClosingState.CLOSE_BUTTON);
+                    recordInfoBarDisplayed();
+                } else {
+                    if (visibleWhenClosed) {
+                        recordInfoBarClosingState(InfoBarClosingState.VISIBLE_INDIRECT);
+                    } else {
+                        recordInfoBarClosingState(InfoBarClosingState.HIDDEN_INDIRECT);
+                    }
+                }
             }
 
             @Override
             public void onSurveyTriggered() {
-                RecordUserAction.record("Android.ChromeHome.AcceptedSurvey");
+                recordInfoBarClosingState(InfoBarClosingState.ACCEPTED_SURVEY);
                 recordInfoBarDisplayed();
             }
 
@@ -392,6 +463,17 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         mTabModelSelector = tabModelSelector;
     }
 
+    private void recordSurveyFilteringResult(@FilteringResult int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.ChromeHome.Survey.SurveyFilteringResults", value,
+                FilteringResult.ENUM_BOUNDARY);
+    }
+
+    private void recordInfoBarClosingState(@InfoBarClosingState int value) {
+        RecordHistogram.recordEnumeratedHistogram("Android.ChromeHome.Survey.InfoBarClosingState",
+                value, InfoBarClosingState.ENUM_BOUNDARY);
+    }
+
     static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {
         final ChromeHomeSurveyController mController;
         @SuppressLint("StaticFieldLeak") // TODO(crbug.com/799070): Fix.
@@ -411,10 +493,15 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
             if (SurveyController.getInstance().doesSurveyExist(mController.getSiteId(), mContext)) {
                 return true;
             } else {
-                return mController.isRandomlySelectedForSurvey()
-                        || CommandLine.getInstance().hasSwitch(
-                                   ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
-                        || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY);
+                boolean forceSurveyOn = false;
+                if (CommandLine.getInstance().hasSwitch(
+                            ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
+                        || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
+                    forceSurveyOn = true;
+                    mController.recordSurveyFilteringResult(
+                            FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT);
+                }
+                return mController.isRandomlySelectedForSurvey() || forceSurveyOn;
             }
         }
 

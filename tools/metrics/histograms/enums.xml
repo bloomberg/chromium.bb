@@ -22363,6 +22363,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Open()"/>
 </enum>
 
+<enum name="InfoBarClosingStates">
+  <int value="0" label="Accepted survey"/>
+  <int value="1" label="Tapped close button"/>
+  <int value="2" label="Indirectly closed while visible"/>
+  <int value="3" label="Indirectly closed while hidden"/>
+</enum>
+
 <enum name="InfoBarIdentifier">
   <int value="1" label="APP_BANNER_INFOBAR_DELEGATE"/>
   <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP (Obsolete)"/>
@@ -41362,6 +41369,16 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Max surveys already shown"/>
   <int value="4" label="Failed to download survey"/>
   <int value="5" label="Unknown response code"/>
+</enum>
+
+<enum name="SurveyFilteringResult">
+  <int value="0" label="Survey info bar already displayed"/>
+  <int value="1" label="Chrome Home enabled for less than one week"/>
+  <int value="2" label="Force Survey On command present"/>
+  <int value="3" label="User already sampled today"/>
+  <int value="4" label="Max number is missing"/>
+  <int value="5" label="Rolled a non-zero number"/>
+  <int value="6" label="User selected for survey"/>
 </enum>
 
 <enum name="SuspendAttempt">
