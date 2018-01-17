@@ -143,7 +143,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers) {}
+      const std::string& extra_headers,
+      const base::Optional<std::string>& suggested_filename) {}
 
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If
   // |frame_tree_node| has a NavigationRequest waiting for the renderer

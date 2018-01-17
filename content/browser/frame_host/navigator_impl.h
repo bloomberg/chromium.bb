@@ -75,17 +75,19 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool user_gesture,
       blink::WebTriggeringEventInfo triggering_event_info,
       const base::Optional<std::string>& suggested_filename) override;
-  void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
-                          const GURL& url,
-                          SiteInstance* source_site_instance,
-                          const std::vector<GURL>& redirect_chain,
-                          const Referrer& referrer,
-                          ui::PageTransition page_transition,
-                          const GlobalRequestID& transferred_global_request_id,
-                          bool should_replace_current_entry,
-                          const std::string& method,
-                          scoped_refptr<network::ResourceRequestBody> post_body,
-                          const std::string& extra_headers) override;
+  void RequestTransferURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      SiteInstance* source_site_instance,
+      const std::vector<GURL>& redirect_chain,
+      const Referrer& referrer,
+      ui::PageTransition page_transition,
+      const GlobalRequestID& transferred_global_request_id,
+      bool should_replace_current_entry,
+      const std::string& method,
+      scoped_refptr<network::ResourceRequestBody> post_body,
+      const std::string& extra_headers,
+      const base::Optional<std::string>& suggested_filename) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                          bool proceed,
                          const base::TimeTicks& proceed_time) override;
