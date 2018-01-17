@@ -651,11 +651,11 @@ void CastStreamingNativeHandler::GetRawEvents(
   CHECK(args[2]->IsFunction());
 
   const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
-  v8::Global<v8::Function> callback(args.GetIsolate(),
-                                    args[2].As<v8::Function>());
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::Global<v8::Function> callback(isolate, args[2].As<v8::Function>());
   std::string extra_data;
   if (!args[1]->IsNull()) {
-    extra_data = *v8::String::Utf8Value(args[1]);
+    extra_data = *v8::String::Utf8Value(isolate, args[1]);
   }
 
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
@@ -893,7 +893,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
     return;
   }
 
-  const std::string url = *v8::String::Utf8Value(args[6]);
+  const std::string url = *v8::String::Utf8Value(isolate, args[6]);
   blink::WebMediaStream stream =
       blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
 

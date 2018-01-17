@@ -386,7 +386,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
   }
 
   if (val->IsString()) {
-    v8::String::Utf8Value utf8(val);
+    v8::String::Utf8Value utf8(isolate, val);
     return std::make_unique<base::Value>(std::string(*utf8, utf8.length()));
   }
 
@@ -413,7 +413,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
       return FromV8Object(val.As<v8::Object>(), state, isolate);
-    return std::make_unique<base::Value>(*v8::String::Utf8Value(val));
+    return std::make_unique<base::Value>(*v8::String::Utf8Value(isolate, val));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
@@ -569,12 +569,13 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Object(
     // Extend this test to cover more types as necessary and if sensible.
     if (!key->IsString() &&
         !key->IsNumber()) {
-      NOTREACHED() << "Key \"" << *v8::String::Utf8Value(key) << "\" "
+      NOTREACHED() << "Key \"" << *v8::String::Utf8Value(isolate, key)
+                   << "\" "
                       "is neither a string nor a number";
       continue;
     }
 
-    v8::String::Utf8Value name_utf8(key);
+    v8::String::Utf8Value name_utf8(isolate, key);
 
     v8::TryCatch try_catch(isolate);
     v8::Local<v8::Value> child_v8 = val->Get(key);

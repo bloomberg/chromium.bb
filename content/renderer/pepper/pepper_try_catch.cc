@@ -154,7 +154,8 @@ bool PepperTryCatchVar::HasException() {
   } else if (try_catch_.HasCaught()) {
     v8::Local<v8::Message> message(try_catch_.Message());
     if (!message.IsEmpty()) {
-      v8::String::Utf8Value utf8(try_catch_.Message()->Get());
+      v8::String::Utf8Value utf8(handle_scope_.GetIsolate(),
+                                 try_catch_.Message()->Get());
       exception_message = std::string(*utf8, utf8.length());
     } else {
       exception_message = "There was a v8 exception.";

@@ -186,9 +186,10 @@ void MessagingBindings::OpenChannelToExtension(
   if (extension && !extension->is_hosted_app())
     info.source_id = extension->id();
 
-  info.target_id = *v8::String::Utf8Value(args[0]);
+  v8::Isolate* isolate = args.GetIsolate();
+  info.target_id = *v8::String::Utf8Value(isolate, args[0]);
   info.source_url = context()->url();
-  std::string channel_name = *v8::String::Utf8Value(args[1]);
+  std::string channel_name = *v8::String::Utf8Value(isolate, args[1]);
   // TODO(devlin): Why is this not part of info?
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
@@ -217,7 +218,8 @@ void MessagingBindings::OpenChannelToNativeApp(
   if (!render_frame)
     return;
 
-  std::string native_app_name = *v8::String::Utf8Value(args[0]);
+  std::string native_app_name =
+      *v8::String::Utf8Value(args.GetIsolate(), args[0]);
 
   int js_id = GetNextJsId();
   PortId port_id(context()->context_id(), js_id, true);
@@ -260,8 +262,9 @@ void MessagingBindings::OpenChannelToTab(
   info.tab_id = args[0]->Int32Value();
   info.frame_id = args[1]->Int32Value();
   // TODO(devlin): Why is this not part of info?
-  std::string extension_id = *v8::String::Utf8Value(args[2]);
-  std::string channel_name = *v8::String::Utf8Value(args[3]);
+  v8::Isolate* isolate = args.GetIsolate();
+  std::string extension_id = *v8::String::Utf8Value(isolate, args[2]);
+  std::string channel_name = *v8::String::Utf8Value(isolate, args[3]);
 
   ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
   DCHECK(frame_helper);

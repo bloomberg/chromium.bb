@@ -40,13 +40,14 @@
 
 namespace blink {
 
-const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node,
+const v8::HeapGraphNode* GetProperty(v8::Isolate* isolate,
+                                     const v8::HeapGraphNode* node,
                                      v8::HeapGraphEdge::Type type,
                                      const char* name) {
   for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
     const v8::HeapGraphEdge* prop = node->GetChild(i);
     if (prop->GetType() == type) {
-      v8::String::Utf8Value prop_name(prop->GetName());
+      v8::String::Utf8Value prop_name(isolate, prop->GetName());
       if (!strcmp(name, *prop_name))
         return prop->GetToNode();
     }
@@ -66,13 +67,14 @@ int GetNumObjects(const char* constructor) {
     const v8::HeapGraphNode* node = snapshot->GetNode(i);
     if (node->GetType() != v8::HeapGraphNode::kObject)
       continue;
-    v8::String::Utf8Value node_name(node->GetName());
+    v8::String::Utf8Value node_name(isolate, node->GetName());
     if (!strcmp(constructor, *node_name)) {
-      const v8::HeapGraphNode* constructor_prop =
-          GetProperty(node, v8::HeapGraphEdge::kProperty, "constructor");
+      const v8::HeapGraphNode* constructor_prop = GetProperty(
+          isolate, node, v8::HeapGraphEdge::kProperty, "constructor");
       // Skip an Object instance named after the constructor.
       if (constructor_prop) {
-        v8::String::Utf8Value constructor_name(constructor_prop->GetName());
+        v8::String::Utf8Value constructor_name(isolate,
+                                               constructor_prop->GetName());
         if (!strcmp(constructor, *constructor_name))
           continue;
       }

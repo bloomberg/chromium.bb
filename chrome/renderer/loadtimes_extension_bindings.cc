@@ -110,8 +110,8 @@ class LoadTimesExtensionWrapper : public v8::Extension {
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info) {
     if (WebLocalFrame* frame = WebLocalFrame::FrameForCurrentContext()) {
-      frame->UsageCountChromeLoadTimes(
-          blink::WebString::FromUTF8(*v8::String::Utf8Value(name)));
+      frame->UsageCountChromeLoadTimes(blink::WebString::FromUTF8(
+          *v8::String::Utf8Value(info.GetIsolate(), name)));
     }
     info.GetReturnValue().Set(info.Data());
   }

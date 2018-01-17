@@ -44,7 +44,7 @@ std::unique_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
   }
 
   return std::unique_ptr<base::Value>(
-      new base::Value(std::string(*v8::String::Utf8Value(name))));
+      new base::Value(std::string(*v8::String::Utf8Value(isolate, name))));
 }
 
 }  // namespace

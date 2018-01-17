@@ -61,12 +61,12 @@ std::string GetContextTypeDescriptionString(Feature::Context context_type) {
   return std::string();
 }
 
-static std::string ToStringOrDefault(
-    const v8::Local<v8::String>& v8_string,
-    const std::string& dflt) {
+static std::string ToStringOrDefault(v8::Isolate* isolate,
+                                     const v8::Local<v8::String>& v8_string,
+                                     const std::string& dflt) {
   if (v8_string.IsEmpty())
     return dflt;
-  std::string ascii_value = *v8::String::Utf8Value(v8_string);
+  std::string ascii_value = *v8::String::Utf8Value(isolate, v8_string);
   return ascii_value.empty() ? dflt : ascii_value;
 }
 
@@ -425,8 +425,10 @@ std::string ScriptContext::GetStackTraceAsString() const {
     CHECK(!frame.IsEmpty());
     result += base::StringPrintf(
         "\n    at %s (%s:%d:%d)",
-        ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
-        ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
+        ToStringOrDefault(isolate(), frame->GetFunctionName(), "<anonymous>")
+            .c_str(),
+        ToStringOrDefault(isolate(), frame->GetScriptName(), "<anonymous>")
+            .c_str(),
         frame->GetLineNumber(), frame->GetColumn());
   }
   return result;
@@ -443,8 +445,8 @@ v8::Local<v8::Value> ScriptContext::RunScript(
 
   // Prepend extensions:: to |name| so that internal code can be differentiated
   // from external code in stack traces. This has no effect on behaviour.
-  std::string internal_name =
-      base::StringPrintf("extensions::%s", *v8::String::Utf8Value(name));
+  std::string internal_name = base::StringPrintf(
+      "extensions::%s", *v8::String::Utf8Value(isolate(), name));
 
   if (internal_name.size() >= v8::String::kMaxLength) {
     NOTREACHED() << "internal_name is too long.";

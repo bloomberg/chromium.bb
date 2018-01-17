@@ -118,7 +118,7 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
   v8::Local<v8::Array> property_names(image_data_set->GetOwnPropertyNames());
   for (size_t i = 0; i < property_names->Length(); ++i) {
     v8::Local<v8::Value> key(property_names->Get(i));
-    v8::String::Utf8Value utf8_key(key);
+    v8::String::Utf8Value utf8_key(isolate, key);
     int size;
     if (!base::StringToInt(std::string(*utf8_key), &size))
       continue;

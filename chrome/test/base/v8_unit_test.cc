@@ -27,7 +27,7 @@ std::string LogArgs2String(const v8::FunctionCallbackInfo<v8::Value>& args) {
     else
       message += " ";
 
-    v8::String::Utf8Value str(args[i]);
+    v8::String::Utf8Value str(args.GetIsolate(), args[i]);
     message += *str;
   }
   return message;
@@ -255,18 +255,19 @@ std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  v8::String::Utf8Value exception(try_catch.Exception());
+  v8::String::Utf8Value exception(isolate, try_catch.Exception());
   v8::Local<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     str.append(base::StringPrintf("%s\n", *exception));
   } else {
-    v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
+    v8::String::Utf8Value filename(isolate,
+                                   message->GetScriptOrigin().ResourceName());
     int linenum = message->GetLineNumber(context).ToChecked();
     int colnum = message->GetStartColumn(context).ToChecked();
     str.append(base::StringPrintf(
         "%s:%i:%i %s\n", *filename, linenum, colnum, *exception));
     v8::String::Utf8Value sourceline(
-        message->GetSourceLine(context).ToLocalChecked());
+        isolate, message->GetSourceLine(context).ToLocalChecked());
     str.append(base::StringPrintf("%s\n", *sourceline));
   }
   return str;
@@ -306,14 +307,15 @@ void V8UnitTest::Error(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   // We expect to receive 2 args: ("testResult", [ok, message]). However,
   // chrome.send may pass only one. Therefore we need to ensure we have at least
   // 1, then ensure that the first is "testResult" before checking again for 2.
   EXPECT_LE(1, args.Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  v8::String::Utf8Value message(args[0]);
+  v8::String::Utf8Value message(isolate, args[0]);
   EXPECT_EQ("testResult", std::string(*message, message.length()));
   if (::testing::Test::HasNonfatalFailure())
     return;
@@ -326,7 +328,7 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
     return;
   g_test_result_ok = test_result->Get(0)->BooleanValue();
   if (!g_test_result_ok) {
-    v8::String::Utf8Value message(test_result->Get(1));
+    v8::String::Utf8Value message(isolate, test_result->Get(1));
     LOG(ERROR) << *message;
   }
 }

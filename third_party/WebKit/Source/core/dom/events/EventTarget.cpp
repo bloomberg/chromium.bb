@@ -266,6 +266,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
       if (function->IsFunction() &&
           strcmp("ssc_wheel",
                  *v8::String::Utf8Value(
+                     v8::Isolate::GetCurrent(),
                      v8::Local<v8::Function>::Cast(function)->GetName())) ==
               0) {
         options.setPassive(true);

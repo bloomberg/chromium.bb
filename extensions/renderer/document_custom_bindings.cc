@@ -29,7 +29,7 @@ void DocumentCustomBindings::RegisterElement(
     return;
   }
 
-  std::string element_name(*v8::String::Utf8Value(args[0]));
+  std::string element_name(*v8::String::Utf8Value(args.GetIsolate(), args[0]));
   v8::Local<v8::Object> options = v8::Local<v8::Object>::Cast(args[1]);
 
   blink::WebDocument document = context()->web_frame()->GetDocument();

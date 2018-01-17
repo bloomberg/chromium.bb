@@ -90,7 +90,7 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
     std::string stack_trace = "<stack trace unavailable>";
     v8::Local<v8::Value> v8_stack_trace;
     if (try_catch.StackTrace(context_->v8_context()).ToLocal(&v8_stack_trace)) {
-      v8::String::Utf8Value stack_value(v8_stack_trace);
+      v8::String::Utf8Value stack_value(context_->isolate(), v8_stack_trace);
       if (*stack_value)
         stack_trace.assign(*stack_value, stack_value.length());
       else
@@ -142,13 +142,13 @@ std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
   std::string resource_name = "<unknown resource>";
   if (!message->GetScriptOrigin().ResourceName().IsEmpty()) {
     v8::String::Utf8Value resource_name_v8(
-        message->GetScriptOrigin().ResourceName());
+        context_->isolate(), message->GetScriptOrigin().ResourceName());
     resource_name.assign(*resource_name_v8, resource_name_v8.length());
   }
 
   std::string error_message = "<no error message>";
   if (!message->Get().IsEmpty()) {
-    v8::String::Utf8Value error_message_v8(message->Get());
+    v8::String::Utf8Value error_message_v8(context_->isolate(), message->Get());
     error_message.assign(*error_message_v8, error_message_v8.length());
   }
 
@@ -280,7 +280,7 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
   if (!create)
     return v8::Undefined(GetIsolate());
 
-  exports = LoadModule(*v8::String::Utf8Value(module_name));
+  exports = LoadModule(*v8::String::Utf8Value(GetIsolate(), module_name));
   SetPrivateProperty(v8_context, modules, module_name, exports);
   return handle_scope.Escape(exports);
 }
@@ -402,7 +402,7 @@ void ModuleSystem::LazyFieldGetterInner(
     Warn(isolate, "Cannot find module.");
     return;
   }
-  std::string name = *v8::String::Utf8Value(v8_module_name);
+  std::string name = *v8::String::Utf8Value(isolate, v8_module_name);
 
   // As part of instantiating a module, we delete the getter and replace it with
   // the property directly. If we're trying to load the same module a second
@@ -439,7 +439,7 @@ void ModuleSystem::LazyFieldGetterInner(
   }
 
   if (!IsTrue(module->Has(context, field))) {
-    std::string field_str = *v8::String::Utf8Value(field);
+    std::string field_str = *v8::String::Utf8Value(isolate, field);
     Fatal(module_system->context_,
           "Lazy require of " + name + "." + field_str + " did not set the " +
               field_str + " field");
@@ -573,7 +573,7 @@ v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
 void ModuleSystem::RequireNative(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  std::string native_name = *v8::String::Utf8Value(args[0]);
+  std::string native_name = *v8::String::Utf8Value(args.GetIsolate(), args[0]);
   v8::Local<v8::Object> object;
   if (RequireNativeFromString(native_name).ToLocal(&object))
     args.GetReturnValue().Set(object);
@@ -613,7 +613,7 @@ v8::MaybeLocal<v8::Object> ModuleSystem::RequireNativeFromString(
 
 void ModuleSystem::LoadScript(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  std::string module_name = *v8::String::Utf8Value(args[0]);
+  std::string module_name = *v8::String::Utf8Value(GetIsolate(), args[0]);
 
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> v8_context = context()->v8_context();

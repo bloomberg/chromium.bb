@@ -70,7 +70,8 @@ void ObjectBackedNativeHandler::Router(
         ScriptContextSet::GetContextByV8Context(context);
     v8::Local<v8::String> feature_name_string =
         feature_name_value->ToString(context).ToLocalChecked();
-    std::string feature_name = *v8::String::Utf8Value(feature_name_string);
+    std::string feature_name =
+        *v8::String::Utf8Value(isolate, feature_name_string);
     // TODO(devlin): Eventually, we should fail if either script_context is null
     // or feature_name is empty.
     if (script_context && !feature_name.empty()) {

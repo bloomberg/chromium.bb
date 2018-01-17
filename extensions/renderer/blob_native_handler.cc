@@ -41,13 +41,14 @@ void BlobNativeHandler::TakeBrowserProcessBlob(
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsString());
   CHECK(args[2]->IsInt32());
-  std::string uuid(*v8::String::Utf8Value(args[0]));
-  std::string type(*v8::String::Utf8Value(args[1]));
+  v8::Isolate* isolate = args.GetIsolate();
+  std::string uuid(*v8::String::Utf8Value(isolate, args[0]));
+  std::string type(*v8::String::Utf8Value(isolate, args[1]));
   blink::WebBlob blob = blink::WebBlob::CreateFromUUID(
       blink::WebString::FromUTF8(uuid), blink::WebString::FromUTF8(type),
       args[2]->Int32Value());
   args.GetReturnValue().Set(
-      blob.ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
+      blob.ToV8Value(context()->v8_context()->Global(), isolate));
 }
 
 }  // namespace extensions

@@ -106,7 +106,7 @@ bool Equals(const PP_Var& var,
       return false;
     StringVar* string_var = StringVar::FromPPVar(var);
     DCHECK(string_var);
-    v8::String::Utf8Value utf8(val);
+    v8::String::Utf8Value utf8(isolate, val);
     return std::string(*utf8, utf8.length()) == string_var->value();
   } else if (val->IsArray()) {
     if (var.type != PP_VARTYPE_ARRAY)
@@ -143,7 +143,7 @@ bool Equals(const PP_Var& var,
           return false;
         v8::Local<v8::Value> child_v8 = v8_object->Get(key);
 
-        v8::String::Utf8Value name_utf8(key);
+        v8::String::Utf8Value name_utf8(isolate, key);
         ScopedPPVar release_key(ScopedPPVar::PassRef(),
                                 StringVar::StringToPPVar(std::string(
                                     *name_utf8, name_utf8.length())));
