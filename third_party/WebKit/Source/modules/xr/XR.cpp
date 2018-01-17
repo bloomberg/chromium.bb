@@ -28,6 +28,8 @@ const char kCrossOriginSubframeBlocked[] =
     "Blocked call to navigator.xr.requestDevice inside a cross-origin "
     "iframe because the frame has never been activated by the user.";
 
+const char kNoDevicesMessage[] = "No devices found.";
+
 }  // namespace
 
 XR::XR(LocalFrame& frame)
@@ -95,7 +97,12 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
     // TODO (offenwanger): When we have a prioritized order of devices, or some
     // other method of getting the prefered device, insert that here. For now,
     // just get the first device out of the list, if there is one.
-    devices_.size() == 0 ? resolver->Resolve() : resolver->Resolve(devices_[0]);
+    if (devices_.size() == 0) {
+      resolver->Reject(DOMException::Create(kNotFoundError, kNoDevicesMessage));
+    } else {
+      resolver->Resolve(devices_[0]);
+    }
+
     return promise;
   }
 
@@ -133,8 +140,13 @@ void XR::OnDevicesSynced() {
 // Called when details for every connected XRDevice has been received.
 void XR::ResolveRequestDevice() {
   if (pending_devices_resolver_) {
-    devices_.size() == 0 ? pending_devices_resolver_->Resolve()
-                         : pending_devices_resolver_->Resolve(devices_[0]);
+    if (devices_.size() == 0) {
+      pending_devices_resolver_->Reject(
+          DOMException::Create(kNotFoundError, kNoDevicesMessage));
+    } else {
+      pending_devices_resolver_->Resolve(devices_[0]);
+    }
+
     pending_devices_resolver_ = nullptr;
   }
 }
