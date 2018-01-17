@@ -15,7 +15,6 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -143,8 +142,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         // supported payment method for the payment request.
         if (mIsIncognito || isOnlySupportBasiccard(methodDataMap)) {
             new Handler().post(() -> {
-                List<PaymentInstrument> instruments = new ArrayList();
-                instruments.add(ServiceWorkerPaymentApp.this);
+                List<PaymentInstrument> instruments =
+                        Collections.singletonList(ServiceWorkerPaymentApp.this);
                 callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
             });
             return;
@@ -153,10 +152,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         ServiceWorkerPaymentAppBridge.canMakePayment(mWebContents, mRegistrationId, origin,
                 iframeOrigin, new HashSet<>(methodDataMap.values()),
                 new HashSet<>(modifiers.values()), (boolean canMakePayment) -> {
-                    List<PaymentInstrument> instruments = new ArrayList();
-                    if (canMakePayment) {
-                        instruments.add(ServiceWorkerPaymentApp.this);
-                    }
+                    List<PaymentInstrument> instruments = canMakePayment
+                            ? Collections.singletonList(ServiceWorkerPaymentApp.this)
+                            : Collections.emptyList();
                     callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
                 });
     }
