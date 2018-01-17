@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local_storage.h"
+#include "build/build_config.h"
 #include "net/base/lookup_string_in_fixed_set.h"
 #include "third_party/icu/source/common/unicode/schriter.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
@@ -162,7 +163,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+04B1 (ұ) => y
   //   - U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ) => x
   //   - U+04BD (ҽ), U+04BF (ҿ) => e
-  //   - U+04CF (ӏ) => l
+  //   - U+04CF (ӏ) => i (on Windows), l (elsewhere)
   //   - U+0503 (ԃ) => d
   //   - U+050D (ԍ) => g
   //   - U+0D1F (ട) => s
@@ -172,7 +173,12 @@ IDNSpoofChecker::IDNSpoofChecker() {
                                    "[ĸκкқҝҟҡӄԟ] > k; [ŧтҭ] > t;"
                                    "[ƅьҍв] > b;  [ωшщ] > w; [мӎ] > m;"
                                    "п > n; ћ > h; ґ > r; ғ > f; ҫ > c;"
-                                   "ұ > y; [χҳӽӿ] > x; [ҽҿ] > e; ӏ > l;"
+                                   "ұ > y; [χҳӽӿ] > x; [ҽҿ] > e;"
+#if defined(OS_WIN)
+                                   "ӏ > i;"
+#else
+                                   "ӏ > l;"
+#endif
                                    "ԃ  > d; ԍ > g; ട > s"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
