@@ -1034,6 +1034,7 @@ group("chromium_builder_perf") {
     data_deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
+      "//chrome/test:performance_test_suite",
       "//chrome/test:telemetry_perf_tests",
       "//components/tracing:tracing_perftests",
       "//gpu:command_buffer_perftests",
