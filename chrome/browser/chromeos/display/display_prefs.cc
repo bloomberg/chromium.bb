@@ -50,6 +50,8 @@ constexpr char kTouchAssociationCalibrationData[] =
 constexpr char kMirroringSourceId[] = "mirroring_source_id";
 constexpr char kMirroringDestinationIds[] = "mirroring_destination_ids";
 
+constexpr char kDisplayZoom[] = "display_zoom";
+
 // This kind of boilerplates should be done by base::JSONValueConverter but it
 // doesn't support classes like gfx::Insets for now.
 // TODO(mukai): fix base::JSONValueConverter and use it here.
@@ -241,9 +243,15 @@ void LoadDisplayProperties(PrefService* local_state) {
     gfx::Insets insets;
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
+
+    // Set the default zoom percentage to 100.
+    int display_zoom_percentage = 100;
+    dict_value->GetInteger(kDisplayZoom, &display_zoom_percentage);
+
     GetDisplayManager()->RegisterDisplayProperty(
         id, rotation, ui_scale, insets_to_set, resolution_in_pixels,
-        device_scale_factor);
+        device_scale_factor,
+        static_cast<float>(display_zoom_percentage) / 100.f);
   }
 }
 
@@ -494,6 +502,12 @@ void StoreCurrentDisplayProperties(PrefService* local_state) {
       TouchDataToValue(legacy_data_map.at(id).calibration_data,
                        property_value.get());
     }
+
+    // Store the display zoom as a percentage.
+    int display_zoom_percentage =
+        display_manager->GetZoomFactorForDisplay(id) * 100;
+    property_value->SetInteger(kDisplayZoom, display_zoom_percentage);
+
     pref_data->Set(base::Int64ToString(id), std::move(property_value));
   }
 }
