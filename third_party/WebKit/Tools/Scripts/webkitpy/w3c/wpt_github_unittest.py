@@ -9,7 +9,7 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.common import EXPORT_PR_LABEL
-from webkitpy.w3c.wpt_github import GitHubError, MergeError, PullRequest, WPTGitHub
+from webkitpy.w3c.wpt_github import MAX_PR_HISTORY_WINDOW, GitHubError, MergeError, PullRequest, WPTGitHub
 
 
 class WPTGitHubTest(unittest.TestCase):
@@ -29,6 +29,11 @@ class WPTGitHubTest(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.wpt_github.user, 'rutabaga')
         self.assertEqual(self.wpt_github.token, 'decafbad')
+
+    def test_constructor_throws_on_pr_history_window_too_large(self):
+        with self.assertRaises(ValueError):
+            self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad',
+                                        pr_history_window=MAX_PR_HISTORY_WINDOW + 1)
 
     def test_auth_token(self):
         self.assertEqual(

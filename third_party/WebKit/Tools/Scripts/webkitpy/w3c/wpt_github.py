@@ -15,6 +15,7 @@ from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
 MAX_PER_PAGE = 100
+MAX_PR_HISTORY_WINDOW = 1000
 
 
 class WPTGitHub(object):
@@ -25,7 +26,9 @@ class WPTGitHub(object):
     GitHubError will be raised if an API call fails.
     """
 
-    def __init__(self, host, user=None, token=None, pr_history_window=5000):
+    def __init__(self, host, user=None, token=None, pr_history_window=MAX_PR_HISTORY_WINDOW):
+        if pr_history_window > MAX_PR_HISTORY_WINDOW:
+            raise ValueError("GitHub only provides up to %d results per search" % MAX_PR_HISTORY_WINDOW)
         self.host = host
         self.user = user
         self.token = token
