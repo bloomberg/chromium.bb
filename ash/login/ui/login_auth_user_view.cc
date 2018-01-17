@@ -347,9 +347,13 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
 
 void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
   password_view_->SetReadOnly(false);
-  password_view_->Clear();
-  if (auth_success.has_value())
-    on_auth_.Run(*auth_success);
+  if (auth_success.has_value()) {
+    // Clear the password if auth fails.
+    if (!auth_success.value())
+      password_view_->Clear();
+
+    on_auth_.Run(auth_success.value());
+  }
 }
 
 void LoginAuthUserView::OnUserViewTap() {
