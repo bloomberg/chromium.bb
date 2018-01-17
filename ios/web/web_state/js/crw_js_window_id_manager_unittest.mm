@@ -29,7 +29,8 @@ class JSWindowIDManagerTest : public PlatformTest {
 TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
   // Inject the first manager.
   WKWebView* web_view = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view, GetEarlyPageScriptForAllFrames(&browser_state_));
+  ExecuteJavaScript(web_view,
+                    GetDocumentStartScriptForAllFrames(&browser_state_));
 
   CRWJSWindowIDManager* manager =
       [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
@@ -39,7 +40,8 @@ TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
 
   // Inject the second manager.
   WKWebView* web_view2 = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view2, GetEarlyPageScriptForAllFrames(&browser_state_));
+  ExecuteJavaScript(web_view2,
+                    GetDocumentStartScriptForAllFrames(&browser_state_));
 
   CRWJSWindowIDManager* manager2 =
       [[CRWJSWindowIDManager alloc] initWithWebView:web_view2];
@@ -54,7 +56,8 @@ TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
 // Tests that injecting multiple times creates a new window ID.
 TEST_F(JSWindowIDManagerTest, MultipleInjections) {
   WKWebView* web_view = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view, GetEarlyPageScriptForAllFrames(&browser_state_));
+  ExecuteJavaScript(web_view,
+                    GetDocumentStartScriptForAllFrames(&browser_state_));
 
   // First injection.
   CRWJSWindowIDManager* manager =
@@ -83,7 +86,8 @@ TEST_F(JSWindowIDManagerTest, InjectionRetry) {
   EXPECT_FALSE(ExecuteJavaScript(web_view, @"window.__gCrWeb"));
 
   // Now inject window.__gCrWeb and check if window ID injection retried.
-  ExecuteJavaScript(web_view, GetEarlyPageScriptForAllFrames(&browser_state_));
+  ExecuteJavaScript(web_view,
+                    GetDocumentStartScriptForAllFrames(&browser_state_));
   EXPECT_NSEQ([manager windowID],
               ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 }

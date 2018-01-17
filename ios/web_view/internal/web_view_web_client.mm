@@ -70,7 +70,7 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-NSString* WebViewWebClient::GetEarlyPageScriptForMainFrame(
+NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
     web::BrowserState* browser_state) const {
   NSMutableArray* scripts = [NSMutableArray array];
 

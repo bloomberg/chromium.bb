@@ -136,15 +136,17 @@ TEST_F(WKWebViewConfigurationProviderTest, Purge) {
 }
 
 // Tests that configuration's userContentController has only one script with the
-// same content as web::GetEarlyPageScriptForMainFrame() returns.
+// same content as web::GetDocumentStartScriptForMainFrame() returns.
 TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
   WKWebViewConfiguration* config = GetProvider().GetWebViewConfiguration();
   NSArray* scripts = config.userContentController.userScripts;
   ASSERT_EQ(2U, scripts.count);
   EXPECT_FALSE(((WKUserScript*)[scripts objectAtIndex:0]).isForMainFrameOnly);
   EXPECT_TRUE(((WKUserScript*)[scripts objectAtIndex:1]).isForMainFrameOnly);
-  NSString* all_frames_script = GetEarlyPageScriptForAllFrames(&browser_state_);
-  NSString* main_frame_script = GetEarlyPageScriptForMainFrame(&browser_state_);
+  NSString* all_frames_script =
+      GetDocumentStartScriptForAllFrames(&browser_state_);
+  NSString* main_frame_script =
+      GetDocumentStartScriptForMainFrame(&browser_state_);
   // |early_main_frame_script| and |all_frames_script| are substrings of
   // corresponding scripts from |userScripts|. The latter wraps the former with
   // "if (!injected)" check to avoid double injections.
