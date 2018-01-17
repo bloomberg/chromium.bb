@@ -29,17 +29,6 @@ class Textfield;
 
 namespace app_list {
 
-// Possible locations for partial keyboard focus (but note that the search
-// box always handles typing).
-enum SearchBoxFocus {
-  FOCUS_NONE,           // No focus
-  FOCUS_BACK_BUTTON,    // Back button, only responds to ENTER
-  FOCUS_SEARCH_BOX,     // Nothing else has partial focus
-  FOCUS_MIC_BUTTON,     // Mic button, only responds to ENTER
-  FOCUS_CLOSE_BUTTON,   // Close button, only responds to ENTER
-  FOCUS_CONTENTS_VIEW,  // Something outside the SearchBox is selected
-};
-
 class AppListView;
 class AppListViewDelegate;
 class SearchBoxModel;
@@ -79,12 +68,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   void set_contents_view(views::View* contents_view) {
     contents_view_ = contents_view;
   }
-
-  // Moves focus in response to arrow key.
-  bool MoveArrowFocus(const ui::KeyEvent& event);
-
-  // Moves focus forward/backwards in response to TAB.
-  bool MoveTabFocus(bool move_backwards);
 
   // Sets voice label for Back button depending on whether a folder is open.
   void SetBackButtonLabel(bool folder);
@@ -149,15 +132,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   // Used only in the tests to get the current search icon.
   views::ImageView* get_search_icon_for_test() { return search_icon_; }
 
-  // Used only in the tests to get the current focused view.
-  SearchBoxFocus get_focused_view_for_test() const { return focused_view_; }
-
   // Whether the search box is active.
   bool is_search_box_active() const { return is_search_box_active_; }
-
-  // Whether the key event is an arrow up/down/left/right.
-  // TODO(weidongg): move this function to utility class.
-  static bool IsArrowKey(const ui::KeyEvent& event);
 
   // Returns selected view in contents view.
   views::View* GetSelectedViewInContentsView() const;
@@ -240,8 +216,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
 
   // Owned by |content_container_|. It is deleted when the view is deleted.
   views::BoxLayout* box_layout_ = nullptr;
-
-  SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 
   // Whether the search box is active.
   bool is_search_box_active_ = false;
