@@ -131,16 +131,20 @@ class ChromeVoxPanelWidgetObserver : public views::WidgetObserver {
     widget_->AddObserver(this);
   }
 
+  ~ChromeVoxPanelWidgetObserver() override = default;
+
   void OnWidgetClosing(views::Widget* widget) override {
     CHECK_EQ(widget_, widget);
     widget->RemoveObserver(this);
     manager_->OnChromeVoxPanelClosing();
+    // |this| is deleted.
   }
 
   void OnWidgetDestroying(views::Widget* widget) override {
     CHECK_EQ(widget_, widget);
     widget->RemoveObserver(this);
     manager_->OnChromeVoxPanelDestroying();
+    // |this| is deleted.
   }
 
  private:
@@ -1082,6 +1086,10 @@ void AccessibilityManager::InputMethodChanged(
 }
 
 void AccessibilityManager::OnSessionStateChanged() {
+  // Don't reload ChromeVox during shutdown. http://crrev.com/c/838180
+  if (app_terminating_)
+    return;
+
   if (!chromevox_panel_)
     return;
   if (chromevox_panel_->for_blocked_user_session() ==
@@ -1374,7 +1382,7 @@ void AccessibilityManager::Observe(
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING: {
-      chromevox_panel_ = nullptr;
+      app_terminating_ = true;
       break;
     }
   }
@@ -1427,6 +1435,11 @@ void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
 }
 
 void AccessibilityManager::PostLoadChromeVox() {
+  // In browser_tests loading the ChromeVox extension can race with shutdown.
+  // http://crbug.com/801700
+  if (app_terminating_)
+    return;
+
   // Do any setup work needed immediately after ChromeVox actually loads.
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
 
