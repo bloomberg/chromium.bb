@@ -2050,7 +2050,17 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   // If the container has a scroll offset, subtract that out because we want our
   // bounds to be relative to the *unscrolled* position of the container object.
   ScrollableArea* scrollable_area = container->GetScrollableAreaIfScrollable();
-  if (scrollable_area && !container->IsWebArea()) {
+
+  // Without RLS, LayoutView (i.e. "WebArea") is scrolled by the FrameView and
+  // those scrolls aren't accounted for at all in the layout tree. The
+  // scrollable_area returned above returns the FrameView in that case though
+  // so we avoid making the adjustment below. Once RLS ships, the LayoutView
+  // scroll will be accounted for by the layout tree so this condition can be
+  // removed.
+  bool is_self_scrolling = !container->IsWebArea() ||
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+
+  if (scrollable_area && is_self_scrolling) {
     ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
     out_bounds_in_container.Move(scroll_offset);
   }
