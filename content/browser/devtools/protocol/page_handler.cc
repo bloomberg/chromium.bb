@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/result_codes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -284,6 +286,17 @@ Response PageHandler::Disable() {
   }
 
   download_manager_delegate_ = nullptr;
+  return Response::FallThrough();
+}
+
+Response PageHandler::Crash() {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::Error("Not attached to a page");
+  if (web_contents->IsCrashed())
+    return Response::Error("The target has already crashed");
+  if (web_contents->GetMainFrame()->frame_tree_node()->navigation_request())
+    return Response::Error("Page has pending navigations, not killing");
   return Response::FallThrough();
 }
 
