@@ -8,7 +8,7 @@
 
 import argparse
 import hashlib
-import imp
+import importlib
 import json
 import os
 import pprint
@@ -46,9 +46,9 @@ from mojom.parse.parser import Parse
 
 
 _BUILTIN_GENERATORS = {
-  "c++": "mojom_cpp_generator.py",
-  "javascript": "mojom_js_generator.py",
-  "java": "mojom_java_generator.py",
+  "c++": "mojom_cpp_generator",
+  "javascript": "mojom_js_generator",
+  "java": "mojom_java_generator",
 }
 
 
@@ -56,18 +56,14 @@ def LoadGenerators(generators_string):
   if not generators_string:
     return []  # No generators.
 
-  script_dir = os.path.dirname(os.path.abspath(__file__))
   generators = {}
   for generator_name in [s.strip() for s in generators_string.split(",")]:
     language = generator_name.lower()
-    if language in _BUILTIN_GENERATORS:
-      generator_name = os.path.join(script_dir, "generators",
-                                    _BUILTIN_GENERATORS[language])
-    else:
+    if language not in _BUILTIN_GENERATORS:
       print "Unknown generator name %s" % generator_name
       sys.exit(1)
-    generator_module = imp.load_source(os.path.basename(generator_name)[:-3],
-                                       generator_name)
+    generator_module = importlib.import_module(
+        "generators.%s" % _BUILTIN_GENERATORS[language])
     generators[language] = generator_module
   return generators
 
