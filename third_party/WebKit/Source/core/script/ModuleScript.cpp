@@ -135,9 +135,6 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const TextPosition& start_position)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
-      record_(this),
-      parse_error_(this),
-      error_to_rethrow_(this),
       source_text_(source_text),
       start_position_(start_position) {
   if (record.IsNull()) {

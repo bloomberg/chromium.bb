@@ -12,10 +12,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(
     ScriptState* state,
     const AtomicString& type,
     const PromiseRejectionEventInit& initializer)
-    : Event(type, initializer),
-      world_(&state->World()),
-      promise_(this),
-      reason_(this) {
+    : Event(type, initializer), world_(&state->World()) {
   DCHECK(initializer.hasPromise());
   promise_.Set(initializer.promise().GetIsolate(),
                initializer.promise().V8Value());

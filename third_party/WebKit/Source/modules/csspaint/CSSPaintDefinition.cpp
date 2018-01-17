@@ -54,9 +54,8 @@ CSSPaintDefinition::CSSPaintDefinition(
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
     const PaintRenderingContext2DSettings& context_settings)
     : script_state_(script_state),
-      constructor_(script_state->GetIsolate(), this, constructor),
-      paint_(script_state->GetIsolate(), this, paint),
-      instance_(this),
+      constructor_(script_state->GetIsolate(), constructor),
+      paint_(script_state->GetIsolate(), paint),
       did_call_constructor_(false),
       context_settings_(context_settings) {
   native_invalidation_properties_ = native_invalidation_properties;

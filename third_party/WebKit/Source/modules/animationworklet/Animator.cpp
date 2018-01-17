@@ -17,7 +17,7 @@ Animator::Animator(v8::Isolate* isolate,
                    AnimatorDefinition* definition,
                    v8::Local<v8::Object> instance)
     : definition_(definition),
-      instance_(isolate, this, instance),
+      instance_(isolate, instance),
       effect_(new EffectProxy()) {}
 
 Animator::~Animator() = default;
