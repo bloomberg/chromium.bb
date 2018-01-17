@@ -906,10 +906,6 @@
       name: "RootLayerScrolling",
     },
     {
-      name: "RTCRtpSenderReplaceTrack",
-      status: "experimental",
-    },
-    {
       name: "RTCUnifiedPlan",
       status: "experimental",
     },
