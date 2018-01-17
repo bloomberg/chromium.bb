@@ -132,7 +132,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Flaky: crbug.com/715963
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    CreateNewFolder,
+    DISABLED_CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "createNewFolderAfterSelectFile"),
