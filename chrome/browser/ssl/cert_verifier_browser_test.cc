@@ -18,19 +18,7 @@
 
 CertVerifierBrowserTest::CertVerifier::CertVerifier(
     net::MockCertVerifier* verifier)
-    : verifier_(verifier) {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
-      content::IsNetworkServiceRunningInProcess()) {
-    return;
-  }
-
-  // Enable the MockCertVerifier in the network process via a switch. This is
-  // because it's too early to call the service manager at this point (it's not
-  // created yet), and by the time we can call the service manager in
-  // SetUpOnMainThread the main profile has already been created.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseMockCertVerifierForTesting);
-}
+    : verifier_(verifier) {}
 
 CertVerifierBrowserTest::CertVerifier::~CertVerifier() = default;
 
@@ -90,6 +78,22 @@ CertVerifierBrowserTest::CertVerifierBrowserTest()
       cert_verifier_(mock_cert_verifier_.get()) {}
 
 CertVerifierBrowserTest::~CertVerifierBrowserTest() {}
+
+void CertVerifierBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  // Check here instead of the constructor since some tests may set the feature
+  // flag in their constructor.
+  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
+      content::IsNetworkServiceRunningInProcess()) {
+    return;
+  }
+
+  // Enable the MockCertVerifier in the network process via a switch. This is
+  // because it's too early to call the service manager at this point (it's not
+  // created yet), and by the time we can call the service manager in
+  // SetUpOnMainThread the main profile has already been created.
+  command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+}
 
 void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
   ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_.get());

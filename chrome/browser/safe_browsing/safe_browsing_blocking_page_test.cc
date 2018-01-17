@@ -384,6 +384,7 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
     if (testing::get<1>(GetParam()))
       content::IsolateAllSitesForTesting(command_line);
   }
