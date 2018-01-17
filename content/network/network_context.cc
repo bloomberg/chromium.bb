@@ -25,7 +25,6 @@
 #include "content/network/http_server_properties_pref_delegate.h"
 #include "content/network/network_service_impl.h"
 #include "content/network/network_service_url_loader_factory.h"
-#include "content/network/proxy_config_service_mojo.h"
 #include "content/network/restricted_cookie_manager.h"
 #include "content/network/throttling/network_conditions.h"
 #include "content/network/throttling/throttling_controller.h"
@@ -50,6 +49,7 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/proxy_config_service_mojo.h"
 
 namespace content {
 
@@ -339,10 +339,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     network_context_params->initial_proxy_config =
         net::ProxyConfig::CreateDirect();
   }
-  builder->set_proxy_config_service(std::make_unique<ProxyConfigServiceMojo>(
-      std::move(network_context_params->proxy_config_client_request),
-      std::move(network_context_params->initial_proxy_config),
-      std::move(network_context_params->proxy_config_poller_client)));
+  builder->set_proxy_config_service(
+      std::make_unique<network::ProxyConfigServiceMojo>(
+          std::move(network_context_params->proxy_config_client_request),
+          std::move(network_context_params->initial_proxy_config),
+          std::move(network_context_params->proxy_config_poller_client)));
 
   if (network_context_params->http_server_properties_path) {
     scoped_refptr<JsonPrefStore> json_pref_store(new JsonPrefStore(

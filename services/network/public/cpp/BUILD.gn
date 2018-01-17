@@ -44,6 +44,8 @@ static_library("typemap_dependencies") {
     "http_raw_request_response_info.h",
     "network_param_ipc_traits.cc",
     "network_param_ipc_traits.h",
+    "proxy_config_traits.cc",
+    "proxy_config_traits.h",
     "resource_response.cc",
     "resource_response.h",
     "resource_response_info.cc",
@@ -53,6 +55,7 @@ static_library("typemap_dependencies") {
   ]
   public_deps = [
     "//url/ipc:url_ipc",
+    "//url/mojo:url_mojom_gurl",
   ]
   deps = [
     "//base",
@@ -79,6 +82,7 @@ source_set("tests") {
     "mutable_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "network_struct_traits_unittest.cc",
+    "proxy_config_traits_unittest.cc",
     "proxy_resolving_client_socket_unittest.cc",
   ]
   deps = [

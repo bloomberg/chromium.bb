@@ -15,6 +15,7 @@ mojom("interfaces") {
     "mutable_partial_network_traffic_annotation_tag.mojom",
     "network_change_manager.mojom",
     "network_types.mojom",
+    "proxy_config.mojom",
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
   ]

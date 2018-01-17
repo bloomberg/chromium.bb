@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/proxy_config_service_mojo.h"
+#include "services/network/proxy_config_service_mojo.h"
 
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/proxy_config.mojom.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
+#include "services/network/public/interfaces/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -112,4 +112,4 @@ TEST(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
 
 }  // namespace
 
-}  // namespace content
+}  // namespace network

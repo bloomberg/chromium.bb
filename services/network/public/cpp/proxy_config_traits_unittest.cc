@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/proxy_config_traits.h"
+#include "services/network/public/cpp/proxy_config_traits.h"
 
-#include "content/public/common/network_service.mojom.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_config.h"
+#include "services/network/public/interfaces/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace network {
 namespace {
 
 // Tests that serializing and then deserializing |original_config| to send it
@@ -102,4 +102,4 @@ TEST(ProxyConfigTraitsTest, BypassRules) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace network

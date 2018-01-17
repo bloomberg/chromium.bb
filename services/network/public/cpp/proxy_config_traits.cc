@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/proxy_config_traits.h"
+#include "services/network/public/cpp/proxy_config_traits.h"
 
 #include "base/logging.h"
 #include "url/gurl.h"
@@ -11,7 +11,7 @@
 namespace mojo {
 
 std::vector<std::string>
-StructTraits<content::mojom::ProxyBypassRulesDataView,
+StructTraits<network::mojom::ProxyBypassRulesDataView,
              net::ProxyBypassRules>::rules(const net::ProxyBypassRules& r) {
   std::vector<std::string> out;
   for (const auto& rule : r.rules()) {
@@ -20,9 +20,9 @@ StructTraits<content::mojom::ProxyBypassRulesDataView,
   return out;
 }
 
-bool StructTraits<content::mojom::ProxyBypassRulesDataView,
+bool StructTraits<network::mojom::ProxyBypassRulesDataView,
                   net::ProxyBypassRules>::
-    Read(content::mojom::ProxyBypassRulesDataView data,
+    Read(network::mojom::ProxyBypassRulesDataView data,
          net::ProxyBypassRules* out_proxy_bypass_rules) {
   std::vector<std::string> rules;
   if (!data.ReadRules(&rules))
@@ -35,7 +35,7 @@ bool StructTraits<content::mojom::ProxyBypassRulesDataView,
 }
 
 std::vector<std::string>
-StructTraits<content::mojom::ProxyListDataView, net::ProxyList>::proxies(
+StructTraits<network::mojom::ProxyListDataView, net::ProxyList>::proxies(
     const net::ProxyList& r) {
   std::vector<std::string> out;
   for (const auto& proxy : r.GetAll()) {
@@ -44,8 +44,8 @@ StructTraits<content::mojom::ProxyListDataView, net::ProxyList>::proxies(
   return out;
 }
 
-bool StructTraits<content::mojom::ProxyListDataView, net::ProxyList>::Read(
-    content::mojom::ProxyListDataView data,
+bool StructTraits<network::mojom::ProxyListDataView, net::ProxyList>::Read(
+    network::mojom::ProxyListDataView data,
     net::ProxyList* out_proxy_list) {
   std::vector<std::string> proxies;
   if (!data.ReadProxies(&proxies))
@@ -59,41 +59,41 @@ bool StructTraits<content::mojom::ProxyListDataView, net::ProxyList>::Read(
   return true;
 }
 
-content::mojom::ProxyRulesType
-EnumTraits<content::mojom::ProxyRulesType, net::ProxyConfig::ProxyRules::Type>::
+network::mojom::ProxyRulesType
+EnumTraits<network::mojom::ProxyRulesType, net::ProxyConfig::ProxyRules::Type>::
     ToMojom(net::ProxyConfig::ProxyRules::Type net_proxy_rules_type) {
   switch (net_proxy_rules_type) {
     case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
-      return content::mojom::ProxyRulesType::TYPE_NO_RULES;
+      return network::mojom::ProxyRulesType::TYPE_NO_RULES;
     case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
-      return content::mojom::ProxyRulesType::TYPE_SINGLE_PROXY;
+      return network::mojom::ProxyRulesType::TYPE_SINGLE_PROXY;
     case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
-      return content::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME;
+      return network::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME;
   }
-  return content::mojom::ProxyRulesType::TYPE_NO_RULES;
+  return network::mojom::ProxyRulesType::TYPE_NO_RULES;
 }
 
-bool EnumTraits<content::mojom::ProxyRulesType,
+bool EnumTraits<network::mojom::ProxyRulesType,
                 net::ProxyConfig::ProxyRules::Type>::
-    FromMojom(content::mojom::ProxyRulesType mojo_proxy_rules_type,
+    FromMojom(network::mojom::ProxyRulesType mojo_proxy_rules_type,
               net::ProxyConfig::ProxyRules::Type* out) {
   switch (mojo_proxy_rules_type) {
-    case content::mojom::ProxyRulesType::TYPE_NO_RULES:
+    case network::mojom::ProxyRulesType::TYPE_NO_RULES:
       *out = net::ProxyConfig::ProxyRules::TYPE_NO_RULES;
       return true;
-    case content::mojom::ProxyRulesType::TYPE_SINGLE_PROXY:
+    case network::mojom::ProxyRulesType::TYPE_SINGLE_PROXY:
       *out = net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
       return true;
-    case content::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME:
+    case network::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME:
       *out = net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
       return true;
   }
   return false;
 }
 
-bool StructTraits<content::mojom::ProxyRulesDataView,
+bool StructTraits<network::mojom::ProxyRulesDataView,
                   net::ProxyConfig::ProxyRules>::
-    Read(content::mojom::ProxyRulesDataView data,
+    Read(network::mojom::ProxyRulesDataView data,
          net::ProxyConfig::ProxyRules* out_proxy_rules) {
   out_proxy_rules->reverse_bypass = data.reverse_bypass();
   return data.ReadBypassRules(&out_proxy_rules->bypass_rules) &&
@@ -105,67 +105,67 @@ bool StructTraits<content::mojom::ProxyRulesDataView,
          data.ReadFallbackProxies(&out_proxy_rules->fallback_proxies);
 }
 
-content::mojom::ProxyConfigSource
-EnumTraits<content::mojom::ProxyConfigSource, net::ProxyConfigSource>::ToMojom(
+network::mojom::ProxyConfigSource
+EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource>::ToMojom(
     net::ProxyConfigSource net_proxy_config_source) {
   switch (net_proxy_config_source) {
     case net::PROXY_CONFIG_SOURCE_UNKNOWN:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
     case net::PROXY_CONFIG_SOURCE_SYSTEM:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM;
     case net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
-      return content::mojom::ProxyConfigSource::
+      return network::mojom::ProxyConfigSource::
           PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
     case net::PROXY_CONFIG_SOURCE_GSETTINGS:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS;
     case net::PROXY_CONFIG_SOURCE_KDE:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE;
     case net::PROXY_CONFIG_SOURCE_ENV:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV;
     case net::PROXY_CONFIG_SOURCE_CUSTOM:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM;
     case net::PROXY_CONFIG_SOURCE_TEST:
-      return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST;
+      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST;
     case net::NUM_PROXY_CONFIG_SOURCES:
       break;
   }
-  return content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
+  return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
 }
 
-bool EnumTraits<content::mojom::ProxyConfigSource, net::ProxyConfigSource>::
-    FromMojom(content::mojom::ProxyConfigSource mojo_proxy_config_source,
+bool EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource>::
+    FromMojom(network::mojom::ProxyConfigSource mojo_proxy_config_source,
               net::ProxyConfigSource* out) {
   switch (mojo_proxy_config_source) {
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN:
       *out = net::PROXY_CONFIG_SOURCE_UNKNOWN;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM:
       *out = net::PROXY_CONFIG_SOURCE_SYSTEM;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
       *out = net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS:
       *out = net::PROXY_CONFIG_SOURCE_GSETTINGS;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE:
       *out = net::PROXY_CONFIG_SOURCE_KDE;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV:
       *out = net::PROXY_CONFIG_SOURCE_ENV;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM:
       *out = net::PROXY_CONFIG_SOURCE_CUSTOM;
       return true;
-    case content::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST:
+    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST:
       *out = net::PROXY_CONFIG_SOURCE_TEST;
       return true;
   }
   return false;
 }
 
-bool StructTraits<content::mojom::ProxyConfigDataView, net::ProxyConfig>::Read(
-    content::mojom::ProxyConfigDataView data,
+bool StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig>::Read(
+    network::mojom::ProxyConfigDataView data,
     net::ProxyConfig* out_proxy_config) {
   GURL pac_url;
   net::ProxyConfigSource source;

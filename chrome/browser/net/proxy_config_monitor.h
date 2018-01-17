@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "content/public/common/network_service.mojom.h"
-#include "content/public/common/proxy_config.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/proxy/proxy_config_service.h"
+#include "services/network/public/interfaces/proxy_config.mojom.h"
 
 namespace net {
 class ProxyConfig;
@@ -24,7 +24,7 @@ class PrefProxyConfigTracker;
 // Tracks the ProxyConfig to use, and passes any updates to a NetworkContext's
 // ProxyConfigClient.
 class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
-                           public content::mojom::ProxyConfigPollerClient {
+                           public network::mojom::ProxyConfigPollerClient {
  public:
   // Creates a ProxyConfigMonitor that gets proxy settings from |profile| and
   // watches for changes. The created ProxyConfigMonitor must be destroyed
@@ -57,16 +57,16 @@ class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
       const net::ProxyConfig& config,
       net::ProxyConfigService::ConfigAvailability availability) override;
 
-  // content::mojom::ProxyConfigPollerClient implementation:
+  // network::mojom::ProxyConfigPollerClient implementation:
   void OnLazyProxyConfigPoll() override;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   // Monitors global and Profile prefs related to proxy configuration.
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  mojo::BindingSet<content::mojom::ProxyConfigPollerClient> binding_set_;
+  mojo::BindingSet<network::mojom::ProxyConfigPollerClient> binding_set_;
 
-  mojo::InterfacePtrSet<content::mojom::ProxyConfigClient>
+  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
       proxy_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
