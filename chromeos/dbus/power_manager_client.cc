@@ -28,7 +28,6 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
-#include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/switch_states.pb.h"
 #include "chromeos/system/statistics_provider.h"
@@ -325,6 +324,17 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetInactivityDelays(
+      DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
+      override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kGetInactivityDelaysMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PowerManagerClientImpl::OnGetInactivityDelays,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   base::Closure GetSuspendReadinessCallback() override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
@@ -374,6 +384,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kInactivityDelaysChangedSignal,
+        base::BindRepeating(
+            &PowerManagerClientImpl::InactivityDelaysChangedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&PowerManagerClientImpl::SignalConnected,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
@@ -533,6 +552,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
       observer.ScreenIdleStateChanged(proto);
   }
 
+  void InactivityDelaysChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::PowerManagementPolicy::Delays proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      POWER_LOG(ERROR) << "Unable to decode protocol buffer from "
+                       << power_manager::kInactivityDelaysChangedSignal
+                       << " signal";
+      return;
+    }
+    for (auto& observer : observers_)
+      observer.InactivityDelaysChanged(proto);
+  }
+
   void PeripheralBatteryStatusReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     power_manager::PeripheralBatteryStatus protobuf_status;
@@ -644,6 +676,27 @@ class PowerManagerClientImpl : public PowerManagerClient {
     std::move(callback).Run(
         SwitchStates{GetLidStateFromProtoEnum(proto.lid_state()),
                      GetTabletModeFromProtoEnum(proto.tablet_mode())});
+  }
+
+  void OnGetInactivityDelays(
+      DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback,
+      dbus::Response* response) {
+    if (!response) {
+      POWER_LOG(ERROR) << "Error calling "
+                       << power_manager::kGetInactivityDelaysMethod;
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    power_manager::PowerManagementPolicy::Delays proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      POWER_LOG(ERROR) << "Error parsing response from "
+                       << power_manager::kGetInactivityDelaysMethod;
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(proto);
   }
 
   void HandlePowerSupplyProperties(

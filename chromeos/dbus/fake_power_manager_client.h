@@ -87,6 +87,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void SetBacklightsForcedOff(bool forced_off) override;
   void GetBacklightsForcedOff(DBusMethodCallback<bool> callback) override;
   void GetSwitchStates(DBusMethodCallback<SwitchStates> callback) override;
+  void GetInactivityDelays(
+      DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
+      override;
   base::Closure GetSuspendReadinessCallback() override;
   int GetNumPendingSuspendReadinessCallbacks() override;
 
@@ -118,6 +121,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // change.
   void SetLidState(LidState state, const base::TimeTicks& timestamp);
   void SetTabletMode(TabletMode mode, const base::TimeTicks& timestamp);
+
+  // Sets |inactivity_delays_| and notifies |observers_| about the change.
+  void SetInactivityDelays(
+      const power_manager::PowerManagementPolicy::Delays& delays);
 
   // Updates |props_| and notifies observers of its changes.
   void UpdatePowerProperties(
@@ -197,6 +204,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // Pending brightness changes caused by SetBacklightsForcedOff().
   // ApplyPendingBrightnessChange() applies the first pending change.
   std::queue<double> pending_brightness_changes_;
+
+  // Delays returned by GetInactivityDelays().
+  power_manager::PowerManagementPolicy::Delays inactivity_delays_;
 
   // States returned by GetSwitchStates().
   LidState lid_state_ = LidState::OPEN;
