@@ -37,6 +37,11 @@
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
 #include "components/search_provider_logos/logo_tracker.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -61,6 +66,8 @@ using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::StrictMock;
 using ::testing::Return;
+
+using sync_preferences::TestingPrefServiceSyncable;
 
 namespace search_provider_logos {
 
@@ -270,6 +277,46 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
   }
 };
 
+// A helper class that wraps around all the dependencies required to simulate
+// signing in/out.
+class SigninHelper {
+ public:
+  SigninHelper(base::test::ScopedTaskEnvironment* task_environment,
+               net::FakeURLFetcherFactory* fetcher_factory)
+      : task_environment_(task_environment),
+        signin_client_(&pref_service_),
+        cookie_service_(&token_service_, "test_source", &signin_client_) {
+    // GaiaCookieManagerService calls static methods of AccountTrackerService
+    // which access prefs.
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+
+    cookie_service_.Init(fetcher_factory);
+  }
+
+  GaiaCookieManagerService* cookie_service() { return &cookie_service_; }
+
+  void SignIn() {
+    cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
+                                                      "gaia_id");
+    cookie_service_.TriggerListAccounts("test_source");
+    task_environment_->RunUntilIdle();
+  }
+
+  void SignOut() {
+    cookie_service_.SetListAccountsResponseNoAccounts();
+    cookie_service_.TriggerListAccounts("test_source");
+    task_environment_->RunUntilIdle();
+  }
+
+ private:
+  base::test::ScopedTaskEnvironment* task_environment_;
+
+  TestingPrefServiceSyncable pref_service_;
+  TestSigninClient signin_client_;
+  FakeProfileOAuth2TokenService token_service_;
+  FakeGaiaCookieManagerService cookie_service_;
+};
+
 class LogoServiceImplTest : public ::testing::Test {
  protected:
   LogoServiceImplTest()
@@ -280,6 +327,7 @@ class LogoServiceImplTest : public ::testing::Test {
             nullptr,
             base::Bind(&LogoServiceImplTest::CapturingFakeURLFetcherCreator,
                        base::Unretained(this))),
+        signin_helper_(&task_environment_, &fake_url_fetcher_factory_),
         use_gray_background_(false) {
     // Default search engine with logo. All 3P doodle_urls use ddljson API.
     AddSearchEngine("ex", "Logo Example",
@@ -289,8 +337,8 @@ class LogoServiceImplTest : public ::testing::Test {
 
     test_clock_->SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
     logo_service_ = std::make_unique<LogoServiceImpl>(
-        base::FilePath(), &template_url_service_,
-        std::make_unique<FakeImageDecoder>(),
+        base::FilePath(), signin_helper_.cookie_service(),
+        &template_url_service_, std::make_unique<FakeImageDecoder>(),
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()),
         base::BindRepeating(&LogoServiceImplTest::use_gray_background,
@@ -354,6 +402,8 @@ class LogoServiceImplTest : public ::testing::Test {
   NiceMock<MockLogoCache>* logo_cache_;
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   std::unique_ptr<LogoServiceImpl> logo_service_;
+  SigninHelper signin_helper_;
+
   GURL latest_url_;
   bool use_gray_background_;
 };
@@ -854,6 +904,25 @@ TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
   EXPECT_CALL(fresh, Run(LogoCallbackReason::FAILED, Eq(base::nullopt)));
 
   GetDecodedLogo(cached.Get(), fresh.Get());
+}
+
+TEST_F(LogoServiceImplTest, ClearLogoOnSignOut) {
+  // Sign in and setup a logo response.
+  signin_helper_.SignIn();
+  Logo logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
+  SetServerResponse(ServerResponse(logo));
+
+  // Request the logo so it gets fetched and cached.
+  logo_cache_->ExpectSetCachedLogo(&logo);
+  StrictMock<MockLogoCallback> cached;
+  StrictMock<MockLogoCallback> fresh;
+  EXPECT_CALL(cached, Run(LogoCallbackReason::DETERMINED, Eq(base::nullopt)));
+  EXPECT_CALL(fresh, Run(LogoCallbackReason::DETERMINED, Eq(logo)));
+  GetDecodedLogo(cached.Get(), fresh.Get());
+
+  // Signing out should clear the cached logo immediately.
+  logo_cache_->ExpectSetCachedLogo(nullptr);
+  signin_helper_.SignOut();
 }
 
 // Tests that deal with multiple listeners.

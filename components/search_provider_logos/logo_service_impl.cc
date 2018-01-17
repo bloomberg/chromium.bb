@@ -21,6 +21,7 @@
 #include "components/search_provider_logos/logo_cache.h"
 #include "components/search_provider_logos/logo_tracker.h"
 #include "components/search_provider_logos/switches.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/image/image.h"
 
@@ -141,20 +142,61 @@ void RunCallbacksWithDisabled(LogoCallbacks callbacks) {
 
 }  // namespace
 
+class LogoServiceImpl::SigninObserver
+    : public GaiaCookieManagerService::Observer {
+ public:
+  using SigninStatusChangedCallback = base::RepeatingClosure;
+
+  SigninObserver(GaiaCookieManagerService* cookie_service,
+                 const SigninStatusChangedCallback& callback)
+      : cookie_service_(cookie_service), callback_(callback) {
+    if (cookie_service_) {
+      cookie_service_->AddObserver(this);
+    }
+  }
+
+  ~SigninObserver() override {
+    if (cookie_service_) {
+      cookie_service_->RemoveObserver(this);
+    }
+  }
+
+ private:
+  // GaiaCookieManagerService::Observer implementation.
+  void OnGaiaAccountsInCookieUpdated(const std::vector<gaia::ListedAccount>&,
+                                     const std::vector<gaia::ListedAccount>&,
+                                     const GoogleServiceAuthError&) override {
+    callback_.Run();
+  }
+
+  GaiaCookieManagerService* const cookie_service_;
+  SigninStatusChangedCallback callback_;
+};
+
 LogoServiceImpl::LogoServiceImpl(
     const base::FilePath& cache_directory,
+    GaiaCookieManagerService* cookie_service,
     TemplateURLService* template_url_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     base::RepeatingCallback<bool()> want_gray_logo_getter)
-    : LogoService(),
-      cache_directory_(cache_directory),
+    : cache_directory_(cache_directory),
       template_url_service_(template_url_service),
       request_context_getter_(request_context_getter),
       want_gray_logo_getter_(std::move(want_gray_logo_getter)),
-      image_decoder_(std::move(image_decoder)) {}
+      image_decoder_(std::move(image_decoder)),
+      signin_observer_(std::make_unique<SigninObserver>(
+          cookie_service,
+          base::BindRepeating(&LogoServiceImpl::SigninStatusChanged,
+                              base::Unretained(this)))) {}
 
 LogoServiceImpl::~LogoServiceImpl() = default;
+
+void LogoServiceImpl::Shutdown() {
+  // The GaiaCookieManagerService may be destroyed at any point after Shutdown,
+  // so make sure we drop any references to it.
+  signin_observer_.reset();
+}
 
 void LogoServiceImpl::GetLogo(search_provider_logos::LogoObserver* observer) {
   LogoCallbacks callbacks;
@@ -217,25 +259,9 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
     return;
   }
 
+  InitializeLogoTrackerIfNecessary();
+
   const bool use_fixed_logo = !doodle_url.is_valid();
-
-  if (!logo_tracker_) {
-    std::unique_ptr<LogoCache> logo_cache = std::move(logo_cache_for_test_);
-    if (!logo_cache) {
-      logo_cache = std::make_unique<LogoCache>(cache_directory_);
-    }
-
-    std::unique_ptr<base::Clock> clock = std::move(clock_for_test_);
-    if (!clock) {
-      clock = std::make_unique<base::DefaultClock>();
-    }
-
-    logo_tracker_ = std::make_unique<LogoTracker>(
-        request_context_getter_,
-        std::make_unique<LogoDelegateImpl>(std::move(image_decoder_)),
-        std::move(logo_cache), std::move(clock));
-  }
-
   if (use_fixed_logo) {
     logo_tracker_->SetServerAPI(
         logo_url, base::Bind(&search_provider_logos::ParseFixedLogoResponse),
@@ -260,6 +286,33 @@ void LogoServiceImpl::SetLogoCacheForTests(std::unique_ptr<LogoCache> cache) {
 
 void LogoServiceImpl::SetClockForTests(std::unique_ptr<base::Clock> clock) {
   clock_for_test_ = std::move(clock);
+}
+
+void LogoServiceImpl::InitializeLogoTrackerIfNecessary() {
+  if (logo_tracker_) {
+    return;
+  }
+
+  std::unique_ptr<LogoCache> logo_cache = std::move(logo_cache_for_test_);
+  if (!logo_cache) {
+    logo_cache = std::make_unique<LogoCache>(cache_directory_);
+  }
+
+  std::unique_ptr<base::Clock> clock = std::move(clock_for_test_);
+  if (!clock) {
+    clock = std::make_unique<base::DefaultClock>();
+  }
+
+  logo_tracker_ = std::make_unique<LogoTracker>(
+      request_context_getter_,
+      std::make_unique<LogoDelegateImpl>(std::move(image_decoder_)),
+      std::move(logo_cache), std::move(clock));
+}
+
+void LogoServiceImpl::SigninStatusChanged() {
+  // Clear any cached logo, since it may be personalized (e.g. birthday Doodle).
+  InitializeLogoTrackerIfNecessary();
+  logo_tracker_->ClearCachedLogo();
 }
 
 }  // namespace search_provider_logos

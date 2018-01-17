@@ -116,8 +116,11 @@ class LogoTracker : public net::URLFetcherDelegate {
   // invoked exactly once.
   void GetLogo(LogoCallbacks callbacks);
 
- private:
+  // Clear any cached logo we might have. Useful on sign-out to get rid of
+  // (potentially) personalized data.
+  void ClearCachedLogo();
 
+ private:
   // These values must stay in sync with the NewTabPageLogoDownloadOutcome enum
   // in histograms.xml. And any addtion should be treated as append-only!
   // Animated doodle is not covered by this enum.

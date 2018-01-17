@@ -38,6 +38,10 @@ GoogleLogoService::GoogleLogoService(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : LogoServiceImpl(
           DoodleDirectory(),
+          // Personalized Doodles aren't supported on iOS (see
+          // https://crbug.com/711314), so no need to pass a
+          // GaiaCookieManagerService.
+          /*cookie_service=*/nullptr,
           template_url_service,
           image_fetcher::CreateIOSImageDecoder(),
           request_context_getter,

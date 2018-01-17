@@ -156,6 +156,13 @@ void LogoTracker::GetLogo(LogoCallbacks callbacks) {
   }
 }
 
+void LogoTracker::ClearCachedLogo() {
+  // First cancel any fetch that might be ongoing.
+  ReturnToIdle(kDownloadOutcomeNotTracked);
+  // Then clear any cached logo.
+  SetCachedLogo(nullptr);
+}
+
 void LogoTracker::ReturnToIdle(int outcome) {
   if (outcome != kDownloadOutcomeNotTracked) {
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoDownloadOutcome",
