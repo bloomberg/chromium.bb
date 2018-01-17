@@ -48,6 +48,7 @@ class TextInputControllerBindings
   void UnmarkText();
   void UnmarkAndUnselectText();
   void DoCommand(const std::string& text);
+  void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);
   void SetMarkedText(const std::string& text, int start, int length);
   void SetMarkedTextFromExistingText(int start, int length);
@@ -102,6 +103,8 @@ TextInputControllerBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("unmarkAndUnselectText",
                  &TextInputControllerBindings::UnmarkAndUnselectText)
       .SetMethod("doCommand", &TextInputControllerBindings::DoCommand)
+      .SetMethod("extendSelectionAndDelete",
+                 &TextInputControllerBindings::ExtendSelectionAndDelete)
       .SetMethod("deleteSurroundingText",
                  &TextInputControllerBindings::DeleteSurroundingText)
       .SetMethod("setMarkedText", &TextInputControllerBindings::SetMarkedText)
@@ -135,6 +138,12 @@ void TextInputControllerBindings::UnmarkAndUnselectText() {
 void TextInputControllerBindings::DoCommand(const std::string& text) {
   if (controller_)
     controller_->DoCommand(text);
+}
+
+void TextInputControllerBindings::ExtendSelectionAndDelete(int before,
+                                                           int after) {
+  if (controller_)
+    controller_->ExtendSelectionAndDelete(before, after);
 }
 
 void TextInputControllerBindings::DeleteSurroundingText(int before, int after) {
@@ -224,6 +233,16 @@ void TextInputController::DoCommand(const std::string& text) {
                                                      "is not a local frame.";
     view()->MainFrame()->ToWebLocalFrame()->ExecuteCommand(
         blink::WebString::FromUTF8(text));
+  }
+}
+
+void TextInputController::ExtendSelectionAndDelete(int before, int after) {
+  if (view()->MainFrame()) {
+    CHECK(view()->MainFrame()->ToWebLocalFrame()) << "This function cannot be "
+                                                     "called if the main frame "
+                                                     "is not a local frame.";
+    view()->MainFrame()->ToWebLocalFrame()->ExtendSelectionAndDelete(before,
+                                                                     after);
   }
 }
 
