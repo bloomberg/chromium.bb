@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
@@ -22,16 +23,16 @@
 // The stack view containing the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
 
-// Button to display the tools menu.
-@property(nonatomic, strong) ToolbarToolsMenuButton* toolsMenuButton;
-// Button to display the tab grid.
-@property(nonatomic, strong) ToolbarButton* tabGridButton;
-// Button to display the share menu.
-@property(nonatomic, strong) ToolbarButton* shareButton;
-// Button to focus the omnibox.
-@property(nonatomic, strong) ToolbarButton* omniboxButton;
+// Button to display the tools menu, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
+// Button to display the tab grid, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarTabGridButton* tabGridButton;
+// Button to display the share menu, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarButton* shareButton;
+// Button to focus the omnibox, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarButton* omniboxButton;
 // Button to manage the bookmarks of this page, defined as readwrite.
-@property(nonatomic, strong, readwrite) ToolbarButton* bookmarksButton;
+@property(nonatomic, strong, readwrite) ToolbarButton* bookmarkButton;
 
 @end
 
@@ -43,7 +44,7 @@
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize shareButton = _shareButton;
 @synthesize omniboxButton = _omniboxButton;
-@synthesize bookmarksButton = _bookmarksButton;
+@synthesize bookmarkButton = _bookmarkButton;
 @synthesize tabGridButton = _tabGridButton;
 
 #pragma mark - UIView
@@ -66,15 +67,15 @@
   self.translatesAutoresizingMaskIntoConstraints = NO;
   self.backgroundColor = [UIColor whiteColor];
 
-  self.tabGridButton = [self.buttonFactory tabSwitcherStripButton];
+  self.tabGridButton = [self.buttonFactory tabGridButton];
   self.shareButton = [self.buttonFactory shareButton];
   self.omniboxButton = [self.buttonFactory omniboxButton];
-  self.bookmarksButton = [self.buttonFactory bookmarkButton];
+  self.bookmarkButton = [self.buttonFactory bookmarkButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
   self.allButtons = @[
     self.tabGridButton, self.shareButton, self.omniboxButton,
-    self.bookmarksButton, self.toolsMenuButton
+    self.bookmarkButton, self.toolsMenuButton
   ];
 
   self.stackView =
@@ -84,6 +85,32 @@
   [self addSubview:self.stackView];
 
   PinToSafeArea(self.stackView, self);
+}
+
+#pragma mark - AdaptiveToolbarView
+
+- (ToolbarButton*)backButton {
+  return nil;
+}
+
+- (ToolbarButton*)forwardLeadingButton {
+  return nil;
+}
+
+- (ToolbarButton*)forwardTrailingButton {
+  return nil;
+}
+
+- (ToolbarButton*)stopButton {
+  return nil;
+}
+
+- (ToolbarButton*)reloadButton {
+  return nil;
+}
+
+- (MDCProgressView*)progressBar {
+  return nil;
 }
 
 @end

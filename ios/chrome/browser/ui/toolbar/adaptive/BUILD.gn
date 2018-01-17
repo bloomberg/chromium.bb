@@ -18,6 +18,7 @@ source_set("adaptive") {
     ":adaptive_ui",
     "//base",
     "//components/google/core/browser",
+    "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
@@ -33,6 +34,7 @@ source_set("adaptive") {
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/browser/web_state_list",
+    "//ios/public/provider/chrome/browser",
     "//ios/web",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -55,8 +57,10 @@ source_set("adaptive_ui") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
+    "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util:constraints_ui",
+    "//ios/third_party/material_components_ios",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

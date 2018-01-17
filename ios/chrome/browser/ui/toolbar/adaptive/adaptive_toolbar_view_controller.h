@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
 
 @protocol ApplicationCommands;
@@ -15,7 +16,7 @@
 
 // ViewController for the adaptive toolbar. This ViewController is the super
 // class of the different implementation (primary or secondary).
-@interface AdaptiveToolbarViewController : UIViewController
+@interface AdaptiveToolbarViewController : UIViewController<ToolbarConsumer>
 
 // Button factory.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;

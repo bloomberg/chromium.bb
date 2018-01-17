@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
@@ -102,42 +103,47 @@ const int styleCount = 2;
   return forwardButton;
 }
 
-- (ToolbarButton*)tabSwitcherStripButton {
-  int tabSwitcherButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
+- (ToolbarTabGridButton*)tabGridButton {
+  int tabGridButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(OVERVIEW);
-  ToolbarButton* tabSwitcherStripButton = [ToolbarButton
-      toolbarButtonWithImageForNormalState:
-          NativeImage(tabSwitcherButtonImages[self.style][DEFAULT])
-                  imageForHighlightedState:
-                      NativeImage(tabSwitcherButtonImages[self.style][PRESSED])
-                     imageForDisabledState:
-                         NativeImage(
-                             tabSwitcherButtonImages[self.style][DISABLED])];
-  SetA11yLabelAndUiAutomationName(tabSwitcherStripButton,
-                                  IDS_IOS_TOOLBAR_SHOW_TABS,
+  ToolbarTabGridButton* tabGridButton = [ToolbarTabGridButton
+      toolbarButtonWithImageForNormalState:NativeImage(
+                                               tabGridButtonImages[self.style]
+                                                                  [DEFAULT])
+                  imageForHighlightedState:NativeImage(
+                                               tabGridButtonImages[self.style]
+                                                                  [PRESSED])
+                     imageForDisabledState:NativeImage(
+                                               tabGridButtonImages[self.style]
+                                                                  [DISABLED])];
+  SetA11yLabelAndUiAutomationName(tabGridButton, IDS_IOS_TOOLBAR_SHOW_TABS,
                                   kToolbarStackButtonIdentifier);
-  [tabSwitcherStripButton
+  [tabGridButton
       setTitleColor:[self.toolbarConfiguration buttonTitleNormalColor]
            forState:UIControlStateNormal];
-  [tabSwitcherStripButton
+  [tabGridButton
       setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
            forState:UIControlStateHighlighted];
-  [self configureButton:tabSwitcherStripButton width:kToolbarButtonWidth];
+  [self configureButton:tabGridButton width:kToolbarButtonWidth];
 
   // TODO(crbug.com/799601): Delete this once its not needed.
   if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
-    [tabSwitcherStripButton addTarget:self.dispatcher
-                               action:@selector(navigateToMemexTabSwitcher)
-                     forControlEvents:UIControlEventTouchUpInside];
+    [tabGridButton addTarget:self.dispatcher
+                      action:@selector(navigateToMemexTabSwitcher)
+            forControlEvents:UIControlEventTouchUpInside];
   } else {
-    [tabSwitcherStripButton addTarget:self.dispatcher
-                               action:@selector(displayTabSwitcher)
-                     forControlEvents:UIControlEventTouchUpInside];
+    [tabGridButton addTarget:self.dispatcher
+                      action:@selector(displayTabSwitcher)
+            forControlEvents:UIControlEventTouchUpInside];
   }
 
-  tabSwitcherStripButton.visibilityMask =
+  tabGridButton.visibilityMask =
       self.visibilityConfiguration.tabGridButtonVisibility;
-  return tabSwitcherStripButton;
+  return tabGridButton;
+}
+
+- (ToolbarButton*)tabSwitcherStripButton {
+  return [self tabGridButton];
 }
 
 - (ToolbarButton*)tabSwitcherGridButton {
