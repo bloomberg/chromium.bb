@@ -395,11 +395,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StartArcInstance(ArcStartupMode startup_mode,
-                        const cryptohome::Identification& cryptohome_id,
-                        bool skip_boot_completed_broadcast,
-                        bool scan_vendor_priv_app,
-                        bool native_bridge_experiment,
+  void StartArcInstance(const login_manager::StartArcInstanceRequest& request,
                         StartArcInstanceCallback callback) override {
     DCHECK(!callback.is_null());
 
@@ -408,19 +404,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerStartArcInstance);
     dbus::MessageWriter writer(&method_call);
 
-    login_manager::StartArcInstanceRequest request;
-    request.set_native_bridge_experiment(native_bridge_experiment);
-    switch (startup_mode) {
-      case ArcStartupMode::FULL:
-        request.set_account_id(cryptohome_id.id());
-        request.set_skip_boot_completed_broadcast(
-            skip_boot_completed_broadcast);
-        request.set_scan_vendor_priv_app(scan_vendor_priv_app);
-        break;
-      case ArcStartupMode::LOGIN_SCREEN:
-        request.set_for_login_screen(true);
-        break;
-    }
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethodWithErrorResponse(
@@ -1025,11 +1008,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         std::move(callback));
   }
 
-  void StartArcInstance(ArcStartupMode startup_mode,
-                        const cryptohome::Identification& cryptohome_id,
-                        bool disable_boot_completed_broadcast,
-                        bool enable_vendor_privileged,
-                        bool native_bridge_experiment,
+  void StartArcInstance(const login_manager::StartArcInstanceRequest& request,
                         StartArcInstanceCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),

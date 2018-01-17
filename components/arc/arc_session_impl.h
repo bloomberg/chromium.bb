@@ -121,6 +121,9 @@ class ArcSessionImpl : public ArcSession,
     STOPPED,
   };
 
+  static const char kPackagesCacheModeCopy[];
+  static const char kPackagesCacheModeSkipCopy[];
+
   // Delegate interface to emulate ArcBridgeHost mojo connection establishment.
   class Delegate {
    public:
