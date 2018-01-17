@@ -11,6 +11,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -1184,6 +1185,214 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
   fake_bluetooth_gatt_characteristic_client_->SetAuthenticated(true);
+}
+
+// Test a read request issued from the success callback of another read request.
+TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue_Nested_Read_Read) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+
+  // Obtain readable Body Sensor Location characteristic.
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetBodySensorLocationPath()
+                                     .value());
+
+  characteristic->ReadRemoteCharacteristic(
+      base::BindLambdaForTesting([&](const std::vector<uint8_t>& data) {
+        ValueCallback(data);
+        EXPECT_EQ(1, success_callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(characteristic->GetValue(), last_read_value_);
+
+        characteristic->ReadRemoteCharacteristic(
+            base::Bind(&BluetoothGattBlueZTest::ValueCallback,
+                       base::Unretained(this)),
+            base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                       base::Unretained(this)));
+      }),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(characteristic->GetValue(), last_read_value_);
+}
+
+// Test a write request issued from the success callback of another write
+// request.
+TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue_Nested_Write_Write) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+
+  // Obtain writable Heart Rate Control Point characteristic.
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetHeartRateControlPointPath()
+                                     .value());
+
+  std::vector<uint8_t> write_value = {0x01};
+  characteristic->WriteRemoteCharacteristic(
+      write_value, base::BindLambdaForTesting([&] {
+        SuccessCallback();
+        EXPECT_EQ(1, success_callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+
+        characteristic->WriteRemoteCharacteristic(
+            write_value,
+            base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                       base::Unretained(this)),
+            base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                       base::Unretained(this)));
+      }),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+}
+
+// Test a write request issued from the success callback of a read request.
+TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue_Nested_Read_Write) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+
+  // Obtain readable Body Sensor Location characteristic.
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetBodySensorLocationPath()
+                                     .value());
+
+  characteristic->ReadRemoteCharacteristic(
+      base::BindLambdaForTesting([&](const std::vector<uint8_t>& data) {
+        ValueCallback(data);
+        EXPECT_EQ(1, success_callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(characteristic->GetValue(), last_read_value_);
+
+        // Obtain writable Heart Rate Control Point characteristic.
+        characteristic = service->GetCharacteristic(
+            fake_bluetooth_gatt_characteristic_client_
+                ->GetHeartRateControlPointPath()
+                .value());
+
+        characteristic->WriteRemoteCharacteristic(
+            std::vector<uint8_t>({0x01}),
+            base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                       base::Unretained(this)),
+            base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                       base::Unretained(this)));
+      }),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+}
+
+// Test a read request issued from the success callback of a write request.
+TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue_Nested_Write_Read) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+
+  // Obtain writable Heart Rate Control Point characteristic.
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetHeartRateControlPointPath()
+                                     .value());
+
+  characteristic->WriteRemoteCharacteristic(
+      std::vector<uint8_t>({0x01}), base::BindLambdaForTesting([&] {
+        SuccessCallback();
+        EXPECT_EQ(1, success_callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+
+        // Obtain readable Body Sensor Location characteristic.
+        characteristic = service->GetCharacteristic(
+            fake_bluetooth_gatt_characteristic_client_
+                ->GetBodySensorLocationPath()
+                .value());
+
+        characteristic->ReadRemoteCharacteristic(
+            base::Bind(&BluetoothGattBlueZTest::ValueCallback,
+                       base::Unretained(this)),
+            base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                       base::Unretained(this)));
+      }),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(characteristic->GetValue(), last_read_value_);
 }
 
 TEST_F(BluetoothGattBlueZTest, GattCharacteristicProperties) {

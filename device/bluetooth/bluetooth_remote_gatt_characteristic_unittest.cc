@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -756,6 +757,177 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 
   // TODO(591740): Remove if define for OS_ANDROID in this test.
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+// Tests a nested ReadRemoteCharacteristic from within another
+// ReadRemoteCharacteristic.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       RemoteCharacteristic_Nested_Read_Read) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ));
+
+  std::vector<uint8_t> test_vector_1 = {0, 1, 2, 3, 4};
+  std::vector<uint8_t> test_vector_2 = {0xf, 0xf0, 0xff};
+
+  characteristic1_->ReadRemoteCharacteristic(
+      base::BindLambdaForTesting([&](const std::vector<uint8_t>& data) {
+        GetReadValueCallback(Call::EXPECTED).Run(data);
+
+        EXPECT_EQ(1, gatt_read_characteristic_attempts_);
+        EXPECT_EQ(1, callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(test_vector_1, last_read_value_);
+        EXPECT_EQ(test_vector_1, characteristic1_->GetValue());
+
+        characteristic1_->ReadRemoteCharacteristic(
+            GetReadValueCallback(Call::EXPECTED),
+            GetGattErrorCallback(Call::NOT_EXPECTED));
+        SimulateGattCharacteristicRead(characteristic1_, test_vector_2);
+      }),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  SimulateGattCharacteristicRead(characteristic1_, test_vector_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, gatt_read_characteristic_attempts_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(test_vector_2, last_read_value_);
+  EXPECT_EQ(test_vector_2, characteristic1_->GetValue());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+// Tests a nested WriteRemoteCharacteristic from within another
+// WriteRemoteCharacteristic.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       RemoteCharacteristic_Nested_Write_Write) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  std::vector<uint8_t> test_vector_1 = {0, 1, 2, 3, 4};
+  std::vector<uint8_t> test_vector_2 = {0xf, 0xf0, 0xff};
+
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector_1, base::BindLambdaForTesting([&] {
+        GetCallback(Call::EXPECTED).Run();
+
+        EXPECT_EQ(1, gatt_write_characteristic_attempts_);
+        EXPECT_EQ(1, callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(test_vector_1, last_write_value_);
+
+        characteristic1_->WriteRemoteCharacteristic(
+            test_vector_2, GetCallback(Call::EXPECTED),
+            GetGattErrorCallback(Call::NOT_EXPECTED));
+        SimulateGattCharacteristicWrite(characteristic1_);
+      }),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  SimulateGattCharacteristicWrite(characteristic1_);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2, gatt_write_characteristic_attempts_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(test_vector_2, last_write_value_);
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+// Tests a nested WriteRemoteCharacteristic from within a
+// ReadRemoteCharacteristic.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       RemoteCharacteristic_Nested_Read_Write) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  std::vector<uint8_t> test_vector_1 = {0, 1, 2, 3, 4};
+  std::vector<uint8_t> test_vector_2 = {0xf, 0xf0, 0xff};
+
+  characteristic1_->ReadRemoteCharacteristic(
+      base::BindLambdaForTesting([&](const std::vector<uint8_t>& data) {
+        GetReadValueCallback(Call::EXPECTED).Run(data);
+
+        EXPECT_EQ(1, gatt_read_characteristic_attempts_);
+        EXPECT_EQ(0, gatt_write_characteristic_attempts_);
+        EXPECT_EQ(1, callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(test_vector_1, last_read_value_);
+        EXPECT_EQ(test_vector_1, characteristic1_->GetValue());
+
+        characteristic1_->WriteRemoteCharacteristic(
+            test_vector_2, GetCallback(Call::EXPECTED),
+            GetGattErrorCallback(Call::NOT_EXPECTED));
+        SimulateGattCharacteristicWrite(characteristic1_);
+      }),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  SimulateGattCharacteristicRead(characteristic1_, test_vector_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, gatt_read_characteristic_attempts_);
+  EXPECT_EQ(1, gatt_write_characteristic_attempts_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(test_vector_2, last_write_value_);
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+// Tests a nested ReadRemoteCharacteristic from within a
+// WriteRemoteCharacteristic.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       RemoteCharacteristic_Nested_Write_Read) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  std::vector<uint8_t> test_vector_1 = {0, 1, 2, 3, 4};
+  std::vector<uint8_t> test_vector_2 = {0xf, 0xf0, 0xff};
+
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector_1, base::BindLambdaForTesting([&] {
+        GetCallback(Call::EXPECTED).Run();
+
+        EXPECT_EQ(0, gatt_read_characteristic_attempts_);
+        EXPECT_EQ(1, gatt_write_characteristic_attempts_);
+        EXPECT_EQ(1, callback_count_);
+        EXPECT_EQ(0, error_callback_count_);
+        EXPECT_EQ(test_vector_1, last_write_value_);
+
+        characteristic1_->ReadRemoteCharacteristic(
+            GetReadValueCallback(Call::EXPECTED),
+            GetGattErrorCallback(Call::NOT_EXPECTED));
+        SimulateGattCharacteristicRead(characteristic1_, test_vector_2);
+      }),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  SimulateGattCharacteristicWrite(characteristic1_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, gatt_read_characteristic_attempts_);
+  EXPECT_EQ(1, gatt_write_characteristic_attempts_);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(test_vector_2, last_read_value_);
+  EXPECT_EQ(test_vector_2, characteristic1_->GetValue());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
