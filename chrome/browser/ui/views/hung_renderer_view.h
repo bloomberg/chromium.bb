@@ -56,6 +56,8 @@ class HungPagesTableModel : public ui::TableModel {
   void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
+  friend class HungRendererDialogViewBrowserTest;
+
   // Used to track a single WebContents. If the WebContents is destroyed
   // TabDestroyed() is invoked on the model.
   class WebContentsObserverImpl : public content::WebContentsObserver {
@@ -143,13 +145,15 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static HungRendererDialogView* g_instance_;
 
  private:
+  friend class HungRendererDialogViewBrowserTest;
+
   // Initialize the controls in this dialog.
   void Init();
 
   // Restart the hang timer, giving the page more time.
   void RestartHangTimer();
 
-  static void InitClass();
+  void UpdateLabels();
 
   // The label describing the list.
   views::Label* info_label_;
