@@ -45,6 +45,7 @@
     },
 
     async function testConsolePanelToDrawer(next) {
+      await TestRunner.showPanel('console');
       await showDrawerPromise();
       TestRunner.addResult('Drawer panel set to ' + UI.inspectorView._drawerTabbedPane._currentTab.id);
       await TestRunner.showPanel('sources');
@@ -52,6 +53,19 @@
       await TestRunner.showPanel('console');
       dumpScrollTop();
       next();
+    },
+
+    async function testCloseDrawerFromConsolePanelAndOpenFromAnotherPanel(next) {
+      await TestRunner.showPanel('console');
+      TestRunner.addSniffer(UI.SplitWidget.prototype, '_showFinishedForTest', async () => {
+        await TestRunner.showPanel('sources');
+        await showDrawerPromise();
+        TestRunner.addResult('Drawer panel set to ' + UI.inspectorView._drawerTabbedPane._currentTab.id);
+        dumpScrollTop();
+        next();
+      });
+      // Close the drawer with animation.
+      UI.inspectorView._drawerSplitWidget.hideSidebar(true /* animate */);
     }
   ]);
 
