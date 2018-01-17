@@ -29,6 +29,12 @@ namespace {
 // is returned to IME for improving conversion accuracy.
 static const size_t kExtraNumberOfChars = 20;
 
+ui::EventDispatchDetails DispatcherDestroyedDetails() {
+  ui::EventDispatchDetails dispatcher_details;
+  dispatcher_details.dispatcher_destroyed = true;
+  return dispatcher_details;
+}
+
 }  // namespace
 
 InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
@@ -103,9 +109,12 @@ ui::EventDispatchDetails InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   const base::NativeEvent& native_key_event = event->native_event();
   BOOL handled = FALSE;
   if (native_key_event.message == WM_CHAR) {
+    auto ref = weak_ptr_factory_.GetWeakPtr();
     OnChar(native_key_event.hwnd, native_key_event.message,
            native_key_event.wParam, native_key_event.lParam, native_key_event,
            &handled);
+    if (!ref)
+      return DispatcherDestroyedDetails();
     if (handled)
       event->StopPropagation();
     return ui::EventDispatchDetails();
@@ -199,8 +208,12 @@ ui::EventDispatchDetails InputMethodWin::ProcessUnhandledKeyEvent(
   }
 
   BOOL handled;
-  for (const auto& msg : (*char_msgs))
+  for (const auto& msg : (*char_msgs)) {
+    auto ref = weak_ptr_factory_.GetWeakPtr();
     OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, msg, &handled);
+    if (!ref)
+      return DispatcherDestroyedDetails();
+  }
   return details;
 }
 
