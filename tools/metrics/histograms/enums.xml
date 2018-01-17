@@ -28654,6 +28654,12 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Storage permission failed due to missing WebContents"/>
 </enum>
 
+<enum name="MobileFreLinkTappedStatus">
+  <int value="0" label="Link successfully loaded."/>
+  <int value="1" label="Link failed to load."/>
+  <int value="2" label="Link load did not complete."/>
+</enum>
+
 <enum name="MobileFreProgress">
   <int value="0" label="FRE started"/>
   <int value="1" label="Welcome shown"/>

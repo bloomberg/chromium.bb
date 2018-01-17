@@ -38751,6 +38751,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileFre.PrivacyLinkTappedStatus"
+    enum="MobileFreLinkTappedStatus">
+  <owner>justincohen@chromium.org</owner>
+  <summary>
+    iOS: Records the status of the privacy page after user taps on the privacy
+    link on the first run welcome view.  This metric is only recorded if and
+    after the TOS are accepted. This metric is specific to iOS.
+  </summary>
+</histogram>
+
 <histogram name="MobileFre.Progress" enum="MobileFreProgress">
   <owner>gogerald@chromium.org</owner>
   <summary>
