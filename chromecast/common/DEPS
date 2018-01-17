@@ -1,5 +1,10 @@
 include_rules = [
+  "+components/version_info",
   "+content/public/common",
+  "+extensions/common",
+  "+extensions/grit",
+  "+extensions/shell/common/api",
+  "+extensions/shell/grit",
   "+ui/base",
   "+ui/gfx",
 ]

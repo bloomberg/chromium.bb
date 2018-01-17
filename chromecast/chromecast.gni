@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
+import("//extensions/features/features.gni")
 
 # This args block should contain arguments used within the //chromecast
 # directory. Arguments which are used in other Chrome components should
@@ -83,6 +84,9 @@ if (chromecast_branding == "public") {
 # reference for all GN files referencing a locales list. |locales| is declared
 # in //build/config/locales.gni.
 cast_locales = locales
+
+# Currently extensions require use_dbus=true if it is a linux build.
+enable_chromecast_extensions = enable_extensions && (!is_linux || use_dbus)
 
 # These templates are a temporary fix fo link libc++ into shared libraries and
 # executables. These should be removed as soon as crbug.com/746091 is resolved.

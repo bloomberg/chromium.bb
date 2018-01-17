@@ -97,6 +97,14 @@
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "chromecast/browser/extensions/cast_extension_system.h"
+#include "chromecast/browser/extensions/cast_extensions_browser_client.h"
+#include "chromecast/browser/extensions/cast_prefs.h"
+#include "chromecast/common/cast_extensions_client.h"
+#include "extensions/browser/extension_prefs.h"  // nogncheck
+#endif
+
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -347,6 +355,10 @@ media::MediaCapsImpl* CastBrowserMainParts::media_caps() {
   return media_caps_.get();
 }
 
+content::BrowserContext* CastBrowserMainParts::browser_context() {
+  return cast_browser_process_->browser_context();
+}
+
 void CastBrowserMainParts::PreMainMessageLoopStart() {
   // GroupedHistograms needs to be initialized before any threads are created
   // to prevent race conditions between calls to Preregister and those threads
@@ -514,6 +526,29 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  user_pref_service_ = extensions::cast_prefs::CreateUserPrefService(
+      cast_browser_process_->browser_context());
+
+  extensions_client_ = std::make_unique<extensions::CastExtensionsClient>();
+  extensions::ExtensionsClient::Set(extensions_client_.get());
+
+  extensions_browser_client_ =
+      std::make_unique<extensions::CastExtensionsBrowserClient>(
+          cast_browser_process_->browser_context(), user_pref_service_.get());
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
+  extensions::CastExtensionSystem* extension_system =
+      static_cast<extensions::CastExtensionSystem*>(
+          extensions::ExtensionSystem::Get(
+              cast_browser_process_->browser_context()));
+
+  extension_system->InitForRegularProfile(true);
+  extension_system->Init();
+
+  extensions::ExtensionPrefs::Get(cast_browser_process_->browser_context());
+#endif
 
   // Initializing metrics service and network delegates must happen after cast
   // service is intialized because CastMetricsServiceClient and

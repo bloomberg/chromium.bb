@@ -24,6 +24,24 @@ cast_source_set("common") {
     "//ui/gfx",
     "//url:url",
   ]
+
+  if (enable_chromecast_extensions) {
+    sources += [
+      "cast_extensions_client.cc",
+      "cast_extensions_client.h",
+    ]
+
+    deps += [
+      "//extensions:extensions_resources_grd_grit",
+      "//extensions/common",
+      "//extensions/common/api:generated_api_bundle_generator_schema",
+      "//extensions/shell:resources",
+      "//extensions/shell:resources_grit",
+      "//extensions/shell/common/api",
+      "//extensions/shell/common/api:api_registration",
+      "//extensions/shell/common/api:extensions_features",
+    ]
+  }
 }
 
 if (!is_android) {
