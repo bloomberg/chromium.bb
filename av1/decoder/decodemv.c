@@ -1039,9 +1039,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     valid_dv = valid_dv && assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row,
                                      mi_col, bsize, r);
     if (!valid_dv) {
-      // Intra bc motion vectors are not valid - disable intrabc
-      mbmi->use_intrabc = 0;
-      return;
+      // Intra bc motion vectors are not valid - signal corrupt frame
+      aom_merge_corrupted_flag(&xd->corrupted, 1);
     }
 #if !CONFIG_TXK_SEL
     av1_read_tx_type(cm, xd, r);
