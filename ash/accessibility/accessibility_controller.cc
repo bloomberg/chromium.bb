@@ -5,6 +5,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -175,6 +176,11 @@ void AccessibilityController::HandleAccessibilityGesture(
     DCHECK(!gesture_str.empty() || gesture == ui::AX_GESTURE_NONE);
     client_->HandleAccessibilityGesture(gesture_str);
   }
+}
+
+void AccessibilityController::ToggleDictation() {
+  if (client_)
+    client_->ToggleDictation();
 }
 
 void AccessibilityController::SetClient(

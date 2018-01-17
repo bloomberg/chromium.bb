@@ -77,6 +77,9 @@ class ASH_EXPORT AccessibilityController
   // ChromeVox.
   void HandleAccessibilityGesture(ui::AXGesture gesture);
 
+  // Toggle dictation.
+  void ToggleDictation();
+
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;

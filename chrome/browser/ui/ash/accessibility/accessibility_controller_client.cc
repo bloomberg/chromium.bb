@@ -118,6 +118,10 @@ void AccessibilityControllerClient::HandleAccessibilityGesture(
   chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
 }
 
+void AccessibilityControllerClient::ToggleDictation() {
+  chromeos::AccessibilityManager::Get()->ToggleDictation();
+}
+
 void AccessibilityControllerClient::FlushForTesting() {
   accessibility_controller_.FlushForTesting();
 }

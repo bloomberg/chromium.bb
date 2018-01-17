@@ -786,6 +786,15 @@ void HandleToggleCapsLock() {
   keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
 }
 
+bool CanHandleToggleDictation() {
+  return chromeos::switches::AreExperimentalAccessibilityFeaturesEnabled();
+}
+
+void HandleToggleDictation() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
+  Shell::Get()->accessibility_controller()->ToggleDictation();
+}
+
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
@@ -1210,6 +1219,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
+    case TOGGLE_DICTATION:
+      return CanHandleToggleDictation();
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
       return CanHandleToggleMessageCenterBubble();
     case TOGGLE_MIRROR_MODE:
@@ -1532,6 +1543,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();
+      break;
+    case TOGGLE_DICTATION:
+      HandleToggleDictation();
       break;
     case TOGGLE_FULLSCREEN:
       HandleToggleFullscreen(accelerator);

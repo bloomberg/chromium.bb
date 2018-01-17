@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 
 #include <string>
 
@@ -17,8 +17,6 @@ struct SpeechRecognitionSessionPreamble;
 namespace net {
 class URLRequestContextGetter;
 }
-
-namespace app_list {
 
 class SpeechRecognizerDelegate;
 
@@ -48,6 +46,4 @@ class SpeechRecognizer {
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };
 
-}  // namespace app_list
-
-#endif  // CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_

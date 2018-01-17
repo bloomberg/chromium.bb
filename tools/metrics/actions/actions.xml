@@ -973,6 +973,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Toggle_Dictation">
+  <owner>dtseng@chromium.org</owner>
+  <description>
+    Metric recorded when the user starts or stops dictation using keyboard
+    shortcut.
+  </description>
+</action>
+
 <action name="Accel_Toggle_High_Contrast">
   <owner>dmazzoni@chromium.org</owner>
   <description>

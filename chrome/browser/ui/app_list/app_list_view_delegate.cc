@@ -85,6 +85,27 @@ void RecordHistogram(bool is_tablet_mode, app_list::AppListViewState state) {
 
 }  // namespace
 
+namespace app_list {
+
+SpeechRecognitionState ToSpeechRecognitionState(SpeechRecognizerState state) {
+  switch (state) {
+    case SPEECH_RECOGNIZER_OFF:
+      return SPEECH_RECOGNITION_OFF;
+    case SPEECH_RECOGNIZER_READY:
+      return SPEECH_RECOGNITION_READY;
+    case SPEECH_RECOGNIZER_RECOGNIZING:
+      return SPEECH_RECOGNITION_RECOGNIZING;
+    case SPEECH_RECOGNIZER_IN_SPEECH:
+      return SPEECH_RECOGNITION_IN_SPEECH;
+    case SPEECH_RECOGNIZER_STOPPING:
+      return SPEECH_RECOGNITION_STOPPING;
+    case SPEECH_RECOGNIZER_NETWORK_ERROR:
+      return SPEECH_RECOGNITION_NETWORK_ERROR;
+  }
+}
+
+}  // namespace app_list
+
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(nullptr),
@@ -202,10 +223,11 @@ void AppListViewDelegate::SetUpSearchUI() {
   if (start_page_service)
     start_page_service->AddObserver(this);
 
-  speech_ui_->SetSpeechRecognitionState(start_page_service
-                                            ? start_page_service->state()
-                                            : app_list::SPEECH_RECOGNITION_OFF,
-                                        false);
+  speech_ui_->SetSpeechRecognitionState(
+      start_page_service
+          ? app_list::ToSpeechRecognitionState(start_page_service->state())
+          : app_list::SPEECH_RECOGNITION_OFF,
+      false);
 
   search_resource_manager_.reset(new app_list::SearchResourceManager(
       profile_, model_updater_, speech_ui_.get()));
@@ -307,7 +329,7 @@ void AppListViewDelegate::StartSpeechRecognitionForHotword(
   // Don't start the recognizer or stop the hotword session if there is a
   // network error. Show the network error message instead.
   if (service) {
-    if (service->state() == app_list::SPEECH_RECOGNITION_NETWORK_ERROR) {
+    if (service->state() == SPEECH_RECOGNIZER_NETWORK_ERROR) {
       speech_ui_->SetSpeechRecognitionState(
           app_list::SPEECH_RECOGNITION_NETWORK_ERROR, true);
       return;
@@ -321,8 +343,9 @@ void AppListViewDelegate::OnSpeechSoundLevelChanged(int16_t level) {
 }
 
 void AppListViewDelegate::OnSpeechRecognitionStateChanged(
-    app_list::SpeechRecognitionState new_state) {
-  speech_ui_->SetSpeechRecognitionState(new_state, false);
+    SpeechRecognizerState new_state) {
+  speech_ui_->SetSpeechRecognitionState(
+      app_list::ToSpeechRecognitionState(new_state), false);
 }
 
 views::View* AppListViewDelegate::CreateStartPageWebView(

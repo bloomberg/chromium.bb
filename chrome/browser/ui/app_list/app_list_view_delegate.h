@@ -101,7 +101,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Overridden from app_list::StartPageObserver:
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
-      app_list::SpeechRecognitionState new_state) override;
+      SpeechRecognizerState new_state) override;
 
   // Overridden from ash::mojom::WallpaperObserver:
   void OnWallpaperColorsChanged(
