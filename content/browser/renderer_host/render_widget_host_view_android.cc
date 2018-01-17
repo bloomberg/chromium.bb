@@ -1692,7 +1692,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   : args.frame_time + (args.interval * 0.6);
   if (sync_compositor_) {
     host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
-    sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid(), args);
+    sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid());
   } else if (renderer_compositor_frame_sink_) {
     renderer_compositor_frame_sink_->OnBeginFrame(args);
   }
