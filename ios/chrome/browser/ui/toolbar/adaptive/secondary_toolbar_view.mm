@@ -16,20 +16,28 @@
 
 @interface SecondaryToolbarView ()
 
+// Redefined as readwrite
+@property(nonatomic, strong, readwrite) NSArray<ToolbarButton*>* allButtons;
+
 // The stack view containing the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
 
-// Redefined as readwrite
-@property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
-@property(nonatomic, strong, readwrite) ToolbarButton* tabGridButton;
-@property(nonatomic, strong, readwrite) ToolbarButton* shareButton;
-@property(nonatomic, strong, readwrite) ToolbarButton* omniboxButton;
+// Button to display the tools menu.
+@property(nonatomic, strong) ToolbarToolsMenuButton* toolsMenuButton;
+// Button to display the tab grid.
+@property(nonatomic, strong) ToolbarButton* tabGridButton;
+// Button to display the share menu.
+@property(nonatomic, strong) ToolbarButton* shareButton;
+// Button to focus the omnibox.
+@property(nonatomic, strong) ToolbarButton* omniboxButton;
+// Button to manage the bookmarks of this page, defined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarButton* bookmarksButton;
 
 @end
 
 @implementation SecondaryToolbarView
 
+@synthesize allButtons = _allButtons;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize stackView = _stackView;
 @synthesize toolsMenuButton = _toolsMenuButton;
@@ -64,10 +72,13 @@
   self.bookmarksButton = [self.buttonFactory bookmarkButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
-  self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
+  self.allButtons = @[
     self.tabGridButton, self.shareButton, self.omniboxButton,
     self.bookmarksButton, self.toolsMenuButton
-  ]];
+  ];
+
+  self.stackView =
+      [[UIStackView alloc] initWithArrangedSubviews:self.allButtons];
   self.stackView.distribution = UIStackViewDistributionEqualSpacing;
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:self.stackView];

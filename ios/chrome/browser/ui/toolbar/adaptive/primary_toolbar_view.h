@@ -7,23 +7,17 @@
 
 #import <UIKit/UIKit.h>
 
-@class ToolbarButton;
-@class ToolbarButtonFactory;
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 
 // View for the primary toolbar. In an adaptive toolbar paradigm, this is the
-// toolbar always presented.
-@interface PrimaryToolbarView : UIView
+// toolbar always displayed.
+@interface PrimaryToolbarView : UIView<AdaptiveToolbarView>
 
 // Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
 // overlap with the Status Bar.
 @property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
-// Factory used to create the buttons.
-@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
-
-// Property to get all the buttons in this view.
-@property(nonatomic, readonly) NSArray<ToolbarButton*>* allButtons;
 
 @end
 

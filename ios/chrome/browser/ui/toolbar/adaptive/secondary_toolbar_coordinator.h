@@ -5,28 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_SECONDARY_TOOLBAR_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_SECONDARY_TOOLBAR_COORDINATOR_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator.h"
 
-#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-@protocol ToolbarCommands;
-
-// Coordinator for the secondary toolbar. The secondary toolbar contains actions
-// and shortcuts that are not displayed on the primary toolbar.
-@interface SecondaryToolbarCoordinator : ChromeCoordinator
-
-- (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController NS_UNAVAILABLE;
-
-// UIViewController managed by this coordinator;
-@property(nonatomic, strong, readonly, nullable)
-    UIViewController* viewController;
-// Dispatcher.
-@property(nonatomic, weak, nullable)
-    id<ApplicationCommands, BrowserCommands, ToolbarCommands>
-        dispatcher;
+// Coordinator for the secondary part of the adaptive toolbar. It is the part
+// containing the controls displayed only on specific size classes.
+@interface SecondaryToolbarCoordinator : AdaptiveToolbarCoordinator
 
 @end
 

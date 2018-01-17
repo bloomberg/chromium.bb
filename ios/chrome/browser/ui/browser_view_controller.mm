@@ -189,6 +189,8 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinator_adaptor.h"
@@ -689,7 +691,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     primaryToolbarCoordinator;
 // Secondary toolbar.
 @property(nonatomic, strong)
-    SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
+    AdaptiveToolbarCoordinator* secondaryToolbarCoordinator;
 // Interface object with the toolbars.
 @property(nonatomic, strong)
     id<ToolbarCoordinating, ToolsMenuPresentationStateProvider>
@@ -1935,11 +1937,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     topToolbarCoordinator.dispatcher = self.dispatcher;
     [topToolbarCoordinator start];
 
-    SecondaryToolbarCoordinator* bottomToolbarCoordinator =
-        [[SecondaryToolbarCoordinator alloc]
-            initWithBaseViewController:nil
-                          browserState:_browserState];
+    SecondaryToolbarCoordinator* bottomToolbarCoordinator = [
+        [SecondaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
     self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
+    bottomToolbarCoordinator.webStateList = [_model webStateList];
     bottomToolbarCoordinator.dispatcher = self.dispatcher;
     [bottomToolbarCoordinator start];
 

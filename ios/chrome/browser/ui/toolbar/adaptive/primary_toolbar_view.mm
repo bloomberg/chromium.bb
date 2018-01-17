@@ -49,7 +49,7 @@
 // Button to manage the bookmarks of this page.
 @property(nonatomic, strong) ToolbarButton* bookmarkButton;
 // Button to display the tools menu, redefined as readwrite.
-@property(nonatomic, strong) ToolbarToolsMenuButton* toolsMenuButton;
+@property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
 
 @end
 

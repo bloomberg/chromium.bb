@@ -312,6 +312,8 @@ const int styleCount = 2;
                   imageForHighlightedState:NativeImage(IDR_IOS_OMNIBOX_SEARCH)
                      imageForDisabledState:nil];
   [self configureButton:omniboxButton width:kToolbarButtonWidth];
+  omniboxButton.visibilityMask =
+      self.visibilityConfiguration.omniboxButtonVisibility;
   return omniboxButton;
 }
 
