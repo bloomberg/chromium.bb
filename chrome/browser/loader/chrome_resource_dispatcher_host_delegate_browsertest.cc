@@ -116,7 +116,7 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
   void OnRequestRedirected(const GURL& redirect_url,
                            net::URLRequest* request,
                            content::ResourceContext* resource_context,
-                           content::ResourceResponse* response) override {
+                           network::ResourceResponse* response) override {
     ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
         redirect_url,
         request,

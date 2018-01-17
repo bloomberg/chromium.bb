@@ -173,7 +173,7 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
 
   // mojom::URLLoaderClient overrides:
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK_EQ(Status::kStarted, status_);
@@ -182,8 +182,9 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
     if (response_head.headers)
       response_.SetHTTPStatusCode(response_head.headers->response_code());
   }
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {
     DCHECK_EQ(Status::kStarted, status_);
     loader_->FollowRedirect();
     response_.SetURL(redirect_info.new_url);

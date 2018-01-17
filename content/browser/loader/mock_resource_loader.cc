@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -55,7 +55,7 @@ MockResourceLoader::Status MockResourceLoader::OnWillStart(const GURL& url) {
 
 MockResourceLoader::Status MockResourceLoader::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    scoped_refptr<ResourceResponse> response) {
+    scoped_refptr<network::ResourceResponse> response) {
   EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
 
@@ -72,7 +72,7 @@ MockResourceLoader::Status MockResourceLoader::OnRequestRedirected(
 }
 
 MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
-    scoped_refptr<ResourceResponse> response) {
+    scoped_refptr<network::ResourceResponse> response) {
   EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
 

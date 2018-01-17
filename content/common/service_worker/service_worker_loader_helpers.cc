@@ -11,10 +11,10 @@
 #include "content/common/loader_util.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_response.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -78,7 +78,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
     const int status_code,
     const std::string& status_text,
     const ServiceWorkerHeaderMap& headers,
-    ResourceResponseHead* out_head) {
+    network::ResourceResponseHead* out_head) {
   // Build a string instead of using HttpResponseHeaders::AddHeader on
   // each header, since AddHeader has O(n^2) performance.
   std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
@@ -105,7 +105,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
 // static
 void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     const ServiceWorkerResponse& response,
-    ResourceResponseHead* out_head) {
+    network::ResourceResponseHead* out_head) {
   out_head->was_fetched_via_service_worker = true;
   out_head->was_fallback_required_by_service_worker = false;
   out_head->url_list_via_service_worker = response.url_list;
@@ -120,7 +120,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
 base::Optional<net::RedirectInfo>
 ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
     const network::ResourceRequest& original_request,
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool token_binding_negotiated) {
   std::string new_location;
   if (!response_head.headers->IsRedirect(&new_location))

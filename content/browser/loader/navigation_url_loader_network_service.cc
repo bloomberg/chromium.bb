@@ -126,7 +126,7 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 // TODO(arthursonzogni): IsDownload can't be determined only by the response's
 // headers. The response's body might contain information to guess it.
 // See MimeSniffingResourceHandler.
-bool IsDownload(const ResourceResponse& response,
+bool IsDownload(const network::ResourceResponse& response,
                 const GURL& url,
                 const std::vector<GURL>& url_chain,
                 const base::Optional<url::Origin>& initiator_origin,
@@ -518,7 +518,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
  private:
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const ResourceResponseHead& head,
+      const network::ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     received_response_ = true;
@@ -538,7 +538,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           response_loader_binding_.Unbind());
     }
 
-    scoped_refptr<ResourceResponse> response(new ResourceResponse());
+    scoped_refptr<network::ResourceResponse> response(
+        new network::ResourceResponse());
     response->head = head;
 
     bool is_download;
@@ -583,7 +584,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override {
+                         const network::ResourceResponseHead& head) override {
     if (--redirect_limit_ == 0) {
       OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
@@ -594,7 +595,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // our handlers_ a chance to intercept the request for the new location.
     redirect_info_ = redirect_info;
 
-    scoped_refptr<ResourceResponse> response(new ResourceResponse());
+    scoped_refptr<network::ResourceResponse> response(
+        new network::ResourceResponse());
     response->head = head;
     url_ = redirect_info.new_url;
 
@@ -637,7 +639,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       // If the default loader (network) was used to handle the URL load
       // request we need to see if the handlers want to potentially create a
       // new loader for the response. e.g. AppCache.
-      if (MaybeCreateLoaderForResponse(ResourceResponseHead()))
+      if (MaybeCreateLoaderForResponse(network::ResourceResponseHead()))
         return;
     }
     status_ = status;
@@ -650,7 +652,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // Returns true if a handler wants to handle the response, i.e. return a
   // different response. For e.g. AppCache may have fallback content.
-  bool MaybeCreateLoaderForResponse(const ResourceResponseHead& response) {
+  bool MaybeCreateLoaderForResponse(
+      const network::ResourceResponseHead& response) {
     if (!base::FeatureList::IsEnabled(features::kNetworkService))
       return false;
 
@@ -907,7 +910,7 @@ void NavigationURLLoaderNetworkService::FollowRedirect() {
 void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
 
 void NavigationURLLoaderNetworkService::OnReceiveResponse(
-    scoped_refptr<ResourceResponse> response,
+    scoped_refptr<network::ResourceResponse> response,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const base::Optional<net::SSLInfo>& maybe_ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
@@ -934,7 +937,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
 
 void NavigationURLLoaderNetworkService::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    scoped_refptr<ResourceResponse> response) {
+    scoped_refptr<network::ResourceResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnRequestRedirected(redirect_info, std::move(response));
 }

@@ -27,12 +27,12 @@ class HttpResponseHeaders;
 
 namespace network {
 class NetToMojoPendingBuffer;
+struct ResourceResponse;
 }
 
 namespace content {
 
 class NetworkContext;
-struct ResourceResponse;
 
 class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
                                  public net::URLRequest::Delegate {
@@ -114,7 +114,7 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
 
   // Used when deferring sending the data to the client until mime sniffing is
   // finished.
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   bool report_raw_headers_;

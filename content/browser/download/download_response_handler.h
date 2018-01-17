@@ -10,9 +10,9 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -44,11 +44,11 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   ~DownloadResponseHandler() override;
 
   // mojom::URLLoaderClient
-  void OnReceiveResponse(const ResourceResponseHead& head,
+  void OnReceiveResponse(const network::ResourceResponseHead& head,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override;
+                         const network::ResourceResponseHead& head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -61,7 +61,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
 
  private:
   std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
-      const ResourceResponseHead& head);
+      const network::ResourceResponseHead& head);
 
   // Helper method that is called when response is received.
   void OnResponseStarted(mojom::DownloadStreamHandlePtr stream_handle);

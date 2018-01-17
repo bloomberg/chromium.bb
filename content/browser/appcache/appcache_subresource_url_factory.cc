@@ -19,6 +19,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -171,7 +172,7 @@ class SubresourceLoader : public mojom::URLLoader,
   // mojom::URLLoaderClient implementation
   // Called by either the appcache or network loader, whichever is in use.
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     // Don't MaybeFallback for appcache produced responses.
@@ -189,10 +190,11 @@ class SubresourceLoader : public mojom::URLLoader,
                        std::move(downloaded_file)));
   }
 
-  void ContinueOnReceiveResponse(const ResourceResponseHead& response_head,
-                                 const base::Optional<net::SSLInfo>& ssl_info,
-                                 mojom::DownloadedTempFilePtr downloaded_file,
-                                 StartLoaderCallback start_function) {
+  void ContinueOnReceiveResponse(
+      const network::ResourceResponseHead& response_head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      mojom::DownloadedTempFilePtr downloaded_file,
+      StartLoaderCallback start_function) {
     if (start_function) {
       CreateAndStartAppCacheLoader(std::move(start_function));
     } else {
@@ -201,8 +203,9 @@ class SubresourceLoader : public mojom::URLLoader,
     }
   }
 
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {
     DCHECK(network_loader_) << "appcache loader does not produce redirects";
     if (!redirect_limit_--) {
       OnComplete(
@@ -220,8 +223,9 @@ class SubresourceLoader : public mojom::URLLoader,
                        weak_factory_.GetWeakPtr(), response_head));
   }
 
-  void ContinueOnReceiveRedirect(const ResourceResponseHead& response_head,
-                                 StartLoaderCallback start_function) {
+  void ContinueOnReceiveRedirect(
+      const network::ResourceResponseHead& response_head,
+      StartLoaderCallback start_function) {
     if (start_function)
       CreateAndStartAppCacheLoader(std::move(start_function));
     else
@@ -259,7 +263,7 @@ class SubresourceLoader : public mojom::URLLoader,
       return;
     }
     handler_->MaybeFallbackForSubresourceResponse(
-        ResourceResponseHead(),
+        network::ResourceResponseHead(),
         base::BindOnce(&SubresourceLoader::ContinueOnComplete,
                        weak_factory_.GetWeakPtr(), status));
   }

@@ -204,8 +204,6 @@ jumbo_source_set("common_sources") {
     "request_context_type.h",
     "resource_request_body_android.cc",
     "resource_request_body_android.h",
-    "resource_response.cc",
-    "resource_response.h",
     "resource_type.cc",
     "resource_type.h",
     "result_codes.h",

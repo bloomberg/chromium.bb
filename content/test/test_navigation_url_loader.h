@@ -16,12 +16,15 @@ namespace net {
 struct RedirectInfo;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class NavigationData;
 class NavigationURLLoaderDelegate;
 class StreamHandle;
-struct ResourceResponse;
 
 // PlzNavigate
 // Test implementation of NavigationURLLoader to simulate the network stack
@@ -43,11 +46,13 @@ class TestNavigationURLLoader
 
   void SimulateError(int error_code);
 
-  void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
-                               const scoped_refptr<ResourceResponse>& response);
-  void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             std::unique_ptr<StreamHandle> body,
-                             std::unique_ptr<NavigationData> navigation_data);
+  void CallOnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      const scoped_refptr<network::ResourceResponse>& response);
+  void CallOnResponseStarted(
+      const scoped_refptr<network::ResourceResponse>& response,
+      std::unique_ptr<StreamHandle> body,
+      std::unique_ptr<NavigationData> navigation_data);
 
   int redirect_count() { return redirect_count_; }
 

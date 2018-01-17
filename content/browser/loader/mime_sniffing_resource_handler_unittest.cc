@@ -25,7 +25,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -33,6 +32,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -76,7 +76,7 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
   std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
       const base::FilePath& plugin_path,
       net::URLRequest* request,
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::string* payload) override {
     intercepted_as_stream_count_++;
     if (stream_has_handler_)
@@ -296,7 +296,8 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
 
   MockResourceLoader mock_loader(&mime_sniffing_handler);
 
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   // The MIME type isn't important but it shouldn't be empty.
   response->head.mime_type = "application/pdf";
 
@@ -366,7 +367,8 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
             mock_loader.OnWillStart(request->url()));
 
   // The response should be sniffed.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   response->head.mime_type.assign("text/plain");
 
   // Simulate the response starting. The MimeSniffingHandler should start
@@ -527,7 +529,8 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
             mock_loader.OnWillStart(request->url()));
 
   // The response should not be sniffed.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   response->head.mime_type.assign("text/html");
 
   // Simulate the response starting. There should be no need for buffering, so
@@ -898,7 +901,8 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
             mock_loader.OnWillStart(request->url()));
 
   // Simulate a 304 response.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   // The MIME type isn't important but it shouldn't be empty.
   response->head.mime_type = "application/pdf";
   response->head.headers = new net::HttpResponseHeaders("HTTP/1.x 304 OK");
@@ -949,7 +953,8 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
   EXPECT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader.OnWillStart(request->url()));
 
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   response->head.mime_type = "text/plain";
 
   // |mime_sniffing_handler->OnResponseStarted| should return false because

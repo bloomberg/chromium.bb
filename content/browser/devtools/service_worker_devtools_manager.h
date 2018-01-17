@@ -20,13 +20,13 @@
 
 namespace network {
 struct ResourceRequest;
+struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }
 
 namespace content {
 
 class BrowserContext;
-struct ResourceResponseHead;
 class ServiceWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
 
@@ -75,11 +75,12 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
                                     int worker_route_id,
                                     const std::string& request_id,
                                     const network::ResourceRequest& request);
-  void NavigationPreloadResponseReceived(int worker_process_id,
-                                         int worker_route_id,
-                                         const std::string& request_id,
-                                         const GURL& url,
-                                         const ResourceResponseHead& head);
+  void NavigationPreloadResponseReceived(
+      int worker_process_id,
+      int worker_route_id,
+      const std::string& request_id,
+      const GURL& url,
+      const network::ResourceResponseHead& head);
   void NavigationPreloadCompleted(
       int worker_process_id,
       int worker_route_id,

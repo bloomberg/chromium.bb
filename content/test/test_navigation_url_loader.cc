@@ -16,9 +16,9 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -46,7 +46,8 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   redirect_info.new_method = "GET";
   redirect_info.new_url = redirect_url;
   redirect_info.new_site_for_cookies = redirect_url;
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   CallOnRequestRedirected(redirect_info, response);
 }
 
@@ -56,12 +57,12 @@ void TestNavigationURLLoader::SimulateError(int error_code) {
 
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<ResourceResponse>& response) {
+    const scoped_refptr<network::ResourceResponse>& response) {
   delegate_->OnRequestRedirected(redirect_info, response);
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
-    const scoped_refptr<ResourceResponse>& response,
+    const scoped_refptr<network::ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     std::unique_ptr<NavigationData> navigation_data) {
   // Start the request_ids at 1000 to avoid collisions with request ids from

@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/null_resource_controller.h"
 #include "content/browser/loader/resource_controller.h"
-#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -66,7 +66,7 @@ InterceptingResourceHandler::InterceptingResourceHandler(
 InterceptingResourceHandler::~InterceptingResourceHandler() {}
 
 void InterceptingResourceHandler::OnResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   // If there's no need to switch handlers, just start acting as a blind
   // pass-through ResourceHandler.

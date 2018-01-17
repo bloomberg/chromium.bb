@@ -24,6 +24,10 @@ class ClientCertStore;
 class URLRequest;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class AppCacheService;
@@ -31,7 +35,6 @@ class NavigationData;
 class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceThrottle;
-struct ResourceResponse;
 struct StreamInfo;
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
@@ -104,13 +107,13 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(net::URLRequest* request,
                                  ResourceContext* resource_context,
-                                 ResourceResponse* response);
+                                 network::ResourceResponse* response);
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(const GURL& redirect_url,
                                    net::URLRequest* request,
                                    ResourceContext* resource_context,
-                                   ResourceResponse* response);
+                                   network::ResourceResponse* response);
 
   // Notification that a request has completed.
   virtual void RequestComplete(net::URLRequest* url_request, int net_error);

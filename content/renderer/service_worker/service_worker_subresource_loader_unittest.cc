@@ -50,7 +50,7 @@ class FakeNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     net::HttpResponseInfo info;
     info.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
-    ResourceResponseHead response;
+    network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
     client->OnReceiveResponse(response, base::nullopt, nullptr);
@@ -587,7 +587,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   StartRequest(factory.get(), request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  const ResourceResponseHead& info = client->response_head();
+  const network::ResourceResponseHead& info = client->response_head();
   EXPECT_EQ(200, info.headers->response_code());
   EXPECT_EQ(true, info.was_fetched_via_service_worker);
   EXPECT_EQ(false, info.was_fallback_required_by_service_worker);
@@ -709,7 +709,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   loader->FollowRedirect();
   client->RunUntilResponseReceived();
 
-  const ResourceResponseHead& info = client->response_head();
+  const network::ResourceResponseHead& info = client->response_head();
   EXPECT_EQ(200, info.headers->response_code());
   EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
             info.response_type_via_service_worker);
@@ -844,7 +844,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
     StartRequest(factory.get(), request, &loader, &client);
     client->RunUntilResponseReceived();
 
-    const ResourceResponseHead& info = client->response_head();
+    const network::ResourceResponseHead& info = client->response_head();
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
               info.was_fetched_via_service_worker);
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,

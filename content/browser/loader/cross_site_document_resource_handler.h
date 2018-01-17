@@ -72,7 +72,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
 
   // LayeredResourceHandler overrides:
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
@@ -95,7 +95,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Computes whether this response contains a cross-site document that needs to
   // be blocked from the renderer process.  This is a first approximation based
   // on the headers, and may be revised after some of the data is sniffed.
-  bool ShouldBlockBasedOnHeaders(ResourceResponse* response);
+  bool ShouldBlockBasedOnHeaders(network::ResourceResponse* response);
 
   // Once the downstream handler has allocated the buffer for OnWillRead
   // (possibly after deferring), this sets up sniffing into a local buffer.

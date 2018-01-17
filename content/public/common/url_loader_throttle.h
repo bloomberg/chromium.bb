@@ -17,11 +17,10 @@ struct RedirectInfo;
 
 namespace network {
 struct ResourceRequest;
+struct ResourceResponseHead;
 }
 
 namespace content {
-
-struct ResourceResponseHead;
 
 // A URLLoaderThrottle gets notified at various points during the process of
 // loading a resource. At each stage, it has the opportunity to defer the
@@ -74,15 +73,17 @@ class CONTENT_EXPORT URLLoaderThrottle {
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new
   // URL and new method.
-  virtual void WillRedirectRequest(const net::RedirectInfo& redirect_info,
-                                   const ResourceResponseHead& response_head,
-                                   bool* defer);
+  virtual void WillRedirectRequest(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head,
+      bool* defer);
 
   // Called when the response headers and meta data are available.
   // TODO(776312): Migrate this URL to ResourceResponseHead.
-  virtual void WillProcessResponse(const GURL& response_url,
-                                   const ResourceResponseHead& response_head,
-                                   bool* defer);
+  virtual void WillProcessResponse(
+      const GURL& response_url,
+      const network::ResourceResponseHead& response_head,
+      bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 

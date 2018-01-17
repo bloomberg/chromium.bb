@@ -14,7 +14,7 @@ URLLoaderRequestHandler::MaybeCreateSubresourceLoaderParams() {
 }
 
 bool URLLoaderRequestHandler::MaybeCreateLoaderForResponse(
-    const ResourceResponseHead& response,
+    const network::ResourceResponseHead& response,
     mojom::URLLoaderPtr* loader,
     mojom::URLLoaderClientRequest* client_request) {
   return false;

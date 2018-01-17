@@ -501,7 +501,7 @@ std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::MaybeInterceptAsStream(
     const base::FilePath& plugin_path,
     net::URLRequest* request,
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::string* payload) {
   payload->clear();
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
@@ -584,7 +584,7 @@ void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
 void ResourceDispatcherHostImpl::DidReceiveRedirect(
     ResourceLoader* loader,
     const GURL& new_url,
-    ResourceResponse* response) {
+    network::ResourceResponse* response) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
   if (delegate_) {
     delegate_->OnRequestRedirected(
@@ -594,7 +594,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(
     ResourceLoader* loader,
-    ResourceResponse* response) {
+    network::ResourceResponse* response) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
   net::URLRequest* request = loader->request();
   if (request->was_fetched_via_proxy() &&

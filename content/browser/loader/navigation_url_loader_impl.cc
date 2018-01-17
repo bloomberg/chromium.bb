@@ -89,14 +89,14 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {
 
 void NavigationURLLoaderImpl::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<ResourceResponse>& response) {
+    const scoped_refptr<network::ResourceResponse>& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnRequestRedirected(redirect_info, response);
 }
 
 void NavigationURLLoaderImpl::NotifyResponseStarted(
-    const scoped_refptr<ResourceResponse>& response,
+    const scoped_refptr<network::ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,

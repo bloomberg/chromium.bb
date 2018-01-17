@@ -19,7 +19,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
@@ -263,5 +263,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::EffectiveConnectionType,
                           net::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
+
+IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseHead)
+  IPC_STRUCT_TRAITS_PARENT(network::ResourceResponseInfo)
+  IPC_STRUCT_TRAITS_MEMBER(request_start)
+  IPC_STRUCT_TRAITS_MEMBER(response_start)
+IPC_STRUCT_TRAITS_END()
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_

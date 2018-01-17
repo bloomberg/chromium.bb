@@ -18,12 +18,15 @@ struct RedirectInfo;
 class SSLInfo;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class NavigationData;
 class StreamHandle;
 struct GlobalRequestID;
-struct ResourceResponse;
 struct SubresourceLoaderParams;
 
 // PlzNavigate: The delegate interface to NavigationURLLoader.
@@ -33,7 +36,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // processing the request.
   virtual void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<ResourceResponse>& response) = 0;
+      const scoped_refptr<network::ResourceResponse>& response) = 0;
 
   // Called when the request receives its response. No further calls will be
   // made to the delegate. The response body is returned as a stream in
@@ -46,7 +49,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // process if the navigated context is controlled by a request interceptor
   // like AppCache or ServiceWorker.
   virtual void OnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
+      const scoped_refptr<network::ResourceResponse>& response,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body_stream,
       const net::SSLInfo& ssl_info,

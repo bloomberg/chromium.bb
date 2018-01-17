@@ -18,11 +18,11 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -94,7 +94,7 @@ void NavigationURLLoaderImplCore::CancelRequestIfNeeded() {
 
 void NavigationURLLoaderImplCore::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    ResourceResponse* response) {
+    network::ResourceResponse* response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
 
@@ -117,7 +117,7 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 }
 
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,

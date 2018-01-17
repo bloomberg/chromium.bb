@@ -15,9 +15,9 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -140,7 +140,7 @@ void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
-  CommitNavigation(ResourceResponseHead(), GURL(), common_params,
+  CommitNavigation(network::ResourceResponseHead(), GURL(), common_params,
                    request_params, mojom::URLLoaderClientEndpointsPtr(),
                    URLLoaderFactoryBundle(),
                    mojom::ControllerServiceWorkerInfoPtr(),

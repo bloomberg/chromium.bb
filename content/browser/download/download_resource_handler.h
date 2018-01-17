@@ -54,12 +54,12 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
 
   // Send the download creation information to the download thread.
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
 
   // Pass-through implementation.

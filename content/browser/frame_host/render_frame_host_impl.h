@@ -104,6 +104,7 @@ class Rect;
 
 namespace network {
 class ResourceRequestBody;
+struct ResourceResponse;
 }
 
 namespace content {
@@ -136,7 +137,6 @@ struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
 struct RequestNavigationParams;
-struct ResourceResponse;
 struct SubresourceLoaderParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl
@@ -539,7 +539,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the parameters to create a custom subresource loader in the renderer
   // process, e.g. by AppCache etc.
   void CommitNavigation(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body,
       const CommonNavigationParams& common_params,

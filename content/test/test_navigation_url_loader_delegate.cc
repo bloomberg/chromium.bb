@@ -9,7 +9,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/resource_response.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -50,7 +50,7 @@ void TestNavigationURLLoaderDelegate::ReleaseBody() {
 
 void TestNavigationURLLoaderDelegate::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<ResourceResponse>& response) {
+    const scoped_refptr<network::ResourceResponse>& response) {
   redirect_info_ = redirect_info;
   redirect_response_ = response;
   ASSERT_TRUE(request_redirected_);
@@ -58,7 +58,7 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 }
 
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
-    const scoped_refptr<ResourceResponse>& response,
+    const scoped_refptr<network::ResourceResponse>& response,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,

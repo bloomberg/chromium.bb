@@ -261,7 +261,7 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   const net::HttpResponseInfo* http_info = is_range_request()
                                                ? range_response_info_.get()
                                                : info_->http_response_info();
-  ResourceResponseHead response_head;
+  network::ResourceResponseHead response_head;
   response_head.headers = http_info->headers;
   response_head.appcache_id = cache_id_;
   response_head.appcache_manifest_url = manifest_url_;

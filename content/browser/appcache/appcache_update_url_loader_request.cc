@@ -88,14 +88,14 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
   url_loader_ = nullptr;
   handle_watcher_.Cancel();
   handle_.reset();
-  response_ = ResourceResponseHead();
+  response_ = network::ResourceResponseHead();
   http_response_info_.reset(nullptr);
   read_requested_ = false;
   return 0;
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   response_ = response_head;
@@ -120,7 +120,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   response_ = response_head;
   fetcher_->OnReceivedRedirect(redirect_info);
 }

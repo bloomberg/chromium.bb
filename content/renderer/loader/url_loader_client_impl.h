@@ -24,13 +24,13 @@ struct RedirectInfo;
 }  // namespace net
 
 namespace network {
+struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
 namespace content {
 class ResourceDispatcher;
 class URLResponseBodyConsumer;
-struct ResourceResponseHead;
 
 class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
  public:
@@ -58,11 +58,12 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void Bind(mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // mojom::URLLoaderClient implementation
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
+  void OnReceiveResponse(const network::ResourceResponseHead& response_head,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,

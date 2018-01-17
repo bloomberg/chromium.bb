@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/resource_response.h"
+#include "services/network/public/cpp/resource_response.h"
 
 #include "net/http/http_response_headers.h"
 
-namespace content {
+namespace network {
 
 scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   scoped_refptr<ResourceResponse> new_response(new ResourceResponse);
@@ -46,10 +46,8 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.url_list_via_service_worker;
   new_response->head.response_type_via_service_worker =
       head.response_type_via_service_worker;
-  new_response->head.service_worker_start_time =
-      head.service_worker_start_time;
-  new_response->head.service_worker_ready_time =
-      head.service_worker_ready_time;
+  new_response->head.service_worker_start_time = head.service_worker_start_time;
+  new_response->head.service_worker_ready_time = head.service_worker_ready_time;
   new_response->head.is_in_cache_storage = head.is_in_cache_storage;
   new_response->head.cache_storage_cache_name = head.cache_storage_cache_name;
   new_response->head.previews_state = head.previews_state;
@@ -66,4 +64,4 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   return new_response;
 }
 
-}  // namespace content
+}  // namespace network

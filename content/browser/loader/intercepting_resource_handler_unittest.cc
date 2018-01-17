@@ -21,7 +21,6 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -30,6 +29,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -96,7 +96,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
   // The response is received. The handler should not change.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
 
   // The read is replayed by the MimeSniffingResourceHandler. The data should
   // have been received by the old intercepting_handler.
@@ -140,7 +140,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
   // the download.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
 
   EXPECT_FALSE(old_handler_status_.is_success());
   EXPECT_EQ(net::ERR_ABORTED, old_handler_status_.error());
@@ -198,7 +198,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   // the download.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
 
   // The old handler should have received the payload.
   EXPECT_EQ(kPayload, old_handler_body_);
@@ -257,7 +257,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsOnWillStart) {
   // The response is received. The new ResourceHandler should tell us to fail.
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
   EXPECT_EQ(net::ERR_ABORTED, mock_loader_->error_code());
 }
 
@@ -285,7 +285,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsResponseStarted) {
   // The response is received. The new ResourceHandler should tell us to fail.
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
   EXPECT_EQ(net::ERR_ABORTED, mock_loader_->error_code());
 }
 
@@ -315,7 +315,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsWillRead) {
   // read yet.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
   EXPECT_EQ(net::URLRequestStatus::CANCELED, old_handler_status_.status());
   EXPECT_EQ(net::ERR_ABORTED, old_handler_status_.error());
 
@@ -353,7 +353,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
   // The response is received.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
   EXPECT_EQ(net::URLRequestStatus::CANCELED, old_handler_status_.status());
   EXPECT_EQ(net::ERR_ABORTED, old_handler_status_.error());
 
@@ -434,7 +434,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   // OnReadCompleted method.
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
   old_handler_->WaitUntilDeferred();
 
   EXPECT_EQ(1, old_handler_->on_read_completed_called());
@@ -573,7 +573,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelNewHandler) {
   // The response is received.
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, old_handler_status_.status());
   EXPECT_FALSE(old_handler_);
@@ -613,7 +613,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelBothHandlers) {
   // The response is received.
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                base::MakeRefCounted<ResourceResponse>()));
+                base::MakeRefCounted<network::ResourceResponse>()));
 
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status_.status());
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());

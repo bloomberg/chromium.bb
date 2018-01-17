@@ -21,6 +21,7 @@ include_rules = [
   "+gin/v8_initializer.h",
   "+services/catalog",
   "+services/device/public/cpp/generic_sensor",
+  "+services/network/public/cpp",
   "+services/proxy_resolver",
   "+services/service_manager/public",
   "+ui/base/resource/data_pack.h",

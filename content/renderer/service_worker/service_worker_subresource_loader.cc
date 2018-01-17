@@ -25,11 +25,11 @@ namespace content {
 
 namespace {
 
-ResourceResponseHead RewriteServiceWorkerTime(
+network::ResourceResponseHead RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
-    const ResourceResponseHead& response_head) {
-  ResourceResponseHead new_head = response_head;
+    const network::ResourceResponseHead& response_head) {
+  network::ResourceResponseHead new_head = response_head;
   new_head.service_worker_start_time = service_worker_start_time;
   new_head.service_worker_ready_time = service_worker_ready_time;
   return new_head;
@@ -40,8 +40,8 @@ ResourceResponseHead RewriteServiceWorkerTime(
 // connection is closed.
 class HeaderRewritingURLLoaderClient : public mojom::URLLoaderClient {
  public:
-  using RewriteHeaderCallback =
-      base::Callback<ResourceResponseHead(const ResourceResponseHead&)>;
+  using RewriteHeaderCallback = base::Callback<network::ResourceResponseHead(
+      const network::ResourceResponseHead&)>;
 
   static mojom::URLLoaderClientPtr CreateAndBind(
       mojom::URLLoaderClientPtr url_loader_client,
@@ -76,7 +76,7 @@ class HeaderRewritingURLLoaderClient : public mojom::URLLoaderClient {
 
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(url_loader_client_.is_bound());
@@ -85,8 +85,9 @@ class HeaderRewritingURLLoaderClient : public mojom::URLLoaderClient {
         std::move(downloaded_file));
   }
 
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveRedirect(
         redirect_info, rewrite_header_callback_.Run(response_head));

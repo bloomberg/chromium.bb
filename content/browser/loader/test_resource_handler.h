@@ -22,11 +22,14 @@ namespace net {
 class URLRequestStatus;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class ResourceController;
 class ResourceHandler;
-struct ResourceResponse;
 
 // A test version of a ResourceHandler. It returns a configurable buffer in
 // response to OnWillStart. It records what ResourceHandler methods are called,
@@ -45,10 +48,10 @@ class TestResourceHandler : public ResourceHandler {
   // ResourceHandler implementation:
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnWillStart(const GURL& url,
                    std::unique_ptr<ResourceController> controller) override;
@@ -147,7 +150,9 @@ class TestResourceHandler : public ResourceHandler {
   // URL passed to OnResponseStarted, if it was called.
   const GURL& start_url() const { return start_url_; }
 
-  ResourceResponse* resource_response() { return resource_response_.get(); };
+  network::ResourceResponse* resource_response() {
+    return resource_response_.get();
+  };
 
   int total_bytes_downloaded() const { return total_bytes_downloaded_; }
 
@@ -204,7 +209,7 @@ class TestResourceHandler : public ResourceHandler {
   int on_response_completed_called_ = 0;
 
   GURL start_url_;
-  scoped_refptr<ResourceResponse> resource_response_;
+  scoped_refptr<network::ResourceResponse> resource_response_;
   int total_bytes_downloaded_ = 0;
   std::string body_;
   net::URLRequestStatus final_status_ =

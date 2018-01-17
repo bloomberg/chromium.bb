@@ -75,7 +75,7 @@ DownloadResponseHandler::DownloadResponseHandler(
 DownloadResponseHandler::~DownloadResponseHandler() = default;
 
 void DownloadResponseHandler::OnReceiveResponse(
-    const ResourceResponseHead& head,
+    const network::ResourceResponseHead& head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   create_info_ = CreateDownloadCreateInfo(head);
@@ -109,7 +109,7 @@ void DownloadResponseHandler::OnReceiveResponse(
 
 std::unique_ptr<DownloadCreateInfo>
 DownloadResponseHandler::CreateDownloadCreateInfo(
-    const ResourceResponseHead& head) {
+    const network::ResourceResponseHead& head) {
   // TODO(qinmin): instead of using NetLogWithSource, introduce new logging
   // class for download.
   auto create_info = std::make_unique<DownloadCreateInfo>(
@@ -141,7 +141,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
 
 void DownloadResponseHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& head) {
+    const network::ResourceResponseHead& head) {
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
     // middle box. Trigger another interruption so that the DownloadItem can
@@ -198,7 +198,7 @@ void DownloadResponseHandler::OnComplete(
 
   // OnComplete() called without OnReceiveResponse(). This should only
   // happen when the request was aborted.
-  create_info_ = CreateDownloadCreateInfo(ResourceResponseHead());
+  create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
   create_info_->result = reason;
 
   OnResponseStarted(mojom::DownloadStreamHandlePtr());

@@ -448,7 +448,7 @@ class AppCacheRequestHandlerTest
       // status and the response code.
       DCHECK_EQ(net::OK, delegate_.request_status());
     } else {
-      ResourceResponseHead response;
+      network::ResourceResponseHead response;
       response.headers = info.headers;
       request_->AsURLLoaderRequest()->set_response(response);
     }
@@ -461,7 +461,7 @@ class AppCacheRequestHandlerTest
           url_request_.get(), nullptr, info));
       request_->AsURLRequest()->GetURLRequest()->Start();
     } else {
-      ResourceResponseHead response;
+      network::ResourceResponseHead response;
       response.headers = info.headers;
       request_->AsURLLoaderRequest()->set_response(response);
     }

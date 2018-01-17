@@ -9,10 +9,10 @@
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/utils.h"
-#include "content/public/common/resource_response.h"
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace safe_browsing {
 
@@ -67,7 +67,7 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
-    const content::ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called
@@ -86,7 +86,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 
 void BrowserURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const content::ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called

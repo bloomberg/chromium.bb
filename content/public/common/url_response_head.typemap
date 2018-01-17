@@ -3,12 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//content/public/common/url_loader.mojom"
-public_headers = [ "//content/public/common/resource_response.h" ]
+public_headers = [ "//services/network/public/cpp/resource_response.h" ]
 traits_headers = [ "//content/common/resource_messages.h" ]
 deps = [
-  "//content:export",
   "//net:net",
-  "//third_party/WebKit/public:blink_headers",
 ]
 type_mappings =
-    [ "content.mojom.URLResponseHead=content::ResourceResponseHead" ]
+    [ "content.mojom.URLResponseHead=network::ResourceResponseHead" ]

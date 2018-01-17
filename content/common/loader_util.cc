@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_raw_request_headers.h"
@@ -17,6 +16,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -32,7 +32,7 @@ constexpr char kDefaultAcceptHeader[] = "*/*";
 }  //  namespace
 
 bool ShouldSniffContent(net::URLRequest* url_request,
-                        ResourceResponse* response) {
+                        network::ResourceResponse* response) {
   const std::string& mime_type = response->head.mime_type;
 
   std::string content_type_options;

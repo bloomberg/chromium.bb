@@ -59,7 +59,7 @@ class TestRenderFrameHost::NavigationInterceptor
 
   // mojom::FrameNavigationControl:
   void CommitNavigation(
-      const ResourceResponseHead& head,
+      const network::ResourceResponseHead& head,
       const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
@@ -582,7 +582,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
     url_loader->SimulateServerRedirect(redirect_url);
 
   // Simulate the network stack commit.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   response->head.socket_address = socket_address;
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.

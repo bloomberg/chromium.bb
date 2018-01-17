@@ -7,9 +7,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_request.h"
-#include "content/public/common/resource_response.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   void set_request(const network::ResourceRequest& request) {
     request_ = request;
   }
-  void set_response(const ResourceResponseHead& response) {
+  void set_response(const network::ResourceResponseHead& response) {
     response_ = response;
   }
 
@@ -54,7 +54,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
 
  private:
   network::ResourceRequest request_;
-  ResourceResponseHead response_;
+  network::ResourceResponseHead response_;
   base::WeakPtrFactory<AppCacheURLLoaderRequest> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);
 };

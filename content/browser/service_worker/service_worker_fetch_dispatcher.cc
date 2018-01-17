@@ -103,7 +103,7 @@ void NotifyNavigationPreloadRequestSentOnUI(
 
 void NotifyNavigationPreloadResponseReceivedOnUI(
     const GURL& url,
-    const ResourceResponseHead& head,
+    const network::ResourceResponseHead& head,
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -171,7 +171,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
   void OnReceiveResponse(
-      const ResourceResponseHead& head,
+      const network::ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     client_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
@@ -181,7 +181,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
         base::Bind(&NotifyNavigationPreloadResponseReceivedOnUI, url_, head));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override {
+                         const network::ResourceResponseHead& head) override {
     completed_ = true;
     // When the server returns a redirect response, we only send
     // OnReceiveRedirect IPC and don't send OnComplete IPC. The service worker

@@ -3423,7 +3423,7 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 }
 
 void RenderFrameHostImpl::CommitNavigation(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
@@ -3452,7 +3452,7 @@ void RenderFrameHostImpl::CommitNavigation(
   if (common_params.url.SchemeIs(url::kJavaScriptScheme)) {
     DCHECK(!url_loader_client_endpoints && !body);
     GetNavigationControl()->CommitNavigation(
-        ResourceResponseHead(), GURL(), common_params, request_params,
+        network::ResourceResponseHead(), GURL(), common_params, request_params,
         mojom::URLLoaderClientEndpointsPtr(),
         /*subresource_loader_factories=*/base::nullopt,
         /*controller_service_worker=*/nullptr, devtools_navigation_token);
@@ -3473,8 +3473,8 @@ void RenderFrameHostImpl::CommitNavigation(
   }
 
   const GURL body_url = body.get() ? body->GetURL() : GURL();
-  const ResourceResponseHead head = response ?
-      response->head : ResourceResponseHead();
+  const network::ResourceResponseHead head =
+      response ? response->head : network::ResourceResponseHead();
   const bool is_same_document =
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
