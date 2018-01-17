@@ -58,9 +58,8 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   const NGPaintFragment& text_fragment = *line_box_fragment.Children()[0];
 
   EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 3,
+      RootPaintController().GetDisplayItemList(), 2,
       TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
-      TestDisplayItem(root_fragment, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(text_fragment, kForegroundType));
 }
 

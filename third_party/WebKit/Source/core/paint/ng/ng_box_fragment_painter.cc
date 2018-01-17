@@ -21,6 +21,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPhase.h"
 #include "core/paint/ScrollableAreaPainter.h"
+#include "core/paint/ng/ng_box_clipper.h"
 #include "core/paint/ng/ng_fragment_painter.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "core/paint/ng/ng_text_fragment_painter.h"
@@ -112,9 +113,7 @@ void NGBoxFragmentPainter::PaintWithAdjustedOffset(
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    // TODO(layout-dev): Clip using BoxClipper.
-    // BoxClipper box_clipper(layout_block_, info, paint_offset,
-    //                       contents_clip_behavior);
+    NGBoxClipper box_clipper(box_fragment_, info);
     PaintObject(info, paint_offset);
   }
 
@@ -143,8 +142,10 @@ void NGBoxFragmentPainter::PaintObject(const PaintInfo& paint_info,
     // PaintBoxDecorationBackground should be called here but is currently
     // called during the foreground phase instead for all box types, not just
     // for inline flow boxes.
-    // if (is_visible && style.HasBoxDecorationBackground())
-    //  PaintBoxDecorationBackground(paint_info, paint_offset);
+    // The paint phase and inline/block box distinction needs cleanup, but
+    // without this, borders on 'overflow: scroll' are clipped.
+    if (is_visible && style.HasBoxDecorationBackground() && !is_inline_)
+      PaintBoxDecorationBackground(paint_info, paint_offset);
 
     // Record the scroll hit test after the background so background squashing
     // is not affected. Hit test order would be equivalent if this were
@@ -182,7 +183,7 @@ void NGBoxFragmentPainter::PaintObject(const PaintInfo& paint_info,
   // for inline boxes. Split this method into PaintBlock and PaintInline once we
   // can tell the two types of fragments apart or we've eliminated the extra
   // block wrapper fragments.
-  if (paint_info.phase == PaintPhase::kForeground)
+  if (paint_info.phase == PaintPhase::kForeground && is_inline_)
     PaintBoxDecorationBackground(paint_info, paint_offset);
 
   PaintContents(contents_paint_info, paint_offset);
