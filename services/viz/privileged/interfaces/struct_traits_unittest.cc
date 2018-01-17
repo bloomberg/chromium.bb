@@ -40,7 +40,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.show_overdraw_feedback = true;
   input.enable_draw_occlusion = true;
   input.highp_threshold_min = -1;
-  input.disallow_non_exact_resource_reuse = true;
   input.use_skia_renderer = true;
 
   RendererSettings output;
@@ -66,8 +65,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
   EXPECT_EQ(input.enable_draw_occlusion, output.enable_draw_occlusion);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
-  EXPECT_EQ(input.disallow_non_exact_resource_reuse,
-            output.disallow_non_exact_resource_reuse);
   EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);
 }
 

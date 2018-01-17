@@ -2548,11 +2548,11 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   viz::ContextProvider* compositor_context_provider =
       layer_tree_frame_sink_->context_provider();
   if (!compositor_context_provider) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), false, GetTaskRunner(),
-                             viz::ResourceTextureHint::kDefault,
-                             ResourcePool::kDefaultExpirationDelay,
-                             settings_.disallow_non_exact_resource_reuse);
+    // This ResourcePool will vend software resources.
+    *resource_pool = std::make_unique<ResourcePool>(
+        resource_provider_.get(), GetTaskRunner(),
+        ResourcePool::kDefaultExpirationDelay,
+        settings_.disallow_non_exact_resource_reuse);
 
     *raster_buffer_provider =
         BitmapRasterBufferProvider::Create(resource_provider_.get());
@@ -2564,11 +2564,13 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   if (use_gpu_rasterization_) {
     DCHECK(worker_context_provider);
 
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), true, GetTaskRunner(),
-                             viz::ResourceTextureHint::kFramebuffer,
-                             ResourcePool::kDefaultExpirationDelay,
-                             settings_.disallow_non_exact_resource_reuse);
+    // This ResourcePool will vend gpu resources optimized for binding as a
+    // framebuffer for gpu raster.
+    *resource_pool = std::make_unique<ResourcePool>(
+        resource_provider_.get(), GetTaskRunner(),
+        viz::ResourceTextureHint::kFramebuffer,
+        ResourcePool::kDefaultExpirationDelay,
+        settings_.disallow_non_exact_resource_reuse);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2598,7 +2600,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   }
 
   if (use_zero_copy) {
-    *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
+    // This ResourcePool will vend gpu resources backed by gpu memory buffers.
+    *resource_pool = std::make_unique<ResourcePool>(
         resource_provider_.get(), GetTaskRunner(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         ResourcePool::kDefaultExpirationDelay,
@@ -2609,8 +2612,9 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     return;
   }
 
-  *resource_pool = ResourcePool::Create(
-      resource_provider_.get(), true, GetTaskRunner(),
+  // This ResourcePool will vend gpu texture resources.
+  *resource_pool = std::make_unique<ResourcePool>(
+      resource_provider_.get(), GetTaskRunner(),
       viz::ResourceTextureHint::kDefault, ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
 

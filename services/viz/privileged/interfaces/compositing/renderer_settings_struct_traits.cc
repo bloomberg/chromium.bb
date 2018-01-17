@@ -23,8 +23,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->show_overdraw_feedback = data.show_overdraw_feedback();
   out->enable_draw_occlusion = data.enable_draw_occlusion();
   out->highp_threshold_min = data.highp_threshold_min();
-  out->disallow_non_exact_resource_reuse =
-      data.disallow_non_exact_resource_reuse();
   out->slow_down_compositing_scale_factor =
       data.slow_down_compositing_scale_factor();
   out->use_skia_renderer = data.use_skia_renderer();

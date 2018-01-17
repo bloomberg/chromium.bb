@@ -63,11 +63,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.highp_threshold_min;
   }
 
-  static bool disallow_non_exact_resource_reuse(
-      const viz::RendererSettings& input) {
-    return input.disallow_non_exact_resource_reuse;
-  }
-
   static int slow_down_compositing_scale_factor(
       const viz::RendererSettings& input) {
     return input.slow_down_compositing_scale_factor;

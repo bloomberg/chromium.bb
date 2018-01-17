@@ -55,8 +55,6 @@ RendererSettings CreateRendererSettings() {
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   renderer_settings.enable_draw_occlusion =
       command_line->HasSwitch(switches::kEnableDrawOcclusion);
-  renderer_settings.disallow_non_exact_resource_reuse =
-      command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer =

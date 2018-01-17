@@ -70,7 +70,7 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
 }
 
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
-    base::SequencedTaskRunner* task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     LayerTreeResourceProvider* resource_provider,
@@ -89,7 +89,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
       use_partial_raster_(use_partial_raster),
       bytes_scheduled_since_last_flush_(0),
       preferred_tile_format_(preferred_tile_format),
-      staging_pool_(task_runner,
+      staging_pool_(std::move(task_runner),
                     worker_context_provider,
                     resource_provider,
                     use_partial_raster,

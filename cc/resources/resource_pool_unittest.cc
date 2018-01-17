@@ -25,10 +25,10 @@ class ResourcePoolTest : public testing::Test {
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         context_provider_.get(), nullptr);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
-                             viz::ResourceTextureHint::kDefault,
-                             ResourcePool::kDefaultExpirationDelay, false);
+    resource_pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), task_runner_,
+        viz::ResourceTextureHint::kDefault,
+        ResourcePool::kDefaultExpirationDelay, false);
   }
 
  protected:
@@ -157,10 +157,10 @@ TEST_F(ResourcePoolTest, LostResource) {
 TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
-  resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
-                           viz::ResourceTextureHint::kDefault,
-                           base::TimeDelta::FromMilliseconds(10), false);
+  resource_pool_ = std::make_unique<ResourcePool>(
+      resource_provider_.get(), task_runner_,
+      viz::ResourceTextureHint::kDefault, base::TimeDelta::FromMilliseconds(10),
+      false);
 
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
@@ -198,10 +198,10 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
 TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
-  resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
-                           viz::ResourceTextureHint::kDefault,
-                           base::TimeDelta::FromMilliseconds(100), false);
+  resource_pool_ = std::make_unique<ResourcePool>(
+      resource_provider_.get(), task_runner_,
+      viz::ResourceTextureHint::kDefault,
+      base::TimeDelta::FromMilliseconds(100), false);
 
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
@@ -408,10 +408,10 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
   viz::ResourceFormat format = viz::RGBA_8888;
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
-  resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
-                           viz::ResourceTextureHint::kDefault,
-                           base::TimeDelta::FromMilliseconds(100), true);
+  resource_pool_ = std::make_unique<ResourcePool>(
+      resource_provider_.get(), task_runner_,
+      viz::ResourceTextureHint::kDefault,
+      base::TimeDelta::FromMilliseconds(100), true);
 
   // Create unused resource with size 100x100.
   CheckAndReturnResource(

@@ -25,7 +25,7 @@ class StagingBufferPool;
 class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
  public:
   OneCopyRasterBufferProvider(
-      base::SequencedTaskRunner* task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       viz::ContextProvider* compositor_context_provider,
       viz::RasterContextProvider* worker_context_provider,
       LayerTreeResourceProvider* resource_provider,

@@ -36,28 +36,25 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   static constexpr base::TimeDelta kDefaultExpirationDelay =
       base::TimeDelta::FromSeconds(5);
 
-  static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
-      LayerTreeResourceProvider* resource_provider,
-      base::SingleThreadTaskRunner* task_runner,
-      gfx::BufferUsage usage,
-      const base::TimeDelta& expiration_delay,
-      bool disallow_non_exact_reuse) {
-    return base::WrapUnique(new ResourcePool(resource_provider, task_runner,
-                                             usage, expiration_delay,
-                                             disallow_non_exact_reuse));
-  }
+  // Constructor for creating Gpu memory buffer resources.
+  ResourcePool(LayerTreeResourceProvider* resource_provider,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               gfx::BufferUsage usage,
+               const base::TimeDelta& expiration_delay,
+               bool disallow_non_exact_reuse);
 
-  static std::unique_ptr<ResourcePool> Create(
-      LayerTreeResourceProvider* resource_provider,
-      bool gpu_resources,
-      base::SingleThreadTaskRunner* task_runner,
-      viz::ResourceTextureHint hint,
-      const base::TimeDelta& expiration_delay,
-      bool disallow_non_exact_reuse) {
-    return base::WrapUnique(
-        new ResourcePool(resource_provider, gpu_resources, task_runner, hint,
-                         expiration_delay, disallow_non_exact_reuse));
-  }
+  // Constructor for creating standard Gpu resources.
+  ResourcePool(LayerTreeResourceProvider* resource_provider,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               viz::ResourceTextureHint hint,
+               const base::TimeDelta& expiration_delay,
+               bool disallow_non_exact_reuse);
+
+  // Constructor for creating software resources.
+  ResourcePool(LayerTreeResourceProvider* resource_provider,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               const base::TimeDelta& expiration_delay,
+               bool disallow_non_exact_reuse);
 
   ~ResourcePool() override;
 
@@ -111,22 +108,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   bool AllowsNonExactReUseForTesting() const {
     return !disallow_non_exact_reuse_;
   }
-
- protected:
-  // Constructor for creating GPU memory buffer resources.
-  ResourcePool(LayerTreeResourceProvider* resource_provider,
-               base::SingleThreadTaskRunner* task_runner,
-               gfx::BufferUsage usage,
-               const base::TimeDelta& expiration_delay,
-               bool disallow_non_exact_reuse);
-
-  // Constructor for creating standard resources.
-  ResourcePool(LayerTreeResourceProvider* resource_provider,
-               bool gpu_resources,
-               base::SingleThreadTaskRunner* task_runner,
-               viz::ResourceTextureHint hint,
-               const base::TimeDelta& expiration_delay,
-               bool disallow_non_exact_reuse);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourcePoolTest, ReuseResource);

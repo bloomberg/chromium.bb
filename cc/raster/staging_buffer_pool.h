@@ -58,7 +58,7 @@ class CC_EXPORT StagingBufferPool
  public:
   ~StagingBufferPool() final;
 
-  StagingBufferPool(base::SequencedTaskRunner* task_runner,
+  StagingBufferPool(scoped_refptr<base::SequencedTaskRunner> task_runner,
                     viz::RasterContextProvider* worker_context_provider,
                     LayerTreeResourceProvider* resource_provider,
                     bool use_partial_raster,
