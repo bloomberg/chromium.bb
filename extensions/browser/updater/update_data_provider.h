@@ -34,19 +34,12 @@ namespace extensions {
 class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
  public:
   using UpdateClientCallback = ExtensionInstaller::UpdateClientCallback;
-  using InstallCallback = base::OnceCallback<void(
-      content::BrowserContext* context,
-      const std::string& /* extension_id */,
-      const std::string& /* public_key */,
-      const base::FilePath& /* unpacked_dir */,
-      UpdateClientCallback /* update_client_callback */)>;
 
   // We need a browser context to use when retrieving data for a set of
   // extension ids, as well as an install callback for proceeding with
   // installation steps once the UpdateClient has downloaded and unpacked
   // an update for an extension.
-  UpdateDataProvider(content::BrowserContext* browser_context,
-                     InstallCallback install_callback);
+  explicit UpdateDataProvider(content::BrowserContext* browser_context);
 
   // Notify this object that the associated browser context is being shut down
   // the pointer to the context should be dropped and no more work should be
@@ -69,7 +62,6 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
                           UpdateClientCallback update_client_callback);
 
   content::BrowserContext* browser_context_;
-  InstallCallback install_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateDataProvider);
 };
