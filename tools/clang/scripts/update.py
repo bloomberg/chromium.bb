@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -794,9 +794,10 @@ def UpdateClang(args):
       # Make standalone Android toolchain for target_arch.
       toolchain_dir = os.path.join(
           LLVM_BUILD_DIR, 'android-toolchain-' + target_arch)
+      api_level = '21' if target_arch == 'aarch64' else '19'
       RunCommand([
           make_toolchain,
-          '--api=' + ('21' if target_arch == 'aarch64' else '19'),
+          '--api=' + api_level,
           '--force',
           '--install-dir=%s' % toolchain_dir,
           '--stl=libc++',
@@ -816,7 +817,7 @@ def UpdateClang(args):
       if target_arch == 'arm':
         target_triple = 'armv7'
         abi_libs += ';unwind'
-      target_triple += '-linux-androideabi'
+      target_triple += '-linux-android' + api_level
       cflags = ['--target=%s' % target_triple,
                 '--sysroot=%s/sysroot' % toolchain_dir,
                 '-B%s' % toolchain_dir]
