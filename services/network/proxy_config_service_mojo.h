@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
-#define CONTENT_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
+#ifndef SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
+#define SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "content/common/content_export.h"
-#include "content/public/common/network_service.mojom.h"
-#include "content/public/common/proxy_config.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
+#include "services/network/public/interfaces/proxy_config.mojom.h"
 
 namespace net {
 class ProxyConfig;
 }
 
-namespace content {
+namespace network {
 
 // ProxyConfigService that gets its proxy configuration over a Mojo pipe.
-class CONTENT_EXPORT ProxyConfigServiceMojo : public net::ProxyConfigService,
-                                              public mojom::ProxyConfigClient {
+class ProxyConfigServiceMojo : public net::ProxyConfigService,
+                               public mojom::ProxyConfigClient {
  public:
   // |proxy_config_client_request| is the Mojo pipe over which new
   // configurations are received. |initial_proxy_config| is the initial proxy
@@ -60,6 +58,6 @@ class CONTENT_EXPORT ProxyConfigServiceMojo : public net::ProxyConfigService,
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMojo);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_
+#endif  // SERVICES_NETWORK_PROXY_CONFIG_SERVICE_MOJO_H_

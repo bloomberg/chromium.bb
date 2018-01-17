@@ -63,7 +63,7 @@ ProxyConfigMonitor::~ProxyConfigMonitor() {
 
 void ProxyConfigMonitor::AddToNetworkContextParams(
     content::mojom::NetworkContextParams* network_context_params) {
-  content::mojom::ProxyConfigClientPtr proxy_config_client;
+  network::mojom::ProxyConfigClientPtr proxy_config_client;
   network_context_params->proxy_config_client_request =
       mojo::MakeRequest(&proxy_config_client);
   proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
@@ -88,7 +88,7 @@ void ProxyConfigMonitor::OnProxyConfigChanged(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   proxy_config_client_set_.ForAllPtrs(
       [config,
-       availability](content::mojom::ProxyConfigClient* proxy_config_client) {
+       availability](network::mojom::ProxyConfigClient* proxy_config_client) {
         switch (availability) {
           case net::ProxyConfigService::CONFIG_VALID:
             proxy_config_client->OnProxyConfigUpdated(config);

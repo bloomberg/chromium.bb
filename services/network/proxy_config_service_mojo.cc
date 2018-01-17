@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/proxy_config_service_mojo.h"
+#include "services/network/proxy_config_service_mojo.h"
 
-namespace content {
+namespace network {
 
 ProxyConfigServiceMojo::ProxyConfigServiceMojo(
     mojom::ProxyConfigClientRequest proxy_config_client_request,
@@ -64,4 +64,4 @@ void ProxyConfigServiceMojo::OnLazyPoll() {
     proxy_poller_client_->OnLazyProxyConfigPoll();
 }
 
-}  // namespace content
+}  // namespace network

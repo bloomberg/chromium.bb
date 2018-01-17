@@ -8,4 +8,5 @@ typemaps = [
   "//services/network/public/cpp/cookie_manager.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
   "//services/network/public/cpp/network_types.typemap",
+  "//services/network/public/cpp/proxy_config.typemap",
 ]
