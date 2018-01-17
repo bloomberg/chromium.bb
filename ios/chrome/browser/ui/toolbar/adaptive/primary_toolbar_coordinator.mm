@@ -72,6 +72,8 @@
   self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher = self.dispatcher;
+  self.locationBarCoordinator.URLLoader = self.URLLoader;
+  self.locationBarCoordinator.delegate = self.delegate;
   [self.locationBarCoordinator start];
 
   // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
@@ -79,6 +81,8 @@
   _locationBar = std::make_unique<LocationBarControllerImpl>(
       self.locationBarCoordinator.locationBarView, self.browserState, self,
       self.dispatcher);
+  self.locationBarCoordinator.locationBarController = _locationBar.get();
+  _locationBar->SetURLLoader(self.locationBarCoordinator);
   self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
   [self.omniboxPopupCoordinator start];
   // End of TODO(crbug.com/785253):.

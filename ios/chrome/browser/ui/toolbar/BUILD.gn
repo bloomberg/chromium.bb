@@ -115,6 +115,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/ntp",
+    "//ios/chrome/browser/ui/location_bar",
   ]
   libs = [
     "CoreLocation.framework",

@@ -4,15 +4,11 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 
-#import <CoreLocation/CoreLocation.h>
-
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
@@ -54,7 +50,6 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -133,6 +128,8 @@
   self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher = self.dispatcher;
+  self.locationBarCoordinator.URLLoader = self.URLLoader;
+  self.locationBarCoordinator.delegate = self.delegate;
   [self.locationBarCoordinator start];
 
   // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
@@ -140,6 +137,8 @@
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       self.locationBarCoordinator.locationBarView, self.browserState, self,
       self.dispatcher);
+  self.locationBarCoordinator.locationBarController = _locationBar.get();
+  _locationBar->SetURLLoader(self.locationBarCoordinator);
   self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
   [self.omniboxPopupCoordinator start];
   // End of TODO(crbug.com/785253):.
@@ -214,15 +213,9 @@
   return self.toolbarViewController;
 }
 
-- (void)updateOmniboxState {
-  _locationBar->SetShouldShowHintText(
-      [self.delegate toolbarModelIOS]->ShouldDisplayHintText());
-  _locationBar->OnToolbarUpdated();
-}
-
 - (void)updateToolbarState {
   // Updates the omnibox.
-  [self updateOmniboxState];
+  [self.locationBarCoordinator updateOmniboxState];
   // Updates the toolbar buttons.
   if ([self getWebState])
     [self.mediator updateConsumerForWebState:[self getWebState]];
@@ -289,7 +282,9 @@
 
 - (void)navigateToMemexTabSwitcher {
   const GURL memexURL("https://chrome-memex.appspot.com");
-  [self loadGURLFromLocationBar:memexURL transition:ui::PAGE_TRANSITION_LINK];
+  [self.locationBarCoordinator
+      loadGURLFromLocationBar:memexURL
+                   transition:ui::PAGE_TRANSITION_LINK];
 }
 
 // TODO(crbug.com/786940): This protocol should move to the ViewController
@@ -302,36 +297,6 @@
 }
 
 #pragma mark - LocationBarDelegate
-
-- (void)loadGURLFromLocationBar:(const GURL&)url
-                     transition:(ui::PageTransition)transition {
-  if (url.SchemeIs(url::kJavaScriptScheme)) {
-    // Evaluate the URL as JavaScript if its scheme is JavaScript.
-    NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
-        stringByRemovingPercentEncoding];
-    [self.URLLoader loadJavaScriptFromLocationBar:jsToEval];
-  } else {
-    // When opening a URL, force the omnibox to resign first responder.  This
-    // will also close the popup.
-
-    // TODO(crbug.com/785244): Is it ok to call |cancelOmniboxEdit| after
-    // |loadURL|?  It doesn't seem to be causing major problems.  If we call
-    // cancel before load, then any prerendered pages get destroyed before the
-    // call to load.
-    [self.URLLoader loadURL:url
-                   referrer:web::Referrer()
-                 transition:transition
-          rendererInitiated:NO];
-
-    if (google_util::IsGoogleSearchUrl(url)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOmniboxQueryLocationAuthorizationStatusHistogram,
-          [CLLocationManager authorizationStatus],
-          kLocationAuthorizationStatusCount);
-    }
-  }
-  [self cancelOmniboxEdit];
-}
 
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
