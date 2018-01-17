@@ -544,12 +544,12 @@ TEST_F(PaintArtifactCompositorTest, OneClip) {
 TEST_F(PaintArtifactCompositorTest, NestedClips) {
   scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(100, 100, 700, 700),
+      FloatRoundedRect(100, 100, 700, 700), nullptr,
       CompositingReason::kOverflowScrollingTouch);
-  scoped_refptr<ClipPaintPropertyNode> clip2 =
-      ClipPaintPropertyNode::Create(clip1, TransformPaintPropertyNode::Root(),
-                                    FloatRoundedRect(200, 200, 700, 700),
-                                    CompositingReason::kOverflowScrollingTouch);
+  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+      clip1, TransformPaintPropertyNode::Root(),
+      FloatRoundedRect(200, 200, 700, 700), nullptr,
+      CompositingReason::kOverflowScrollingTouch);
 
   TestPaintArtifact artifact;
   artifact
@@ -2590,7 +2590,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2646,7 +2647,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2717,7 +2719,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2806,7 +2809,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c1, ColorFilter(), CompositorFilterOperations(), 1,
@@ -2878,7 +2882,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   CompositorFilterOperations non_trivial_filter;
   non_trivial_filter.AppendBlurFilter(5);
@@ -2984,7 +2989,8 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
+      c0(), t0(), rrect, nullptr,
+      CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c1, ColorFilter(), CompositorFilterOperations(), 1,

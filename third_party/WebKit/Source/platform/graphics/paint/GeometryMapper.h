@@ -7,6 +7,7 @@
 
 #include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Optional.h"
 
@@ -64,7 +65,8 @@ class PLATFORM_EXPORT GeometryMapper {
   // in the presences of transforms.
   static FloatClipRect LocalToAncestorClipRect(
       const PropertyTreeState& local_state,
-      const PropertyTreeState& ancestor_state);
+      const PropertyTreeState& ancestor_state,
+      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize);
 
   // Maps from a rect in |local_state| to its visual rect in |ancestor_state|.
   // This is computed by multiplying the rect by its combined transform between
@@ -82,9 +84,11 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static void LocalToAncestorVisualRect(const PropertyTreeState& local_state,
-                                        const PropertyTreeState& ancestor_state,
-                                        FloatClipRect& mapping_rect);
+  static void LocalToAncestorVisualRect(
+      const PropertyTreeState& local_state,
+      const PropertyTreeState& ancestor_state,
+      FloatClipRect& mapping_rect,
+      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize);
 
   static void ClearCache();
 
@@ -103,18 +107,21 @@ class PLATFORM_EXPORT GeometryMapper {
       const ClipPaintPropertyNode* descendant,
       const ClipPaintPropertyNode* ancestor_clip,
       const TransformPaintPropertyNode* ancestor_transform,
+      OverlayScrollbarClipBehavior,
       bool& success);
 
   static void LocalToAncestorVisualRectInternal(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
+      OverlayScrollbarClipBehavior,
       bool& success);
 
   static void SlowLocalToAncestorVisualRectWithEffects(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
+      OverlayScrollbarClipBehavior,
       bool& success);
 
   friend class GeometryMapperTest;

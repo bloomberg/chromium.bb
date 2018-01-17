@@ -771,6 +771,51 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorChild) {
   EXPECT_EQ(LayoutRect(0, 0, 500, 500), layer_bounds);
 }
 
+TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorChildScrollBetween) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id='parent' style='position:absolute; width: 200px; height: 300px;
+        overflow: scroll;'>
+      <div id='child' style='position: relative; width: 500px;
+           height: 500px'>
+      </div>
+    </div>
+  )HTML");
+
+  Element* parent = GetDocument().getElementById("parent");
+  PaintLayer* root_paint_layer = parent->GetLayoutObject()->View()->Layer();
+
+  Element* child = GetDocument().getElementById("child");
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+
+  ClipRectsContext context(root_paint_layer, kUncachedClipRects,
+                           kExcludeOverlayScrollbarSizeForHitTesting);
+
+  LayoutRect layer_bounds;
+  ClipRect background_rect, foreground_rect;
+  child_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
+      .CalculateRects(context,
+                      &child_paint_layer->GetLayoutObject().FirstFragment(),
+                      LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
+                      background_rect, foreground_rect);
+
+  // The background and foreground rect are clipped by the scrollbar size.
+  EXPECT_EQ(LayoutRect(8, 8, 193, 293), background_rect.Rect());
+  EXPECT_EQ(LayoutRect(8, 8, 193, 293), foreground_rect.Rect());
+  EXPECT_EQ(LayoutRect(8, 8, 500, 500), layer_bounds);
+
+  child_paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .CalculateRects(context, nullptr,
+                      LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
+                      background_rect, foreground_rect);
+
+  // The background and foreground rect are clipped by the scrollbar size.
+  EXPECT_EQ(LayoutRect(8, 8, 193, 293), background_rect.Rect());
+  EXPECT_EQ(LayoutRect(8, 8, 193, 293), foreground_rect.Rect());
+  EXPECT_EQ(LayoutRect(8, 8, 500, 500), layer_bounds);
+}
+
 TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorParent) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

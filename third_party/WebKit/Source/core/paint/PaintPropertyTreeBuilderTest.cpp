@@ -272,6 +272,34 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
                           frame_view->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbars) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller'
+         style='width: 100px; height: 100px; overflow: scroll;
+                 border: 10px solid blue'>
+      <div style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
+  CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
+
+  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* overflow_clip = properties->OverflowClip();
+
+  EXPECT_EQ(FrameContentClip(), overflow_clip->Parent());
+  EXPECT_EQ(properties->PaintOffsetTranslation(),
+            overflow_clip->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(10, 10, 100, 100), overflow_clip->ClipRect());
+
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
+  EXPECT_TRUE(paint_layer->GetScrollableArea()
+                  ->VerticalScrollbar()
+                  ->IsOverlayScrollbar());
+
+  EXPECT_EQ(FloatRoundedRect(10, 10, 93, 93),
+            overflow_clip->ClipRectExcludingOverlayScrollbars());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>

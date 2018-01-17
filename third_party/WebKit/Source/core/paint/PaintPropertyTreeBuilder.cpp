@@ -1053,16 +1053,22 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
     bool clip_added_or_removed;
     if (NeedsOverflowClip(object_)) {
       FloatRoundedRect clip_rect;
+      FloatRoundedRect clip_rect_excluding_overlay_scrollbars;
       if (object_.IsBox()) {
         clip_rect =
             FloatRoundedRect(FloatRect(ToLayoutBox(object_).OverflowClipRect(
                 context_.current.paint_offset)));
+        clip_rect_excluding_overlay_scrollbars =
+            FloatRoundedRect(FloatRect(ToLayoutBox(object_).OverflowClipRect(
+                context_.current.paint_offset,
+                kExcludeOverlayScrollbarSizeForHitTesting)));
       } else {
         DCHECK(object_.IsSVGViewportContainer());
         const auto& viewport_container = ToLayoutSVGViewportContainer(object_);
         clip_rect = FloatRoundedRect(
             viewport_container.LocalToSVGParentTransform().Inverse().MapRect(
                 viewport_container.Viewport()));
+        clip_rect_excluding_overlay_scrollbars = clip_rect;
       }
 
       if (!full_context_.clip_changed && properties_->OverflowClip() &&
@@ -1070,7 +1076,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         full_context_.clip_changed = true;
 
       auto result = properties_->UpdateOverflowClip(
-          context_.current.clip, context_.current.transform, clip_rect);
+          context_.current.clip, context_.current.transform, clip_rect,
+          &clip_rect_excluding_overlay_scrollbars);
       clip_added_or_removed = result.NewNodeCreated();
     } else {
       clip_added_or_removed = properties_->ClearOverflowClip();

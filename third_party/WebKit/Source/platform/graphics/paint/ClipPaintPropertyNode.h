@@ -35,26 +35,39 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       scoped_refptr<const ClipPaintPropertyNode> parent,
       scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
+      const FloatRoundedRect* clip_rect_excluding_overlay_scrollbars = nullptr,
       CompositingReasons direct_compositing_reasons =
           CompositingReason::kNone) {
     return base::AdoptRef(new ClipPaintPropertyNode(
         std::move(parent), std::move(local_transform_space), clip_rect,
+        clip_rect_excluding_overlay_scrollbars
+            ? *clip_rect_excluding_overlay_scrollbars
+            : clip_rect,
         direct_compositing_reasons));
   }
 
   bool Update(
       scoped_refptr<const ClipPaintPropertyNode> parent,
       scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
-      const FloatRoundedRect& clip_rect) {
+      const FloatRoundedRect& clip_rect,
+      const FloatRoundedRect* clip_rect_excluding_overlay_scrollbars =
+          nullptr) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
     if (local_transform_space == local_transform_space_ &&
-        clip_rect == clip_rect_)
+        clip_rect == clip_rect_ &&
+        (!clip_rect_excluding_overlay_scrollbars ||
+         *clip_rect_excluding_overlay_scrollbars ==
+             clip_rect_excluding_overlay_scrollbars_))
       return parent_changed;
 
     SetChanged();
     local_transform_space_ = std::move(local_transform_space);
     clip_rect_ = clip_rect;
+    clip_rect_excluding_overlay_scrollbars_ =
+        clip_rect_excluding_overlay_scrollbars
+            ? *clip_rect_excluding_overlay_scrollbars
+            : clip_rect;
     return true;
   }
 
@@ -62,6 +75,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return local_transform_space_.get();
   }
   const FloatRoundedRect& ClipRect() const { return clip_rect_; }
+  const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {
+    return clip_rect_excluding_overlay_scrollbars_;
+  }
 
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
@@ -69,7 +85,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   scoped_refptr<ClipPaintPropertyNode> Clone() const {
     return base::AdoptRef(
         new ClipPaintPropertyNode(Parent(), local_transform_space_, clip_rect_,
-                                  direct_compositing_reasons_));
+                                  clip_rect_, direct_compositing_reasons_));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -95,10 +111,13 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       scoped_refptr<const ClipPaintPropertyNode> parent,
       scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
+      const FloatRoundedRect& clip_rect_excluding_overlay_scrollbars,
       CompositingReasons direct_compositing_reasons)
       : PaintPropertyNode(std::move(parent)),
         local_transform_space_(std::move(local_transform_space)),
         clip_rect_(clip_rect),
+        clip_rect_excluding_overlay_scrollbars_(
+            clip_rect_excluding_overlay_scrollbars),
         direct_compositing_reasons_(direct_compositing_reasons) {}
 
   // For access to GetClipCache();
@@ -117,6 +136,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
   scoped_refptr<const TransformPaintPropertyNode> local_transform_space_;
   FloatRoundedRect clip_rect_;
+  FloatRoundedRect clip_rect_excluding_overlay_scrollbars_;
   CompositingReasons direct_compositing_reasons_;
 
   std::unique_ptr<GeometryMapperClipCache> geometry_mapper_clip_cache_;
