@@ -2436,6 +2436,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
         Refresh
       </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_TITLE" desc="The title for a section containing a list of article suggestions based on the user's current webpage. The title tells users that the list contains articles viewed by people who also viewed the current webpage.">
+        People also viewed
+      </message>
 
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">

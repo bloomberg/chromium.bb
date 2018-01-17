@@ -25455,6 +25455,7 @@ from previous Chrome versions.
   <int value="-1171900360" label="EnablePreventLayerSquashing:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
+  <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
   <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
@@ -26338,6 +26339,7 @@ from previous Chrome versions.
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
   <int value="1215531732" label="OmniboxUIExperiments:disabled"/>
   <int value="1217907443" label="spurious-power-button-keyboard-accel"/>
+  <int value="1219317631" label="ContextualSuggestionsAboveArticles:disabled"/>
   <int value="1219628795" label="PrintScaling:disabled"/>
   <int value="1219826373" label="ServiceWorkerNavigationPreload:enabled"/>
   <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>

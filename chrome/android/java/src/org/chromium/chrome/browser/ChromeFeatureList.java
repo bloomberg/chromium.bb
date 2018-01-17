@@ -198,6 +198,8 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
+    public static final String CONTEXTUAL_SUGGESTIONS_ABOVE_ARTICLES =
+            "ContextualSuggestionsAboveArticles";
     public static final String CONTEXTUAL_SUGGESTIONS_CAROUSEL = "ContextualSuggestionsCarousel";
     public static final String COPYLESS_PASTE = "CopylessPaste";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
