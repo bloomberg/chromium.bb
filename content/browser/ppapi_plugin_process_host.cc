@@ -371,6 +371,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #endif
 #if defined(USE_AURA)
       switches::kMus,
+      switches::kMusHostingViz,
 #endif
       switches::kNoSandbox,
       switches::kPpapiStartupDialog,
