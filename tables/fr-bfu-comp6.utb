@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-30
+#-updated: 2018-01-17
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -51,6 +51,7 @@ display " 2356
 display ! 235
 display - 36
 display . 256
+display ? 26
 display / 34
 display * 35
 display | 456
@@ -66,7 +67,6 @@ display ó 346
 #display [ 12356
 #display ] 23456
 
-
 space \s 0      	# blank 32
 space \t 9 tab    # 9
 space \x001B 1b   # escape
@@ -77,59 +77,6 @@ space \x00A0 a    # no-break space
 space \x007f 0
 
 include latinLetterDef6Dots.uti
-
-uplow \x00c7\x00e7  12346 # c cédille (Çç)
-uplow \x00c6\x00E6 345     #*ae
-uplow \x0152\x0153    246 # oe liés (Œœ)
-uplow \x00C3\x00E3 5-26-1		a tilde
-noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
-
-uplow \x00c0\x00e0  12356 # a accent grave (Àà)
-uplow \x00c8\x00e8   2346 # e accent grave (Èè)
-uplow \x00d9\x00f9  23456 # u accent grave (Ùù)
-noback uplow \x00cc\x00ec  34 # i accent grave (Ìì)
-noback uplow \x00d2\x00f2 346 # o accent grave (Òò)
-
-uplow \x00c2\x00e2     16 # a accent circonflexe (Ââ)
-uplow \x00ca\x00ea    126 # e accent circonflexe (Êê)
-uplow \x00ce\x00ee    146 # i accent circonflexe (Îî)
-uplow \x00d4\x00f4   1456 # o accent circonflexe (Ôô)
-uplow \x00db\x00fb    156 # u accent circonflexe (Ûû)
-
-uplow \x00c1\x00e1  12356 # a accent aigu (Áá)
-uplow \x00c9\x00e9 123456 # e accent aigu (Éé)
-uplow \x00d3\x00f3    346 # o accent aigu (Óó)
-uplow \x00da\x00fa  23456 # u accent aigu (Úú)
-noback uplow \x00cd\x00ed 34 # i accent aigu (Íí)
-
-uplow \x00c4\x00e4    345 # a tréma (Ää)
-uplow \x00cb\x00eb   1246 # e tréma (Ëë)
-uplow \x00cf\x00ef  12456 # i tréma (Ïï)
-uplow \x00d6\x00f6    246 # o tréma (Öö)
-uplow \x00dc\x00fc   1256 # u tréma (Üü)
-
-uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above
-letter \x00d8 3456
-
-digit 0 3456
-litdigit        0      3456
-comp6 0 3456
-
-include digits6DotsPlusDot6.uti
-include litdigits6DotsPlusDot6.uti
-
-noback math + 235  # plus
-math - 36
-math * 35   # astérisque
-math / 34   # barre oblique
-math = 2356 # égal
-#math ( 236
-#math ) 356
-
-
-math \x00F7 25     # divisé par
-math \x003c 5-126  # inférieur à
-math \x003e 5-345  # supérieur à
 
 punctuation , 2    # virgule
 postpunc , 2
@@ -163,6 +110,51 @@ punctuation { 6-6-236	#	accolade de gauche
 prepunc { 6-6-236	#	accolade de gauche
 punctuation } 356-3-3	#	accolade de droite
 postpunc } 356-3-3	#	accolade de droite
+
+uplow \x00c7\x00e7  12346 # c cédille (Çç)
+uplow \x00c6\x00E6 345     #*ae
+uplow \x0152\x0153    246 # oe liés (Œœ)
+uplow \x00C3\x00E3 5-26-1		a tilde
+noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
+
+uplow \x00c0\x00e0  12356 # a accent grave (Àà)
+uplow \x00c8\x00e8   2346 # e accent grave (Èè)
+uplow \x00d9\x00f9  23456 # u accent grave (Ùù)
+noback uplow \x00cc\x00ec  34 # i accent grave (Ìì)
+noback uplow \x00d2\x00f2 346 # o accent grave (Òò)
+
+uplow \x00c2\x00e2     16 # a accent circonflexe (Ââ)
+uplow \x00ca\x00ea    126 # e accent circonflexe (Êê)
+uplow \x00ce\x00ee    146 # i accent circonflexe (Îî)
+uplow \x00d4\x00f4   1456 # o accent circonflexe (Ôô)
+uplow \x00db\x00fb    156 # u accent circonflexe (Ûû)
+
+uplow \x00c1\x00e1  12356 # a accent aigu (Áá)
+uplow \x00c9\x00e9 123456 # e accent aigu (Éé)
+uplow \x00d3\x00f3    346 # o accent aigu (Óó)
+uplow \x00da\x00fa  23456 # u accent aigu (Úú)
+noback uplow \x00cd\x00ed 34 # i accent aigu (Íí)
+
+uplow \x00c4\x00e4    345 # a tréma (Ää)
+uplow \x00cb\x00eb   1246 # e tréma (Ëë)
+uplow \x00cf\x00ef  12456 # i tréma (Ïï)
+uplow \x00d6\x00f6    246 # o tréma (Öö)
+uplow \x00dc\x00fc   1256 # u tréma (Üü)
+
+uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above
+uplow \x00c6\x00E6 345     #*ae
+
+noback math + 235  # plus
+math - 36
+math * 35   # astérisque
+math / 34   # barre oblique
+math = 2356 # égal
+math ( 236
+math ) 356
+
+math \x00F7 25     # divisé par
+math \x003c 5-126  # inférieur à
+math \x003e 5-345  # supérieur à
 
 # guillemets
 punctuation \x00AB 2356     # right-pointing double angle quotation mark
@@ -199,7 +191,6 @@ noback sign \x2015 36-36 # horizontal bar (quotation dash long dash introducing 
 sign \xFE58 36           # small em dash
 sign \xFE63 36           # small hyphen-minus
 sign \xFF0D 36           # fullwidth hyphen-minus
-
 word — 456-36
 word – 36-36
 
@@ -256,8 +247,8 @@ sign \x00D7 5-35    # multiplication sign
 sign \x00D8 3456    # latin capital letter o with stroke
 sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
-uplow \x00c6\x00E6 345     #*ae
 sign \x00F0 12      # latin small letter eth
+sign \x00d8 3456
 sign \x00F8 56      # latin small letter o with stroke
 sign \x00FE 245     # latin small letter thorn
 sign © 5-14				  # copyright
@@ -281,6 +272,12 @@ sign ½ 16-34-126    # un demi
 sign ¾ 146-34-1456  # trois quarts
 sign \x007E 5-26  # 126 ~    tilde
 
+digit 0 3456
+litdigit        0      3456
+comp6 0 3456
+
+include digits6DotsPlusDot6.uti
+include litdigits6DotsPlusDot6.uti
 # unicode braille
 include braille-patterns.cti
 # other signs: 8 and 6 dots
@@ -289,9 +286,7 @@ include fr-bfu-comp68.cti
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=[]
-#numericnocontchars âêîôûëïüœ
 numericnocontchars 0123456789
-
 
 capsletter 46
 begcaps 46-46-46
@@ -334,5 +329,5 @@ midword = 6-2356
 endword + 6-235
 endword = 6-2356
 
-nofor pass2 [@6-235]$d @6-235-6
-nofor pass2 [@6-2356]$d @6-2356-6
+#nofor pass2 [@6-235]$d @6-235-6
+#nofor pass2 [@6-2356]$d @6-2356-6

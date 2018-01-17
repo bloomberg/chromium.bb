@@ -82,7 +82,7 @@ tests:
     - ["quetschier", "⠟⠑⠞⠎⠷⠊⠦"]
   # ⠺ -> om, tt (entre voyelles)
     - ["omnipotence", "⠺⠝⠊⠏⠕⠞⠢⠉⠑"]
-    - ["réescompte", "⠗⠿⠑⠎⠉⠺⠏⠞⠑"]
+    - ["réescompte", "⠗⠿⠱⠉⠺⠏⠞⠑"]
     - ["pronom", "⠖⠝⠕⠍"]
     - ["rémittence", "⠗⠿⠍⠊⠺⠢⠉⠑"]
     - ["désembattre", "⠙⠿⠎⠜⠃⠁⠞⠴⠑"]
@@ -1095,7 +1095,7 @@ tests:
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: backward}
 tests:
-    - ["⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠨⠺ ⠨⠁⠠⠡⠱⠫⠫ ⠰⠨⠉⠠⠣⠰⠨⠊",
+    - ["⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠨⠺ ⠨⠁⠠⠡⠱⠫⠫ ⠰⠨⠉⠠2⠰⠨⠊",
        "A1 b5 1200W A1566 C2I"]
     - ["⠰⠍⠲⠰⠞⠲⠰⠎⠲", "m.t.s."]
     - ["⠠2⠤2⠶0", "2-2=0"]
@@ -1233,7 +1233,7 @@ tests:
     - ["⠟⠑⠞⠎⠷⠊⠦", "quetschier"]
   # ⠺ -> om, tt (entre voyelles)
     - ["⠺⠝⠊⠏⠕⠞⠢⠉⠑", "omnipotence"]
-    - ["⠗⠿⠑⠎⠉⠺⠏⠞⠑", "réescompte"]
+    - ["⠗⠿⠱⠉⠺⠏⠞⠑", "réescompte"]
     - ["⠖⠝⠕⠍", "pronom"]
     - ["⠗⠿⠍⠊⠺⠢⠉⠑", "rémittence"]
     - ["⠙⠿⠎⠜⠃⠁⠞⠴⠑", "désembattre"]
