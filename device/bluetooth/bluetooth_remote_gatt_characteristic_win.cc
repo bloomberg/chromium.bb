@@ -334,6 +334,7 @@ void BluetoothRemoteGattCharacteristicWin::
         std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
         HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+  characteristic_value_read_or_write_in_progress_ = false;
 
   std::pair<ValueCallback, ErrorCallback> callbacks;
   callbacks.swap(read_characteristic_value_callbacks_);
@@ -346,12 +347,12 @@ void BluetoothRemoteGattCharacteristicWin::
 
     callbacks.first.Run(characteristic_value_);
   }
-  characteristic_value_read_or_write_in_progress_ = false;
 }
 
 void BluetoothRemoteGattCharacteristicWin::
     OnWriteRemoteCharacteristicValueCallback(HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+  characteristic_value_read_or_write_in_progress_ = false;
 
   std::pair<base::Closure, ErrorCallback> callbacks;
   callbacks.swap(write_characteristic_value_callbacks_);
@@ -360,7 +361,6 @@ void BluetoothRemoteGattCharacteristicWin::
   } else {
     callbacks.first.Run();
   }
-  characteristic_value_read_or_write_in_progress_ = false;
 }
 
 BluetoothRemoteGattService::GattErrorCode
