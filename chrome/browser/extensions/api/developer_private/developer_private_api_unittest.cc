@@ -16,6 +16,8 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -130,6 +133,8 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   // Uses ASSERT_* inside - callers should use ASSERT_NO_FATAL_FAILURE.
   void GetProfileConfiguration(
       std::unique_ptr<api::developer_private::ProfileInfo>* profile_info);
+
+  virtual bool ProfileIsSupervised() const { return false; }
 
   Browser* browser() { return browser_.get(); }
 
@@ -320,6 +325,7 @@ void DeveloperPrivateApiUnitTest::SetUp() {
   // - see BuildTestingProfile in extension_service_test_base.cc.
   ExtensionServiceInitParams init_params = CreateDefaultInitParams();
   init_params.pref_file.clear();
+  init_params.profile_is_supervised = ProfileIsSupervised();
   InitializeExtensionService(init_params);
 
   browser_window_.reset(new TestBrowserWindow());
@@ -334,6 +340,10 @@ void DeveloperPrivateApiUnitTest::SetUp() {
 
   DeveloperPrivateAPI::GetFactoryInstance()->SetTestingFactory(
       profile(), &BuildAPI);
+
+  // Loading unpacked extensions through the developerPrivate API requires
+  // developer mode to be enabled.
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 }
 
 void DeveloperPrivateApiUnitTest::TearDown() {
@@ -1149,18 +1159,98 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevModeDisabledPolicy) {
 // Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
 // (without DeveloperToolsDisabled policy).
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevMode) {
+  UpdateProfileConfigurationDevMode(false);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
+  {
+    std::unique_ptr<api::developer_private::ProfileInfo> profile_info;
+    ASSERT_NO_FATAL_FAILURE(GetProfileConfiguration(&profile_info));
+    EXPECT_FALSE(profile_info->in_developer_mode);
+    EXPECT_FALSE(profile_info->is_developer_mode_controlled_by_policy);
+  }
 
   UpdateProfileConfigurationDevMode(true);
-
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
+  {
+    std::unique_ptr<api::developer_private::ProfileInfo> profile_info;
+    ASSERT_NO_FATAL_FAILURE(GetProfileConfiguration(&profile_info));
+    EXPECT_TRUE(profile_info->in_developer_mode);
+    EXPECT_FALSE(profile_info->is_developer_mode_controlled_by_policy);
+  }
+}
 
-  std::unique_ptr<api::developer_private::ProfileInfo> profile_info;
-  ASSERT_NO_FATAL_FAILURE(GetProfileConfiguration(&profile_info));
-  EXPECT_TRUE(profile_info->in_developer_mode);
-  EXPECT_FALSE(profile_info->is_developer_mode_controlled_by_policy);
+TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithoutDevMode) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  base::FilePath path = data_dir().AppendASCII("good_unpacked");
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]", browser());
+  EXPECT_THAT(error, testing::HasSubstr("developer mode"));
+  prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  base::FilePath path = data_dir().AppendASCII("good_unpacked");
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+  {
+    ExtensionManagementPrefUpdater<sync_preferences::TestingPrefServiceSyncable>
+        pref_updater(testing_profile()->GetTestingPrefService());
+    pref_updater.SetBlacklistedByDefault(true);
+  }
+  EXPECT_TRUE(
+      ExtensionManagementFactory::GetForBrowserContext(browser_context())
+          ->BlacklistedByDefault());
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]", browser());
+  EXPECT_THAT(error, testing::HasSubstr("policy"));
+}
+
+class DeveloperPrivateApiSupervisedUserUnitTest
+    : public DeveloperPrivateApiUnitTest {
+ public:
+  DeveloperPrivateApiSupervisedUserUnitTest() = default;
+  ~DeveloperPrivateApiSupervisedUserUnitTest() override = default;
+
+  bool ProfileIsSupervised() const override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateApiSupervisedUserUnitTest);
+};
+
+// Tests trying to call loadUnpacked when the profile shouldn't be allowed to.
+TEST_F(DeveloperPrivateApiSupervisedUserUnitTest,
+       LoadUnpackedFailsForSupervisedUsers) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  base::FilePath path = data_dir().AppendASCII("good_unpacked");
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+  ASSERT_TRUE(profile()->IsSupervised());
+
+  scoped_refptr<UIThreadExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      function.get(), "[]", browser());
+  EXPECT_THAT(error, testing::HasSubstr("Supervised"));
 }
 
 }  // namespace extensions
