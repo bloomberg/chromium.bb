@@ -79,9 +79,6 @@ class CC_EXPORT ResourceProvider
 
   size_t num_resources() const { return resources_.size(); }
 
-  // Checks whether a resource is in use by a consumer.
-  bool InUseByConsumer(viz::ResourceId id);
-
   bool IsLost(viz::ResourceId id);
 
   void LoseResourceForTesting(viz::ResourceId id);

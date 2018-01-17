@@ -87,12 +87,6 @@ ResourceProvider::~ResourceProvider() {
 #endif  // DCHECK_IS_ON()
 }
 
-bool ResourceProvider::InUseByConsumer(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
-         resource->lost;
-}
-
 bool ResourceProvider::IsLost(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
   return resource->lost;

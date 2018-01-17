@@ -1046,6 +1046,17 @@ void LayerTreeResourceProvider::ValidateResource(viz::ResourceId id) const {
          imported_resources_.find(id) != imported_resources_.end());
 }
 
+bool LayerTreeResourceProvider::InUseByConsumer(viz::ResourceId id) {
+  auto it = imported_resources_.find(id);
+  if (it != imported_resources_.end()) {
+    ImportedResource& imported = it->second;
+    return imported.exported_count > 0 || imported.returned_lost;
+  }
+
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->exported_count > 0 || resource->lost;
+}
+
 bool LayerTreeResourceProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {

@@ -470,6 +470,11 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
   return target;
 }
 
+bool DisplayResourceProvider::InUse(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->lock_for_read_count > 0 || resource->lost;
+}
+
 GLint DisplayResourceProvider::GetActiveTextureUnit(
     gpu::gles2::GLES2Interface* gl) {
   GLint active_unit = 0;

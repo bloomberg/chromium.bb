@@ -739,9 +739,9 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_NE(0u, mapped_id1);
   EXPECT_NE(0u, mapped_id2);
   EXPECT_NE(0u, mapped_id3);
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(mapped_id1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(mapped_id2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(mapped_id3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_id1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_id2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_id3));
 
   uint8_t result[4] = { 0 };
   GetResourcePixels(
@@ -1462,8 +1462,8 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   viz::ResourceId mapped_id2 = resource_map[id2];
   EXPECT_NE(0u, mapped_id1);
   EXPECT_NE(0u, mapped_id2);
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(mapped_id1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(mapped_id2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_id1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_id2));
 
   uint8_t result[4] = { 0 };
   GetResourcePixels(

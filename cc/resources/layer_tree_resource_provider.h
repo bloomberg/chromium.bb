@@ -98,6 +98,9 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   // checks.
   void ValidateResource(viz::ResourceId id) const;
 
+  // Checks whether a resource is in use by a consumer.
+  bool InUseByConsumer(viz::ResourceId id);
+
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(viz::ResourceId id);
 
