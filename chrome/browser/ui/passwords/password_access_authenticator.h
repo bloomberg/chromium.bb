@@ -38,6 +38,11 @@ class PasswordAccessAuthenticator {
   // seconds.
   bool EnsureUserIsAuthenticated();
 
+  // Presents the reauthentication challenge to the user and returns whether
+  // the user passed the challenge. This call is guaranteed to present the
+  // challenge to the user.
+  bool ForceUserReauthentication();
+
   // Use this in tests to mock the OS-level reauthentication.
   void SetOsReauthCallForTesting(
       base::RepeatingCallback<bool()> os_reauth_call);

@@ -32,6 +32,10 @@ bool PasswordAccessAuthenticator::EnsureUserIsAuthenticated() {
     return true;
   }
 
+  return ForceUserReauthentication();
+}
+
+bool PasswordAccessAuthenticator::ForceUserReauthentication() {
   bool authenticated = os_reauth_call_.Run();
   if (authenticated)
     last_authentication_time_ = clock_->Now();
