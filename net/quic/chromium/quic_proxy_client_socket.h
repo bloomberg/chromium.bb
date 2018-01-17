@@ -35,7 +35,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
       const NetLogWithSource& net_log,
       HttpAuthController* auth_controller);
 
-  /// On destruction Disconnect() is called.
+  // On destruction Disconnect() is called.
   ~QuicProxyClientSocket() override;
 
   // ProxyClientSocket methods:
@@ -125,6 +125,8 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   IOBuffer* read_buf_;
   // Stores the callback for Write().
   CompletionCallback write_callback_;
+  // Stores the write buffer length for Write().
+  int write_buf_len_;
 
   // CONNECT request and response.
   HttpRequestInfo request_;
