@@ -180,6 +180,10 @@ class ScreenLocker : public AuthStatusConsumer,
   // Returns the tester
   static test::ScreenLockerTester* GetTester();
 
+  // Saves sync password hash and salt to user profile prefs based on
+  // |user_context|.
+  void SaveSyncPasswordHash(const UserContext& user_context);
+
  private:
   friend class base::DeleteHelper<ScreenLocker>;
   friend class test::ScreenLockerTester;

@@ -52,6 +52,7 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
+    "//components/password_manager/public/interfaces",
     "//components/proximity_auth/public/interfaces",
     "//components/signin/public/interfaces",
     "//components/sync/mojo:interfaces",

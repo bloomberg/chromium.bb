@@ -15,6 +15,7 @@ namespace password_manager {
 
 struct SyncPasswordData {
   SyncPasswordData() = default;
+  SyncPasswordData(const SyncPasswordData& other) = default;
   SyncPasswordData(const base::string16& password, bool force_update);
   bool MatchesPassword(const base::string16& password);
 

@@ -118,6 +118,7 @@ bool LoginDisplayHostViews::IsVoiceInteractionOobe() {
 void LoginDisplayHostViews::HandleAuthenticateUser(
     const AccountId& account_id,
     const std::string& hashed_password,
+    const password_manager::SyncPasswordData& sync_password_data,
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
   DCHECK(!authenticated_by_pin);
@@ -129,6 +130,7 @@ void LoginDisplayHostViews::HandleAuthenticateUser(
   UserContext user_context(account_id);
   user_context.SetKey(Key(chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                           std::string(), hashed_password));
+  user_context.SetSyncPasswordData(sync_password_data);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
     user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
 

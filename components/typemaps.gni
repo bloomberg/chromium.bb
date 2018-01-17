@@ -9,6 +9,7 @@ typemaps = [
   "//components/leveldb/leveldb.typemap",
   "//components/nacl/common/nacl.typemap",
   "//components/password_manager/content/common/credential_manager.typemap",
+  "//components/password_manager/public/interfaces/sync_password_data.typemap",
   "//components/signin/public/interfaces/account_id.typemap",
   "//components/spellcheck/common/spellcheck.typemap",
   "//components/translate/content/common/translate.typemap",
