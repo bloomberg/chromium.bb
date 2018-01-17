@@ -115,8 +115,7 @@ class CORE_EXPORT RenderedPosition {
 
   void GetLocalSelectionEndpoints(bool selection_start,
                                   LayoutPoint& edge_top_in_layer,
-                                  LayoutPoint& edge_bottom_in_layer,
-                                  bool& is_text_direction_rtl) const;
+                                  LayoutPoint& edge_bottom_in_layer) const;
 
   FloatPoint LocalToInvalidationBackingPoint(
       const LayoutPoint& local_point,
