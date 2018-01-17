@@ -1255,8 +1255,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         blob_context, child_id, request_data.service_worker_provider_id,
         service_worker_mode != ServiceWorkerMode::ALL,
         request_data.fetch_request_mode, request_data.fetch_credentials_mode,
-        static_cast<FetchRedirectMode>(request_data.fetch_redirect_mode),
-        request_data.fetch_integrity, request_data.keepalive,
+        request_data.fetch_redirect_mode, request_data.fetch_integrity,
+        request_data.keepalive,
         static_cast<ResourceType>(request_data.resource_type),
         static_cast<RequestContextType>(
             request_data.fetch_request_context_type),

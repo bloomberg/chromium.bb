@@ -82,7 +82,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       const ResourceContext* resource_context,
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode,
-      FetchRedirectMode redirect_mode,
+      network::mojom::FetchRedirectMode redirect_mode,
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,
@@ -314,7 +314,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   network::mojom::FetchRequestMode request_mode_;
   network::mojom::FetchCredentialsMode credentials_mode_;
-  FetchRedirectMode redirect_mode_;
+  network::mojom::FetchRedirectMode redirect_mode_;
   std::string integrity_;
   const bool keepalive_;
   const ResourceType resource_type_;

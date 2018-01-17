@@ -14,15 +14,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::FetchRedirectMode, content::FetchRedirectMode> {
-  static blink::mojom::FetchRedirectMode ToMojom(
-      content::FetchRedirectMode input);
-
-  static bool FromMojom(blink::mojom::FetchRedirectMode input,
-                        content::FetchRedirectMode* out);
-};
-
-template <>
 struct EnumTraits<blink::mojom::RequestContextType,
                   content::RequestContextType> {
   static blink::mojom::RequestContextType ToMojom(
@@ -108,7 +99,7 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.cache_mode;
   }
 
-  static content::FetchRedirectMode redirect_mode(
+  static network::mojom::FetchRedirectMode redirect_mode(
       const content::ServiceWorkerFetchRequest& request) {
     return request.redirect_mode;
   }

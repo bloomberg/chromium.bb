@@ -289,10 +289,10 @@ class PLATFORM_EXPORT ResourceRequest final {
     fetch_credentials_mode_ = mode;
   }
 
-  WebURLRequest::FetchRedirectMode GetFetchRedirectMode() const {
+  network::mojom::FetchRedirectMode GetFetchRedirectMode() const {
     return fetch_redirect_mode_;
   }
-  void SetFetchRedirectMode(WebURLRequest::FetchRedirectMode redirect) {
+  void SetFetchRedirectMode(network::mojom::FetchRedirectMode redirect) {
     fetch_redirect_mode_ = redirect;
   }
 
@@ -395,7 +395,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
-  WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
+  network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
@@ -456,7 +456,7 @@ struct CrossThreadResourceRequestData {
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;
-  WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
+  network::mojom::FetchRedirectMode fetch_redirect_mode_;
   String fetch_integrity_;
   WebURLRequest::PreviewsState previews_state_;
   ReferrerPolicy referrer_policy_;

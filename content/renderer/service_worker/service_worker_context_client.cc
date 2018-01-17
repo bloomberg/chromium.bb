@@ -160,11 +160,6 @@ class StreamHandleListener
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
 };
 
-WebURLRequest::FetchRedirectMode GetBlinkFetchRedirectMode(
-    FetchRedirectMode redirect_mode) {
-  return static_cast<WebURLRequest::FetchRedirectMode>(redirect_mode);
-}
-
 WebURLRequest::RequestContext GetBlinkRequestContext(
     RequestContextType request_context_type) {
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
@@ -231,8 +226,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   web_request->SetCredentialsMode(request.fetch_credentials_mode);
   web_request->SetCacheMode(
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags));
-  web_request->SetRedirectMode(GetBlinkFetchRedirectMode(
-      static_cast<FetchRedirectMode>(request.fetch_redirect_mode)));
+  web_request->SetRedirectMode(request.fetch_redirect_mode);
   web_request->SetRequestContext(GetBlinkRequestContext(
       static_cast<RequestContextType>(request.fetch_request_context_type)));
   web_request->SetFrameType(request.fetch_frame_type);
@@ -271,8 +265,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetIsMainResourceLoad(request.is_main_resource_load);
   web_request->SetCredentialsMode(request.credentials_mode);
   web_request->SetCacheMode(request.cache_mode);
-  web_request->SetRedirectMode(
-      GetBlinkFetchRedirectMode(request.redirect_mode));
+  web_request->SetRedirectMode(request.redirect_mode);
   web_request->SetRequestContext(
       GetBlinkRequestContext(request.request_context_type));
   web_request->SetFrameType(request.frame_type);

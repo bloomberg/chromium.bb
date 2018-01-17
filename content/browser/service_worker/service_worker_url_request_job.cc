@@ -323,7 +323,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const ResourceContext* resource_context,
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchCredentialsMode credentials_mode,
-    FetchRedirectMode redirect_mode,
+    network::mojom::FetchRedirectMode redirect_mode,
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,

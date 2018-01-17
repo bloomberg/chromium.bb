@@ -64,7 +64,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               base::WeakPtr<storage::BlobStorageContext>(),
               fetch_type,
               network::mojom::FetchCredentialsMode::kOmit,
-              FetchRedirectMode::FOLLOW_MODE,
+              network::mojom::FetchRedirectMode::kFollow,
               std::string() /* integrity */,
               false /* keepalive */,
               type,

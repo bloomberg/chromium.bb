@@ -127,9 +127,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         false /* skip_service_worker */,
         network::mojom::FetchRequestMode::kNoCORS,
         network::mojom::FetchCredentialsMode::kOmit,
-        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-        false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        network::mojom::FetchRedirectMode::kFollow,
+        std::string() /* integrity */, false /* keepalive */,
+        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone, nullptr);
   }
 
@@ -261,7 +261,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
       helper_->mock_render_process_id(), provider_host_->provider_id(),
       true /* skip_service_worker */, network::mojom::FetchRequestMode::kNoCORS,
       network::mojom::FetchCredentialsMode::kOmit,
-      FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+      network::mojom::FetchRedirectMode::kFollow, std::string() /* integrity */,
       false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
       REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
       network::mojom::RequestContextFrameType::kNone, nullptr);

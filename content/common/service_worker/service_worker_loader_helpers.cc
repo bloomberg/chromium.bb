@@ -61,8 +61,7 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(
   new_request->credentials_mode = request.fetch_credentials_mode;
   new_request->cache_mode =
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags);
-  new_request->redirect_mode =
-      static_cast<FetchRedirectMode>(request.fetch_redirect_mode);
+  new_request->redirect_mode = request.fetch_redirect_mode;
   new_request->keepalive = request.keepalive;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
       static_cast<ui::PageTransition>(request.transition_type),

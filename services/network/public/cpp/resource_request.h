@@ -125,11 +125,8 @@ struct ResourceRequest {
       mojom::FetchCredentialsMode::kOmit;
 
   // The redirect mode used in Fetch API.
-  // Note: this is an enum of type content::FetchRedirectMode.
-  // TODO(jam): emove this if network service shouldn't know about this, or
-  // redefine it in /services/network if it is needed to implement CORS in
-  // network service.
-  int fetch_redirect_mode = 0;
+  mojom::FetchRedirectMode fetch_redirect_mode =
+      mojom::FetchRedirectMode::kFollow;
 
   // The integrity used in Fetch API.
   std::string fetch_integrity;

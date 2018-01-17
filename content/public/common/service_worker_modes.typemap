@@ -6,6 +6,5 @@ mojom = "//content/public/common/service_worker_modes.mojom"
 public_headers = [ "//content/public/common/service_worker_modes.h" ]
 type_mappings = [
   "blink.mojom.FetchCredentialsMode=::content::FetchCredentialsMode",
-  "blink.mojom.FetchRedirectMode=::content::FetchRedirectMode",
   "blink.mojom.FetchRequestMode=::content::FetchRequestMode",
 ]

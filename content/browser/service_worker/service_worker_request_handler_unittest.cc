@@ -98,8 +98,9 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         helper_->mock_render_process_id(), kMockProviderId, skip_service_worker,
         network::mojom::FetchRequestMode::kNoCORS,
         network::mojom::FetchCredentialsMode::kOmit,
-        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-        false /* keepalive */, resource_type, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        network::mojom::FetchRedirectMode::kFollow,
+        std::string() /* integrity */, false /* keepalive */, resource_type,
+        REQUEST_CONTEXT_TYPE_HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel, nullptr);
   }
 

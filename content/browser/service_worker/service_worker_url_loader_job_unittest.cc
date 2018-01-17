@@ -576,8 +576,7 @@ class ServiceWorkerURLLoaderJobTest
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
     request->fetch_credentials_mode =
         network::mojom::FetchCredentialsMode::kInclude;
-    request->fetch_redirect_mode =
-        static_cast<int>(FetchRedirectMode::MANUAL_MODE);
+    request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
     return request;
   }
 
@@ -906,8 +905,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
   request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kInclude;
-  request.fetch_redirect_mode =
-      static_cast<int>(FetchRedirectMode::MANUAL_MODE);
+  request.fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
 
   StartLoaderCallback callback;
   auto job = std::make_unique<ServiceWorkerURLLoaderJob>(

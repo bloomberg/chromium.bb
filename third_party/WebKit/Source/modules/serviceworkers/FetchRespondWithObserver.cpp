@@ -140,7 +140,7 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     int fetch_event_id,
     const KURL& request_url,
     network::mojom::FetchRequestMode request_mode,
-    WebURLRequest::FetchRedirectMode redirect_mode,
+    network::mojom::FetchRedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
     WebURLRequest::RequestContext request_context,
     WaitUntilObserver* observer) {
@@ -201,12 +201,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
       return;
     }
   }
-  if (redirect_mode_ != WebURLRequest::kFetchRedirectModeManual &&
+  if (redirect_mode_ != network::mojom::FetchRedirectMode::kManual &&
       response_type == network::mojom::FetchResponseType::kOpaqueRedirect) {
     OnResponseRejected(ServiceWorkerResponseError::kResponseTypeOpaqueRedirect);
     return;
   }
-  if (redirect_mode_ != WebURLRequest::kFetchRedirectModeFollow &&
+  if (redirect_mode_ != network::mojom::FetchRedirectMode::kFollow &&
       response->redirected()) {
     OnResponseRejected(
         ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest);
@@ -284,7 +284,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
     int fetch_event_id,
     const KURL& request_url,
     network::mojom::FetchRequestMode request_mode,
-    WebURLRequest::FetchRedirectMode redirect_mode,
+    network::mojom::FetchRedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
     WebURLRequest::RequestContext request_context,
     WaitUntilObserver* observer)

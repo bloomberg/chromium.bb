@@ -317,9 +317,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         request_.get(), context_wrapper(), &blob_storage_context_, process_id,
         provider_id, false, network::mojom::FetchRequestMode::kNoCORS,
         network::mojom::FetchCredentialsMode::kOmit,
-        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-        false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        network::mojom::FetchRedirectMode::kFollow,
+        std::string() /* integrity */, false /* keepalive */,
+        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone,
         scoped_refptr<network::ResourceRequestBody>());
   }
