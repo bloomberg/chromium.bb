@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class ToolsPopupController;
 @class ToolsMenuConfiguration;
 
 // ToolbarController public interface.
@@ -39,14 +38,6 @@
 // affecting the other components of the toolbar.
 @property(nonatomic, readonly, strong) UIImageView* backgroundView;
 
-// Following methods will be removed shortly by CL 741466.
-@optional
-#pragma mark - ToolsMenu
-- (void)showToolsMenuPopupWithConfiguration:
-    (ToolsMenuConfiguration*)configuration;
-- (void)dismissToolsMenuPopup;
-@property(nonatomic, readonly, strong)
-    ToolsPopupController* toolsPopupController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_TOOLBAR_H_

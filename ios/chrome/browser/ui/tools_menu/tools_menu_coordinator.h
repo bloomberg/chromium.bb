@@ -18,20 +18,29 @@
 // showing tools menu UI. In the typical case that may be a tools menu popup.
 @interface ToolsMenuCoordinator
     : ChromeCoordinator<ToolsMenuPresentationStateProvider>
+
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // The dispatcher for this Coordinator. This Coordinator will register itself
 // as the handler for tools menu commands (see the ToolsPopupCommands
 // protocol) and will present and dismiss a tools popup in reaction to them.
-@property(nonatomic, readwrite, strong) CommandDispatcher* dispatcher;
+@property(nonatomic, strong) CommandDispatcher* dispatcher;
 
 // A provider that prepares a configuration describing the contents of
 // the tools popup menu list, as well as the state of other controls in the
 // menu such as the Reload/Cancel Loading button.
-@property(nonatomic, readwrite, weak) id<ToolsMenuConfigurationProvider>
+@property(nonatomic, weak) id<ToolsMenuConfigurationProvider>
     configurationProvider;
 
 // A provider that may provide more information about the manner in which
 // the coordinator may be presented.
-@property(nonatomic, readwrite, weak) id<ToolsMenuPresentationProvider>
+@property(nonatomic, weak) id<ToolsMenuPresentationProvider>
     presentationProvider;
 
 // Re-fetches configuration details from the

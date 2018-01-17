@@ -561,10 +561,10 @@ NSString* const kTransitionToolbarAnimationKey =
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
 
-    _toolsMenuCoordinator =
-        [[ToolsMenuCoordinator alloc] initWithBaseViewController:self];
+    _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
     _toolsMenuCoordinator.dispatcher = _dispatcher;
     _toolsMenuCoordinator.configurationProvider = self;
+    [_toolsMenuCoordinator start];
   }
   return self;
 }

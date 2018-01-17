@@ -32,10 +32,10 @@
                                                 (CommandDispatcher*)dispatcher {
   self = [super init];
   if (self) {
-    _toolsMenuCoordinator =
-        [[ToolsMenuCoordinator alloc] initWithBaseViewController:nil];
+    _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
     _toolsMenuCoordinator.dispatcher = dispatcher;
     _toolsMenuCoordinator.configurationProvider = configurationProvider;
+    [_toolsMenuCoordinator start];
     [dispatcher startDispatchingToTarget:self
                              forProtocol:@protocol(ToolbarCommands)];
     _coordinators = [NSMutableArray array];
