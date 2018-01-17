@@ -8,11 +8,13 @@
 #include <array>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/wm/core/window_util.h"
@@ -20,6 +22,22 @@
 namespace ash {
 
 namespace {
+
+aura::Window* GetTargetWindow() {
+  aura::Window* window = wm::GetActiveWindow();
+  if (!window)
+    return nullptr;
+
+  // If |window| is transient window, move its first non-transient
+  // transient-parent window instead.
+  if (::wm::GetTransientParent(window)) {
+    while (::wm::GetTransientParent(window))
+      window = ::wm::GetTransientParent(window);
+    if (window == window->GetRootWindow())
+      return nullptr;
+  }
+  return window;
+}
 
 // Calculate the vertical offset between two displays' center points.
 int GetVerticalOffset(const display::Display& display1,
@@ -138,25 +156,27 @@ int64_t GetNextDisplay(const display::Display& origin_display,
 
 }  // namespace
 
-void HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection direction) {
-  aura::Window* window = wm::GetActiveWindow();
-  if (!window)
-    return;
+bool CanHandleMoveActiveWindowBetweenDisplays() {
+  if (!switches::IsDisplayMoveWindowAccelsEnabled())
+    return false;
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  // Accelerators to move window between displays on unified desktop mode and
+  // mirror mode is disabled.
+  if (display_manager->IsInUnifiedMode() || display_manager->IsInMirrorMode())
+    return false;
 
-  // If |window| is transient window, move its first non-transient
-  // transient-parent window instead. Otherwise, it should be the first one in
-  // window cycle list.
-  if (::wm::GetTransientParent(window)) {
-    while (::wm::GetTransientParent(window))
-      window = ::wm::GetTransientParent(window);
-    if (window == window->GetRootWindow())
-      return;
-  } else {
-    MruWindowTracker::WindowList window_list =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-    if (window_list.empty() || window_list.front() != window)
-      return;
-  }
+  aura::Window* target = GetTargetWindow();
+  // The movement target window must be in window cycle list.
+  MruWindowTracker::WindowList window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  return std::find(window_list.begin(), window_list.end(), target) !=
+         window_list.end();
+}
+
+void HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection direction) {
+  DCHECK(CanHandleMoveActiveWindowBetweenDisplays());
+  aura::Window* window = GetTargetWindow();
+  DCHECK(window);
 
   display::Display origin_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
