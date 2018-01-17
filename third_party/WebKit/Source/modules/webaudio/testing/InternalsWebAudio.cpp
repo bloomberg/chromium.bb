@@ -10,6 +10,11 @@
 namespace blink {
 
 unsigned InternalsWebAudio::audioHandlerCount(Internals& internals) {
+#if DEBUG_AUDIONODE_REFERENCES
+  fprintf(
+      stderr, "InternalsWebAudio::audioHandlerCount = %u\n",
+      InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter));
+#endif
   return InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter);
 }
 
