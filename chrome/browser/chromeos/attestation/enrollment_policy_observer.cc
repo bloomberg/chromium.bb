@@ -85,7 +85,6 @@ EnrollmentPolicyObserver::EnrollmentPolicyObserver(
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   device_settings_service_->AddObserver(this);
   Start();
 }
@@ -136,7 +135,7 @@ void EnrollmentPolicyObserver::GetEnrollmentCertificate() {
       PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
-      false,             // Not used.
+      true,              // Get a fresh certificate.
       base::Bind(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(
@@ -163,8 +162,11 @@ void EnrollmentPolicyObserver::UploadCertificate(
 }
 
 void EnrollmentPolicyObserver::OnUploadComplete(bool status) {
-  if (!status)
+  if (!status) {
+    VLOG(1) << "Failed to upload Enterprise Enrollment Certificate"
+            << " to DMServer.";
     return;
+  }
   VLOG(1) << "Enterprise Enrollment Certificate uploaded to DMServer.";
 }
 
