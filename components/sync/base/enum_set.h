@@ -125,18 +125,13 @@ class EnumSet {
     return 1ULL << (ToIndex(val));
   }
 
-  // Base case for recursive packing of a list of enum values. The uint64_t
-  // corresponding to an empty list is 0.
-  static constexpr uint64_t bitstring() { return 0ULL; }
-
-  // As of writing, constexpr expressions can't contain anything other than a
-  // return statement (and static asserts). To pack a variable number of enum
-  // value arguments into a bitstring, we use template varargs with a recursive
-  // constructor. Each recursive call packs one more enum into the bitstring,
-  // and the individual results are combined with bitwise or.
   template <class... T>
-  static constexpr uint64_t bitstring(E head, T... tail) {
-    return (single_val_bitstring(head)) | bitstring(tail...);
+  static constexpr uint64_t bitstring(T... values) {
+    uint64_t converted[] = {single_val_bitstring(values)...};
+    uint64_t result = 0;
+    for (uint64_t e : converted)
+      result |= e;
+    return result;
   }
 
   template <class... T>
