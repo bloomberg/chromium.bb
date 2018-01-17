@@ -69,7 +69,9 @@ const qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
 typedef tran_low_t dequant_val_type_nuq[NUQ_KNOTS * 3];
 typedef tran_low_t cuml_bins_type_nuq[NUQ_KNOTS];
 void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
-                             tran_low_t *cuml_bins, int dq_off_index);
+                             int dq_off_index);
+void av1_get_cuml_bins_nuq(int q, int is_ac_coeff, tran_low_t *cuml_bins,
+                           int q_profile);
 tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq,
                                     int shift);
 tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq, int shift);

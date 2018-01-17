@@ -1542,14 +1542,17 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
         const int u_quant = deq->u_dequant_QTX[q][i != 0];
         const int v_quant = deq->v_dequant_QTX[q][i != 0];
         av1_get_dequant_val_nuq(y_quant, i,
-                                deq->y_dequant_val_nuq_QTX[dq][q][i],
-                                quants->y_cuml_bins_nuq[dq][q][i], dq);
+                                deq->y_dequant_val_nuq_QTX[dq][q][i], dq);
         av1_get_dequant_val_nuq(u_quant, i,
-                                deq->u_dequant_val_nuq_QTX[dq][q][i],
-                                quants->u_cuml_bins_nuq[dq][q][i], dq);
+                                deq->u_dequant_val_nuq_QTX[dq][q][i], dq);
         av1_get_dequant_val_nuq(v_quant, i,
-                                deq->v_dequant_val_nuq_QTX[dq][q][i],
-                                quants->v_cuml_bins_nuq[dq][q][i], dq);
+                                deq->v_dequant_val_nuq_QTX[dq][q][i], dq);
+        av1_get_cuml_bins_nuq(y_quant, i, quants->y_cuml_bins_nuq[dq][q][i],
+                              dq);
+        av1_get_cuml_bins_nuq(u_quant, i, quants->u_cuml_bins_nuq[dq][q][i],
+                              dq);
+        av1_get_cuml_bins_nuq(v_quant, i, quants->v_cuml_bins_nuq[dq][q][i],
+                              dq);
       }
     }
 #endif  // CONFIG_NEW_QUANT

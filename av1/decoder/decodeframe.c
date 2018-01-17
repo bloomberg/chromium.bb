@@ -1118,11 +1118,11 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
       // DC and AC coefs
       for (int b = 0; b < 2; ++b) {
         av1_get_dequant_val_nuq(cm->y_dequant_QTX[i][b != 0], b,
-                                cm->y_dequant_nuq_QTX[i][dq][b], NULL, dq);
+                                cm->y_dequant_nuq_QTX[i][dq][b], dq);
         av1_get_dequant_val_nuq(cm->u_dequant_QTX[i][b != 0], b,
-                                cm->u_dequant_nuq_QTX[i][dq][b], NULL, dq);
+                                cm->u_dequant_nuq_QTX[i][dq][b], dq);
         av1_get_dequant_val_nuq(cm->v_dequant_QTX[i][b != 0], b,
-                                cm->v_dequant_nuq_QTX[i][dq][b], NULL, dq);
+                                cm->v_dequant_nuq_QTX[i][dq][b], dq);
       }
     }
 #endif  //  CONFIG_NEW_QUANT

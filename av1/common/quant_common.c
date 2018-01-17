@@ -21,155 +21,232 @@
 // So a value x indicates the bin is actually factor x/128 of the
 // nominal quantization step. The width is only
 // for one side of zero, so the actual width is twice that.
-//
-// Functions with nuq correspond to "non uniform quantization"
-// TODO(sarahparker, debargha): Optimize these tables
-
-typedef struct {
-  uint8_t zbin;  // zero-bin width
-  uint8_t doff;  // dequantization offset
-} qprofile_type;
-
-static const qprofile_type nuq[QUANT_PROFILES][2] = {
+// These are needed only on the encoder side.
+static const uint8_t x0_nuq[QUANT_PROFILES][2] = {
   {
       // lossless
-      { 64, 0 },  // dc
-      { 64, 0 },  // ac
+      64, 64,  // dc, ac
   },
 
   // dq_type = 1
   {
       // Y/intra, dq_type 1, low quality
-      { 64, 4 },  // dc
-      { 64, 6 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // Y/intra, dq_type 1, high quality
-      { 64, 2 },  // dc
-      { 64, 3 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // UV/intra, dq_type 1, low quality
-      { 64, 4 },  // dc
-      { 64, 6 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // UV/intra, dq_type 1, high quality
-      { 64, 2 },  // dc
-      { 64, 3 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // Y/inter, dq_type 1, low quality
-      { 64, 4 },  // dc
-      { 64, 6 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // Y/inter, dq_type 1, high quality
-      { 64, 3 },  // dc
-      { 64, 4 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // UV/inter, dq_type 1, low quality
-      { 64, 4 },  // dc
-      { 64, 6 },  // ac
+      64, 64,  // dc, ac
   },
   {
       // UV/inter, dq_type 1, high quality
-      { 64, 3 },  // dc
-      { 64, 4 },  // ac
+      64, 64,  // dc, ac
   },
 
   // dq_type = 2
   {
       // Y/intra, dq_type 2, low quality
-      { 72, 12 },  // dc
-      { 72, 14 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // Y/intra, dq_type 2, high quality
-      { 72, 6 },  // dc
-      { 72, 8 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // UV/intra, dq_type 2, low quality
-      { 72, 14 },  // dc
-      { 72, 16 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // UV/intra, dq_type 2, high quality
-      { 72, 8 },   // dc
-      { 72, 10 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // Y/inter, dq_type 2, low quality
-      { 72, 16 },  // dc
-      { 72, 18 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // Y/inter, dq_type 2, high quality
-      { 72, 10 },  // dc
-      { 72, 12 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // UV/inter, dq_type 2, low quality
-      { 72, 18 },  // dc
-      { 72, 20 },  // ac
+      72, 72,  // dc, ac
   },
   {
       // UV/inter, dq_type 2, high quality
-      { 72, 12 },  // dc
-      { 72, 14 },  // ac
+      72, 72,  // dc, ac
   },
 
   // dq_type = 3
   {
       // Y/intra, dq_type 3, low quality
-      { 80, 12 },  // dc
-      { 80, 14 },  // ac
+      80, 80,  // dc, ac
   },
   {
       // Y/intra, dq_type 3, high quality
-      { 82, 6 },  // dc
-      { 82, 8 },  // ac
+      82, 82,  // dc, ac
   },
   {
       // UV/intra, dq_type 3, low quality
-      { 80, 14 },  // dc
-      { 80, 16 },  // ac
+      80, 80,  // dc, ac
   },
   {
       // UV/intra, dq_type 3, high quality
-      { 82, 8 },   // dc
-      { 82, 10 },  // ac
+      82, 82,  // dc, ac
   },
   {
       // Y/inter, dq_type 3, low quality
-      { 80, 16 },  // dc
-      { 80, 18 },  // ac
+      80, 80,  // dc, ac
   },
   {
       // Y/inter, dq_type 3, high quality
-      { 82, 10 },  // dc
-      { 82, 12 },  // ac
+      82, 82,  // dc, ac
   },
   {
       // UV/inter, dq_type 3, low quality
-      { 80, 18 },  // dc
-      { 80, 20 },  // ac
+      80, 80,  // dc, ac
   },
   {
       // UV/inter, dq_type 3, high quality
-      { 82, 12 },  // dc
-      { 82, 14 },  // ac
+      82, 82,  // dc, ac
+  },
+};
+
+// Offset tables needed on the decoder side
+static const int8_t doff_nuq[QUANT_PROFILES][2] = {
+  {
+      // lossless
+      0, 0,  // dc, ac
+  },
+
+  // dq_type = 1
+  {
+      // Y/intra, dq_type 1, low quality
+      -4, -6,  // dc, ac
+  },
+  {
+      // Y/intra, dq_type 1, high quality
+      -2, -3,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 1, low quality
+      -4, -6,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 1, high quality
+      -2, -3,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 1, low quality
+      -4, -6,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 1, high quality
+      -3, -4,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 1, low quality
+      -4, -6,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 1, high quality
+      -3, -4,  // dc, ac
+  },
+
+  // dq_type = 2
+  {
+      // Y/intra, dq_type 2, low quality
+      0, -2,  // dc, ac
+  },
+  {
+      // Y/intra, dq_type 2, high quality
+      5, 3,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 2, low quality
+      -1, -3,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 2, high quality
+      4, 2,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 2, low quality
+      -2, -4,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 2, high quality
+      2, 1,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 2, low quality
+      -3, -5,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 2, high quality
+      1, 0,  // dc, ac
+  },
+
+  // dq_type = 3
+  {
+      // Y/intra, dq_type 3, low quality
+      4, 2,  // dc, ac
+  },
+  {
+      // Y/intra, dq_type 3, high quality
+      12, 10,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 3, low quality
+      2, 0,  // dc, ac
+  },
+  {
+      // UV/intra, dq_type 3, high quality
+      10, 8,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 3, low quality
+      0, -2,  // dc, ac
+  },
+  {
+      // Y/inter, dq_type 3, high quality
+      8, 6,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 3, low quality
+      -2, -4,  // dc, ac
+  },
+  {
+      // UV/inter, dq_type 3, high quality
+      6, 4,  // dc, ac
   },
 };
 
 static INLINE uint8_t get_nuq_zbin(int is_ac_coeff, int q_profile) {
-  return nuq[q_profile][is_ac_coeff].zbin;
+  return x0_nuq[q_profile][is_ac_coeff];
 }
 
-static INLINE uint8_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
-  return nuq[q_profile][is_ac_coeff].doff;
+static INLINE int8_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
+  return doff_nuq[q_profile][is_ac_coeff];
 }
 
 // get zero bin width
@@ -179,21 +256,19 @@ static INLINE void get_cuml_bins_nuq(int q, int is_ac_coeff,
   zbin_width[0] = ROUND_POWER_OF_TWO(zbin * q, 7);
 }
 
-void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
-                             tran_low_t *cuml_bins, int q_profile) {
-  tran_low_t cuml_bins_[NUQ_KNOTS], *cuml_bins_ptr;
-  tran_low_t doff;
+void av1_get_cuml_bins_nuq(int q, int is_ac_coeff, tran_low_t *cuml_bins,
+                           int q_profile) {
   // Get the quantization boundary for the zero bin
-  const uint8_t zbin = get_nuq_zbin(is_ac_coeff, q_profile);
-  cuml_bins_ptr = (cuml_bins ? cuml_bins : cuml_bins_);
-  get_cuml_bins_nuq(q, is_ac_coeff, cuml_bins_ptr, q_profile);
+  get_cuml_bins_nuq(q, is_ac_coeff, cuml_bins, q_profile);
+}
 
+void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
+                             int q_profile) {
   // Get the dequantization offset that will be applied to all non-zero bins.
-  // This is computed as: ((x0 - 64 - d) / 128) * Q
-  doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
-  dq[0] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 7);
-  dq[1] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 8);
-  dq[2] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 9);
+  const tran_low_t doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
+  dq[0] = ROUND_POWER_OF_TWO_SIGNED(doff * q, 7);
+  dq[1] = ROUND_POWER_OF_TWO_SIGNED(doff * q, 8);
+  dq[2] = ROUND_POWER_OF_TWO_SIGNED(doff * q, 9);
 }
 
 tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq,
