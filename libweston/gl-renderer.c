@@ -60,6 +60,12 @@
 #include "shared/timespec-util.h"
 #include "weston-egl-ext.h"
 
+#define GR_GL_VERSION(major, minor) \
+	(((uint32_t)(major) << 16) | (uint32_t)(minor))
+
+#define GR_GL_VERSION_INVALID \
+	GR_GL_VERSION(0, 0)
+
 struct gl_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
@@ -198,6 +204,8 @@ struct gl_renderer {
 	EGLConfig egl_config;
 
 	EGLSurface dummy_surface;
+
+	uint32_t gl_version;
 
 	struct wl_array vertices;
 	struct wl_array vtxcnt;
@@ -3586,6 +3594,22 @@ fan_debug_repaint_binding(struct weston_keyboard *keyboard,
 	weston_compositor_damage_all(compositor);
 }
 
+static uint32_t
+get_gl_version(void)
+{
+	const char *version;
+	int major, minor;
+
+	version = (const char *) glGetString(GL_VERSION);
+	if (version &&
+	    (sscanf(version, "%d.%d", &major, &minor) == 2 ||
+	     sscanf(version, "OpenGL ES %d.%d", &major, &minor) == 2)) {
+		return GR_GL_VERSION(major, minor);
+	}
+
+	return GR_GL_VERSION_INVALID;
+}
+
 static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
@@ -3624,6 +3648,13 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		weston_log("Failed to make EGL context current.\n");
 		gl_renderer_print_egl_error_state();
 		return -1;
+	}
+
+	gr->gl_version = get_gl_version();
+	if (gr->gl_version == GR_GL_VERSION_INVALID) {
+		weston_log("warning: failed to detect GLES version, "
+			   "defaulting to 2.0.\n");
+		gr->gl_version = GR_GL_VERSION(2, 0);
 	}
 
 	log_egl_gl_info(gr->egl_display);
