@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/string_or_trusted_url.h"
+#include "bindings/core/v8/usv_string_or_trusted_url.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/trustedtypes/TrustedURL.h"
@@ -63,8 +63,8 @@ inline const KURL& Location::Url() const {
   return url;
 }
 
-void Location::href(StringOrTrustedURL& result) const {
-  result.SetString(Url().StrippedForUseAsHref());
+void Location::href(USVStringOrTrustedURL& result) const {
+  result.SetUSVString(Url().StrippedForUseAsHref());
 }
 
 String Location::protocol() const {
@@ -108,10 +108,10 @@ DOMStringList* Location::ancestorOrigins() const {
 }
 
 String Location::toString() const {
-  StringOrTrustedURL result;
+  USVStringOrTrustedURL result;
   href(result);
-  DCHECK(result.IsString());
-  return result.GetAsString();
+  DCHECK(result.IsUSVString());
+  return result.GetAsUSVString();
 }
 
 String Location::hash() const {
@@ -120,20 +120,20 @@ String Location::hash() const {
 
 void Location::setHref(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
-                       const StringOrTrustedURL& stringOrUrl,
+                       const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.IsString() ||
+  DCHECK(stringOrUrl.IsUSVString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrUrl.IsString() &&
+  if (stringOrUrl.IsUSVString() &&
       current_window->document()->RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedURL` assignment.");
     return;
   }
 
-  String url = stringOrUrl.IsString()
-                   ? stringOrUrl.GetAsString()
+  String url = stringOrUrl.IsUSVString()
+                   ? stringOrUrl.GetAsUSVString()
                    : stringOrUrl.GetAsTrustedURL()->toString();
   SetLocation(url, current_window, entered_window, &exception_state);
 }
