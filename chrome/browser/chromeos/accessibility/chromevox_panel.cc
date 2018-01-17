@@ -108,6 +108,7 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.bounds = gfx::Rect(0, 0, root_window->bounds().width(),
                             root_window->bounds().height());
+  params.name = "ChromeVoxPanel";
   widget_->Init(params);
   SetShadowElevation(widget_->GetNativeWindow(), wm::ShadowElevation::MEDIUM);
 

@@ -439,6 +439,8 @@ class AccessibilityManager
   // Ash's mojom::AccessibilityController used to SetDarkenScreen.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
+  bool app_terminating_ = false;
+
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
