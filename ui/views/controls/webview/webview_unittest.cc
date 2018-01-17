@@ -245,9 +245,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   // parent does not make the web contents visible.
   top_level_widget()->Hide();
   web_view()->SetVisible(true);
-  // TODO(tapted): The following line is wrong, the shown_count() should still
-  // be 1, until the parent window is made visible on the line after.
-  EXPECT_EQ(2, observer1.shown_count());
+  EXPECT_EQ(1, observer1.shown_count());
   top_level_widget()->Show();
   EXPECT_EQ(2, observer1.shown_count());
   top_level_widget()->Hide();

@@ -140,10 +140,10 @@ void SessionRestoreStatsCollector::TrackTabs(
   tab_loader_stats_.tab_count += tabs.size();
   waiting_for_load_tab_count_ += tabs.size();
   for (const auto& tab : tabs) {
-    TabState* tab_state =
-        RegisterForNotifications(&tab.contents()->GetController());
-    // Active tabs have already started loading.
-    if (tab.is_active())
+    auto* controller = &tab.contents()->GetController();
+    TabState* tab_state = RegisterForNotifications(controller);
+    // The tab might already be loading if it is active in a visible window.
+    if (!controller->NeedsReload())
       MarkTabAsLoading(tab_state);
   }
 }

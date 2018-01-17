@@ -1387,7 +1387,11 @@ void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
   if (window != window_.get() && window_->Contains(window))
     return;
 
-  web_contents_->UpdateWebContentsVisibility(visible);
+  // |visible| indicates whether |window| (which points to |window_| or one of
+  // its ancestors) is visible within its parent. What we really need is
+  // |window_->IsVisible()|, which indicates whether |window_| and all its
+  // ancestors are visible.
+  web_contents_->UpdateWebContentsVisibility(window_->IsVisible());
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
