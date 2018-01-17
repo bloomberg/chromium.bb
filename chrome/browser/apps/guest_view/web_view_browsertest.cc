@@ -2174,6 +2174,26 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DOMStorageIsolation) {
   EXPECT_STREQ("badval", output.c_str());
 }
 
+// This tests how guestviews should or should not be able to find each other
+// depending on whether they are in the same storage partition or not.
+// This is a regression test for https://crbug.com/794079 (where two guestviews
+// in the same storage partition stopped being able to find each other).
+// This is also a regression test for https://crbug.com/802278 (setting of
+// a guestview as an opener should not leak any memory).
+IN_PROC_BROWSER_TEST_P(WebViewTest, FindabilityIsolation) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL navigate_to_url = embedded_test_server()->GetURL(
+      "/extensions/platform_apps/web_view/findability_isolation/page.html");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("localhost");
+  navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::NavigateToURL(browser(), navigate_to_url);
+  ASSERT_TRUE(
+      RunPlatformAppTest("platform_apps/web_view/findability_isolation"));
+}
+
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
