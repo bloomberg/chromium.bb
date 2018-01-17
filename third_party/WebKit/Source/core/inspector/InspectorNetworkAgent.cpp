@@ -1633,12 +1633,6 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
   return false;
 }
 
-bool InspectorNetworkAgent::CacheDisabled() {
-  return state_->booleanProperty(NetworkAgentState::kNetworkAgentEnabled,
-                                 false) &&
-         state_->booleanProperty(NetworkAgentState::kCacheDisabled, false);
-}
-
 void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {
   replay_xhrs_to_be_deleted_.clear();
 }

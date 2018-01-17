@@ -107,7 +107,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool ScreencastEnabled();
   void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
-  bool CacheDisabled();
   String EvaluateInOverlayForTesting(const String& script);
 
  private:

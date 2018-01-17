@@ -4089,7 +4089,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     info.is_client_redirect = pending_navigation_info_->client_redirect;
     info.triggering_event_info =
         pending_navigation_info_->triggering_event_info;
-    info.is_cache_disabled = pending_navigation_info_->cache_disabled;
     info.form = pending_navigation_info_->form;
     info.source_location = pending_navigation_info_->source_location;
 
@@ -6682,16 +6681,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   base::Optional<url::Origin> initiator_origin =
       base::Optional<url::Origin>(info.url_request.RequestorOrigin());
 
-  int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
-
-  // Requests initiated via devtools can have caching disabled.
-  if (info.is_cache_disabled) {
-    // Turn off all caching related flags and set LOAD_BYPASS_CACHE.
-    load_flags &= ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
-                    net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
-    load_flags |= net::LOAD_BYPASS_CACHE;
-  }
-
   bool is_form_submission =
       info.navigation_type == blink::kWebNavigationTypeFormSubmitted ||
       info.navigation_type == blink::kWebNavigationTypeFormResubmitted;
@@ -6708,6 +6697,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   if (info.is_client_redirect)
     client_side_redirect_url = frame_->GetDocument().Url();
 
+  int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info.url_request), load_flags,
@@ -7304,7 +7294,6 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
           info.is_history_navigation_in_new_child_frame),
       client_redirect(info.is_client_redirect),
       triggering_event_info(info.triggering_event_info),
-      cache_disabled(info.is_cache_disabled),
       form(info.form),
       source_location(info.source_location) {}
 

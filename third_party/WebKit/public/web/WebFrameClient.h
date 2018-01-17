@@ -336,7 +336,6 @@ class BLINK_EXPORT WebFrameClient {
     bool is_client_redirect;
     WebTriggeringEventInfo triggering_event_info;
     WebFormElement form;
-    bool is_cache_disabled;
     WebSourceLocation source_location;
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
@@ -355,7 +354,6 @@ class BLINK_EXPORT WebFrameClient {
           is_history_navigation_in_new_child_frame(false),
           is_client_redirect(false),
           triggering_event_info(WebTriggeringEventInfo::kUnknown),
-          is_cache_disabled(false),
           should_check_main_world_content_security_policy(
               kWebContentSecurityPolicyDispositionCheck),
           archive_status(ArchiveStatus::Absent) {}
