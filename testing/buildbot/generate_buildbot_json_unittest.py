@@ -539,8 +539,8 @@ MERGED_ARGS_OUTPUT = """\
     "gtest_tests": [
       {
         "args": [
-          "--c_arg",
-          "--bar"
+          "--bar",
+          "--c_arg"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

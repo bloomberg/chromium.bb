@@ -292,7 +292,7 @@ class BBJSONGenerator(object):
         elif isinstance(a[key], list) and isinstance(b[key], list):
           if all(isinstance(x, str)
                  for x in itertools.chain(a[key], b[key])):
-            a[key] = a[key] + b[key]
+            a[key] = sorted(a[key] + b[key])
           else:
             # TODO(kbr): this only works properly if the two arrays are
             # the same length, which is currently always the case in the
