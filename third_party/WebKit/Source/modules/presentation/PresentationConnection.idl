@@ -11,7 +11,8 @@ enum PresentationConnectionState {
 };
 
 [
-    RuntimeEnabled=Presentation
+    RuntimeEnabled=Presentation,
+    Exposed=Window
 ] interface PresentationConnection : EventTarget {
     readonly attribute USVString id;
     readonly attribute USVString url;

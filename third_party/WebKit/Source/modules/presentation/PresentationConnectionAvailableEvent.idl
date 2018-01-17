@@ -6,7 +6,8 @@
 
 [
     Constructor(DOMString type, PresentationConnectionAvailableEventInit eventInitDict),
-    RuntimeEnabled=Presentation
+    RuntimeEnabled=Presentation,
+    Exposed=Window
 ] interface PresentationConnectionAvailableEvent : Event {
     [SameObject] readonly attribute PresentationConnection connection;
 };
