@@ -52,7 +52,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/message_center/message_center.h"
 
 using testing::Invoke;
 using testing::NiceMock;
@@ -265,7 +264,6 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkStateTest::SetUp();
 
-    message_center::MessageCenter::Initialize();
     chromeos::NetworkConnect::Initialize(nullptr);
     chromeos::NetworkHandler::Initialize();
 
@@ -329,7 +327,6 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     EXPECT_EQ(test_tether_component_factory_->was_tether_component_active(),
               shutdown_reason_verified_);
 
-    message_center::MessageCenter::Shutdown();
     chromeos::NetworkConnect::Shutdown();
     chromeos::NetworkHandler::Shutdown();
 
