@@ -140,10 +140,9 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // |cookie|. If so, returns the document associated with the cookie.
   PrintedDocument* GetDocument(int cookie);
 
-  // Starts printing a document with data given in |print_data|. |print_data|
-  // must successfully initialize a metafile. |document| is the printed
-  // document associated with the print job. Returns true if successful.
-  bool PrintDocument(PrintedDocument* document,
+  // Starts printing |document| with the given |print_data|. This method assumes
+  // |print_data| contains valid data.
+  void PrintDocument(PrintedDocument* document,
                      const scoped_refptr<base::RefCountedBytes>& print_data,
                      const gfx::Size& page_size,
                      const gfx::Rect& content_area,
