@@ -179,8 +179,7 @@ TypingCommand::TypingCommand(Document& document,
       kill_ring_(options & kKillRing),
       opened_by_backward_delete_(false),
       should_retain_autocorrection_indicator_(options &
-                                              kRetainAutocorrectionIndicator),
-      should_prevent_spell_checking_(options & kPreventSpellChecking) {
+                                              kRetainAutocorrectionIndicator) {
   UpdatePreservesTypingStyle(command_type_);
 }
 
@@ -197,8 +196,6 @@ void TypingCommand::DeleteSelection(Document& document, Options options) {
           LastTypingCommandIfStillOpenForTyping(frame)) {
     UpdateSelectionIfDifferentFromCurrentSelection(last_typing_command, frame);
 
-    last_typing_command->SetShouldPreventSpellChecking(options &
-                                                       kPreventSpellChecking);
     // InputMethodController uses this function to delete composition
     // selection.  It won't be aborted.
     last_typing_command->DeleteSelection(options & kSmartDelete,
@@ -237,8 +234,6 @@ void TypingCommand::DeleteKeyPressed(Document& document,
       if (last_typing_command->CommandTypeOfOpenCommand() == kDeleteKey) {
         UpdateSelectionIfDifferentFromCurrentSelection(last_typing_command,
                                                        frame);
-        last_typing_command->SetShouldPreventSpellChecking(
-            options & kPreventSpellChecking);
         EditingState editing_state;
         last_typing_command->DeleteKeyPressed(granularity, options & kKillRing,
                                               &editing_state);
@@ -263,8 +258,6 @@ void TypingCommand::ForwardDeleteKeyPressed(Document& document,
             LastTypingCommandIfStillOpenForTyping(frame)) {
       UpdateSelectionIfDifferentFromCurrentSelection(last_typing_command,
                                                      frame);
-      last_typing_command->SetShouldPreventSpellChecking(options &
-                                                         kPreventSpellChecking);
       last_typing_command->ForwardDeleteKeyPressed(
           granularity, options & kKillRing, editing_state);
       return;
@@ -412,8 +405,6 @@ void TypingCommand::InsertText(
     last_typing_command->SetCompositionType(composition_type);
     last_typing_command->SetShouldRetainAutocorrectionIndicator(
         options & kRetainAutocorrectionIndicator);
-    last_typing_command->SetShouldPreventSpellChecking(options &
-                                                       kPreventSpellChecking);
     last_typing_command->is_incremental_insertion_ = is_incremental_insertion;
     last_typing_command->selection_start_ = selection_start;
     last_typing_command->input_type_ = input_type;
