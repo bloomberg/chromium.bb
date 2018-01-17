@@ -259,8 +259,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
                              IDS_MD_EXTENSIONS_LOAD_ERROR_FILE_LABEL);
   source->AddLocalizedString("loadErrorErrorLabel",
                              IDS_MD_EXTENSIONS_LOAD_ERROR_ERROR_LABEL);
-  source->AddLocalizedString("loadErrorCancel",
-                             IDS_MD_EXTENSIONS_LOAD_ERROR_CANCEL);
   source->AddLocalizedString("loadErrorRetry",
                              IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY);
   source->AddLocalizedString("noErrorsToShow",
@@ -282,8 +280,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
                              IDS_MD_EXTENSIONS_PACK_DIALOG_KEY_FILE_LABEL);
   source->AddLocalizedString("packDialogContent",
                              IDS_EXTENSION_PACK_DIALOG_HEADING);
-  source->AddLocalizedString("packDialogCancel",
-                             IDS_MD_EXTENSIONS_PACK_DIALOG_CANCEL_BUTTON);
   source->AddLocalizedString("packDialogConfirm",
                              IDS_MD_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON);
   source->AddLocalizedString("shortcutNotSet",

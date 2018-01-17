@@ -1101,9 +1101,6 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE" desc="Label for the CUPS printer queue in the manually add printer dialog.">
       Queue
     </message>
-    <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_CANCEL" desc="Text for the button which cancels adding a CUPS printer.">
-      Cancel
-    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD" desc="Text for the button which allows the user to add a CUPS printer.">
       Add
     </message>
@@ -2986,9 +2983,6 @@
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_FINGER_IMMOBILE" desc="Warning text in the add fingerprint dialog to tell users they should move their finger slightly to capture different parts of the fingerprint.">
       Move slightly to capture a different part of the fingerprint
-    </message>
-    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_CANCEL_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to cancel a current setup.">
-      Cancel
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_DONE_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to exit once a fingerprint has been setup.">
       Done
