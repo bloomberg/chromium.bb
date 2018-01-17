@@ -11,12 +11,14 @@
 #include "base/strings/string16.h"
 
 class MockIToastNotification
-    : public ABI::Windows::UI::Notifications::IToastNotification {
+    : public ABI::Windows::UI::Notifications::IToastNotification,
+      public ABI::Windows::UI::Notifications::IToastNotification2 {
  public:
-  explicit MockIToastNotification(const base::string16& xml);
+  explicit MockIToastNotification(const base::string16& xml,
+                                  const base::string16& tag);
   ~MockIToastNotification() = default;
 
-  // ABI::Windows::UI::Notifications::IToastNotification implementation:
+  // IInspectable implementation:
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
                                            void** ppvObject) override;
   ULONG STDMETHODCALLTYPE AddRef() override;
@@ -24,6 +26,8 @@ class MockIToastNotification
   HRESULT STDMETHODCALLTYPE GetIids(ULONG* iidCount, IID** iids) override;
   HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING* className) override;
   HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel* trustLevel) override;
+
+  // ABI::Windows::UI::Notifications::IToastNotification implementation:
   HRESULT STDMETHODCALLTYPE
   get_Content(ABI::Windows::Data::Xml::Dom::IXmlDocument** value) override;
   HRESULT STDMETHODCALLTYPE put_ExpirationTime(
@@ -49,8 +53,19 @@ class MockIToastNotification
   HRESULT STDMETHODCALLTYPE
   remove_Failed(EventRegistrationToken token) override;
 
+  // ABI::Windows::UI::Notifications::IToastNotification2 implementation:
+  HRESULT STDMETHODCALLTYPE put_Tag(HSTRING value) override;
+  HRESULT STDMETHODCALLTYPE get_Tag(HSTRING* value) override;
+  HRESULT STDMETHODCALLTYPE put_Group(HSTRING value) override;
+  HRESULT STDMETHODCALLTYPE get_Group(HSTRING* value) override;
+  HRESULT STDMETHODCALLTYPE put_SuppressPopup(boolean value) override;
+  HRESULT STDMETHODCALLTYPE get_SuppressPopup(boolean* value) override;
+
  private:
   base::string16 xml_;
+
+  base::string16 group_;
+  base::string16 tag_;
 
   int refcount_ = 0;
 

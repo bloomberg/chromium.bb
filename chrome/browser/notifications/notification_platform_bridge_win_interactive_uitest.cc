@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
 </toast>
 )";
 
-  MockIToastNotification toast(kXmlDoc);
+  MockIToastNotification toast(kXmlDoc, L"tag");
   MockIToastActivatedEventArgs args(L"buttonIndex=1");
 
   base::RunLoop run_loop;
@@ -215,13 +215,17 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   // Add four items (two in each profile, one for each being incognito and one
   // for each that is not).
   bool incognito = true;
-  MockIToastNotification item1(GetToastString(L"P1i", L"P1", incognito));
+  MockIToastNotification item1(GetToastString(L"P1i", L"P1", incognito),
+                               L"tag");
   notifications.push_back(&item1);
-  MockIToastNotification item2(GetToastString(L"P1reg", L"P1", !incognito));
+  MockIToastNotification item2(GetToastString(L"P1reg", L"P1", !incognito),
+                               L"tag");
   notifications.push_back(&item2);
-  MockIToastNotification item3(GetToastString(L"P2i", L"P2", incognito));
+  MockIToastNotification item3(GetToastString(L"P2i", L"P2", incognito),
+                               L"tag");
   notifications.push_back(&item3);
-  MockIToastNotification item4(GetToastString(L"P2reg", L"P2", !incognito));
+  MockIToastNotification item4(GetToastString(L"P2reg", L"P2", !incognito),
+                               L"tag");
   notifications.push_back(&item4);
 
   // Query for profile P1 in incognito (should return 1 item).

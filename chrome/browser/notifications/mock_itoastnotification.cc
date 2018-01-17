@@ -14,11 +14,22 @@ namespace mswr = Microsoft::WRL;
 namespace winui = ABI::Windows::UI;
 namespace winxml = ABI::Windows::Data::Xml;
 
-MockIToastNotification::MockIToastNotification(const base::string16& xml)
-    : xml_(xml) {}
+MockIToastNotification::MockIToastNotification(const base::string16& xml,
+                                               const base::string16& tag)
+    : xml_(xml), group_(L"Notifications"), tag_(tag) {}
 
 HRESULT MockIToastNotification::QueryInterface(REFIID riid, void** ppvObject) {
-  return E_NOTIMPL;
+  if (riid == ABI::Windows::UI::Notifications::IID_IToastNotification) {
+    AddRef();
+    *ppvObject = static_cast<IToastNotification*>(this);
+    return S_OK;
+  } else if (riid == ABI::Windows::UI::Notifications::IID_IToastNotification2) {
+    AddRef();
+    *ppvObject = static_cast<IToastNotification2*>(this);
+    return S_OK;
+  }
+
+  return E_NOINTERFACE;
 }
 
 ULONG MockIToastNotification::AddRef() {
@@ -113,5 +124,33 @@ HRESULT MockIToastNotification::add_Failed(
 }
 
 HRESULT MockIToastNotification::remove_Failed(EventRegistrationToken token) {
+  return E_NOTIMPL;
+}
+
+HRESULT MockIToastNotification::put_Tag(HSTRING value) {
+  return E_NOTIMPL;
+}
+
+HRESULT MockIToastNotification::get_Tag(HSTRING* value) {
+  base::win::ScopedHString tag = base::win::ScopedHString::Create(tag_);
+  *value = tag.release();
+  return S_OK;
+}
+
+HRESULT MockIToastNotification::put_Group(HSTRING value) {
+  return E_NOTIMPL;
+}
+
+HRESULT MockIToastNotification::get_Group(HSTRING* value) {
+  base::win::ScopedHString group = base::win::ScopedHString::Create(group_);
+  *value = group.release();
+  return S_OK;
+}
+
+HRESULT MockIToastNotification::put_SuppressPopup(boolean value) {
+  return E_NOTIMPL;
+}
+
+HRESULT MockIToastNotification::get_SuppressPopup(boolean* value) {
   return E_NOTIMPL;
 }

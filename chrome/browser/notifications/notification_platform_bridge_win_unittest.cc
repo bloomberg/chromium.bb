@@ -12,10 +12,13 @@
 #include "base/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/notifications/mock_itoastnotification.h"
 #include "chrome/browser/notifications/mock_notification_image_retainer.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
@@ -45,20 +48,36 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
   ~NotificationPlatformBridgeWinTest() override = default;
 
   HRESULT GetToast(
-      ABI::Windows::UI::Notifications::IToastNotification** toast) {
+      bool renotify,
+      mswr::ComPtr<winui::Notifications::IToastNotification2>* toast2) {
     GURL origin(kOrigin);
     auto notification = std::make_unique<message_center::Notification>(
         message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, L"title",
         L"message", gfx::Image(), L"display_source", origin,
         message_center::NotifierId(origin),
         message_center::RichNotificationData(), nullptr /* delegate */);
+    notification->set_renotify(renotify);
     MockNotificationImageRetainer image_retainer;
     std::unique_ptr<NotificationTemplateBuilder> builder =
         NotificationTemplateBuilder::Build(&image_retainer, kEncodedId,
                                            kProfileId, *notification);
 
-    return notification_platform_bridge_win_->GetToastNotificationForTesting(
-        *notification, *builder, toast);
+    mswr::ComPtr<winui::Notifications::IToastNotification> toast;
+    HRESULT hr =
+        notification_platform_bridge_win_->GetToastNotificationForTesting(
+            *notification, *builder, &toast);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "GetToastNotificationForTesting failed";
+      return hr;
+    }
+
+    hr = toast.As<winui::Notifications::IToastNotification2>(toast2);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Converting to IToastNotification2 failed";
+      return hr;
+    }
+
+    return S_OK;
   }
 
  protected:
@@ -136,11 +155,8 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-  ASSERT_HRESULT_SUCCEEDED(GetToast(&toast));
   mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
-  ASSERT_HRESULT_SUCCEEDED(
-      toast.As<winui::Notifications::IToastNotification2>(&toast2));
+  ASSERT_HRESULT_SUCCEEDED(GetToast(false /* renotify */, &toast2));
 
   HSTRING hstring_group;
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Group(&hstring_group));
@@ -155,4 +171,45 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   base::win::ScopedHString tag(hstring_tag);
   ASSERT_STREQ(base::UintToString16(base::Hash(kNotificationId)).c_str(),
                tag.Get().as_string().c_str());
+}
+
+TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
+  // This test requires WinRT core functions, which are not available in
+  // older versions of Windows.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  base::win::ScopedCOMInitializer com_initializer;
+
+  std::vector<winui::Notifications::IToastNotification*> notifications;
+  notification_platform_bridge_win_->SetDisplayedNotificationsForTesting(
+      &notifications);
+
+  mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
+  boolean suppress;
+
+  // Make sure this works a toast is not suppressed when no notifications are
+  // registered.
+  ASSERT_HRESULT_SUCCEEDED(GetToast(false, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
+  ASSERT_FALSE(suppress);
+
+  // Register a single notification.
+  base::string16 tag = base::UintToString16(base::Hash(kNotificationId));
+  MockIToastNotification item1(
+      L"<toast launch=\"0|Default|0|https://foo.com/|id\"></toast>", tag);
+  notifications.push_back(&item1);
+
+  // Request this notification with renotify true (should not be suppressed).
+  ASSERT_HRESULT_SUCCEEDED(GetToast(true, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
+  ASSERT_FALSE(suppress);
+
+  // Request this notification with renotify false (should be suppressed).
+  ASSERT_HRESULT_SUCCEEDED(GetToast(false, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
+  ASSERT_TRUE(suppress);
+
+  notification_platform_bridge_win_->SetDisplayedNotificationsForTesting(
+      nullptr);
 }

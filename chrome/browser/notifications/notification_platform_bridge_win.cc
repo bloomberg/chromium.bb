@@ -149,6 +149,8 @@ class NotificationPlatformBridgeWinImpl
   HRESULT GetToastNotification(
       const message_center::Notification& notification,
       const NotificationTemplateBuilder& notification_template_builder,
+      const std::string& profile_id,
+      bool incognito,
       winui::Notifications::IToastNotification** toast_notification) {
     *toast_notification = nullptr;
 
@@ -234,6 +236,48 @@ class NotificationPlatformBridgeWinImpl
       return hr;
     }
 
+    // By default, Windows 10 will always show the notification on screen.
+    // Chrome, however, wants to suppress them if both conditions are true:
+    // 1) Renotify flag is not set.
+    // 2) They are not new (no other notification with same tag is found).
+    if (!notification.renotify()) {
+      std::vector<winui::Notifications::IToastNotification*> notifications;
+      GetNotifications(profile_id, incognito, &notifications);
+
+      for (winui::Notifications::IToastNotification* notification :
+           notifications) {
+        winui::Notifications::IToastNotification2* t2 = nullptr;
+        HRESULT hr = notification->QueryInterface(&t2);
+        if (FAILED(hr))
+          continue;
+
+        HSTRING hstring_group;
+        hr = t2->get_Group(&hstring_group);
+        if (FAILED(hr)) {
+          LOG(ERROR) << "Failed to get group value";
+          return hr;
+        }
+        ScopedHString scoped_group(hstring_group);
+
+        HSTRING hstring_tag;
+        hr = t2->get_Tag(&hstring_tag);
+        if (FAILED(hr)) {
+          LOG(ERROR) << "Failed to get tag value";
+          return hr;
+        }
+        ScopedHString scoped_tag(hstring_tag);
+
+        if (group.Get() != scoped_group.Get() || tag.Get() != scoped_tag.Get())
+          continue;  // Because it is not a repeat of an toast.
+
+        hr = toast2->put_SuppressPopup(true);
+        if (FAILED(hr)) {
+          LOG(ERROR) << "Failed to set suppress value";
+          return hr;
+        }
+      }
+    }
+
     return S_OK;
   }
 
@@ -258,8 +302,8 @@ class NotificationPlatformBridgeWinImpl
         NotificationTemplateBuilder::Build(image_retainer_.get(), encoded_id,
                                            profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-    HRESULT hr =
-        GetToastNotification(*notification, *notification_template, &toast);
+    HRESULT hr = GetToastNotification(*notification, *notification_template,
+                                      profile_id, incognito, &toast);
     if (FAILED(hr)) {
       LOG(ERROR) << "Unable to get a toast notification";
       return;
@@ -399,6 +443,18 @@ class NotificationPlatformBridgeWinImpl
     }
   }
 
+  void GetNotifications(const std::string& profile_id,
+                        bool incognito,
+                        std::vector<winui::Notifications::IToastNotification*>*
+                            notifications) const {
+    if (!NotificationPlatformBridgeWinImpl::notifications_for_testing_) {
+      GetDisplayedFromActionCenter(profile_id, incognito, notifications);
+    } else {
+      *notifications =
+          *NotificationPlatformBridgeWinImpl::notifications_for_testing_;
+    }
+  }
+
   void GetDisplayed(const std::string& profile_id,
                     bool incognito,
                     const GetDisplayedNotificationsCallback& callback) const {
@@ -407,12 +463,7 @@ class NotificationPlatformBridgeWinImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     std::vector<winui::Notifications::IToastNotification*> notifications;
-    if (!NotificationPlatformBridgeWinImpl::notifications_for_testing_) {
-      GetDisplayedFromActionCenter(profile_id, incognito, &notifications);
-    } else {
-      notifications =
-          *NotificationPlatformBridgeWinImpl::notifications_for_testing_;
-    }
+    GetNotifications(profile_id, incognito, &notifications);
 
     auto displayed_notifications = std::make_unique<std::set<std::string>>();
     for (winui::Notifications::IToastNotification* notification :
@@ -806,5 +857,6 @@ HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
     const NotificationTemplateBuilder& notification_template_builder,
     winui::Notifications::IToastNotification** toast_notification) {
   return impl_->GetToastNotification(
-      notification, notification_template_builder, toast_notification);
+      notification, notification_template_builder, "UnusedValue",
+      false /* incognito */, toast_notification);
 }
