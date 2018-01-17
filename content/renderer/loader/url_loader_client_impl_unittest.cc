@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
@@ -21,20 +22,17 @@
 namespace content {
 
 class URLLoaderClientImplTest : public ::testing::Test,
-                                mojom::URLLoaderFactory {
+                                public mojom::URLLoaderFactory {
  protected:
   URLLoaderClientImplTest()
-      : dispatcher_(new ResourceDispatcher(message_loop_.task_runner())),
-        mojo_binding_(this) {
-    mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
-
+      : dispatcher_(new ResourceDispatcher(message_loop_.task_runner())) {
     request_id_ = dispatcher_->StartAsync(
         std::make_unique<network::ResourceRequest>(), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
-        url_loader_factory_proxy_.get(),
+        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         mojom::URLLoaderClientEndpointsPtr());
     request_peer_context_.request_id = request_id_;
@@ -45,7 +43,6 @@ class URLLoaderClientImplTest : public ::testing::Test,
 
   void TearDown() override {
     url_loader_client_ = nullptr;
-    url_loader_factory_proxy_ = nullptr;
   }
 
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -75,8 +72,6 @@ class URLLoaderClientImplTest : public ::testing::Test,
   TestRequestPeer::Context request_peer_context_;
   int request_id_ = 0;
   mojom::URLLoaderClientPtr url_loader_client_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_proxy_;
-  mojo::Binding<mojom::URLLoaderFactory> mojo_binding_;
 };
 
 TEST_F(URLLoaderClientImplTest, OnReceiveResponse) {

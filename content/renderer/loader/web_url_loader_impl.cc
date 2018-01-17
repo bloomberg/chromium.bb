@@ -27,6 +27,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
@@ -383,9 +384,12 @@ std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
 
   DCHECK(task_runner);
   DCHECK(resource_dispatcher_);
+  // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
+  // pointer into SharedURLLoaderFactory.
   return std::make_unique<WebURLLoaderImpl>(
       resource_dispatcher_.get(), std::move(task_runner),
-      loader_factory_getter_->GetFactoryForURL(request.Url()));
+      base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+          loader_factory_getter_->GetFactoryForURL(request.Url())));
 }
 
 // This inner class exists since the WebURLLoader may be deleted while inside a
@@ -398,7 +402,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   Context(WebURLLoaderImpl* loader,
           ResourceDispatcher* resource_dispatcher,
           scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-          mojom::URLLoaderFactory* factory,
+          scoped_refptr<SharedURLLoaderFactory> factory,
           mojom::KeepAliveHandlePtr keep_alive_handle);
 
   ResourceDispatcher* resource_dispatcher() { return resource_dispatcher_; }
@@ -459,8 +463,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   DeferState defers_loading_;
   int request_id_;
 
-  // These are owned by the Blink::Platform singleton.
-  mojom::URLLoaderFactory* url_loader_factory_;
+  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
 };
 
 // A thin wrapper class for Context to ensure its lifetime while it is
@@ -519,7 +522,7 @@ WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
     : loader_(loader),
       use_stream_on_response_(false),
@@ -534,7 +537,7 @@ WebURLLoaderImpl::Context::Context(
               : nullptr),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK(url_loader_factory_ || !resource_dispatcher);
 }
 
@@ -1109,21 +1112,21 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::URLLoaderFactory* url_loader_factory)
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory)
     : WebURLLoaderImpl(resource_dispatcher,
                        std::move(task_runner),
-                       url_loader_factory,
+                       std::move(url_loader_factory),
                        nullptr) {}
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle)
     : context_(new Context(this,
                            resource_dispatcher,
                            std::move(task_runner),
-                           url_loader_factory,
+                           std::move(url_loader_factory),
                            std::move(keep_alive_handle))) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {

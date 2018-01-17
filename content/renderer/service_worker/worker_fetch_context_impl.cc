@@ -9,6 +9,8 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
@@ -43,15 +45,19 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
     DCHECK(resource_dispatcher_);
     if (auto loader = CreateServiceWorkerURLLoader(request, task_runner))
       return loader;
+    // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
+    // pointer into SharedURLLoaderFactory.
     return std::make_unique<WebURLLoaderImpl>(
         resource_dispatcher_.get(), std::move(task_runner),
-        loader_factory_getter_->GetFactoryForURL(request.Url()));
+        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            loader_factory_getter_->GetFactoryForURL(request.Url())));
   }
 
   void SetServiceWorkerURLLoaderFactory(
       mojom::URLLoaderFactoryPtr service_worker_url_loader_factory) {
     service_worker_url_loader_factory_ =
-        std::move(service_worker_url_loader_factory);
+        base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+            std::move(service_worker_url_loader_factory));
   }
 
   base::WeakPtr<URLLoaderFactoryImpl> GetWeakPtr() {
@@ -85,12 +91,12 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
     // worker.
     return std::make_unique<WebURLLoaderImpl>(
         resource_dispatcher_.get(), std::move(task_runner),
-        service_worker_url_loader_factory_.get());
+        service_worker_url_loader_factory_);
   }
 
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
   scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
-  mojom::URLLoaderFactoryPtr service_worker_url_loader_factory_;
+  scoped_refptr<SharedURLLoaderFactory> service_worker_url_loader_factory_;
   base::WeakPtrFactory<URLLoaderFactoryImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);
 };

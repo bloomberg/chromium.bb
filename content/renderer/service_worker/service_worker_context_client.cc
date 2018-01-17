@@ -25,6 +25,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
@@ -124,9 +125,12 @@ class WebServiceWorkerNetworkProviderImpl
     if (render_thread && provider_->script_loader_factory() &&
         ServiceWorkerUtils::IsServicificationEnabled() &&
         IsScriptRequest(request)) {
+      // TODO(crbug.com/796425): Temporarily wrap the raw
+      // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
       return std::make_unique<WebURLLoaderImpl>(
           render_thread->resource_dispatcher(), std::move(task_runner),
-          provider_->script_loader_factory());
+          base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+              provider_->script_loader_factory()));
     }
     return nullptr;
   }

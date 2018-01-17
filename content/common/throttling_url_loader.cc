@@ -94,14 +94,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
 };
 
 ThrottlingURLLoader::StartInfo::StartInfo(
-    mojom::URLLoaderFactory* in_url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> in_url_loader_factory,
     int32_t in_routing_id,
     int32_t in_request_id,
     uint32_t in_options,
     StartLoaderCallback in_start_loader_callback,
     network::ResourceRequest* in_url_request,
     scoped_refptr<base::SingleThreadTaskRunner> in_task_runner)
-    : url_loader_factory(in_url_loader_factory),
+    : url_loader_factory(std::move(in_url_loader_factory)),
       routing_id(in_routing_id),
       request_id(in_request_id),
       options(in_options),
@@ -137,7 +137,7 @@ ThrottlingURLLoader::PriorityInfo::~PriorityInfo() = default;
 
 // static
 std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
-    mojom::URLLoaderFactory* factory,
+    scoped_refptr<SharedURLLoaderFactory> factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
@@ -148,8 +148,8 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
-  loader->Start(factory, routing_id, request_id, options, StartLoaderCallback(),
-                url_request, std::move(task_runner));
+  loader->Start(std::move(factory), routing_id, request_id, options,
+                StartLoaderCallback(), url_request, std::move(task_runner));
   return loader;
 }
 
@@ -229,7 +229,7 @@ ThrottlingURLLoader::ThrottlingURLLoader(
 }
 
 void ThrottlingURLLoader::Start(
-    mojom::URLLoaderFactory* factory,
+    scoped_refptr<SharedURLLoaderFactory> factory,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -255,21 +255,21 @@ void ThrottlingURLLoader::Start(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
-      start_info_ =
-          std::make_unique<StartInfo>(factory, routing_id, request_id, options,
-                                      std::move(start_loader_callback),
-                                      url_request, std::move(task_runner));
+      start_info_ = std::make_unique<StartInfo>(
+          std::move(factory), routing_id, request_id, options,
+          std::move(start_loader_callback), url_request,
+          std::move(task_runner));
       return;
     }
   }
 
-  StartNow(factory, routing_id, request_id, options,
+  StartNow(factory.get(), routing_id, request_id, options,
            std::move(start_loader_callback), url_request,
            std::move(task_runner));
 }
 
 void ThrottlingURLLoader::StartNow(
-    mojom::URLLoaderFactory* factory,
+    SharedURLLoaderFactory* factory,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -480,7 +480,7 @@ void ThrottlingURLLoader::Resume() {
   deferred_stage_ = DEFERRED_NONE;
   switch (prev_deferred_stage) {
     case DEFERRED_START: {
-      StartNow(start_info_->url_loader_factory, start_info_->routing_id,
+      StartNow(start_info_->url_loader_factory.get(), start_info_->routing_id,
                start_info_->request_id, start_info_->options,
                std::move(start_info_->start_loader_callback),
                &start_info_->url_request, std::move(start_info_->task_runner));
