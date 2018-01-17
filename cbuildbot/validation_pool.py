@@ -61,6 +61,9 @@ SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 # Default timeout (second) for computing dependency map.
 COMPUTE_DEPENDENCY_MAP_TIMEOUT = 5 * 60
 
+# The url prefix of the CL status page.
+CL_STATUS_URL_PREFIX = 'https://chromeos-cl-viewer-ui.googleplex.com/cl_status'
+
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
 
@@ -1924,6 +1927,20 @@ class ValidationPool(object):
                lab_fail, no_stat] for change in candidates]
     parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
 
+  def _GetCLStatusURL(self, change):
+    """Construct and return the CL Status URL.
+
+    Args:
+      change: GerritPatch instance to query CL status.
+
+    Returns:
+      The URL string of the CL Status page.
+    """
+    host = (constants.INTERNAL_GERRIT_HOST if change.internal
+            else constants.EXTERNAL_GERRIT_HOST)
+    return '%s/%s/%s/%s' % (CL_STATUS_URL_PREFIX, host, change.gerrit_number,
+                            change.patch_number)
+
   def HandleApplySuccess(self, change, build_log=None):
     """Handler for when Paladin successfully applies (picks up) a change.
 
@@ -1935,9 +1952,13 @@ class ValidationPool(object):
       action_history: List of CLAction instances.
       build_log: The URL to the build log.
     """
-    msg = ('%(queue)s has picked up your change. '
-           'You can follow along at %(build_log)s .')
-    self.SendNotification(change, msg, build_log=build_log)
+    cl_status_url = self._GetCLStatusURL(change)
+    msg = ('%(queue)s has picked up your change.\n'
+           'You can follow along at %(build_log)s.\n'
+           'You can find the CL status and build information at '
+           '%(cl_status_url)s.')
+    self.SendNotification(change, msg, build_log=build_log,
+                          cl_status_url=cl_status_url)
 
   # Note: This function doesn't need to be a ValidationPool instance method.
   def UpdateCLPreCQStatus(self, change, status):

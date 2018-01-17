@@ -387,8 +387,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     handlers = kwargs.pop('handlers', False)
     kwargs['build_root'] = self.build_root
     pool = MakePool(*args, **kwargs)
-    funcs = ['HandleApplySuccess', '_HandleApplyFailure',
-             '_HandleCouldNotApply', '_HandleCouldNotSubmit',
+    funcs = ['_HandleApplyFailure', '_HandleCouldNotApply',
+             '_HandleCouldNotSubmit',
              '_HandleFailedToApplyDueToInflightConflict']
     if handlers:
       for func in funcs:
@@ -428,6 +428,35 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
     master_pool._HandleApplyFailure(notified_patches)
     slave_pool._HandleApplyFailure(unnotified_patches)
+
+  def testHandleApplySuccess(self):
+    """Test HandleApplySuccess."""
+    master_pool = self.MakePool()
+    change = self.MockPatch(
+        change_id=1, patch_number=2)
+    master_pool.HandleApplySuccess(change)
+
+  def testGetCLStatusURLForExternalPatch(self):
+    """Test GetCLStatusURL for external patches."""
+    master_pool = self.MakePool()
+    change = self.MockPatch(
+        change_id=1, patch_number=2)
+    url = master_pool._GetCLStatusURL(change)
+    self.assertEqual(
+        validation_pool.CL_STATUS_URL_PREFIX +
+        '/chromium-review.googlesource.com/1/2',
+        url)
+
+  def testGetCLStatusURLForInternalPatch(self):
+    """Test GetCLStatusURL for internal patches."""
+    master_pool = self.MakePool()
+    change = self.MockPatch(
+        change_id=1, patch_number=2, remote=site_config.params.INTERNAL_REMOTE)
+    url = master_pool._GetCLStatusURL(change)
+    self.assertEqual(
+        validation_pool.CL_STATUS_URL_PREFIX +
+        '/chrome-internal-review.googlesource.com/1/2',
+        url)
 
   def _setUpSubmit(self):
     pool = self.MakePool(dryrun=False, handlers=True)
