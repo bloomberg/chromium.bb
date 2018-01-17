@@ -221,7 +221,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
                                float ui_scale,
                                const gfx::Insets* overscan_insets,
                                const gfx::Size& resolution_in_pixels,
-                               float device_scale_factor);
+                               float device_scale_factor,
+                               float display_zoom_factor);
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,
