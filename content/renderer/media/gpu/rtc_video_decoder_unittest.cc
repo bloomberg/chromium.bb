@@ -24,6 +24,7 @@
 #endif  // defined(OS_WIN)
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -356,15 +357,9 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
-// Tests/Verifies that |rtc_encoder_| increases its error counter when it runs
+// Tests/Verifies that |rtc_decoder_| increases its error counter when it runs
 // out of pending buffers.
-//
-// TODO(sergeyu): This test is flaky as it depends on CPU scheduler behavior:
-// it assumes that RequestBufferDecode() task posted from the first Decode() is
-// executed after the last Decode() call. Fix this test or delete it.
-// https://crbug.com/795387
-TEST_P(RTCVideoDecoderTest,
-       DISABLED_GetVDAErrorCounterForRunningOutOfPendingBuffers) {
+TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   const webrtc::VideoCodecType codec_type = GetParam();
   CreateDecoder(codec_type);
   Initialize();
@@ -378,16 +373,27 @@ TEST_P(RTCVideoDecoderTest,
   input_image._frameType = webrtc::kVideoFrameKey;
   input_image._length = sizeof(buffer);
 
-  for (size_t i = 0; i < rtc_video_decoder::kMaxNumOfPendingBuffers; ++i) {
-    EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-              rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
-  }
+  EXPECT_CALL(*mock_vda_, Decode(_)).Times(AtLeast(1));
 
-  // Expect the next call to increase error counter.
-  EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
-  EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
+  const uint32_t kMaxNumDecodeRequests = 100;
+  uint32_t i = 0;
+  while (i++ < kMaxNumDecodeRequests) {
+    const int32_t result =
+        rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0);
+    RunUntilIdle();
+    if (result == WEBRTC_VIDEO_CODEC_OK)
+      EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
+    else if (result == WEBRTC_VIDEO_CODEC_ERROR) {
+      // Expect to saturate all buffer resources and increase error counter.
+      EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
+      return;
+    } else {
+      ASSERT_TRUE(false);
+      return;
+    }
+  }
+  // We have run out of kMaxNumDecodeRequests without forcing an error.
+  ASSERT_TRUE(false);
 }
 
 TEST_P(RTCVideoDecoderTest, Reinitialize) {

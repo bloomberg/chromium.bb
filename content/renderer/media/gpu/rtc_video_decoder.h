@@ -40,11 +40,6 @@ namespace gpu {
 struct SyncToken;
 }  // namespace gpu
 
-namespace rtc_video_decoder {
-// Maximum number of pending WebRTC buffers that are waiting for shared memory.
-static const size_t kMaxNumOfPendingBuffers = 8;
-}  // namespace rtc_video_decoder
-
 namespace content {
 
 // This class uses hardware accelerated video decoder to decode video for
