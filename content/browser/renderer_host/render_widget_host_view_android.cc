@@ -845,6 +845,10 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
     ClearBeginFrameRequest(PERSISTENT_BEGIN_FRAME);
 }
 
+void RenderWidgetHostViewAndroid::SetWantsAnimateOnlyBeginFrames() {
+  wants_animate_only_begin_frames_ = true;
+}
+
 viz::SurfaceId RenderWidgetHostViewAndroid::GetCurrentSurfaceId() const {
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceId()
                                : viz::SurfaceId();
@@ -2278,6 +2282,10 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
 const viz::BeginFrameArgs& RenderWidgetHostViewAndroid::LastUsedBeginFrameArgs()
     const {
   return last_begin_frame_args_;
+}
+
+bool RenderWidgetHostViewAndroid::WantsAnimateOnlyBeginFrames() const {
+  return wants_animate_only_begin_frames_;
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFramePaused() {

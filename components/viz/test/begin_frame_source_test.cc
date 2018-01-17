@@ -22,6 +22,8 @@ MockBeginFrameObserver::MockBeginFrameObserver()
     : last_begin_frame_args(kDefaultBeginFrameArgs) {
   ON_CALL(*this, LastUsedBeginFrameArgs())
       .WillByDefault(::testing::ReturnPointee(&last_begin_frame_args));
+  ON_CALL(*this, WantsAnimateOnlyBeginFrames())
+      .WillByDefault(::testing::Return(false));
 }
 
 MockBeginFrameObserver::~MockBeginFrameObserver() {}

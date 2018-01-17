@@ -1033,11 +1033,16 @@ void RenderWidget::RequestScheduleAnimation() {
   ScheduleAnimation();
 }
 
-void RenderWidget::UpdateVisualState() {
-  GetWebWidget()->UpdateAllLifecyclePhases();
+void RenderWidget::UpdateVisualState(VisualStateUpdate requested_update) {
+  bool pre_paint_only = requested_update == VisualStateUpdate::kPrePaint;
+  WebWidget::LifecycleUpdate lifecycle_update =
+      pre_paint_only ? WebWidget::LifecycleUpdate::kPrePaint
+                     : WebWidget::LifecycleUpdate::kAll;
+
+  GetWebWidget()->UpdateLifecycle(lifecycle_update);
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
 
-  if (first_update_visual_state_after_hidden_) {
+  if (first_update_visual_state_after_hidden_ && !pre_paint_only) {
     RecordTimeToFirstActivePaint();
     first_update_visual_state_after_hidden_ = false;
   }

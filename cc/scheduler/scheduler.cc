@@ -46,6 +46,9 @@ Scheduler::Scheduler(
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
+  // We want to handle animate_only BeginFrames.
+  wants_animate_only_begin_frames_ = true;
+
   ProcessScheduledActions();
 }
 

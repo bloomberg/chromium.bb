@@ -240,6 +240,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
                          BeginFrameResult result);
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
+  void BeginMainFrameAnimateAndLayoutOnly(const viz::BeginFrameArgs& args);
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;

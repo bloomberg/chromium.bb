@@ -930,6 +930,11 @@ RenderWidgetHostViewChildFrame::GetTouchSelectionControllerClientManager() {
   return root_view->GetTouchSelectionControllerClientManager();
 }
 
+void RenderWidgetHostViewChildFrame::SetWantsAnimateOnlyBeginFrames() {
+  if (support_)
+    support_->SetWantsAnimateOnlyBeginFrames();
+}
+
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {

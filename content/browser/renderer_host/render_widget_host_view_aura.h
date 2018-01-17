@@ -122,6 +122,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
 

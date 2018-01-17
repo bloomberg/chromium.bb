@@ -148,6 +148,8 @@ void HeadlessBrowserTest::SetUp() {
 }
 
 void HeadlessBrowserTest::SetUpWithoutGPU() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  SetUpCommandLine(command_line);
   BrowserTestBase::SetUp();
 }
 

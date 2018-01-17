@@ -40,6 +40,10 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
     return args.on_critical_path;
   }
 
+  static bool animate_only(const viz::BeginFrameArgs& args) {
+    return args.animate_only;
+  }
+
   static bool Read(viz::mojom::BeginFrameArgsDataView data,
                    viz::BeginFrameArgs* out);
 };

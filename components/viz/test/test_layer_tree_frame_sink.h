@@ -53,6 +53,8 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
  public:
   // Pass true for |force_disable_reclaim_resources| to act like the Display
   // is out-of-process and can't return resources synchronously.
+  // If |begin_frame_source| is specified, |disable_display_vsync| and
+  // |refresh_rate| are ignored.
   TestLayerTreeFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<RasterContextProvider> worker_context_provider,
@@ -62,7 +64,8 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool synchronous_composite,
       bool disable_display_vsync,
-      double refresh_rate);
+      double refresh_rate,
+      BeginFrameSource* begin_frame_source = nullptr);
   ~TestLayerTreeFrameSink() override;
 
   // This client must be set before BindToClient() happens.
@@ -138,6 +141,8 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source_;
+  BeginFrameSource* client_provided_begin_frame_source_;    // Not owned.
+  BeginFrameSource* display_begin_frame_source_ = nullptr;  // Not owned.
   ExternalBeginFrameSource external_begin_frame_source_;
 
   // Uses surface_manager_ and begin_frame_source_.

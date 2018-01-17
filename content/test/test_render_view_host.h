@@ -101,6 +101,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
       viz::mojom::HitTestRegionListPtr hit_test_region_list) override;
   void ClearCompositorFrame() override {}
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
+  void SetWantsAnimateOnlyBeginFrames() override {}
 
   // RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

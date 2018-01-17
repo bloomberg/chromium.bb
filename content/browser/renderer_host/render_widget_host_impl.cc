@@ -2679,6 +2679,11 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   OnSetNeedsBeginFrames(needs_begin_frame);
 }
 
+void RenderWidgetHostImpl::SetWantsAnimateOnlyBeginFrames() {
+  if (view_)
+    view_->SetWantsAnimateOnlyBeginFrames();
+}
+
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,

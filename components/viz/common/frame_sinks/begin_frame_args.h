@@ -107,6 +107,20 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   BeginFrameArgsType type;
   bool on_critical_path;
 
+  // If true, observers of this BeginFrame should not produce a new
+  // CompositorFrame, but instead only run the (web-visible) side effects of the
+  // BeginFrame, such as updating animations and layout. Such a BeginFrame
+  // effectively advances an observer's view of frame time, which in turn may
+  // trigger side effects such as loading of new resources.
+  //
+  // Observers have to explicitly opt-in to receiving animate_only
+  // BeginFrames via BeginFrameObserver::WantsAnimateOnlyBeginFrames.
+  //
+  // Designed for use in headless, in conjunction with
+  // --disable-threaded-animation, --disable-threaded-scrolling, and
+  // --disable-checker-imaging, see bit.ly/headless-rendering.
+  bool animate_only;
+
  private:
   BeginFrameArgs(uint64_t source_id,
                  uint64_t sequence_number,

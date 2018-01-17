@@ -80,6 +80,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame,
@@ -130,6 +131,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
+  bool WantsAnimateOnlyBeginFrames() const override;
 
   void UpdateNeedsBeginFramesInternal();
   Surface* CreateSurface(const SurfaceInfo& surface_info);
@@ -169,6 +171,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_ = false;
+
+  bool wants_animate_only_begin_frames_ = false;
 
   const bool is_root_;
   const bool needs_sync_tokens_;

@@ -105,6 +105,12 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
+  // Headless uses a software output device which will cause us to fall back to
+  // software compositing anyway, but only after attempting and failing to
+  // initialize GPU compositing. We disable GPU compositing here explicitly to
+  // preempt this attempt.
+  command_line->AppendSwitch(switches::kDisableGpuCompositing);
+
   SetContentClient(&content_client_);
   return false;
 }

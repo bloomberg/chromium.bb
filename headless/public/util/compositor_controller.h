@@ -36,12 +36,17 @@ class HEADLESS_EXPORT CompositorController
   // |wait_for_compositor_ready_begin_frame_delay| is the real time delay
   // between BeginFrames that are sent while waiting for the main frame
   // compositor to become ready (real time).
+  // If |update_display_for_animations| is false, animation BeginFrames will not
+  // commit or draw visual updates to the display. This can be used to reduce
+  // the overhead of such BeginFrames in the common case that screenshots will
+  // be taken from separate BeginFrames.
   CompositorController(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       HeadlessDevToolsClient* devtools_client,
       VirtualTimeController* virtual_time_controller,
       base::TimeDelta animation_begin_frame_interval,
-      base::TimeDelta wait_for_compositor_ready_begin_frame_delay);
+      base::TimeDelta wait_for_compositor_ready_begin_frame_delay,
+      bool update_display_for_animations = true);
   ~CompositorController() override;
 
   // Issues BeginFrames until the main frame's compositor has completed
@@ -89,12 +94,14 @@ class HEADLESS_EXPORT CompositorController
   void PostBeginFrame(
       const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
           begin_frame_complete_callback,
+      bool no_display_updates = false,
       std::unique_ptr<ScreenshotParams> screenshot = nullptr);
   // Issues a BeginFrame synchronously and runs |begin_frame_complete_callback|
   // when done. Should not be called again until |begin_frame_complete_callback|
   // was run.
   void BeginFrame(const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
                       begin_frame_complete_callback,
+                  bool no_display_updates = false,
                   std::unique_ptr<ScreenshotParams> screenshot = nullptr);
   // Runs the |begin_frame_complete_callback_| and the |idle_callback_| if set.
   void BeginFrameComplete(std::unique_ptr<BeginFrameResult>);
@@ -127,6 +134,7 @@ class HEADLESS_EXPORT CompositorController
   base::CancelableClosure wait_for_compositor_ready_begin_frame_task_;
   base::TimeDelta animation_begin_frame_interval_;
   base::TimeDelta wait_for_compositor_ready_begin_frame_delay_;
+  bool update_display_for_animations_;
   bool needs_begin_frames_ = false;
   bool main_frame_ready_ = false;
   base::Time last_begin_frame_time_ = base::Time::UnixEpoch();

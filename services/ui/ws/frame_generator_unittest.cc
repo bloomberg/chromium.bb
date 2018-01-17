@@ -66,6 +66,8 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
       begin_frame_source_->RemoveObserver(this);
   }
 
+  void SetWantsAnimateOnlyBeginFrames() override {}
+
   // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override {
     sink_client_->OnBeginFrame(args);
@@ -75,6 +77,8 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
   const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override {
     return last_begin_frame_args_;
   }
+
+  bool WantsAnimateOnlyBeginFrames() const override { return false; }
 
   void OnBeginFrameSourcePausedChanged(bool paused) override {}
 

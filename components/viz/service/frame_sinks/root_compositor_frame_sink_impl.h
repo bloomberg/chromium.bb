@@ -57,6 +57,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame,
                              mojom::HitTestRegionListPtr hit_test_region_list,

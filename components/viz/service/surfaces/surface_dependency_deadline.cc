@@ -76,6 +76,10 @@ const BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
   return last_begin_frame_args_;
 }
 
+bool SurfaceDependencyDeadline::WantsAnimateOnlyBeginFrames() const {
+  return false;
+}
+
 void SurfaceDependencyDeadline::OnBeginFrameSourcePausedChanged(bool paused) {}
 
 void SurfaceDependencyDeadline::CancelInternal(bool deadline) {

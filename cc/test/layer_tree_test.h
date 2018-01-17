@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
+class BeginFrameSource;
 class TestLayerTreeFrameSink;
 }
 
@@ -160,6 +161,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return image_worker_->task_runner().get();
   }
 
+  void UseBeginFrameSource(viz::BeginFrameSource* begin_frame_source) {
+    begin_frame_source_ = begin_frame_source;
+  }
+
  private:
   virtual void DispatchAddAnimationToPlayer(
       AnimationPlayer* player_to_receive_animation,
@@ -192,6 +197,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool ended_ = false;
 
   int timeout_seconds_ = false;
+
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;  // NOT OWNED.
 
   std::unique_ptr<LayerTreeTestLayerTreeFrameSinkClient>
       layer_tree_frame_sink_client_;

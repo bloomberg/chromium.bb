@@ -58,6 +58,9 @@ class VIZ_COMMON_EXPORT BeginFrameObserver {
   virtual const BeginFrameArgs& LastUsedBeginFrameArgs() const = 0;
 
   virtual void OnBeginFrameSourcePausedChanged(bool paused) = 0;
+
+  // Whether the observer also wants to receive animate_only BeginFrames.
+  virtual bool WantsAnimateOnlyBeginFrames() const = 0;
 };
 
 // Simple base class which implements a BeginFrameObserver which checks the
@@ -81,6 +84,7 @@ class VIZ_COMMON_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
   // true.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  bool WantsAnimateOnlyBeginFrames() const override;
 
  protected:
   // Return true if the given argument is (or will be) used.
@@ -90,6 +94,7 @@ class VIZ_COMMON_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 
   BeginFrameArgs last_begin_frame_args_;
   int64_t dropped_begin_frame_args_ = 0;
+  bool wants_animate_only_begin_frames_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginFrameObserverBase);

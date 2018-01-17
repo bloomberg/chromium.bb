@@ -182,6 +182,7 @@ class CONTENT_EXPORT DelegatedFrameHost
                                          gfx::PointF* transformed_point);
 
   void SetNeedsBeginFrames(bool needs_begin_frames);
+  void SetWantsAnimateOnlyBeginFrames();
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   viz::SurfaceId GetCurrentSurfaceId() const {

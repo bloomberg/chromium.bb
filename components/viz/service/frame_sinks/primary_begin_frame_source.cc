@@ -50,6 +50,11 @@ const BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs() const {
   return last_begin_frame_args_;
 }
 
+bool PrimaryBeginFrameSource::WantsAnimateOnlyBeginFrames() const {
+  // Forward animate_only BeginFrames.
+  return true;
+}
+
 void PrimaryBeginFrameSource::OnBeginFrameSourcePausedChanged(bool paused) {}
 
 void PrimaryBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {

@@ -120,7 +120,7 @@ class CORE_EXPORT WebViewImpl final
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(double last_frame_time_monotonic) override;
 
-  void UpdateAllLifecyclePhases() override;
+  void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void Paint(WebCanvas*, const WebRect&) override;
 #if defined(OS_ANDROID)
   void PaintIgnoringCompositing(WebCanvas*, const WebRect&) override;

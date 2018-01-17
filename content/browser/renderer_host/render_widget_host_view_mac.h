@@ -296,6 +296,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
 
   // Implementation of RenderWidgetHostViewBase.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

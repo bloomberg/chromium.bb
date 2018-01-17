@@ -18,6 +18,10 @@ CompositorFrameSinkClientBinding::CompositorFrameSinkClientBinding(
 
 CompositorFrameSinkClientBinding::~CompositorFrameSinkClientBinding() = default;
 
+void CompositorFrameSinkClientBinding::SetWantsAnimateOnlyBeginFrames() {
+  compositor_frame_sink_->SetWantsAnimateOnlyBeginFrames();
+}
+
 void CompositorFrameSinkClientBinding::SetNeedsBeginFrame(
     bool needs_begin_frame) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frame);

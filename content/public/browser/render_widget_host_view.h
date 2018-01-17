@@ -244,6 +244,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // when the value has changed.  Views must initially default to false.
   virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
 
+  // Informs the view that its associated render widget also wants to receive
+  // animate_only BeginFrames.
+  virtual void SetWantsAnimateOnlyBeginFrames() = 0;
+
   // This method returns the ScreenInfo used by the view to render.
   virtual void GetScreenInfo(ScreenInfo* screen_info) = 0;
 

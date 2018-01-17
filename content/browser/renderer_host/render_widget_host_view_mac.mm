@@ -1205,6 +1205,10 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
   browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_);
 }
 
+void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
+  browser_compositor_->SetWantsAnimateOnlyBeginFrames();
+}
+
 void RenderWidgetHostViewMac::KillSelf() {
   if (!weak_factory_.HasWeakPtrs()) {
     [cocoa_view_ setHidden:YES];
