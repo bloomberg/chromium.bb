@@ -261,7 +261,10 @@ bool ArcNavigationThrottle::FoundPreferredOrVerifiedArcApp(
 
     if (!instance) {
       close_reason = CloseReason::ERROR;
-    } else if (!ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
+    } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
+      chrome::SetIntentPickerViewVisibility(
+          chrome::FindBrowserWithWebContents(handle->GetWebContents()), true);
+    } else {
       instance->HandleUrl(url.spec(), package_name);
       cancel_navigation = true;
     }
