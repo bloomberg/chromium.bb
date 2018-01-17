@@ -2888,8 +2888,8 @@ TEST_F(GLRendererPixelTest, DISABLED_TrilinearFiltering) {
   std::unique_ptr<RenderPass> child_pass = RenderPass::Create();
   child_pass->SetAll(child_pass_id, child_pass_rect, child_pass_rect,
                      transform_to_root, cc::FilterOperations(),
-                     cc::FilterOperations(), gfx::ColorSpace(), false, false,
-                     false, generate_mipmap);
+                     cc::FilterOperations(), gfx::ColorSpace::CreateSRGB(),
+                     false, false, false, generate_mipmap);
 
   gfx::Rect red_rect(child_pass_rect);
   // Small enough red rect that linear filtering will miss it but large enough
