@@ -46,8 +46,8 @@ namespace {
 const int kBubbleWidth = 395;
 
 // Dimensions of the Google Pay logo.
-const int kGooglePayLogoWidth = 49;
-const int kGooglePayLogoHeight = 20;
+const int kGooglePayLogoWidth = 57;
+const int kGooglePayLogoHeight = 16;
 
 std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
     const LegalMessageLine& line,
@@ -229,7 +229,8 @@ gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
   if (base::FeatureList::IsEnabled(
           features::kAutofillUpstreamUseGooglePayBranding)) {
     return gfx::ImageSkiaOperations::CreateTiledImage(
-        gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
+        gfx::CreateVectorIcon(kGooglePayLogoWithVerticalSeparatorIcon,
+                              gfx::kPlaceholderColor),
         /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
   }
   return gfx::CreateVectorIcon(kGoogleGLogoIcon, 16, gfx::kPlaceholderColor);
