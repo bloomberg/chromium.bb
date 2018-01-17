@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -87,6 +88,9 @@ const uint8_t kTbProtocolVersionMajor = 0;
 const uint8_t kTbProtocolVersionMinor = 13;
 const uint8_t kTbMinProtocolVersionMajor = 0;
 const uint8_t kTbMinProtocolVersionMinor = 10;
+
+const base::Feature kPostQuantumPadding{"PostQuantumPadding",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     uint16_t algorithm,
@@ -953,6 +957,12 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantExperiment2:
       SSL_set_tls13_variant(ssl_.get(), tls13_experiment2);
       break;
+  }
+
+  const int dummy_pq_padding_len = base::GetFieldTrialParamByFeatureAsInt(
+      kPostQuantumPadding, "length", 0 /* default value */);
+  if (dummy_pq_padding_len > 0 && dummy_pq_padding_len < 15000) {
+    SSL_set_dummy_pq_padding_size(ssl_.get(), dummy_pq_padding_len);
   }
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
