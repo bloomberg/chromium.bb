@@ -1763,6 +1763,28 @@
             ]
         }
     ],
+    "LowPriorityIframes": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "max_effective_connection_type_threshold": "4G"
+                    },
+                    "enable_features": [
+                        "LowPriorityIframes"
+                    ]
+                }
+            ]
+        }
+    ],
     "LsdPermissionPrompt": [
         {
             "platforms": [

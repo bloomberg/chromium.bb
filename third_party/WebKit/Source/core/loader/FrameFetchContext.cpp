@@ -66,6 +66,7 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
+#include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -88,6 +89,7 @@
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -1253,6 +1255,47 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
 
 void FrameFetchContext::RecordDataUriWithOctothorpe() {
   UseCounter::Count(GetFrame(), WebFeature::kDataUriHasOctothorpe);
+}
+
+ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
+    ResourceLoadPriority priority) const {
+  if (!GetSettings())
+    return priority;
+
+  WebEffectiveConnectionType max_effective_connection_type_threshold =
+      GetSettings()->GetLowPriorityIframesThreshold();
+
+  if (max_effective_connection_type_threshold <=
+      WebEffectiveConnectionType::kTypeOffline) {
+    return priority;
+  }
+
+  WebEffectiveConnectionType effective_connection_type =
+      GetNetworkStateNotifier().EffectiveType();
+
+  if (effective_connection_type <= WebEffectiveConnectionType::kTypeOffline) {
+    return priority;
+  }
+
+  if (effective_connection_type > max_effective_connection_type_threshold) {
+    // Network is not slow enough.
+    return priority;
+  }
+
+  if (GetFrame()->IsMainFrame()) {
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, main_frame_priority_histogram,
+                        ("LowPriorityIframes.MainFrameRequestPriority",
+                         static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+    main_frame_priority_histogram.Count(static_cast<int>(priority));
+    return priority;
+  }
+
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, iframe_priority_histogram,
+                      ("LowPriorityIframes.IframeRequestPriority",
+                       static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+  iframe_priority_histogram.Count(static_cast<int>(priority));
+  // When enabled, the priority of all resources in subframe is dropped.
+  return ResourceLoadPriority::kLowest;
 }
 
 }  // namespace blink
