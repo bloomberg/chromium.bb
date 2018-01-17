@@ -12447,6 +12447,7 @@ Called by update_net_error_codes.py.-->
   <int value="407" label="ThirdPartyBlockingEnabled"/>
   <int value="408" label="SpellcheckEnabled"/>
   <int value="409" label="AdsSettingForIntrusiveAdsSites"/>
+  <int value="410" label="RestrictAccountsToPatterns"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -10904,6 +10904,30 @@
       If this policy is set to 1, ads will not be blocked on sites with intrusive ads.
       If this policy is left not set, 2 will be used.''',
     },
+    {
+      'name': 'RestrictAccountsToPatterns',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' }
+      },
+      'supported_on': ['android:65-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['*@example.com', 'user@managedchrome.com'],
+      'id': 410,
+      'caption': '''Restrict accounts that are visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'tags': [],
+      'desc': '''Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Account on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if its name matches any pattern from the list. Otherwise account will be filtered out and hidden.
+
+      The wildcard character '*' can be used to match zero or more arbitrary characters. The escape character is '\\', so to match actual '*' or '\\' characters, you can put a '\\' in front of them.
+
+      If this policy is left not set then all Google accounts on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
   ],
 
   'messages': {
