@@ -7236,9 +7236,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
 }
 
+// TODO: Flaking test crbug.com/802827
+#if defined(OS_WIN)
+#define MAYBE_InputEventRouterGesturePreventDefaultTargetMapTest \
+  DISABLED_InputEventRouterGesturePreventDefaultTargetMapTest
+#else
+#define MAYBE_InputEventRouterGesturePreventDefaultTargetMapTest \
+  InputEventRouterGesturePreventDefaultTargetMapTest
+#endif
 #if defined(USE_AURA) || defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       InputEventRouterGesturePreventDefaultTargetMapTest) {
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    MAYBE_InputEventRouterGesturePreventDefaultTargetMapTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -7316,8 +7325,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 #endif
 
+// TODO: Flaking test crbug.com/802829
+#if defined(OS_WIN)
+#define MAYBE_InputEventRouterTouchpadGestureTargetTest \
+  DISABLED_InputEventRouterTouchpadGestureTargetTest
+#else
+#define MAYBE_InputEventRouterTouchpadGestureTargetTest \
+  InputEventRouterTouchpadGestureTargetTest
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       InputEventRouterTouchpadGestureTargetTest) {
+                       MAYBE_InputEventRouterTouchpadGestureTargetTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
