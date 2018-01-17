@@ -26,7 +26,7 @@ namespace {
 const size_t kMaxShaderColorsSupported = 10000;
 const size_t kMaxMergeFilterCount = 10000;
 const size_t kMaxKernelSize = 1000;
-const size_t kMaxRegionSize = 1000;
+const size_t kMaxRegionByteSize = 10 * 1024;
 
 struct TypefacesCatalog {
   TransferCacheDeserializeHelper* transfer_cache;
@@ -719,21 +719,12 @@ void PaintOpReader::ReadComposePaintFilter(
 void PaintOpReader::ReadAlphaThresholdPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  size_t region_size = 0;
+  SkRegion region;
   SkScalar inner_min = 0.f;
   SkScalar outer_max = 0.f;
   sk_sp<PaintFilter> input;
-  ReadSimple(&region_size);
-  if (region_size > kMaxRegionSize)
-    SetInvalid();
-  if (!valid_)
-    return;
-  SkRegion region;
-  for (size_t i = 0; i < region_size; ++i) {
-    SkIRect rect;
-    ReadSimple(&rect);
-    region.op(rect, SkRegion::kUnion_Op);
-  }
+
+  Read(&region);
   ReadSimple(&inner_min);
   ReadSimple(&outer_max);
   Read(&input);
@@ -1166,6 +1157,22 @@ void PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   }
   memory_ += size_bytes;
   remaining_bytes_ -= size_bytes;
+}
+
+void PaintOpReader::Read(SkRegion* region) {
+  size_t region_bytes = 0;
+  ReadSimple(&region_bytes);
+  if (region_bytes == 0 || region_bytes > kMaxRegionByteSize)
+    SetInvalid();
+  if (!valid_)
+    return;
+  std::unique_ptr<char[]> data(new char[region_bytes]);
+  ReadData(region_bytes, data.get());
+  if (!valid_)
+    return;
+  size_t result = region->readFromMemory(data.get(), region_bytes);
+  if (!result)
+    SetInvalid();
 }
 
 }  // namespace cc
