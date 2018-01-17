@@ -30,15 +30,12 @@ class SecurityStateTabHelper
   void GetSecurityInfo(
       security_state::SecurityInfo* result) const;
 
-  // Called when the NavigationEntry's SSLStatus or other security
-  // information changes.
-  void VisibleSecurityStateChanged();
-
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidChangeVisibleSecurityState() override;
   void WebContentsDestroyed() override;
 
  private:

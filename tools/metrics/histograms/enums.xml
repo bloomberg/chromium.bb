@@ -38494,6 +38494,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="SHOW_WHITEPAPER"/>
 </enum>
 
+<enum name="SecurityLevel">
+  <int value="0" label="None"/>
+  <int value="1" label="Non-secure with warning"/>
+  <int value="2" label="Secure with EV certificate"/>
+  <int value="3" label="Secure"/>
+  <int value="4" label="Secure with policy-installed certificate"/>
+  <int value="5" label="Dangerous"/>
+</enum>
+
 <enum name="SelectFileDialogScope">
   <int value="0" label="Generic files"/>
   <int value="1" label="Images"/>

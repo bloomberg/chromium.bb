@@ -66,5 +66,8 @@ int GetIconForSecurityState(security_state::SecurityLevel security_level) {
       return IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING;
     case security_state::DANGEROUS:
       return IDR_IOS_OMNIBOX_HTTPS_INVALID;
+    case security_state::SECURITY_LEVEL_COUNT:
+      NOTREACHED();
+      return IDR_IOS_OMNIBOX_HTTP;
   }
 }

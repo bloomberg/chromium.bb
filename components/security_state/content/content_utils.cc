@@ -47,6 +47,9 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
       return blink::kWebSecurityStyleSecure;
     case security_state::DANGEROUS:
       return blink::kWebSecurityStyleInsecure;
+    case security_state::SECURITY_LEVEL_COUNT:
+      NOTREACHED();
+      return blink::kWebSecurityStyleNeutral;
   }
 
   NOTREACHED();

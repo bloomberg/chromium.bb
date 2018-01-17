@@ -93,6 +93,9 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
       return toolbar::kHttpsInvalidIcon;
+    case security_state::SECURITY_LEVEL_COUNT:
+      NOTREACHED();
+      return toolbar::kHttpIcon;
   }
   NOTREACHED();
   return toolbar::kHttpIcon;

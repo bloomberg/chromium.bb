@@ -37,6 +37,22 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
+namespace {
+
+void RecordSecurityLevel(const security_state::SecurityInfo& security_info) {
+  if (security_info.scheme_is_cryptographic) {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
+                              security_info.security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
+                              security_info.security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  }
+}
+
+}  // namespace
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecurityStateTabHelper);
 
 using safe_browsing::SafeBrowsingUIManager;
@@ -60,46 +76,6 @@ void SecurityStateTabHelper::GetSecurityInfo(
   security_state::GetSecurityInfo(GetVisibleSecurityState(),
                                   UsedPolicyInstalledCertificate(),
                                   base::Bind(&content::IsOriginSecure), result);
-}
-
-void SecurityStateTabHelper::VisibleSecurityStateChanged() {
-  if (logged_http_warning_on_current_navigation_)
-    return;
-
-  security_state::SecurityInfo security_info;
-  GetSecurityInfo(&security_info);
-  if (!security_info.insecure_input_events.password_field_shown &&
-      !security_info.insecure_input_events.credit_card_field_edited) {
-    return;
-  }
-
-  DCHECK(time_of_http_warning_on_current_navigation_.is_null());
-  time_of_http_warning_on_current_navigation_ = base::Time::Now();
-
-  logged_http_warning_on_current_navigation_ = true;
-  web_contents()->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING,
-      "This page includes a password or credit card input in a non-secure "
-      "context. A warning has been added to the URL bar. For more "
-      "information, see https://goo.gl/zmWq3m.");
-
-  // |warning_is_user_visible| will only be false if the user has set the flag
-  // for marking HTTP pages as Dangerous. In that case, the page will be
-  // flagged as Dangerous, but it isn't distinguished from other HTTP pages,
-  // which is why this code records it as not-user-visible.
-  bool warning_is_user_visible =
-      (security_info.security_level == security_state::HTTP_SHOW_WARNING);
-
-  if (security_info.insecure_input_events.credit_card_field_edited) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Security.HTTPBad.UserWarnedAboutSensitiveInput.CreditCard",
-        warning_is_user_visible);
-  }
-  if (security_info.insecure_input_events.password_field_shown) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Security.HTTPBad.UserWarnedAboutSensitiveInput.Password",
-        warning_is_user_visible);
-  }
 }
 
 void SecurityStateTabHelper::DidStartNavigation(
@@ -152,6 +128,48 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // many times the re-enable warnings button is clicked, as a fraction of
     // the number of times it was available.
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
+  }
+}
+
+void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
+  security_state::SecurityInfo security_info;
+  GetSecurityInfo(&security_info);
+  RecordSecurityLevel(security_info);
+
+  if (logged_http_warning_on_current_navigation_)
+    return;
+
+  if (!security_info.insecure_input_events.password_field_shown &&
+      !security_info.insecure_input_events.credit_card_field_edited) {
+    return;
+  }
+
+  DCHECK(time_of_http_warning_on_current_navigation_.is_null());
+  time_of_http_warning_on_current_navigation_ = base::Time::Now();
+
+  logged_http_warning_on_current_navigation_ = true;
+  web_contents()->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      "This page includes a password or credit card input in a non-secure "
+      "context. A warning has been added to the URL bar. For more "
+      "information, see https://goo.gl/zmWq3m.");
+
+  // |warning_is_user_visible| will only be false if the user has set the flag
+  // for marking HTTP pages as Dangerous. In that case, the page will be
+  // flagged as Dangerous, but it isn't distinguished from other HTTP pages,
+  // which is why this code records it as not-user-visible.
+  bool warning_is_user_visible =
+      (security_info.security_level == security_state::HTTP_SHOW_WARNING);
+
+  if (security_info.insecure_input_events.credit_card_field_edited) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Security.HTTPBad.UserWarnedAboutSensitiveInput.CreditCard",
+        warning_is_user_visible);
+  }
+  if (security_info.insecure_input_events.password_field_shown) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Security.HTTPBad.UserWarnedAboutSensitiveInput.Password",
+        warning_is_user_visible);
   }
 }
 

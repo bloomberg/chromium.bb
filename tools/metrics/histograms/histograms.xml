@@ -78675,6 +78675,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Security.SecurityLevel.CryptographicScheme"
+    enum="SecurityLevel">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Records the security level of a page with a cryptographic scheme (e.g.
+    https). This histogram is recorded once at navigation commit time, and can
+    be called again for the same document if the security level changes
+    dynamically. Note that the security level can change very quickly after
+    commit time, for example if the page includes mixed content on load (which
+    can downgrade the security level). This histogram should be analyzed with
+    care because each recorded security level is not necessarily user-visible:
+    in particular, a page may commit as a secure level (SECURE, EV_SECURE,
+    SECURE_WITH_POLICY_INSTALLED_CERT) but get quickly downgraded to NONE if it
+    shows mixed content on load. Therefore the histogram values should be
+    regarded as an upper-bound on what the user actually sees for these security
+    levels.
+  </summary>
+</histogram>
+
+<histogram name="Security.SecurityLevel.NoncryptographicScheme"
+    enum="SecurityLevel">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Records the security level of a page with a non-cryptographic scheme (e.g.
+    http). This histogram is recorded once at navigation commit time, and can be
+    called again for the same document if the security level changes
+    dynamically. Note that the security level can change very quickly after
+    commit time, for example if the page includes a password field on load
+    (which can downgrade the security level). This histogram should be analyzed
+    with care because each recorded security level is not necessarily
+    user-visible: in particular, a page may commit as NONE or HTTP_SHOW_WARNING
+    but get quickly downgraded to HTTP_SHOW_WARNING or DANGEROUS, depending on
+    field trial configuration, if it shows a password field on load. Therefore
+    the histogram values should be regarded as an upper-bound on what the user
+    actually sees for the NONE and HTTP_SHOW_WARNING levels.
+  </summary>
+</histogram>
+
 <histogram name="Security.TreatInsecureOriginAsSecure">
   <owner>mkwst@chromium.org</owner>
   <summary>
