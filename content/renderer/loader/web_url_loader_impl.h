@@ -25,11 +25,14 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace network {
+struct ResourceResponseInfo;
+}
+
 namespace content {
 
 class ChildURLLoaderFactoryGetter;
 class ResourceDispatcher;
-struct ResourceResponseInfo;
 
 // PlzNavigate: Used to override parameters of the navigation request.
 struct CONTENT_EXPORT StreamOverrideParameters {
@@ -41,7 +44,7 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
   ResourceResponseHead response;
   std::vector<GURL> redirects;
-  std::vector<ResourceResponseInfo> redirect_responses;
+  std::vector<network::ResourceResponseInfo> redirect_responses;
   std::vector<net::RedirectInfo> redirect_infos;
 
   // Called when this struct is deleted. Used to notify the browser that it can
@@ -85,7 +88,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,
-                                  const ResourceResponseInfo& info,
+                                  const network::ResourceResponseInfo& info,
                                   blink::WebURLResponse* response,
                                   bool report_security_info);
   // WebURLLoader methods:

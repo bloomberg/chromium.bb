@@ -41,9 +41,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerResponseError,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerClientType,
                           blink::mojom::ServiceWorkerClientType::kLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
-                          network::mojom::FetchResponseType::kLast)
-
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchType,
                           content::ServiceWorkerFetchType::LAST)
 

@@ -11,13 +11,13 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
+#include "services/network/public/cpp/resource_response_info.h"
 
 namespace content {
 

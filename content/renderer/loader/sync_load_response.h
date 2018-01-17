@@ -9,7 +9,7 @@
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_response_info.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/interfaces/cors.mojom.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,7 @@ namespace content {
 
 // See the SyncLoad method. (The name of this struct is not
 // suffixed with "Info" because it also contains the response data.)
-struct CONTENT_EXPORT SyncLoadResponse : ResourceResponseInfo {
+struct CONTENT_EXPORT SyncLoadResponse : network::ResourceResponseInfo {
   SyncLoadResponse();
   ~SyncLoadResponse();
 

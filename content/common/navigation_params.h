@@ -202,7 +202,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   std::vector<GURL> redirects;
 
   // The ResourceResponseInfos received during redirects.
-  std::vector<ResourceResponseInfo> redirect_response;
+  std::vector<network::ResourceResponseInfo> redirect_response;
 
   // PlzNavigate
   // The RedirectInfos received during redirects.

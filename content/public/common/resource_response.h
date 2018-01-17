@@ -12,14 +12,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "url/gurl.h"
 
 namespace content {
 
 // Parameters for a resource response header.
-struct ResourceResponseHead : ResourceResponseInfo {
+struct ResourceResponseHead : network::ResourceResponseInfo {
   // TimeTicks::Now() when the browser received the request from the renderer.
   base::TimeTicks request_start;
   // TimeTicks::Now() when the browser sent the response to the renderer.

@@ -5,8 +5,8 @@
 #include "content/browser/service_worker/service_worker_response_info.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_response_info.h"
 
 namespace content {
 
@@ -36,7 +36,7 @@ void ServiceWorkerResponseInfo::ResetDataForRequest(net::URLRequest* request) {
 ServiceWorkerResponseInfo::~ServiceWorkerResponseInfo() {}
 
 void ServiceWorkerResponseInfo::GetExtraResponseInfo(
-    ResourceResponseInfo* response_info) const {
+    network::ResourceResponseInfo* response_info) const {
   response_info->was_fetched_via_service_worker =
       was_fetched_via_service_worker_;
   response_info->was_fallback_required_by_service_worker =

@@ -44,6 +44,8 @@ static_library("typemap_dependencies") {
     "http_raw_request_response_info.h",
     "network_param_ipc_traits.cc",
     "network_param_ipc_traits.h",
+    "resource_response_info.cc",
+    "resource_response_info.h",
     "url_loader_completion_status.cc",
     "url_loader_completion_status.h",
   ]

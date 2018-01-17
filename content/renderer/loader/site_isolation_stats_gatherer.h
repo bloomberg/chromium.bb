@@ -17,9 +17,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace content {
-
+namespace network {
 struct ResourceResponseInfo;
+}
+
+namespace content {
 
 // SiteIsolationStatsGatherer monitors responses to gather various UMA stats to
 // see the compatibility impact of actual deployment of the policy. The UMA stat
@@ -73,7 +75,7 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
       const url::Origin& frame_origin,
       const GURL& response_url,
       ResourceType resource_type,
-      const ResourceResponseInfo& info);
+      const network::ResourceResponseInfo& info);
 
   // Examines the first chunk of network data in case response_url is registered
   // as a cross-site document by OnReceivedResponse(). This records various

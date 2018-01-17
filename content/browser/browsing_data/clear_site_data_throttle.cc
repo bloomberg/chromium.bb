@@ -21,12 +21,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -393,7 +393,7 @@ bool ClearSiteDataThrottle::HandleHeader() {
   const ServiceWorkerResponseInfo* response_info =
       ServiceWorkerResponseInfo::ForRequest(request_);
   if (response_info) {
-    ResourceResponseInfo extra_response_info;
+    network::ResourceResponseInfo extra_response_info;
     response_info->GetExtraResponseInfo(&extra_response_info);
 
     if (extra_response_info.was_fetched_via_service_worker) {

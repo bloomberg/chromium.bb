@@ -71,13 +71,13 @@ void ExtensionLocalizationPeer::OnUploadProgress(uint64_t position,
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const content::ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   NOTREACHED();
   return false;
 }
 
 void ExtensionLocalizationPeer::OnReceivedResponse(
-    const content::ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   response_info_ = info;
 }
 
