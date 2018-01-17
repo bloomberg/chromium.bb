@@ -30,7 +30,6 @@
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
-using namespace password_manager::metrics_util;
 using password_manager::MatchResult;
 using password_manager::PasswordStore;
 
@@ -104,7 +103,9 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
   if (!string_attr_map["form_data"].empty()) {
     bool success = DeserializeFormDataFromBase64String(
         string_attr_map["form_data"], &form->form_data);
-    FormDeserializationStatus status = success ? GNOME_SUCCESS : GNOME_FAILURE;
+    password_manager::metrics_util::FormDeserializationStatus status =
+        success ? password_manager::metrics_util::GNOME_SUCCESS
+                : password_manager::metrics_util::GNOME_FAILURE;
     LogFormDataDeserializationStatus(status);
   }
   return form;
