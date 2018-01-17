@@ -15,6 +15,13 @@ MemoryInstrumentation* g_instance = nullptr;
 void DestroyCoordinatorTLS(void* tls_object) {
   delete reinterpret_cast<mojom::CoordinatorPtr*>(tls_object);
 };
+
+void WrapGlobalMemoryDump(
+    MemoryInstrumentation::RequestGlobalDumpCallback callback,
+    bool success,
+    mojom::GlobalMemoryDumpPtr dump) {
+  callback.Run(success, GlobalMemoryDump::MoveFrom(std::move(dump)));
+}
 }  // namespace
 
 // static
@@ -53,16 +60,18 @@ void MemoryInstrumentation::RequestGlobalDump(
     const std::vector<std::string>& allocator_dump_names,
     RequestGlobalDumpCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
-  coordinator->RequestGlobalMemoryDump(MemoryDumpType::SUMMARY_ONLY,
-                                       MemoryDumpLevelOfDetail::BACKGROUND,
-                                       allocator_dump_names, callback);
+  coordinator->RequestGlobalMemoryDump(
+      MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND,
+      allocator_dump_names,
+      base::BindRepeating(&WrapGlobalMemoryDump, callback));
 }
 
 void MemoryInstrumentation::RequestGlobalDumpForPid(
     base::ProcessId pid,
     RequestGlobalDumpCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
-  coordinator->RequestGlobalMemoryDumpForPid(pid, callback);
+  coordinator->RequestGlobalMemoryDumpForPid(
+      pid, base::BindRepeating(&WrapGlobalMemoryDump, callback));
 }
 
 void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(

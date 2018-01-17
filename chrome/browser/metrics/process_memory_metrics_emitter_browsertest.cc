@@ -39,6 +39,7 @@
 namespace {
 
 using base::trace_event::MemoryDumpType;
+using memory_instrumentation::GlobalMemoryDump;
 using memory_instrumentation::mojom::ProcessType;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -75,9 +76,8 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
  private:
   ~ProcessMemoryMetricsEmitterFake() override {}
 
-  void ReceivedMemoryDump(
-      bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr) override {
+  void ReceivedMemoryDump(bool success,
+                          std::unique_ptr<GlobalMemoryDump> ptr) override {
     EXPECT_TRUE(success);
     ProcessMemoryMetricsEmitter::ReceivedMemoryDump(success, std::move(ptr));
     finished_memory_dump_ = true;

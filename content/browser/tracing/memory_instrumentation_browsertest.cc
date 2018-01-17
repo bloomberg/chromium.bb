@@ -16,10 +16,7 @@
 using testing::Le;
 using testing::Ge;
 using testing::AllOf;
-using memory_instrumentation::mojom::GlobalMemoryDumpPtr;
-using memory_instrumentation::mojom::GlobalMemoryDump;
-using memory_instrumentation::mojom::ProcessMemoryDumpPtr;
-using memory_instrumentation::mojom::ProcessMemoryDump;
+using memory_instrumentation::GlobalMemoryDump;
 using memory_instrumentation::mojom::ProcessType;
 
 namespace content {
@@ -33,24 +30,25 @@ class MemoryInstrumentationTest : public ContentBrowserTest {
 
 uint64_t GetPrivateFootprintKb(ProcessType type,
                                const GlobalMemoryDump& global_dump) {
-  ProcessMemoryDump* target_dump = nullptr;
-  for (const ProcessMemoryDumpPtr& dump : global_dump.process_dumps) {
-    if (dump->process_type == type) {
+  const GlobalMemoryDump::ProcessDump* target_dump = nullptr;
+  for (const auto& dump : global_dump.process_dumps()) {
+    if (dump.process_type() == type) {
       EXPECT_FALSE(target_dump);
-      target_dump = dump.get();
+      target_dump = &dump;
     }
   }
   EXPECT_TRUE(target_dump);
-  return target_dump->os_dump->private_footprint_kb;
+  return target_dump->os_dump().private_footprint_kb;
 }
 
-GlobalMemoryDumpPtr DoGlobalDump() {
-  GlobalMemoryDumpPtr result = nullptr;
+std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
+  std::unique_ptr<GlobalMemoryDump> result = nullptr;
   base::RunLoop run_loop;
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(base::Bind(
-          [](base::Closure quit_closure, GlobalMemoryDumpPtr* out_result,
-             bool success, GlobalMemoryDumpPtr result) {
+          [](base::Closure quit_closure,
+             std::unique_ptr<GlobalMemoryDump>* out_result, bool success,
+             std::unique_ptr<GlobalMemoryDump> result) {
             EXPECT_TRUE(success);
             *out_result = std::move(result);
             quit_closure.Run();
@@ -81,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
   const int64_t kAllocSize = 65 * 1024 * 1024;
   const int64_t kAllocSizeKb = kAllocSize / 1024;
 
-  GlobalMemoryDumpPtr before_ptr = DoGlobalDump();
+  std::unique_ptr<GlobalMemoryDump> before_ptr = DoGlobalDump();
 
   std::unique_ptr<char[]> buffer = std::make_unique<char[]>(kAllocSize);
   memset(buffer.get(), 1, kAllocSize);
@@ -93,11 +91,11 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
   EXPECT_TRUE(content::ExecuteScript(web_contents,
                                      "var a = Array(1000000).fill(1234);\n"));
 
-  GlobalMemoryDumpPtr during_ptr = DoGlobalDump();
+  std::unique_ptr<GlobalMemoryDump> during_ptr = DoGlobalDump();
 
   buffer.reset();
 
-  GlobalMemoryDumpPtr after_ptr = DoGlobalDump();
+  std::unique_ptr<GlobalMemoryDump> after_ptr = DoGlobalDump();
 
   int64_t before_kb = GetPrivateFootprintKb(ProcessType::BROWSER, *before_ptr);
   int64_t during_kb = GetPrivateFootprintKb(ProcessType::BROWSER, *during_ptr);

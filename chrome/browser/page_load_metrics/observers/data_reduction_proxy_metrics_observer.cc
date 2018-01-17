@@ -486,14 +486,17 @@ void DataReductionProxyMetricsObserver::OnEventOccurred(
 
 void DataReductionProxyMetricsObserver::ProcessMemoryDump(
     bool success,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr memory_dump) {
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> memory_dump) {
   if (!success || !memory_dump)
     return;
   // There should only be one process in the dump.
-  DCHECK_EQ(1u, memory_dump->process_dumps.size());
-  DCHECK_EQ(process_id_, memory_dump->process_dumps[0]->pid);
-  renderer_memory_usage_kb_ = static_cast<int64_t>(
-      memory_dump->process_dumps[0]->os_dump->private_footprint_kb);
+  DCHECK_EQ(1, std::distance(memory_dump->process_dumps().begin(),
+                             memory_dump->process_dumps().end()));
+
+  auto process_dump_it = memory_dump->process_dumps().begin();
+  DCHECK_EQ(process_id_, process_dump_it->pid());
+  renderer_memory_usage_kb_ =
+      static_cast<int64_t>(process_dump_it->os_dump().private_footprint_kb);
 }
 
 void DataReductionProxyMetricsObserver::RequestProcessDump(

@@ -10,6 +10,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -30,7 +31,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   using MemoryDumpType = base::trace_event::MemoryDumpType;
   using MemoryDumpLevelOfDetail = base::trace_event::MemoryDumpLevelOfDetail;
   using RequestGlobalDumpCallback =
-      base::RepeatingCallback<void(bool success, mojom::GlobalMemoryDumpPtr)>;
+      base::RepeatingCallback<void(bool success,
+                                   std::unique_ptr<GlobalMemoryDump> dump)>;
   using RequestGlobalMemoryDumpAndAppendToTraceCallback =
       base::RepeatingCallback<void(bool success, uint64_t dump_id)>;
 

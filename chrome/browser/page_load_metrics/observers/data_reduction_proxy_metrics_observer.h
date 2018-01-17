@@ -115,7 +115,7 @@ class DataReductionProxyMetricsObserver
   // process.
   void ProcessMemoryDump(
       bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr memory_dump);
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> memory_dump);
 
   // Gets the memory coordinator for Chrome. Virtual for testing.
   virtual void RequestProcessDump(
