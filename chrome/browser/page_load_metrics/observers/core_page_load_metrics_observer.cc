@@ -194,13 +194,6 @@ const char kHistogramForegroundToFirstContentfulPaint[] =
 const char kHistogramForegroundToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ForegroundToFirstMeaningfulPaint";
 
-const char kHistogramCacheRequestPercentParseStop[] =
-    "PageLoad.Experimental.Cache.RequestPercent.ParseStop";
-const char kHistogramCacheTotalRequestsParseStop[] =
-    "PageLoad.Experimental.Cache.TotalRequests.ParseStop";
-const char kHistogramTotalRequestsParseStop[] =
-    "PageLoad.Experimental.TotalRequests.ParseStop";
-
 const char kRapporMetricsNameCoarseTiming[] =
     "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
 
@@ -597,28 +590,6 @@ void CorePageLoadMetricsObserver::OnParseStop(
         timing.parse_timing
             ->parse_blocked_on_script_execution_from_document_write_duration
             .value());
-
-    int total_resources = num_cache_resources_ + num_network_resources_;
-    if (total_resources) {
-      int percent_cached = (100 * num_cache_resources_) / total_resources;
-      UMA_HISTOGRAM_PERCENTAGE(internal::kHistogramCacheRequestPercentParseStop,
-                               percent_cached);
-      UMA_HISTOGRAM_COUNTS(internal::kHistogramCacheTotalRequestsParseStop,
-                           num_cache_resources_);
-      UMA_HISTOGRAM_COUNTS(internal::kHistogramTotalRequestsParseStop,
-                           num_cache_resources_ + num_network_resources_);
-
-      // Separate out parse duration based on cache percent.
-      if (percent_cached <= 50) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.ParseDuration.CachedPercent.0-50",
-            parse_duration);
-      } else {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.ParseDuration.CachedPercent.51-100",
-            parse_duration);
-      }
-    }
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramParseDuration,
                         parse_duration);
