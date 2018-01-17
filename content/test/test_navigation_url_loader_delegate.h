@@ -18,10 +18,13 @@ namespace base {
 class RunLoop;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class StreamHandle;
-struct ResourceResponse;
 
 // PlzNavigate
 // Test implementation of NavigationURLLoaderDelegate to monitor navigation
@@ -32,10 +35,10 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   ~TestNavigationURLLoaderDelegate() override;
 
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
-  ResourceResponse* redirect_response() const {
+  network::ResourceResponse* redirect_response() const {
     return redirect_response_.get();
   }
-  ResourceResponse* response() const { return response_.get(); }
+  network::ResourceResponse* response() const { return response_.get(); }
   StreamHandle* body() const { return body_.get(); }
   int net_error() const { return net_error_; }
   const net::SSLInfo& ssl_info() const { return ssl_info_; }
@@ -56,9 +59,9 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<ResourceResponse>& response) override;
+      const scoped_refptr<network::ResourceResponse>& response) override;
   void OnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
+      const scoped_refptr<network::ResourceResponse>& response,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body,
       const net::SSLInfo& ssl_info,
@@ -75,9 +78,9 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
 
  private:
   net::RedirectInfo redirect_info_;
-  scoped_refptr<ResourceResponse> redirect_response_;
+  scoped_refptr<network::ResourceResponse> redirect_response_;
   mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
   int net_error_;
   net::SSLInfo ssl_info_;

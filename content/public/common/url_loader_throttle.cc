@@ -25,12 +25,12 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
 
 void URLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {}
 
 void URLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {}
 
 URLLoaderThrottle::URLLoaderThrottle() {}

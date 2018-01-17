@@ -43,7 +43,7 @@ class CONTENT_EXPORT InterceptingResourceHandler
 
   // ResourceHandler implementation:
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
@@ -167,7 +167,7 @@ class CONTENT_EXPORT InterceptingResourceHandler
   scoped_refptr<net::IOBuffer>* parent_read_buffer_ = nullptr;
   int* parent_read_buffer_size_ = nullptr;
 
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
 
   // Next two values are used to handle synchronous Resume calls without a
   // PostTask.

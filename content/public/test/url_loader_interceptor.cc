@@ -200,7 +200,7 @@ void URLLoaderInterceptor::WriteResponse(const std::string& headers,
   net::HttpResponseInfo info;
   info.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
-  content::ResourceResponseHead response;
+  network::ResourceResponseHead response;
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);
   client->OnReceiveResponse(response, base::nullopt, nullptr);

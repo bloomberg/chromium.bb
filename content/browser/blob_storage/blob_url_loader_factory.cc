@@ -140,7 +140,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
   void HeadersCompleted(net::HttpStatusCode status_code,
                         uint64_t content_size,
                         net::IOBufferWithSize* metadata) {
-    ResourceResponseHead response;
+    network::ResourceResponseHead response;
     response.content_length = 0;
     if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)
       response.content_length = content_size;
@@ -180,7 +180,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
     if (error_code != net::OK && !sent_headers_) {
       net::HttpStatusCode status_code =
           storage::BlobURLRequestJob::NetErrorToHttpStatusCode(error_code);
-      ResourceResponseHead response;
+      network::ResourceResponseHead response;
       response.headers = storage::BlobURLRequestJob::GenerateHeaders(
           status_code, nullptr, nullptr, 0, 0);
       client_->OnReceiveResponse(response, base::nullopt, nullptr);

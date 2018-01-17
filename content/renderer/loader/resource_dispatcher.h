@@ -39,13 +39,13 @@ struct RedirectInfo;
 namespace network {
 struct ResourceResponseInfo;
 struct ResourceRequest;
+struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }
 
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-struct ResourceResponseHead;
 struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
 class ThrottlingURLLoader;
@@ -200,19 +200,19 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(int request_id, int64_t position, int64_t size);
-  void OnReceivedResponse(int request_id, const ResourceResponseHead&);
+  void OnReceivedResponse(int request_id, const network::ResourceResponseHead&);
   void OnReceivedCachedMetadata(int request_id,
                                 const std::vector<uint8_t>& data);
   void OnReceivedRedirect(int request_id,
                           const net::RedirectInfo& redirect_info,
-                          const ResourceResponseHead& response_head);
+                          const network::ResourceResponseHead& response_head);
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);
 
   void ToResourceResponseInfo(
       const PendingRequestInfo& request_info,
-      const ResourceResponseHead& browser_info,
+      const network::ResourceResponseHead& browser_info,
       network::ResourceResponseInfo* renderer_info) const;
 
   base::TimeTicks ToRendererCompletionTime(

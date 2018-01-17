@@ -47,7 +47,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
-      const scoped_refptr<ResourceResponse>& response,
+      const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
@@ -76,7 +76,7 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // Intercepts the navigation response.
   void InterceptResponse(
-      const scoped_refptr<ResourceResponse>& response,
+      const scoped_refptr<network::ResourceResponse>& response,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       net::CertStatus cert_status,

@@ -15,7 +15,6 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -24,6 +23,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -81,7 +81,7 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
 
   // mojom::URLLoaderClient implementation
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     response_head_ = response_head;
@@ -121,8 +121,9 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
     stream_callback->OnCompleted();
     delete this;
   }
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {}
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {}
   void OnDataDownloaded(int64_t data_length,
                         int64_t encoded_data_length) override {}
   void OnUploadProgress(int64_t current_position,
@@ -137,7 +138,7 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
   mojom::URLLoaderPtr url_loader_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
 
-  ResourceResponseHead response_head_;
+  network::ResourceResponseHead response_head_;
   mojo::ScopedDataPipeConsumerHandle body_;
 
   // Callbacks that complete Helper::OnFetchEvent().
@@ -170,7 +171,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     net::HttpResponseInfo info;
     info.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
-    ResourceResponseHead response;
+    network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
     client->OnReceiveResponse(response, base::nullopt, nullptr);
@@ -450,8 +451,9 @@ class Helper : public EmbeddedWorkerTestHelper {
 
 // Returns typical response info for a resource load that went through a service
 // worker.
-std::unique_ptr<ResourceResponseHead> CreateResponseInfoFromServiceWorker() {
-  auto head = std::make_unique<ResourceResponseHead>();
+std::unique_ptr<network::ResourceResponseHead>
+CreateResponseInfoFromServiceWorker() {
+  auto head = std::make_unique<network::ResourceResponseHead>();
   head->was_fetched_via_service_worker = true;
   head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
@@ -548,8 +550,8 @@ class ServiceWorkerURLLoaderJobTest
     return JobResult::kHandledRequest;
   }
 
-  void ExpectResponseInfo(const ResourceResponseHead& info,
-                          const ResourceResponseHead& expected_info) {
+  void ExpectResponseInfo(const network::ResourceResponseHead& info,
+                          const network::ResourceResponseHead& expected_info) {
     EXPECT_EQ(expected_info.was_fetched_via_service_worker,
               info.was_fetched_via_service_worker);
     EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
@@ -618,7 +620,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, Basic) {
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 }
@@ -675,7 +677,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilComplete();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -707,7 +709,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BrokenBlobResponse) {
 
   // We should get a valid response once the headers arrive.
   client_.RunUntilResponseReceived();
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -730,7 +732,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilResponseReceived();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -770,7 +772,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse_Abort) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilResponseReceived();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -808,7 +810,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponseAndCancel) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilResponseReceived();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -884,7 +886,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, EarlyResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilComplete();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
@@ -930,10 +932,10 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NavigationPreload) {
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
 
-  std::unique_ptr<ResourceResponseHead> expected_info =
+  std::unique_ptr<network::ResourceResponseHead> expected_info =
       CreateResponseInfoFromServiceWorker();
   expected_info->did_service_worker_navigation_preload = true;
   ExpectResponseInfo(info, *expected_info);
@@ -955,7 +957,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, Redirect) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilRedirectReceived();
 
-  const ResourceResponseHead& info = client_.response_head();
+  const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(301, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 

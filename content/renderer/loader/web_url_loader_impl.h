@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderFactory.h"
 #include "url/gurl.h"
@@ -42,7 +42,7 @@ struct CONTENT_EXPORT StreamOverrideParameters {
 
   GURL stream_url;
   mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
-  ResourceResponseHead response;
+  network::ResourceResponseHead response;
   std::vector<GURL> redirects;
   std::vector<network::ResourceResponseInfo> redirect_responses;
   std::vector<net::RedirectInfo> redirect_infos;

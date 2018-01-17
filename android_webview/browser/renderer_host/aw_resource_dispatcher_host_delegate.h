@@ -50,12 +50,12 @@ class AwResourceDispatcherHostDelegate
                               content::ResourceRequestInfo* info) override;
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
-                         content::ResourceResponse* response) override;
+                         network::ResourceResponse* response) override;
 
   void OnRequestRedirected(const GURL& redirect_url,
                            net::URLRequest* request,
                            content::ResourceContext* resource_context,
-                           content::ResourceResponse* response) override;
+                           network::ResourceResponse* response) override;
 
   void RequestComplete(net::URLRequest* request) override;
 

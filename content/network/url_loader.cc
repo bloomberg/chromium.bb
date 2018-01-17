@@ -16,7 +16,6 @@
 #include "content/network/data_pipe_element_reader.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -27,6 +26,7 @@
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -37,7 +37,7 @@ constexpr size_t kDefaultAllocationSize = 512 * 1024;
 // content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
                               bool is_load_timing_enabled,
-                              ResourceResponse* response) {
+                              network::ResourceResponse* response) {
   response->head.request_time = request->request_time();
   response->head.response_time = request->response_time();
   response->head.headers = request->response_headers();
@@ -350,7 +350,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // optionally follow the redirect.
   *defer_redirect = true;
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse();
+  scoped_refptr<network::ResourceResponse> response =
+      new network::ResourceResponse();
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response.get());
   if (report_raw_headers_) {
@@ -403,7 +404,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     upload_progress_tracker_ = nullptr;
   }
 
-  response_ = new ResourceResponse();
+  response_ = new network::ResourceResponse();
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response_.get());
   if (report_raw_headers_) {

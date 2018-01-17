@@ -484,7 +484,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   ~NavigationPreloadRequest() override {}
 
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
@@ -497,8 +497,9 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     MaybeReportResponseToClient();
   }
 
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {
     DCHECK(!response_);
     DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
         response_head.headers->response_code()));

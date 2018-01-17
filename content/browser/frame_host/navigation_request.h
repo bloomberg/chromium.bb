@@ -223,9 +223,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<ResourceResponse>& response) override;
+      const scoped_refptr<network::ResourceResponse>& response) override;
   void OnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
+      const scoped_refptr<network::ResourceResponse>& response,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body,
       const net::SSLInfo& ssl_info,
@@ -355,7 +355,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // completed, these objects will be used to continue the navigation.
   // The URLLoaderClientEndpointsPtr is used when the Network Service or
   // NavigationMojoResponse is enabled. Otherwise the StreamHandle is used.
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
   mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   net::SSLInfo ssl_info_;

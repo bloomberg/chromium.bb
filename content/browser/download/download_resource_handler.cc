@@ -27,7 +27,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/resource_response.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -149,7 +149,7 @@ std::unique_ptr<ResourceHandler> DownloadResourceHandler::Create(
 
 void DownloadResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   if (core_.OnRequestRedirected()) {
     controller->Resume();
@@ -160,7 +160,7 @@ void DownloadResourceHandler::OnRequestRedirected(
 
 // Send the download creation information to the download thread.
 void DownloadResourceHandler::OnResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   // The MIME type in ResourceResponse is the product of
   // MimeTypeResourceHandler.

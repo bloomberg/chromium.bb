@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_controller.h"
-#include "content/public/common/resource_response.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -51,7 +51,7 @@ TestResourceHandler::~TestResourceHandler() {}
 
 void TestResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_EQ(1, on_will_start_called_);
@@ -78,7 +78,7 @@ void TestResourceHandler::OnRequestRedirected(
 }
 
 void TestResourceHandler::OnResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
   EXPECT_EQ(1, on_will_start_called_);

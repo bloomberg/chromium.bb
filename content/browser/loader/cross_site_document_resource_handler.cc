@@ -225,7 +225,7 @@ CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
 CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
 
 void CrossSiteDocumentResourceHandler::OnResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   has_response_started_ = true;
   http_response_code_ =
@@ -489,7 +489,7 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
 }
 
 bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
-    ResourceResponse* response) {
+    network::ResourceResponse* response) {
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.

@@ -10,12 +10,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -33,11 +33,12 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   TestURLLoaderClient();
   ~TestURLLoaderClient() override;
 
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
+  void OnReceiveResponse(const network::ResourceResponseHead& response_head,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
@@ -58,7 +59,9 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
     return has_received_cached_metadata_;
   }
   bool has_received_completion() const { return has_received_completion_; }
-  const ResourceResponseHead& response_head() const { return response_head_; }
+  const network::ResourceResponseHead& response_head() const {
+    return response_head_;
+  }
   const base::Optional<net::SSLInfo>& ssl_info() const { return ssl_info_; }
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
   const std::string& cached_metadata() const { return cached_metadata_; }
@@ -100,7 +103,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnConnectionError();
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
-  ResourceResponseHead response_head_;
+  network::ResourceResponseHead response_head_;
   base::Optional<net::SSLInfo> ssl_info_;
   mojom::DownloadedTempFilePtr downloaded_file_;
   net::RedirectInfo redirect_info_;

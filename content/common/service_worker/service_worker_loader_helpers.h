@@ -13,11 +13,10 @@
 
 namespace network {
 struct ResourceRequest;
+struct ResourceResponseHead;
 }
 
 namespace content {
-
-struct ResourceResponseHead;
 
 // Helper functions for service worker classes that use URLLoader
 //(e.g., ServiceWorkerURLLoaderJob and ServiceWorkerSubresourceLoader).
@@ -31,16 +30,16 @@ class ServiceWorkerLoaderHelpers {
   static void SaveResponseHeaders(const int status_code,
                                   const std::string& status_text,
                                   const ServiceWorkerHeaderMap& headers,
-                                  ResourceResponseHead* out_head);
+                                  network::ResourceResponseHead* out_head);
   // Populates |out_head| (except for headers) with given |response|.
   static void SaveResponseInfo(const ServiceWorkerResponse& response,
-                               ResourceResponseHead* out_head);
+                               network::ResourceResponseHead* out_head);
 
   // Returns a redirect info if |response_head| is an redirect response.
   // Otherwise returns base::nullopt.
   static base::Optional<net::RedirectInfo> ComputeRedirectInfo(
       const network::ResourceRequest& original_request,
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       bool token_binding_negotiated);
 
   // Reads |blob| using the range in |headers| (if any), writing into

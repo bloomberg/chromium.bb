@@ -30,7 +30,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
   void NotifyClientOnReceiveResponse(const std::string& extra_header) {
     DCHECK(client_ptr_);
-    ResourceResponseHead response;
+    network::ResourceResponseHead response;
     response.headers = new net::HttpResponseHeaders(
         "HTTP/1.1 200 OK\n"
         "Content-Type: image/png\n");

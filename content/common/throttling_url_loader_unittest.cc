@@ -46,14 +46,14 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnReceiveResponse() {
-    client_ptr_->OnReceiveResponse(ResourceResponseHead(), base::nullopt,
-                                   nullptr);
+    client_ptr_->OnReceiveResponse(network::ResourceResponseHead(),
+                                   base::nullopt, nullptr);
   }
 
   void NotifyClientOnReceiveRedirect() {
     net::RedirectInfo info;
     info.new_url = redirect_url;
-    client_ptr_->OnReceiveRedirect(info, ResourceResponseHead());
+    client_ptr_->OnReceiveRedirect(info, network::ResourceResponseHead());
   }
 
   void NotifyClientOnComplete(int error_code) {
@@ -136,15 +136,16 @@ class TestURLLoaderClient : public mojom::URLLoaderClient {
  private:
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
+      const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
     on_received_response_called_++;
     if (on_received_response_callback_)
       on_received_response_callback_.Run();
   }
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override {
     on_received_redirect_called_++;
   }
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {}
@@ -221,7 +222,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   }
 
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
-                           const content::ResourceResponseHead& response_head,
+                           const network::ResourceResponseHead& response_head,
                            bool* defer) override {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_)
@@ -229,7 +230,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   }
 
   void WillProcessResponse(const GURL& response_url,
-                           const ResourceResponseHead& response_head,
+                           const network::ResourceResponseHead& response_head,
                            bool* defer) override {
     will_process_response_called_++;
     if (will_process_response_callback_)

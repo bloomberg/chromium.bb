@@ -112,7 +112,7 @@ ThrottlingURLLoader::StartInfo::StartInfo(
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
 ThrottlingURLLoader::ResponseInfo::ResponseInfo(
-    const ResourceResponseHead& in_response_head,
+    const network::ResourceResponseHead& in_response_head,
     const base::Optional<net::SSLInfo>& in_ssl_info,
     mojom::DownloadedTempFilePtr in_downloaded_file)
     : response_head(in_response_head),
@@ -123,7 +123,7 @@ ThrottlingURLLoader::ResponseInfo::~ResponseInfo() = default;
 
 ThrottlingURLLoader::RedirectInfo::RedirectInfo(
     const net::RedirectInfo& in_redirect_info,
-    const ResourceResponseHead& in_response_head)
+    const network::ResourceResponseHead& in_response_head)
     : redirect_info(in_redirect_info), response_head(in_response_head) {}
 
 ThrottlingURLLoader::RedirectInfo::~RedirectInfo() = default;
@@ -329,7 +329,7 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
@@ -362,7 +362,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
 void ThrottlingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
   DCHECK(deferring_throttles_.empty());

@@ -98,7 +98,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // CommitResponseHeaders (i.e. status_ == kSentHeader).
   void CommitCompleted(int error_code);
 
-  ResourceResponseHead response_head_;
+  network::ResourceResponseHead response_head_;
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
 

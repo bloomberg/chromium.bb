@@ -331,7 +331,7 @@ void AwResourceDispatcherHostDelegate::OnRequestRedirected(
     const GURL& redirect_url,
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    content::ResourceResponse* response) {
+    network::ResourceResponse* response) {
   AddExtraHeadersIfNeeded(request, resource_context);
 }
 
@@ -413,7 +413,7 @@ bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(
 void AwResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    content::ResourceResponse* response) {
+    network::ResourceResponse* response) {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!request_info) {

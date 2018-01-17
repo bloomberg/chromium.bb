@@ -19,12 +19,12 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -82,7 +82,7 @@ void NavigationResourceHandler::ProceedWithResponse() {
 
 void NavigationResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
 
@@ -101,7 +101,7 @@ void NavigationResourceHandler::OnRequestRedirected(
 }
 
 void NavigationResourceHandler::OnResponseStarted(
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
 

@@ -16,8 +16,8 @@
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/resource_response.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 
 namespace content {
@@ -129,7 +129,7 @@ void ServiceWorkerScriptURLLoader::ResumeReadingBodyFromNet() {
 // URLLoaderClient for network loader ------------------------------------------
 
 void ServiceWorkerScriptURLLoader::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   if (!version_->context() || version_->is_redundant()) {
@@ -210,7 +210,7 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
 
 void ServiceWorkerScriptURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   // Resource requests for service worker scripts should not follow redirects.
   //
   // Step 7.5: "Set request's redirect mode to "error"."

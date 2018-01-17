@@ -231,7 +231,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
       const base::FilePath& plugin_path,
       net::URLRequest* request,
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::string* payload);
 
   ResourceScheduler* scheduler() { return scheduler_.get(); }
@@ -401,10 +401,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::AuthChallengeInfo* auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
   void DidStartRequest(ResourceLoader* loader) override;
-  void DidReceiveRedirect(ResourceLoader* loader, const GURL& new_url,
-                          ResourceResponse* response) override;
+  void DidReceiveRedirect(ResourceLoader* loader,
+                          const GURL& new_url,
+                          network::ResourceResponse* response) override;
   void DidReceiveResponse(ResourceLoader* loader,
-                          ResourceResponse* response) override;
+                          network::ResourceResponse* response) override;
   void DidFinishLoading(ResourceLoader* loader) override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceLoader* loader) override;

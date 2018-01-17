@@ -91,7 +91,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   void OnWillStart(const GURL&,
                    std::unique_ptr<ResourceController> controller) override;
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
@@ -170,7 +170,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   bool must_download_is_set_;
 
   // Used to buffer the response received until replay.
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   int bytes_read_;

@@ -22,7 +22,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
@@ -34,6 +33,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class ResourceDispatcherTest : public testing::Test,
   void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
 
   void CallOnReceiveResponse(mojom::URLLoaderClient* client) {
-    ResourceResponseHead head;
+    network::ResourceResponseHead head;
     std::string raw_headers(kTestPageHeaders);
     std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
     head.headers = new net::HttpResponseHeaders(raw_headers);
@@ -308,7 +308,7 @@ TEST_F(ResourceDispatcherTest, SerializedPostData) {
 
 class TimeConversionTest : public ResourceDispatcherTest {
  public:
-  void PerformTest(const ResourceResponseHead& response_head) {
+  void PerformTest(const network::ResourceResponseHead& response_head) {
     std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
     TestRequestPeer::Context peer_context;
     StartAsync(std::move(request), nullptr, &peer_context);
@@ -329,7 +329,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
 
 // TODO(simonjam): Enable this when 10829031 lands.
 TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
-  ResourceResponseHead response_head;
+  network::ResourceResponseHead response_head;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
   response_head.load_timing.request_start_time = base::Time::Now();
@@ -348,7 +348,7 @@ TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
 }
 
 TEST_F(TimeConversionTest, PartiallyInitialized) {
-  ResourceResponseHead response_head;
+  network::ResourceResponseHead response_head;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
 
@@ -360,7 +360,7 @@ TEST_F(TimeConversionTest, PartiallyInitialized) {
 }
 
 TEST_F(TimeConversionTest, NotInitialized) {
-  ResourceResponseHead response_head;
+  network::ResourceResponseHead response_head;
 
   PerformTest(response_head);
 

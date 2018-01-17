@@ -56,7 +56,7 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
   // The interface request for the URLLoaderClient is returned in the
   // |client_request| parameter.
   virtual bool MaybeCreateLoaderForResponse(
-      const ResourceResponseHead& response,
+      const network::ResourceResponseHead& response,
       mojom::URLLoaderPtr* loader,
       mojom::URLLoaderClientRequest* client_request);
 };

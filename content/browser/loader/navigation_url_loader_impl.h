@@ -19,6 +19,10 @@ struct RedirectInfo;
 class SSLInfo;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class AppCacheNavigationHandle;
@@ -27,7 +31,6 @@ class NavigationData;
 class ServiceWorkerNavigationHandle;
 class StreamHandle;
 struct GlobalRequestID;
-struct ResourceResponse;
 
 class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
@@ -49,17 +52,19 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   friend class NavigationURLLoaderImplCore;
 
   // Notifies the delegate of a redirect.
-  void NotifyRequestRedirected(const net::RedirectInfo& redirect_info,
-                               const scoped_refptr<ResourceResponse>& response);
+  void NotifyRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      const scoped_refptr<network::ResourceResponse>& response);
 
   // Notifies the delegate that the response has started.
-  void NotifyResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             std::unique_ptr<StreamHandle> body,
-                             const net::SSLInfo& ssl_info,
-                             std::unique_ptr<NavigationData> navigation_data,
-                             const GlobalRequestID& request_id,
-                             bool is_download,
-                             bool is_stream);
+  void NotifyResponseStarted(
+      const scoped_refptr<network::ResourceResponse>& response,
+      std::unique_ptr<StreamHandle> body,
+      const net::SSLInfo& ssl_info,
+      std::unique_ptr<NavigationData> navigation_data,
+      const GlobalRequestID& request_id,
+      bool is_download,
+      bool is_stream);
 
   // Notifies the delegate the the request has failed. If |net_error| is a
   // certificate error, the caller must pass valid values for |ssl_info| and

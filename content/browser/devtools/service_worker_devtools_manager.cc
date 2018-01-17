@@ -192,7 +192,7 @@ void ServiceWorkerDevToolsManager::NavigationPreloadResponseReceived(
     int worker_route_id,
     const std::string& request_id,
     const GURL& url,
-    const ResourceResponseHead& head) {
+    const network::ResourceResponseHead& head) {
   const WorkerId worker_id(worker_process_id, worker_route_id);
   auto it = live_hosts_.find(worker_id);
   if (it == live_hosts_.end())

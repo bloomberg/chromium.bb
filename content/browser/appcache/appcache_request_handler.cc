@@ -598,7 +598,7 @@ void AppCacheRequestHandler::MaybeCreateLoader(
 }
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
-    const ResourceResponseHead& response,
+    const network::ResourceResponseHead& response,
     mojom::URLLoaderPtr* loader,
     mojom::URLLoaderClientRequest* client_request) {
   // The sync interface of this method is inherited from the
@@ -653,7 +653,7 @@ void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
 }
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(
-    const ResourceResponseHead& response,
+    const network::ResourceResponseHead& response,
     LoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());

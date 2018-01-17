@@ -150,7 +150,7 @@ class FileURLDirectoryLoader
       return;
     }
 
-    ResourceResponseHead head;
+    network::ResourceResponseHead head;
     head.mime_type = "text/html";
     head.charset = "utf-8";
     client->OnReceiveResponse(head, base::nullopt, nullptr);
@@ -324,7 +324,7 @@ class FileURLLoader : public mojom::URLLoader {
              FileAccessPolicy file_access_policy,
              LinkFollowingPolicy link_following_policy,
              std::unique_ptr<FileURLLoaderObserver> observer) {
-    ResourceResponseHead head;
+    network::ResourceResponseHead head;
     head.request_start = base::TimeTicks::Now();
     head.response_start = base::TimeTicks::Now();
     binding_.Bind(std::move(loader));

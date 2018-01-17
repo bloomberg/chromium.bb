@@ -120,7 +120,7 @@ void CORSURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void CORSURLLoader::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK(network_loader_);
@@ -152,7 +152,7 @@ void CORSURLLoader::OnReceiveResponse(
 
 void CORSURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);

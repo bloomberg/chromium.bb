@@ -25,7 +25,6 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -35,6 +34,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -939,13 +939,13 @@ class CrossSiteDocumentResourceHandlerTest
   }
 
   // Returns a ResourceResponse that matches the TestScenario's parameters.
-  scoped_refptr<ResourceResponse> CreateResponse(
+  scoped_refptr<network::ResourceResponse> CreateResponse(
       const char* response_mime_type,
       bool include_no_sniff_header,
       AccessControlAllowOriginHeader cors_response,
       const char* initiator_origin) {
-    scoped_refptr<ResourceResponse> response =
-        base::MakeRefCounted<ResourceResponse>();
+    scoped_refptr<network::ResourceResponse> response =
+        base::MakeRefCounted<network::ResourceResponse>();
     response->head.mime_type = response_mime_type;
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("");
@@ -1045,7 +1045,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
             mock_loader_->OnWillStart(request_->url()));
 
   // Set up response based on scenario.
-  scoped_refptr<ResourceResponse> response = CreateResponse(
+  scoped_refptr<network::ResourceResponse> response = CreateResponse(
       scenario.response_mime_type, scenario.include_no_sniff_header,
       scenario.cors_response, scenario.initiator_origin);
 
@@ -1319,7 +1319,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, OnWillReadDefer) {
             mock_loader_->OnWillStart(request_->url()));
 
   // Set up response based on scenario.
-  scoped_refptr<ResourceResponse> response = CreateResponse(
+  scoped_refptr<network::ResourceResponse> response = CreateResponse(
       scenario.response_mime_type, scenario.include_no_sniff_header,
       scenario.cors_response, scenario.initiator_origin);
 

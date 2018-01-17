@@ -13,6 +13,10 @@
 #include "content/public/browser/web_contents.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
+namespace network {
+struct ResourceResponseHead;
+}
+
 namespace content {
 
 // This object monitors the URLLoaderCompletionStatus change when
@@ -26,11 +30,11 @@ class URLLoaderStatusMonitor : public mojom::URLLoaderClient {
 
   // mojom::URLLoaderClient
   void OnReceiveResponse(
-      const ResourceResponseHead& head,
+      const network::ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {}
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override {}
+                         const network::ResourceResponseHead& head) override {}
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -109,7 +113,7 @@ ResourceDownloader::InterceptNavigationResponse(
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
-    const scoped_refptr<ResourceResponse>& response,
+    const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   auto downloader = std::make_unique<ResourceDownloader>(
@@ -183,7 +187,7 @@ void ResourceDownloader::Start(
 }
 
 void ResourceDownloader::InterceptResponse(
-    const scoped_refptr<ResourceResponse>& response,
+    const scoped_refptr<network::ResourceResponse>& response,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     net::CertStatus cert_status,

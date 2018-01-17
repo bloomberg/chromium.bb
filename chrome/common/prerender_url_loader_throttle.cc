@@ -7,10 +7,10 @@
 #include "build/build_config.h"
 #include "chrome/common/prerender_util.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace prerender {
 
@@ -39,7 +39,7 @@ void CancelPrerenderForSyncDeferredRedirect(
 }
 
 // Returns true if the response has a "no-store" cache control header.
-bool IsNoStoreResponse(const content::ResourceResponseHead& response_head) {
+bool IsNoStoreResponse(const network::ResourceResponseHead& response_head) {
   return response_head.headers &&
          response_head.headers->HasHeaderValue("cache-control", "no-store");
 }
@@ -141,7 +141,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
 
 void PrerenderURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
-    const content::ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {
   redirect_count_++;
   if (mode_ == PREFETCH_ONLY) {
@@ -181,7 +181,7 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
 
 void PrerenderURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    const content::ResourceResponseHead& response_head,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {
   if (mode_ != PREFETCH_ONLY)
     return;

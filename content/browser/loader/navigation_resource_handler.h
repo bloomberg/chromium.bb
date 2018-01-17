@@ -41,10 +41,10 @@ class NavigationResourceHandler : public LayeredResourceHandler {
   // LayeredResourceHandler implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnResponseStarted(
-      ResourceResponse* response,
+      network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
@@ -58,7 +58,7 @@ class NavigationResourceHandler : public LayeredResourceHandler {
 
   // Used to buffer the response and redirect info while waiting for UI thread
   // checks to execute.
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<network::ResourceResponse> response_;
   std::unique_ptr<net::RedirectInfo> redirect_info_;
 
   // NavigationResourceHandler has joint ownership of the

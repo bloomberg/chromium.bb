@@ -122,11 +122,12 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
   void StopDeferringForThrottle(URLLoaderThrottle* throttle);
 
   // mojom::URLLoaderClient implementation:
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
+  void OnReceiveResponse(const network::ResourceResponseHead& response_head,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -207,12 +208,12 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
   std::unique_ptr<StartInfo> start_info_;
 
   struct ResponseInfo {
-    ResponseInfo(const ResourceResponseHead& in_response_head,
+    ResponseInfo(const network::ResourceResponseHead& in_response_head,
                  const base::Optional<net::SSLInfo>& in_ssl_info,
                  mojom::DownloadedTempFilePtr in_downloaded_file);
     ~ResponseInfo();
 
-    ResourceResponseHead response_head;
+    network::ResourceResponseHead response_head;
     base::Optional<net::SSLInfo> ssl_info;
     mojom::DownloadedTempFilePtr downloaded_file;
   };
@@ -221,11 +222,11 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
 
   struct RedirectInfo {
     RedirectInfo(const net::RedirectInfo& in_redirect_info,
-                 const ResourceResponseHead& in_response_head);
+                 const network::ResourceResponseHead& in_response_head);
     ~RedirectInfo();
 
     net::RedirectInfo redirect_info;
-    ResourceResponseHead response_head;
+    network::ResourceResponseHead response_head;
   };
   // Set if redirect is deferred.
   std::unique_ptr<RedirectInfo> redirect_info_;

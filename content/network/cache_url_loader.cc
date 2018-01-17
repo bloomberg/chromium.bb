@@ -24,7 +24,7 @@ class CacheURLLoader {
       : client_(std::move(client)) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-    ResourceResponseHead resource_response;
+    network::ResourceResponseHead resource_response;
     resource_response.headers = headers;
     resource_response.mime_type = "text/html";
     client_->OnReceiveResponse(resource_response, base::nullopt, nullptr);

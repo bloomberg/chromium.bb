@@ -25,7 +25,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
@@ -41,6 +40,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -140,7 +140,8 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 }
 
 void ResourceDispatcher::OnReceivedResponse(
-    int request_id, const ResourceResponseHead& response_head) {
+    int request_id,
+    const network::ResourceResponseHead& response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -199,7 +200,7 @@ void ResourceDispatcher::OnDownloadedData(int request_id,
 void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -461,7 +462,7 @@ int ResourceDispatcher::StartAsync(
 
 void ResourceDispatcher::ToResourceResponseInfo(
     const PendingRequestInfo& request_info,
-    const ResourceResponseHead& browser_info,
+    const network::ResourceResponseHead& browser_info,
     network::ResourceResponseInfo* renderer_info) const {
   *renderer_info = browser_info;
   if (base::TimeTicks::IsConsistentAcrossProcesses() ||
@@ -528,7 +529,7 @@ void ResourceDispatcher::ContinueForNavigation(
   // the request. ResourceResponseHead can be empty here because we
   // pull the StreamOverride's one in
   // WebURLLoaderImpl::Context::OnReceivedResponse.
-  client_ptr->OnReceiveResponse(ResourceResponseHead(), base::nullopt,
+  client_ptr->OnReceiveResponse(network::ResourceResponseHead(), base::nullopt,
                                 mojom::DownloadedTempFilePtr());
   // TODO(clamy): Move the replaying of redirects from WebURLLoaderImpl here.
 

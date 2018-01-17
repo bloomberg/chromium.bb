@@ -21,6 +21,10 @@ namespace storage {
 class FileSystemContext;
 }
 
+namespace network {
+struct ResourceResponse;
+}
+
 namespace content {
 
 class AppCacheNavigationHandleCore;
@@ -30,7 +34,6 @@ class ResourceContext;
 class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
 struct GlobalRequestID;
-struct ResourceResponse;
 
 // The IO-thread counterpart to the NavigationURLLoaderImpl. It lives on the IO
 // thread and is owned by the UI-thread NavigationURLLoaderImpl and the
@@ -70,10 +73,10 @@ class NavigationURLLoaderImplCore
 
   // Notifies |loader_| on the UI thread that the request was redirected.
   void NotifyRequestRedirected(const net::RedirectInfo& redirect_info,
-                               ResourceResponse* response);
+                               network::ResourceResponse* response);
 
   // Notifies |loader_| on the UI thread that the response started.
-  void NotifyResponseStarted(ResourceResponse* response,
+  void NotifyResponseStarted(network::ResourceResponse* response,
                              std::unique_ptr<StreamHandle> body,
                              const net::SSLInfo& ssl_info,
                              std::unique_ptr<NavigationData> navigation_data,

@@ -121,7 +121,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // Have the current RenderFrameHost commit the navigation.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(request)->CallOnResponseStarted(
       response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(main_test_rfh()->GetProcess()->did_frame_commit_navigation());
@@ -385,7 +386,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 204 response.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
@@ -410,7 +412,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 205 response.
-  response = new ResourceResponse;
+  response = new network::ResourceResponse;
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
@@ -446,7 +448,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   main_test_rfh()->SendBeforeUnloadACK(true);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
 
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
@@ -489,7 +492,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, RedirectCrossSite) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // Have the RenderFrameHost commit the navigation.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   TestRenderFrameHost* final_speculative_rfh =
@@ -561,7 +565,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_NE(site_instance_id_1, site_instance_id_2);
 
   // Have the RenderFrameHost commit the navigation.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
       response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(speculative_rfh->GetProcess()->did_frame_commit_navigation());
@@ -753,7 +758,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   ASSERT_TRUE(speculative_rfh);
 
   // Have the RenderFrameHost commit the navigation.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
       response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(speculative_rfh->GetProcess()->did_frame_commit_navigation());
@@ -899,7 +905,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Ask Navigator to commit the navigation by simulating a call to
   // OnResponseStarted.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(node->navigation_request())
       ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
@@ -958,7 +965,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Commit the navigation with Navigator by simulating the call to
   // OnResponseStarted.
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   speculative_rfh = GetSpeculativeRenderFrameHost(node);

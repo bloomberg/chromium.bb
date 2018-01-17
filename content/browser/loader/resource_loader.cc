@@ -31,7 +31,6 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -44,6 +43,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -54,7 +54,7 @@ namespace {
 void PopulateResourceResponse(
     ResourceRequestInfoImpl* info,
     net::URLRequest* request,
-    ResourceResponse* response,
+    network::ResourceResponse* response,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers) {
   response->head.request_time = request->request_time();
@@ -347,7 +347,8 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
     }
   }
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse();
+  scoped_refptr<network::ResourceResponse> response =
+      new network::ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get(),
                            raw_request_headers_, raw_response_headers_.get());
   raw_request_headers_ = net::HttpRawRequestHeaders();
@@ -652,7 +653,8 @@ void ResourceLoader::FollowDeferredRedirectInternal() {
 
 void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
-  scoped_refptr<ResourceResponse> response = new ResourceResponse();
+  scoped_refptr<network::ResourceResponse> response =
+      new network::ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get(),
                            raw_request_headers_, raw_response_headers_.get());
   raw_request_headers_ = net::HttpRawRequestHeaders();

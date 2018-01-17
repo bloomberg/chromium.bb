@@ -41,10 +41,10 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 

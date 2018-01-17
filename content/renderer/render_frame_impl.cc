@@ -74,7 +74,6 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/resource_response.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -3050,7 +3049,7 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 // mojom::FrameNavigationControl implementation --------------------------------
 
 void RenderFrameImpl::CommitNavigation(
-    const ResourceResponseHead& head,
+    const network::ResourceResponseHead& head,
     const GURL& body_url,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
@@ -6433,7 +6432,7 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    const ResourceResponseHead& head,
+    const network::ResourceResponseHead& head,
     const GURL& body_url,
     bool is_same_document_navigation) {
   // This will override the url requested by the WebURLLoader, as well as

@@ -327,7 +327,8 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
       Referrer::ReferrerPolicyForUrlRequest(referrer_.policy);
 
   url_loader->CallOnRequestRedirected(
-      redirect_info, scoped_refptr<ResourceResponse>(new ResourceResponse));
+      redirect_info,
+      scoped_refptr<network::ResourceResponse>(new network::ResourceResponse));
 
   WaitForThrottleChecksComplete();
 

@@ -154,7 +154,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
   blink::mojom::BlobPtr body_as_blob_;
 
   bool did_navigation_preload_ = false;
-  ResourceResponseHead response_head_;
+  network::ResourceResponseHead response_head_;
   base::Optional<net::SSLInfo> ssl_info_;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).

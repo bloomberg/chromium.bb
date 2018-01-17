@@ -87,7 +87,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(response.headers.c_str(),
                                           response.headers.size()));
-    ResourceResponseHead response_head;
+    network::ResourceResponseHead response_head;
     response_head.headers = info.headers;
     response_head.headers->GetMimeType(&response_head.mime_type);
     if (response.has_certificate_error) {

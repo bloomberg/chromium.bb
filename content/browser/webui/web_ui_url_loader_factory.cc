@@ -53,7 +53,7 @@ void CallOnError(mojom::URLLoaderClientPtrInfo client_info, int error_code) {
   client->OnComplete(status);
 }
 
-void ReadData(scoped_refptr<ResourceResponse> headers,
+void ReadData(scoped_refptr<network::ResourceResponse> headers,
               const ui::TemplateReplacements* replacements,
               bool gzipped,
               scoped_refptr<URLDataSourceImpl> data_source,
@@ -122,7 +122,7 @@ void ReadData(scoped_refptr<ResourceResponse> headers,
   client->OnComplete(status);
 }
 
-void DataAvailable(scoped_refptr<ResourceResponse> headers,
+void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
                    const ui::TemplateReplacements* replacements,
                    bool gzipped,
                    scoped_refptr<URLDataSourceImpl> source,
@@ -172,7 +172,8 @@ void StartURLLoader(const network::ResourceRequest& request,
   scoped_refptr<net::HttpResponseHeaders> headers =
       URLDataManagerBackend::GetHeaders(source, path, origin_header);
 
-  scoped_refptr<ResourceResponse> resource_response(new ResourceResponse);
+  scoped_refptr<network::ResourceResponse> resource_response(
+      new network::ResourceResponse);
   resource_response->head.headers = headers;
   resource_response->head.mime_type = source->source()->GetMimeType(path);
   // TODO: fill all the time related field i.e. request_time response_time

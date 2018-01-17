@@ -846,7 +846,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
       // chunk of HTML.
 
       // Leave cache headers out of generated background page jobs.
-      content::ResourceResponseHead head;
+      network::ResourceResponseHead head;
       const bool send_cors_headers = false;
       head.headers = BuildHttpHeaders(content_security_policy,
                                       send_cors_headers, base::Time());

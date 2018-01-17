@@ -23,6 +23,7 @@ class URLRequest;
 }  // namespace net
 
 namespace network {
+struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -37,7 +38,6 @@ class NavigationThrottle;
 struct GlobalRequestID;
 struct InterceptedRequestInfo;
 struct ResourceRequest;
-struct ResourceResponseHead;
 
 namespace protocol {
 
@@ -121,9 +121,10 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   void NavigationPreloadRequestSent(const std::string& request_id,
                                     const network::ResourceRequest& request);
-  void NavigationPreloadResponseReceived(const std::string& request_id,
-                                         const GURL& url,
-                                         const ResourceResponseHead& head);
+  void NavigationPreloadResponseReceived(
+      const std::string& request_id,
+      const GURL& url,
+      const network::ResourceResponseHead& head);
   void NavigationPreloadCompleted(
       const std::string& request_id,
       const network::URLLoaderCompletionStatus& completion_status);

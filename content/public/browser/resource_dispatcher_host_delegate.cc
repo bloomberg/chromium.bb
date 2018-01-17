@@ -63,14 +63,13 @@ void ResourceDispatcherHostDelegate::OnStreamCreated(
 void ResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     ResourceContext* resource_context,
-    ResourceResponse* response) {}
+    network::ResourceResponse* response) {}
 
 void ResourceDispatcherHostDelegate::OnRequestRedirected(
     const GURL& redirect_url,
     net::URLRequest* request,
     ResourceContext* resource_context,
-    ResourceResponse* response) {
-}
+    network::ResourceResponse* response) {}
 
 void ResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request,
