@@ -8,6 +8,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
+#include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPanelElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
@@ -75,6 +76,10 @@ void MediaControlsWindowEventListener::Start() {
                                                   false);
   media_controls_->volume_slider_->addEventListener(EventTypeNames::click, this,
                                                     false);
+  if (media_controls_->overlay_play_button_) {
+    media_controls_->overlay_play_button_->addEventListener(
+        EventTypeNames::click, this, false);
+  }
 
   is_active_ = true;
 }
@@ -106,6 +111,10 @@ void MediaControlsWindowEventListener::Stop() {
                                                      this, false);
   media_controls_->volume_slider_->removeEventListener(EventTypeNames::click,
                                                        this, false);
+  if (media_controls_->overlay_play_button_) {
+    media_controls_->overlay_play_button_->removeEventListener(
+        EventTypeNames::click, this, false);
+  }
 
   is_active_ = false;
 }
