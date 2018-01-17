@@ -8,6 +8,7 @@
 #include "core/css/RuleSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/ContainerNode.h"
 
@@ -121,6 +122,24 @@ ActiveSheetsChange CompareActiveStyleSheets(
   return changed_rule_sets.IsEmpty() && !adds_non_matching_mq
              ? kNoActiveSheetsChanged
              : kActiveSheetsChanged;
+}
+
+bool ClearMediaQueryDependentRuleSets(
+    const ActiveStyleSheetVector& active_style_sheets) {
+  bool needs_active_style_update = false;
+  for (const auto& active_sheet : active_style_sheets) {
+    if (const MediaQuerySet* media_queries =
+            active_sheet.first->MediaQueries()) {
+      if (!media_queries->QueryVector().IsEmpty())
+        needs_active_style_update = true;
+    }
+    StyleSheetContents* contents = active_sheet.first->Contents();
+    if (contents->HasMediaQueries()) {
+      needs_active_style_update = true;
+      contents->ClearRuleSet();
+    }
+  }
+  return needs_active_style_update;
 }
 
 }  // namespace blink

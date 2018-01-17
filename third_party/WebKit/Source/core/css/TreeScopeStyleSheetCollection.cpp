@@ -51,18 +51,7 @@ void TreeScopeStyleSheetCollection::AddStyleSheetCandidateNode(Node& node) {
 }
 
 bool TreeScopeStyleSheetCollection::MediaQueryAffectingValueChanged() {
-  bool needs_active_style_update = false;
-  for (const auto& active_sheet : active_author_style_sheets_) {
-    if (const MediaQuerySet* media_queries =
-            active_sheet.first->MediaQueries()) {
-      if (!media_queries->QueryVector().IsEmpty())
-        needs_active_style_update = true;
-    }
-    StyleSheetContents* contents = active_sheet.first->Contents();
-    if (contents->HasMediaQueries())
-      contents->ClearRuleSet();
-  }
-  return needs_active_style_update;
+  return ClearMediaQueryDependentRuleSets(active_author_style_sheets_);
 }
 
 void TreeScopeStyleSheetCollection::ApplyActiveStyleSheetChanges(

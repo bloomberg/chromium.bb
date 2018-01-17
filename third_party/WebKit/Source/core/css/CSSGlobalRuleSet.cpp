@@ -50,7 +50,7 @@ void CSSGlobalRuleSet::Update(Document& document) {
   if (watched_selectors_rule_set_)
     features_.Add(watched_selectors_rule_set_->Features());
 
-  document.GetStyleEngine().CollectScopedStyleFeaturesTo(features_);
+  document.GetStyleEngine().CollectFeaturesTo(features_);
 }
 
 void CSSGlobalRuleSet::Dispose() {
