@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
@@ -10,7 +10,11 @@
 
 <dom-module id="settings-channel-switcher-dialog">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #warningSelector > :not(.iron-selected) {
+        display: none;
+      }
+    </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{aboutChangeChannel}</div>
       <div slot="body">
@@ -29,10 +33,24 @@
             $i18n{aboutChannelDialogDev}
           </paper-radio-button>
         </paper-radio-group>
-        <div id="warning" hidden="[[!shouldShowWarning_(warning_)]]">
-          <h2>[[warning_.title]]</h2>
-          <div>[[warning_.description]]</div>
-        </div>
+        <iron-selector id="warningSelector">
+          <div>
+            <h2>$i18n{aboutDelayedWarningTitle}</h2>
+            <div>[[substituteString_(
+                '$i18nPolymer{aboutDelayedWarningMessage}',
+                '$i18nPolymer{aboutProductTitle}')]]</div>
+          </div>
+          <div>
+            <h2>$i18n{aboutPowerwashWarningTitle}</h2>
+            <div>$i18n{aboutPowerwashWarningMessage}</div>
+          </div>
+          <div>
+            <h2>$i18n{aboutUnstableWarningTitle}</h2>
+            <div>[[substituteString_(
+                '$i18nPolymer{aboutUnstableWarningMessage}',
+                '$i18nPolymer{aboutProductTitle}')]]</div>
+          </div>
+        </iron-selector>
       </div>
       <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_"
