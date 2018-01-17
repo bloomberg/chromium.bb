@@ -40,7 +40,8 @@ void CancelPrerenderForSyncDeferredRedirect(
 
 // Returns true if the response has a "no-store" cache control header.
 bool IsNoStoreResponse(const content::ResourceResponseHead& response_head) {
-  return response_head.headers->HasHeaderValue("cache-control", "no-store");
+  return response_head.headers &&
+         response_head.headers->HasHeaderValue("cache-control", "no-store");
 }
 
 }  // namespace
