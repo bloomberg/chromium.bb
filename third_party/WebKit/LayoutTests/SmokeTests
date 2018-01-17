@@ -980,10 +980,10 @@ virtual/layout_ng/fast/block/float/positioned-float-crash.html
 
 # Include //media/OWNERS on review of changes to media-gpu-accelerated SmokeTests coverage.
 virtual/media-gpu-accelerated/media/video-autoplay.html
-virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-play.html
-virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html
-virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html
-virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html
+virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-play.html
+virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-av-audio-bitrate.html
+virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html
+virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html
 
 virtual/layout_ng/fast/block/margin-collapse/019.html
 virtual/mojo-loading/http/tests/htmlimports/csp-block-import.html
