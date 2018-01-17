@@ -113,8 +113,7 @@ class CORE_EXPORT SelectionController final
   bool UpdateSelectionForMouseDownDispatchingSelectStart(
       Node*,
       const SelectionInFlatTree&,
-      TextGranularity,
-      HandleVisibility);
+      const SetSelectionOptions&);
 
   FrameSelection& Selection() const;
 
