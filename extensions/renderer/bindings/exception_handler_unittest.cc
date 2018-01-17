@@ -154,7 +154,7 @@ TEST_F(ExceptionHandlerTest, StackTraces) {
                             gin::StringToV8(context->GetIsolate(),
                                             "throw new Error('simple');"))
             .ToLocalChecked();
-    script->Run();
+    ASSERT_TRUE(script->Run(context).IsEmpty());
     ASSERT_TRUE(try_catch.HasCaught());
     handler.HandleException(context, "handled", &try_catch);
 
@@ -189,7 +189,7 @@ TEST_F(ExceptionHandlerTest, StackTraces) {
         v8::Script::Compile(context,
                             gin::StringToV8(context->GetIsolate(), kNestedCall))
             .ToLocalChecked();
-    script->Run();
+    ASSERT_TRUE(script->Run(context).IsEmpty());
     ASSERT_TRUE(try_catch.HasCaught());
     handler.HandleException(context, "handled", &try_catch);
     ASSERT_TRUE(logged_error);

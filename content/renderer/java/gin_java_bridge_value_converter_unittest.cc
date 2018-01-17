@@ -120,11 +120,15 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
   };
   for (size_t i = 0; i < arraysize(array_types); i += 2) {
     const char* typed_array_type = array_types[i + 1];
-    v8::Local<v8::Script> script(v8::Script::Compile(v8::String::NewFromUtf8(
-        isolate_,
-        base::StringPrintf(
-            source_template, array_types[i], typed_array_type).c_str())));
-    v8::Local<v8::Value> v8_typed_array = script->Run();
+    v8::Local<v8::Script> script(
+        v8::Script::Compile(
+            context,
+            v8::String::NewFromUtf8(
+                isolate_, base::StringPrintf(source_template, array_types[i],
+                                             typed_array_type)
+                              .c_str()))
+            .ToLocalChecked());
+    v8::Local<v8::Value> v8_typed_array = script->Run(context).ToLocalChecked();
     std::unique_ptr<base::Value> list_value(
         converter->FromV8Value(v8_typed_array, context));
     ASSERT_TRUE(list_value.get()) << typed_array_type;
