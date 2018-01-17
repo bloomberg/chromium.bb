@@ -25,11 +25,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "ui/base/page_transition_types.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

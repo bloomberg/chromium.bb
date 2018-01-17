@@ -67,9 +67,9 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD2(OnUploadProgress, void(uint64_t position, uint64_t size));
   MOCK_METHOD2(OnReceivedRedirect,
                bool(const net::RedirectInfo& redirect_info,
-                    const content::ResourceResponseInfo& info));
+                    const network::ResourceResponseInfo& info));
   MOCK_METHOD1(OnReceivedResponse,
-               void(const content::ResourceResponseInfo& info));
+               void(const network::ResourceResponseInfo& info));
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
   void OnReceivedData(
       std::unique_ptr<RequestPeer::ReceivedData> data) override {

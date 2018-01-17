@@ -31,7 +31,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_response.h"
-#include "content/public/common/resource_response_info.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader.mojom.h"
@@ -49,6 +48,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

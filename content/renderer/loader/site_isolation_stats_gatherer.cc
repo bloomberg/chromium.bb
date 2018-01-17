@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_response_info.h"
 
 namespace content {
 
@@ -105,7 +105,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
     const url::Origin& frame_origin,
     const GURL& response_url,
     ResourceType resource_type,
-    const ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   if (!g_stats_gathering_enabled)
     return nullptr;
 

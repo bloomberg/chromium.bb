@@ -17,9 +17,12 @@ namespace net {
 class URLRequest;
 }
 
+namespace network {
+struct ResourceResponseInfo;
+}
+
 namespace content {
 
-struct ResourceResponseInfo;
 
 class CONTENT_EXPORT ServiceWorkerResponseInfo
     : public base::SupportsUserData::Data {
@@ -30,7 +33,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
 
   ~ServiceWorkerResponseInfo() override;
 
-  void GetExtraResponseInfo(ResourceResponseInfo* response_info) const;
+  void GetExtraResponseInfo(network::ResourceResponseInfo* response_info) const;
   void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
                           base::TimeTicks service_worker_ready_time,
                           bool did_navigation_preload);

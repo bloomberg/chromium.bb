@@ -20,7 +20,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_response_info.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -35,6 +34,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -319,8 +319,7 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestURL);
     redirect_info.new_site_for_cookies = GURL(kTestURL);
-    peer()->OnReceivedRedirect(redirect_info,
-                               content::ResourceResponseInfo());
+    peer()->OnReceivedRedirect(redirect_info, network::ResourceResponseInfo());
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 
@@ -331,14 +330,13 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestHTTPSURL);
     redirect_info.new_site_for_cookies = GURL(kTestHTTPSURL);
-    peer()->OnReceivedRedirect(redirect_info,
-                               content::ResourceResponseInfo());
+    peer()->OnReceivedRedirect(redirect_info, network::ResourceResponseInfo());
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 
   void DoReceiveResponse() {
     EXPECT_FALSE(client()->did_receive_response());
-    peer()->OnReceivedResponse(content::ResourceResponseInfo());
+    peer()->OnReceivedResponse(network::ResourceResponseInfo());
     EXPECT_TRUE(client()->did_receive_response());
   }
 
@@ -377,7 +375,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoReceiveResponseFtp() {
     EXPECT_FALSE(client()->did_receive_response());
-    content::ResourceResponseInfo response_info;
+    network::ResourceResponseInfo response_info;
     response_info.mime_type = kFtpDirMimeType;
     peer()->OnReceivedResponse(response_info);
     EXPECT_TRUE(client()->did_receive_response());
@@ -644,7 +642,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   EXPECT_EQ(kStreamURL, dispatcher()->stream_url());
 
   EXPECT_FALSE(client()->did_receive_response());
-  peer()->OnReceivedResponse(content::ResourceResponseInfo());
+  peer()->OnReceivedResponse(network::ResourceResponseInfo());
   EXPECT_TRUE(client()->did_receive_response());
 
   // The response info should have been overriden.
@@ -675,7 +673,7 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.ip);
-    content::ResourceResponseInfo info;
+    network::ResourceResponseInfo info;
     info.socket_address = net::HostPortPair(test.ip, 443);
     blink::WebURLResponse response;
     WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true);
@@ -696,7 +694,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
   base::StringPiece cert1_der =
       net::x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer());
 
-  content::ResourceResponseInfo info;
+  network::ResourceResponseInfo info;
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
                                      &info.ssl_connection_status);
   info.certificate.emplace_back(cert0_der);
@@ -732,7 +730,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   base::StringPiece cert0_der =
       net::x509_util::CryptoBufferAsStringPiece(certs[0]->cert_buffer());
 
-  content::ResourceResponseInfo info;
+  network::ResourceResponseInfo info;
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
                                      &info.ssl_connection_status);
   info.certificate.emplace_back(cert0_der);

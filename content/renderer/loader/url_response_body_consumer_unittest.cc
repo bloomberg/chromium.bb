@@ -41,12 +41,12 @@ class TestRequestPeer : public RequestPeer {
   }
 
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info) override {
+                          const network::ResourceResponseInfo& info) override {
     ADD_FAILURE() << "OnReceivedRedirect should not be called.";
     return false;
   }
 
-  void OnReceivedResponse(const ResourceResponseInfo& info) override {
+  void OnReceivedResponse(const network::ResourceResponseInfo& info) override {
     ADD_FAILURE() << "OnReceivedResponse should not be called.";
   }
 

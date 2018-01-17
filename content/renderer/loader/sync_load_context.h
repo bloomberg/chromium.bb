@@ -55,8 +55,8 @@ class SyncLoadContext : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const ResourceResponseInfo& info) override;
+                          const network::ResourceResponseInfo& info) override;
+  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;

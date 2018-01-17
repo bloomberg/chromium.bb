@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/resource_response_info.h"
+#include "services/network/public/cpp/resource_response_info.h"
 
 #include "net/http/http_response_headers.h"
 
-namespace content {
+namespace network {
 
 ResourceResponseInfo::ResourceResponseInfo()
     : is_legacy_symantec_cert(false),
@@ -20,8 +20,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_fetched_via_service_worker(false),
       was_fallback_required_by_service_worker(false),
-      response_type_via_service_worker(
-          network::mojom::FetchResponseType::kDefault),
+      response_type_via_service_worker(mojom::FetchResponseType::kDefault),
       previews_state(0),
       effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cert_status(0),
@@ -33,7 +32,6 @@ ResourceResponseInfo::ResourceResponseInfo()
 ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
     default;
 
-ResourceResponseInfo::~ResourceResponseInfo() {
-}
+ResourceResponseInfo::~ResourceResponseInfo() {}
 
-}  // namespace content
+}  // namespace network

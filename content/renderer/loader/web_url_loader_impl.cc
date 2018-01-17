@@ -192,7 +192,7 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
 // Extracts info from a data scheme URL |url| into |info| and |data|. Returns
 // net::OK if successful. Returns a net error code otherwise.
 int GetInfoFromDataURL(const GURL& url,
-                       ResourceResponseInfo* info,
+                       network::ResourceResponseInfo* info,
                        std::string* data) {
   // Assure same time for all time fields of data: URLs.
   Time now = Time::Now();
@@ -243,7 +243,7 @@ blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
 }
 
 void SetSecurityStyleAndDetails(const GURL& url,
-                                const ResourceResponseInfo& info,
+                                const network::ResourceResponseInfo& info,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
@@ -415,8 +415,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   void OnUploadProgress(uint64_t position, uint64_t size);
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info);
-  void OnReceivedResponse(const ResourceResponseInfo& info);
+                          const network::ResourceResponseInfo& info);
+  void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnDownloadedData(int len, int encoded_data_length);
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
@@ -473,8 +473,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   // RequestPeer methods:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const ResourceResponseInfo& info) override;
+                          const network::ResourceResponseInfo& info) override;
+  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -495,10 +495,10 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override {}
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info) override {
+                          const network::ResourceResponseInfo& info) override {
     return true;
   }
-  void OnReceivedResponse(const ResourceResponseInfo& info) override {}
+  void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
   void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
@@ -752,7 +752,7 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   if (!client_)
     return false;
 
@@ -774,7 +774,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
-    const ResourceResponseInfo& initial_info) {
+    const network::ResourceResponseInfo& initial_info) {
   if (!client_)
     return;
 
@@ -782,7 +782,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       "loading", "WebURLLoaderImpl::Context::OnReceivedResponse",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  ResourceResponseInfo info = initial_info;
+  network::ResourceResponseInfo info = initial_info;
 
   // PlzNavigate: during navigations, the ResourceResponse has already been
   // received on the browser side, and has been passed down to the renderer.
@@ -1038,7 +1038,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       return;
   }
 
-  ResourceResponseInfo info;
+  network::ResourceResponseInfo info;
   std::string data;
 
   int error_code = GetInfoFromDataURL(url_, &info, &data);
@@ -1068,12 +1068,12 @@ void WebURLLoaderImpl::RequestPeerImpl::OnUploadProgress(uint64_t position,
 
 bool WebURLLoaderImpl::RequestPeerImpl::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   return context_->OnReceivedRedirect(redirect_info, info);
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(
-    const ResourceResponseInfo& info) {
+    const network::ResourceResponseInfo& info) {
   context_->OnReceivedResponse(info);
 }
 
@@ -1130,10 +1130,11 @@ WebURLLoaderImpl::~WebURLLoaderImpl() {
   Cancel();
 }
 
-void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
-                                           const ResourceResponseInfo& info,
-                                           WebURLResponse* response,
-                                           bool report_security_info) {
+void WebURLLoaderImpl::PopulateURLResponse(
+    const WebURL& url,
+    const network::ResourceResponseInfo& info,
+    WebURLResponse* response,
+    bool report_security_info) {
   response->SetURL(url);
   response->SetResponseTime(info.response_time);
   response->SetMIMEType(WebString::FromUTF8(info.mime_type));

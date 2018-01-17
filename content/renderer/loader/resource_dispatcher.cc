@@ -164,7 +164,7 @@ void ResourceDispatcher::OnReceivedResponse(
         response_head.cert_status);
   }
 
-  ResourceResponseInfo renderer_response_info;
+  network::ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
   request_info->site_isolation_metadata =
       SiteIsolationStatsGatherer::OnReceivedResponse(
@@ -206,7 +206,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     return;
   request_info->response_start = base::TimeTicks::Now();
 
-  ResourceResponseInfo renderer_response_info;
+  network::ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
   if (request_info->peer->OnReceivedRedirect(redirect_info,
                                              renderer_response_info)) {
@@ -462,7 +462,7 @@ int ResourceDispatcher::StartAsync(
 void ResourceDispatcher::ToResourceResponseInfo(
     const PendingRequestInfo& request_info,
     const ResourceResponseHead& browser_info,
-    ResourceResponseInfo* renderer_info) const {
+    network::ResourceResponseInfo* renderer_info) const {
   *renderer_info = browser_info;
   if (base::TimeTicks::IsConsistentAcrossProcesses() ||
       request_info.request_start.is_null() ||
