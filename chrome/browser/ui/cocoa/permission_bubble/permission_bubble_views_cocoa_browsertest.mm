@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -24,7 +26,7 @@ namespace {
 // toolkit-specific bubble implementation.
 void ShowBubble(Browser* browser) {
   auto test_api =
-      base::MakeUnique<test::PermissionRequestManagerTestApi>(browser);
+      std::make_unique<test::PermissionRequestManagerTestApi>(browser);
   EXPECT_TRUE(test_api->manager());
 
   test_api->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   // TODO(tapted): This should use ShowBubble(). However, on 10.9 it triggers a
   // DCHECK failure in cr_setPatternPhase:forView:. See http://crbug.com/802107.
   auto prompt =
-      base::MakeUnique<PermissionPromptImpl>(browser(), test_delegate());
+      std::make_unique<PermissionPromptImpl>(browser(), test_delegate());
   EXPECT_TRUE(HasVisibleLocationBarForBrowser(browser()));
 
   FullscreenController* controller =
@@ -115,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
   // ShowBubble(app_browser) doesn't actually show a bubble for extension app
   // windows, so create one directly.
   auto prompt =
-      base::MakeUnique<PermissionPromptImpl>(app_browser, test_delegate());
+      std::make_unique<PermissionPromptImpl>(app_browser, test_delegate());
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(app_browser));
 }
 

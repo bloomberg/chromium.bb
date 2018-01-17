@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -249,7 +251,7 @@ void ManagePasswordsBubbleView::Init() {
 
 void ManagePasswordsBubbleView::AddedToWidget() {
   auto title_view =
-      base::MakeUnique<views::StyledLabel>(base::string16(), this);
+      std::make_unique<views::StyledLabel>(base::string16(), this);
   title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   UpdateTitleText(title_view.get());
   GetBubbleFrameView()->SetTitleView(std::move(title_view));

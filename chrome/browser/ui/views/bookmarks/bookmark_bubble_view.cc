@@ -290,7 +290,7 @@ void BookmarkBubbleView::Init() {
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_NAME_LABEL));
 
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
-  auto parent_folder_model = base::MakeUnique<RecentlyUsedFoldersComboModel>(
+  auto parent_folder_model = std::make_unique<RecentlyUsedFoldersComboModel>(
       model, model->GetMostRecentlyAddedUserNodeForURL(url_));
 
   parent_combobox_ = AddComboboxRow(

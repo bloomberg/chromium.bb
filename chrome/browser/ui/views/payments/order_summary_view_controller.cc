@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -44,7 +43,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 bool emphasize,
                                                 DialogViewID currency_label_id,
                                                 DialogViewID amount_label_id) {
-  std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> row = std::make_unique<views::View>();
 
   // The vertical spacing for these rows is slightly different than the spacing
   // spacing for clickable rows, so don't use kPaymentRequestRowVerticalInsets.
@@ -79,9 +78,9 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
     currency_text = CreateMediumLabel(currency);
     amount_text = CreateMediumLabel(amount);
   } else {
-    label_text = base::MakeUnique<views::Label>(label);
+    label_text = std::make_unique<views::Label>(label);
     currency_text = CreateHintLabel(currency);
-    amount_text = base::MakeUnique<views::Label>(amount);
+    amount_text = std::make_unique<views::Label>(amount);
   }
   // Strings from the website may not match the locale of the device, so align
   // them according to the language of the text. This will result, for example,
@@ -94,7 +93,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   amount_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   amount_text->SetAllowCharacterBreak(true);
 
-  std::unique_ptr<views::View> amount_wrapper = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> amount_wrapper = std::make_unique<views::View>();
   views::GridLayout* wrapper_layout = amount_wrapper->SetLayoutManager(
       std::make_unique<views::GridLayout>(amount_wrapper.get()));
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);

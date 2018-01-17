@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -112,10 +111,10 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   std::unique_ptr<views::View> CreateContentView(
       base::string16* accessible_content) override {
     DCHECK(accessible_content);
-    auto card_info_container = base::MakeUnique<views::View>();
+    auto card_info_container = std::make_unique<views::View>();
     card_info_container->set_can_process_events_within_subtree(false);
 
-    auto box_layout = base::MakeUnique<views::BoxLayout>(
+    auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
         gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
@@ -131,7 +130,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     base::string16 missing_info;
     if (!instrument_->IsCompleteForPayment()) {
       missing_info = instrument_->GetMissingInfoLabel();
-      auto missing_info_label = base::MakeUnique<views::Label>(
+      auto missing_info_label = std::make_unique<views::Label>(
           missing_info, CONTEXT_DEPRECATED_SMALL);
       missing_info_label->SetEnabledColor(
           missing_info_label->GetNativeTheme()->GetSystemColor(
@@ -174,7 +173,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 };
 
 std::unique_ptr<views::View> CreateHeaderView(const base::string16& text) {
-  auto label = base::MakeUnique<views::Label>(text);
+  auto label = std::make_unique<views::Label>(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetBorder(views::CreateEmptyBorder(
@@ -194,7 +193,7 @@ PaymentMethodViewController::PaymentMethodViewController(
   const std::vector<std::unique_ptr<PaymentInstrument>>& available_instruments =
       state->available_instruments();
   for (const auto& instrument : available_instruments) {
-    auto item = base::MakeUnique<PaymentMethodListItem>(
+    auto item = std::make_unique<PaymentMethodListItem>(
         instrument.get(), spec, state, &payment_method_list_, dialog,
         instrument.get() == state->selected_instrument());
     payment_method_list_.AddItem(std::move(item));
@@ -209,7 +208,7 @@ base::string16 PaymentMethodViewController::GetSheetTitle() {
 }
 
 void PaymentMethodViewController::FillContentView(views::View* content_view) {
-  auto layout = base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
@@ -232,7 +231,7 @@ PaymentMethodViewController::CreateExtraFooterView() {
   if (!spec()->supports_basic_card())
     return nullptr;
 
-  auto extra_view = base::MakeUnique<views::View>();
+  auto extra_view = std::make_unique<views::View>();
 
   extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),

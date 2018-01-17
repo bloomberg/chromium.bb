@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
+#include <memory>
 #include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
@@ -87,7 +88,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     EXPECT_EQ(window, move.target());
   }
 
-  auto rects = base::MakeUnique<AppWindow::ShapeRects>();
+  auto rects = std::make_unique<AppWindow::ShapeRects>();
   rects->emplace_back();
   app_window()->UpdateShape(std::move(rects));
   {
@@ -110,7 +111,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
   //  90 +--------+     +---------+
   //              |     |
   // 130          +-----+
-  rects = base::MakeUnique<AppWindow::ShapeRects>();
+  rects = std::make_unique<AppWindow::ShapeRects>();
   rects->emplace_back(40, 0, 20, 100);
   rects->emplace_back(0, 40, 100, 20);
   app_window()->UpdateShape(std::move(rects));
@@ -180,7 +181,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     EXPECT_EQ(window, move.target());
   }
 
-  auto rects = base::MakeUnique<AppWindow::ShapeRects>();
+  auto rects = std::make_unique<AppWindow::ShapeRects>();
   rects->emplace_back(40, 0, 20, 100);
   rects->emplace_back(0, 40, 100, 20);
   app_window()->UpdateShape(std::move(rects));

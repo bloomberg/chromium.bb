@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -63,9 +62,9 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
       icon_(nullptr),
       close_button_(nullptr) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
-  SetBackground(base::MakeUnique<InfoBarBackground>(
+  SetBackground(std::make_unique<InfoBarBackground>(
       infobars::InfoBar::delegate()->GetInfoBarType()));
-  SetEventTargeter(base::MakeUnique<views::ViewTargeter>(this));
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
   AddChildView(child_container_);
 

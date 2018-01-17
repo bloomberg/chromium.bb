@@ -15,7 +15,6 @@
 #include "ash/shell_port_classic.h"
 #include "ash/window_manager.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
@@ -55,7 +54,7 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   const bool show_primary_host_on_connect = true;
   std::unique_ptr<ash::WindowManager> window_manager =
-      base::MakeUnique<ash::WindowManager>(connector, ash::Config::MUS,
+      std::make_unique<ash::WindowManager>(connector, ash::Config::MUS,
                                            show_primary_host_on_connect);
   // The WindowManager normally deletes the Shell when it loses its connection
   // to mus. Disable that by installing an empty callback. Chrome installs
@@ -66,7 +65,7 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
   // DiscardableSharedMemoryManager.
   const bool create_discardable_memory = false;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
-      base::MakeUnique<aura::WindowTreeClient>(
+      std::make_unique<aura::WindowTreeClient>(
           connector, window_manager.get(), window_manager.get(), nullptr,
           nullptr, create_discardable_memory);
   const bool automatically_create_display_roots = false;
@@ -74,7 +73,7 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
       automatically_create_display_roots);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
   window_manager->Init(std::move(window_tree_client),
-                       base::MakeUnique<ChromeShellDelegate>());
+                       std::make_unique<ChromeShellDelegate>());
   CHECK(window_manager->WaitForInitialDisplays());
   return window_manager;
 }

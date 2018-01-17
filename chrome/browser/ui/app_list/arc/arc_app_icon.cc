@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -251,7 +250,7 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
       observer_(observer),
       weak_ptr_factory_(this) {
   CHECK(observer_ != nullptr);
-  auto source = base::MakeUnique<Source>(weak_ptr_factory_.GetWeakPtr(),
+  auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
                                          resource_size_in_dip);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   image_skia_ = gfx::ImageSkia(std::move(source), resource_size);
@@ -303,7 +302,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
     path_to_read = path;
   } else {
     if (default_app_path.empty() || !base::PathExists(default_app_path)) {
-      return base::MakeUnique<ArcAppIcon::ReadResult>(false, true, scale_factor,
+      return std::make_unique<ArcAppIcon::ReadResult>(false, true, scale_factor,
                                                       std::string());
     }
     path_to_read = default_app_path;
@@ -320,11 +319,11 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
     // If |unsafe_icon_data| is empty typically means we have a file corruption
     // on cached icon file. Send request to re install the icon.
     request_to_install |= unsafe_icon_data.empty();
-    return base::MakeUnique<ArcAppIcon::ReadResult>(
+    return std::make_unique<ArcAppIcon::ReadResult>(
         true, request_to_install, scale_factor, std::string());
   }
 
-  return base::MakeUnique<ArcAppIcon::ReadResult>(
+  return std::make_unique<ArcAppIcon::ReadResult>(
       false, request_to_install, scale_factor, unsafe_icon_data);
 }
 
@@ -336,7 +335,7 @@ void ArcAppIcon::OnIconRead(
     MaybeRequestIcon(read_result->scale_factor);
 
   if (!read_result->unsafe_icon_data.empty()) {
-    decode_requests_.push_back(base::MakeUnique<DecodeRequest>(
+    decode_requests_.push_back(std::make_unique<DecodeRequest>(
         weak_ptr_factory_.GetWeakPtr(), resource_size_in_dip_,
         read_result->scale_factor));
     if (disable_safe_decoding_for_testing) {

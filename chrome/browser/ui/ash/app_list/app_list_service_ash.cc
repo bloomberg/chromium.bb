@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/shell.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +65,7 @@ class AppListPresenterDelegateFactoryMus
 
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
       app_list::AppListPresenterImpl* presenter) override {
-    return base::MakeUnique<AppListPresenterDelegateMus>(
+    return std::make_unique<AppListPresenterDelegateMus>(
         presenter, view_delegate_factory_.get());
   }
 
@@ -93,17 +92,17 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
 AppListServiceAsh::AppListServiceAsh() {
   std::unique_ptr<app_list::AppListPresenterDelegateFactory> factory;
   if (ash_util::IsRunningInMash()) {
-    factory = base::MakeUnique<AppListPresenterDelegateFactoryMus>(
-        base::MakeUnique<ViewDelegateFactoryImpl>(this));
+    factory = std::make_unique<AppListPresenterDelegateFactoryMus>(
+        std::make_unique<ViewDelegateFactoryImpl>(this));
   } else {
-    factory = base::MakeUnique<ash::AppListPresenterDelegateFactory>(
-        base::MakeUnique<ViewDelegateFactoryImpl>(this));
+    factory = std::make_unique<ash::AppListPresenterDelegateFactory>(
+        std::make_unique<ViewDelegateFactoryImpl>(this));
   }
   app_list_presenter_ =
-      base::MakeUnique<app_list::AppListPresenterImpl>(std::move(factory));
+      std::make_unique<app_list::AppListPresenterImpl>(std::move(factory));
   controller_delegate_ =
-      base::MakeUnique<AppListControllerDelegateAsh>(app_list_presenter_.get());
-  app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
+      std::make_unique<AppListControllerDelegateAsh>(app_list_presenter_.get());
+  app_list_presenter_service_ = std::make_unique<AppListPresenterService>();
 }
 
 AppListServiceAsh::~AppListServiceAsh() {}

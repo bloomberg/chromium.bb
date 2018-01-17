@@ -128,7 +128,7 @@ bool WebserviceCache::PayloadFromDict(const base::DictionaryValue* dict,
 
 std::unique_ptr<base::DictionaryValue> WebserviceCache::DictFromPayload(
     const Payload& payload) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kKeyResultTime, base::Int64ToString(
       payload.time.ToInternalValue()));
   // The payload will still keep ownership of it's result dict, hence put a

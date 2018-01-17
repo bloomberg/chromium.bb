@@ -616,7 +616,7 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
     connector->OverrideIsManagedForTesting(true);
     profile()->GetTestingPrefService()->SetManagedPref(
         arc::prefs::kArcEnabled,
-        base::MakeUnique<base::Value>(IsEnabledByPolicy()));
+        std::make_unique<base::Value>(IsEnabledByPolicy()));
 
     ArcPlayStoreAppTest::OnBeforeArcTestSetup();
   }
@@ -641,7 +641,7 @@ class ArcVoiceInteractionTest : public ArcPlayStoreAppTest {
     DCHECK(!pai_starter_->started());
     DCHECK(!pai_starter_->locked());
 
-    voice_service_ = base::MakeUnique<arc::ArcVoiceInteractionArcHomeService>(
+    voice_service_ = std::make_unique<arc::ArcVoiceInteractionArcHomeService>(
         profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
     voice_service()->OnAssistantStarted();
 

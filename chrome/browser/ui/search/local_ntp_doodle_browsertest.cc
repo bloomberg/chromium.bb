@@ -209,7 +209,7 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
 
   static std::unique_ptr<KeyedService> CreateLogoService(
       content::BrowserContext* context) {
-    return base::MakeUnique<MockLogoService>();
+    return std::make_unique<MockLogoService>();
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {

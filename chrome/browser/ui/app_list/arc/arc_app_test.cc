@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
@@ -86,9 +85,9 @@ void ArcAppTest::SetUp(Profile* profile) {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
         profile_);
   }
-  arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>();
-  arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
-      base::MakeUnique<arc::ArcSessionRunner>(
+  arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
+  arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+      std::make_unique<arc::ArcSessionRunner>(
           base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::DisableUIForTesting();
@@ -96,7 +95,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_session_manager_->SetProfile(profile_);
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =
-      base::MakeUnique<arc::ArcPlayStoreEnabledPreferenceHandler>(
+      std::make_unique<arc::ArcPlayStoreEnabledPreferenceHandler>(
           profile_, arc_session_manager_.get());
   arc_play_store_enabled_preference_handler_->Start();
 
@@ -207,7 +206,7 @@ void ArcAppTest::StopArcInstance() {
 void ArcAppTest::RestartArcInstance() {
   auto* bridge_service = arc_service_manager_->arc_bridge_service();
   bridge_service->app()->CloseInstance(app_instance_.get());
-  app_instance_ = base::MakeUnique<arc::FakeAppInstance>(arc_app_list_pref_);
+  app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
   bridge_service->app()->SetInstance(app_instance_.get());
   WaitForInstanceReady(bridge_service->app());
 }

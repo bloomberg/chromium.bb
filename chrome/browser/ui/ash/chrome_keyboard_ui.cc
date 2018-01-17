@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -212,7 +211,7 @@ class AshKeyboardControllerObserver
     new_bounds->SetInteger("height", bounds.height());
     event_args->Append(std::move(new_bounds));
 
-    auto event = base::MakeUnique<extensions::Event>(
+    auto event = std::make_unique<extensions::Event>(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
         virtual_keyboard_private::OnBoundsChanged::kEventName,
         std::move(event_args), context_);
@@ -227,10 +226,10 @@ class AshKeyboardControllerObserver
       return;
     }
 
-    auto event = base::MakeUnique<extensions::Event>(
+    auto event = std::make_unique<extensions::Event>(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED,
         virtual_keyboard_private::OnKeyboardClosed::kEventName,
-        base::MakeUnique<base::ListValue>(), context_);
+        std::make_unique<base::ListValue>(), context_);
     router->BroadcastEvent(std::move(event));
   }
 

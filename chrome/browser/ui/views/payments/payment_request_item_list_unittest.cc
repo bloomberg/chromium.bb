@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
@@ -36,7 +35,7 @@ class TestListItem : public PaymentRequestItemList::Item {
  private:
   std::unique_ptr<views::View> CreateContentView(
       base::string16* accessible_content) override {
-    return base::MakeUnique<views::View>();
+    return std::make_unique<views::View>();
   }
 
   base::string16 GetNameForDataType() override { return base::string16(); }
@@ -65,10 +64,10 @@ TEST(PaymentRequestItemListTest, TestAddItem) {
   EXPECT_FALSE(list_view->has_children());
 
   std::vector<std::unique_ptr<TestListItem>> items;
-  items.push_back(base::MakeUnique<TestListItem>(&list, false));
-  items.push_back(base::MakeUnique<TestListItem>(&list, true));
-  items.push_back(base::MakeUnique<TestListItem>(&list, false));
-  items.push_back(base::MakeUnique<TestListItem>(&list, true));
+  items.push_back(std::make_unique<TestListItem>(&list, false));
+  items.push_back(std::make_unique<TestListItem>(&list, true));
+  items.push_back(std::make_unique<TestListItem>(&list, false));
+  items.push_back(std::make_unique<TestListItem>(&list, true));
 
   // The unique_ptr objects will become owned by |list|, but the underlying
   // pointers will be needed for assertions after the unique_ptr is moved.
@@ -93,9 +92,9 @@ TEST(PaymentRequestItemListTest, TestSelectItemResultsInSingleItemSelected) {
   PaymentRequestItemList list(nullptr);
 
   std::vector<std::unique_ptr<TestListItem>> items;
-  items.push_back(base::MakeUnique<TestListItem>(&list, false));
-  items.push_back(base::MakeUnique<TestListItem>(&list, false));
-  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+  items.push_back(std::make_unique<TestListItem>(&list, false));
+  items.push_back(std::make_unique<TestListItem>(&list, false));
+  items.push_back(std::make_unique<TestListItem>(&list, false));
 
   // The unique_ptr objects will become owned by |list|, but the underlying
   // pointers will be needed for assertions after the unique_ptr is moved.

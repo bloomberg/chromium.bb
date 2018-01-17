@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 
 // A test delegate for a bubble to hang off the toolbar actions bar.
@@ -36,7 +35,7 @@ class TestToolbarActionsBarBubbleDelegate {
 
     if (!info_) {
       info_ =
-          base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
+          std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
     }
     info_->text = learn_more;
     info_->is_text_linked = true;

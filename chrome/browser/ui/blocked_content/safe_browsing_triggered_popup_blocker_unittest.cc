@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -78,7 +77,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
   }
 
   virtual std::unique_ptr<base::test::ScopedFeatureList> DefaultFeatureList() {
-    auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+    auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
     feature_list->InitAndEnableFeature(kAbusiveExperienceEnforce);
     return feature_list;
   }
@@ -88,7 +87,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
   }
 
   base::test::ScopedFeatureList* ResetFeatureAndGet() {
-    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     return scoped_feature_list_.get();
   }
 
@@ -136,7 +135,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
 class IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest
     : public SafeBrowsingTriggeredPopupBlockerTest {
   std::unique_ptr<base::test::ScopedFeatureList> DefaultFeatureList() override {
-    auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+    auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
     feature_list->InitAndEnableFeatureWithParameters(
         kAbusiveExperienceEnforce, {{"ignore_sublists", "true"}});
     return feature_list;

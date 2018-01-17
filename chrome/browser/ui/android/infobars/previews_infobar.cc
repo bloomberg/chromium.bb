@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/android/infobars/previews_infobar.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "jni/PreviewsInfoBar_jni.h"
 
 PreviewsInfoBar::PreviewsInfoBar(
@@ -36,5 +36,5 @@ base::android::ScopedJavaLocalRef<jobject> PreviewsInfoBar::CreateRenderInfoBar(
 std::unique_ptr<infobars::InfoBar> PreviewsInfoBar::CreateInfoBar(
     infobars::InfoBarManager* infobar_manager,
     std::unique_ptr<PreviewsInfoBarDelegate> delegate) {
-  return base::MakeUnique<PreviewsInfoBar>(std::move(delegate));
+  return std::make_unique<PreviewsInfoBar>(std::move(delegate));
 }

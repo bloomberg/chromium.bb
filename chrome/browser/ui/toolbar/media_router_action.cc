@@ -177,7 +177,7 @@ bool MediaRouterAction::DisabledClickOpensMenu() const {
 }
 
 void MediaRouterAction::OnIssue(const media_router::Issue& issue) {
-  current_issue_ = base::MakeUnique<media_router::IssueInfo>(issue.info());
+  current_issue_ = std::make_unique<media_router::IssueInfo>(issue.info());
   MaybeUpdateIcon();
 }
 

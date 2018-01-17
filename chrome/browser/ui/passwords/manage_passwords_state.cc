@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -26,7 +25,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> DeepCopyNonPSLMapToVector(
   for (const auto& form_pair : password_form_map) {
     if (!form_pair.second->is_public_suffix_match) {
       result.push_back(
-          base::MakeUnique<autofill::PasswordForm>(*form_pair.second));
+          std::make_unique<autofill::PasswordForm>(*form_pair.second));
     }
   }
   return result;
@@ -37,7 +36,7 @@ void AppendDeepCopyVector(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* result) {
   result->reserve(result->size() + forms.size());
   for (auto* form : forms)
-    result->push_back(base::MakeUnique<autofill::PasswordForm>(*form));
+    result->push_back(std::make_unique<autofill::PasswordForm>(*form));
 }
 
 // Updates one form in |forms| that has the same unique key as |updated_form|.
@@ -133,16 +132,16 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
       continue;
     if (form_manager_->pending_credentials().username_value == form.first) {
       local_credentials_forms_.push_back(
-          base::MakeUnique<autofill::PasswordForm>(
+          std::make_unique<autofill::PasswordForm>(
               form_manager_->pending_credentials()));
       updated = true;
     } else {
       local_credentials_forms_.push_back(
-          base::MakeUnique<autofill::PasswordForm>(*form.second));
+          std::make_unique<autofill::PasswordForm>(*form.second));
     }
   }
   if (!updated) {
-    local_credentials_forms_.push_back(base::MakeUnique<autofill::PasswordForm>(
+    local_credentials_forms_.push_back(std::make_unique<autofill::PasswordForm>(
         form_manager_->pending_credentials()));
   }
   AppendDeepCopyVector(form_manager_->form_fetcher()->GetFederatedMatches(),
@@ -233,7 +232,7 @@ void ManagePasswordsState::AddForm(const autofill::PasswordForm& form) {
   if (UpdateForm(form))
     return;
   local_credentials_forms_.push_back(
-      base::MakeUnique<autofill::PasswordForm>(form));
+      std::make_unique<autofill::PasswordForm>(form));
 }
 
 bool ManagePasswordsState::UpdateForm(const autofill::PasswordForm& form) {

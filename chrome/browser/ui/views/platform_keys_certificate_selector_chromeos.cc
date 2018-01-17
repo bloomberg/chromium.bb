@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/platform_keys_certificate_selector_chromeos.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,7 +47,7 @@ net::ClientCertIdentityList CertificateListToIdentityList(
   net::ClientCertIdentityList identities;
   for (const auto& cert : certs) {
     identities.push_back(
-        base::MakeUnique<ClientCertIdentityPlatformKeys>(cert));
+        std::make_unique<ClientCertIdentityPlatformKeys>(cert));
   }
   return identities;
 }

@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -33,7 +32,7 @@ namespace {
 
 std::unique_ptr<base::DictionaryValue> CreateAppDict(
     const std::string& app_id) {
-  auto app_value = base::MakeUnique<base::DictionaryValue>();
+  auto app_value = std::make_unique<base::DictionaryValue>();
   app_value->SetString(kPinnedAppsPrefAppIDPath, app_id);
   return app_value;
 }

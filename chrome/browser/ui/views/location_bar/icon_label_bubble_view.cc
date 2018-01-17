@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -276,7 +278,7 @@ std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
   center_point.SetToMax(ink_drop_container_->origin());
   center_point.SetToMin(ink_drop_container_->bounds().bottom_right());
 
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       ink_drop_container_->size(), center_point, GetInkDropBaseColor(),
       ink_drop_visible_opacity());
 }

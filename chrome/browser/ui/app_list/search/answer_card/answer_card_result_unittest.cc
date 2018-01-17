@@ -50,7 +50,7 @@ class AnswerCardResultTest : public AppListTestBase {
       const std::string& result_url,
       const std::string& stripped_result_url,
       const base::string16& result_title) const {
-    return base::MakeUnique<AnswerCardResult>(
+    return std::make_unique<AnswerCardResult>(
         profile_.get(), app_list_controller_delegate_.get(), result_url,
         stripped_result_url, result_title, contents_.get());
   }
@@ -65,9 +65,9 @@ class AnswerCardResultTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    contents_ = base::MakeUnique<AnswerCardTestContents>();
+    contents_ = std::make_unique<AnswerCardTestContents>();
     app_list_controller_delegate_ =
-        base::MakeUnique<::test::TestAppListControllerDelegate>();
+        std::make_unique<::test::TestAppListControllerDelegate>();
   }
 
  private:

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -110,7 +109,7 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       web_contents_(web_contents),
       ipc_router_(web_contents,
                   this,
-                  base::MakeUnique<SearchIPCRouterPolicyImpl>(web_contents)),
+                  std::make_unique<SearchIPCRouterPolicyImpl>(web_contents)),
       instant_service_(nullptr) {
   DCHECK(search::IsInstantExtendedAPIEnabled());
 

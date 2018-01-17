@@ -200,7 +200,7 @@ void AnswerCardSearchProvider::UpdateResult() {
         GURL(current_context.result_url), AutocompleteInput(),
         template_url_service_, base::string16() /* keyword */);
 
-    results.emplace_back(base::MakeUnique<AnswerCardResult>(
+    results.emplace_back(std::make_unique<AnswerCardResult>(
         profile_, list_controller_, current_context.result_url,
         stripped_result_url.spec(),
         base::UTF8ToUTF16(current_context.result_title),

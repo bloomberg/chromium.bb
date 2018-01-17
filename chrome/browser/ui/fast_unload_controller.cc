@@ -37,7 +37,7 @@ FastUnloadController::FastUnloadController(Browser* browser)
       tab_needing_before_unload_ack_(NULL),
       is_attempting_to_close_browser_(false),
       detached_delegate_(
-          base::MakeUnique<UnloadControllerWebContentsDelegate>()),
+          std::make_unique<UnloadControllerWebContentsDelegate>()),
       weak_factory_(this) {
   browser_->tab_strip_model()->AddObserver(this);
 }

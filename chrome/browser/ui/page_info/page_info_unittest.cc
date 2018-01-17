@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/page_info/page_info.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -993,7 +993,7 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   content_settings->SetWebsiteSettingDefaultScope(
       url(), GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
 }

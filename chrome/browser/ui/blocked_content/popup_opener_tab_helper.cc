@@ -67,7 +67,7 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(
     std::unique_ptr<base::TickClock> tick_clock)
     : content::WebContentsObserver(web_contents),
       tick_clock_(std::move(tick_clock)) {
-  visibility_tracker_ = base::MakeUnique<ScopedVisibilityTracker>(
+  visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
       tick_clock_.get(), web_contents->IsVisible());
 }
 

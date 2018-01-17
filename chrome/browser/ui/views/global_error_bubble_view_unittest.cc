@@ -79,9 +79,9 @@ class GlobalErrorBubbleViewTest : public testing::Test {
  public:
   GlobalErrorBubbleViewTest()
       : mock_global_error_with_standard_bubble_(
-            base::MakeUnique<StrictMock<MockGlobalErrorWithStandardBubble>>()),
+            std::make_unique<StrictMock<MockGlobalErrorWithStandardBubble>>()),
         button_(&mock_button_listener_, base::string16()),
-        view_(base::MakeUnique<GlobalErrorBubbleView>(
+        view_(std::make_unique<GlobalErrorBubbleView>(
             &arg_view_,
             anchor_point_,
             arrow_,

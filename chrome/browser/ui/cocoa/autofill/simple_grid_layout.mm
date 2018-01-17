@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 
 namespace {
 const int kAutoColumnIdStart = 1000000;  // Starting ID for autogeneration.
@@ -161,11 +160,11 @@ ColumnSet::~ColumnSet() {
 }
 
 void ColumnSet::AddPaddingColumn(int fixed_width) {
-  columns_.push_back(base::MakeUnique<Column>(0.0f, fixed_width, true));
+  columns_.push_back(std::make_unique<Column>(0.0f, fixed_width, true));
 }
 
 void ColumnSet::AddColumn(float resize_percent) {
-  columns_.push_back(base::MakeUnique<Column>(resize_percent, 0, false));
+  columns_.push_back(std::make_unique<Column>(resize_percent, 0, false));
 }
 
 void ColumnSet::CalculateSize(float width) {
@@ -234,7 +233,7 @@ SimpleGridLayout::~SimpleGridLayout() {
 
 ColumnSet* SimpleGridLayout::AddColumnSet(int id) {
   DCHECK(GetColumnSet(id) == nullptr);
-  column_sets_.push_back(base::MakeUnique<ColumnSet>(id));
+  column_sets_.push_back(std::make_unique<ColumnSet>(id));
   return column_sets_.back().get();
 }
 
@@ -248,17 +247,17 @@ ColumnSet* SimpleGridLayout::GetColumnSet(int id) {
 }
 
 void SimpleGridLayout::AddPaddingRow(int fixed_height) {
-  AddRow(base::MakeUnique<Row>(0.0f, fixed_height, nullptr));
+  AddRow(std::make_unique<Row>(0.0f, fixed_height, nullptr));
 }
 
 void SimpleGridLayout::StartRow(float vertical_resize, int column_set_id) {
   ColumnSet* column_set = GetColumnSet(column_set_id);
   DCHECK(column_set);
-  AddRow(base::MakeUnique<Row>(vertical_resize, 0, column_set));
+  AddRow(std::make_unique<Row>(vertical_resize, 0, column_set));
 }
 
 ColumnSet* SimpleGridLayout::AddRow() {
-  AddRow(base::MakeUnique<Row>(0, 0, AddColumnSet(current_auto_id_++)));
+  AddRow(std::make_unique<Row>(0, 0, AddColumnSet(current_auto_id_++)));
   return column_sets_.back().get();
 }
 
@@ -274,7 +273,7 @@ void SimpleGridLayout::SkipColumns(int col_count) {
 void SimpleGridLayout::AddView(NSView* view) {
   [host_ addSubview:view];
   DCHECK(next_column_ < GetLastValidColumnSet()->num_columns());
-  view_states_.push_back(base::MakeUnique<ViewState>(
+  view_states_.push_back(std::make_unique<ViewState>(
       view, GetLastValidColumnSet(), rows_.size() - 1, next_column_++));
   SkipPaddingColumns();
 }

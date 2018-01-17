@@ -16,6 +16,7 @@
 #include <limits.h>
 
 #include <algorithm>  // NOLINT
+#include <memory>
 
 #include "base/feature_list.h"
 #include "base/i18n/bidi_line_iterator.h"
@@ -285,7 +286,7 @@ void OmniboxResultView::Invalidate() {
   } else {
     const SkColor bg_color = GetColor(state, BACKGROUND);
     SetBackground(
-        base::MakeUnique<BackgroundWith1PxBorder>(bg_color, bg_color));
+        std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color));
   }
 
   // While the text in the RenderTexts may not have changed, the styling

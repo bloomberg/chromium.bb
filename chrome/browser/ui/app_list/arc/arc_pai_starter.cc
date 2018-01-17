@@ -38,7 +38,7 @@ std::unique_ptr<ArcPaiStarter> ArcPaiStarter::CreateIfNeeded(
     PrefService* pref_service) {
   if (pref_service->GetBoolean(prefs::kArcPaiStarted))
     return std::unique_ptr<ArcPaiStarter>();
-  return base::MakeUnique<ArcPaiStarter>(context, pref_service);
+  return std::make_unique<ArcPaiStarter>(context, pref_service);
 }
 
 void ArcPaiStarter::AcquireLock() {

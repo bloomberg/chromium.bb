@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -511,7 +512,7 @@ void ContentSettingBubbleContents::Init() {
            bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
     auto list_view =
-        base::MakeUnique<ContentSettingDomainListView>(i->title, i->hosts);
+        std::make_unique<ContentSettingDomainListView>(i->title, i->hosts);
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(list_view.release());
     bubble_content_empty = false;

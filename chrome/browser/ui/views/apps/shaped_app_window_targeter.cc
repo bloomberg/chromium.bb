@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 #include "ui/gfx/path.h"
 
@@ -18,7 +20,7 @@ ShapedAppWindowTargeter::GetExtraHitTestShapeRects(aura::Window* target) const {
   if (!app_window_->shape_rects())
     return nullptr;
 
-  auto shape_rects = base::MakeUnique<aura::WindowTargeter::HitTestRects>(
+  auto shape_rects = std::make_unique<aura::WindowTargeter::HitTestRects>(
       *app_window_->shape_rects());
   return shape_rects;
 }

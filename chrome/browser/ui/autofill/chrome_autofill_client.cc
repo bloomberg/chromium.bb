@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -196,7 +195,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 #if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+          std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
               callback, GetPrefs())));
 #else
@@ -217,7 +216,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #if defined(OS_ANDROID)
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
-          base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+          std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               true, card, std::move(legal_message), callback, GetPrefs());
   if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
     InfoBarService::FromWebContents(web_contents())
@@ -239,11 +238,11 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
     const base::Closure& callback) {
 #if defined(OS_ANDROID)
   auto infobar_delegate =
-      base::MakeUnique<AutofillCreditCardFillingInfoBarDelegateMobile>(
+      std::make_unique<AutofillCreditCardFillingInfoBarDelegateMobile>(
           card, callback);
   auto* raw_delegate = infobar_delegate.get();
-  if (InfoBarService::FromWebContents(web_contents())->AddInfoBar(
-          base::MakeUnique<AutofillCreditCardFillingInfoBar>(
+  if (InfoBarService::FromWebContents(web_contents())
+          ->AddInfoBar(std::make_unique<AutofillCreditCardFillingInfoBar>(
               std::move(infobar_delegate)))) {
     raw_delegate->set_was_shown();
   }

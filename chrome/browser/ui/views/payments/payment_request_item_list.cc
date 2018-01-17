@@ -136,7 +136,7 @@ void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
 std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
     bool selected) {
   std::unique_ptr<views::ImageView> checkmark =
-      base::MakeUnique<views::ImageView>();
+      std::make_unique<views::ImageView>();
   checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   checkmark->set_can_process_events_within_subtree(false);
   checkmark->set_owned_by_client();
@@ -201,7 +201,7 @@ void PaymentRequestItemList::Clear() {
 }
 
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
-  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> content_view = std::make_unique<views::View>();
 
   content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,

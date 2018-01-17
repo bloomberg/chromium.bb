@@ -8,13 +8,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
@@ -233,7 +233,7 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return base::MakeUnique<views::FloodFillInkDropRipple>(
+    return std::make_unique<views::FloodFillInkDropRipple>(
         size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
@@ -245,12 +245,12 @@ class BookmarkButtonBase : public views::LabelButton {
         kInkDropVerticalInsetPx /
             GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
         0));
-    return base::MakeUnique<views::InkDropHighlight>(
+    return std::make_unique<views::InkDropHighlight>(
         bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return base::MakeUnique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
+    return std::make_unique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
                                                          kInkDropCornerRadius);
   }
 
@@ -365,7 +365,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return base::MakeUnique<views::FloodFillInkDropRipple>(
+    return std::make_unique<views::FloodFillInkDropRipple>(
         size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
@@ -377,12 +377,12 @@ class BookmarkMenuButtonBase : public views::MenuButton {
         kInkDropVerticalInsetPx /
             GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
         0));
-    return base::MakeUnique<views::InkDropHighlight>(
+    return std::make_unique<views::InkDropHighlight>(
         bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return base::MakeUnique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
+    return std::make_unique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
                                                          kInkDropCornerRadius);
   }
 

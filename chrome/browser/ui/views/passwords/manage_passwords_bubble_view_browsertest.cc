@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +33,7 @@ class ManagePasswordsBubbleDialogViewTest
       test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
       local_credentials.push_back(
-          base::MakeUnique<autofill::PasswordForm>(*test_form()));
+          std::make_unique<autofill::PasswordForm>(*test_form()));
 
       ManagePasswordAutoSignInView::set_auto_signin_toast_timeout(10);
       SetupAutoSignin(std::move(local_credentials));

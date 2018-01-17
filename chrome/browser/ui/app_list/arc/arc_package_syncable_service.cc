@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
@@ -31,7 +30,7 @@ constexpr int64_t kNoAndroidID = 0;
 
 std::unique_ptr<ArcSyncItem> CreateSyncItemFromSyncSpecifics(
     const sync_pb::ArcPackageSpecifics& specifics) {
-  return base::MakeUnique<ArcSyncItem>(
+  return std::make_unique<ArcSyncItem>(
       specifics.package_name(), specifics.package_version(),
       specifics.last_backup_android_id(), specifics.last_backup_time());
 }
@@ -68,7 +67,7 @@ syncer::SyncData GetSyncDataFromSyncItem(const ArcSyncItem* item) {
 std::unique_ptr<ArcSyncItem> CreateSyncItemFromPrefs(
     std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info) {
   DCHECK(package_info);
-  return base::MakeUnique<ArcSyncItem>(
+  return std::make_unique<ArcSyncItem>(
       package_info->package_name, package_info->package_version,
       package_info->last_backup_android_id, package_info->last_backup_time);
 }
@@ -330,7 +329,7 @@ void ArcPackageSyncableService::SendSyncChange(
     return;
   }
 
-  std::unique_ptr<ArcSyncItem> sync_item = base::MakeUnique<ArcSyncItem>(
+  std::unique_ptr<ArcSyncItem> sync_item = std::make_unique<ArcSyncItem>(
       package_info.package_name, package_info.package_version,
       package_info.last_backup_android_id, package_info.last_backup_time);
 

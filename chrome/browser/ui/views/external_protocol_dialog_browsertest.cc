@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -85,7 +85,7 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
     int render_view_routing_id =
         web_contents->GetRenderViewHost()->GetRoutingID();
     dialog_ = new ExternalProtocolDialog(
-        base::MakeUnique<TestExternalProtocolDialogDelegate>(
+        std::make_unique<TestExternalProtocolDialogDelegate>(
             GURL("telnet://12345"), render_view_process_id,
             render_view_routing_id, &called_, &accept_, &remember_),
         render_view_process_id, render_view_routing_id);

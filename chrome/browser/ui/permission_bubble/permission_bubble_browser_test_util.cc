@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,7 +43,7 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
 
   // Add a single permission request.
-  requests_.push_back(base::MakeUnique<MockPermissionRequest>(
+  requests_.push_back(std::make_unique<MockPermissionRequest>(
       "Request 1", l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
       l10n_util::GetStringUTF8(IDS_PERMISSION_DENY)));
 

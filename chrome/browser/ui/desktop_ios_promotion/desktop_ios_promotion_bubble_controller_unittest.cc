@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -45,7 +44,7 @@ class FakeSMSService : public SMSService {
 
 std::unique_ptr<KeyedService> BuildFakeSMSService(
     content::BrowserContext* profile) {
-  return base::MakeUnique<FakeSMSService>();
+  return std::make_unique<FakeSMSService>();
 }
 
 }  // namespace
@@ -57,7 +56,7 @@ class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
 
   void SetUp() override {
     pref_service_ =
-        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>(
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>(
             new TestingPrefStore(), new TestingPrefStore(),
             new TestingPrefStore(), new TestingPrefStore(),
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
@@ -67,7 +66,7 @@ class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
     builder.AddTestingFactory(SMSServiceFactory::GetInstance(),
                               BuildFakeSMSService);
     profile_ = builder.Build();
-    local_state_ = base::MakeUnique<TestingPrefServiceSimple>();
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
     desktop_ios_promotion::RegisterLocalPrefs(local_state_->registry());
     sms_service_ = static_cast<FakeSMSService*>(
@@ -84,7 +83,7 @@ class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
   void InitController(desktop_ios_promotion::PromotionEntryPoint entry_point) {
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(sms_service_));
     EXPECT_CALL(*sms_service_, QueryPhoneNumber(_));
-    controller_ = base::MakeUnique<DesktopIOSPromotionBubbleController>(
+    controller_ = std::make_unique<DesktopIOSPromotionBubbleController>(
         profile_.get(), nullptr, entry_point);
   }
 

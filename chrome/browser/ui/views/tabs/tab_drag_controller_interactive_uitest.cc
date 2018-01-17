@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -127,7 +128,7 @@ class QuitDraggingObserver : public content::NotificationObserver {
 void SetID(WebContents* web_contents, int id) {
   web_contents->SetUserData(
       &kTabDragControllerInteractiveUITestUserDataKey,
-      base::MakeUnique<TabDragControllerInteractiveUITestUserData>(id));
+      std::make_unique<TabDragControllerInteractiveUITestUserData>(id));
 }
 
 void ResetIDs(TabStripModel* model, int start) {

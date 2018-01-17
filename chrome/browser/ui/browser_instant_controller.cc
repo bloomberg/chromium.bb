@@ -80,9 +80,9 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   // TemplateURLService can be null in tests.
   if (template_url_service) {
     search_engine_base_url_tracker_ =
-        base::MakeUnique<SearchEngineBaseURLTracker>(
+        std::make_unique<SearchEngineBaseURLTracker>(
             template_url_service,
-            base::MakeUnique<UIThreadSearchTermsData>(profile()),
+            std::make_unique<UIThreadSearchTermsData>(profile()),
             base::Bind(&BrowserInstantController::OnSearchEngineBaseURLChanged,
                        base::Unretained(this)));
   }

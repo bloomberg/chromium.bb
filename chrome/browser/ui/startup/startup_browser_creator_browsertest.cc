@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -997,7 +998,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy_map_.Set(policy::key::kMetricsReportingEnabled,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                   policy::POLICY_SOURCE_CLOUD,
-                  base::MakeUnique<base::Value>(false), nullptr);
+                  std::make_unique<base::Value>(false), nullptr);
   provider_.UpdateChromePolicy(policy_map_);
 #endif  // defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 
@@ -1220,9 +1221,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // * RestoreOnStartupURLs = [ "/title1.html" ]
   policy_map_.Set(policy::key::kRestoreOnStartup,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                  policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(4),
+                  policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(4),
                   nullptr);
-  auto url_list = base::MakeUnique<base::Value>(base::Value::Type::LIST);
+  auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
   url_list->GetList().push_back(
       base::Value(embedded_test_server()->GetURL("/title1.html").spec()));
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
@@ -1296,7 +1297,7 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
     profile_ = browser()->profile();
 
     // Keep the browser process running when all browsers are closed.
-    scoped_keep_alive_ = base::MakeUnique<ScopedKeepAlive>(
+    scoped_keep_alive_ = std::make_unique<ScopedKeepAlive>(
         KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
 
     // Close the browser opened by InProcessBrowserTest.
@@ -1312,8 +1313,8 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
       policy::PolicyMap values;
       values.Set(policy::key::kRestoreOnStartup, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::Value>(4), nullptr);
-      auto url_list = base::MakeUnique<base::Value>(base::Value::Type::LIST);
+                 std::make_unique<base::Value>(4), nullptr);
+      auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
       url_list->GetList().push_back(base::Value("http://managed.site.com/"));
       values.Set(policy::key::kRestoreOnStartupURLs, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,

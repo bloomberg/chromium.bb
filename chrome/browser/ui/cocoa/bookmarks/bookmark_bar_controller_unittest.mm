@@ -10,7 +10,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -734,13 +733,13 @@ TEST_F(BookmarkBarControllerTest, LayoutManagedAppsButton) {
 
   // Hide the apps shortcut by policy, via the managed pref.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        base::MakeUnique<base::Value>(false));
+                        std::make_unique<base::Value>(false));
   layout = [bar_ layoutFromCurrentState];
   EXPECT_FALSE(layout.IsAppsButtonVisible());
 
   // And try showing it via policy too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        base::MakeUnique<base::Value>(true));
+                        std::make_unique<base::Value>(true));
   layout = [bar_ layoutFromCurrentState];
   EXPECT_TRUE(layout.IsAppsButtonVisible());
 }

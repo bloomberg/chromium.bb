@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -150,7 +152,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
     base::FilePath crx_path = PackCRXInTempDir(
         &temp_dir, "update_from_webstore", "update_from_webstore.pem");
 
-    auto provider = base::MakeUnique<extensions::MockExternalProvider>(
+    auto provider = std::make_unique<extensions::MockExternalProvider>(
         extension_service, extensions::Manifest::EXTERNAL_PREF);
     extensions::MockExternalProvider* provider_ptr = provider.get();
     extension_service->AddProviderForTesting(std::move(provider));

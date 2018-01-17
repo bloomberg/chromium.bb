@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
@@ -44,10 +45,9 @@ class TestStackView : public views::View {
 
 class ViewStackTest : public views::ViewsTestBase {
  public:
-  ViewStackTest()
-    : view_stack_(base::MakeUnique<ViewStack>()) {
+  ViewStackTest() : view_stack_(std::make_unique<ViewStack>()) {
     view_stack_->SetBounds(0, 0, 10, 10);
-    view_stack_->Push(base::MakeUnique<TestStackView>(), false);
+    view_stack_->Push(std::make_unique<TestStackView>(), false);
     view_stack_->slide_in_animator_->SetAnimationDuration(1);
     view_stack_->slide_out_animator_->SetAnimationDuration(1);
   }
@@ -67,7 +67,7 @@ class ViewStackTest : public views::ViewsTestBase {
   // Pushes a view on the stack, waits for its animation to be over, then
   // returns a pointer to the pushed view.
   views::View* PushViewOnStackAndWait() {
-    std::unique_ptr<TestStackView> view = base::MakeUnique<TestStackView>();
+    std::unique_ptr<TestStackView> view = std::make_unique<TestStackView>();
     views::View* view_ptr = view.get();
 
     view_stack_->Push(std::move(view), true);
@@ -108,7 +108,7 @@ TEST_F(ViewStackTest, TestInitialStateAddedAsChildView) {
 }
 
 TEST_F(ViewStackTest, TestPushStateAddsViewToChildren) {
-  view_stack_->Push(base::MakeUnique<TestStackView>(), true);
+  view_stack_->Push(std::make_unique<TestStackView>(), true);
   EXPECT_EQ(2, view_stack_->child_count());
 
   AssertViewCompletelyNextToStack(view_stack_->top());
@@ -116,7 +116,7 @@ TEST_F(ViewStackTest, TestPushStateAddsViewToChildren) {
 
 TEST_F(ViewStackTest, TestPopStateRemovesChildViewAndCleansUpState) {
   TestStackView::Observer observer;
-  std::unique_ptr<TestStackView> view = base::MakeUnique<TestStackView>();
+  std::unique_ptr<TestStackView> view = std::make_unique<TestStackView>();
   view->AddObserver(&observer);
   views::View* view_ptr = view.get();
 
@@ -148,7 +148,7 @@ TEST_F(ViewStackTest, TestPopStateRemovesChildViewAndCleansUpState) {
 
 TEST_F(ViewStackTest, TestDeletingViewCleansUpState) {
   TestStackView::Observer observer;
-  std::unique_ptr<TestStackView> view = base::MakeUnique<TestStackView>();
+  std::unique_ptr<TestStackView> view = std::make_unique<TestStackView>();
   view->AddObserver(&observer);
   views::View* view_ptr = view.get();
 
@@ -174,7 +174,7 @@ TEST_F(ViewStackTest, TestDeletingViewCleansUpState) {
 
 TEST_F(ViewStackTest, TestLayoutUpdatesAnimations) {
   TestStackView::Observer observer;
-  std::unique_ptr<TestStackView> view = base::MakeUnique<TestStackView>();
+  std::unique_ptr<TestStackView> view = std::make_unique<TestStackView>();
   view->AddObserver(&observer);
   views::View* view_ptr = view.get();
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
@@ -92,7 +93,7 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
 
 std::unique_ptr<BubbleUi> BuildViewsExtensionInstalledBubbleUi(
     ExtensionInstalledBubble* bubble) {
-  return base::MakeUnique<ExtensionInstalledBubbleUi>(bubble);
+  return std::make_unique<ExtensionInstalledBubbleUi>(bubble);
 }
 
 void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,

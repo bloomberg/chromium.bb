@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -59,7 +58,7 @@ ChromeAppWindowClient::CreateAppWindowForLockScreenAction(
   if (!lock_screen_apps::StateController::IsEnabled())
     return nullptr;
 
-  auto app_delegate = base::MakeUnique<ChromeAppDelegate>(true /*keep_alive*/);
+  auto app_delegate = std::make_unique<ChromeAppDelegate>(true /*keep_alive*/);
   app_delegate->set_for_lock_screen_app(true);
 
   return lock_screen_apps::StateController::Get()

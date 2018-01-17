@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -24,7 +23,7 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildPinnedTabService(
     content::BrowserContext* profile) {
-  return base::MakeUnique<PinnedTabService>(static_cast<Profile*>(profile));
+  return std::make_unique<PinnedTabService>(static_cast<Profile*>(profile));
 }
 
 PinnedTabService* BuildForProfile(Profile* profile) {

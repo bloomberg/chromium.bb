@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -85,7 +86,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     std::unique_ptr<content::ClientCertificateDelegate> delegate)
     : CertificateSelector(std::move(client_certs), web_contents),
       auth_observer_impl_(
-          base::MakeUnique<SSLClientAuthObserverImpl>(web_contents,
+          std::make_unique<SSLClientAuthObserverImpl>(web_contents,
                                                       cert_request_info,
                                                       std::move(delegate))) {
   chrome::RecordDialogCreation(

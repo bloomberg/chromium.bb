@@ -1589,8 +1589,8 @@ FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
   if (!fullscreen_control_host_) {
     // This is a do-nothing view that controls the z-order of the fullscreen
     // control host. See DropdownBarHost::SetHostViewNative() for more details.
-    auto fullscreen_exit_host_view = base::MakeUnique<views::View>();
-    fullscreen_control_host_ = base::MakeUnique<FullscreenControlHost>(
+    auto fullscreen_exit_host_view = std::make_unique<views::View>();
+    fullscreen_control_host_ = std::make_unique<FullscreenControlHost>(
         this, fullscreen_exit_host_view.get());
     AddChildView(fullscreen_exit_host_view.release());
   }
@@ -2177,7 +2177,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
     bookmark_bar_view_->set_owned_by_client();
     bookmark_bar_view_->SetBackground(
-        base::MakeUnique<BookmarkBarViewBackground>(this,
+        std::make_unique<BookmarkBarViewBackground>(this,
                                                     bookmark_bar_view_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),

@@ -36,7 +36,7 @@ void LocationBarBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // In order to let a vanilla extension override the bookmark star, we have to
   // enable the switch.
   enable_override_ =
-      base::MakeUnique<extensions::FeatureSwitch::ScopedOverride>(
+      std::make_unique<extensions::FeatureSwitch::ScopedOverride>(
           extensions::FeatureSwitch::enable_override_bookmarks_ui(), true);
 }
 

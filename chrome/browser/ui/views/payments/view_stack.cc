@@ -7,12 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 ViewStack::ViewStack()
-    : slide_in_animator_(base::MakeUnique<views::BoundsAnimator>(this)),
-      slide_out_animator_(base::MakeUnique<views::BoundsAnimator>(this)) {
+    : slide_in_animator_(std::make_unique<views::BoundsAnimator>(this)),
+      slide_out_animator_(std::make_unique<views::BoundsAnimator>(this)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   slide_out_animator_->AddObserver(this);

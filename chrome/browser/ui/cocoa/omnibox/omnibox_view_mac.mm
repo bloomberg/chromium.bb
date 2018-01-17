@@ -209,7 +209,7 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
     range = NSMakeRange(0, GetTextLength());
   }
 
-  StoreStateToTab(tab, base::MakeUnique<OmniboxViewMacState>(
+  StoreStateToTab(tab, std::make_unique<OmniboxViewMacState>(
                            model()->GetStateForTabSwitch(), hasFocus, range));
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/web_contents_closer.h"
 
+#include <memory>
+
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -59,7 +61,7 @@ class CloseTracker {
 CloseTracker::CloseTracker(const Contents& contents) {
   observers_.reserve(contents.size());
   for (content::WebContents* current : contents)
-    observers_.push_back(base::MakeUnique<DeletionObserver>(this, current));
+    observers_.push_back(std::make_unique<DeletionObserver>(this, current));
 }
 
 CloseTracker::~CloseTracker() {

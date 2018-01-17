@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/ash/session_controller_client.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -163,7 +163,7 @@ SessionControllerClient::SessionControllerClient()
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
 
-  local_state_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  local_state_registrar_ = std::make_unique<PrefChangeRegistrar>();
   local_state_registrar_->Init(g_browser_process->local_state());
   local_state_registrar_->Add(
       prefs::kSessionStartTime,
@@ -499,7 +499,7 @@ void SessionControllerClient::OnLoginUserProfilePrepared(Profile* profile) {
       base::Bind(&SessionControllerClient::SendSessionInfoIfChanged,
                  weak_ptr_factory_.GetWeakPtr());
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar =
-      base::MakeUnique<PrefChangeRegistrar>();
+      std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar->Init(profile->GetPrefs());
   pref_change_registrar->Add(prefs::kAllowScreenLock,
                              session_info_changed_closure);

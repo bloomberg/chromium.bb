@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -117,7 +116,7 @@ void TemplateURLTableModel::Add(int index,
   data.SetKeyword(keyword);
   data.SetURL(url);
   AddEntry(index,
-           template_url_service_->Add(base::MakeUnique<TemplateURL>(data)));
+           template_url_service_->Add(std::make_unique<TemplateURL>(data)));
   template_url_service_->AddObserver(this);
 }
 

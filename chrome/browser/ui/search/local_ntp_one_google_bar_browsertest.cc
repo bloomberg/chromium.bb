@@ -76,8 +76,8 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
     GaiaCookieManagerService* cookie_service =
         GaiaCookieManagerServiceFactory::GetForProfile(
             Profile::FromBrowserContext(context));
-    return base::MakeUnique<OneGoogleBarService>(
-        cookie_service, base::MakeUnique<FakeOneGoogleBarFetcher>());
+    return std::make_unique<OneGoogleBarService>(
+        cookie_service, std::make_unique<FakeOneGoogleBarFetcher>());
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {

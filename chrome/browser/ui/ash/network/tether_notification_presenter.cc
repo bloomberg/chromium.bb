@@ -129,7 +129,7 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
                << "Notification ID = " << kPotentialHotspotNotificationId;
 
   hotspot_nearby_device_id_ =
-      base::MakeUnique<std::string>(remote_device.GetDeviceId());
+      std::make_unique<std::string>(remote_device.GetDeviceId());
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(
@@ -259,7 +259,7 @@ TetherNotificationPresenter::CreateNotification(
     const base::string16& message,
     const gfx::ImageSkia& small_image,
     const message_center::RichNotificationData& rich_notification_data) {
-  auto notification = base::MakeUnique<message_center::Notification>(
+  auto notification = std::make_unique<message_center::Notification>(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id, title,
       message, gfx::Image() /* image */, base::string16() /* display_source */,
       GURL() /* origin_url */,

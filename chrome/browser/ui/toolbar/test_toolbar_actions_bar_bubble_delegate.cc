@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 
 class TestToolbarActionsBarBubbleDelegate::DelegateImpl
     : public ToolbarActionsBarBubbleDelegate {
@@ -33,7 +32,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
   GetExtraViewInfo() override {
     if (parent_->info_)
-      return base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>(
+      return std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>(
           *parent_->info_);
     return nullptr;
   }

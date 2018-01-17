@@ -68,7 +68,7 @@ class ProfileSigninConfirmationViewControllerTest
     controller_.reset([[ProfileSigninConfirmationViewController alloc]
              initWithBrowser:browser()
                     username:username()
-                    delegate:base::MakeUnique<TestSigninDelegate>(this)
+                    delegate:std::make_unique<TestSigninDelegate>(this)
          closeDialogCallback:close
         offerProfileCreation:offerProfileCreation]);
     [[window_ contentView] addSubview:[controller_ view]];

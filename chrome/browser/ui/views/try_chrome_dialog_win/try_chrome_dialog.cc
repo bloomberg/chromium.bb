@@ -166,7 +166,7 @@ std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
     views::ButtonListener* listener,
     const base::string16& text,
     TryChromeButtonType button_type) {
-  auto button = base::MakeUnique<views::LabelButton>(listener, text,
+  auto button = std::make_unique<views::LabelButton>(listener, text,
                                                      CONTEXT_WINDOWS10_NATIVE);
   button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -1013,7 +1013,7 @@ void TryChromeDialog::OnContextInitialized() {
   // that the logoff was cancelled. The toast may as well be shown.
 
   // Create the popup.
-  auto logo = base::MakeUnique<views::ImageView>();
+  auto logo = std::make_unique<views::ImageView>();
   logo->SetImage(gfx::CreateVectorIcon(kInactiveToastLogoIcon, kHeaderColor));
   const gfx::Size logo_size = logo->GetPreferredSize();
 
@@ -1089,7 +1089,7 @@ void TryChromeDialog::OnContextInitialized() {
           ExperimentVariations::CloseStyle::kCloseX ||
       kExperiments[group_].close_style ==
           ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX) {
-    auto close_button = base::MakeUnique<views::ImageButton>(this);
+    auto close_button = std::make_unique<views::ImageButton>(this);
     close_button->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kInactiveToastCloseIcon, kBodyColor));
@@ -1106,7 +1106,7 @@ void TryChromeDialog::OnContextInitialized() {
   layout->StartRow(0, 0);
   layout->AddView(logo.release());
   // All variants have a main header.
-  auto header = base::MakeUnique<views::Label>(
+  auto header = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(kExperiments[group_].heading_id),
       CONTEXT_WINDOWS10_NATIVE);
   header->SetBackgroundColor(kBackgroundColor);
@@ -1120,7 +1120,7 @@ void TryChromeDialog::OnContextInitialized() {
   layout->StartRow(0, 1);
   const int body_string_id = kExperiments[group_].body_id;
   if (body_string_id) {
-    auto body_text = base::MakeUnique<views::Label>(
+    auto body_text = std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(body_string_id), CONTEXT_WINDOWS10_NATIVE);
     body_text->SetBackgroundColor(kBackgroundColor);
     body_text->SetEnabledColor(kBodyColor);

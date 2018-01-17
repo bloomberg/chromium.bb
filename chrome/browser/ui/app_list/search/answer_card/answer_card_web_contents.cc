@@ -132,7 +132,7 @@ void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
 }  // namespace
 
 AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
-    : web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
+    : web_view_(std::make_unique<SearchAnswerWebView>(profile)),
       web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,

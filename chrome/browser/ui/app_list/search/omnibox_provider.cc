@@ -46,7 +46,7 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
     if (!match.destination_url.is_valid())
       continue;
 
-    new_results.emplace_back(base::MakeUnique<OmniboxResult>(
+    new_results.emplace_back(std::make_unique<OmniboxResult>(
         profile_, list_controller_, controller_.get(), match));
   }
   SwapResults(&new_results);

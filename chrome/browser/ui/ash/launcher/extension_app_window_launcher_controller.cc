@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -152,7 +154,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
   } else {
     std::unique_ptr<ExtensionAppWindowLauncherItemController> controller =
-        base::MakeUnique<ExtensionAppWindowLauncherItemController>(shelf_id);
+        std::make_unique<ExtensionAppWindowLauncherItemController>(shelf_id);
     app_controller_map_[shelf_id] = controller.get();
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.

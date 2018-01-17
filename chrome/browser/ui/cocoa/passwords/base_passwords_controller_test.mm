@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -82,9 +81,9 @@ void ManagePasswordsControllerTest::SetUpUpdatePendingState(
   autofill::PasswordForm form;
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
-  forms.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+  forms.push_back(std::make_unique<autofill::PasswordForm>(form));
   if (multiple_forms) {
-    forms.push_back(base::MakeUnique<autofill::PasswordForm>(form));
+    forms.push_back(std::make_unique<autofill::PasswordForm>(form));
   }
   EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
   GURL origin(kSiteOrigin);

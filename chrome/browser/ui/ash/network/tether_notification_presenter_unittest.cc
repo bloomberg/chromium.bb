@@ -101,7 +101,7 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
 
     test_network_connect_ = base::WrapUnique(new TestNetworkConnect());
 
-    notification_presenter_ = base::MakeUnique<TetherNotificationPresenter>(
+    notification_presenter_ = std::make_unique<TetherNotificationPresenter>(
         profile(), test_network_connect_.get());
 
     test_settings_ui_delegate_ = new TestSettingsUiDelegate();

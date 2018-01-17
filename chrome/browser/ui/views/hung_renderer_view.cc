@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,7 +87,7 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
     // Force hung_contents to be first.
     if (hung_contents) {
       tab_observers_.push_back(
-          base::MakeUnique<WebContentsObserverImpl>(this, hung_contents));
+          std::make_unique<WebContentsObserverImpl>(this, hung_contents));
     }
     for (TabContentsIterator it; !it.done(); it.Next()) {
       if (*it != hung_contents &&
@@ -95,7 +95,7 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
               hung_contents->GetMainFrame()->GetProcess() &&
           !it->IsCrashed())
         tab_observers_.push_back(
-            base::MakeUnique<WebContentsObserverImpl>(this, *it));
+            std::make_unique<WebContentsObserverImpl>(this, *it));
     }
   }
   // The world is different.

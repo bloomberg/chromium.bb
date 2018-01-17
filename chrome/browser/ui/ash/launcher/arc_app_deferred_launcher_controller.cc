@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shelf_model.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,7 +91,7 @@ void ArcAppDeferredLauncherController::MaybeApplySpinningEffect(
 
   const color_utils::HSL shift = {-1, 0, 0.25};
   *image = gfx::ImageSkia(
-      base::MakeUnique<SpinningEffectSource>(
+      std::make_unique<SpinningEffectSource>(
           weak_ptr_factory_.GetWeakPtr(), app_id,
           gfx::ImageSkiaOperations::CreateTransparentImage(
               gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image, shift),
@@ -206,7 +207,7 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
     return;
 
   std::unique_ptr<ArcAppDeferredLauncherItemController> controller =
-      base::MakeUnique<ArcAppDeferredLauncherItemController>(
+      std::make_unique<ArcAppDeferredLauncherItemController>(
           app_id, event_flags, display_id, weak_ptr_factory_.GetWeakPtr());
   ArcAppDeferredLauncherItemController* item_controller = controller.get();
   if (!item) {

@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -196,7 +195,7 @@ TabDragController::TabDragController()
       attached_tabstrip_(NULL),
       can_release_capture_(true),
       offset_to_width_ratio_(0),
-      old_focused_view_tracker_(base::MakeUnique<views::ViewTracker>()),
+      old_focused_view_tracker_(std::make_unique<views::ViewTracker>()),
       last_move_screen_loc_(0),
       started_drag_(false),
       active_(true),
@@ -217,7 +216,7 @@ TabDragController::TabDragController()
       is_mutating_(false),
       attach_x_(-1),
       attach_index_(-1),
-      window_finder_(base::MakeUnique<WindowFinder>()),
+      window_finder_(std::make_unique<WindowFinder>()),
       weak_factory_(this) {
   instance_ = this;
 }
