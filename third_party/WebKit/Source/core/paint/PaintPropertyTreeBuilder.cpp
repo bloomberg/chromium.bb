@@ -961,12 +961,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
 }
 
 static bool NeedsOverflowClip(const LayoutObject& object) {
-  if (object.IsBox() && ToLayoutBox(object).ShouldClipOverflow()) {
-    return !object.IsLayoutView() ||
-           NeedsFrameContentClip(*ToLayoutView(object).GetFrame());
-  }
-  return object.IsSVGViewportContainer() &&
-         SVGLayoutSupport::IsOverflowHidden(&object);
+  // Though a SVGForeignObject is a LayoutBox, its overflow clip logic is
+  // special because it doesn't create a PaintLayer.
+  // See LayoutSVGBlock::AllowsOverflowClip().
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      (object.IsSVGForeignObject() || object.IsSVGViewportContainer()) &&
+      SVGLayoutSupport::IsOverflowHidden(&object))
+    return true;
+
+  return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow() &&
+         (!object.IsLayoutView() ||
+          NeedsFrameContentClip(*ToLayoutView(object).GetFrame()));
 }
 
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
@@ -1054,7 +1059,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
     if (NeedsOverflowClip(object_)) {
       FloatRoundedRect clip_rect;
       FloatRoundedRect clip_rect_excluding_overlay_scrollbars;
-      if (object_.IsBox()) {
+      if (object_.IsSVGForeignObject()) {
+        clip_rect =
+            FloatRoundedRect(FloatRect(ToLayoutBox(object_).FrameRect()));
+        clip_rect_excluding_overlay_scrollbars = clip_rect;
+      } else if (object_.IsBox()) {
         clip_rect =
             FloatRoundedRect(FloatRect(ToLayoutBox(object_).OverflowClipRect(
                 context_.current.paint_offset)));
