@@ -7030,6 +7030,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.EventListenerDuration.Resize" units="microseconds">
+  <obsolete>
+    Deprecated 01/2018.
+  </obsolete>
   <owner>bokan@chromium.org</owner>
   <summary>
     Time it takes to execute all the `resize` event listeners on a page when a

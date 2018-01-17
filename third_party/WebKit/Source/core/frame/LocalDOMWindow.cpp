@@ -90,7 +90,6 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -1504,17 +1503,7 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event* event,
 
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
                InspectorEventDispatchEvent::Data(*event));
-  DispatchEventResult result;
-
-  if (GetFrame() && GetFrame()->IsMainFrame() &&
-      event->type() == EventTypeNames::resize) {
-    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.EventListenerDuration.Resize");
-    result = FireEventListeners(event);
-  } else {
-    result = FireEventListeners(event);
-  }
-
-  return result;
+  return FireEventListeners(event);
 }
 
 void LocalDOMWindow::RemoveAllEventListeners() {
