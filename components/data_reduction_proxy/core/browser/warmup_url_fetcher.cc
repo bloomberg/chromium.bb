@@ -29,7 +29,8 @@ WarmupURLFetcher::WarmupURLFetcher(
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     WarmupURLFetcherCallback callback)
-    : url_request_context_getter_(url_request_context_getter),
+    : previous_attempt_counts_(0),
+      url_request_context_getter_(url_request_context_getter),
       is_fetch_in_flight_(false),
       callback_(callback) {
   DCHECK(url_request_context_getter_);
@@ -40,25 +41,27 @@ WarmupURLFetcher::WarmupURLFetcher(
 WarmupURLFetcher::~WarmupURLFetcher() {}
 
 void WarmupURLFetcher::FetchWarmupURL(size_t previous_attempt_counts) {
-  DCHECK_GE(2u, previous_attempt_counts);
+  previous_attempt_counts_ = previous_attempt_counts;
+
+  DCHECK_LE(0u, previous_attempt_counts_);
+  DCHECK_GE(2u, previous_attempt_counts_);
 
   // There can be at most one pending fetch at any time.
   fetch_delay_timer_.Stop();
 
-  if (previous_attempt_counts == 0) {
+  if (previous_attempt_counts_ == 0) {
     FetchWarmupURLNow();
     return;
   }
-  fetch_delay_timer_.Start(FROM_HERE, GetFetchWaitTime(previous_attempt_counts),
-                           this, &WarmupURLFetcher::FetchWarmupURLNow);
+  fetch_delay_timer_.Start(FROM_HERE, GetFetchWaitTime(), this,
+                           &WarmupURLFetcher::FetchWarmupURLNow);
 }
 
-base::TimeDelta WarmupURLFetcher::GetFetchWaitTime(
-    size_t previous_attempt_counts) const {
-  DCHECK_LT(0u, previous_attempt_counts);
-  DCHECK_GE(2u, previous_attempt_counts);
+base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
+  DCHECK_LT(0u, previous_attempt_counts_);
+  DCHECK_GE(2u, previous_attempt_counts_);
 
-  if (previous_attempt_counts == 1)
+  if (previous_attempt_counts_ == 1)
     return base::TimeDelta::FromSeconds(30);
 
   return base::TimeDelta::FromSeconds(60);
@@ -133,7 +136,6 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(source, fetcher_.get());
   DCHECK(is_fetch_in_flight_);
 
-  is_fetch_in_flight_ = false;
   UMA_HISTOGRAM_BOOLEAN(
       "DataReductionProxy.WarmupURL.FetchSuccessful",
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
@@ -160,6 +162,7 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
           features::kDataReductionProxyRobustConnection,
           "warmup_fetch_callback_enabled", false)) {
     // Running the callback is not enabled.
+    is_fetch_in_flight_ = false;
     return;
   }
 
@@ -167,7 +170,8 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetStatus().error() == net::ERR_INTERNET_DISCONNECTED) {
     // Fetching failed due to Internet unavailability, and not due to some
     // error. Set the proxy server to unknown.
-    callback_.Run(net::ProxyServer(), true);
+    callback_.Run(net::ProxyServer(), FetchResult::kSuccessful);
+    is_fetch_in_flight_ = false;
     return;
   }
 
@@ -177,7 +181,10 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetResponseHeaders() &&
       HasDataReductionProxyViaHeader(*(source->GetResponseHeaders()),
                                      nullptr /* has_intermediary */);
-  callback_.Run(source->ProxyServerUsed(), success_response);
+  callback_.Run(source->ProxyServerUsed(), success_response
+                                               ? FetchResult::kSuccessful
+                                               : FetchResult::kFailed);
+  is_fetch_in_flight_ = false;
 }
 
 bool WarmupURLFetcher::IsFetchInFlight() const {

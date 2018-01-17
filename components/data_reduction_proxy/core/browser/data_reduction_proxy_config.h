@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
+#include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/previews/core/previews_experiments.h"
@@ -50,7 +51,6 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 class NetworkPropertiesManager;
 class SecureProxyChecker;
-class WarmupURLFetcher;
 struct DataReductionProxyTypeInfo;
 
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
@@ -227,8 +227,9 @@ class DataReductionProxyConfig
   // |proxy_server| is the proxy server over which the warmup URL was fetched.
   // |success_response| is true if the fetching of the URL was successful or
   // not.
-  void HandleWarmupFetcherResponse(const net::ProxyServer& proxy_server,
-                                   bool success_response);
+  void HandleWarmupFetcherResponse(
+      const net::ProxyServer& proxy_server,
+      WarmupURLFetcher::FetchResult success_response);
 
   // Returns the details of the proxy to which the next warmup URL probe should
   // be sent to.

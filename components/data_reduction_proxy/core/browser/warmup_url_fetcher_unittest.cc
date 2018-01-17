@@ -45,7 +45,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   const net::ProxyServer& proxy_server_last() const {
     return proxy_server_last_;
   }
-  bool success_response_last() const { return success_response_last_; }
+  FetchResult success_response_last() const { return success_response_last_; }
 
   static void InitExperiment(
       base::test::ScopedFeatureList* scoped_feature_list) {
@@ -55,10 +55,9 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
         features::kDataReductionProxyRobustConnection, params);
   }
 
-  base::TimeDelta GetFetchWaitTime(
-      size_t previous_attempt_counts) const override {
+  base::TimeDelta GetFetchWaitTime() const override {
     if (!fetch_wait_time_)
-      return WarmupURLFetcher::GetFetchWaitTime(previous_attempt_counts);
+      return WarmupURLFetcher::GetFetchWaitTime();
 
     return fetch_wait_time_.value();
   }
@@ -72,7 +71,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
 
  private:
   void HandleWarmupFetcherResponse(const net::ProxyServer& proxy_server,
-                                   bool success_response) {
+                                   FetchResult success_response) {
     callback_received_count_++;
     proxy_server_last_ = proxy_server;
     success_response_last_ = success_response;
@@ -81,7 +80,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   base::Optional<base::TimeDelta> fetch_wait_time_;
   size_t callback_received_count_ = 0;
   net::ProxyServer proxy_server_last_;
-  bool success_response_last_ = false;
+  FetchResult success_response_last_ = FetchResult::kFailed;
   DISALLOW_COPY_AND_ASSIGN(WarmupURLFetcherTest);
 };
 
@@ -179,7 +178,8 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
             warmup_url_fetcher.proxy_server_last().scheme());
   // success_response_last() should be false since the response does not contain
   // the via header.
-  EXPECT_FALSE(warmup_url_fetcher.success_response_last());
+  EXPECT_EQ(WarmupURLFetcher::FetchResult::kFailed,
+            warmup_url_fetcher.success_response_last());
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
@@ -239,9 +239,9 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT,
             warmup_url_fetcher.proxy_server_last().scheme());
-  // success_response_last() should be true since the response contains the via
-  // header.
-  EXPECT_TRUE(warmup_url_fetcher.success_response_last());
+  // The last response contained the via header.
+  EXPECT_EQ(WarmupURLFetcher::FetchResult::kSuccessful,
+            warmup_url_fetcher.success_response_last());
 }
 
 TEST(WarmupURLFetcherTest,
@@ -349,7 +349,8 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   EXPECT_EQ(net::ProxyServer::SCHEME_INVALID,
             warmup_url_fetcher.proxy_server_last().scheme());
-  EXPECT_FALSE(warmup_url_fetcher.success_response_last());
+  EXPECT_EQ(WarmupURLFetcher::FetchResult::kFailed,
+            warmup_url_fetcher.success_response_last());
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
@@ -413,7 +414,8 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
             warmup_url_fetcher.proxy_server_last().scheme());
   // success_response_last() should be true since the response contains the via
   // header.
-  EXPECT_TRUE(warmup_url_fetcher.success_response_last());
+  EXPECT_EQ(WarmupURLFetcher::FetchResult::kSuccessful,
+            warmup_url_fetcher.success_response_last());
 }
 
 }  // namespace

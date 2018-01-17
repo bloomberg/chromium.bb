@@ -1022,6 +1022,28 @@
             ]
         }
     ],
+    "DataReductionProxyRobustConnection": [
+        {
+            "platforms": [
+                "android",
+                "win",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "warmup_fetch_callback_enabled": "true"
+                    },
+                    "enable_features": [
+                        "DataReductionProxyRobustConnection"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataReductionProxyServerExperiments": [
         {
             "platforms": [
