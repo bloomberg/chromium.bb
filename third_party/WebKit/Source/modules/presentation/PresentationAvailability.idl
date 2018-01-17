@@ -6,7 +6,8 @@
 
 [
     ActiveScriptWrappable,
-    RuntimeEnabled=Presentation
+    RuntimeEnabled=Presentation,
+    Exposed=Window
 ] interface PresentationAvailability : EventTarget {
     readonly attribute boolean value;
     attribute EventHandler onchange;

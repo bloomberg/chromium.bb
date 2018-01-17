@@ -8,7 +8,8 @@ enum PresentationConnectionCloseReason { "error", "closed", "wentaway" };
 
 [
     Constructor(DOMString type, PresentationConnectionCloseEventInit eventInitDict),
-    RuntimeEnabled=Presentation
+    RuntimeEnabled=Presentation,
+    Exposed=Window
 ] interface PresentationConnectionCloseEvent : Event {
     readonly attribute PresentationConnectionCloseReason reason;
     readonly attribute DOMString message;
