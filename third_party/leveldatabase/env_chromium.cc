@@ -4,6 +4,7 @@
 
 #include "third_party/leveldatabase/env_chromium.h"
 
+#include <atomic>
 #include <utility>
 
 #if defined(OS_POSIX)
@@ -12,6 +13,7 @@
 #endif
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -43,6 +45,9 @@ using base::trace_event::ProcessMemoryDump;
 using leveldb::FileLock;
 using leveldb::Slice;
 using leveldb::Status;
+
+const base::Feature kLevelDBFileHandleEviction{
+    "LevelDBFileHandleEviction", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace leveldb_env {
 
@@ -95,6 +100,8 @@ class Semaphore {
 };
 
 namespace {
+
+std::atomic<int32_t> g_num_files_opened_past_handle_limit = ATOMIC_VAR_INIT(0);
 
 const FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 
@@ -282,12 +289,26 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
         uma_logger_(uma_logger),
         file_semaphore_(file_semaphore),
         open_before_read_(!file_semaphore->TryAcquire()) {
-    if (open_before_read_)
+    if (open_before_read_) {
       file_.Close();  // Open file on every access.
+      int32_t result = g_num_files_opened_past_handle_limit.fetch_add(
+                           1, std::memory_order_relaxed) +
+                       1;
+      TRACE_COUNTER1("leveldb",
+                     "ChromiumRandomAccessFile::NumFilesPastHandleLimit",
+                     result);
+    }
   }
   virtual ~ChromiumRandomAccessFile() {
-    if (!open_before_read_)
+    if (!open_before_read_) {
       file_semaphore_->Release();
+      int32_t result = g_num_files_opened_past_handle_limit.fetch_sub(
+                           1, std::memory_order_relaxed) -
+                       1;
+      TRACE_COUNTER1("leveldb",
+                     "ChromiumRandomAccessFile::NumFilesPastHandleLimit",
+                     result);
+    }
   }
 
   Status Read(uint64_t offset,
@@ -746,7 +767,10 @@ ChromiumEnv::ChromiumEnv(const std::string& name)
       name_(name),
       bgsignal_(&mu_),
       started_bgthread_(false),
-      file_semaphore_(new Semaphore(MaxOpenFiles())) {
+      file_semaphore_(
+          new Semaphore(base::FeatureList::IsEnabled(kLevelDBFileHandleEviction)
+                            ? MaxOpenFiles()
+                            : std::numeric_limits<intptr_t>::max())) {
   uma_ioerror_base_name_ = name_ + ".IOError.BFE";
 }
 
