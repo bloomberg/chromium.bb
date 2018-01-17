@@ -20,20 +20,17 @@ namespace chromeos {
 // which initializes the DBusThreadManager instance.
 class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
  public:
-  using MountCallback =
-      base::OnceCallback<void(smbprovider::ErrorType error, int32_t mount_id)>;
-  using UnmountCallback =
-      base::OnceCallback<void(smbprovider::ErrorType error)>;
-  using ReadDirectoryCallback =
-      base::OnceCallback<void(smbprovider::ErrorType error,
-                              const smbprovider::DirectoryEntryList& entries)>;
   using GetMetdataEntryCallback =
       base::OnceCallback<void(smbprovider::ErrorType error,
                               const smbprovider::DirectoryEntry& entry)>;
+  using MountCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error, int32_t mount_id)>;
   using OpenFileCallback =
       base::OnceCallback<void(smbprovider::ErrorType error, int32_t file_id)>;
-  using CloseFileCallback =
-      base::OnceCallback<void(smbprovider::ErrorType error)>;
+  using ReadDirectoryCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error,
+                              const smbprovider::DirectoryEntryList& entries)>;
+  using StatusCallback = base::OnceCallback<void(smbprovider::ErrorType error)>;
 
   ~SmbProviderClient() override;
 
@@ -49,7 +46,7 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
-  virtual void Unmount(int32_t mount_id, UnmountCallback callback) = 0;
+  virtual void Unmount(int32_t mount_id, StatusCallback callback) = 0;
 
   // Calls ReadDirectory. Using the corresponding mount of |mount_id|, this
   // reads the directory on a given |directory_path| and passes the
@@ -77,7 +74,7 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   // |file_id|. Subsequent operations using file with this handle will fail.
   virtual void CloseFile(int32_t mount_id,
                          int32_t file_id,
-                         CloseFileCallback callback) = 0;
+                         StatusCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

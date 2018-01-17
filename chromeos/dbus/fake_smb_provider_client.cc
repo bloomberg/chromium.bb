@@ -24,8 +24,7 @@ void FakeSmbProviderClient::Mount(const base::FilePath& share_path,
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK, 1));
 }
 
-void FakeSmbProviderClient::Unmount(int32_t mount_id,
-                                    UnmountCallback callback) {
+void FakeSmbProviderClient::Unmount(int32_t mount_id, StatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
 }
@@ -58,7 +57,7 @@ void FakeSmbProviderClient::OpenFile(int32_t mount_id,
 
 void FakeSmbProviderClient::CloseFile(int32_t mount_id,
                                       int32_t file_id,
-                                      CloseFileCallback callback) {
+                                      StatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
 }
