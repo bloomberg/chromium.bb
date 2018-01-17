@@ -39,6 +39,8 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   std::string GetDebugMessage() const override = 0;
 
  protected:
+  base::TimeDelta GetTimeoutDuration() override;
+
   const std::vector<browser_sync::ProfileSyncService*>& services() {
     return services_;
   }
