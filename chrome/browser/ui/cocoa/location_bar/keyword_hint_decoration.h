@@ -28,6 +28,9 @@ class KeywordHintDecoration : public LocationBarDecoration {
   void DrawInFrame(NSRect frame, NSView* control_view) override;
   CGFloat GetWidthForSpace(CGFloat width) override;
 
+  NSString* GetAccessibilityLabel() override;
+  bool IsAccessibilityIgnored() override;
+
  private:
   // Fetch and cache the [tab] image.
   NSImage* GetHintImage();
@@ -41,6 +44,9 @@ class KeywordHintDecoration : public LocationBarDecoration {
   // The text to display to the left and right of the hint image.
   base::scoped_nsobject<NSString> hint_prefix_;
   base::scoped_nsobject<NSString> hint_suffix_;
+
+  // The accessibility text used to describe this decoration.
+  base::string16 accessibility_text_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordHintDecoration);
 };

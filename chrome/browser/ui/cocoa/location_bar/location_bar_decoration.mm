@@ -153,6 +153,7 @@ LocationBarDecoration::LocationBarDecoration() {
 }
 
 void LocationBarDecoration::OnAccessibilityViewAction() {
+  DCHECK(!IsAccessibilityIgnored());
   // Turn the action into a synthesized mouse click at the center of |this|.
   NSRect frame = [accessibility_view_.get() frame];
   NSPoint mousePoint = NSMakePoint(NSMidX(frame), NSMidY(frame));
@@ -173,7 +174,8 @@ bool LocationBarDecoration::IsVisible() const {
 
 void LocationBarDecoration::SetVisible(bool visible) {
   visible_ = visible;
-  [accessibility_view_.get() setHidden:visible ? NO : YES];
+  bool a11y_hidden = !visible || IsAccessibilityIgnored();
+  [accessibility_view_.get() setHidden:a11y_hidden];
 }
 
 
@@ -233,6 +235,10 @@ NSString* LocationBarDecoration::GetToolTip() {
 
 NSString* LocationBarDecoration::GetAccessibilityLabel() {
   return nil;
+}
+
+bool LocationBarDecoration::IsAccessibilityIgnored() {
+  return false;
 }
 
 NSRect LocationBarDecoration::GetTrackingFrame(NSRect frame) {

@@ -79,6 +79,11 @@ class LocationBarDecoration {
   // the result of |GetTooltip()| as a fallback.
   virtual NSString* GetAccessibilityLabel();
 
+  // Returns whether this decoration is a visual decoration only. Any decoration
+  // that is purely visual must have its state reflected elsewhere to make it
+  // available to screenreader users.
+  virtual bool IsAccessibilityIgnored();
+
   // Returns a NSRect derived from |frame| to set up the tracking area.
   virtual NSRect GetTrackingFrame(NSRect frame);
 

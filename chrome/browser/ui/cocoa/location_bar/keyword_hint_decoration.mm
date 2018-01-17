@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -75,6 +76,8 @@ void KeywordHintDecoration::SetKeyword(const base::string16& short_name,
       l10n_util::GetStringFUTF16(message_id,
                                  base::string16(), short_name,
                                  &content_param_offsets));
+  accessibility_text_ = l10n_util::GetStringFUTF16(
+      message_id, base::UTF8ToUTF16("Tab"), short_name);
 
   // Should always be 2 offsets, see the comment in
   // location_bar_view.cc after IDS_OMNIBOX_KEYWORD_HINT fetch.
@@ -113,6 +116,14 @@ CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
     return full_width;
 
   return image_width;
+}
+
+NSString* KeywordHintDecoration::GetAccessibilityLabel() {
+  return base::SysUTF16ToNSString(accessibility_text_);
+}
+
+bool KeywordHintDecoration::IsAccessibilityIgnored() {
+  return true;
 }
 
 void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
