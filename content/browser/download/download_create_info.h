@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_source.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
@@ -145,6 +146,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
 
   // Source ID generated for UKM.
   ukm::SourceId ukm_source_id;
+
+  // Source of the download, used in metrics.
+  DownloadSource download_source = DownloadSource::UNKNOWN;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);

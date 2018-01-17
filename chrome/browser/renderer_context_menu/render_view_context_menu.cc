@@ -2388,6 +2388,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
   dl_params->set_prompt(true);
+  dl_params->set_download_source(content::DownloadSource::CONTEXT_MENU);
 
   BrowserContext::GetDownloadManager(browser_context_)
       ->DownloadUrl(std::move(dl_params));

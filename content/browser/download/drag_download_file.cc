@@ -65,7 +65,6 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
                         const base::FilePath& file_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
     // TODO(https://crbug.com/614134) This should use the frame actually
     // containing the link being dragged rather than the main frame of the tab.
     net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -100,6 +99,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
                                     weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
+    params->set_download_source(DownloadSource::DRAG_AND_DROP);
     BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext())
         ->DownloadUrl(std::move(params));
   }

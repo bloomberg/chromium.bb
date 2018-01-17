@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_source.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -123,39 +124,17 @@ enum DownloadCountTypes {
   // A cross origin download without a content disposition header.
   CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION,
 
+  // Count of attempts that triggered the download flow, before any network
+  // requests are sent.
+  DOWNLOAD_TRIGGERED_COUNT,
+
+  // Count of attempts for manual download resumption.
+  MANUAL_RESUMPTION_COUNT,
+
+  // Count of attempts for auto download resumption.
+  AUTO_RESUMPTION_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
-};
-
-// TODO(xingliu): Deprecate this enum.
-enum DownloadTriggerSource {
-  // The download was initiated when the SavePackage system rejected
-  // a Save Page As ... by returning false from
-  // SavePackage::IsSaveableContents().
-  INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML = 0,
-
-  // The download was initiated by a drag and drop from a drag-and-drop
-  // enabled web application.
-  INITIATED_BY_DRAG_N_DROP,
-
-  // The download was initiated by explicit RPC from the renderer process
-  // (e.g. by Alt-click) through the IPC ViewHostMsg_DownloadUrl.
-  INITIATED_BY_RENDERER,
-
-  // Fomerly INITIATED_BY_PEPPER_SAVE.
-  DOWNLOAD_SOURCE_UNUSED_3,
-
-  // Formerly INITIATED_BY_RESUMPTION.
-  DOWNLOAD_SOURCE_UNUSED_4,
-
-  // A request that was initiated as a result of manually resuming an
-  // interrupted download.
-  INITIATED_BY_MANUAL_RESUMPTION,
-
-  // A request that was initiated as a result of automatically resuming an
-  // interrupted download.
-  INITIATED_BY_AUTOMATIC_RESUMPTION,
-
-  DOWNLOAD_SOURCE_LAST_ENTRY
 };
 
 enum DownloadDiscardReason {
@@ -208,20 +187,23 @@ enum class ParallelDownloadCreationEvent {
 // Increment one of the above counts.
 void RecordDownloadCount(DownloadCountTypes type);
 
-// Record initiation of a download from a specific source.
-void RecordDownloadSource(DownloadTriggerSource source);
+// Record download count with download source.
+void RecordDownloadCountWithSource(DownloadCountTypes type,
+                                   DownloadSource download_source);
 
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start,
                              int64_t download_len,
-                             bool is_parallelizable);
+                             bool is_parallelizable,
+                             DownloadSource download_source);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
                                bool is_parallelizable,
-                               bool is_parallel_download_enabled);
+                               bool is_parallel_download_enabled,
+                               DownloadSource download_source);
 
 // Record that a download has been classified as malicious.
 void RecordMaliciousDownloadClassified(DownloadDangerType danger_type);
@@ -334,6 +316,10 @@ enum SavePackageEvent {
 
   // The save package tried to write to an already failed file.
   SAVE_PACKAGE_WRITE_TO_FAILED,
+
+  // Instead of using save package API, used download API to save non HTML
+  // format files.
+  SAVE_PACKAGE_DOWNLOAD_ON_NON_HTML,
 
   SAVE_PACKAGE_LAST_ENTRY
 };

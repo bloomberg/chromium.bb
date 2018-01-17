@@ -137,13 +137,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // DownloadInterruptReason enum for information on possible return values.
   static DownloadInterruptReason BeginDownloadRequest(
       std::unique_ptr<net::URLRequest> url_request,
-      const Referrer& referrer,
       ResourceContext* resource_context,
-      bool is_content_initiated,
-      int render_process_id,
-      int render_view_route_id,
-      int render_frame_route_id,
-      bool do_not_prompt_for_login);
+      DownloadUrlParameters* params);
 
   // Continue a navigation that ends up to be a download after it reaches the
   // OnResponseStarted() step. It has to be called on the UI thread.

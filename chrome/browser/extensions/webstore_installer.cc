@@ -655,7 +655,6 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
-  RecordDownloadSource(DOWNLOAD_INITIATED_BY_WEBSTORE_INSTALLER);
   int render_process_host_id =
       contents->GetRenderViewHost()->GetProcess()->GetID();
   int render_view_host_routing_id =
@@ -707,6 +706,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));
+  params->set_download_source(content::DownloadSource::EXTENSION_INSTALLER);
   download_manager->DownloadUrl(std::move(params));
 }
 

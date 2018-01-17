@@ -315,6 +315,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // should be considered complete.
   virtual void MarkAsComplete();
 
+  DownloadSource download_source() const { return download_source_; }
+
   // DownloadDestinationObserver
   void DestinationUpdate(
       int64_t bytes_so_far,
@@ -751,6 +753,9 @@ class CONTENT_EXPORT DownloadItemImpl
   // Whether the download should fetch the response body for non successful HTTP
   // response.
   bool fetch_error_body_ = false;
+
+  // Source of the download, used in metrics.
+  DownloadSource download_source_ = DownloadSource::UNKNOWN;
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 

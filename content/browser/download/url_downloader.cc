@@ -14,7 +14,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -66,10 +66,10 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
 std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<net::URLRequest> request,
-    const Referrer& referrer,
+    DownloadUrlParameters* params,
     bool is_parallel_request) {
   Referrer sanitized_referrer =
-      Referrer::SanitizeForRequest(request->url(), referrer);
+      Referrer::SanitizeForRequest(request->url(), params->referrer());
   Referrer::SetReferrerForRequest(request.get(), sanitized_referrer);
 
   if (request->url().SchemeIs(url::kBlobScheme))
@@ -78,7 +78,8 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
   // From this point forward, the |UrlDownloader| is responsible for
   // |started_callback|.
   std::unique_ptr<UrlDownloader> downloader(
-      new UrlDownloader(std::move(request), delegate, is_parallel_request));
+      new UrlDownloader(std::move(request), delegate, is_parallel_request,
+                        params->download_source()));
   downloader->Start();
 
   return downloader;
@@ -87,10 +88,11 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
 UrlDownloader::UrlDownloader(
     std::unique_ptr<net::URLRequest> request,
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    bool is_parallel_request)
+    bool is_parallel_request,
+    DownloadSource download_source)
     : request_(std::move(request)),
       delegate_(delegate),
-      core_(request_.get(), this, is_parallel_request),
+      core_(request_.get(), this, is_parallel_request, download_source),
       weak_ptr_factory_(this) {}
 
 UrlDownloader::~UrlDownloader() {

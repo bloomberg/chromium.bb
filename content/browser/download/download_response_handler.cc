@@ -54,6 +54,7 @@ DownloadResponseHandler::DownloadResponseHandler(
     bool is_parallel_request,
     bool is_transient,
     bool fetch_error_body,
+    DownloadSource download_source,
     std::vector<GURL> url_chain)
     : delegate_(delegate),
       started_(false),
@@ -63,11 +64,12 @@ DownloadResponseHandler::DownloadResponseHandler(
       referrer_(resource_request->referrer),
       is_transient_(is_transient),
       fetch_error_body_(fetch_error_body),
+      download_source_(download_source),
       has_strong_validators_(false),
       is_partial_request_(save_info_->offset > 0),
       abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
   if (!is_parallel_request)
-    RecordDownloadCount(UNTHROTTLED_COUNT);
+    RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
   if (resource_request->request_initiator.has_value())
     origin_ = resource_request->request_initiator.value().GetURL();
 }
@@ -134,6 +136,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->offset = create_info->save_info->offset;
   create_info->mime_type = head.mime_type;
   create_info->fetch_error_body = fetch_error_body_;
+  create_info->download_source = download_source_;
 
   HandleResponseHeaders(head.headers.get(), create_info.get());
   return create_info;

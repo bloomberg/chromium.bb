@@ -44,7 +44,7 @@ CreateUrlDownloadHandler(std::unique_ptr<DownloadUrlParameters> params,
 
   return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
       UrlDownloader::BeginDownload(delegate, std::move(url_request),
-                                   params->referrer(), true)
+                                   params.get(), true)
           .release());
 }
 

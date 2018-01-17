@@ -17,7 +17,9 @@ struct DownloadEntry {
  public:
   DownloadEntry();
   DownloadEntry(const DownloadEntry& other);
-  DownloadEntry(const std::string& guid, int64_t ukm_id);
+  DownloadEntry(const std::string& guid,
+                DownloadSource download_source,
+                int64_t ukm_id);
   DownloadEntry(const std::string& guid,
                 const std::string& request_origin,
                 DownloadSource download_source,

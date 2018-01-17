@@ -29,13 +29,14 @@ class UrlDownloader : public net::URLRequest::Delegate,
  public:
   UrlDownloader(std::unique_ptr<net::URLRequest> request,
                 base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-                bool is_parallel_request);
+                bool is_parallel_request,
+                DownloadSource download_source);
   ~UrlDownloader() override;
 
   static std::unique_ptr<UrlDownloader> BeginDownload(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<net::URLRequest> request,
-      const Referrer& referrer,
+      DownloadUrlParameters* params,
       bool is_parallel_request);
 
  private:
