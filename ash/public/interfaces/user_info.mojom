@@ -51,4 +51,7 @@ struct UserInfo {
   // True if this user has a newly created profile (first time login on the
   // device)
   bool is_new_profile;
+  // True if the user's non-cryptohome data (wallpaper, avatar etc.) is
+  // ephemeral. See |UserManager::IsUserNonCryptohomeDataEphemeral| for details.
+  bool is_ephemeral;
 };

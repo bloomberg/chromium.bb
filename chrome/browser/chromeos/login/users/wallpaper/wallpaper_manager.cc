@@ -19,7 +19,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -73,17 +72,6 @@ namespace chromeos {
 namespace {
 
 WallpaperManager* wallpaper_manager = nullptr;
-
-// The Wallpaper App that the user is using right now on Chrome OS. It's the
-// app that is used when the user right clicks on desktop and selects "Set
-// wallpaper" or when the user selects "Set wallpaper" from chrome://settings
-// page. This is recorded at user login. It's used to back an UMA histogram so
-// it should be treated as append-only.
-enum WallpaperAppsType {
-  WALLPAPERS_PICKER_APP_CHROMEOS = 0,
-  WALLPAPERS_APP_ANDROID = 1,
-  WALLPAPERS_APPS_NUM = 2,
-};
 
 // Returns index of the first public session user found in |users|
 // or -1 otherwise.
@@ -252,22 +240,6 @@ void WallpaperManager::InitializeWallpaper() {
   ShowUserWallpaper(user_manager->GetActiveUser()->GetAccountId());
 }
 
-bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (user_manager::UserManager::Get()->IsLoggedInAsStub()) {
-    info->location = "";
-    info->layout = wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
-    info->type = wallpaper::DEFAULT;
-    info->date = base::Time::Now().LocalMidnight();
-    *GetCachedWallpaperInfo() = *info;
-    return true;
-  }
-
-  return GetUserWallpaperInfo(
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(), info);
-}
-
 void WallpaperManager::SetCustomizedDefaultWallpaperPaths(
     const base::FilePath& default_small_wallpaper_file,
     const base::FilePath& default_large_wallpaper_file) {
@@ -283,19 +255,6 @@ void WallpaperManager::AddObservers() {
           kAccountsPrefShowUserNamesOnSignIn,
           base::Bind(&WallpaperManager::InitializeRegisteredDeviceWallpaper,
                      weak_factory_.GetWeakPtr()));
-}
-
-void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
-  WallpaperInfo info;
-  if (GetLoggedInUserWallpaperInfo(&info)) {
-    UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
-                              wallpaper::WALLPAPER_TYPE_COUNT);
-    RecordWallpaperAppType();
-    if (info == *GetCachedWallpaperInfo())
-      return;
-  }
-  ShowUserWallpaper(
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }
 
 void WallpaperManager::OnPolicyFetched(const std::string& policy,
@@ -506,26 +465,6 @@ void WallpaperManager::SetDefaultWallpaperImpl(const AccountId& account_id,
       account_id, user->GetType(), show_wallpaper);
 }
 
-void WallpaperManager::RecordWallpaperAppType() {
-  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Ash.Wallpaper.Apps",
-      wallpaper_manager_util::ShouldUseAndroidWallpapersApp(profile)
-          ? WALLPAPERS_APP_ANDROID
-          : WALLPAPERS_PICKER_APP_CHROMEOS,
-      WALLPAPERS_APPS_NUM);
-}
-
-const char* WallpaperManager::GetCustomWallpaperSubdirForCurrentResolution() {
-  ash::WallpaperController::WallpaperResolution resolution =
-      ash::WallpaperController::GetAppropriateResolution();
-  return resolution == ash::WallpaperController::WALLPAPER_RESOLUTION_SMALL
-             ? ash::WallpaperController::kSmallWallpaperSubDir
-             : ash::WallpaperController::kLargeWallpaperSubDir;
-}
-
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
     std::unique_ptr<user_manager::UserImage> user_image) {
@@ -552,14 +491,6 @@ void WallpaperManager::SetPolicyControlledWallpaper(
       user_image->image(),
       user_manager::UserManager::Get()
           ->IsUserLoggedIn() /* update wallpaper */);
-}
-
-wallpaper::WallpaperInfo* WallpaperManager::GetCachedWallpaperInfo() {
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
-    return &dummy_current_user_wallpaper_info_;
-  return ash::Shell::Get()
-      ->wallpaper_controller()
-      ->GetCurrentUserWallpaperInfo();
 }
 
 }  // namespace chromeos
