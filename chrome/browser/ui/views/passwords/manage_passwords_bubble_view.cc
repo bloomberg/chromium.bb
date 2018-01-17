@@ -297,27 +297,6 @@ void ManagePasswordsBubbleView::StyledLabelLinkClicked(
   model()->OnBrandLinkClicked();
 }
 
-void ManagePasswordsBubbleView::Refresh() {
-  RemoveAllChildViews(true);
-  initially_focused_view_ = NULL;
-  CreateChild();
-  // Show/hide the close button.
-  GetWidget()->non_client_view()->ResetWindowControls();
-  GetWidget()->UpdateWindowIcon();
-  UpdateTitleText(
-      static_cast<views::StyledLabel*>(GetBubbleFrameView()->title()));
-  if (model()->state() ==
-      password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
-    // Update the height and keep the existing width.
-    gfx::Rect bubble_bounds = GetWidget()->GetWindowBoundsInScreen();
-    bubble_bounds.set_height(
-        GetWidget()->GetRootView()->GetHeightForWidth(bubble_bounds.width()));
-    GetWidget()->SetBounds(bubble_bounds);
-  } else {
-    SizeToContents();
-  }
-}
-
 void ManagePasswordsBubbleView::CreateChild() {
   if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     AddChildView(new ManagePasswordPendingView(this));
@@ -326,16 +305,6 @@ void ManagePasswordsBubbleView::CreateChild() {
     AddChildView(new ManagePasswordUpdatePendingView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new ManagePasswordSaveConfirmationView(this));
-  } else if (model()->state() ==
-             password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    AddChildView(new ManagePasswordSignInPromoView(this));
-#if defined(OS_WIN)
-  } else if (model()->state() ==
-             password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
-    AddChildView(new DesktopIOSPromotionBubbleView(
-        model()->GetProfile(),
-        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE));
-#endif
   } else {
     // This model state should be handled by separate dialogs.
     NOTREACHED();
