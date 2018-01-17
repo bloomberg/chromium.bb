@@ -31,7 +31,6 @@ import unittest
 
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.system_host_mock import MockSystemHost
-from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.layout_tests.controllers.test_result_writer import write_test_result
 from webkitpy.layout_tests.port.driver import DriverOutput
 from webkitpy.layout_tests.port.test import TestPort
@@ -91,9 +90,3 @@ class TestResultWriterTests(unittest.TestCase):
         files = {'/src/exists-expected.html': 'yup'}
         written_files = self.run_test(failures=[failure], files=files)
         self.assertEqual(written_files, {'/tmp/exists-expected.html': 'yup'})
-
-    def test_baseline_name(self):
-        fs = MockFileSystem()
-        self.assertEqual(baseline_name(fs, 'x/y/foo.html', 'txt'), 'x/y/foo-expected.txt')
-        self.assertEqual(baseline_name(fs, 'foo.html', 'txt'), 'foo-expected.txt')
-        self.assertEqual(baseline_name(fs, 'foo', 'txt'), 'foo-expected.txt')
