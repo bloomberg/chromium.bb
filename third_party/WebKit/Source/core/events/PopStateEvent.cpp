@@ -32,12 +32,12 @@
 namespace blink {
 
 PopStateEvent::PopStateEvent()
-    : serialized_state_(nullptr), state_(this), history_(nullptr) {}
+    : serialized_state_(nullptr), history_(nullptr) {}
 
 PopStateEvent::PopStateEvent(ScriptState* script_state,
                              const AtomicString& type,
                              const PopStateEventInit& initializer)
-    : Event(type, initializer), state_(this), history_(nullptr) {
+    : Event(type, initializer), history_(nullptr) {
   if (initializer.hasState()) {
     world_ = WrapRefCounted(&script_state->World());
     state_.Set(initializer.state().GetIsolate(), initializer.state().V8Value());
@@ -49,7 +49,6 @@ PopStateEvent::PopStateEvent(
     History* history)
     : Event(EventTypeNames::popstate, false, true),
       serialized_state_(std::move(serialized_state)),
-      state_(this),
       history_(history) {}
 
 PopStateEvent::~PopStateEvent() = default;

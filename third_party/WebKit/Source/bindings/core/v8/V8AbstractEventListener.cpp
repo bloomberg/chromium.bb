@@ -51,7 +51,6 @@ V8AbstractEventListener::V8AbstractEventListener(v8::Isolate* isolate,
                                                  bool is_attribute,
                                                  DOMWrapperWorld& world)
     : EventListener(kJSEventListenerType),
-      listener_(nullptr),
       is_attribute_(is_attribute),
       world_(&world),
       isolate_(isolate),

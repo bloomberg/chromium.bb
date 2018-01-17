@@ -7,8 +7,7 @@
 namespace blink {
 
 CallbackFunctionBase::CallbackFunctionBase(
-    v8::Local<v8::Function> callback_function)
-    : callback_function_(this) {
+    v8::Local<v8::Function> callback_function) {
   DCHECK(!callback_function.IsEmpty());
 
   callback_relevant_script_state_ =

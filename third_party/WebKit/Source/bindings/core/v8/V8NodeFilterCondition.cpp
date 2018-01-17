@@ -43,7 +43,7 @@ namespace blink {
 
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter,
                                              ScriptState* script_state)
-    : script_state_(script_state), filter_(this), active_flag_(false) {
+    : script_state_(script_state), active_flag_(false) {
   // ..acceptNode(..) will only dispatch filter_ if filter_->IsObject().
   // We'll make sure filter_ is either usable by acceptNode or empty.
   // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
