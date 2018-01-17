@@ -483,6 +483,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return window_tree_host_manager_.get();
   }
 
+  ToplevelWindowEventHandler* toplevel_window_event_handler() {
+    return toplevel_window_event_handler_.get();
+  }
+
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();

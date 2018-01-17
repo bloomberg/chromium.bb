@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="9">
+  <interface name="zcr_remote_shell_v1" version="10">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -181,7 +181,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="9">
+  <interface name="zcr_remote_surface_v1" version="10">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -620,6 +620,143 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
+
+    <!-- Version 10 additions -->
+    <enum name="bounds_change_reason">
+      <description summary="bounds_change_reason">
+        Specifies the cause of the window bounds change event.
+      </description>
+      <entry name="drag_move" value="1" summary="the window is being moved by drag operation"/>
+      <entry name="drag_resize" value="2" summary="the window is being resized by drag operation."/>
+      <entry name="snap_to_left" value="3"
+	     summary="the window is resized to left snapped state"/>
+      <entry name="snap_to_right" value="4"
+	     summary="the window is resized to right snapped state"/>
+      <entry name="move" value="5"
+	     summary="the window bounds is moved due to other WM operations"/>
+      <entry name="resize" value="6"
+	     summary="the window bounds is reiszed due to other WM operations"/>
+    </enum>
+
+    <event name="bounds_changed" since="10">
+      <description summary="The compositor requested to change the bounds">
+	The compositor requested to change its
+	bounds. "bounds_change_reason" specifies the cause of the
+	bounds change. The client may apply the different move/resize
+	strategy depending on the reason.
+
+	"display_id_hi", "display_id_lo" specifies in which workspace
+	the surface should live in.
+
+	The client responds with set_window_geometry request, with the
+	bounds it is resized to (this may be different from the bounds
+	requested).
+
+	The client may ignore move request depending on the state,
+	e.g, if it becomes resizable or other constrants.
+      </description>
+      <arg name="workspace_id_hi" type="uint"/>
+      <arg name="workspace_id_lo" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="bounds_change_reason" type="uint"/>
+    </event>
+
+    <request name="start_move" since="10">
+      <description summary="start an interactive move">
+	Request an interactive, user-driven move of the surface. "x"
+	and "y" specifies the starting point of the pointer device
+	that initiated the move.
+
+	The compositor responds to this request with a drag_started
+	event with "none" direction.  Please see drag_started event
+	for more details.
+
+	The compositor may ignore move requests depending on the state of the
+	surface, e.g. fullscreen or maximized.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <enum name="resize_direction">
+      <description summary="resize direction">
+	The resize direction for drag operation
+      </description>
+      <entry name="none" value="0" summary="move only, no resize"/>
+      <entry name="left" value="1" summary="resize to the left"/>
+      <entry name="topleft" value="2" summary="resize to the top left"/>
+      <entry name="top" value="3" summary="resize to the top"/>
+      <entry name="topright" value="4" summary="resize to the top right"/>
+      <entry name="right" value="5" summary="resize to the right"/>
+      <entry name="bottomright" value="6" summary="resize to the buttom right"/>
+      <entry name="bottom" value="7" summary="resize to the bottom"/>
+      <entry name="bottomleft" value="8" summary="resize to the bottom left"/>
+    </enum>
+
+    <event name="drag_started" since="10">
+      <description summary="Notifies that a drag to move/resize started.">
+	Notifies a client that the compositor started drag
+	operation. "direction" specifies which direction it is being
+	resized. "none" direction means just move but not resize.
+
+	This will be followed by series of the "bounds_changed" event
+	with "drag_resize" or "drag_move" reasons to update the window
+	bounds druing the drag operation.
+      </description>
+      <arg name="direction" type="uint"/>
+    </event>
+
+    <event name="drag_finished" since="10">
+      <description summary="Notifies that a drag operation has finished.">
+	Called when the drag operation is finished.  "x" and "y"
+	specifies the position of the pointer device used to drag.
+	"canceled" is true if the drag operation is aborted during
+	drag (e.g. by capture change or user action.)
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="canceled" type="int" summary="true if the operation was canceled"/>
+    </event>
+
+    <request name="set_can_maximize" since="10">
+      <description summary="set can_maximize">
+	Request that surface can be in maximzied state.
+      </description>
+    </request>
+
+    <request name="unset_can_maximize" since="10">
+      <description summary="unset can_maximize">
+	Request that surface can not be in maximzied state.
+      </description>
+    </request>
+
+    <request name="set_min_size" since="10">
+      <description summary="set the minimum size">
+	Set a minimum size of the surface.
+
+	Values set in this way are double-buffered. They will get
+	applied on the next commit.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="set_max_size" since="10">
+      <description summary="set the maximum size">
+	Set a maximum size of the surface.
+
+	Values set in this way are double-buffered. They will get
+	applied on the next commit.
+
+	Setting the same size as minimum size makes the surface
+	unresizable.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
 
   </interface>
 

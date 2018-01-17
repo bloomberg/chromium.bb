@@ -8,8 +8,12 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
+#include "ash/wm/drag_details.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -81,7 +85,20 @@ class ClientControlledStateDelegate
   }
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
                            const gfx::Rect& bounds) override {
-    // TODO(oshima): Implement this.
+    bool is_resize = window_state->window()->bounds().size() != bounds.size();
+
+    gfx::Rect bounds_in_screen(bounds);
+    ::wm::ConvertRectToScreen(window_state->window()->GetRootWindow(),
+                              &bounds_in_screen);
+    int64_t display_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(window_state->window())
+                             .id();
+
+    shell_surface_->OnBoundsChangeEvent(
+        window_state->GetStateType(), display_id, bounds_in_screen, is_resize,
+        window_state->drag_details()
+            ? window_state->drag_details()->bounds_change
+            : 0);
   }
 
  private:
@@ -95,8 +112,9 @@ class ClientControlledWindowStateDelegate
     : public ash::wm::WindowStateDelegate {
  public:
   explicit ClientControlledWindowStateDelegate(
+      ClientControlledShellSurface* shell_surface,
       ash::wm::ClientControlledState::Delegate* delegate)
-      : delegate_(delegate) {}
+      : shell_surface_(shell_surface), delegate_(delegate) {}
   ~ClientControlledWindowStateDelegate() override {}
 
   // Overridden from ash::wm::WindowStateDelegate:
@@ -156,7 +174,16 @@ class ClientControlledWindowStateDelegate
     return true;
   }
 
+  void OnDragStarted(int component) override {
+    shell_surface_->OnDragStarted(component);
+  }
+
+  void OnDragFinished(bool canceled, const gfx::Point& location) override {
+    shell_surface_->OnDragFinished(canceled, location);
+  }
+
  private:
+  ClientControlledShellSurface* shell_surface_;
   ash::wm::ClientControlledState::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledWindowStateDelegate);
@@ -167,6 +194,34 @@ bool IsPinned(const ash::wm::WindowState* window_state) {
 }
 
 }  // namespace
+
+class ClientControlledShellSurface::ScopedSetBoundsLocally {
+ public:
+  ScopedSetBoundsLocally(ClientControlledShellSurface* shell_surface)
+      : state_(shell_surface->client_controlled_state_) {
+    state_->set_bounds_locally(true);
+  }
+  ~ScopedSetBoundsLocally() { state_->set_bounds_locally(false); }
+
+ private:
+  ash::wm::ClientControlledState* const state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsLocally);
+};
+
+class ClientControlledShellSurface::ScopedLockedToRoot {
+ public:
+  ScopedLockedToRoot(views::Widget* widget)
+      : window_(widget->GetNativeWindow()) {
+    window_->SetProperty(ash::kLockedToRootKey, true);
+  }
+  ~ScopedLockedToRoot() { window_->ClearProperty(ash::kLockedToRootKey); }
+
+ private:
+  aura::Window* const window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedLockedToRoot);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClientControlledShellSurface, public:
@@ -281,9 +336,10 @@ void ClientControlledShellSurface::SetTopInset(int height) {
 void ClientControlledShellSurface::SetResizeOutset(int outset) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeOutset", "outset",
                outset);
-
-  if (root_surface())
-    root_surface()->SetInputOutset(outset);
+  if (client_controlled_move_resize_) {
+    if (root_surface())
+      root_surface()->SetInputOutset(outset);
+  }
 }
 
 void ClientControlledShellSurface::OnWindowStateChangeEvent(
@@ -293,6 +349,61 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
     state_changed_callback_.Run(current_state, next_state);
 }
 
+void ClientControlledShellSurface::StartResize_DEPRECATED() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::StartResize");
+
+  if (!widget_ || !client_controlled_move_resize_)
+    return;
+
+  AttemptToStartDrag(HTBORDER);
+}
+
+void ClientControlledShellSurface::StartMove(const gfx::Point& location) {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::StartMove");
+
+  if (!widget_)
+    return;
+
+  gfx::Point point_in_root(location);
+  wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
+                             &point_in_root);
+
+  aura::Window* target = widget_->GetNativeWindow();
+  ash::Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
+      target, point_in_root, HTCAPTION,
+      ash::wm::WmToplevelWindowEventHandler::EndClosure());
+}
+
+void ClientControlledShellSurface::SetCanMaximize(bool can_maximize) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetCanMaximize",
+               "can_maximzie", can_maximize);
+  can_maximize_ = can_maximize;
+  if (widget_)
+    widget_->OnSizeConstraintsChanged();
+}
+
+void ClientControlledShellSurface::OnBoundsChangeEvent(
+    ash::mojom::WindowStateType current_state,
+    int64_t display_id,
+    const gfx::Rect& bounds,
+    bool is_resize,
+    int bounds_change) {
+  if (!bounds.IsEmpty() && !bounds_changed_callback_.is_null()) {
+    bounds_changed_callback_.Run(current_state, display_id, bounds, is_resize,
+                                 bounds_change);
+  }
+}
+
+void ClientControlledShellSurface::OnDragStarted(int component) {
+  if (!drag_started_callback_.is_null())
+    drag_started_callback_.Run(component);
+}
+
+void ClientControlledShellSurface::OnDragFinished(bool canceled,
+                                                  const gfx::Point& location) {
+  if (!drag_finished_callback_.is_null())
+    drag_finished_callback_.Run(location.x(), location.y(), canceled);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
@@ -382,11 +493,17 @@ void ClientControlledShellSurface::OnWindowBoundsChanged(
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {}
 
+void ClientControlledShellSurface::OnWindowAddedToRootWindow(
+    aura::Window* window) {
+  ScopedLockedToRoot scoped_locked_to_root(widget_);
+  UpdateWidgetBounds();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides:
 
-bool ClientControlledShellSurface::CanResize() const {
-  return false;
+bool ClientControlledShellSurface::CanMaximize() const {
+  return can_maximize_;
 }
 
 views::NonClientFrameView*
@@ -397,8 +514,8 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
           ? std::make_unique<ClientControlledStateDelegate>(this)
           : g_factory_callback.Run();
 
-  auto window_delegate =
-      std::make_unique<ClientControlledWindowStateDelegate>(delegate.get());
+  auto window_delegate = std::make_unique<ClientControlledWindowStateDelegate>(
+      this, delegate.get());
   auto state =
       std::make_unique<ash::wm::ClientControlledState>(std::move(delegate));
   client_controlled_state_ = state.get();
@@ -416,6 +533,19 @@ bool ClientControlledShellSurface::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::View overrides:
+
+gfx::Size ClientControlledShellSurface::GetMaximumSize() const {
+  // On ChromeOS, a window with non empty maximum size is non-maximizable,
+  // even if CanMaximize() returns true. ClientControlledShellSurface
+  // sololy depends on |can_maximize_| to determine if it is maximizable,
+  // so just return empty size because the maximum size in
+  // ClientControlledShellSurface is used only to tell the resizability,
+  // but not real maximum size.
+  return gfx::Size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -485,10 +615,13 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 // ShellSurface overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
-  if (!resizer_ || resizer_->details().window_component != HTCAPTION) {
-    client_controlled_state_->set_bounds_locally(true);
-    widget_->SetBounds(bounds);
-    client_controlled_state_->set_bounds_locally(false);
+  if ((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
+      (client_controlled_move_resize_ &&
+       (!resizer_ || resizer_->details().window_component != HTCAPTION))) {
+    {
+      ScopedSetBoundsLocally scoped_set_bounds(this);
+      widget_->SetBounds(bounds);
+    }
     UpdateSurfaceBounds();
     return;
   }
@@ -504,13 +637,15 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   wm::ConvertPointFromScreen(widget_->GetNativeWindow()->parent(), &origin);
 
   // Move the window relative to the current display.
-  client_controlled_state_->set_bounds_locally(true);
-  widget_->GetNativeWindow()->SetBounds(gfx::Rect(origin, bounds.size()));
-  client_controlled_state_->set_bounds_locally(false);
+  {
+    ScopedSetBoundsLocally scoped_set_bounds(this);
+    widget_->GetNativeWindow()->SetBounds(gfx::Rect(origin, bounds.size()));
+  }
   UpdateSurfaceBounds();
 
   // Render phantom windows when beyond the current display.
-  resizer_->Drag(GetMouseLocation(), 0);
+  if (resizer_)
+    resizer_->Drag(GetMouseLocation(), 0);
 }
 
 gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {

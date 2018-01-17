@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ash {
 namespace wm {
 class WindowState;
@@ -29,6 +33,16 @@ class ASH_EXPORT WindowStateDelegate {
   // reassert its always on top state. Returns true if delegate has handled this
   // and no additional work is needed, false otherwise.
   virtual bool RestoreAlwaysOnTop(WindowState* window_state);
+
+  // Invoked when the user started drag operation. |component| must be
+  // a member of ui::HitTestCompat enum and specifies which part of
+  // the window the pointer device was on when the user started drag
+  // operation.
+  virtual void OnDragStarted(int component) {}
+
+  // Invoked when the user finished drag operation. |cancel| is true
+  // if the drag operation was canceled.
+  virtual void OnDragFinished(bool cancel, const gfx::Point& location) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowStateDelegate);

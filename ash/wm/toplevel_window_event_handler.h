@@ -33,6 +33,16 @@ class ASH_EXPORT ToplevelWindowEventHandler : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // Attempts to start a drag if one is not already in progress. Returns true if
+  // successful. |end_closure| is run when the drag completes.
+  // If the event handler is handing the gesture stream, it will use the touch
+  // movement.
+  bool AttemptToStartDrag(
+      aura::Window* window,
+      const gfx::Point& point_in_parent,
+      int window_component,
+      const wm::WmToplevelWindowEventHandler::EndClosure& end_closure);
+
   // Overridden form wm::WindowMoveClient:
   ::wm::WindowMoveResult RunMoveLoop(
       aura::Window* source,
