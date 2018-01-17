@@ -966,6 +966,21 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
   if (!web_contents)
     return RespondNow(Error(kCouldNotFindWebContentsError));
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (profile->IsSupervised()) {
+    return RespondNow(
+        Error("Supervised users cannot load unpacked extensions."));
+  }
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
+    return RespondNow(
+        Error("Must be in developer mode to load unpacked extensions."));
+  }
+  if (ExtensionManagementFactory::GetForBrowserContext(browser_context())
+          ->BlacklistedByDefault()) {
+    return RespondNow(Error("Extension installation is blocked by policy."));
+  }
+
   fail_quietly_ = params->options &&
                   params->options->fail_quietly &&
                   *params->options->fail_quietly;
