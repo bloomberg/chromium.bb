@@ -30,7 +30,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       separate_leading_fragmentainer_margins_(false),
       is_new_fc_(false),
       is_anonymous_(false),
-      use_first_line_sytle_(false),
+      use_first_line_style_(false),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       exclusion_space_(nullptr) {}
 
@@ -135,8 +135,8 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUseFirstLineStyle(
-    bool use_first_line_sytle) {
-  use_first_line_sytle_ = use_first_line_sytle;
+    bool use_first_line_style) {
+  use_first_line_style_ = use_first_line_style;
   return *this;
 }
 
@@ -234,7 +234,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_),
         separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-        use_first_line_sytle_, margin_strut, bfc_offset, floats_bfc_offset,
+        use_first_line_style_, margin_strut, bfc_offset, floats_bfc_offset,
         exclusion_space, unpositioned_floats_, clearance_offset,
         baseline_requests_));
   }
@@ -249,7 +249,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_),
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-      use_first_line_sytle_, margin_strut, bfc_offset, floats_bfc_offset,
+      use_first_line_style_, margin_strut, bfc_offset, floats_bfc_offset,
       exclusion_space, unpositioned_floats_, clearance_offset,
       baseline_requests_));
 }
