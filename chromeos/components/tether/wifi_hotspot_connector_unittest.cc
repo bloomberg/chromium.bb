@@ -12,6 +12,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -63,6 +64,11 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
         : network_state_test_(network_state_test) {}
     ~TestNetworkConnect() override = default;
 
+    void set_is_running_in_test_task_runner(
+        bool is_running_in_test_task_runner) {
+      is_running_in_test_task_runner_ = is_running_in_test_task_runner;
+    }
+
     base::DictionaryValue* last_configuration() {
       return last_configuration_.get();
     }
@@ -111,10 +117,10 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
 
       // Prevent nested RunLoops when ConfigureServiceWithLastNetworkConfig()
       // calls NetworkStateTest::ConfigureService(); that causes threading
-      // issues. If a RunLoop is running right now, the client which was running
-      // the RunLoop can manually call ConfigureServiceWithLastNetworkConfig()
-      // once done.
-      if (!base::RunLoop::IsRunningOnCurrentThread())
+      // issues. If |test_task_runner_| is causing this function to be run, the
+      // client which triggered this call can manually call
+      // ConfigureServiceWithLastNetworkConfig() once done.
+      if (!is_running_in_test_task_runner_)
         ConfigureServiceWithLastNetworkConfig();
     }
 
@@ -136,6 +142,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     std::string network_id_to_disconnect_;
     uint32_t num_connection_attempts_ = 0;
     uint32_t num_disconnection_attempts_ = 0;
+    bool is_running_in_test_task_runner_ = false;
   };
 
   WifiHotspotConnectorTest() = default;
@@ -173,11 +180,12 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
-    wifi_hotspot_connector_->SetTimerForTest(base::WrapUnique(mock_timer_));
-
     test_clock_ = new base::SimpleTestClock();
     test_clock_->SetNow(base::Time::UnixEpoch());
-    wifi_hotspot_connector_->SetClockForTest(base::WrapUnique(test_clock_));
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+    wifi_hotspot_connector_->SetTestDoubles(base::WrapUnique(mock_timer_),
+                                            base::WrapUnique(test_clock_),
+                                            test_task_runner_);
   }
 
   void SetUpShillState() {
@@ -208,14 +216,22 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     mock_timer_->Fire();
   }
 
+  void RunTestTaskRunner() {
+    test_network_connect_->set_is_running_in_test_task_runner(true);
+    test_task_runner_->RunUntilIdle();
+    test_network_connect_->set_is_running_in_test_task_runner(false);
+  }
+
   void NotifyConnectable(const std::string& service_path) {
     SetServiceProperty(service_path, std::string(shill::kConnectableProperty),
                        base::Value(true));
+    RunTestTaskRunner();
   }
 
   void NotifyConnected(const std::string& service_path) {
     SetServiceProperty(service_path, std::string(shill::kStateProperty),
                        base::Value(shill::kStateReady));
+    RunTestTaskRunner();
   }
 
   void VerifyConnectionToHotspotDurationRecorded(bool expected) {
@@ -300,6 +316,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
 
   base::MockTimer* mock_timer_;
   base::SimpleTestClock* test_clock_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TestNetworkConnect> test_network_connect_;
 
   std::unique_ptr<WifiHotspotConnector> wifi_hotspot_connector_;
@@ -630,11 +647,9 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_Success) {
   EXPECT_TRUE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
-  // Letting the RunLoop run-until-idle above indirectly led to
-  // TestNetworkConnect::CreateConfiguration being called with a running
-  // RunLoop. A RunLoop cannot be running when finishing work in
-  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
-  // finish the work it started.
+  // Run the task and manually invoke ConfigureServiceWithLastNetworkConfig() to
+  // prevent nested RunLoop errors.
+  RunTestTaskRunner();
   test_network_connect_->ConfigureServiceWithLastNetworkConfig();
 
   std::string wifi_guid =
@@ -688,11 +703,9 @@ TEST_F(WifiHotspotConnectorTest,
   EXPECT_TRUE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
-  // Letting the RunLoop run-until-idle above indirectly led to
-  // TestNetworkConnect::CreateConfiguration being called with a running
-  // RunLoop. A RunLoop cannot be running when finishing work in
-  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
-  // finish the work it started.
+  // Run the task and manually invoke ConfigureServiceWithLastNetworkConfig() to
+  // prevent nested RunLoop errors.
+  RunTestTaskRunner();
   test_network_connect_->ConfigureServiceWithLastNetworkConfig();
 
   std::string wifi_guid =
@@ -786,11 +799,9 @@ TEST_F(WifiHotspotConnectorTest,
   EXPECT_TRUE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
-  // Letting the RunLoop run-until-idle above indirectly led to
-  // TestNetworkConnect::CreateConfiguration being called with a running
-  // RunLoop. A RunLoop cannot be running when finishing work in
-  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
-  // finish the work it started.
+  // Run the task and manually invoke ConfigureServiceWithLastNetworkConfig() to
+  // prevent nested RunLoop errors.
+  RunTestTaskRunner();
   test_network_connect_->ConfigureServiceWithLastNetworkConfig();
 
   std::string wifi_guid2 = VerifyLastConfiguration("ssid2", "password2");
