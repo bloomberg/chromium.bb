@@ -325,13 +325,13 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryWithBackoff) {
   // Make a fetch request.
   RequestExternalDataFetch(0);
 
-  base::TimeDelta expected_delay = base::TimeDelta::FromSeconds(60);
+  base::TimeDelta expected_delay = base::TimeDelta::FromSeconds(15);
   const base::TimeDelta delay_cap = base::TimeDelta::FromHours(12);
 
   int fetcher_id = 0;
 
-  // The backoff delay is capped at 12 hours, which is reached after 10 retries:
-  // 60 * 2^10 == 61440 > 43200 == 12 * 60 * 60
+  // The backoff delay is capped at 12 hours, which is reached after 12 retries:
+  // 15 * 2^12 == 61440 > 43200 == 12 * 60 * 60
   for (int i = 0; i < 20; ++i) {
     // Verify that the fetch has been (re)started.
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(fetcher_id);
@@ -358,12 +358,12 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryWithBackoff) {
                   0.799 * expected_delay.InMilliseconds()));
     EXPECT_LE(delay, expected_delay);
 
-    if (i < 10) {
+    if (i < 12) {
       // The delay cap has not been reached yet.
       EXPECT_LT(expected_delay, delay_cap);
       expected_delay *= 2;
 
-      if (i == 9) {
+      if (i == 11) {
         // The last doubling reached the cap.
         EXPECT_GT(expected_delay, delay_cap);
         expected_delay = delay_cap;
