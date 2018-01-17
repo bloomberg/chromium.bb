@@ -1677,7 +1677,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)prefersStatusBarHidden {
-  return self.hideStatusBar;
+  BOOL defaultValue = NO;
+  if (IsAdaptiveToolbarEnabled()) {
+    defaultValue = [super prefersStatusBarHidden];
+  }
+  return self.hideStatusBar || defaultValue;
 }
 
 // Called when in the foreground and the OS needs more memory. Release as much
