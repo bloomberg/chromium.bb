@@ -78,6 +78,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
 
   bool is_rendering_;
+  gfx::Size current_size_in_pixels_;
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 
   THREAD_CHECKER(media_thread_checker_);

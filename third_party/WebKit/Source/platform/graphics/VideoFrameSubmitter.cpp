@@ -131,6 +131,11 @@ void VideoFrameSubmitter::SubmitFrame(
                                           &compositor_frame.resource_list);
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
+  if (compositor_frame.size_in_pixels() != current_size_in_pixels_) {
+    current_local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    current_size_in_pixels_ = compositor_frame.size_in_pixels();
+  }
+
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
   compositor_frame_sink_->SubmitCompositorFrame(
       current_local_surface_id_, std::move(compositor_frame), nullptr, 0);
