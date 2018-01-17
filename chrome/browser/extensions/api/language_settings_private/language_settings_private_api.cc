@@ -156,8 +156,8 @@ std::vector<std::string> GetSortedExtensionIMEs(
   return extension_ime_list;
 }
 
-}  // anonymous namespace
-#endif
+}  // namespace
+#endif  // defined(OS_CHROMEOS)
 
 LanguageSettingsPrivateGetLanguageListFunction::
     LanguageSettingsPrivateGetLanguageListFunction()
@@ -184,8 +184,8 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
                                                    locales.end());
 
   // Get the list of spell check languages and convert to a set.
-  std::vector<std::string> spellcheck_languages;
-  spellcheck::SpellCheckLanguages(&spellcheck_languages);
+  std::vector<std::string> spellcheck_languages =
+      spellcheck::SpellCheckLanguages();
   const std::unordered_set<std::string> spellcheck_language_set(
       spellcheck_languages.begin(), spellcheck_languages.end());
 

@@ -42,7 +42,7 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
 
 // Get SpellChecker supported languages.
-void SpellCheckLanguages(std::vector<std::string>* languages);
+std::vector<std::string> SpellCheckLanguages();
 
 // Gets the ISO codes for the language and country of this |locale|. The
 // |locale| is an ISO locale ID that may not include a country ID, e.g., "fr" or

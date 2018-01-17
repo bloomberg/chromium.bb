@@ -26,62 +26,62 @@ struct LanguageVersion {
   const char* version;   // The corresponding version.
 };
 
-static const LanguageRegion g_supported_spellchecker_languages[] = {
-  // Several languages are not to be included in the spellchecker list:
-  // th-TH, vi-VI.
-  {"af", "af-ZA"},
-  {"bg", "bg-BG"},
-  {"ca", "ca-ES"},
-  {"cs", "cs-CZ"},
-  {"da", "da-DK"},
-  {"de", "de-DE"},
-  {"el", "el-GR"},
-  {"en-AU", "en-GB"},
-  {"en-CA", "en-CA"},
-  {"en-GB", "en-GB"},
-  {"en-US", "en-US"},
-  {"es", "es-ES"},
-  {"es-419", "es-ES"},
-  {"es-AR", "es-ES"},
-  {"es-ES", "es-ES"},
-  {"es-MX", "es-ES"},
-  {"es-US", "es-ES"},
-  {"et", "et-EE"},
-  {"fa", "fa-IR"},
-  {"fo", "fo-FO"},
-  {"fr", "fr-FR"},
-  {"he", "he-IL"},
-  {"hi", "hi-IN"},
-  {"hr", "hr-HR"},
-  {"hu", "hu-HU"},
-  {"id", "id-ID"},
-  {"it", "it-IT"},
-  {"ko", "ko"},
-  {"lt", "lt-LT"},
-  {"lv", "lv-LV"},
-  {"nb", "nb-NO"},
-  {"nl", "nl-NL"},
-  {"pl", "pl-PL"},
-  {"pt-BR", "pt-BR"},
-  {"pt-PT", "pt-PT"},
-  {"ro", "ro-RO"},
-  {"ru", "ru-RU"},
-  {"sh", "sh"},
-  {"sk", "sk-SK"},
-  {"sl", "sl-SI"},
-  {"sq", "sq"},
-  {"sr", "sr"},
-  {"sv", "sv-SE"},
-  {"ta", "ta-IN"},
-  {"tg", "tg-TG"},
-  {"tr", "tr-TR"},
-  {"uk", "uk-UA"},
-  {"vi", "vi-VN"},
+static constexpr LanguageRegion kSupportedSpellCheckerLanguages[] = {
+    // Several languages are not to be included in the spellchecker list:
+    // th-TH, vi-VI.
+    {"af", "af-ZA"},
+    {"bg", "bg-BG"},
+    {"ca", "ca-ES"},
+    {"cs", "cs-CZ"},
+    {"da", "da-DK"},
+    {"de", "de-DE"},
+    {"el", "el-GR"},
+    {"en-AU", "en-GB"},
+    {"en-CA", "en-CA"},
+    {"en-GB", "en-GB"},
+    {"en-US", "en-US"},
+    {"es", "es-ES"},
+    {"es-419", "es-ES"},
+    {"es-AR", "es-ES"},
+    {"es-ES", "es-ES"},
+    {"es-MX", "es-ES"},
+    {"es-US", "es-ES"},
+    {"et", "et-EE"},
+    {"fa", "fa-IR"},
+    {"fo", "fo-FO"},
+    {"fr", "fr-FR"},
+    {"he", "he-IL"},
+    {"hi", "hi-IN"},
+    {"hr", "hr-HR"},
+    {"hu", "hu-HU"},
+    {"id", "id-ID"},
+    {"it", "it-IT"},
+    {"ko", "ko"},
+    {"lt", "lt-LT"},
+    {"lv", "lv-LV"},
+    {"nb", "nb-NO"},
+    {"nl", "nl-NL"},
+    {"pl", "pl-PL"},
+    {"pt-BR", "pt-BR"},
+    {"pt-PT", "pt-PT"},
+    {"ro", "ro-RO"},
+    {"ru", "ru-RU"},
+    {"sh", "sh"},
+    {"sk", "sk-SK"},
+    {"sl", "sl-SI"},
+    {"sq", "sq"},
+    {"sr", "sr"},
+    {"sv", "sv-SE"},
+    {"ta", "ta-IN"},
+    {"tg", "tg-TG"},
+    {"tr", "tr-TR"},
+    {"uk", "uk-UA"},
+    {"vi", "vi-VN"},
 };
 
 bool IsValidRegion(const std::string& region) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
-    if (g_supported_spellchecker_languages[i].language_region == region)
+  for (const auto& lang_region : kSupportedSpellCheckerLanguages) {
+    if (lang_region.language_region == region)
       return true;
   }
   return false;
@@ -90,10 +90,9 @@ bool IsValidRegion(const std::string& region) {
 // This function returns the language-region version of language name.
 // e.g. returns hi-IN for hi.
 std::string GetSpellCheckLanguageRegion(const std::string& input_language) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
-    if (g_supported_spellchecker_languages[i].language == input_language) {
-      return std::string(g_supported_spellchecker_languages[i].language_region);
-    }
+  for (const auto& lang_region : kSupportedSpellCheckerLanguages) {
+    if (lang_region.language == input_language)
+      return std::string(lang_region.language_region);
   }
 
   return input_language;
@@ -109,53 +108,48 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
   // dictionaries that you add at the same time. Increment the major version
   // number if you're updating either dic or aff files. Increment the minor
   // version number if you're updating only dic_delta files.
-  static LanguageVersion special_version_string[] = {
-    {"tr-TR", "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
-                        // crash.
-    {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
+  static constexpr LanguageVersion kSpecialVersionString[] = {
+      {"tr-TR",
+       "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
+                 // crash.
+      {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
 
-    // October 2017: Update from upstream.
-    {"en-AU", "-8-0"},
-    {"en-CA", "-8-0"},
-    {"en-GB", "-8-0"},
-    {"en-US", "-8-0"},
+      // October 2017: Update from upstream.
+      {"en-AU", "-8-0"},
+      {"en-CA", "-8-0"},
+      {"en-GB", "-8-0"},
+      {"en-US", "-8-0"},
 
-    // March 2016: Initial check-in of Persian
-    {"fa-IR", "-7-0"},
+      // March 2016: Initial check-in of Persian
+      {"fa-IR", "-7-0"},
   };
 
   // Generate the bdict file name using default version string or special
   // version string, depending on the language.
   std::string language = GetSpellCheckLanguageRegion(input_language);
-  std::string versioned_bdict_file_name(language + kDefaultVersionString +
-                                        ".bdic");
-  for (size_t i = 0; i < arraysize(special_version_string); ++i) {
-    if (language == special_version_string[i].language) {
-      versioned_bdict_file_name =
-          language + special_version_string[i].version + ".bdic";
+  std::string version = kDefaultVersionString;
+  for (const auto& lang_ver : kSpecialVersionString) {
+    if (language == lang_ver.language) {
+      version = lang_ver.version;
       break;
     }
   }
-
+  std::string versioned_bdict_file_name(language + version + ".bdic");
   return dict_dir.AppendASCII(versioned_bdict_file_name);
 }
 
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
   std::string best_match;
   // Look for exact match in the Spell Check language list.
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
+  for (const auto& lang_region : kSupportedSpellCheckerLanguages) {
     // First look for exact match in the language region of the list.
-    std::string spellcheck_language(
-        g_supported_spellchecker_languages[i].language);
-    if (spellcheck_language == language)
+    if (lang_region.language == language)
       return language;
 
     // Next, look for exact match in the language_region part of the list.
-    std::string spellcheck_language_region(
-        g_supported_spellchecker_languages[i].language_region);
-    if (spellcheck_language_region == language) {
+    if (lang_region.language_region == language) {
       if (best_match.empty())
-        best_match = g_supported_spellchecker_languages[i].language;
+        best_match = lang_region.language;
     }
   }
 
@@ -163,10 +157,11 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
   return best_match;
 }
 
-void SpellCheckLanguages(std::vector<std::string>* languages) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
-    languages->push_back(g_supported_spellchecker_languages[i].language);
-  }
+std::vector<std::string> SpellCheckLanguages() {
+  std::vector<std::string> languages;
+  for (const auto& lang_region : kSupportedSpellCheckerLanguages)
+    languages.push_back(lang_region.language);
+  return languages;
 }
 
 void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
