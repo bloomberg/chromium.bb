@@ -57,6 +57,8 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
   // This is the main entry for tracing method definitions.
   void CheckTracingMethod(clang::CXXMethodDecl* method);
 
+  void CheckWrapperTracingMethod(clang::CXXMethodDecl* method);
+
   // Determine what type of tracing method this is (dispatch or trace).
   void CheckTraceOrDispatchMethod(RecordInfo* parent,
                                   clang::CXXMethodDecl* method);
@@ -65,6 +67,11 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
   void CheckTraceMethod(RecordInfo* parent,
                         clang::CXXMethodDecl* trace,
                         Config::TraceMethodType trace_type);
+
+  void CheckTraceWrappersMethod(
+      RecordInfo* parent,
+      clang::CXXMethodDecl* trace_wrappers,
+      Config::TraceWrappersMethodType trace_wrappers_type);
 
   void DumpClass(RecordInfo* info);
 

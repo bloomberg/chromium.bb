@@ -30,6 +30,9 @@ struct BlinkGCPluginOptions {
   // TODO(sof): remove this option once safely rolled out.
   bool enable_weak_members_in_unmanaged_classes = false;
 
+  // Warn on missing dispatches to base class TraceWrappers.
+  bool warn_trace_wrappers_missing_base_dispatch = false;
+
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;

@@ -37,6 +37,8 @@ class BlinkGCPluginAction : public PluginASTAction {
         options_.warn_unneeded_finalizer = true;
       } else if (arg == "enable-weak-members-in-unmanaged-classes") {
         options_.enable_weak_members_in_unmanaged_classes = true;
+      } else if (arg == "warn-trace-wrappers-missing-base-dispatch") {
+        options_.warn_trace_wrappers_missing_base_dispatch = true;
       } else {
         llvm::errs() << "Unknown blink-gc-plugin argument: " << arg << "\n";
         return false;

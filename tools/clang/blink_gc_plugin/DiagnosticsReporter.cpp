@@ -17,6 +17,9 @@ const char kClassRequiresTraceMethod[] =
 const char kBaseRequiresTracing[] =
     "[blink-gc] Base class %0 of derived class %1 requires tracing.";
 
+const char kBaseRequiresWrapperTracing[] =
+    "[blink-gc] Base class %0 of derived class %1 requires wrapper tracing.";
+
 const char kBaseRequiresTracingNote[] =
     "[blink-gc] Untraced base class %0 declared here:";
 
@@ -181,6 +184,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kClassRequiresTraceMethod);
   diag_base_requires_tracing_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresTracing);
+  diag_base_requires_wrapper_tracing_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresWrapperTracing);
   diag_fields_require_tracing_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
   diag_fields_improperly_traced_ =
@@ -310,6 +315,13 @@ void DiagnosticsReporter::BaseRequiresTracing(
     CXXMethodDecl* trace,
     CXXRecordDecl* base) {
   ReportDiagnostic(trace->getLocStart(), diag_base_requires_tracing_)
+      << base << derived->record();
+}
+
+void DiagnosticsReporter::BaseRequiresWrapperTracing(RecordInfo* derived,
+                                                     CXXMethodDecl* trace,
+                                                     CXXRecordDecl* base) {
+  ReportDiagnostic(trace->getLocStart(), diag_base_requires_wrapper_tracing_)
       << base << derived->record();
 }
 
