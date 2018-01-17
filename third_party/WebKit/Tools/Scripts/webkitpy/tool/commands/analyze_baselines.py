@@ -30,7 +30,6 @@ import logging
 import optparse
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
-from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 _log = logging.getLogger(__name__)
@@ -56,8 +55,10 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
         print msg
 
     def _analyze_baseline(self, options, test_name):
+        # TODO(robertma): Investigate changing the CLI to take extensions with leading '.'.
         for suffix in self._baseline_suffix_list:
-            name = baseline_name(self._tool.filesystem, test_name, suffix)
+            extension = '.' + suffix
+            name = self._port.output_filename(test_name, self._port.BASELINE_SUFFIX, extension)
             results_by_directory = self._baseline_optimizer.read_results_by_directory(name)
             if results_by_directory:
                 self._write('%s:' % name)
