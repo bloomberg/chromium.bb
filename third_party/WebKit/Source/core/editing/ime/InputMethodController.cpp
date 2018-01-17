@@ -913,10 +913,6 @@ EphemeralRange InputMethodController::CompositionEphemeralRange() const {
   return EphemeralRange(composition_range_.Get());
 }
 
-Range* InputMethodController::CompositionRange() const {
-  return HasComposition() ? composition_range_ : nullptr;
-}
-
 String InputMethodController::ComposingText() const {
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetDocument().Lifecycle());
@@ -1014,7 +1010,7 @@ PlainTextRange InputMethodController::CreateRangeForSelection(
     right_boundary += it.length();
 
   if (HasComposition())
-    right_boundary -= CompositionRange()->GetText().length();
+    right_boundary -= composition_range_->GetText().length();
 
   right_boundary += text_length;
 

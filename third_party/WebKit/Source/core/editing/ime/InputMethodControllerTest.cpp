@@ -29,6 +29,12 @@ class InputMethodControllerTest : public PageTestBase {
   InputMethodController& Controller() {
     return GetFrame().GetInputMethodController();
   }
+
+  // TODO(editing-dev): We should use |CompositionEphemeralRange()| instead
+  // of having |GetCompositionRange()| and marking |InputMethodControllerTest|
+  // as friend class.
+  Range* GetCompositionRange() { return Controller().composition_range_; }
+
   Element* InsertHTMLElement(const char* element_code, const char* element_id);
   void CreateHTMLWithCompositionInputEventListeners();
   void CreateHTMLWithCompositionEndEventListener(const SelectionType);
@@ -164,7 +170,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
                                        Color(255, 0, 0), false, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 5);
 
-  Range* range = Controller().CompositionRange();
+  Range* range = GetCompositionRange();
   EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(5u, range->endOffset());
 
@@ -464,7 +470,7 @@ TEST_F(InputMethodControllerTest,
                                        Color(255, 0, 0), false, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 5);
 
-  Range* range = Controller().CompositionRange();
+  Range* range = GetCompositionRange();
   EXPECT_EQ(1u, range->startOffset());
   EXPECT_EQ(6u, range->endOffset());
 
@@ -482,7 +488,7 @@ TEST_F(InputMethodControllerTest,
                                        Color(255, 0, 0), false, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 7, 8);
 
-  EXPECT_FALSE(Controller().CompositionRange());
+  EXPECT_FALSE(GetCompositionRange());
 }
 
 TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
@@ -1464,8 +1470,8 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
   Controller().SetComposition("foo", ime_text_spans, 3, 3);
 
   EXPECT_TRUE(Controller().HasComposition());
-  EXPECT_EQ(0u, Controller().CompositionRange()->startOffset());
-  EXPECT_EQ(3u, Controller().CompositionRange()->endOffset());
+  EXPECT_EQ(0u, GetCompositionRange()->startOffset());
+  EXPECT_EQ(3u, GetCompositionRange()->endOffset());
   EXPECT_EQ(3, GetFrame()
                    .Selection()
                    .GetSelectionInDOMTree()
@@ -2509,7 +2515,7 @@ TEST_F(InputMethodControllerTest, SetCompositionTamilVirama) {
   EXPECT_STREQ("\xE0\xAE\x9A\xE0\xAF\x8D\xE0\xAE\x9A",
                text->data().Utf8().data());
 
-  Range* range = Controller().CompositionRange();
+  Range* range = GetCompositionRange();
   EXPECT_EQ(2u, range->startOffset());
   EXPECT_EQ(3u, range->endOffset());
 }
