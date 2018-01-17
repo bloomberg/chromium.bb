@@ -44,9 +44,10 @@ const Command = {
   ADD_FOLDER: 17,
   IMPORT: 18,
   EXPORT: 19,
+  HELP_CENTER: 20,
 
   // Append new values to the end of the enum.
-  MAX_VALUE: 20,
+  MAX_VALUE: 21,
 };
 
 /**

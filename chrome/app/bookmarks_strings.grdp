@@ -425,10 +425,13 @@
     Copy URL
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_EXPORT" desc="Title of the bookmark toolbar dropdown menu item that exports bookmarks.">
-    Export Bookmarks
+    Export bookmarks
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_HELP_CENTER" desc="Title of the bookmark toolbar dropdown menu item that opens the help center.">
+    Help center
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT" desc="Title of the bookmark toolbar dropdown menu item that imports bookmarks.">
-    Import Bookmarks
+    Import bookmarks
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
     Open all bookmarks
