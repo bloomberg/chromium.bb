@@ -81,6 +81,3 @@ Current patches:
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
 
-  libavcodec/arm/sbrdsp_init_arm.c
-    ff_sbrdsp_init_arm() : Temporary fix for audio being played with screech
-    noises. A todo exists to investigate further. http://crbug.com/796028
