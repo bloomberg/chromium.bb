@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -68,9 +67,9 @@ ExtensionManagement::ExtensionManagement(PrefService* pref_service,
   // be called in the initialization of ExtensionManagement.
   Refresh();
   providers_.push_back(
-      base::MakeUnique<StandardManagementPolicyProvider>(this));
+      std::make_unique<StandardManagementPolicyProvider>(this));
   providers_.push_back(
-      base::MakeUnique<PermissionsBasedManagementPolicyProvider>(this));
+      std::make_unique<PermissionsBasedManagementPolicyProvider>(this));
 }
 
 ExtensionManagement::~ExtensionManagement() {
@@ -470,7 +469,7 @@ void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
 std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetInstallListByMode(
     InstallationMode installation_mode) const {
-  auto extension_dict = base::MakeUnique<base::DictionaryValue>();
+  auto extension_dict = std::make_unique<base::DictionaryValue>();
   for (const auto& entry : settings_by_id_) {
     if (entry.second->installation_mode == installation_mode) {
       ExternalPolicyLoader::AddExtension(extension_dict.get(), entry.first,
@@ -507,7 +506,7 @@ internal::IndividualSettings* ExtensionManagement::AccessById(
   std::unique_ptr<internal::IndividualSettings>& settings = settings_by_id_[id];
   if (!settings) {
     settings =
-        base::MakeUnique<internal::IndividualSettings>(default_settings_.get());
+        std::make_unique<internal::IndividualSettings>(default_settings_.get());
   }
   return settings.get();
 }
@@ -519,7 +518,7 @@ internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
       settings_by_update_url_[update_url];
   if (!settings) {
     settings =
-        base::MakeUnique<internal::IndividualSettings>(default_settings_.get());
+        std::make_unique<internal::IndividualSettings>(default_settings_.get());
   }
   return settings.get();
 }

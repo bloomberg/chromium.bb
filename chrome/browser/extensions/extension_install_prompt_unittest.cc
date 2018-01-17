@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
@@ -120,7 +119,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   base::RunLoop run_loop;
   prompt.ShowDialog(
       ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
-      base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+      std::make_unique<ExtensionInstallPrompt::Prompt>(
           ExtensionInstallPrompt::PERMISSIONS_PROMPT),
       std::move(permission_set),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),

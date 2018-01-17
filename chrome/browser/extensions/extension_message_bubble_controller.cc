@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
@@ -71,7 +73,7 @@ void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   prefs->UpdateExtensionPref(
       extension_id, pref_name,
-      value ? base::MakeUnique<base::Value>(value) : nullptr);
+      value ? std::make_unique<base::Value>(value) : nullptr);
 }
 
 std::string

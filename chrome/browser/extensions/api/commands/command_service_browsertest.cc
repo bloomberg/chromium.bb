@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest,
   // another platform.
   std::string anotherPlatformKey = GetAnotherCommandPlatform() + ":Alt+G";
   const char kNamedCommandName[] = "toggle-feature";
-  auto keybinding = base::MakeUnique<base::DictionaryValue>();
+  auto keybinding = std::make_unique<base::DictionaryValue>();
   keybinding->SetString("extension", extension->id());
   keybinding->SetString("command_name", kNamedCommandName);
   keybinding->SetBoolean("global", false);

@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -24,12 +23,12 @@ namespace api {
 
 static std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<ApiResourceManager<ResumableTCPSocket>>(context);
+  return std::make_unique<ApiResourceManager<ResumableTCPSocket>>(context);
 }
 
 static std::unique_ptr<KeyedService> ApiResourceManagerTestServerFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<ApiResourceManager<ResumableTCPServerSocket>>(
+  return std::make_unique<ApiResourceManager<ResumableTCPServerSocket>>(
       context);
 }
 

@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -530,7 +529,7 @@ void ExternalProviderImpl::CreateExternalProviders(
     external_loader = new ExternalPolicyLoader(
         ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
-    auto signin_profile_provider = base::MakeUnique<ExternalProviderImpl>(
+    auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
@@ -578,7 +577,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // Policies are mandatory so they can't be skipped with command line flag.
   if (external_loader.get()) {
-    auto policy_provider = base::MakeUnique<ExternalProviderImpl>(
+    auto policy_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
         Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS);
     policy_provider->set_allow_updates(true);
@@ -627,7 +626,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // Extensions provided by recommended policies.
   if (external_recommended_loader.get()) {
-    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service, external_recommended_loader, profile, crx_location,
         Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS));
   }
@@ -672,7 +671,7 @@ void ExternalProviderImpl::CreateExternalProviders(
             ? ExternalPrefLoader::DELAY_LOAD_UNTIL_PRIORITY_SYNC
             : ExternalPrefLoader::NONE;
     for (const auto external_apps_path_id : external_apps_path_ids) {
-      provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+      provider_list->push_back(std::make_unique<ExternalProviderImpl>(
           service,
           new ExternalPrefLoader(external_apps_path_id, pref_load_flags,
                                  profile),
@@ -685,14 +684,14 @@ void ExternalProviderImpl::CreateExternalProviders(
         bundled_extension_creation_flags | Extension::WAS_INSTALLED_BY_OEM;
     chromeos::ServicesCustomizationDocument* customization =
         chromeos::ServicesCustomizationDocument::GetInstance();
-    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service, customization->CreateExternalLoader(profile), profile,
         Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         oem_extension_creation_flags));
   }
 #elif defined(OS_LINUX)
   if (!profile->IsLegacySupervised()) {
-    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
         new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
                                ExternalPrefLoader::NONE, nullptr),
@@ -703,14 +702,14 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   if (!profile->IsLegacySupervised()) {
 #if defined(OS_WIN)
-    auto registry_provider = base::MakeUnique<ExternalProviderImpl>(
+    auto registry_provider = std::make_unique<ExternalProviderImpl>(
         service, new ExternalRegistryLoader, profile,
         Manifest::EXTERNAL_REGISTRY, Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS);
     registry_provider->set_allow_updates(true);
     provider_list->push_back(std::move(registry_provider));
 #else
-    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
         new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
                                check_admin_permissions_on_mac, nullptr),
@@ -719,9 +718,10 @@ void ExternalProviderImpl::CreateExternalProviders(
 
     // Define a per-user source of external extensions.
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD))
-    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
-        service, new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                                        ExternalPrefLoader::NONE, nullptr),
+    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+        service,
+        new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
+                               ExternalPrefLoader::NONE, nullptr),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS));
 #endif
@@ -730,7 +730,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 #if !defined(OS_CHROMEOS)
     // The default apps are installed as INTERNAL but use the external
     // extension installer codeflow.
-    provider_list->push_back(base::MakeUnique<default_apps::Provider>(
+    provider_list->push_back(std::make_unique<default_apps::Provider>(
         profile, service,
         new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
                                ExternalPrefLoader::NONE, nullptr),
@@ -749,7 +749,7 @@ void ExternalProviderImpl::CreateExternalProviders(
     provider_list->push_back(std::move(drive_migration_provider));
   }
 
-  provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+  provider_list->push_back(std::make_unique<ExternalProviderImpl>(
       service, new ExternalComponentLoader(profile), profile,
       Manifest::INVALID_LOCATION, Manifest::EXTERNAL_COMPONENT,
       Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));

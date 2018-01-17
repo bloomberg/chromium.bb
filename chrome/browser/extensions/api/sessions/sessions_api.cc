@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -154,7 +154,7 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
     const sessions::TabRestoreService::Window& window) {
   DCHECK(!window.tabs.empty());
 
-  auto tabs = base::MakeUnique<std::vector<tabs::Tab>>();
+  auto tabs = std::make_unique<std::vector<tabs::Tab>>();
   for (const auto& tab : window.tabs)
     tabs->push_back(
         CreateTabModel(*tab, tab->tabstrip_index == window.selected_tab_index));
@@ -570,7 +570,7 @@ SessionsEventRouter::~SessionsEventRouter() {
 void SessionsEventRouter::TabRestoreServiceChanged(
     sessions::TabRestoreService* service) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  EventRouter::Get(profile_)->BroadcastEvent(base::MakeUnique<Event>(
+  EventRouter::Get(profile_)->BroadcastEvent(std::make_unique<Event>(
       events::SESSIONS_ON_CHANGED, api::sessions::OnChanged::kEventName,
       std::move(args)));
 }

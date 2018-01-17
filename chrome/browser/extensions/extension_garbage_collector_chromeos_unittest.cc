@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -92,16 +92,16 @@ class ExtensionGarbageCollectorChromeOSUnitTest
 
     base::DictionaryValue* extension_info_weak = NULL;
     if (!shared_extensions->GetDictionary(id, &extension_info_weak)) {
-      auto extension_info = base::MakeUnique<base::DictionaryValue>();
+      auto extension_info = std::make_unique<base::DictionaryValue>();
       extension_info_weak = extension_info.get();
       shared_extensions->Set(id, std::move(extension_info));
     }
 
-    auto version_info = base::MakeUnique<base::DictionaryValue>();
+    auto version_info = std::make_unique<base::DictionaryValue>();
     version_info->SetString(
         ExtensionAssetsManagerChromeOS::kSharedExtensionPath, path.value());
 
-    auto users = base::MakeUnique<base::ListValue>();
+    auto users = std::make_unique<base::ListValue>();
     for (const std::string& user :
          base::SplitString(users_string, ",", base::KEEP_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY)) {

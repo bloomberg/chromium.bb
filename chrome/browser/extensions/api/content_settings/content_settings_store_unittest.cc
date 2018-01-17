@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -293,7 +292,7 @@ TEST_F(ContentSettingsStoreTest, SetFromList) {
   base::ListValue pref_list;
   // {"primaryPattern": pattern, "secondaryPattern": pattern, "type": "cookies",
   //  "setting": "allow"}
-  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(keys::kPrimaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kSecondaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kContentSettingsTypeKey, "cookies");
@@ -302,7 +301,7 @@ TEST_F(ContentSettingsStoreTest, SetFromList) {
   // Test content settings types that have been removed. Should be ignored.
   // {"primaryPattern": pattern, "secondaryPattern": pattern,
   //  "type": "fullscreen", "setting": "allow"}
-  dict_value = base::MakeUnique<base::DictionaryValue>();
+  dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(keys::kPrimaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kSecondaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kContentSettingsTypeKey, "fullscreen");
@@ -310,7 +309,7 @@ TEST_F(ContentSettingsStoreTest, SetFromList) {
   pref_list.Append(std::move(dict_value));
   // {"primaryPattern": pattern, "secondaryPattern": pattern,
   //  "type": "mouselock", "setting": "allow"}
-  dict_value = base::MakeUnique<base::DictionaryValue>();
+  dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(keys::kPrimaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kSecondaryPatternKey, pattern.ToString());
   dict_value->SetString(keys::kContentSettingsTypeKey, "mouselock");

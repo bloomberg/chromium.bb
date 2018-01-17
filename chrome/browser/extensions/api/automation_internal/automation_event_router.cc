@@ -110,7 +110,7 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
   browser_context = browser_context ? browser_context : active_profile_;
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
-  auto event = base::MakeUnique<Event>(
+  auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
       std::move(args), browser_context);
@@ -127,7 +127,7 @@ void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnActionResult::Create(
           data.target_tree_id, data.request_id, result));
-  auto event = base::MakeUnique<Event>(
+  auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
       api::automation_internal::OnActionResult::kEventName, std::move(args),
       active_profile_);

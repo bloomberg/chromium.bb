@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/extension_builder.h"
@@ -18,7 +17,7 @@ namespace {
 std::unique_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
                                               const ActionInfo& action_info) {
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
-  return base::MakeUnique<ExtensionAction>(*extension, type, action_info);
+  return std::make_unique<ExtensionAction>(*extension, type, action_info);
 }
 
 }  // namespace

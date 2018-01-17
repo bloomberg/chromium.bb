@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
@@ -42,7 +44,7 @@ class FakeHidDeviceManager : public HidDeviceManager {
 
 std::unique_ptr<KeyedService> CreateHidDeviceManager(
     content::BrowserContext* context) {
-  return base::MakeUnique<FakeHidDeviceManager>(context);
+  return std::make_unique<FakeHidDeviceManager>(context);
 }
 
 }  // namespace

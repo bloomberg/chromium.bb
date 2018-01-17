@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_storage_monitor.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
@@ -191,7 +192,7 @@ class ExtensionStorageMonitorIOHelper
     DCHECK(!FindObserver(extension_id));
 
     storage_observers_[extension_id] =
-        base::MakeUnique<SingleExtensionStorageObserver>(
+        std::make_unique<SingleExtensionStorageObserver>(
             this, extension_id, std::move(quota_manager), site_url.GetOrigin(),
             next_threshold, rate, should_uma);
   }
@@ -589,7 +590,7 @@ void ExtensionStorageMonitor::SetNextStorageThreshold(
   extension_prefs_->UpdateExtensionPref(
       extension_id, kPrefNextStorageThreshold,
       next_threshold > 0
-          ? base::MakeUnique<base::Value>(base::Int64ToString(next_threshold))
+          ? std::make_unique<base::Value>(base::Int64ToString(next_threshold))
           : nullptr);
 }
 
@@ -625,7 +626,7 @@ void ExtensionStorageMonitor::SetStorageNotificationEnabled(
     bool enable_notifications) {
   extension_prefs_->UpdateExtensionPref(
       extension_id, kPrefDisableStorageNotifications,
-      enable_notifications ? nullptr : base::MakeUnique<base::Value>(true));
+      enable_notifications ? nullptr : std::make_unique<base::Value>(true));
 }
 
 }  // namespace extensions

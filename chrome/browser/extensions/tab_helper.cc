@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -442,7 +441,7 @@ void TabHelper::DoInlineInstall(
     if (observe_install_stage || observe_download_progress) {
       DCHECK_EQ(0u, install_observers_.count(webstore_item_id));
       install_observers_[webstore_item_id] =
-          base::MakeUnique<InlineInstallObserver>(
+          std::make_unique<InlineInstallObserver>(
               this, web_contents()->GetBrowserContext(), webstore_item_id,
               observe_download_progress, observe_install_stage);
     }

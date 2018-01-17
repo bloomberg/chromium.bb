@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -181,7 +180,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
   EXPECT_EQ(0u, tracker.call_count());
 
   PasswordFormList list;
-  list.push_back(base::MakeUnique<autofill::PasswordForm>());
+  list.push_back(std::make_unique<autofill::PasswordForm>());
   delegate.SetPasswordList(list);
   EXPECT_EQ(1u, tracker.call_count());
 
@@ -198,7 +197,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
   EXPECT_EQ(0u, tracker.call_count());
 
   PasswordFormList list;
-  list.push_back(base::MakeUnique<autofill::PasswordForm>());
+  list.push_back(std::make_unique<autofill::PasswordForm>());
   delegate.SetPasswordExceptionList(list);
   EXPECT_EQ(1u, tracker.call_count());
 

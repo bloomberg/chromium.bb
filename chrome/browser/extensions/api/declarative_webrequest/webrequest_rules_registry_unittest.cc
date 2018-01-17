@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
@@ -103,18 +102,18 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that roughly matches http://*.example.com and
   // https://www.example.com and cancels it
   linked_ptr<api::events::Rule> CreateRule1() {
-    auto scheme_http = base::MakeUnique<base::ListValue>();
+    auto scheme_http = std::make_unique<base::ListValue>();
     scheme_http->AppendString("http");
-    auto http_condition_dict = base::MakeUnique<base::DictionaryValue>();
+    auto http_condition_dict = std::make_unique<base::DictionaryValue>();
     http_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
     base::DictionaryValue http_condition_url_filter;
     http_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                         keys::kRequestMatcherType);
 
     scheme_http->AppendString("https");
-    auto https_condition_dict = base::MakeUnique<base::DictionaryValue>();
+    auto https_condition_dict = std::make_unique<base::DictionaryValue>();
     https_condition_dict->Set(keys2::kSchemesKey,
-                              base::MakeUnique<base::ListValue>());
+                              std::make_unique<base::ListValue>());
     https_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
     https_condition_dict->SetString(keys2::kHostPrefixKey, "www");
     base::DictionaryValue https_condition_url_filter;
@@ -175,7 +174,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // contains index.html.
   linked_ptr<api::events::Rule> CreateIgnoreRule() {
     base::DictionaryValue condition_dict;
-    auto http_condition_dict = base::MakeUnique<base::DictionaryValue>();
+    auto http_condition_dict = std::make_unique<base::DictionaryValue>();
     http_condition_dict->SetString(keys2::kPathContainsKey, "index.html");
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
     condition_dict.Set(keys::kUrlKey, std::move(http_condition_dict));

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,7 +132,7 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_NoURLHandlers) {
   manifest.SetString(keys::kVersion, "0");
   manifest.SetString(keys::kLaunchWebURL, "http://aaronboodman.com/gearpad/");
   manifest.SetDictionary(keys::kUrlHandlers,
-                         base::MakeUnique<base::DictionaryValue>());
+                         std::make_unique<base::DictionaryValue>());
 
   std::string error;
   scoped_refptr<Extension> bookmark_app =
@@ -160,14 +160,14 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_WrongURLHandler) {
   //     "title": "test handler"
   //   }
   // }
-  auto test_matches = base::MakeUnique<base::ListValue>();
+  auto test_matches = std::make_unique<base::ListValue>();
   test_matches->AppendString("http://*.aaronboodman.com/");
 
-  auto test_handler = base::MakeUnique<base::DictionaryValue>();
+  auto test_handler = std::make_unique<base::DictionaryValue>();
   test_handler->SetList(keys::kMatches, std::move(test_matches));
   test_handler->SetString(keys::kUrlHandlerTitle, "test handler");
 
-  auto url_handlers = base::MakeUnique<base::DictionaryValue>();
+  auto url_handlers = std::make_unique<base::DictionaryValue>();
   url_handlers->SetDictionary("test_url_handler", std::move(test_handler));
   manifest.SetDictionary(keys::kUrlHandlers, std::move(url_handlers));
 
@@ -206,10 +206,10 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
       CreateURLHandlersForBookmarkApp(scope_url,
                                       base::ASCIIToUTF16("Test App"));
 
-  auto test_matches = base::MakeUnique<base::ListValue>();
+  auto test_matches = std::make_unique<base::ListValue>();
   test_matches->AppendString("http://*.aaronboodman.com/");
 
-  auto test_handler = base::MakeUnique<base::DictionaryValue>();
+  auto test_handler = std::make_unique<base::DictionaryValue>();
   test_handler->SetList(keys::kMatches, std::move(test_matches));
   test_handler->SetString(keys::kUrlHandlerTitle, "test handler");
 

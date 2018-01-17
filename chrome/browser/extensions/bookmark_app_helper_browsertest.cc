@@ -73,7 +73,7 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
     if (info.title.empty())
       info.title = base::UTF8ToUTF16(info.app_url.spec());
 
-    bookmark_app_helper_ = base::MakeUnique<TestBookmarkAppHelper>(
+    bookmark_app_helper_ = std::make_unique<TestBookmarkAppHelper>(
         browser()->profile(), info, web_contents(), quit_closure_,
         WebAppInstallSource::MENU);
     bookmark_app_helper_->Create(

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_system_impl.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -196,7 +197,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   LoadErrorReporter::Init(allow_noisy_errors);
 
   content_verifier_ = new ContentVerifier(
-      profile_, base::MakeUnique<ChromeContentVerifierDelegate>(profile_));
+      profile_, std::make_unique<ChromeContentVerifierDelegate>(profile_));
 
   service_worker_manager_.reset(new ServiceWorkerManager(profile_));
 

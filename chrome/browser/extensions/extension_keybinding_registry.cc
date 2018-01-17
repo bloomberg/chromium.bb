@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/values.h"
@@ -123,7 +124,7 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   args->AppendString(command);
 
   auto event =
-      base::MakeUnique<Event>(events::COMMANDS_ON_COMMAND, kOnCommandEventName,
+      std::make_unique<Event>(events::COMMANDS_ON_COMMAND, kOnCommandEventName,
                               std::move(args), browser_context_);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(browser_context_)

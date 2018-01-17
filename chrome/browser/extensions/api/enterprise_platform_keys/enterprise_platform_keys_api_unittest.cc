@@ -240,11 +240,11 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
   }
 
   std::unique_ptr<base::ListValue> CreateArgsNoRegister() {
-    return CreateArgsInternal(base::MakeUnique<bool>(false));
+    return CreateArgsInternal(std::make_unique<bool>(false));
   }
 
   std::unique_ptr<base::ListValue> CreateArgsRegister() {
-    return CreateArgsInternal(base::MakeUnique<bool>(true));
+    return CreateArgsInternal(std::make_unique<bool>(true));
   }
 
   std::unique_ptr<base::ListValue> CreateArgsInternal(

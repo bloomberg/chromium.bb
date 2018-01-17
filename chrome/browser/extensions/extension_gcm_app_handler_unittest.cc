@@ -206,7 +206,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-    return base::MakeUnique<gcm::GCMProfileService>(
+    return std::make_unique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
         chrome::GetChannel(),
         gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
@@ -279,7 +279,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(manifest_keys::kName, kTestExtensionName);
-    auto permission_list = base::MakeUnique<base::ListValue>();
+    auto permission_list = std::make_unique<base::ListValue>();
     permission_list->AppendString("gcm");
     manifest.Set(manifest_keys::kPermissions, std::move(permission_list));
 

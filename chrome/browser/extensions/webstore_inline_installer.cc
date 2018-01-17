@@ -129,7 +129,7 @@ std::string WebstoreInlineInstaller::GetJsonPostData() {
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
     return std::string();
 
-  auto redirect_chain = base::MakeUnique<base::ListValue>();
+  auto redirect_chain = std::make_unique<base::ListValue>();
 
   if (SafeBrowsingNavigationEventsEnabled()) {
     // If we have it, use the new referrer checker.

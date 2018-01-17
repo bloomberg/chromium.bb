@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +32,7 @@ const int kTestExtensionPrepopulatedId = 1;
 // TemplateURLData with search engines settings from test extension manifest.
 // chrome/test/data/extensions/settings_override/manifest.json
 std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(PrefService* prefs) {
-  auto result = base::MakeUnique<TemplateURLData>();
+  auto result = std::make_unique<TemplateURLData>();
   result->SetShortName(base::ASCIIToUTF16("name.de"));
   result->SetKeyword(base::ASCIIToUTF16("keyword.de"));
   result->SetURL("http://www.foo.de/s?q={searchTerms}&id=10");

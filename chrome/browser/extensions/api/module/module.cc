@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/module/module.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -48,19 +48,19 @@ ExtensionFunction::ResponseAction ExtensionSetUpdateUrlDataFunction::Run() {
 
   ExtensionPrefs::Get(browser_context())
       ->UpdateExtensionPref(extension_id(), extension::kUpdateURLData,
-                            base::MakeUnique<base::Value>(data));
+                            std::make_unique<base::Value>(data));
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
 ExtensionIsAllowedIncognitoAccessFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       util::IsIncognitoEnabled(extension_id(), browser_context()))));
 }
 
 ExtensionFunction::ResponseAction
 ExtensionIsAllowedFileSchemeAccessFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       util::AllowFileAccess(extension_id(), browser_context()))));
 }
 

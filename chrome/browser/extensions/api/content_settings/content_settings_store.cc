@@ -91,7 +91,7 @@ std::unique_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
   if (iterators.empty())
     return nullptr;
 
-  return base::MakeUnique<ConcatenationIterator>(std::move(iterators),
+  return std::make_unique<ConcatenationIterator>(std::move(iterators),
                                                  auto_lock.release());
 }
 
@@ -254,7 +254,7 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
   if (!map)
     return nullptr;
 
-  auto settings = base::MakeUnique<base::ListValue>();
+  auto settings = std::make_unique<base::ListValue>();
   for (const auto& it : *map) {
     const auto& key = it.first;
     std::unique_ptr<RuleIterator> rule_iterator(

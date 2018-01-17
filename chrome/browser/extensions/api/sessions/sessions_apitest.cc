@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -195,7 +196,7 @@ std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
   browser_sync::ProfileSyncServiceMock* sync_service =
       new browser_sync::ProfileSyncServiceMock(
           CreateProfileSyncServiceParamsForTest(
-              base::MakeUnique<browser_sync::ChromeSyncClient>(profile),
+              std::make_unique<browser_sync::ChromeSyncClient>(profile),
               profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(std::move(factory));

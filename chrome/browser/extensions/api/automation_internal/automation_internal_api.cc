@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -548,7 +547,7 @@ void AutomationInternalQuerySelectorFunction::OnResponse(
     return;
   }
 
-  Respond(OneArgument(base::MakeUnique<base::Value>(result_acc_obj_id)));
+  Respond(OneArgument(std::make_unique<base::Value>(result_acc_obj_id)));
 }
 
 }  // namespace extensions

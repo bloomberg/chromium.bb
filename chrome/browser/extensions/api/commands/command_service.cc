@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,7 +87,7 @@ std::string StripCurrentPlatform(const std::string& key) {
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
-                             base::MakeUnique<base::Value>(true));
+                             std::make_unique<base::Value>(true));
 }
 
 bool InitialBindingsHaveBeenAssigned(
@@ -277,7 +277,7 @@ bool CommandService::AddKeybindingPref(
     RemoveKeybindingPrefs(extension_id, command_name);
 
   // Set the keybinding pref.
-  auto keybinding = base::MakeUnique<base::DictionaryValue>();
+  auto keybinding = std::make_unique<base::DictionaryValue>();
   keybinding->SetString(kExtension, extension_id);
   keybinding->SetString(kCommandName, command_name);
   keybinding->SetBoolean(kGlobal, global);

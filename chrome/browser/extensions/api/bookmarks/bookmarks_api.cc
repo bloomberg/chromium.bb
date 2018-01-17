@@ -14,7 +14,6 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -263,7 +262,7 @@ void BookmarkEventRouter::DispatchEvent(
     std::unique_ptr<base::ListValue> event_args) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    event_router->BroadcastEvent(base::MakeUnique<extensions::Event>(
+    event_router->BroadcastEvent(std::make_unique<extensions::Event>(
         histogram_value, event_name, std::move(event_args)));
   }
 }

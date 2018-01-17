@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -165,7 +165,7 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
 
   GetExtensionPrefs()->UpdateExtensionPref(
       extension_id, kBrowserActionVisible,
-      base::MakeUnique<base::Value>(visible));
+      std::make_unique<base::Value>(visible));
   for (auto& observer : observers_)
     observer.OnExtensionActionVisibilityChanged(extension_id, visible);
 }
@@ -274,7 +274,7 @@ void ExtensionActionAPI::DispatchEventToExtension(
   if (!EventRouter::Get(context))
     return;
 
-  auto event = base::MakeUnique<Event>(histogram_value, event_name,
+  auto event = std::make_unique<Event>(histogram_value, event_name,
                                        std::move(event_args), context);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
@@ -516,19 +516,19 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 ExtensionFunction::ResponseAction
 ExtensionActionGetTitleFunction::RunExtensionAction() {
   return RespondNow(OneArgument(
-      base::MakeUnique<base::Value>(extension_action_->GetTitle(tab_id_))));
+      std::make_unique<base::Value>(extension_action_->GetTitle(tab_id_))));
 }
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetPopupFunction::RunExtensionAction() {
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       extension_action_->GetPopupUrl(tab_id_).spec())));
 }
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
   return RespondNow(OneArgument(
-      base::MakeUnique<base::Value>(extension_action_->GetBadgeText(tab_id_))));
+      std::make_unique<base::Value>(extension_action_->GetBadgeText(tab_id_))));
 }
 
 ExtensionFunction::ResponseAction

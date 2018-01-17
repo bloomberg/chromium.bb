@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -95,7 +96,7 @@ void WebAuthFlow::Start() {
     args->AppendString("silent");
 
   auto event =
-      base::MakeUnique<Event>(events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
+      std::make_unique<Event>(events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
                               identity_private::OnWebFlowRequest::kEventName,
                               std::move(args), profile_);
   ExtensionSystem* system = ExtensionSystem::Get(profile_);

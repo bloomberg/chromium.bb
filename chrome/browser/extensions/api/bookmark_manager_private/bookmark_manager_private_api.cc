@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -193,7 +192,7 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     std::unique_ptr<base::ListValue> event_args) {
   EventRouter::Get(browser_context_)
-      ->BroadcastEvent(base::MakeUnique<Event>(histogram_value, event_name,
+      ->BroadcastEvent(std::make_unique<Event>(histogram_value, event_name,
                                                std::move(event_args)));
 }
 
@@ -438,7 +437,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)) {
-    SetResult(base::MakeUnique<base::Value>(false));
+    SetResult(std::make_unique<base::Value>(false));
     return true;
   }
 
@@ -450,7 +449,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
     return false;
   }
   bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
-  SetResult(base::MakeUnique<base::Value>(can_paste));
+  SetResult(std::make_unique<base::Value>(can_paste));
   return true;
 }
 
@@ -654,7 +653,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
 
 bool BookmarkManagerPrivateCanEditFunction::RunOnReady() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  SetResult(base::MakeUnique<base::Value>(
+  SetResult(std::make_unique<base::Value>(
       prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)));
   return true;
 }

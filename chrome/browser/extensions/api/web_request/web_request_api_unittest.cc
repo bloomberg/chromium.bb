@@ -557,14 +557,14 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
                                          true /* overwrite */);
   }
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
-  element_readers.push_back(base::MakeUnique<net::UploadBytesElementReader>(
+  element_readers.push_back(std::make_unique<net::UploadBytesElementReader>(
       &(bytes_1[0]), bytes_1.size()));
-  element_readers.push_back(base::MakeUnique<net::UploadFileElementReader>(
+  element_readers.push_back(std::make_unique<net::UploadFileElementReader>(
       base::ThreadTaskRunnerHandle::Get().get(), base::FilePath(), 0, 0,
       base::Time()));
-  element_readers.push_back(base::MakeUnique<net::UploadBytesElementReader>(
+  element_readers.push_back(std::make_unique<net::UploadBytesElementReader>(
       &(bytes_2[0]), bytes_2.size()));
-  request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+  request->set_upload(std::make_unique<net::ElementsUploadDataStream>(
       std::move(element_readers), 0));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request->Start();
@@ -636,7 +636,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       Value::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawFileKey,
-      base::MakeUnique<base::Value>(std::string()), &raw);
+      std::make_unique<base::Value>(std::string()), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
       Value::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length), &raw);

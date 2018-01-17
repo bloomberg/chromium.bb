@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
@@ -184,9 +183,9 @@ void DialAPI::ShutdownOnUIThread() {
 void DialAPI::SetDeviceForTest(
     const media_router::DialDeviceData& device_data,
     const media_router::DialDeviceDescriptionData& device_description) {
-  test_device_data_ = base::MakeUnique<DialDeviceData>(device_data);
+  test_device_data_ = std::make_unique<DialDeviceData>(device_data);
   test_device_description_ =
-      base::MakeUnique<DialDeviceDescriptionData>(device_description);
+      std::make_unique<DialDeviceDescriptionData>(device_description);
 }
 
 DialDiscoverNowFunction::DialDiscoverNowFunction()
@@ -207,7 +206,7 @@ void DialDiscoverNowFunction::Work() {
 
 bool DialDiscoverNowFunction::Respond() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetResult(base::MakeUnique<base::Value>(result_));
+  SetResult(std::make_unique<base::Value>(result_));
   return true;
 }
 
@@ -255,7 +254,7 @@ void DialFetchDeviceDescriptionFunction::MaybeStartFetch(const GURL& url) {
     return;
   }
 
-  device_description_fetcher_ = base::MakeUnique<DeviceDescriptionFetcher>(
+  device_description_fetcher_ = std::make_unique<DeviceDescriptionFetcher>(
       url, Profile::FromBrowserContext(browser_context())->GetRequestContext(),
       base::BindOnce(&DialFetchDeviceDescriptionFunction::OnFetchComplete,
                      this),

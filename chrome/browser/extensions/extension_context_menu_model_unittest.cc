@@ -74,7 +74,7 @@ class MenuBuilder {
   ~MenuBuilder() {}
 
   std::unique_ptr<ExtensionContextMenuModel> BuildMenu() {
-    return base::MakeUnique<ExtensionContextMenuModel>(
+    return std::make_unique<ExtensionContextMenuModel>(
         extension_.get(), browser_, ExtensionContextMenuModel::VISIBLE,
         nullptr);
   }
@@ -85,7 +85,7 @@ class MenuBuilder {
     id.uid = ++cur_id_;
     menu_manager_->AddContextItem(
         extension_.get(),
-        base::MakeUnique<MenuItem>(id, kTestExtensionItemLabel,
+        std::make_unique<MenuItem>(id, kTestExtensionItemLabel,
                                    false,  // check`ed
                                    true,   // visible
                                    true,   // enabled

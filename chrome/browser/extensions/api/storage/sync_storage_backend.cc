@@ -29,7 +29,7 @@ void AddAllSyncData(const std::string& extension_id,
 }
 
 std::unique_ptr<base::DictionaryValue> EmptyDictionaryValue() {
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 ValueStoreFactory::ModelType ToFactoryModelType(syncer::ModelType sync_type) {

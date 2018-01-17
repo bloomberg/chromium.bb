@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 
+#include <memory>
+
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/identity.h"
@@ -91,7 +93,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
     const GURL& redirect_url) {
   if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
-    SetResult(base::MakeUnique<base::Value>(redirect_url.spec()));
+    SetResult(std::make_unique<base::Value>(redirect_url.spec()));
     SendResponse(true);
     if (auth_flow_)
       auth_flow_.release()->DetachDelegateAndDelete();

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -80,7 +79,7 @@ SystemPrivateGetIncognitoModeAvailabilityFunction::Run() {
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
   return RespondNow(OneArgument(
-      base::MakeUnique<base::Value>(kIncognitoModeAvailabilityStrings[value])));
+      std::make_unique<base::Value>(kIncognitoModeAvailabilityStrings[value])));
 }
 
 ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
@@ -147,7 +146,7 @@ ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
 
 ExtensionFunction::ResponseAction SystemPrivateGetApiKeyFunction::Run() {
   return RespondNow(
-      OneArgument(base::MakeUnique<base::Value>(google_apis::GetAPIKey())));
+      OneArgument(std::make_unique<base::Value>(google_apis::GetAPIKey())));
 }
 
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {

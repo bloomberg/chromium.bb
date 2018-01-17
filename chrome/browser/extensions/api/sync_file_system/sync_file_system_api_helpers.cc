@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -124,7 +123,7 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
     root_url.append("/");
   }
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("fileSystemType",
                   storage::GetFileSystemTypeString(url.mount_type()));
   dict->SetString("fileSystemName",

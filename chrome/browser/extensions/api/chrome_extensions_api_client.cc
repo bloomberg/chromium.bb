@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
@@ -123,13 +123,13 @@ ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
 std::unique_ptr<guest_view::GuestViewManagerDelegate>
 ChromeExtensionsAPIClient::CreateGuestViewManagerDelegate(
     content::BrowserContext* context) const {
-  return base::MakeUnique<ChromeGuestViewManagerDelegate>(context);
+  return std::make_unique<ChromeGuestViewManagerDelegate>(context);
 }
 
 std::unique_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return base::MakeUnique<ChromeMimeHandlerViewGuestDelegate>();
+  return std::make_unique<ChromeMimeHandlerViewGuestDelegate>();
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(
@@ -145,7 +145,7 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
 
 std::unique_ptr<WebRequestEventRouterDelegate>
 ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return base::MakeUnique<ChromeExtensionWebRequestEventRouterDelegate>();
+  return std::make_unique<ChromeExtensionWebRequestEventRouterDelegate>();
 }
 
 scoped_refptr<ContentRulesRegistry>
@@ -163,14 +163,14 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
 std::unique_ptr<DevicePermissionsPrompt>
 ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
     content::WebContents* web_contents) const {
-  return base::MakeUnique<ChromeDevicePermissionsPrompt>(web_contents);
+  return std::make_unique<ChromeDevicePermissionsPrompt>(web_contents);
 }
 
 std::unique_ptr<VirtualKeyboardDelegate>
 ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
     content::BrowserContext* browser_context) const {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<ChromeVirtualKeyboardDelegate>(browser_context);
+  return std::make_unique<ChromeVirtualKeyboardDelegate>(browser_context);
 #else
   return nullptr;
 #endif
@@ -199,13 +199,13 @@ ChromeExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
 
 FileSystemDelegate* ChromeExtensionsAPIClient::GetFileSystemDelegate() {
   if (!file_system_delegate_)
-    file_system_delegate_ = base::MakeUnique<ChromeFileSystemDelegate>();
+    file_system_delegate_ = std::make_unique<ChromeFileSystemDelegate>();
   return file_system_delegate_.get();
 }
 
 MessagingDelegate* ChromeExtensionsAPIClient::GetMessagingDelegate() {
   if (!messaging_delegate_)
-    messaging_delegate_ = base::MakeUnique<ChromeMessagingDelegate>();
+    messaging_delegate_ = std::make_unique<ChromeMessagingDelegate>();
   return messaging_delegate_.get();
 }
 
@@ -213,7 +213,7 @@ FeedbackPrivateDelegate*
 ChromeExtensionsAPIClient::GetFeedbackPrivateDelegate() {
   if (!feedback_private_delegate_) {
     feedback_private_delegate_ =
-        base::MakeUnique<ChromeFeedbackPrivateDelegate>();
+        std::make_unique<ChromeFeedbackPrivateDelegate>();
   }
   return feedback_private_delegate_.get();
 }
@@ -232,7 +232,7 @@ NonNativeFileSystemDelegate*
 ChromeExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
   if (!non_native_file_system_delegate_) {
     non_native_file_system_delegate_ =
-        base::MakeUnique<NonNativeFileSystemDelegateChromeOS>();
+        std::make_unique<NonNativeFileSystemDelegateChromeOS>();
   }
   return non_native_file_system_delegate_.get();
 }
@@ -244,7 +244,7 @@ void ChromeExtensionsAPIClient::SaveImageDataToClipboard(
     const base::Closure& success_callback,
     const base::Callback<void(const std::string&)>& error_callback) {
   if (!clipboard_extension_helper_)
-    clipboard_extension_helper_ = base::MakeUnique<ClipboardExtensionHelper>();
+    clipboard_extension_helper_ = std::make_unique<ClipboardExtensionHelper>();
   clipboard_extension_helper_->DecodeAndSaveImageData(
       image_data, type, std::move(additional_items), success_callback,
       error_callback);

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "components/cryptauth/connection.h"
@@ -102,7 +101,7 @@ bool EasyUnlockPrivateConnectionManager::SendMessage(
     const std::string& message_body) {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection && connection->IsConnected()) {
-    connection->SendMessage(base::MakeUnique<WireMessage>(message_body));
+    connection->SendMessage(std::make_unique<WireMessage>(message_body));
     return true;
   }
   return false;
@@ -172,7 +171,7 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
     int connection_index = 0;
     args_copy->Set(connection_index,
-                   base::MakeUnique<base::Value>(connection_id));
+                   std::make_unique<base::Value>(connection_id));
     std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)

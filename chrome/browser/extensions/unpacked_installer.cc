@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -186,10 +185,10 @@ void UnpackedInstaller::StartInstallChecks() {
     }
   }
 
-  policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension_);
-  requirements_check_ = base::MakeUnique<RequirementsChecker>(extension_);
+  policy_check_ = std::make_unique<PolicyCheck>(profile_, extension_);
+  requirements_check_ = std::make_unique<RequirementsChecker>(extension_);
 
-  check_group_ = base::MakeUnique<PreloadCheckGroup>();
+  check_group_ = std::make_unique<PreloadCheckGroup>();
   check_group_->set_stop_on_first_error(true);
 
   check_group_->AddCheck(policy_check_.get());

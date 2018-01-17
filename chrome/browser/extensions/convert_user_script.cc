@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -106,12 +105,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   root->SetString(keys::kPublicKey, key);
   root->SetBoolean(keys::kConvertedFromUserScript, true);
 
-  auto js_files = base::MakeUnique<base::ListValue>();
+  auto js_files = std::make_unique<base::ListValue>();
   js_files->AppendString("script.js");
 
   // If the script provides its own match patterns, we use those. Otherwise, we
   // generate some using the include globs.
-  auto matches = base::MakeUnique<base::ListValue>();
+  auto matches = std::make_unique<base::ListValue>();
   if (!script.url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i = script.url_patterns().begin();
          i != script.url_patterns().end(); ++i) {
@@ -124,7 +123,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   // Read the exclude matches, if any are present.
-  auto exclude_matches = base::MakeUnique<base::ListValue>();
+  auto exclude_matches = std::make_unique<base::ListValue>();
   if (!script.exclude_url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i =
          script.exclude_url_patterns().begin();
@@ -133,15 +132,15 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     }
   }
 
-  auto includes = base::MakeUnique<base::ListValue>();
+  auto includes = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < script.globs().size(); ++i)
     includes->AppendString(script.globs().at(i));
 
-  auto excludes = base::MakeUnique<base::ListValue>();
+  auto excludes = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
     excludes->AppendString(script.exclude_globs().at(i));
 
-  auto content_script = base::MakeUnique<base::DictionaryValue>();
+  auto content_script = std::make_unique<base::DictionaryValue>();
   content_script->Set(keys::kMatches, std::move(matches));
   content_script->Set(keys::kExcludeMatches, std::move(exclude_matches));
   content_script->Set(keys::kIncludeGlobs, std::move(includes));
@@ -156,7 +155,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     // This is the default, but store it just in case we change that.
     content_script->SetString(keys::kRunAt, values::kRunAtDocumentIdle);
 
-  auto content_scripts = base::MakeUnique<base::ListValue>();
+  auto content_scripts = std::make_unique<base::ListValue>();
   content_scripts->Append(std::move(content_script));
 
   root->Set(keys::kContentScripts, std::move(content_scripts));

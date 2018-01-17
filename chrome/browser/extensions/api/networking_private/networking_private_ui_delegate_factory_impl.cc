@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -22,7 +23,7 @@ NetworkingPrivateUIDelegateFactoryImpl::
 std::unique_ptr<NetworkingPrivateDelegate::UIDelegate>
 NetworkingPrivateUIDelegateFactoryImpl::CreateDelegate() {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<
+  return std::make_unique<
       chromeos::extensions::NetworkingPrivateUIDelegateChromeOS>();
 #else
   return nullptr;

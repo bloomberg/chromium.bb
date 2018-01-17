@@ -6,10 +6,10 @@
 
 #include <math.h>  // For floor()
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -153,7 +153,7 @@ void GetMetaInfo(const BookmarkNode& node,
     return;
 
   const BookmarkNode::MetaInfoMap* meta_info = node.GetMetaInfoMap();
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
   if (meta_info) {
     BookmarkNode::MetaInfoMap::const_iterator itr;
     for (itr = meta_info->begin(); itr != meta_info->end(); ++itr) {

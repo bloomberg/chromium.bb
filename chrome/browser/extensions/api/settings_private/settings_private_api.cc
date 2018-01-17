@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/settings_private/settings_private_api.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate_factory.h"
@@ -44,10 +44,10 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
       delegate->SetPref(parameters->name, parameters->value.get());
   switch (result) {
     case settings_private::SetPrefResult::SUCCESS:
-      return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
+      return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
     case settings_private::SetPrefResult::PREF_NOT_MODIFIABLE:
       // Not an error, but return false to indicate setting the pref failed.
-      return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
+      return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
     case settings_private::SetPrefResult::PREF_NOT_FOUND:
       return RespondNow(Error("Pref not found: *", parameters->name));
     case settings_private::SetPrefResult::PREF_TYPE_MISMATCH:
@@ -58,7 +58,7 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
                               parameters->name));
   }
   NOTREACHED();
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ ExtensionFunction::ResponseAction
     return RespondNow(Error(kDelegateIsNull));
 
   delegate->SetDefaultZoom(parameters->zoom);
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 }  // namespace extensions

@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -128,7 +128,7 @@ bool GcmRegisterFunction::DoWork() {
 void GcmRegisterFunction::CompleteFunctionWithResult(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
-  SetResult(base::MakeUnique<base::Value>(registration_id));
+  SetResult(std::make_unique<base::Value>(registration_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
@@ -182,7 +182,7 @@ bool GcmSendFunction::DoWork() {
 void GcmSendFunction::CompleteFunctionWithResult(
     const std::string& message_id,
     gcm::GCMClient::Result result) {
-  SetResult(base::MakeUnique<base::Value>(message_id));
+  SetResult(std::make_unique<base::Value>(message_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }

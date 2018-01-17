@@ -1107,7 +1107,7 @@ void DownloadsDownloadFunction::OnStarted(
   VLOG(1) << __func__ << " " << item << " " << interrupt_reason;
   if (item) {
     DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-    SetResult(base::MakeUnique<base::Value>(static_cast<int>(item->GetId())));
+    SetResult(std::make_unique<base::Value>(static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty() ||
         (creator_conflict_action !=
          downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
@@ -1581,7 +1581,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
-  SetResult(base::MakeUnique<base::Value>(url));
+  SetResult(std::make_unique<base::Value>(url));
   SendResponse(true);
 }
 
@@ -1921,7 +1921,7 @@ void ExtensionDownloadsEventRouter::OnDownloadRemoved(
   DispatchEvent(
       events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName, true,
       Event::WillDispatchCallback(),
-      base::MakeUnique<base::Value>(static_cast<int>(download_item->GetId())));
+      std::make_unique<base::Value>(static_cast<int>(download_item->GetId())));
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(
@@ -1949,7 +1949,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   Profile* restrict_to_browser_context =
       (include_incognito && !profile_->IsOffTheRecord()) ? nullptr : profile_;
   auto event =
-      base::MakeUnique<Event>(histogram_value, event_name, std::move(args),
+      std::make_unique<Event>(histogram_value, event_name, std::move(args),
                               restrict_to_browser_context);
   event->will_dispatch_callback = will_dispatch_callback;
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));

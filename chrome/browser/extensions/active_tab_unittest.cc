@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -425,7 +424,7 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
 // Test that the custom platform delegate works as expected.
 TEST_F(ActiveTabTest, Delegate) {
   auto test_delegate =
-      base::MakeUnique<ActiveTabPermissionGranterTestDelegate>();
+      std::make_unique<ActiveTabPermissionGranterTestDelegate>();
   ActiveTabPermissionGranter::SetPlatformDelegate(test_delegate.get());
 
   GURL google("http://www.google.com");

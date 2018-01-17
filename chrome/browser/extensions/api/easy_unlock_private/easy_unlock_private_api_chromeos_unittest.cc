@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -261,7 +260,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   options->Set("associatedData", StringToBinaryValue("ASSOCIATED_DATA"));
   options->Set("publicMetadata", StringToBinaryValue("PUBLIC_METADATA"));
   options->Set("verificationKeyId",
@@ -303,7 +302,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -335,7 +334,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   options->Set("associatedData",
                StringToBinaryValue("ASSOCIATED_DATA"));
   options->Set("verificationKeyId",
@@ -373,7 +372,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   options->Set("associatedData", StringToBinaryValue("ASSOCIATED_DATA"));
   options->SetString(
       "encryptType",
@@ -410,7 +409,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -441,7 +440,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   options->Set("associatedData",
                StringToBinaryValue("ASSOCIATED_DATA"));
   options->SetString(

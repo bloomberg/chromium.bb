@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -49,7 +48,7 @@ void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
 void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->SetWithoutPathExpansion(id, base::MakeUnique<base::DictionaryValue>());
+  pref_->SetWithoutPathExpansion(id, std::make_unique<base::DictionaryValue>());
 }
 
 // Helper functions for 'installation_mode' manipulation -----------------------
@@ -260,7 +259,7 @@ ExtensionManagementPrefUpdaterBase::TakePref() {
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearList(const std::string& path) {
-  pref_->Set(path, base::MakeUnique<base::ListValue>());
+  pref_->Set(path, std::make_unique<base::ListValue>());
 }
 
 void ExtensionManagementPrefUpdaterBase::AddStringToList(
@@ -268,12 +267,12 @@ void ExtensionManagementPrefUpdaterBase::AddStringToList(
     const std::string& str) {
   base::ListValue* list_value_weak = nullptr;
   if (!pref_->GetList(path, &list_value_weak)) {
-    auto list_value = base::MakeUnique<base::ListValue>();
+    auto list_value = std::make_unique<base::ListValue>();
     list_value_weak = list_value.get();
     pref_->Set(path, std::move(list_value));
   }
   CHECK(
-      list_value_weak->AppendIfNotPresent(base::MakeUnique<base::Value>(str)));
+      list_value_weak->AppendIfNotPresent(std::make_unique<base::Value>(str)));
 }
 
 void ExtensionManagementPrefUpdaterBase::RemoveStringFromList(

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -234,8 +233,9 @@ bool PermissionsRequestFunction::RunAsync() {
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
     install_ui_->ShowDialog(
         base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
-        extension(), nullptr, base::MakeUnique<ExtensionInstallPrompt::Prompt>(
-                                  ExtensionInstallPrompt::PERMISSIONS_PROMPT),
+        extension(), nullptr,
+        std::make_unique<ExtensionInstallPrompt::Prompt>(
+            ExtensionInstallPrompt::PERMISSIONS_PROMPT),
         requested_permissions_->Clone(),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
