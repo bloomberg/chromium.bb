@@ -272,6 +272,7 @@ interface CDATASection : Text
     attribute @@toStringTag
     method constructor
 interface CSS
+    static getter paintWorklet
     static method escape
     static method supports
     attribute @@toStringTag
@@ -7668,6 +7669,10 @@ interface Worker : EventTarget
     method terminate
     setter onerror
     setter onmessage
+interface Worklet
+    attribute @@toStringTag
+    method addModule
+    method constructor
 interface WritableStream
     getter locked
     method abort
