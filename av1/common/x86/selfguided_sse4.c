@@ -166,35 +166,32 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
   const __m128i rnd_z = round_for_shift(SGRPROJ_MTABLE_BITS);
   const __m128i rnd_res = round_for_shift(SGRPROJ_RECIP_BITS);
 
+  // Set up masks
+  const __m128i ones32 = _mm_set_epi64x(0, 0xffffffffffffffffULL);
+  __m128i mask[4];
+  for (int idx = 0; idx < 4; idx++) {
+    const __m128i shift = _mm_set_epi64x(0, 8 * (4 - idx));
+    mask[idx] = _mm_cvtepi8_epi32(_mm_srl_epi64(ones32, shift));
+  }
+
   for (int i = -1; i < height + 1; ++i) {
-    for (int j0 = -1; j0 < width + 1; j0 += 4) {
-      const int32_t *Cij = C + i * buf_stride + j0;
-      const int32_t *Dij = D + i * buf_stride + j0;
+    for (int j = -1; j < width + 1; j += 4) {
+      const int32_t *Cij = C + i * buf_stride + j;
+      const int32_t *Dij = D + i * buf_stride + j;
 
-      const __m128i pre_sum1 = boxsum_from_ii(Dij, buf_stride, r);
-      const __m128i pre_sum2 = boxsum_from_ii(Cij, buf_stride, r);
+      __m128i sum1 = boxsum_from_ii(Dij, buf_stride, r);
+      __m128i sum2 = boxsum_from_ii(Cij, buf_stride, r);
 
-#if CONFIG_DEBUG
-      // When width + 2 isn't a multiple of four, z will contain some
-      // uninitialised data in its upper words. This isn't really a problem
-      // (they will be clamped to safe indices by the min() below, and will be
-      // written to memory locations that we don't read again), but Valgrind
-      // complains because we're using an uninitialised value as the address
-      // for a load operation
-      //
-      // This mask is reasonably cheap to compute and quiets the warnings. Note
-      // that we can't mask p instead of sum1 and sum2 (which would be cheaper)
-      // because Valgrind gets the taint propagation in compute_p wrong.
-      const __m128i ones32 = _mm_set_epi64x(0, 0xffffffffULL);
-      const __m128i shift =
-          _mm_set_epi64x(0, AOMMAX(0, 32 - 8 * (width + 1 - j0)));
-      const __m128i mask = _mm_cvtepi8_epi32(_mm_srl_epi32(ones32, shift));
-      const __m128i sum1 = _mm_and_si128(mask, pre_sum1);
-      const __m128i sum2 = _mm_and_si128(mask, pre_sum2);
-#else
-      const __m128i sum1 = pre_sum1;
-      const __m128i sum2 = pre_sum2;
-#endif  // CONFIG_DEBUG
+      // When width + 2 isn't a multiple of 4, sum1 and sum2 will contain
+      // some uninitialised data in their upper words. We use a mask to
+      // ensure that these bits are set to 0.
+      int idx = AOMMIN(4, width + 1 - j);
+      assert(idx >= 1);
+
+      if (idx < 4) {
+        sum1 = _mm_and_si128(mask[idx], sum1);
+        sum2 = _mm_and_si128(mask[idx], sum2);
+      }
 
       const __m128i p = compute_p(sum1, sum2, bit_depth, n);
 
@@ -210,7 +207,7 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
                                           x_by_xplus1[_mm_extract_epi32(z, 1)],
                                           x_by_xplus1[_mm_extract_epi32(z, 0)]);
 
-      xx_storeu_128(A + i * buf_stride + j0, a_res);
+      xx_storeu_128(A + i * buf_stride + j, a_res);
 
       const __m128i a_complement =
           _mm_sub_epi32(_mm_set1_epi32(SGRPROJ_SGR), a_res);
@@ -223,7 +220,7 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
       const __m128i b_res =
           _mm_srli_epi32(_mm_add_epi32(b_int, rnd_res), SGRPROJ_RECIP_BITS);
 
-      xx_storeu_128(B + i * buf_stride + j0, b_res);
+      xx_storeu_128(B + i * buf_stride + j, b_res);
     }
   }
 }
