@@ -289,18 +289,27 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
                                    true, true, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
                                    true, false, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true, false));
-    TestShader(
-        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true, false));
+
+    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true,
+                                false, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false,
+                                true, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false,
+                                true, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true,
+                                true, false));
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true,
+                                true, false));
 
     // Iterate over alpha plane, nv12, and color_lut parameters.
     UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};

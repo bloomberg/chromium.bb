@@ -2059,7 +2059,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, USE_AA,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false,
-                       tint_gl_composited_content_),
+                       false, tint_gl_composited_content_),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
 
@@ -2121,29 +2121,46 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
 
-  float vertex_tex_translate_x = tex_coord_rect.x();
-  float vertex_tex_translate_y = tex_coord_rect.y();
-  float vertex_tex_scale_x = tex_coord_rect.width();
-  float vertex_tex_scale_y = tex_coord_rect.height();
+  // Tiles are guaranteed to have been entirely filled except for the
+  // bottom/right external edge tiles.  Because of border texels, any
+  // internal edge will have uvs that are offset from 0 and 1, so
+  // clamping to tex_coord_rect in all cases would cause these border
+  // texels to not be sampled.  Therefore, only clamp texture coordinates
+  // for external edge bottom/right tiles that don't have content all
+  // the way to the edge.
+  gfx::Size texture_size = quad->texture_size;
+  bool fills_right_edge =
+      quad->shared_quad_state->quad_layer_rect.right() != quad->rect.right() ||
+      texture_size.width() == tex_coord_rect.right();
+  bool fills_bottom_edge = quad->shared_quad_state->quad_layer_rect.bottom() !=
+                               quad->rect.bottom() ||
+                           texture_size.height() == tex_coord_rect.bottom();
+  bool has_tex_clamp_rect =
+      (!fills_right_edge || !fills_bottom_edge) && !quad->nearest_neighbor;
+  gfx::SizeF tex_clamp_size(texture_size);
+  // Clamp from the original tex coord rect, instead of the one that has
+  // been adjusted by the visible rect.
+  if (!fills_right_edge)
+    tex_clamp_size.set_width(quad->tex_coord_rect.right() - 0.5f);
+  if (!fills_bottom_edge)
+    tex_clamp_size.set_height(quad->tex_coord_rect.bottom() - 0.5f);
 
   // Map to normalized texture coordinates.
   if (sampler != SAMPLER_TYPE_2D_RECT) {
-    gfx::Size texture_size = quad->texture_size;
     DCHECK(!texture_size.IsEmpty());
-    vertex_tex_translate_x /= texture_size.width();
-    vertex_tex_translate_y /= texture_size.height();
-    vertex_tex_scale_x /= texture_size.width();
-    vertex_tex_scale_y /= texture_size.height();
+    tex_coord_rect.Scale(1.f / texture_size.width(),
+                         1.f / texture_size.height());
+    tex_clamp_size.Scale(1.f / texture_size.width(),
+                         1.f / texture_size.height());
   }
 
-  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
-      quad->texture_size);
-
+  TexCoordPrecision tex_coord_precision =
+      TexCoordPrecisionRequired(gl_, &highp_threshold_cache_,
+                                settings_->highp_threshold_min, texture_size);
   SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
-                       !quad->ShouldDrawWithBlending(),
+                       !quad->ShouldDrawWithBlending(), has_tex_clamp_rect,
                        tint_gl_composited_content_),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
@@ -2154,9 +2171,13 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                           false, matrix.data());
   }
 
+  if (has_tex_clamp_rect) {
+    gl_->Uniform4f(current_program_->tex_clamp_rect_location(), 0, 0,
+                   tex_clamp_size.width(), tex_clamp_size.height());
+  }
   gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
-                 vertex_tex_translate_x, vertex_tex_translate_y,
-                 vertex_tex_scale_x, vertex_tex_scale_y);
+                 tex_coord_rect.x(), tex_coord_rect.y(), tex_coord_rect.width(),
+                 tex_coord_rect.height());
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 

@@ -74,10 +74,14 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
-              ['mac', 'linux', 'win', 'android'], bug=735228)
-    self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
-              ['mac', 'linux', 'win', 'android'], bug=735171)
+    # Temporary commenting out for
+    # https://chromium-review.googlesource.com/c/chromium/src/+/861085
+    #self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+    #          ['mac', 'linux', 'win', 'android'], bug=735228)
+    #self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
+    #          ['mac', 'linux', 'win', 'android'], bug=735171)
+    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=777154)
+    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=777154)
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
