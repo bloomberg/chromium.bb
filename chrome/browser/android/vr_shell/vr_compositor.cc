@@ -8,6 +8,7 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -15,7 +16,8 @@
 
 namespace vr_shell {
 
-VrCompositor::VrCompositor(ui::WindowAndroid* window) {
+VrCompositor::VrCompositor(ui::WindowAndroid* window, VrShell* vr_shell)
+    : vr_shell_(vr_shell) {
   compositor_.reset(content::Compositor::Create(this, window));
 }
 
@@ -58,6 +60,10 @@ void VrCompositor::SetWindowBounds(gfx::Size size) {
 
 void VrCompositor::SurfaceChanged(jobject surface) {
   compositor_->SetSurface(surface);
+}
+
+void VrCompositor::DidSwapBuffers() {
+  vr_shell_->DidSwapBuffers();
 }
 
 }  // namespace vr_shell

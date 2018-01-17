@@ -224,6 +224,8 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnAssetsLoaded(vr::AssetsLoadStatus status,
                       const base::Version& component_version);
 
+  void DidSwapBuffers();
+
  private:
   ~VrShell() override;
   void PostToGlThread(const base::Location& from_here, base::OnceClosure task);
