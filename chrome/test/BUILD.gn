@@ -4042,8 +4042,15 @@ test("unit_tests") {
       "comsupp.lib",
       "oleacc.lib",
       "rpcrt4.lib",
+      "runtimeobject.lib",
       "urlmon.lib",
       "winmm.lib",
+    ]
+
+    ldflags = [
+      "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
+      "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
+      "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
     ]
 
     if (!is_chrome_branded) {
