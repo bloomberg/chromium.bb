@@ -11,7 +11,6 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "remoting/ios/app/physical_keyboard_detector.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 #import "remoting/ios/app/view_utils.h"
@@ -57,7 +56,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   // When set to true, ClientKeyboard will immediately resign first responder
   // after it becomes first responder.
   BOOL _blocksKeyboard;
-  BOOL _hasPhysicalKeyboard;
   NSLayoutConstraint* _keyboardHeightConstraint;
 
   // Subview of self.view. Adjusted frame for safe area.
@@ -81,7 +79,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     _keyboardSize = CGSizeZero;
     _surfaceCreated = NO;
     _blocksKeyboard = NO;
-    _hasPhysicalKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
 
@@ -202,11 +199,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     _surfaceCreated = YES;
   }
 
-  [PhysicalKeyboardDetector detectOnView:_hostView
-                                callback:^(BOOL hasPhysicalKeyboard) {
-                                  _hasPhysicalKeyboard = hasPhysicalKeyboard;
-                                  [_clientKeyboard becomeFirstResponder];
-                                }];
+  // |_clientKeyboard| should always be the first responder even when the soft
+  // keyboard is not visible, so that input from physical keyboard can still be
+  // captured.
+  [_clientKeyboard becomeFirstResponder];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -284,9 +280,13 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 #pragma mark - Keyboard Notifications
 
 - (void)keyboardWillShow:(NSNotification*)notification {
-  // The soft keyboard can be triggered by the PhysicalKeyboardDetector, in this
-  // case we don't need to change the keyboard size.
-  if (!_clientKeyboard.isFirstResponder) {
+  // Note that this won't be called in split keyboard mode.
+
+  // keyboardWillShow may be called with a wrong keyboard size when the physical
+  // keyboard is plugged in while the soft keyboard is hidden. This is
+  // potentially an OS bug. `!_clientKeyboard.showsSoftKeyboard` works around
+  // it.
+  if (!_clientKeyboard.showsSoftKeyboard) {
     return;
   }
 
@@ -299,11 +299,13 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     return;
   }
 
-  CGSize keyboardSize =
-      [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey]
-          CGRectValue]
-          .size;
-  [self setKeyboardSize:keyboardSize needsLayout:YES];
+  // On iOS 10 the keyboard might be partially shown, i.e. part of the keyboard
+  // is below the screen.
+  CGRect keyboardRect = [[[notification userInfo]
+      objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  CGSize visibleKeyboardSize =
+      CGRectIntersection(self.view.bounds, keyboardRect).size;
+  [self setKeyboardSize:visibleKeyboardSize needsLayout:YES];
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
@@ -470,24 +472,21 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
   __weak HostViewController* weakSelf = self;
-  if (!_hasPhysicalKeyboard) {
-    // These are only needed if the device has no physical keyboard.
-    __weak ClientKeyboard* weakClientKeyboard = _clientKeyboard;
-    if (_clientKeyboard.showsSoftKeyboard) {
-      [self addActionToAlert:alert
-                       title:IDS_HIDE_KEYBOARD
-                       style:UIAlertActionStyleDefault
-            restoresKeyboard:NO
-                     handler:^() {
-                       weakClientKeyboard.showsSoftKeyboard = NO;
-                     }];
-    } else {
-      [self addActionToAlert:alert
-                       title:IDS_SHOW_KEYBOARD
-                     handler:^() {
-                       weakClientKeyboard.showsSoftKeyboard = YES;
-                     }];
-    }
+  __weak ClientKeyboard* weakClientKeyboard = _clientKeyboard;
+  if (_clientKeyboard.showsSoftKeyboard) {
+    [self addActionToAlert:alert
+                     title:IDS_HIDE_KEYBOARD
+                     style:UIAlertActionStyleDefault
+          restoresKeyboard:NO
+                   handler:^() {
+                     weakClientKeyboard.showsSoftKeyboard = NO;
+                   }];
+  } else {
+    [self addActionToAlert:alert
+                     title:IDS_SHOW_KEYBOARD
+                   handler:^() {
+                     weakClientKeyboard.showsSoftKeyboard = YES;
+                   }];
   }
 
   remoting::GestureInterpreter::InputMode currentInputMode =
