@@ -84,54 +84,60 @@ void ResourcePool::PoolResource::OnMemoryDump(
   }
 }
 
-ResourcePool::ResourcePool(LayerTreeResourceProvider* resource_provider,
-                           base::SingleThreadTaskRunner* task_runner,
-                           gfx::BufferUsage usage,
-                           const base::TimeDelta& expiration_delay,
-                           bool disallow_non_exact_reuse)
+ResourcePool::ResourcePool(
+    LayerTreeResourceProvider* resource_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    gfx::BufferUsage usage,
+    const base::TimeDelta& expiration_delay,
+    bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
       use_gpu_memory_buffers_(true),
       usage_(usage),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
-
-#if defined(OS_ANDROID)
-  // TODO(ericrk): This feature appears to be causing visual corruption on
-  // certain android devices. Will investigate and re-enable. crbug.com/746931
-  disallow_non_exact_reuse_ = true;
-#endif
-
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
-ResourcePool::ResourcePool(LayerTreeResourceProvider* resource_provider,
-                           bool gpu_resources,
-                           base::SingleThreadTaskRunner* task_runner,
-                           viz::ResourceTextureHint hint,
-                           const base::TimeDelta& expiration_delay,
-                           bool disallow_non_exact_reuse)
+ResourcePool::ResourcePool(
+    LayerTreeResourceProvider* resource_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    viz::ResourceTextureHint hint,
+    const base::TimeDelta& expiration_delay,
+    bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
-      use_gpu_resources_(gpu_resources),
+      use_gpu_resources_(true),
       use_gpu_memory_buffers_(false),
       hint_(hint),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+}
 
-#if defined(OS_ANDROID)
-  // TODO(ericrk): This feature appears to be causing visual corruption on
-  // certain android devices. Will investigate and re-enable. crbug.com/746931
-  disallow_non_exact_reuse_ = true;
-#endif
-
+ResourcePool::ResourcePool(
+    LayerTreeResourceProvider* resource_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::TimeDelta& expiration_delay,
+    bool disallow_non_exact_reuse)
+    : resource_provider_(resource_provider),
+      use_gpu_resources_(false),
+      use_gpu_memory_buffers_(false),
+      hint_(viz::ResourceTextureHint::kDefault),
+      task_runner_(std::move(task_runner)),
+      resource_expiration_delay_(expiration_delay),
+      disallow_non_exact_reuse_(disallow_non_exact_reuse),
+      weak_ptr_factory_(this) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "cc::ResourcePool", task_runner_.get());
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }

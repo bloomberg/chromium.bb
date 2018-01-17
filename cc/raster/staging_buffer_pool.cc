@@ -129,12 +129,12 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 }
 
 StagingBufferPool::StagingBufferPool(
-    base::SequencedTaskRunner* task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     viz::RasterContextProvider* worker_context_provider,
     LayerTreeResourceProvider* resource_provider,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes)
-    : task_runner_(task_runner),
+    : task_runner_(std::move(task_runner)),
       worker_context_provider_(worker_context_provider),
       resource_provider_(resource_provider),
       use_partial_raster_(use_partial_raster),

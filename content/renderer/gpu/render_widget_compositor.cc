@@ -578,6 +578,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.disallow_non_exact_resource_reuse =
       cmd.HasSwitch(switches::kDisallowNonExactResourceReuse);
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/746931): This feature appears to be causing visual
+  // corruption on certain android devices. Will investigate and re-enable.
+  settings.disallow_non_exact_resource_reuse = true;
+#endif
 
   if (cmd.HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw)) {
     settings.wait_for_all_pipeline_stages_before_draw = true;
