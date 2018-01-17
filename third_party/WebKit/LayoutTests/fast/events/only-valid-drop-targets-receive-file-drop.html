@@ -54,12 +54,15 @@ window.onload = function()
         return;
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
+    // The line below is necessary in order for preventing the default in
+    // beforeunload handler to work properly. crbug.com/802982
+    testRunner.setShouldStayOnPageAfterHandlingBeforeUnload(true);
 
     window.addEventListener('beforeunload', function (e) {
         if (!dropReceived)
             log('Drop not received');
         beforeUnloadReceived = true;
-        e.preventDefault();
+        e.returnValue = "foo";
         testRunner.notifyDone();
     });
 
