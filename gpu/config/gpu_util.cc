@@ -191,12 +191,6 @@ void ParseSecondaryGpuDevicesFromCommandLine(
   const char* secondary_vendor_switch_key = switches::kGpuSecondaryVendorIDs;
   const char* secondary_device_switch_key = switches::kGpuSecondaryDeviceIDs;
 
-  if (command_line.HasSwitch(switches::kGpuTestingSecondaryVendorIDs) &&
-      command_line.HasSwitch(switches::kGpuTestingSecondaryDeviceIDs)) {
-    secondary_vendor_switch_key = switches::kGpuTestingSecondaryVendorIDs;
-    secondary_device_switch_key = switches::kGpuTestingSecondaryDeviceIDs;
-  }
-
   if (!command_line.HasSwitch(secondary_vendor_switch_key) ||
       !command_line.HasSwitch(secondary_device_switch_key)) {
     return;

@@ -132,20 +132,6 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_version = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
-    gpu_info->gl_vendor =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVendor);
-  }
-  if (command_line->HasSwitch(switches::kGpuTestingGLRenderer)) {
-    gpu_info->gl_renderer =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLRenderer);
-  }
-  if (command_line->HasSwitch(switches::kGpuTestingGLVersion)) {
-    gpu_info->gl_version =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVersion);
-  }
-
   gpu_info->gl_extensions = gl::GetGLExtensionsFromCurrentContext();
   gl::ExtensionSet extension_set =
       gl::MakeExtensionSet(gpu_info->gl_extensions);
@@ -278,8 +264,11 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
                                  kATIID};
 
   DCHECK(gpu_info);
-  if (gpu_info->secondary_gpus.size() == 0)
+  if (gpu_info->secondary_gpus.size() == 0) {
+    // If there is only a single GPU, that GPU is active.
+    gpu_info->gpu.active = true;
     return;
+  }
 
   uint32_t active_vendor_id = 0;
   if (!gpu_info->gl_vendor.empty()) {

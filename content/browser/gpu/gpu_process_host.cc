@@ -159,9 +159,6 @@ static const char* const kSwitchNames[] = {
 #endif
     switches::kGpuBlacklistTestGroup,
     switches::kGpuDriverBugListTestGroup,
-    switches::kGpuTestingGLVendor,
-    switches::kGpuTestingGLRenderer,
-    switches::kGpuTestingGLVersion,
     switches::kUseCmdDecoder,
     switches::kForceVideoOverlays,
 #if defined(OS_ANDROID)
