@@ -1446,12 +1446,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
 
     if (node->IsFrameOwnerElement()) {
       HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
-      if (LocalFrame* frame =
-              frame_owner->ContentFrame() &&
-                      frame_owner->ContentFrame()->IsLocalFrame()
-                  ? ToLocalFrame(frame_owner->ContentFrame())
-                  : nullptr)
-        value->setFrameId(IdentifiersFactory::FrameId(frame));
+      if (frame_owner->ContentFrame()) {
+        value->setFrameId(
+            IdentifiersFactory::FrameId(frame_owner->ContentFrame()));
+      }
       if (Document* doc = frame_owner->contentDocument()) {
         value->setContentDocument(BuildObjectForNode(
             doc, pierce ? depth : 0, pierce, nodes_map, flatten_result));

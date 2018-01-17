@@ -162,8 +162,8 @@ void WebSharedWorkerImpl::ResumeStartup() {
   }
 }
 
-const WebString& WebSharedWorkerImpl::GetInstrumentationToken() {
-  return instrumentation_token_;
+const WebString& WebSharedWorkerImpl::GetDevToolsFrameToken() {
+  return devtools_frame_token_;
 }
 
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
@@ -221,7 +221,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& content_security_policy,
     WebContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
-    const WebString& instrumentation_token,
+    const WebString& devtools_frame_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
@@ -233,7 +233,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(content_settings_handle), 0u);
   pending_interface_provider_.set_handle(std::move(interface_provider));
 
-  instrumentation_token_ = instrumentation_token;
+  devtools_frame_token_ = devtools_frame_token;
   shadow_page_ = std::make_unique<WorkerShadowPage>(this);
 
   // If we were asked to pause worker context on start and wait for debugger

@@ -270,7 +270,8 @@ Frame::Frame(FrameClient* client,
       owner_(owner),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
-      is_loading_(false) {
+      is_loading_(false),
+      devtools_frame_token_(client->GetDevToolsFrameToken()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kFrameCounter);
 
   if (owner_)

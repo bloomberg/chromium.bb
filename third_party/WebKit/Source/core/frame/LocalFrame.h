@@ -247,8 +247,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // https://chromium.googlesource.com/chromium/src/+/master/ipc#Using-Channel_associated-Interfaces.
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
-  String GetInstrumentationToken() { return instrumentation_token_; }
-
   LocalFrameClient* Client() const;
 
   ContentSettingsClient* GetContentSettingsClient();
@@ -352,7 +350,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<InspectorTraceEvents> inspector_trace_events_;
 
   InterfaceRegistry* const interface_registry_;
-  String instrumentation_token_;
 
   IntRect remote_viewport_intersection_;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;

@@ -762,10 +762,10 @@ void InspectorNetworkAgent::WillSendRequest(
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           redirect_response, initiator_info, type);
 
-  if (!inspected_frames_->InstrumentationToken().IsEmpty()) {
+  if (!inspected_frames_->GetDevToolsFrameToken().IsEmpty()) {
     request.AddHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
-        AtomicString(inspected_frames_->InstrumentationToken()));
+        AtomicString(inspected_frames_->GetDevToolsFrameToken()));
   }
 }
 
