@@ -4,10 +4,19 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/at_exit.h"
 #include "base/atomic_sequence_num.h"
+#include "base/atomicops.h"
+#include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/sys_info.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +33,9 @@ class ConstructAndDestructLogger {
   ~ConstructAndDestructLogger() {
     destructed_seq_.GetNext();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConstructAndDestructLogger);
 };
 
 class SlowConstructor {
@@ -39,8 +51,11 @@ class SlowConstructor {
   static int constructed;
  private:
   int some_int_;
+
+  DISALLOW_COPY_AND_ASSIGN(SlowConstructor);
 };
 
+// static
 int SlowConstructor::constructed = 0;
 
 class SlowDelegate : public base::DelegateSimpleThread::Delegate {
@@ -56,12 +71,14 @@ class SlowDelegate : public base::DelegateSimpleThread::Delegate {
 
  private:
   base::LazyInstance<SlowConstructor>::DestructorAtExit* lazy_;
+
+  DISALLOW_COPY_AND_ASSIGN(SlowDelegate);
 };
 
 }  // namespace
 
-static base::LazyInstance<ConstructAndDestructLogger>::DestructorAtExit
-    lazy_logger = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ConstructAndDestructLogger>::DestructorAtExit lazy_logger =
+    LAZY_INSTANCE_INITIALIZER;
 
 TEST(LazyInstanceTest, Basic) {
   {
@@ -86,7 +103,7 @@ TEST(LazyInstanceTest, Basic) {
   EXPECT_EQ(4, destructed_seq_.GetNext());
 }
 
-static base::LazyInstance<SlowConstructor>::DestructorAtExit lazy_slow =
+base::LazyInstance<SlowConstructor>::DestructorAtExit lazy_slow =
     LAZY_INSTANCE_INITIALIZER;
 
 TEST(LazyInstanceTest, ConstructorThreadSafety) {
@@ -180,4 +197,126 @@ TEST(LazyInstanceTest, Alignment) {
   EXPECT_ALIGNED(align4.Pointer(), 4);
   EXPECT_ALIGNED(align32.Pointer(), 32);
   EXPECT_ALIGNED(align4096.Pointer(), 4096);
+}
+
+namespace {
+
+// A class whose constructor busy-loops until it is told to complete
+// construction.
+class BlockingConstructor {
+ public:
+  BlockingConstructor() {
+    EXPECT_FALSE(WasConstructorCalled());
+    base::subtle::NoBarrier_Store(&constructor_called_, 1);
+    EXPECT_TRUE(WasConstructorCalled());
+    while (!base::subtle::NoBarrier_Load(&complete_construction_))
+      base::PlatformThread::YieldCurrentThread();
+    done_construction_ = true;
+  }
+
+  ~BlockingConstructor() {
+    // Restore static state for the next test.
+    base::subtle::NoBarrier_Store(&constructor_called_, 0);
+    base::subtle::NoBarrier_Store(&complete_construction_, 0);
+  }
+
+  // Returns true if BlockingConstructor() was entered.
+  static bool WasConstructorCalled() {
+    return base::subtle::NoBarrier_Load(&constructor_called_);
+  }
+
+  // Instructs BlockingConstructor() that it may now unblock its construction.
+  static void CompleteConstructionNow() {
+    base::subtle::NoBarrier_Store(&complete_construction_, 1);
+  }
+
+  bool done_construction() { return done_construction_; }
+
+ private:
+  // Use Atomic32 instead of AtomicFlag for them to be trivially initialized.
+  static base::subtle::Atomic32 constructor_called_;
+  static base::subtle::Atomic32 complete_construction_;
+
+  bool done_construction_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockingConstructor);
+};
+
+// A SimpleThread running at |thread_priority| which invokes |before_get|
+// (optional) and then invokes Get() on the LazyInstance it's assigned.
+class BlockingConstructorThread : public base::SimpleThread {
+ public:
+  BlockingConstructorThread(
+      base::ThreadPriority thread_priority,
+      base::LazyInstance<BlockingConstructor>::DestructorAtExit* lazy,
+      base::OnceClosure before_get)
+      : SimpleThread("BlockingConstructorThread", Options(thread_priority)),
+        lazy_(lazy),
+        before_get_(std::move(before_get)) {}
+
+  void Run() override {
+    if (before_get_)
+      std::move(before_get_).Run();
+    EXPECT_TRUE(lazy_->Get().done_construction());
+  }
+
+ private:
+  base::LazyInstance<BlockingConstructor>::DestructorAtExit* lazy_;
+  base::OnceClosure before_get_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockingConstructorThread);
+};
+
+// static
+base::subtle::Atomic32 BlockingConstructor::constructor_called_ = 0;
+// static
+base::subtle::Atomic32 BlockingConstructor::complete_construction_ = 0;
+
+base::LazyInstance<BlockingConstructor>::DestructorAtExit lazy_blocking =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// Tests that if the thread assigned to construct the LazyInstance runs at
+// background priority : the foreground threads will yield to it enough for it
+// to eventually complete construction.
+// This is a regression test for https://crbug.com/797129.
+TEST(LazyInstanceTest, PriorityInversionAtInitializationResolves) {
+  base::TimeTicks test_begin = base::TimeTicks::Now();
+
+  // Construct BlockingConstructor from a background thread.
+  BlockingConstructorThread background_getter(
+      base::ThreadPriority::BACKGROUND, &lazy_blocking, base::OnceClosure());
+  background_getter.Start();
+
+  while (!BlockingConstructor::WasConstructorCalled())
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+
+  // Spin 4 foreground thread per core contending to get the already under
+  // construction LazyInstance. When they are all running and poking at it :
+  // allow the background thread to complete its work.
+  const int kNumForegroundThreads = 4 * base::SysInfo::NumberOfProcessors();
+  std::vector<std::unique_ptr<base::SimpleThread>> foreground_threads;
+  base::RepeatingClosure foreground_thread_ready_callback =
+      base::BarrierClosure(
+          kNumForegroundThreads,
+          base::BindOnce(&BlockingConstructor::CompleteConstructionNow));
+  for (int i = 0; i < kNumForegroundThreads; ++i) {
+    foreground_threads.push_back(std::make_unique<BlockingConstructorThread>(
+        base::ThreadPriority::NORMAL, &lazy_blocking,
+        foreground_thread_ready_callback));
+    foreground_threads.back()->Start();
+  }
+
+  // This test will hang if the foreground threads become stuck in
+  // LazyInstance::Get() per the background thread never being scheduled to
+  // complete construction.
+  for (auto& foreground_thread : foreground_threads)
+    foreground_thread->Join();
+  background_getter.Join();
+
+  // Fail if this test takes more than 5 seconds (it takes 5-10 seconds on a
+  // Z840 without r527445 but is expected to be fast (~30ms) with the fix).
+  EXPECT_LT(base::TimeTicks::Now() - test_begin,
+            base::TimeDelta::FromSeconds(5));
 }
