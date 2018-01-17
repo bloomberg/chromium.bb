@@ -22,6 +22,9 @@ class UdevGamepadLinux {
     HIDRAW,
   };
 
+  static const char kInputSubsystem[];
+  static const char kHidrawSubsystem[];
+
   ~UdevGamepadLinux() = default;
 
   // Factory method for creating UdevGamepadLinux instances. Extracts info
