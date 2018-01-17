@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
@@ -76,7 +77,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
-      mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) override {
     *response = sync_load_response_;
   }
@@ -89,7 +90,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
-      mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) override {
     EXPECT_FALSE(peer_);
@@ -160,7 +161,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       : loader_(new WebURLLoaderImpl(
             dispatcher,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-            &fake_url_loader_factory_)),
+            base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+                &fake_url_loader_factory_))),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),

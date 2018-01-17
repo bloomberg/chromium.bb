@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -50,10 +51,6 @@ struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
 class ThrottlingURLLoader;
 class URLLoaderClientImpl;
-
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
 
 // This class serves as a communication interface to the ResourceDispatcherHost
 // in the browser process. It can be used from any child process.
@@ -89,7 +86,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
-      mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
 
   // Call this method to initiate the request. If this method succeeds, then
@@ -109,7 +106,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
-      mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 

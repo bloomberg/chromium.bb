@@ -215,6 +215,8 @@ jumbo_source_set("common_sources") {
     "send_zygote_child_ping_linux.h",
     "service_manager_connection.h",
     "service_worker_modes.h",
+    "shared_url_loader_factory.cc",
+    "shared_url_loader_factory.h",
     "simple_connection_filter.cc",
     "simple_connection_filter.h",
     "simple_url_loader.cc",

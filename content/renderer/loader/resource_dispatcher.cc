@@ -370,12 +370,12 @@ void ResourceDispatcher::StartSync(
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
-    mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
-  mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
-  url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
+  std::unique_ptr<SharedURLLoaderFactoryInfo> factory_info =
+      url_loader_factory->Clone();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
 
@@ -393,7 +393,7 @@ void ResourceDispatcher::StartSync(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                      std::move(request), routing_id, task_runner, frame_origin,
-                     traffic_annotation, std::move(url_loader_factory_copy),
+                     traffic_annotation, std::move(factory_info),
                      std::move(throttles), base::Unretained(response),
                      base::Unretained(&event)));
 
@@ -408,7 +408,7 @@ int ResourceDispatcher::StartAsync(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
-    mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   CheckSchemeForReferrerPolicy(*request);
@@ -451,8 +451,8 @@ int ResourceDispatcher::StartAsync(
 
   std::unique_ptr<ThrottlingURLLoader> url_loader =
       ThrottlingURLLoader::CreateLoaderAndStart(
-          url_loader_factory, std::move(throttles), routing_id, request_id,
-          options, request.get(), client.get(), traffic_annotation,
+          std::move(url_loader_factory), std::move(throttles), routing_id,
+          request_id, options, request.get(), client.get(), traffic_annotation,
           std::move(loading_task_runner));
   pending_requests_[request_id]->url_loader = std::move(url_loader);
   pending_requests_[request_id]->url_loader_client = std::move(client);
