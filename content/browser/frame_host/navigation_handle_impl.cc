@@ -731,8 +731,16 @@ void NavigationHandleImpl::WillProcessResponse(
   // If the navigation is done processing the response, then it's ready to
   // commit. Inform observers that the navigation is now ready to commit, unless
   // it is not set to commit (204/205s/downloads).
-  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
+  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_) {
+    CHECK(!suggested_filename_.has_value() ||
+          !(url_.SchemeIsBlob() || url_.SchemeIsFileSystem() ||
+            url_.SchemeIs(url::kAboutScheme) ||
+            url_.SchemeIs(url::kDataScheme)))
+        << "Blob, filesystem, data, and about URLs with a suggested filename "
+           "should always result in a download, so we should never process a "
+           "navigation response here.";
     ReadyToCommitNavigation(render_frame_host_);
+  }
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "ProcessResponse", "result", result.action());

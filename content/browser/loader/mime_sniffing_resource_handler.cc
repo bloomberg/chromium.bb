@@ -517,6 +517,7 @@ bool MimeSniffingResourceHandler::MustDownload() {
   bool is_cross_origin =
       (request()->initiator().has_value() &&
        !request()->url_chain().back().SchemeIsBlob() &&
+       !request()->url_chain().back().SchemeIsFileSystem() &&
        !request()->url_chain().back().SchemeIs(url::kAboutScheme) &&
        !request()->url_chain().back().SchemeIs(url::kDataScheme) &&
        request()->initiator()->GetURL() !=

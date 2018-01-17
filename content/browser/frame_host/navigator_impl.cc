@@ -668,7 +668,8 @@ void NavigatorImpl::RequestTransferURL(
     bool should_replace_current_entry,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
-    const std::string& extra_headers) {
+    const std::string& extra_headers,
+    const base::Optional<std::string>& suggested_filename) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -757,6 +758,7 @@ void NavigatorImpl::RequestTransferURL(
         static_cast<SiteInstanceImpl*>(source_site_instance));
     entry->SetRedirectChain(redirect_chain);
   }
+  entry->set_suggested_filename(suggested_filename);
 
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149

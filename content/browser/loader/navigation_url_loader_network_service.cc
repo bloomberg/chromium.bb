@@ -135,6 +135,7 @@ bool IsDownload(const network::ResourceResponse& response,
     GURL url_chain_back = url_chain.empty() ? url : url_chain.back();
     bool is_cross_origin =
         (initiator_origin.has_value() && !url_chain_back.SchemeIsBlob() &&
+         !url_chain_back.SchemeIsFileSystem() &&
          !url_chain_back.SchemeIs(url::kAboutScheme) &&
          !url_chain_back.SchemeIs(url::kDataScheme) &&
          initiator_origin->GetURL() != url_chain_back.GetOrigin());
