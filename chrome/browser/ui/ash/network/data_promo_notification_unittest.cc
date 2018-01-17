@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
@@ -22,7 +23,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/message_center/message_center.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::LoginState;
@@ -54,10 +54,6 @@ class NetworkConnectTestDelegate : public chromeos::NetworkConnect::Delegate {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);
 };
 
-}  // namespace
-
-namespace test {
-
 class DataPromoNotificationTest : public testing::Test {
  public:
   DataPromoNotificationTest() {}
@@ -72,7 +68,6 @@ class DataPromoNotificationTest : public testing::Test {
     data_promo_notification_.reset(new DataPromoNotification);
     SetupUser();
     SetupNetworkShillState();
-    message_center::MessageCenter::Initialize();
     base::RunLoop().RunUntilIdle();
     network_connect_delegate_.reset(new NetworkConnectTestDelegate);
     chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
@@ -81,8 +76,8 @@ class DataPromoNotificationTest : public testing::Test {
   void TearDown() override {
     chromeos::NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
-    message_center::MessageCenter::Shutdown();
     LoginState::Shutdown();
+    display_service_.reset();
     profile_manager_.reset();
     user_manager_enabler_.reset();
     data_promo_notification_.reset();
@@ -93,8 +88,7 @@ class DataPromoNotificationTest : public testing::Test {
 
  protected:
   void SetupUser() {
-    std::unique_ptr<chromeos::FakeChromeUserManager> user_manager =
-        std::make_unique<chromeos::FakeChromeUserManager>();
+    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
     const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
     user_manager->AddUser(test_account_id);
     user_manager->LoginUser(test_account_id);
@@ -106,9 +100,10 @@ class DataPromoNotificationTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_manager_->SetLoggedIn(true);
 
-    chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
-        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-            test_account_id.GetUserEmail()));
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
+            chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                test_account_id.GetUserEmail())));
 
     ASSERT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 
@@ -151,23 +146,21 @@ class DataPromoNotificationTest : public testing::Test {
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataPromoNotificationTest);
 };
 
 TEST_F(DataPromoNotificationTest, DataSaverNotification) {
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-
   // Network setup shouldn't be enough to activate notification.
-  EXPECT_FALSE(message_center->FindVisibleNotificationById(kNotificationId));
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
 
   chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
   base::RunLoop().RunUntilIdle();
   // Connecting to cellular network (which here makes it the default network)
   // should trigger the Data Saver notification.
-  EXPECT_TRUE(message_center->FindVisibleNotificationById(kNotificationId));
+  EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
 }
 
-}  // namespace test
+}  // namespace
