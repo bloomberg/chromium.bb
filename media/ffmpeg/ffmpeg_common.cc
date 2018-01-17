@@ -479,14 +479,14 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   // actually handle capabilities requests correctly. http://crbug.com/784610
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   switch (codec) {
-#if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
     case kCodecH264:
       format = PIXEL_FORMAT_I420;
       profile = H264PROFILE_BASELINE;
       break;
 #endif
     case kCodecVP8:
-#if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
       format = PIXEL_FORMAT_I420;
 #endif
       profile = VP8PROFILE_ANY;

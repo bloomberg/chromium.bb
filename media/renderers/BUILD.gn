@@ -47,8 +47,6 @@ source_set("renderers") {
     # TODO(crbug.com/167187): Fix size_t to int trunctaions.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
-
-  all_dependent_configs = [ "//media:media_dependent_config" ]
 }
 
 source_set("unit_tests") {

@@ -7,16 +7,17 @@
 
 #include "base/feature_list.h"
 #include "content/public/common/features.h"
+#include "media/media_features.h"
 
 namespace content {
 
-#if BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
+#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
 
-#endif  // BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
+#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_FEATURE_H264_WITH_OPENH264_FFMPEG_H_

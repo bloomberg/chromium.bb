@@ -243,7 +243,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I420A) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I444));
 
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   // When FFmpegVideoDecoder is available it handles VP8 that doesn't have
   // alpha, and VpxVideoDecoder will handle VP8 with alpha.
   if (config.codec() == kCodecVP8 && config.format() != PIXEL_FORMAT_I420A)

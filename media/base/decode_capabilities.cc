@@ -7,10 +7,11 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 #include "third_party/libaom/av1_features.h"
 #include "ui/display/display_switches.h"
 
-#if !defined(MEDIA_DISABLE_LIBVPX)
+#if BUILDFLAG(ENABLE_LIBVPX)
 // VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
 // backwards compatibility for legacy applications using the library.
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -105,7 +106,7 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
 }
 
 bool IsVp9ProfileSupported(VideoCodecProfile profile) {
-#if !defined(MEDIA_DISABLE_LIBVPX)
+#if BUILDFLAG(ENABLE_LIBVPX)
   // High bit depth capabilities may be toggled via LibVPX config flags.
   static bool vpx_supports_high_bit_depth =
       (vpx_codec_get_caps(vpx_codec_vp9_dx()) & VPX_CODEC_CAP_HIGHBITDEPTH) !=

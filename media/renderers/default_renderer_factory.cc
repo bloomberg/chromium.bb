@@ -23,19 +23,20 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/libaom/av1_features.h"
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
-#include "media/filters/ffmpeg_audio_decoder.h"
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
-#include "media/filters/ffmpeg_video_decoder.h"
-#endif
-#endif
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-#include "media/filters/vpx_video_decoder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "media/filters/aom_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_FFMPEG)
+#include "media/filters/ffmpeg_audio_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+#include "media/filters/ffmpeg_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_LIBVPX)
+#include "media/filters/vpx_video_decoder.h"
 #endif
 
 namespace media {
@@ -56,7 +57,7 @@ DefaultRendererFactory::CreateAudioDecoders(
   // Create our audio decoders and renderer.
   std::vector<std::unique_ptr<AudioDecoder>> audio_decoders;
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG)
   audio_decoders.push_back(
       std::make_unique<FFmpegAudioDecoder>(media_task_runner, media_log_));
 #endif
@@ -103,7 +104,7 @@ DefaultRendererFactory::CreateVideoDecoders(
     }
   }
 
-#if !defined(MEDIA_DISABLE_LIBVPX)
+#if BUILDFLAG(ENABLE_LIBVPX)
   video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
@@ -112,7 +113,7 @@ DefaultRendererFactory::CreateVideoDecoders(
     video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log_));
 #endif
 
-#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders.push_back(std::make_unique<FFmpegVideoDecoder>(media_log_));
 #endif
 
