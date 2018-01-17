@@ -386,6 +386,7 @@ void LocationBarViewMac::Layout() {
       [cell availableWidthInFrame:[[cell controlView] frame]];
   is_width_available_for_security_verbose_ = available_width >= kMinURLWidth;
 
+  NSString* a11y_description = @"";
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
     selected_keyword_decoration_->SetVisible(true);
@@ -396,12 +397,16 @@ void LocationBarViewMac::Layout() {
     // Design we need to set its color, which we cannot do until we know the
     // theme (by being installed in a browser window).
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
+    a11y_description = selected_keyword_decoration_->GetAccessibilityLabel();
   } else if (!keyword.empty() && is_keyword_hint) {
     keyword_hint_decoration_->SetKeyword(short_name, is_extension_keyword);
     keyword_hint_decoration_->SetVisible(true);
+    a11y_description = keyword_hint_decoration_->GetAccessibilityLabel();
   } else {
     UpdatePageInfoText();
   }
+  [cell accessibilitySetOverrideValue:a11y_description
+                         forAttribute:NSAccessibilityDescriptionAttribute];
 
   if (!page_info_decoration_->IsVisible())
     page_info_decoration_->ResetAnimation();
