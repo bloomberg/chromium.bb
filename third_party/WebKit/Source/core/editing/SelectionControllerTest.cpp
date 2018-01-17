@@ -47,9 +47,9 @@ void SelectionControllerTest::SetNonDirectionalSelectionIfNeeded(
       .GetEventHandler()
       .GetSelectionController()
       .SetNonDirectionalSelectionIfNeeded(
-          new_selection, granularity,
-          SelectionController::kDoNotAdjustEndpoints,
-          HandleVisibility::kNotVisible);
+          new_selection,
+          SetSelectionOptions::Builder().SetGranularity(granularity).Build(),
+          SelectionController::kDoNotAdjustEndpoints);
 }
 
 TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
