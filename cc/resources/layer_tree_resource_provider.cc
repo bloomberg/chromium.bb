@@ -463,6 +463,23 @@ viz::ResourceId LayerTreeResourceProvider::CreateBitmapResource(
   return id;
 }
 
+void LayerTreeResourceProvider::DeleteResource(viz::ResourceId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
+  viz::internal::Resource* resource = &it->second;
+  DCHECK(!resource->marked_for_deletion);
+  DCHECK_EQ(resource->imported_count, 0);
+  DCHECK(!resource->locked_for_write);
+
+  if (resource->exported_count > 0) {
+    resource->marked_for_deletion = true;
+    return;
+  } else {
+    DeleteResourceInternal(it, NORMAL);
+  }
+}
+
 viz::ResourceId LayerTreeResourceProvider::ImportResource(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
@@ -492,12 +509,10 @@ void LayerTreeResourceProvider::CopyToResource(viz::ResourceId id,
                                                const gfx::Size& image_size) {
   viz::internal::Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);
-  DCHECK(!resource->lock_for_read_count);
   DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
   DCHECK_NE(resource->synchronization_state(),
             viz::internal::Resource::NEEDS_WAIT);
   DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(ReadLockFenceHasPassed(resource));
 
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
@@ -643,7 +658,6 @@ void LayerTreeResourceProvider::TransferResource(
     viz::ResourceId id,
     viz::TransferableResource* resource) {
   DCHECK(!source->locked_for_write);
-  DCHECK(!source->lock_for_read_count);
   DCHECK(source->allocated);
   resource->id = id;
   resource->format = source->format;
@@ -672,10 +686,9 @@ void LayerTreeResourceProvider::TransferResource(
 
 bool LayerTreeResourceProvider::CanLockForWrite(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
-  return !resource->locked_for_write && !resource->lock_for_read_count &&
-         !resource->exported_count &&
+  return !resource->locked_for_write && !resource->exported_count &&
          resource->origin == viz::internal::Resource::INTERNAL &&
-         !resource->lost && ReadLockFenceHasPassed(resource);
+         !resource->lost;
 }
 
 viz::internal::Resource* LayerTreeResourceProvider::LockForWrite(

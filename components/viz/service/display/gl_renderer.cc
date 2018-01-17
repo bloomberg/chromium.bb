@@ -566,7 +566,8 @@ void GLRenderer::BeginDrawingFrame() {
     read_lock_fence = current_sync_query_->Begin();
   } else {
     read_lock_fence =
-        base::MakeRefCounted<cc::ResourceProvider::SynchronousFence>(gl_);
+        base::MakeRefCounted<cc::DisplayResourceProvider::SynchronousFence>(
+            gl_);
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 

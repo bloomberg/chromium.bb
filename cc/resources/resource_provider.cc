@@ -98,24 +98,6 @@ void ResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
   resource->lost = true;
 }
 
-void ResourceProvider::DeleteResource(viz::ResourceId id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  viz::internal::Resource* resource = &it->second;
-  DCHECK(!resource->marked_for_deletion);
-  DCHECK_EQ(resource->imported_count, 0);
-  DCHECK(!resource->locked_for_write);
-
-  if (resource->exported_count > 0 || resource->lock_for_read_count > 0 ||
-      !ReadLockFenceHasPassed(resource)) {
-    resource->marked_for_deletion = true;
-    return;
-  } else {
-    DeleteResourceInternal(it, NORMAL);
-  }
-}
-
 void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                               DeleteStyle style) {
   TRACE_EVENT0("cc", "ResourceProvider::DeleteResourceInternal");
@@ -205,33 +187,6 @@ void ResourceProvider::PopulateSkBitmapWithResource(
   SkImageInfo info = SkImageInfo::MakeN32Premul(resource->size.width(),
                                                 resource->size.height());
   sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
-}
-
-ResourceProvider::SynchronousFence::SynchronousFence(
-    gpu::gles2::GLES2Interface* gl)
-    : gl_(gl), has_synchronized_(true) {}
-
-ResourceProvider::SynchronousFence::~SynchronousFence() = default;
-
-void ResourceProvider::SynchronousFence::Set() {
-  has_synchronized_ = false;
-}
-
-bool ResourceProvider::SynchronousFence::HasPassed() {
-  if (!has_synchronized_) {
-    has_synchronized_ = true;
-    Synchronize();
-  }
-  return true;
-}
-
-void ResourceProvider::SynchronousFence::Wait() {
-  HasPassed();
-}
-
-void ResourceProvider::SynchronousFence::Synchronize() {
-  TRACE_EVENT0("cc", "ResourceProvider::SynchronousFence::Synchronize");
-  gl_->Finish();
 }
 
 void ResourceProvider::WaitSyncTokenInternal(

@@ -74,6 +74,8 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   viz::ResourceId CreateBitmapResource(const gfx::Size& size,
                                        const gfx::ColorSpace& color_space);
 
+  void DeleteResource(viz::ResourceId id);
+
   // Receives a resource from an external client that can be used in compositor
   // frames, via the returned ResourceId.
   viz::ResourceId ImportResource(const viz::TransferableResource&,

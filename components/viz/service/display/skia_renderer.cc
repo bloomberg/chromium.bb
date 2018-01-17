@@ -104,7 +104,7 @@ void SkiaRenderer::BeginDrawingFrame() {
     NOTIMPLEMENTED();
   } else {
     read_lock_fence =
-        base::MakeRefCounted<cc::ResourceProvider::SynchronousFence>(
+        base::MakeRefCounted<cc::DisplayResourceProvider::SynchronousFence>(
             output_surface_->context_provider()->ContextGL());
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
