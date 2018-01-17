@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -178,9 +179,13 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
     for (int i = 0; i < prefetch_count; ++i) {
       keys.emplace_back(expected_key + i, kWebIDBKeyTypeNumber);
       primary_keys.emplace_back();
-      values.emplace_back(
-          WebData(),
-          WebVector<WebBlobInfo>(static_cast<size_t>(expected_key + i)));
+      WebVector<WebBlobInfo> blob_info;
+      blob_info.reserve(expected_key + i);
+      for (int j = 0; j < expected_key + i; ++j) {
+        blob_info.emplace_back(WebString::FromLatin1(base::GenerateGUID()),
+                               "text/plain", 123);
+      }
+      values.emplace_back(WebData(), std::move(blob_info));
     }
     cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                              std::move(values));
@@ -240,8 +245,13 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
   for (int i = 0; i < prefetch_count; ++i) {
     keys.emplace_back(expected_key + i, kWebIDBKeyTypeNumber);
     primary_keys.emplace_back();
-    values.emplace_back(WebData(), WebVector<WebBlobInfo>(
-                                       static_cast<size_t>(expected_key + i)));
+    WebVector<WebBlobInfo> blob_info;
+    blob_info.reserve(expected_key + i);
+    for (int j = 0; j < expected_key + i; ++j) {
+      blob_info.emplace_back(WebString::FromLatin1(base::GenerateGUID()),
+                             "text/plain", 123);
+    }
+    values.emplace_back(WebData(), std::move(blob_info));
   }
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));
