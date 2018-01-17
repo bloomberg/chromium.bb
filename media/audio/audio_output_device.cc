@@ -44,6 +44,7 @@ class AudioOutputDevice::AudioThreadCallback
   bool CurrentThreadIsAudioDeviceThread();
 
  private:
+  const base::TimeTicks start_time_;
   AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<AudioBus> output_bus_;
   uint64_t callback_num_;
@@ -462,10 +463,14 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
           /*read only*/ false,
           ComputeAudioOutputBufferSize(audio_parameters),
           /*segment count*/ 1),
+      start_time_(base::TimeTicks::Now()),
       render_callback_(render_callback),
       callback_num_(0) {}
 
-AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() = default;
+AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
+  UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Render.OutputStreamDuration",
+                           base::TimeTicks::Now() - start_time_);
+}
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   CHECK_EQ(total_segments_, 1u);

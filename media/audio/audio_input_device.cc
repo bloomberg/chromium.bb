@@ -66,6 +66,7 @@ class AudioInputDevice::AudioThreadCallback
   void Process(uint32_t pending_data) override;
 
  private:
+  const base::TimeTicks start_time_;
   const double bytes_per_ms_;
   size_t current_segment_id_;
   uint32_t last_buffer_id_;
@@ -373,6 +374,7 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
           /*read only*/ true,
           ComputeAudioInputBufferSize(audio_parameters, 1u),
           total_segments),
+      start_time_(base::TimeTicks::Now()),
       bytes_per_ms_(static_cast<double>(audio_parameters.GetBytesPerSecond()) /
                     base::Time::kMillisecondsPerSecond),
       current_segment_id_(0u),
@@ -383,7 +385,10 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
       frames_since_last_got_data_callback_(0),
       got_data_callback_(std::move(got_data_callback_)) {}
 
-AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() = default;
+AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
+  UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.InputStreamDuration",
+                           base::TimeTicks::Now() - start_time_);
+}
 
 void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   shared_memory_.Map(memory_length_);

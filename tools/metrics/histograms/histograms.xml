@@ -32954,6 +32954,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Capture.InputStreamDuration" units="ms">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    This histogram measures the duration of every input stream, as seen from the
+    renderer. It counts from when it has been successfully started, until it is
+    stopped. Streams that fail to start are not logged.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Capture.LargestGlitchMs" units="ms">
   <owner>grunell@chromium.org</owner>
   <summary>
@@ -33158,6 +33167,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.OutputStreamsCanceledByBrowser" units="streams">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    When a mojo audio stream factory is destructed, the streams it created are
+    also destructed. This is a potential source of stat differences between the
+    new mojo code and the old Chrome IPC code, where streams could potentially
+    stick around until the destruction of the owning RenderProcessHost. This
+    histogram measures how many output streams are destructed each time a mojo
+    output stream factory is destructed.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.PhysicalProcessorsMac">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -33334,6 +33355,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     Device status received in response to device authorization request.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.OutputStreamDuration" units="ms">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    This histogram measures the duration of every output stream, as seen from
+    the renderer. It counts from when it has been successfully started, until it
+    is stopped. Streams that fail to start are not logged.
   </summary>
 </histogram>
 
@@ -35024,6 +35054,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zqzhang@chromium.org</owner>
   <summary>
     The type of media notification the user clicked to go back to Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Media.OutputStreamDuration" units="ms">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    Duration of an audio output stream. Measured in AudioOutputController from
+    when a stream is started until it is stopped. A stream is stopped when it is
+    paused, closed (i.e. destructed), or when a device change event causes it to
+    be restarted.
   </summary>
 </histogram>
 
