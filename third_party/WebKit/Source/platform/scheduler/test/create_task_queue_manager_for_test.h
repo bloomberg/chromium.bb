@@ -16,15 +16,11 @@ class MessageLoop;
 namespace blink {
 namespace scheduler {
 
-std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerWithUnownedClockForTest(
-    base::MessageLoop* message_loop,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::SimpleTestTickClock* clock);
-
 std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerForTest(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* clock);
+    base::TickClock* clock,
+    base::Optional<uint64_t> random_seed = base::nullopt);
 
 }  // namespace scheduler
 }  // namespace blink

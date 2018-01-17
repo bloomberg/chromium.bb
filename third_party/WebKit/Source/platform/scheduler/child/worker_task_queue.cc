@@ -23,12 +23,14 @@ WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
 
 WorkerTaskQueue::~WorkerTaskQueue() = default;
 
-void WorkerTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
-                                      base::TimeTicks start,
-                                      base::TimeTicks end) {
+void WorkerTaskQueue::OnTaskCompleted(
+    const TaskQueue::Task& task,
+    base::TimeTicks start,
+    base::TimeTicks end,
+    base::Optional<base::TimeDelta> thread_time) {
   // |worker_scheduler_| can be nullptr in tests.
   if (worker_scheduler_)
-    worker_scheduler_->OnTaskCompleted(this, task, start, end);
+    worker_scheduler_->OnTaskCompleted(this, task, start, end, thread_time);
 }
 
 }  // namespace scheduler

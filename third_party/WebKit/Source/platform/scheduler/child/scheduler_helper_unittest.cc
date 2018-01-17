@@ -53,9 +53,7 @@ class SchedulerHelperTest : public ::testing::Test {
   SchedulerHelperTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, false)),
         scheduler_helper_(new WorkerSchedulerHelper(
-            CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
-                                                          mock_task_runner_,
-                                                          &clock_),
+            CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
             nullptr)),
         default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()) {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));

@@ -153,7 +153,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   void OnTaskCompleted(const TaskQueue::Task& task,
                        base::TimeTicks start,
-                       base::TimeTicks end);
+                       base::TimeTicks end,
+                       base::Optional<base::TimeDelta> thread_time);
 
   void DetachFromRendererScheduler();
 

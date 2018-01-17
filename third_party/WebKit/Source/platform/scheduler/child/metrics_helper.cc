@@ -7,19 +7,48 @@
 namespace blink {
 namespace scheduler {
 
+namespace {
+
+// Threshold for discarding ultra-long tasks. It is assumed that ultra-long
+// tasks are reporting glitches (e.g. system falling asleep on the middle of the
+// task).
+constexpr base::TimeDelta kLongTaskDiscardingThreshold =
+    base::TimeDelta::FromSeconds(30);
+
+}  // namespace
+
 MetricsHelper::MetricsHelper(ThreadType thread_type)
     : thread_type_(thread_type),
       thread_task_duration_reporter_(
-          "RendererScheduler.TaskDurationPerThreadType") {}
+          "RendererScheduler.TaskDurationPerThreadType"),
+      thread_task_cpu_duration_reporter_(
+          "RendererScheduler.TaskCPUDurationPerThreadType") {}
 
 MetricsHelper::~MetricsHelper() {}
 
-void MetricsHelper::RecordCommonTaskMetrics(TaskQueue* queue,
-                                            const TaskQueue::Task& task,
-                                            base::TimeTicks start_time,
-                                            base::TimeTicks end_time) {
+bool MetricsHelper::ShouldDiscardTask(
+    TaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    base::Optional<base::TimeDelta> thread_time) {
+  // TODO(altimin): Investigate the relationship between thread time and
+  // wall time for discarded tasks.
+  return end_time - start_time > kLongTaskDiscardingThreshold;
+}
+
+void MetricsHelper::RecordCommonTaskMetrics(
+    TaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    base::Optional<base::TimeDelta> thread_time) {
   thread_task_duration_reporter_.RecordTask(thread_type_,
                                             end_time - start_time);
+  if (thread_time) {
+    thread_task_cpu_duration_reporter_.RecordTask(thread_type_,
+                                                  thread_time.value());
+  }
 }
 
 void MetricsHelper::SetThreadType(ThreadType thread_type) {

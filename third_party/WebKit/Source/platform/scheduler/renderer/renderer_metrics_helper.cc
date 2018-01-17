@@ -34,11 +34,6 @@ namespace {
 
 constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromSeconds(1);
-// Threshold for discarding ultra-long tasks. Is it assumed that ultra-long
-// tasks are reporting glitches (e.g. system falling asleep in the middle
-// of the task).
-constexpr base::TimeDelta kLongTaskDiscardingThreshold =
-    base::TimeDelta::FromSeconds(30);
 constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
     base::TimeDelta::FromMinutes(3);
 
@@ -141,16 +136,20 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 
 }  // namespace
 
-void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
-                                              const TaskQueue::Task& task,
-                                              base::TimeTicks start_time,
-                                              base::TimeTicks end_time) {
-  MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time);
+void RendererMetricsHelper::RecordTaskMetrics(
+    MainThreadTaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    base::Optional<base::TimeDelta> thread_time) {
+  if (ShouldDiscardTask(queue, task, start_time, end_time, thread_time))
+    return;
+
+  MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time,
+                                         thread_time);
 
   MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
   base::TimeDelta duration = end_time - start_time;
-  if (duration > kLongTaskDiscardingThreshold)
-    return;
 
   // Discard anomalously long idle periods.
   if (last_reported_task_ && start_time - last_reported_task_.value() >

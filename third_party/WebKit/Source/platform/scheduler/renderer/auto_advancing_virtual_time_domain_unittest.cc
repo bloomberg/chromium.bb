@@ -31,10 +31,9 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
 
-    scheduler_helper_.reset(
-        new WorkerSchedulerHelper(CreateTaskQueueManagerWithUnownedClockForTest(
-                                      nullptr, mock_task_runner_, &clock_),
-                                  nullptr));
+    scheduler_helper_.reset(new WorkerSchedulerHelper(
+        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        nullptr));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();

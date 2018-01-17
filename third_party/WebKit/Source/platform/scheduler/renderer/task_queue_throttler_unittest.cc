@@ -80,9 +80,8 @@ class TaskQueueThrottlerTest : public ::testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    scheduler_.reset(
-        new RendererSchedulerImpl(CreateTaskQueueManagerWithUnownedClockForTest(
-            nullptr, mock_task_runner_, clock_.get())));
+    scheduler_.reset(new RendererSchedulerImpl(CreateTaskQueueManagerForTest(
+        nullptr, mock_task_runner_, clock_.get())));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameThrottleable);

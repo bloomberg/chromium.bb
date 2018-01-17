@@ -197,7 +197,7 @@ class BaseIdleHelperTest : public ::testing::Test {
                          : new cc::OrderedSimpleTaskRunner(&clock_, false)),
         message_loop_(message_loop),
         scheduler_helper_(new WorkerSchedulerHelper(
-            CreateTaskQueueManagerWithUnownedClockForTest(
+            CreateTaskQueueManagerForTest(
                 message_loop,
                 message_loop ? message_loop->task_runner() : mock_task_runner_,
                 &clock_),

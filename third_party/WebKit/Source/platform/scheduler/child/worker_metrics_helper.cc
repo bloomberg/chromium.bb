@@ -12,11 +12,17 @@ WorkerMetricsHelper::WorkerMetricsHelper()
 
 WorkerMetricsHelper::~WorkerMetricsHelper() {}
 
-void WorkerMetricsHelper::RecordTaskMetrics(WorkerTaskQueue* queue,
-                                            const TaskQueue::Task& task,
-                                            base::TimeTicks start_time,
-                                            base::TimeTicks end_time) {
-  MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time);
+void WorkerMetricsHelper::RecordTaskMetrics(
+    WorkerTaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    base::Optional<base::TimeDelta> thread_time) {
+  if (ShouldDiscardTask(queue, task, start_time, end_time, thread_time))
+    return;
+
+  MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time,
+                                         thread_time);
 }
 
 }  // namespace scheduler

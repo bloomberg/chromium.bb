@@ -37,9 +37,10 @@ void CompositorWorkerScheduler::OnTaskCompleted(
     WorkerTaskQueue* worker_task_queue,
     const TaskQueue::Task& task,
     base::TimeTicks start,
-    base::TimeTicks end) {
+    base::TimeTicks end,
+    base::Optional<base::TimeDelta> thread_time) {
   compositor_metrics_helper_.RecordTaskMetrics(worker_task_queue, task, start,
-                                               end);
+                                               end, thread_time);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

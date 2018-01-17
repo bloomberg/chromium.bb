@@ -17,6 +17,8 @@ class TaskQueueManagerForTest : public TaskQueueManager {
   explicit TaskQueueManagerForTest(
       std::unique_ptr<internal::ThreadController> thread_controller)
       : TaskQueueManager(std::move(thread_controller)) {}
+
+  using TaskQueueManager::SetRandomSeed;
 };
 
 class ThreadControllerForTest : public internal::ThreadControllerImpl {
@@ -47,21 +49,18 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
 
 }  // namespace
 
-std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerWithUnownedClockForTest(
-    base::MessageLoop* message_loop,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::SimpleTestTickClock* clock) {
-  return CreateTaskQueueManagerForTest(message_loop, std::move(task_runner),
-                                       clock);
-}
-
 std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerForTest(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::TickClock* clock) {
-  return std::make_unique<TaskQueueManagerForTest>(
-      std::make_unique<ThreadControllerForTest>(message_loop,
-                                                std::move(task_runner), clock));
+    base::TickClock* clock,
+    base::Optional<uint64_t> random_seed) {
+  std::unique_ptr<TaskQueueManagerForTest> task_queue_manager =
+      std::make_unique<TaskQueueManagerForTest>(
+          std::make_unique<ThreadControllerForTest>(
+              message_loop, std::move(task_runner), clock));
+  if (random_seed)
+    task_queue_manager->SetRandomSeed(random_seed.value());
+  return task_queue_manager;
 }
 
 }  // namespace scheduler

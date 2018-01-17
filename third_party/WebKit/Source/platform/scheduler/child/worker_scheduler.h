@@ -39,7 +39,8 @@ class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
   virtual void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                                const TaskQueue::Task& task,
                                base::TimeTicks start,
-                               base::TimeTicks end) = 0;
+                               base::TimeTicks end,
+                               base::Optional<base::TimeDelta> thread_time) = 0;
 
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 

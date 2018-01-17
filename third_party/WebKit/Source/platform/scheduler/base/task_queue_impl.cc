@@ -962,11 +962,14 @@ void TaskQueueImpl::SetOnTaskCompletedHandler(
   main_thread_only().on_task_completed_handler = std::move(handler);
 }
 
-void TaskQueueImpl::OnTaskCompleted(const TaskQueue::Task& task,
-                                    base::TimeTicks start,
-                                    base::TimeTicks end) {
+void TaskQueueImpl::OnTaskCompleted(
+    const TaskQueue::Task& task,
+    base::TimeTicks start,
+    base::TimeTicks end,
+    base::Optional<base::TimeDelta> thread_time) {
   if (!main_thread_only().on_task_completed_handler.is_null())
-    main_thread_only().on_task_completed_handler.Run(task, start, end);
+    main_thread_only().on_task_completed_handler.Run(task, start, end,
+                                                     thread_time);
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {

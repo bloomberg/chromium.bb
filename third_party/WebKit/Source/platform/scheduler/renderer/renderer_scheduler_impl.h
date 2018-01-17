@@ -293,7 +293,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnTaskCompleted(MainThreadTaskQueue* queue,
                        const TaskQueue::Task& task,
                        base::TimeTicks start,
-                       base::TimeTicks end);
+                       base::TimeTicks end,
+                       base::Optional<base::TimeDelta> thread_time);
 
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
