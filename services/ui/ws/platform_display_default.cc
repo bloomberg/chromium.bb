@@ -19,6 +19,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/stub/stub_window.h"
 
 #if defined(OS_WIN)
 #include "ui/platform_window/win/win_window.h"
@@ -72,23 +73,26 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   const gfx::Rect& bounds = metrics_.bounds_in_pixels;
   DCHECK(!bounds.size().IsEmpty());
 
+  // Use StubWindow for virtual unified displays, like AshWindowTreeHostUnified.
+  if (delegate_->GetDisplay().id() == display::kUnifiedDisplayId) {
+    platform_window_ = std::make_unique<ui::StubWindow>(this, true, bounds);
+  } else {
 #if defined(OS_WIN)
-  platform_window_ = std::make_unique<ui::WinWindow>(this, bounds);
+    platform_window_ = std::make_unique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11)
-  platform_window_ = std::make_unique<ui::X11Window>(this, bounds);
+    platform_window_ = std::make_unique<ui::X11Window>(this, bounds);
 #elif defined(OS_ANDROID)
-  platform_window_ = std::make_unique<ui::PlatformWindowAndroid>(this);
-  platform_window_->SetBounds(bounds);
+    platform_window_ = std::make_unique<ui::PlatformWindowAndroid>(this);
+    platform_window_->SetBounds(bounds);
 #elif defined(USE_OZONE)
-  platform_window_ =
-      delegate_->GetOzonePlatform()->CreatePlatformWindow(this, bounds);
+    platform_window_ =
+        delegate_->GetOzonePlatform()->CreatePlatformWindow(this, bounds);
 #else
-  NOTREACHED() << "Unsupported platform";
+    NOTREACHED() << "Unsupported platform";
 #endif
+  }
 
-  // Show the platform window, unless it's the virtual unified display window.
-  if (delegate_->GetDisplay().id() != display::kUnifiedDisplayId)
-    platform_window_->Show();
+  platform_window_->Show();
   if (image_cursors_) {
     image_cursors_->SetDisplay(delegate_->GetDisplay(),
                                metrics_.device_scale_factor);

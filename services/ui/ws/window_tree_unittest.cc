@@ -1814,8 +1814,7 @@ TEST_F(WindowTreeManualDisplayTest, MoveDisplayRootToNewDisplay) {
   EXPECT_EQ(1u, WindowManagerStateTestApi(window_manager_state)
                     .window_manager_display_roots()
                     .size());
-  // The display itself is not destroyed when the root window is destroyed.
-  EXPECT_TRUE(window_server()->display_manager()->GetDisplayById(display1_id));
+  EXPECT_FALSE(window_server()->display_manager()->GetDisplayById(display1_id));
   EXPECT_TRUE(window_server()->display_manager()->GetDisplayById(display2_id));
 
   // Delete the root, which should delete the WindowManagerDisplayRoot.
@@ -1966,13 +1965,13 @@ TEST_F(WindowTreeManualDisplayTest,
       kDisplay2ScaleFactor,
       static_cast<TestPlatformDisplay*>(platform_display2)->cursor_scale());
 
-  // Delete the second display's root, no notification should be sent.
+  // Delete the second display, no notification should be sent.
   EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id2));
   RunUntilIdle();
   EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
-  EXPECT_TRUE(display_manager->GetDisplayById(display_id2));
+  EXPECT_FALSE(display_manager->GetDisplayById(display_id2));
 
-  // Set the config back to only the first, this deletes the display.
+  // Set the config back to only the first.
   displays.clear();
   displays.push_back(display1);
 
@@ -1984,7 +1983,6 @@ TEST_F(WindowTreeManualDisplayTest,
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display_id1),
             display_manager_observer.GetAndClearObserverCalls());
-  EXPECT_FALSE(display_manager->GetDisplayById(display_id2));
 
   // The display list should not have display2.
   display::DisplayList& display_list =

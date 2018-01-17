@@ -40,19 +40,19 @@ NightLightController* GetController() {
 // Tests that the display color matrices of all compositors correctly correspond
 // to the given |expected_temperature|.
 void TestCompositorsTemperature(float expected_temperature) {
-  for (auto* root_window_controller :
-       RootWindowController::root_window_controllers()) {
-    ui::Compositor* compositor =
-        root_window_controller->GetHost()->compositor();
-    const SkMatrix44& matrix = compositor->display_color_matrix();
-    const float blue_scale = matrix.get(2, 2);
-    const float green_scale = matrix.get(1, 1);
-    EXPECT_FLOAT_EQ(
-        expected_temperature,
-        NightLightController::TemperatureFromBlueColorScale(blue_scale));
-    EXPECT_FLOAT_EQ(
-        expected_temperature,
-        NightLightController::TemperatureFromGreenColorScale(green_scale));
+  for (auto* controller : RootWindowController::root_window_controllers()) {
+    ui::Compositor* compositor = controller->GetHost()->compositor();
+    if (compositor) {
+      const SkMatrix44& matrix = compositor->display_color_matrix();
+      const float blue_scale = matrix.get(2, 2);
+      const float green_scale = matrix.get(1, 1);
+      EXPECT_FLOAT_EQ(
+          expected_temperature,
+          NightLightController::TemperatureFromBlueColorScale(blue_scale));
+      EXPECT_FLOAT_EQ(
+          expected_temperature,
+          NightLightController::TemperatureFromGreenColorScale(green_scale));
+    }
   }
 }
 

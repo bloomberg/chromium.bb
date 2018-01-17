@@ -416,7 +416,7 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   host_info->ash_host->PrepareForShutdown();
   // TODO: |reflector_| should always be non-null here, but isn't in MUS yet
   // because of http://crbug.com/601869.
-  if (reflector_)
+  if (reflector_ && host_info->mirror_window->layer()->GetCompositor())
     reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
 
   // EventProcessor may be accessed after this call if the mirroring window
