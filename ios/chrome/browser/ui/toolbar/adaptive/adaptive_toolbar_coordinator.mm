@@ -78,10 +78,6 @@
   // TODO(crbug.com/801083): Implement that.
 }
 
-- (void)navigateToMemexTabSwitcher {
-  // TODO(crbug.com/799601): Delete this once it is not needed.
-}
-
 #pragma mark - Protected
 
 - (ToolbarButtonFactory*)buttonFactoryWithType:(ToolbarType)type {

@@ -78,12 +78,6 @@
   }
 }
 
-- (void)navigateToMemexTabSwitcher {
-  for (id<ToolbarCommands> coordinator in self.coordinators) {
-    [coordinator navigateToMemexTabSwitcher];
-  }
-}
-
 #pragma mark - ToolsMenuPresentationStateProvider
 
 - (BOOL)isShowingToolsMenu {

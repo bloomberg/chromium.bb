@@ -37,9 +37,6 @@
 - (void)updateToolbarForSideSwipeSnapshot:(Tab*)tab;
 // Remove any formatting added by -updateToolbarForSideSwipeSnapshot.
 - (void)resetToolbarAfterSideSwipeSnapshot;
-// Navigates to the Memex tab switcher.
-// TODO(crbug.com/799601): Delete this once its not needed.
-- (void)navigateToMemexTabSwitcher;
 // WebToolbarDelegate delegate.
 @property(nonatomic, weak) id<WebToolbarDelegate> delegate;
 // Convenience getter for the UIViewController.
