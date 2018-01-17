@@ -43,15 +43,16 @@ class MIDI_EXPORT TaskService final {
   // Checks if the current thread belongs to the specified runner.
   bool IsOnTaskRunner(RunnerId runner_id);
 
-  // Posts a task to run on a specified TaskRunner. |runner_id| should be
-  // kDefaultRunnerId or a positive number. If kDefaultRunnerId is specified
-  // the task runs on the thread on which BindInstance() is called. Other number
-  // will run the task on a dedicated thread that is bound to the |runner_id|.
+  // Posts a task to run on a specified TaskRunner. |runner_id| should be a
+  // positive number that represents a dedicated thread on that |task| will run.
+  // |task| will run even without a bound instance.
   void PostStaticTask(RunnerId runner_id, base::OnceClosure task);
 
   // Posts a task to run on a specified TaskRunner, and ensures that the bound
   // instance should not quit UnbindInstance() while a bound task is running.
-  // See PostStaticTask() for |runner_id|.
+  // |runner_id| should be |kDefaultRunnerId| or a positive number. If
+  // |kDefaultRunnerId| is specified, the task runs on the thread on which
+  // BindInstance() was called.
   void PostBoundTask(RunnerId runner, base::OnceClosure task);
   void PostBoundDelayedTask(RunnerId runner_id,
                             base::OnceClosure task,

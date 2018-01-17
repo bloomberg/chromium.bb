@@ -6,11 +6,12 @@
 
 #pragma warning(disable : 4467)
 
-#include <initguid.h>  // Required by <devpkey.h>
+#include <windows.h>
 
 #include <cfgmgr32.h>
 #include <comdef.h>
 #include <devpkey.h>
+#include <initguid.h>
 #include <objbase.h>
 #include <robuffer.h>
 #include <windows.devices.enumeration.h>
@@ -24,16 +25,14 @@
 
 #include "base/bind.h"
 #include "base/scoped_generic.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/winrt_storage_util.h"
-#include "media/midi/midi_scheduler.h"
+#include "media/midi/midi_service.h"
+#include "media/midi/task_service.h"
 
 namespace midi {
 namespace {
@@ -49,6 +48,11 @@ using base::win::ScopedHString;
 using base::win::GetActivationFactory;
 using mojom::PortState;
 using mojom::Result;
+
+enum {
+  kDefaultRunnerNotUsedOnWinrt = TaskService::kDefaultRunnerId,
+  kComTaskRunner
+};
 
 // Helpers for printing HRESULTs.
 struct PrintHr {
@@ -212,15 +216,16 @@ template <typename InterfaceType,
           base::char16 const* runtime_class_id>
 class MidiManagerWinrt::MidiPortManager {
  public:
-  // MidiPortManager instances should be constructed on the COM thread.
+  // MidiPortManager instances should be constructed on the kComTaskRunner.
   MidiPortManager(MidiManagerWinrt* midi_manager)
-      : midi_manager_(midi_manager),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      : midi_service_(midi_manager->service()), midi_manager_(midi_manager) {}
 
-  virtual ~MidiPortManager() { DCHECK(thread_checker_.CalledOnValidThread()); }
+  virtual ~MidiPortManager() {
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
+  }
 
   bool StartWatcher() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
 
     HRESULT hr = GetActivationFactory<StaticsInterfaceType, runtime_class_id>(
         &midi_port_statics_);
@@ -253,17 +258,18 @@ class MidiManagerWinrt::MidiPortManager {
       return false;
     }
 
-    // Register callbacks to WinRT that post state-modifying jobs back to COM
-    // thread. |weak_ptr| and |task_runner| are captured by lambda callbacks for
-    // posting jobs. Note that WinRT callback arguments should not be passed
-    // outside the callback since the pointers may be unavailable afterwards.
-    base::WeakPtr<MidiPortManager> weak_ptr = GetWeakPtrFromFactory();
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner = task_runner_;
+    // Register callbacks to WinRT that post state-modifying tasks back to
+    // kComTaskRunner. All posted tasks run only during the MidiPortManager
+    // instance is alive. This is ensured by MidiManagerWinrt by calling
+    // UnbindInstance() before destructing any MidiPortManager instance. Thus
+    // we can handle raw pointers safely in the following blocks.
+    MidiPortManager* port_manager = this;
+    TaskService* task_service = midi_service_->task_service();
 
     hr = watcher_->add_Added(
         WRL::Callback<ITypedEventHandler<DeviceWatcher*, DeviceInformation*>>(
-            [weak_ptr, task_runner](IDeviceWatcher* watcher,
-                                    IDeviceInformation* info) {
+            [port_manager, task_service](IDeviceWatcher* watcher,
+                                         IDeviceInformation* info) {
               if (!info) {
                 VLOG(1) << "DeviceWatcher.Added callback provides null "
                            "pointer, ignoring";
@@ -278,9 +284,10 @@ class MidiManagerWinrt::MidiPortManager {
               std::string dev_id = GetIdString(info),
                           dev_name = GetNameString(info);
 
-              task_runner->PostTask(
-                  FROM_HERE, base::BindOnce(&MidiPortManager::OnAdded, weak_ptr,
-                                            dev_id, dev_name));
+              task_service->PostBoundTask(
+                  kComTaskRunner, base::BindOnce(&MidiPortManager::OnAdded,
+                                                 base::Unretained(port_manager),
+                                                 dev_id, dev_name));
 
               return S_OK;
             })
@@ -293,12 +300,12 @@ class MidiManagerWinrt::MidiPortManager {
 
     hr = watcher_->add_EnumerationCompleted(
         WRL::Callback<ITypedEventHandler<DeviceWatcher*, IInspectable*>>(
-            [weak_ptr, task_runner](IDeviceWatcher* watcher,
-                                    IInspectable* insp) {
-              task_runner->PostTask(
-                  FROM_HERE,
+            [port_manager, task_service](IDeviceWatcher* watcher,
+                                         IInspectable* insp) {
+              task_service->PostBoundTask(
+                  kComTaskRunner,
                   base::BindOnce(&MidiPortManager::OnEnumerationCompleted,
-                                 weak_ptr));
+                                 base::Unretained(port_manager)));
 
               return S_OK;
             })
@@ -312,8 +319,8 @@ class MidiManagerWinrt::MidiPortManager {
     hr = watcher_->add_Removed(
         WRL::Callback<
             ITypedEventHandler<DeviceWatcher*, DeviceInformationUpdate*>>(
-            [weak_ptr, task_runner](IDeviceWatcher* watcher,
-                                    IDeviceInformationUpdate* update) {
+            [port_manager, task_service](IDeviceWatcher* watcher,
+                                         IDeviceInformationUpdate* update) {
               if (!update) {
                 VLOG(1) << "DeviceWatcher.Removed callback provides null "
                            "pointer, ignoring";
@@ -322,9 +329,10 @@ class MidiManagerWinrt::MidiPortManager {
 
               std::string dev_id = GetIdString(update);
 
-              task_runner->PostTask(FROM_HERE,
-                                    base::BindOnce(&MidiPortManager::OnRemoved,
-                                                   weak_ptr, dev_id));
+              task_service->PostBoundTask(
+                  kComTaskRunner,
+                  base::BindOnce(&MidiPortManager::OnRemoved,
+                                 base::Unretained(port_manager), dev_id));
 
               return S_OK;
             })
@@ -373,7 +381,7 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   void StopWatcher() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
 
     HRESULT hr;
 
@@ -415,7 +423,7 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   MidiPort<InterfaceType>* GetPortByDeviceId(std::string dev_id) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     auto it = ports_.find(dev_id);
@@ -425,27 +433,25 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   MidiPort<InterfaceType>* GetPortByIndex(uint32_t port_index) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     return GetPortByDeviceId(port_ids_[port_index]);
   }
 
  protected:
-  // Points to the MidiManagerWinrt instance, which is expected to outlive the
+  // Points to the MidiService instance, which is expected to outlive the
   // MidiPortManager instance.
+  MidiService* midi_service_;
+
+  // Points to the MidiManagerWinrt instance, which is safe to be accessed
+  // from tasks that are invoked by TaskService.
   MidiManagerWinrt* midi_manager_;
-
-  // Task runner of the COM thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // Ensures all methods are called on the COM thread.
-  base::ThreadChecker thread_checker_;
 
  private:
   // DeviceWatcher callbacks:
   void OnAdded(std::string dev_id, std::string dev_name) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     port_names_[dev_id] = dev_name;
@@ -463,20 +469,20 @@ class MidiManagerWinrt::MidiPortManager {
       return;
     }
 
-    base::WeakPtr<MidiPortManager> weak_ptr = GetWeakPtrFromFactory();
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner = task_runner_;
+    MidiPortManager* port_manager = this;
+    TaskService* task_service = midi_service_->task_service();
 
     hr = async_op->put_Completed(
         WRL::Callback<IAsyncOperationCompletedHandler<RuntimeType*>>(
-            [weak_ptr, task_runner](IAsyncOperation<RuntimeType*>* async_op,
-                                    AsyncStatus status) {
+            [port_manager, task_service](
+                IAsyncOperation<RuntimeType*>* async_op, AsyncStatus status) {
               // A reference to |async_op| is kept in |async_ops_|, safe to pass
               // outside.
-              task_runner->PostTask(
-                  FROM_HERE,
+              task_service->PostBoundTask(
+                  kComTaskRunner,
                   base::BindOnce(
-                      &MidiPortManager::OnCompletedGetPortFromIdAsync, weak_ptr,
-                      async_op));
+                      &MidiPortManager::OnCompletedGetPortFromIdAsync,
+                      base::Unretained(port_manager), async_op));
 
               return S_OK;
             })
@@ -491,7 +497,7 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   void OnEnumerationCompleted() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     if (async_ops_.empty())
@@ -501,7 +507,7 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   void OnRemoved(std::string dev_id) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     // Note: in case Microsoft GS Wavetable Synth triggers this event for some
@@ -519,7 +525,7 @@ class MidiManagerWinrt::MidiPortManager {
   }
 
   void OnCompletedGetPortFromIdAsync(IAsyncOperation<RuntimeType*>* async_op) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
     CHECK(is_initialized_);
 
     InterfaceType* handle = nullptr;
@@ -589,10 +595,6 @@ class MidiManagerWinrt::MidiPortManager {
   // Calls midi_manager_->Set{Input,Output}PortState.
   virtual void SetPortState(uint32_t port_index, PortState state) = 0;
 
-  // WeakPtrFactory has to be declared in derived class, use this method to
-  // retrieve upcasted WeakPtr for posting tasks.
-  virtual base::WeakPtr<MidiPortManager> GetWeakPtrFromFactory() = 0;
-
   // Midi{In,Out}PortStatics instance.
   WRL::ComPtr<StaticsInterfaceType> midi_port_statics_;
 
@@ -605,7 +607,7 @@ class MidiManagerWinrt::MidiPortManager {
                          token_Stopped_ = {kInvalidTokenValue},
                          token_Updated_ = {kInvalidTokenValue};
 
-  // All manipulations to these fields should be done on COM thread.
+  // All manipulations to these fields should be done on kComTaskRunner.
   std::unordered_map<std::string, std::unique_ptr<MidiPort<InterfaceType>>>
       ports_;
   std::vector<std::string> port_ids_;
@@ -623,7 +625,7 @@ class MidiManagerWinrt::MidiPortManager {
   bool enumeration_completed_not_ready_ = false;
 
   // Set if the instance is initialized without error. Should be checked in all
-  // methods on COM thread except StartWatcher().
+  // methods on kComTaskRunner except StartWatcher().
   bool is_initialized_ = false;
 };
 
@@ -634,22 +636,22 @@ class MidiManagerWinrt::MidiInPortManager final
                              RuntimeClass_Windows_Devices_Midi_MidiInPort> {
  public:
   MidiInPortManager(MidiManagerWinrt* midi_manager)
-      : MidiPortManager(midi_manager), weak_factory_(this) {}
+      : MidiPortManager(midi_manager) {}
 
  private:
   // MidiPortManager overrides:
   bool RegisterOnMessageReceived(IMidiInPort* handle,
                                  EventRegistrationToken* p_token) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
 
-    base::WeakPtr<MidiInPortManager> weak_ptr = weak_factory_.GetWeakPtr();
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner = task_runner_;
+    MidiInPortManager* port_manager = this;
+    TaskService* task_service = midi_service_->task_service();
 
     HRESULT hr = handle->add_MessageReceived(
         WRL::Callback<
             ITypedEventHandler<MidiInPort*, MidiMessageReceivedEventArgs*>>(
-            [weak_ptr, task_runner](IMidiInPort* handle,
-                                    IMidiMessageReceivedEventArgs* args) {
+            [port_manager, task_service](IMidiInPort* handle,
+                                         IMidiMessageReceivedEventArgs* args) {
               const base::TimeTicks now = base::TimeTicks::Now();
 
               std::string dev_id = GetDeviceIdString(handle);
@@ -678,10 +680,11 @@ class MidiManagerWinrt::MidiInPortManager final
               std::vector<uint8_t> data(p_buffer_data,
                                         p_buffer_data + data_length);
 
-              task_runner->PostTask(
-                  FROM_HERE,
+              task_service->PostBoundTask(
+                  kComTaskRunner,
                   base::BindOnce(&MidiInPortManager::OnMessageReceived,
-                                 weak_ptr, dev_id, data, now));
+                                 base::Unretained(port_manager), dev_id, data,
+                                 now));
 
               return S_OK;
             })
@@ -712,26 +715,17 @@ class MidiManagerWinrt::MidiInPortManager final
     midi_manager_->SetInputPortState(port_index, state);
   }
 
-  base::WeakPtr<MidiPortManager> GetWeakPtrFromFactory() final {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    return weak_factory_.GetWeakPtr();
-  }
-
   // Callback on receiving MIDI input message.
   void OnMessageReceived(std::string dev_id,
                          std::vector<uint8_t> data,
                          base::TimeTicks time) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(midi_service_->task_service()->IsOnTaskRunner(kComTaskRunner));
 
     MidiPort<IMidiInPort>* port = GetPortByDeviceId(dev_id);
     CHECK(port);
 
     midi_manager_->ReceiveMidiData(port->index, &data[0], data.size(), time);
   }
-
-  // Last member to ensure destructed first.
-  base::WeakPtrFactory<MidiInPortManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiInPortManager);
 };
@@ -743,7 +737,7 @@ class MidiManagerWinrt::MidiOutPortManager final
                              RuntimeClass_Windows_Devices_Midi_MidiOutPort> {
  public:
   MidiOutPortManager(MidiManagerWinrt* midi_manager)
-      : MidiPortManager(midi_manager), weak_factory_(this) {}
+      : MidiPortManager(midi_manager) {}
 
  private:
   // MidiPortManager overrides:
@@ -753,65 +747,80 @@ class MidiManagerWinrt::MidiOutPortManager final
     midi_manager_->SetOutputPortState(port_index, state);
   }
 
-  base::WeakPtr<MidiPortManager> GetWeakPtrFromFactory() final {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // Last member to ensure destructed first.
-  base::WeakPtrFactory<MidiOutPortManager> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(MidiOutPortManager);
 };
 
+namespace {
+
+// FinalizeOnComRunner() run on kComTaskRunner even after the MidiManager
+// instance destruction.
+void FinalizeOnComRunner(
+    std::unique_ptr<MidiManagerWinrt::MidiInPortManager> port_manager_in,
+    std::unique_ptr<MidiManagerWinrt::MidiOutPortManager> port_manager_out) {
+  if (port_manager_in)
+    port_manager_in->StopWatcher();
+
+  if (port_manager_out)
+    port_manager_out->StopWatcher();
+}
+
+}  // namespace
+
 MidiManagerWinrt::MidiManagerWinrt(MidiService* service)
-    : MidiManager(service), com_thread_("Windows MIDI COM Thread") {}
+    : MidiManager(service) {}
 
 MidiManagerWinrt::~MidiManagerWinrt() {
   base::AutoLock auto_lock(lazy_init_member_lock_);
 
-  CHECK(!com_thread_checker_);
   CHECK(!port_manager_in_);
   CHECK(!port_manager_out_);
-  CHECK(!scheduler_);
 }
 
 void MidiManagerWinrt::StartInitialization() {
-  com_thread_.init_com_with_mta(true);
-  com_thread_.Start();
+  bool result = service()->task_service()->BindInstance();
+  DCHECK(result);
 
-  com_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&MidiManagerWinrt::InitializeOnComThread,
-                                base::Unretained(this)));
+  service()->task_service()->PostBoundTask(
+      kComTaskRunner, base::BindOnce(&MidiManagerWinrt::InitializeOnComRunner,
+                                     base::Unretained(this)));
 }
 
 void MidiManagerWinrt::Finalize() {
-  com_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&MidiManagerWinrt::FinalizeOnComThread,
-                                base::Unretained(this)));
+  // Unbind and take a lock to ensure that InitializeOnComRunner should not run
+  // after here.
+  bool result = service()->task_service()->UnbindInstance();
+  DCHECK(result);
 
-  // Blocks until FinalizeOnComThread() returns. Delayed MIDI send data tasks
-  // will be ignored.
-  com_thread_.Stop();
+  base::AutoLock auto_lock(lazy_init_member_lock_);
+
+  service()->task_service()->PostStaticTask(
+      kComTaskRunner,
+      base::BindOnce(&FinalizeOnComRunner, std::move(port_manager_in_),
+                     std::move(port_manager_out_)));
 }
 
 void MidiManagerWinrt::DispatchSendMidiData(MidiManagerClient* client,
                                             uint32_t port_index,
                                             const std::vector<uint8_t>& data,
                                             double timestamp) {
-  CHECK(scheduler_);
-
-  scheduler_->PostSendDataTask(
-      client, data.size(), timestamp,
-      base::BindOnce(&MidiManagerWinrt::SendOnComThread, base::Unretained(this),
-                     port_index, data));
+  base::TimeDelta delay = MidiService::TimestampToTimeDeltaDelay(timestamp);
+  service()->task_service()->PostBoundDelayedTask(
+      kComTaskRunner,
+      base::BindOnce(&MidiManagerWinrt::SendOnComRunner, base::Unretained(this),
+                     port_index, data),
+      delay);
+  service()->task_service()->PostBoundDelayedTask(
+      kComTaskRunner,
+      base::BindOnce(&MidiManagerWinrt::AccumulateMidiBytesSent,
+                     base::Unretained(this), client, data.size()),
+      delay);
 }
 
-void MidiManagerWinrt::InitializeOnComThread() {
+void MidiManagerWinrt::InitializeOnComRunner() {
   base::AutoLock auto_lock(lazy_init_member_lock_);
 
-  com_thread_checker_.reset(new base::ThreadChecker);
+  DCHECK(service()->task_service()->IsOnTaskRunner(kComTaskRunner));
+
   bool preload_success = base::win::ResolveCoreWinRTDelayload() &&
                          ScopedHString::ResolveCoreWinRTStringDelayload();
   if (!preload_success) {
@@ -822,8 +831,6 @@ void MidiManagerWinrt::InitializeOnComThread() {
   port_manager_in_.reset(new MidiInPortManager(this));
   port_manager_out_.reset(new MidiOutPortManager(this));
 
-  scheduler_.reset(new MidiScheduler(this));
-
   if (!(port_manager_in_->StartWatcher() &&
         port_manager_out_->StartWatcher())) {
     port_manager_in_->StopWatcher();
@@ -832,29 +839,9 @@ void MidiManagerWinrt::InitializeOnComThread() {
   }
 }
 
-void MidiManagerWinrt::FinalizeOnComThread() {
-  base::AutoLock auto_lock(lazy_init_member_lock_);
-
-  DCHECK(com_thread_checker_->CalledOnValidThread());
-
-  scheduler_.reset();
-
-  if (port_manager_in_) {
-    port_manager_in_->StopWatcher();
-    port_manager_in_.reset();
-  }
-
-  if (port_manager_out_) {
-    port_manager_out_->StopWatcher();
-    port_manager_out_.reset();
-  }
-
-  com_thread_checker_.reset();
-}
-
-void MidiManagerWinrt::SendOnComThread(uint32_t port_index,
+void MidiManagerWinrt::SendOnComRunner(uint32_t port_index,
                                        const std::vector<uint8_t>& data) {
-  DCHECK(com_thread_checker_->CalledOnValidThread());
+  DCHECK(service()->task_service()->IsOnTaskRunner(kComTaskRunner));
 
   MidiPort<IMidiOutPort>* port = port_manager_out_->GetPortByIndex(port_index);
   if (!(port && port->handle)) {
@@ -878,7 +865,7 @@ void MidiManagerWinrt::SendOnComThread(uint32_t port_index,
 }
 
 void MidiManagerWinrt::OnPortManagerReady() {
-  DCHECK(com_thread_checker_->CalledOnValidThread());
+  DCHECK(service()->task_service()->IsOnTaskRunner(kComTaskRunner));
   DCHECK(port_manager_ready_count_ < 2);
 
   if (++port_manager_ready_count_ == 2)

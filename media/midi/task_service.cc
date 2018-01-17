@@ -18,6 +18,8 @@ constexpr TaskService::InstanceId kInvalidInstanceId = -1;
 
 }  // namespace
 
+constexpr TaskService::RunnerId TaskService::kDefaultRunnerId;
+
 TaskService::TaskService()
     : no_tasks_in_flight_cv_(&tasks_in_flight_lock_),
       tasks_in_flight_(0),
@@ -90,14 +92,7 @@ bool TaskService::IsOnTaskRunner(RunnerId runner_id) {
 }
 
 void TaskService::PostStaticTask(RunnerId runner_id, base::OnceClosure task) {
-  {
-    // Disallow to post a task when no instance is bound, so that new threads
-    // can not be created after the thread finalization in the destructor.
-    base::AutoLock lock(lock_);
-    if (bound_instance_id_ == kInvalidInstanceId)
-      return;
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> runner;
+  DCHECK_NE(kDefaultRunnerId, runner_id);
   GetTaskRunner(runner_id)->PostTask(FROM_HERE, std::move(task));
 }
 

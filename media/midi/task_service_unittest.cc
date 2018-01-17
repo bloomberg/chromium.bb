@@ -197,6 +197,12 @@ TEST_F(MidiTaskServiceTest, RunStaticTask) {
   // Should be able to unbind the instance to process a static task.
   EXPECT_TRUE(client->Unbind());
   WaitEvent();
+
+  ResetEvent();
+
+  // Should be able to post a static task without a bound instance.
+  task_service()->PostStaticTask(kFirstRunner, base::BindOnce(&SignalEvent));
+  WaitEvent();
 }
 
 // Tests functionalities to run bound tasks.
