@@ -8,12 +8,12 @@
     <script src="../resources/testharnessreport.js"></script>
     <script src="resources/audit-util.js"></script>
     <script src="resources/audit.js"></script>
-    <script src="resources/biquad-testing.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
+      let context;
       let otherContext;
       let node;
       let node2;
@@ -459,36 +459,50 @@
         task.done();
       });
 
-      audit.define('offline-audio-context', (task, should) => {
-        // OfflineAudioContext
-        // Max supported channels
-        should(
-            () => new OfflineAudioContext(32, 100, context.sampleRate),
-            'new OfflineAudioContext(32, 100, context.sampleRate)')
-            .notThrow();
-        // Invalid number of channels
-        should(
-            () => new OfflineAudioContext(0, 100, context.sampleRate),
-            'new OfflineAudioContext(0, 100, context.sampleRate)')
-            .throw('NotSupportedError');
-        should(
-            () => new OfflineAudioContext(99, 100, context.sampleRate),
-            'new OfflineAudioContext(99, 100, context.sampleRate)')
-            .throw('NotSupportedError');
-        // Invalid sample rate.
-        should(
-            () => new OfflineAudioContext(1, 100, 1),
-            'new OfflineAudioContext(1, 100, 1)')
-            .throw('NotSupportedError');
-        should(
-            () => new OfflineAudioContext(1, 100, 1e6),
-            'new OfflineAudioContext(1, 100, 1e6)')
-            .throw('NotSupportedError');
-        should(
-            () => new OfflineAudioContext(1, 0, 44100),
-            'new OfflineAudioContext(1, 0, 44100)')
-            .throw('NotSupportedError');
+      audit.define(
+          {label: 'offline-audio-context', description: 'supports 32 channels'},
+          (task, should) => {
+            // OfflineAudioContext
+            // Max supported channels
+            should(
+                () => new OfflineAudioContext(32, 100, context.sampleRate),
+                'new OfflineAudioContext(32, 100, context.sampleRate)')
+                .notThrow();
+            task.done();
+          });
 
+      audit.define(
+          {
+            label: 'invalid-offline-audio-context-parameters',
+            description: 'errors for invalid channel counts'
+          },
+          (task, should) => {
+            // Invalid number of channels
+            should(
+                () => new OfflineAudioContext(0, 100, context.sampleRate),
+                'new OfflineAudioContext(0, 100, context.sampleRate)')
+                .throw('NotSupportedError');
+            should(
+                () => new OfflineAudioContext(99, 100, context.sampleRate),
+                'new OfflineAudioContext(99, 100, context.sampleRate)')
+                .throw('NotSupportedError');
+            // Invalid sample rate.
+            should(
+                () => new OfflineAudioContext(1, 100, 1),
+                'new OfflineAudioContext(1, 100, 1)')
+                .throw('NotSupportedError');
+            should(
+                () => new OfflineAudioContext(1, 100, 1e6),
+                'new OfflineAudioContext(1, 100, 1e6)')
+                .throw('NotSupportedError');
+            should(
+                () => new OfflineAudioContext(1, 0, 44100),
+                'new OfflineAudioContext(1, 0, 44100)')
+                .throw('NotSupportedError');
+            task.done();
+          });
+
+      audit.define('invalid-frame-length', (task, should) => {
         // Invalid frame length (crbug.com/351277)
         let testContext;
 
@@ -712,6 +726,8 @@
         // Convolver buffer rate must match context rate. Create on offline
         // context so we specify the context rate exactly, in case the test is
         // run on platforms with different HW sample rates.
+        let oc;
+
         should(
             () => oc = new OfflineAudioContext(1, 44100, 44100),
             'oc = new OfflineAudioContext(1, 44100, 44100)')
