@@ -72,16 +72,16 @@ void SVGForeignObjectElement::CollectStyleForPresentationAttribute(
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == width_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
-                                            width_->CssValue());
+                                            &width_->CssValue());
   } else if (property == height_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
-                                            height_->CssValue());
+                                            &height_->CssValue());
   } else if (property == x_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
-                                            x_->CssValue());
+                                            &x_->CssValue());
   } else if (property == y_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
-                                            y_->CssValue());
+                                            &y_->CssValue());
   } else {
     SVGGraphicsElement::CollectStyleForPresentationAttribute(name, value,
                                                              style);
