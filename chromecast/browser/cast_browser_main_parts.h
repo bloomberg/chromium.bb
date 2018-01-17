@@ -12,13 +12,21 @@
 #include "base/metrics/field_trial.h"
 #include "build/buildflag.h"
 #include "chromecast/chromecast_features.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+
+class PrefService;
 
 namespace base {
 class SingleThreadTaskRunner;
 class Thread;
 }  // namespace base
+
+namespace extensions {
+class ExtensionsClient;
+class ExtensionsBrowserClient;
+}  // namespace extensions
 
 namespace net {
 class NetLog;
@@ -60,6 +68,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 #endif
   media::MediaCapsImpl* media_caps();
+  content::BrowserContext* browser_context();
 
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopStart() override;
@@ -96,6 +105,14 @@ class CastBrowserMainParts : public content::BrowserMainParts {
       media_pipeline_backend_manager_;
 
   std::unique_ptr<CastMemoryPressureMonitor> memory_pressure_monitor_;
+#endif
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  std::unique_ptr<extensions::ExtensionsClient> extensions_client_;
+  std::unique_ptr<extensions::ExtensionsBrowserClient>
+      extensions_browser_client_;
+  std::unique_ptr<PrefService> local_state_;
+  std::unique_ptr<PrefService> user_pref_service_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);

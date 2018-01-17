@@ -98,6 +98,12 @@
 #include "chromecast/media/audio/cast_audio_manager_alsa.h"  // nogncheck
 #endif  // defined(USE_ALSA)
 
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "extensions/browser/extension_message_filter.h"  // nogncheck
+#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"  // nogncheck
+#include "extensions/browser/io_thread_extension_message_filter.h"  // nogncheck
+#endif
+
 namespace chromecast {
 namespace shell {
 
@@ -316,6 +322,18 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   // support.
   host->AddFilter(new cdm::CdmMessageFilterAndroid(true, true));
 #endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  int render_process_id = host->GetID();
+  content::BrowserContext* browser_context =
+      cast_browser_main_parts_->browser_context();
+  host->AddFilter(new extensions::ExtensionMessageFilter(render_process_id,
+                                                         browser_context));
+  host->AddFilter(new extensions::IOThreadExtensionMessageFilter(
+      render_process_id, browser_context));
+  host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
+      render_process_id, browser_context));
+#endif
 }
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(

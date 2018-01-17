@@ -10,7 +10,18 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/renderer/content_renderer_client.h"
+
+#if defined(CHROMECAST_BUILD)
+#include <string>
+#endif
+
+namespace extensions {
+class ExtensionsClient;
+class ExtensionsGuestViewContainerDispatcher;
+class CastExtensionsRendererClient;
+}  // namespace extensions
 
 namespace network_hints {
 class PrescientNetworkingDispatcher;
@@ -36,6 +47,13 @@ class CastContentRendererClient : public content::ContentRendererClient {
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;
   void RenderViewCreated(content::RenderView* render_view) override;
+  void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+      content::RenderFrame* render_frame,
+      const std::string& mime_type,
+      const GURL& original_url) override;
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>*
           key_systems_properties) override;
@@ -62,6 +80,14 @@ class CastContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
 #if !defined(OS_ANDROID)
   std::unique_ptr<MemoryPressureObserverImpl> memory_pressure_observer_;
+#endif
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  std::unique_ptr<extensions::ExtensionsClient> extensions_client_;
+  std::unique_ptr<extensions::CastExtensionsRendererClient>
+      extensions_renderer_client_;
+  std::unique_ptr<extensions::ExtensionsGuestViewContainerDispatcher>
+      guest_view_container_dispatcher_;
 #endif
 
   const bool allow_hidden_media_playback_;

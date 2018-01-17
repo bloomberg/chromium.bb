@@ -494,6 +494,18 @@ repack("cast_shell_pak") {
     "//ui/strings",
   ]
 
+  if (enable_chromecast_extensions) {
+    sources += [
+      "$root_gen_dir/extensions/extensions_renderer_resources.pak",
+      "$root_gen_dir/extensions/extensions_resources.pak",
+      "$root_gen_dir/extensions/shell/app_shell_resources.pak",
+    ]
+    deps += [
+      "//extensions:extensions_resources",
+      "//extensions/shell:resources",
+    ]
+  }
+
   if (chromecast_branding != "public") {
     sources += [ "$root_gen_dir/chromecast/internal/cast_shell_internal.pak" ]
 
@@ -550,6 +562,7 @@ buildflag_header("chromecast_features") {
     "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",
     "SUPPORTS_MULTIZONE=$supports_multizone",
     "ENABLE_HEADLESS_MUSIC_MODE=$enable_headless_music_mode",
+    "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
   ]
 }
 

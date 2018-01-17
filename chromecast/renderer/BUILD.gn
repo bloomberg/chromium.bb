@@ -26,6 +26,7 @@ cast_source_set("renderer") {
 
   deps = [
     "//base",
+    "//chromecast:chromecast_features",
     "//chromecast/base",
     "//chromecast/common/media",
     "//chromecast/media",
@@ -52,6 +53,19 @@ cast_source_set("renderer") {
     deps += [
       "//chromecast/common:interfaces",
       "//mojo/public/cpp/bindings",
+    ]
+  }
+
+  if (enable_chromecast_extensions) {
+    sources += [
+      "cast_extensions_renderer_client.cc",
+      "cast_extensions_renderer_client.h",
+    ]
+
+    deps += [
+      "//chromecast/common",
+      "//extensions/common",
+      "//extensions/renderer",
     ]
   }
 }
