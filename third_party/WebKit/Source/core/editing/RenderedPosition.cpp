@@ -259,8 +259,7 @@ IntRect RenderedPosition::AbsoluteRect(
 // Convert a local point into the coordinate system of backing coordinates.
 // Also returns the backing layer if needed.
 FloatPoint RenderedPosition::LocalToInvalidationBackingPoint(
-    const LayoutPoint& local_point,
-    GraphicsLayer** graphics_layer_backing) const {
+    const LayoutPoint& local_point) const {
   const LayoutBoxModelObject& paint_invalidation_container =
       layout_object_->ContainerForPaintInvalidation();
   DCHECK(paint_invalidation_container.Layer());
@@ -282,14 +281,22 @@ FloatPoint RenderedPosition::LocalToInvalidationBackingPoint(
   // |paintInvalidationContainer|.
   if (GraphicsLayer* graphics_layer =
           paint_invalidation_container.Layer()->GraphicsLayerBacking(
-              &paint_invalidation_container)) {
-    if (graphics_layer_backing)
-      *graphics_layer_backing = graphics_layer;
-
+              &paint_invalidation_container))
     container_point.Move(-graphics_layer->OffsetFromLayoutObject());
-  }
 
   return container_point;
+}
+
+static GraphicsLayer* GetGraphicsLayerBacking(
+    const LayoutObject& layout_object) {
+  const LayoutBoxModelObject& paint_invalidation_container =
+      layout_object.ContainerForPaintInvalidation();
+  DCHECK(paint_invalidation_container.Layer());
+  if (paint_invalidation_container.Layer()->GetCompositingState() ==
+      kNotComposited)
+    return nullptr;
+  return paint_invalidation_container.Layer()->GraphicsLayerBacking(
+      &paint_invalidation_container);
 }
 
 void RenderedPosition::GetLocalSelectionEndpoints(
@@ -333,10 +340,10 @@ void RenderedPosition::PositionInGraphicsLayerBacking(
     bound.is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
   }
 
-  bound.edge_top_in_layer =
-      LocalToInvalidationBackingPoint(edge_top_in_layer, &bound.layer);
+  bound.edge_top_in_layer = LocalToInvalidationBackingPoint(edge_top_in_layer);
   bound.edge_bottom_in_layer =
-      LocalToInvalidationBackingPoint(edge_bottom_in_layer, nullptr);
+      LocalToInvalidationBackingPoint(edge_bottom_in_layer);
+  bound.layer = GetGraphicsLayerBacking(*layout_object_);
 }
 
 LayoutPoint RenderedPosition::GetSamplePointForVisibility(

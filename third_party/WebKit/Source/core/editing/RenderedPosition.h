@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class GraphicsLayer;
 class LayoutPoint;
 class LayoutUnit;
 class LayoutObject;
@@ -118,8 +117,7 @@ class CORE_EXPORT RenderedPosition {
                                   LayoutPoint& edge_bottom_in_layer) const;
 
   FloatPoint LocalToInvalidationBackingPoint(
-      const LayoutPoint& local_point,
-      GraphicsLayer** graphics_layer_backing) const;
+      const LayoutPoint& local_point) const;
 
   static LayoutPoint GetSamplePointForVisibility(
       const LayoutPoint& edge_top_in_layer,
