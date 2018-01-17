@@ -853,14 +853,14 @@ cr.define('settings_about_page', function() {
         test('Initialization', function() {
           const radioGroup = dialog.$$('paper-radio-group');
           assertTrue(!!radioGroup);
-          assertTrue(!!dialog.$.warning);
+          assertTrue(!!dialog.$.warningSelector);
           assertTrue(!!dialog.$.changeChannel);
           assertTrue(!!dialog.$.changeChannelAndPowerwash);
 
           // Check that upon initialization the radio button corresponding to
           // the current release channel is pre-selected.
           assertEquals(currentChannel, radioGroup.selected);
-          assertTrue(dialog.$.warning.hidden);
+          assertEquals(dialog.$.warningSelector.selected, -1);
 
           // Check that action buttons are hidden when current and target
           // channel are the same.
@@ -875,7 +875,7 @@ cr.define('settings_about_page', function() {
           Polymer.dom.flush();
 
           return browserProxy.whenCalled('getChannelInfo').then(function() {
-            assertFalse(dialog.$.warning.hidden);
+            assertEquals(dialog.$.warningSelector.selected, 2);
             // Check that only the "Change channel" button becomes visible.
             assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
             assertFalse(dialog.$.changeChannel.hidden);
@@ -901,7 +901,7 @@ cr.define('settings_about_page', function() {
           Polymer.dom.flush();
 
           return browserProxy.whenCalled('getChannelInfo').then(function() {
-            assertFalse(dialog.$.warning.hidden);
+            assertEquals(dialog.$.warningSelector.selected, 1);
             // Check that only the "Change channel and Powerwash" button becomes
             // visible.
             assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
