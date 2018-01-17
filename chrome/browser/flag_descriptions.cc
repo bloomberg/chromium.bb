@@ -2839,7 +2839,8 @@ const char kWebVrAutopresentFromIntentDescription[] =
 #if BUILDFLAG(ENABLE_OPENVR)
 const char kOpenVRName[] = "OpenVR hardware support";
 const char kOpenVRDescription[] =
-    "If enabled, Chrome will use OpenVR devices for VR.";
+    "If enabled, Chrome will use OpenVR devices for VR (supported only on "
+    "Windows 10 or later).";
 #endif  // ENABLE_OPENVR
 
 #endif  // ENABLE_VR
