@@ -265,7 +265,7 @@ TEST_F(SingletonTest, Basic) {
     {
       // Resurrect the static singleton, and assert that it
       // still points to the same (static) memory.
-      CallbackSingletonWithStaticTrait::Trait::Resurrect();
+      CallbackSingletonWithStaticTrait::Trait::ResurrectForTesting();
       EXPECT_EQ(GetStaticSingleton(), static_singleton);
     }
   }

@@ -10,7 +10,7 @@
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
+#include "base/lazy_instance_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/scheduler_lock.h"
