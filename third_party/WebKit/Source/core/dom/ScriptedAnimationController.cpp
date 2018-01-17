@@ -86,6 +86,10 @@ void ScriptedAnimationController::CancelCallback(CallbackId id) {
   callback_collection_.CancelCallback(id);
 }
 
+bool ScriptedAnimationController::HasCallback() const {
+  return !callback_collection_.IsEmpty();
+}
+
 void ScriptedAnimationController::RunTasks() {
   Vector<base::OnceClosure> tasks;
   tasks.swap(task_queue_);

@@ -58,6 +58,8 @@ class CORE_EXPORT ScriptedAnimationController
   typedef int CallbackId;
   CallbackId RegisterCallback(FrameRequestCallbackCollection::FrameCallback*);
   void CancelCallback(CallbackId);
+  // Returns true if any callback is currently registered.
+  bool HasCallback() const;
 
   // Animation frame events are used for resize events, scroll events, etc.
   void EnqueueEvent(Event*);
