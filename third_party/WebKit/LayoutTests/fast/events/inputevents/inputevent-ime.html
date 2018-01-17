@@ -290,4 +290,41 @@
       'compositionend: data="hello"',
     ]);
   }, 'unmarkAndUnselectText, too long for input');
+
+  test(() => {
+    checkTextInputController();
+
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+
+    input.value = 'hello';
+    input.focus();
+    input.setSelectionRange(2, 2);
+    resetEventLog();
+
+    textInputController.deleteSurroundingText(1, 1);
+    assert_array_equals(eventLog, [
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+    ]);
+  }, 'deleteSurroundingText, no composition open');
+
+  test(() => {
+    checkTextInputController();
+
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+
+    input.value = 'hello';
+    input.focus();
+    textInputController.setMarkedTextFromExistingText(0, 5);
+    input.setSelectionRange(2, 2);
+    resetEventLog();
+
+    textInputController.deleteSurroundingText(1, 1);
+    assert_array_equals(eventLog, [
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+    ]);
+  }, 'deleteSurroundingText, composition open');
 </script>

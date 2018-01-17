@@ -38,6 +38,7 @@ class TextInputController {
   void UnmarkText();
   void UnmarkAndUnselectText();
   void DoCommand(const std::string& text);
+  void DeleteSurroundingText(int before, int after);
   void SetMarkedText(const std::string& text, int start, int length);
   void SetMarkedTextFromExistingText(int start, int length);
   bool HasMarkedText();
