@@ -219,6 +219,17 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   return false;
 }
 
+static bool IsFirstLeafChild(LayoutObject* container, LayoutObject* child) {
+  while (child && child != container) {
+    LayoutObject* parent = child->Parent();
+    if (parent && child != parent->SlowFirstChild()) {
+      return false;
+    }
+    child = parent;
+  }
+  return true;
+}
+
 bool LayoutListItem::UpdateMarkerLocation() {
   DCHECK(marker_);
 
@@ -241,10 +252,15 @@ bool LayoutListItem::UpdateMarkerLocation() {
     // If the marker is currently contained inside an anonymous box, then we
     // are the only item in that anonymous box (since no line box parent was
     // found). It's ok to just leave the marker where it is in this case.
-    if (marker_parent && marker_parent->IsAnonymousBlock())
+    if (marker_parent && marker_parent->IsAnonymousBlock()) {
       line_box_parent = marker_parent;
-    else
+      // We could use marker_parent as line_box_parent only if marker is the
+      // first leaf child of list item.
+      if (!IsFirstLeafChild(this, marker_parent))
+        line_box_parent = this;
+    } else {
       line_box_parent = this;
+    }
   }
 
   if (marker_parent != line_box_parent) {
