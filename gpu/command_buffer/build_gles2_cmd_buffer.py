@@ -91,7 +91,7 @@ _CAPABILITY_FLAGS = [
    'extension_flag': 'ext_multisample_compatibility'},
 ]
 
-_STATES = {
+_STATE_INFO = {
   'ClearColor': {
     'type': 'Normal',
     'func': 'ClearColor',
@@ -5564,10 +5564,13 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 class StateSetHandler(TypeHandler):
   """Handler for commands that simply set state."""
 
+  def __init__(self, state_info):
+    self.state_info = state_info
+
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     for ndx,item in enumerate(states):
@@ -5612,7 +5615,7 @@ class StateSetHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     TypeHandler.WriteServiceUnitTest(self, func, f, *extras)
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     for ndx,item in enumerate(states):
       if 'range_checks' in item:
@@ -5680,10 +5683,13 @@ TEST_P(%(test_name)s, %(name)sNaNValue%(ndx)d) {
 class StateSetRGBAlphaHandler(TypeHandler):
   """Handler for commands that simply set state that have rgb/alpha."""
 
+  def __init__(self, state_info):
+    self.state_info = state_info
+
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -5713,10 +5719,14 @@ class StateSetRGBAlphaHandler(TypeHandler):
 class StateSetFrontBackSeparateHandler(TypeHandler):
   """Handler for commands that simply set state that have front/back."""
 
+  def __init__(self, state_info):
+    self.state_info = state_info
+
+
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     face = args[0].name
@@ -5757,10 +5767,13 @@ class StateSetFrontBackSeparateHandler(TypeHandler):
 class StateSetFrontBackHandler(TypeHandler):
   """Handler for commands that simply set state that set both front/back."""
 
+  def __init__(self, state_info):
+    self.state_info = state_info
+
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -5791,10 +5804,13 @@ class StateSetFrontBackHandler(TypeHandler):
 class StateSetNamedParameter(TypeHandler):
   """Handler for commands that set a state chosen with an enum parameter."""
 
+  def __init__(self, state_info):
+    self.state_info = state_info
+
   def WriteHandlerImplementation(self, func, f):
     """Overridden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = _STATES[state_name]
+    state = self.state_info[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -8982,13 +8998,13 @@ class SizeNotNegativeArgument(SizeArgument):
 class EnumBaseArgument(Argument):
   """Base class for EnumArgument, IntArgument, and BitfieldArgument."""
 
-  def __init__(self, name, gl_type, arg_type, gl_error):
+  def __init__(self, name, gl_type, arg_type, gl_error, named_type_info):
     Argument.__init__(self, name, gl_type)
 
     self.gl_error = gl_error
-    name = arg_type[len(gl_type):]
-    self.type_name = name
-    self.named_type = NamedType(_NAMED_TYPE_INFO[name])
+    type_name = arg_type[len(gl_type):]
+    self.type_name = type_name
+    self.named_type = NamedType(named_type_info[type_name])
 
   def IsConstant(self):
     return self.named_type.IsConstant()
@@ -9081,8 +9097,9 @@ class EnumBaseArgument(Argument):
 class EnumArgument(EnumBaseArgument):
   """A class that represents a GLenum argument"""
 
-  def __init__(self, name, arg_type):
-    EnumBaseArgument.__init__(self, name, "GLenum", arg_type, "GL_INVALID_ENUM")
+  def __init__(self, name, arg_type, named_type_info):
+    EnumBaseArgument.__init__(self, name, "GLenum", arg_type, "GL_INVALID_ENUM",
+                              named_type_info)
 
   def GetLogArg(self):
     """Overridden from Argument."""
@@ -9096,8 +9113,9 @@ class IntArgument(EnumBaseArgument):
   argument instead of a GLenum.
   """
 
-  def __init__(self, name, arg_type):
-    EnumBaseArgument.__init__(self, name, "GLint", arg_type, "GL_INVALID_VALUE")
+  def __init__(self, name, arg_type, named_type_info):
+    EnumBaseArgument.__init__(self, name, "GLint", arg_type, "GL_INVALID_VALUE",
+                              named_type_info)
 
 
 class BitFieldArgument(EnumBaseArgument):
@@ -9107,9 +9125,9 @@ class BitFieldArgument(EnumBaseArgument):
   must be 0.
   """
 
-  def __init__(self, name, arg_type):
+  def __init__(self, name, arg_type, named_type_info):
     EnumBaseArgument.__init__(self, name, "GLbitfield", arg_type,
-                              "GL_INVALID_VALUE")
+                              "GL_INVALID_VALUE", named_type_info)
 
 
 class ImmediatePointerArgument(Argument):
@@ -9449,34 +9467,10 @@ class Int64Argument(Argument):
 class Function(object):
   """A class that represents a function."""
 
-  type_handlers = {
-    '': TypeHandler(),
-    'Bind': BindHandler(),
-    'Create': CreateHandler(),
-    'Custom': CustomHandler(),
-    'Data': DataHandler(),
-    'Delete': DeleteHandler(),
-    'DELn': DELnHandler(),
-    'GENn': GENnHandler(),
-    'GETn': GETnHandler(),
-    'GLchar': GLcharHandler(),
-    'GLcharN': GLcharNHandler(),
-    'Is': IsHandler(),
-    'NoCommand': NoCommandHandler(),
-    'PUT': PUTHandler(),
-    'PUTn': PUTnHandler(),
-    'PUTSTR': PUTSTRHandler(),
-    'PUTXn': PUTXnHandler(),
-    'StateSet': StateSetHandler(),
-    'StateSetRGBAlpha': StateSetRGBAlphaHandler(),
-    'StateSetFrontBack': StateSetFrontBackHandler(),
-    'StateSetFrontBackSeparate': StateSetFrontBackSeparateHandler(),
-    'StateSetNamedParameter': StateSetNamedParameter(),
-    'STRn': STRnHandler(),
-  }
-
-  def __init__(self, name, info):
+  def __init__(self, name, info, named_type_info, type_handlers):
     self.name = name
+    self.named_type_info = named_type_info
+
     self.original_name = info['original_name']
 
     self.original_args = self.ParseArgs(info['original_args'])
@@ -9490,7 +9484,8 @@ class Function(object):
 
     self.return_type = info['return_type']
     if self.return_type != 'void':
-      self.return_arg = CreateArg(info['return_type'] + " result")
+      self.return_arg = CreateArg(info['return_type'] + " result",
+                                  named_type_info)
     else:
       self.return_arg = None
 
@@ -9504,7 +9499,7 @@ class Function(object):
     else:
       self.last_original_pointer_arg = None
     self.info = info
-    self.type_handler = self.type_handlers[info['type']]
+    self.type_handler = type_handlers[info['type']]
     self.can_auto_generate = (self.num_pointer_args == 0 and
                               info['return_type'] == "void")
 
@@ -9520,7 +9515,7 @@ class Function(object):
     args = []
     parts = arg_string.split(',')
     for arg_string in parts:
-      arg = CreateArg(arg_string)
+      arg = CreateArg(arg_string, self.named_type_info)
       if arg:
         args.append(arg)
     return args
@@ -9960,13 +9955,15 @@ class PepperInterface(object):
 
 
 class ImmediateFunction(Function):
-  """A class that represnets an immediate function command."""
+  """A class that represents an immediate function command."""
 
-  def __init__(self, func):
+  def __init__(self, func, type_handlers):
     Function.__init__(
         self,
         "%sImmediate" % func.name,
-        func.info)
+        func.info,
+        func.named_type_info,
+        type_handlers)
 
   def InitFunction(self):
     # Override args in original_args and args_for_cmds with immediate versions
@@ -10044,11 +10041,13 @@ class ImmediateFunction(Function):
 class BucketFunction(Function):
   """A class that represnets a bucket version of a function command."""
 
-  def __init__(self, func):
+  def __init__(self, func, type_handlers):
     Function.__init__(
       self,
       "%sBucket" % func.name,
-      func.info)
+      func.info,
+      func.named_type_info,
+      type_handlers)
 
   def InitFunction(self):
     # Override args in original_args and args_for_cmds with bucket versions
@@ -10096,7 +10095,7 @@ class BucketFunction(Function):
     return super(BucketFunction, self)._MaybePrependComma(arg_string, add_comma)
 
 
-def CreateArg(arg_string):
+def CreateArg(arg_string, named_type_info):
   """Convert string argument to an Argument class that represents it.
 
   The parameter 'arg_string' can be a single argument to a GL function,
@@ -10123,16 +10122,16 @@ def CreateArg(arg_string):
   elif t.startswith('GLid'):
     return ResourceIdArgument(arg_name, arg_type)
   elif t.startswith('GLenum') and t !='GLenum':
-    return EnumArgument(arg_name, arg_type)
+    return EnumArgument(arg_name, arg_type, named_type_info)
   elif t.startswith('GLbitfield') and t != 'GLbitfield':
-    return BitFieldArgument(arg_name, arg_type)
+    return BitFieldArgument(arg_name, arg_type, named_type_info)
   elif t.startswith('GLboolean'):
     return BoolArgument(arg_name, arg_type)
   elif t.startswith('GLintUniformLocation'):
     return UniformLocationArgument(arg_name)
   elif (t.startswith('GLint') and t != 'GLint' and
         not t.startswith('GLintptr')):
-    return IntArgument(arg_name, arg_type)
+    return IntArgument(arg_name, arg_type, named_type_info)
   elif t == 'GLsizeiNotNegative' or t == 'GLintptrNotNegative':
     return SizeNotNegativeArgument(arg_name, t.replace('NotNegative', ''))
   elif t.startswith('GLsize'):
@@ -10150,7 +10149,8 @@ class GLGenerator(object):
   _comment_re = re.compile(r'^//.*$')
   _function_re = re.compile(r'^GL_APICALL(.*?)GL_APIENTRY (.*?) \((.*?)\);$')
 
-  def __init__(self, verbose):
+  def __init__(self, verbose, function_info, named_type_info, state_info,
+               capability_flags):
     self.original_functions = []
     self.functions = []
     self.verbose = verbose
@@ -10158,6 +10158,36 @@ class GLGenerator(object):
     self.pepper_interfaces = []
     self.interface_info = {}
     self.generated_cpp_filenames = []
+    self.function_info = function_info
+    self.named_type_info = named_type_info
+    self.state_info = state_info
+    self.capability_flags = capability_flags
+    self.type_handlers = {
+        '': TypeHandler(),
+        'Bind': BindHandler(),
+        'Create': CreateHandler(),
+        'Custom': CustomHandler(),
+        'Data': DataHandler(),
+        'Delete': DeleteHandler(),
+        'DELn': DELnHandler(),
+        'GENn': GENnHandler(),
+        'GETn': GETnHandler(),
+        'GLchar': GLcharHandler(),
+        'GLcharN': GLcharNHandler(),
+        'Is': IsHandler(),
+        'NoCommand': NoCommandHandler(),
+        'PUT': PUTHandler(),
+        'PUTn': PUTnHandler(),
+        'PUTSTR': PUTSTRHandler(),
+        'PUTXn': PUTXnHandler(),
+        'StateSet': StateSetHandler(state_info),
+        'StateSetRGBAlpha': StateSetRGBAlphaHandler(state_info),
+        'StateSetFrontBack': StateSetFrontBackHandler(state_info),
+        'StateSetFrontBackSeparate':
+        StateSetFrontBackSeparateHandler(state_info),
+        'StateSetNamedParameter': StateSetNamedParameter(state_info),
+        'STRn': STRnHandler(),
+    }
 
     for interface in _PEPPER_INTERFACES:
       interface = PepperInterface(interface)
@@ -10170,8 +10200,8 @@ class GLGenerator(object):
 
   def GetFunctionInfo(self, name):
     """Gets a type info for the given function name."""
-    if name in _FUNCTION_INFO:
-      func_info = _FUNCTION_INFO[name].copy()
+    if name in self.function_info:
+      func_info = self.function_info[name].copy()
     else:
       func_info = {}
 
@@ -10214,7 +10244,8 @@ class GLGenerator(object):
           if not k in func_info:
             func_info[k] = parsed_func_info[k]
 
-        f = Function(func_name, func_info)
+        f = Function(func_name, func_info, self.named_type_info,
+                     self.type_handlers)
         if not f.GetInfo('internal'):
           self.original_functions.append(f)
 
@@ -10227,9 +10258,9 @@ class GLGenerator(object):
           if f.type_handler.NeedsDataTransferFunction(f):
             methods = f.GetDataTransferMethods()
             if 'immediate' in methods:
-              self.AddFunction(ImmediateFunction(f))
+              self.AddFunction(ImmediateFunction(f, self.type_handlers))
             if 'bucket' in methods:
-              self.AddFunction(BucketFunction(f))
+              self.AddFunction(BucketFunction(f, self.type_handlers))
             if 'shm' in methods:
               self.AddFunction(f)
           else:
@@ -10322,13 +10353,13 @@ class GLGenerator(object):
     with CHeaderWriter(filename, comment) as f:
       f.write("struct EnableFlags {\n")
       f.write("  EnableFlags();\n")
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         f.write("  bool %s;\n" % capability['name'])
         f.write("  bool cached_%s;\n" % capability['name'])
       f.write("};\n\n")
 
-      for state_name in sorted(_STATES.keys()):
-        state = _STATES[state_name]
+      for state_name in sorted(self.state_info.keys()):
+        state = self.state_info[state_name]
         for item in state['states']:
           if isinstance(item['default'], list):
             f.write("%s %s[%d];\n" % (item['type'], item['name'],
@@ -10348,7 +10379,7 @@ class GLGenerator(object):
           inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
             switch (cap) {
           """)
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         f.write("""\
               case GL_%s:
             """ % capability['name'].upper())
@@ -10379,7 +10410,7 @@ class GLGenerator(object):
     with CHeaderWriter(filename, comment) as f:
       f.write("struct EnableFlags {\n")
       f.write("  EnableFlags();\n")
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         if 'extension_flag' in capability:
           continue
         f.write("  bool %s;\n" % capability['name'])
@@ -10394,8 +10425,8 @@ bool %s::GetStateAs%s(
     GLenum pname, %s* params, GLsizei* num_written) const {
   switch (pname) {
 """ % (class_name, gl_type, gl_type))
-      for state_name in sorted(_STATES.keys()):
-        state = _STATES[state_name]
+      for state_name in sorted(self.state_info.keys()):
+        state = self.state_info[state_name]
         if 'enum' in state:
           f.write("    case %s:\n" % state['enum'])
           f.write("      *num_written = %d;\n" % len(state['states']))
@@ -10430,7 +10461,7 @@ bool %s::GetStateAs%s(
                                                  item['name'])))
             f.write("      }\n")
             f.write("      return true;\n")
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
             f.write("    case GL_%s:\n" % capability['name'].upper())
             f.write("      *num_written = 1;\n")
             f.write("      if (params) {\n")
@@ -10450,7 +10481,7 @@ bool %s::GetStateAs%s(
     comment = "// It is included by context_state.cc\n"
     with CHeaderWriter(filename, comment) as f:
       code = []
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         code.append("%s(%s)" %
                     (capability['name'],
                      ('false', 'true')['default' in capability]))
@@ -10462,8 +10493,8 @@ bool %s::GetStateAs%s(
       f.write("\n")
 
       f.write("void ContextState::Initialize() {\n")
-      for state_name in sorted(_STATES.keys()):
-        state = _STATES[state_name]
+      for state_name in sorted(self.state_info.keys()):
+        state = self.state_info[state_name]
         for item in state['states']:
           if isinstance(item['default'], list):
             for ndx, value in enumerate(item['default']):
@@ -10482,7 +10513,7 @@ bool %s::GetStateAs%s(
 void ContextState::InitCapabilities(const ContextState* prev_state) const {
 """)
       def WriteCapabilities(test_prev, es3_caps):
-        for capability in _CAPABILITY_FLAGS:
+        for capability in self.capability_flags:
           capability_name = capability['name']
           capability_no_init = 'no_init' in capability and \
               capability['no_init'] == True
@@ -10523,8 +10554,8 @@ void ContextState::InitState(const ContextState *prev_state) const {
 
       def WriteStates(test_prev):
         # We need to sort the keys so the expectations match
-        for state_name in sorted(_STATES.keys()):
-          state = _STATES[state_name]
+        for state_name in sorted(self.state_info.keys()):
+          state = self.state_info[state_name]
           if 'no_init' in state and state['no_init']:
             continue
           if state['type'] == 'FrontBack':
@@ -10607,7 +10638,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
       f.write("""bool ContextState::GetEnabled(GLenum cap) const {
   switch (cap) {
 """)
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         f.write("    case GL_%s:\n" % capability['name'].upper())
         f.write("      return enable_flags.%s;\n" % capability['name'])
       f.write("""    default:
@@ -10624,7 +10655,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
     comment = "// It is included by client_context_state.cc\n"
     with CHeaderWriter(filename, comment) as f:
       code = []
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         if 'extension_flag' in capability:
           continue
         code.append("%s(%s)" %
@@ -10641,7 +10672,7 @@ bool ClientContextState::SetCapabilityState(
   *changed = false;
   switch (cap) {
 """)
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         if 'extension_flag' in capability:
           continue
         f.write("    case GL_%s:\n" % capability['name'].upper())
@@ -10660,7 +10691,7 @@ bool ClientContextState::SetCapabilityState(
     GLenum cap, bool* enabled) const {
   switch (cap) {
 """)
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         if 'extension_flag' in capability:
           continue
         f.write("    case GL_%s:\n" % capability['name'].upper())
@@ -10684,7 +10715,7 @@ bool ClientContextState::SetCapabilityState(
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
 """)
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         f.write("    case GL_%s:\n" % capability['name'].upper())
         if 'state_flag' in capability:
 
@@ -10775,7 +10806,7 @@ namespace gles2 {
       f.write(
 """void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(
       bool es3_capable) {""")
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         capability_no_init = 'no_init' in capability and \
             capability['no_init'] == True
         if capability_no_init:
@@ -10793,7 +10824,7 @@ namespace gles2 {
         if 'extension_flag' in capability:
           f.write("  }")
       f.write("  if (es3_capable) {")
-      for capability in _CAPABILITY_FLAGS:
+      for capability in self.capability_flags:
         capability_es3 = 'es3' in capability and capability['es3'] == True
         if capability_es3:
           f.write("    ExpectEnableDisable(GL_%s, %s);\n" %
@@ -10806,8 +10837,8 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
   auto* feature_info_ = group_->feature_info();
 """)
       # We need to sort the keys so the expectations match
-      for state_name in sorted(_STATES.keys()):
-        state = _STATES[state_name]
+      for state_name in sorted(self.state_info.keys()):
+        state = self.state_info[state_name]
         if state['type'] == 'FrontBack':
           num_states = len(state['states'])
           for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
@@ -10995,8 +11026,8 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
     with CHeaderWriter(filename) as f:
-      for name in sorted(_NAMED_TYPE_INFO.keys()):
-        named_type = NamedType(_NAMED_TYPE_INFO[name])
+      for name in sorted(self.named_type_info.keys()):
+        named_type = NamedType(self.named_type_info[name])
         if not named_type.CreateValidator():
           continue
         if named_type.IsComplete():
@@ -11023,9 +11054,9 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteServiceUtilsImplementation(self, filename):
     """Writes the gles2 auto generated utility implementation."""
     with CHeaderWriter(filename) as f:
-      names = sorted(_NAMED_TYPE_INFO.keys())
+      names = sorted(self.named_type_info.keys())
       for name in names:
-        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        named_type = NamedType(self.named_type_info[name])
         if not named_type.CreateValidator():
           continue
         if named_type.IsComplete():
@@ -11078,7 +11109,7 @@ extern const NameToFunc g_gles2_function_table[] = {
       f.write("Validators::Validators()")
       pre = '    : '
       for name in names:
-        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        named_type = NamedType(self.named_type_info[name])
         if not named_type.CreateValidator() or named_type.IsComplete():
           continue
         if named_type.GetValidValues():
@@ -11096,7 +11127,7 @@ extern const NameToFunc g_gles2_function_table[] = {
 
       f.write("void Validators::UpdateValuesES3() {\n")
       for name in names:
-        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        named_type = NamedType(self.named_type_info[name])
         if not named_type.IsConstant() and named_type.IsComplete():
           if named_type.HasES3Values():
             f.write("  %(name)s.SetIsES3(true);" % {
@@ -11134,9 +11165,9 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteCommonUtilsHeader(self, filename):
     """Writes the gles2 common utility header."""
     with CHeaderWriter(filename) as f:
-      type_infos = sorted(_NAMED_TYPE_INFO.keys())
+      type_infos = sorted(self.named_type_info.keys())
       for type_info in type_infos:
-        if _NAMED_TYPE_INFO[type_info]['type'] == 'GLenum':
+        if self.named_type_info[type_info]['type'] == 'GLenum':
           f.write("static std::string GetString%s(uint32_t value);\n" %
                      type_info)
       f.write("\n")
@@ -11179,14 +11210,14 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
 """)
 
-      enums = sorted(_NAMED_TYPE_INFO.keys())
+      enums = sorted(self.named_type_info.keys())
       for enum in enums:
-        if _NAMED_TYPE_INFO[enum]['type'] == 'GLenum':
+        if self.named_type_info[enum]['type'] == 'GLenum':
           f.write("std::string GLES2Util::GetString%s(uint32_t value) {\n" %
                      enum)
-          valid_list = _NAMED_TYPE_INFO[enum]['valid']
-          if 'valid_es3' in _NAMED_TYPE_INFO[enum]:
-            for es3_enum in _NAMED_TYPE_INFO[enum]['valid_es3']:
+          valid_list = self.named_type_info[enum]['valid']
+          if 'valid_es3' in self.named_type_info[enum]:
+            for es3_enum in self.named_type_info[enum]['valid_es3']:
               if not es3_enum in valid_list:
                 valid_list.append(es3_enum)
           assert len(valid_list) == len(set(valid_list))
@@ -11405,8 +11436,8 @@ def main(argv):
   # Add in states and capabilites to GLState
   gl_state_valid = _NAMED_TYPE_INFO['GLState']['valid']
   gl_state_valid_es3 = _NAMED_TYPE_INFO['GLState']['valid_es3']
-  for state_name in sorted(_STATES.keys()):
-    state = _STATES[state_name]
+  for state_name in sorted(_STATE_INFO.keys()):
+    state = _STATE_INFO[state_name]
     if 'extension_flag' in state:
       continue
     if 'enum' in state:
@@ -11433,7 +11464,8 @@ def main(argv):
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")
   base_dir = os.getcwd()
-  gen = GLGenerator(options.verbose)
+  gen = GLGenerator(options.verbose, _FUNCTION_INFO, _NAMED_TYPE_INFO,
+                    _STATE_INFO, _CAPABILITY_FLAGS)
   gen.ParseGLH("gpu/command_buffer/cmd_buffer_functions.txt")
 
   # Support generating files under gen/
