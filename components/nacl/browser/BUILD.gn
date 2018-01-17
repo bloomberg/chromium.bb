@@ -39,6 +39,7 @@ static_library("browser") {
     "//components/url_formatter",
     "//content/public/browser",
     "//content/public/common",
+    "//content/public/common:zygote_features",
     "//mojo/edk/system",
     "//native_client/src/trusted/service_runtime:sel_main_chrome",
     "//net",

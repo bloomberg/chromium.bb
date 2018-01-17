@@ -12,12 +12,12 @@
 #include "content/browser/zygote_host/zygote_communication_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/zygote_handle_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/zygote_handle.h"
 #include "gpu/config/gpu_switches.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 

@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//content/public/common/zygote_features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
@@ -242,7 +243,6 @@ jumbo_source_set("common_sources") {
     "webplugininfo.h",
     "webplugininfo_param_traits.h",
     "zygote_fork_delegate_linux.h",
-    "zygote_handle.h",
   ]
 
   configs += [
@@ -274,6 +274,7 @@ jumbo_source_set("common_sources") {
   ]
   deps = [
     ":content_descriptor_keys",
+    ":zygote_features",
 
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.
@@ -325,11 +326,14 @@ jumbo_source_set("common_sources") {
       "webrtc_ip_handling_policy.h",
     ]
   }
+
+  if (use_zygote_handle) {
+    sources += [ "zygote_handle.h" ]
+  }
 }
 
 buildflag_header("features") {
   header = "features.h"
-
   flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
@@ -343,6 +347,11 @@ source_set("feature_h264_with_openh264_ffmpeg") {
     "feature_h264_with_openh264_ffmpeg.cc",
     "feature_h264_with_openh264_ffmpeg.h",
   ]
+}
+
+buildflag_header("zygote_features") {
+  header = "zygote_features.h"
+  flags = [ "USE_ZYGOTE_HANDLE=$use_zygote_handle" ]
 }
 
 mojom("interfaces") {

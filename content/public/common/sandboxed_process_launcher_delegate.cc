@@ -5,6 +5,11 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
 #include "build/build_config.h"
+#include "content/public/common/zygote_features.h"
+
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#include "content/public/common/zygote_handle.h"
+#endif
 
 namespace content {
 
@@ -24,18 +29,18 @@ void SandboxedProcessLauncherDelegate::PostSpawnTarget(
 bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
   return false;
 }
+#endif  // defined(OS_WIN)
 
-#elif(OS_POSIX)
-
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
 ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
   return nullptr;
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
+#if defined(OS_POSIX)
 base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
   return base::EnvironmentMap();
 }
-#endif
+#endif  // defined(OS_POSIX)
 
 }  // namespace content

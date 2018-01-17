@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/zygote_handle_linux.h"
+#include "content/public/common/zygote_handle.h"
 
 #include "content/browser/zygote_host/zygote_communication_linux.h"
 
