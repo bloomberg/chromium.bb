@@ -54,7 +54,7 @@ def ReadRunFile(run_file):
   tests = list()
   base_dir = os.path.dirname(run_file)
   for line in ReadFileAsLines(run_file):
-    root, ext = os.path.splitext(line)
+    _, ext = os.path.splitext(line)
     if ext == ".test":
       tests.append(os.path.join(base_dir, line))
     elif ext == ".run":
@@ -85,7 +85,7 @@ def GenerateTests(run_files, output):
         })
     for test in ReadRunFile(run_file):
       rel_path = os.path.relpath(test, run_file_dir)
-      root, ext = os.path.splitext(rel_path)
+      root, _ = os.path.splitext(rel_path)
       name = root.replace('.', '_')
       name = "%s.%s" % (suite_prefix, name.replace(os.path.sep, '.'))
       output.write(TEST_DEF_TEMPLATE

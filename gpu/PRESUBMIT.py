@@ -8,7 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
-def PostUploadHook(cl, change, output_api):
+def PostUploadHook(cl, _change, output_api):
   """git cl upload will call this hook after the issue is created/modified.
 
   This hook modifies the CL description in order to run extra GPU
@@ -29,3 +29,33 @@ def PostUploadHook(cl, change, output_api):
       'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
     ],
     'Automatically added optional GPU tests to run on CQ.')
+
+def CommonChecks(input_api, output_api):
+  import sys
+
+  output = []
+  sys_path_backup = sys.path
+  try:
+    sys.path = [
+        input_api.PresubmitLocalPath()
+    ] + sys.path
+    disabled_warnings = [
+        'W0622',  # redefined-builtin
+        'R0923',  # interface-not-implemented
+    ]
+    output.extend(input_api.canned_checks.RunPylint(
+      input_api,
+      output_api,
+      disabled_warnings=disabled_warnings))
+  finally:
+    sys.path = sys_path_backup
+
+  return output
+
+
+def CheckChangeOnUpload(input_api, output_api):
+  return CommonChecks(input_api, output_api)
+
+
+def CheckChangeOnCommit(input_api, output_api):
+  return CommonChecks(input_api, output_api)

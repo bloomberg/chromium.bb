@@ -2,8 +2,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-#
-# pylint: disable=interface-not-implemented
 """code generator for GLES2 command buffers."""
 
 import itertools
@@ -11385,7 +11383,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
 
 def Format(generated_files):
-  formatter = "clang-format"
+  formatter = "third_party/depot_tools/clang-format"
   if platform.system() == "Windows":
     formatter += ".bat"
   for filename in generated_files:

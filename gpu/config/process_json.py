@@ -3,14 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Generate data struct from GPU blacklist and driver bug workarounds json."""
+
 import json
 import os
 import platform
 import sys
 from optparse import OptionParser
 from subprocess import call
-
-"""Generate data struct from GPU blacklist and driver bug workarounds json."""
 
 _LICENSE = """// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -110,7 +110,7 @@ def get_feature_set(features, total_feature_set):
             assert exception in feature_set
             feature_set.remove(exception)
         else:
-          raise KeyException('only exceptions are allowed')
+          raise KeyError('only exceptions are allowed')
     else:
       assert feature in total_feature_set
       feature_set.add(feature)
@@ -341,7 +341,7 @@ def write_gl_type(gl_type, data_file):
 
 
 def write_conditions(entry_id, is_exception, exception_id, entry,
-                     data_file, data_helper_file, data_exception_file):
+                     data_file, data_helper_file, _data_exception_file):
   os_type = ''
   os_version = None
   vendor_id = 0
@@ -366,7 +366,6 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   machine_model_name = None
   machine_model_version = None
   exception_count = 0
-  exception_var = 'nullptr'
   # process the entry
   for key in entry:
     if key == 'id':
@@ -790,7 +789,7 @@ def main(argv):
                     help="skip testing data generation.")
   parser.add_option("--os-filter",
                     help="only output entries applied to the specified os.")
-  (options, args) = parser.parse_args(args=argv)
+  (options, _) = parser.parse_args(args=argv)
 
   script_dir = os.path.dirname(os.path.realpath(__file__))
 
