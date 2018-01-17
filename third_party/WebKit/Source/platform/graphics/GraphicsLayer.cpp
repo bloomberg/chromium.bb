@@ -136,7 +136,12 @@ GraphicsLayer::~GraphicsLayer() {
 
 LayoutRect GraphicsLayer::VisualRect() const {
   LayoutRect bounds = LayoutRect(FloatPoint(), Size());
-  bounds.Move(OffsetFromLayoutObjectWithSubpixelAccumulation());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    DCHECK(layer_state_);
+    bounds.MoveBy(layer_state_->offset);
+  } else {
+    bounds.Move(OffsetFromLayoutObjectWithSubpixelAccumulation());
+  }
   return bounds;
 }
 

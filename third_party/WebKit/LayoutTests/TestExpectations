@@ -338,6 +338,9 @@ crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-028.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-box-002.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-117a.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-118a.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Failure ]
@@ -393,6 +396,7 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html 
 
 ### virtual/layout_ng/fast/block/float
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/012.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Failure Crash ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
