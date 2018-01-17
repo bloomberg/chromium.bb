@@ -16,11 +16,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.SmallTest;
+import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -30,7 +32,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordManagerHandler;
@@ -386,7 +387,6 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("PasswordExport")
-    @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItemNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -398,12 +398,13 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
+        View mainDecorView = preferences.getWindow().getDecorView();
         Espresso.openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
         Espresso.onView(withText(R.string.password_export_set_lock_screen))
-                .inRoot(withDecorView(isEnabled()))
+                .inRoot(withDecorView(not(is(mainDecorView))))
                 .check(matches(isDisplayed()));
     }
 
@@ -424,12 +425,12 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
+        View mainDecorView = preferences.getWindow().getDecorView();
         Espresso.onView(withText(containsString("test user"))).perform(click());
-
         Espresso.onView(withContentDescription(R.string.password_entry_editor_copy_stored_password))
                 .perform(click());
         Espresso.onView(withText(R.string.password_entry_editor_set_lock_screen))
-                .inRoot(withDecorView(isEnabled()))
+                .inRoot(withDecorView(not(is(mainDecorView))))
                 .check(matches(isDisplayed()));
     }
 
