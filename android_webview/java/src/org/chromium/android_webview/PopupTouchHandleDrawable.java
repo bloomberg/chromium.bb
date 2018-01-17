@@ -47,7 +47,9 @@ import java.lang.reflect.Method;
 @JNINamespace("android_webview")
 public class PopupTouchHandleDrawable extends View implements DisplayAndroidObserver {
     @Override
-    public void onRotationChanged(int rotation) {}
+    public void onRotationChanged(int rotation) {
+        mRotationChanged = true;
+    }
 
     @Override
     public void onDIPScaleChanged(float dipScale) {
@@ -103,6 +105,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     private boolean mAttachedToWindow;
     // This should be set only from onVisibilityInputChanged.
     private boolean mWasShowingAllowed;
+    private boolean mRotationChanged;
 
     // Gesture accounting for handle hiding while scrolling.
     private final GestureStateListener mGestureStateListener;
@@ -578,10 +581,15 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
 
     @CalledByNative
     private void setOrigin(float originXDip, float originYDip) {
-        if (mOriginXDip == originXDip && mOriginYDip == originYDip) return;
+        // If rotation has changed, then we always need to scheduleInvalidate() regardless of the
+        // current visibility.
+        if (mOriginXDip == originXDip && mOriginYDip == originYDip && !mRotationChanged) return;
         mOriginXDip = originXDip;
         mOriginYDip = originYDip;
-        if (getVisibility() == VISIBLE) scheduleInvalidate();
+        if (getVisibility() == VISIBLE || mRotationChanged) {
+            if (mRotationChanged) mRotationChanged = false;
+            scheduleInvalidate();
+        }
     }
 
     @CalledByNative
