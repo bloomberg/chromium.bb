@@ -36,6 +36,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
@@ -49,6 +50,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -251,12 +253,43 @@ public class WebVrInputTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_BROWSING})
-    public void testAppButtonNoopsWhenBrowsingDisabled() throws InterruptedException {
+    public void testAppButtonNoopsWhenBrowsingDisabled()
+            throws InterruptedException, ExecutionException {
+        appButtonNoopsTestImpl();
+    }
+
+    /**
+     * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
+     * WebVR presentation when VR browsing isn't supported by the Activity.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.WAA,
+            VrActivityRestriction.SupportedActivity.CCT})
+    public void
+    testAppButtonNoopsWhenBrowsingNotSupported() throws InterruptedException, ExecutionException {
+        appButtonNoopsTestImpl();
+    }
+
+    private void appButtonNoopsTestImpl() throws InterruptedException, ExecutionException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
+
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         controller.pressReleaseAppButton();
+        Assert.assertFalse("App button left Chrome",
+                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return mockApi.getExitFromVrCalled()
+                                || mockApi.getLaunchVrHomescreenCalled();
+                    }
+                }));
         Assert.assertFalse("App button exited WebVR presentation",
                 VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
                         POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));

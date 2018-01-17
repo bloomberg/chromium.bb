@@ -816,8 +816,10 @@ public class VrShellDelegate
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
+        boolean browsingDisabled =
+                !isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity);
         mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
-                mActivity instanceof CustomTabActivity);
+                mActivity instanceof CustomTabActivity, browsingDisabled);
         mVrShell.setWebVrModeEnabled(webVrMode, false);
 
         // We're entering VR, but not in WebVr mode.
@@ -1353,7 +1355,12 @@ public class VrShellDelegate
             mVrDaydreamApi.launchVrHomescreen();
             return true;
         }
-        if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return false;
+        try {
+            if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) return false;
+        } catch (IllegalArgumentException e) {
+            mVrDaydreamApi.launchVrHomescreen();
+            return true;
+        }
         mShowingDaydreamDoff = true;
         mDoffOptional = optional;
         return true;

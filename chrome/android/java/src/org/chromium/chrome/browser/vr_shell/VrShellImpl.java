@@ -312,7 +312,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     // TODO(crbug.com/762588): Fix getRealMetrics and remove suppression.
     @SuppressLint("NewApi")
     public void initializeNative(Tab currentTab, boolean forWebVr,
-            boolean webVrAutopresentationExpected, boolean inCct) {
+            boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled) {
         assert currentTab != null;
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
@@ -322,7 +322,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
 
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
-        boolean browsingDisabled = !VrShellDelegate.isVrShellEnabled(mDelegate.getVrSupportLevel());
         boolean hasOrCanRequestAudioPermission =
                 mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO)
                 || mActivity.getWindowAndroid().canRequestPermission(
