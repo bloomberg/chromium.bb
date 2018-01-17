@@ -36,6 +36,7 @@ class ManagePasswordPendingView : public views::View,
   void CreatePasswordField();
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
+  void ReplaceWithPromo();
 
   ManagePasswordsBubbleView* parent_;
 

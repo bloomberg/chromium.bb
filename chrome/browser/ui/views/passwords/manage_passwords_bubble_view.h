@@ -103,9 +103,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubbleDelegateViewBase,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // Refreshes the bubble's state.
-  void Refresh();
-
   // Updates |title_view|'s text and link styling from |model_|.
   void UpdateTitleText(views::StyledLabel* title_view);
 

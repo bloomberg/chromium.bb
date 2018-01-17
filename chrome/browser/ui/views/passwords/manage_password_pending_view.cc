@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -14,12 +16,19 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
+#endif
 
 namespace {
 
@@ -166,7 +175,7 @@ void ManagePasswordPendingView::ButtonPressed(views::Button* sender,
     UpdateUsernameAndPasswordInModel();
     parent_->model()->OnSaveClicked();
     if (parent_->model()->ReplaceToShowPromotionIfNeeded()) {
-      parent_->Refresh();
+      ReplaceWithPromo();
       return;
     }
   } else if (sender == never_button_) {
@@ -265,4 +274,28 @@ void ManagePasswordPendingView::UpdateUsernameAndPasswordInModel() {
             password_dropdown_->selected_index());
   }
   parent_->model()->OnCredentialEdited(new_username, new_password);
+}
+
+void ManagePasswordPendingView::ReplaceWithPromo() {
+  RemoveAllChildViews(true);
+  parent_->initially_focused_view_ = NULL;
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  if (parent_->model()->state() ==
+      password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    AddChildView(new ManagePasswordSignInPromoView(parent_));
+#if defined(OS_WIN)
+  } else if (parent_->model()->state() ==
+             password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
+    AddChildView(new DesktopIOSPromotionBubbleView(
+        parent_->model()->GetProfile(),
+        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE));
+#endif
+  } else {
+    NOTREACHED();
+  }
+  parent_->GetWidget()->UpdateWindowIcon();
+  parent_->UpdateTitleText(
+      static_cast<views::StyledLabel*>(parent_->GetBubbleFrameView()->title()));
+  parent_->DialogModelChanged();
+  parent_->SizeToContents();
 }
