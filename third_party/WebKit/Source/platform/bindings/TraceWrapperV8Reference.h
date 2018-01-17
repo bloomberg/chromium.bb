@@ -49,6 +49,7 @@ class TraceWrapperV8Reference {
 
   bool IsEmpty() const { return handle_.IsEmpty(); }
   void Clear() { handle_.Reset(); }
+  ALWAYS_INLINE const v8::Persistent<T>& Get() const { return handle_; }
   ALWAYS_INLINE v8::Persistent<T>& Get() { return handle_; }
 
   template <typename S>
