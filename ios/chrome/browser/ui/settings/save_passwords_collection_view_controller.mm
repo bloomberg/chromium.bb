@@ -259,6 +259,15 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   }
 }
 
+- (BOOL)shouldShowEditButton {
+  return YES;
+}
+
+- (BOOL)editButtonEnabled {
+  DCHECK([self shouldShowEditButton]);
+  return !savedForms_.empty() || !blacklistedForms_.empty();
+}
+
 #pragma mark - Items
 
 - (CollectionViewItem*)manageAccountLinkItem {
@@ -410,10 +419,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
-
-  // Update the edit button.
-  [self.editor setEditing:NO];
-  [self updateEditButton];
 }
 
 #pragma mark - Actions
@@ -424,10 +429,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
   // Update the item.
   savePasswordsItem_.on = [passwordManagerEnabled_ value];
-
-  // Update the edit button.
-  [self.editor setEditing:NO];
-  [self updateEditButton];
 }
 
 #pragma mark - Private methods
@@ -461,15 +462,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
   [self updateEditButton];
   [self reloadData];
-}
-
-- (BOOL)shouldShowEditButton {
-  return [passwordManagerEnabled_ value];
-}
-
-- (BOOL)editButtonEnabled {
-  DCHECK([self shouldShowEditButton]);
-  return !savedForms_.empty() || !blacklistedForms_.empty();
 }
 
 - (void)updateExportPasswordsItem {
