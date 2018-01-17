@@ -1107,10 +1107,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     // else it will fail for SSL redirects since net/ will think the blob:https
     // for the stream is not a secure scheme (specifically, in the call to
     // ComputeReferrerForRedirect).
-    const Referrer referrer(request_data.referrer,
-                            Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                                request_data.referrer_policy));
-    Referrer::SetReferrerForRequest(new_request.get(), referrer);
+    new_request->SetReferrer(ComputeReferrer(request_data.referrer));
+    new_request->set_referrer_policy(request_data.referrer_policy);
 
     new_request->SetExtraRequestHeaders(headers);
 

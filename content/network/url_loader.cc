@@ -16,7 +16,6 @@
 #include "content/network/data_pipe_element_reader.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/public/common/referrer.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -220,14 +219,9 @@ URLLoader::URLLoader(NetworkContext* context,
   url_request_ = context_->url_request_context()->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
-
   url_request_->set_site_for_cookies(request.site_for_cookies);
-
-  const Referrer referrer(request.referrer,
-                          Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                              request.referrer_policy));
-  Referrer::SetReferrerForRequest(url_request_.get(), referrer);
-
+  url_request_->SetReferrer(ComputeReferrer(request.referrer));
+  url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->SetExtraRequestHeaders(request.headers);
 
   // Resolve elements from request_body and prepare upload data.
