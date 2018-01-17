@@ -110,14 +110,13 @@ class TestResultWriter(object):
     FILENAME_SUFFIX_ACTUAL = "-actual"
     FILENAME_SUFFIX_EXPECTED = "-expected"
     FILENAME_SUFFIX_DIFF = "-diff"
+    FILENAME_SUFFIX_DIFFS = "-diffs"
     FILENAME_SUFFIX_STDERR = "-stderr"
     FILENAME_SUFFIX_CRASH_LOG = "-crash-log"
     FILENAME_SUFFIX_SAMPLE = "-sample"
     FILENAME_SUFFIX_LEAK_LOG = "-leak-log"
-    FILENAME_SUFFIX_HTML_DIFF = "-pretty-diff.html"
-    FILENAME_SUFFIX_IMAGE_DIFF = "-diff.png"
-    FILENAME_SUFFIX_IMAGE_DIFFS_HTML = "-diffs.html"
-    FILENAME_SUFFIX_OVERLAY = "-overlay.html"
+    FILENAME_SUFFIX_HTML_DIFF = "-pretty-diff"
+    FILENAME_SUFFIX_OVERLAY = "-overlay"
 
     def __init__(self, filesystem, port, root_output_dir, test_name):
         self._filesystem = filesystem
@@ -131,45 +130,24 @@ class TestResultWriter(object):
         output_filename = fs.join(self._root_output_dir, self._test_name)
         fs.maybe_make_directory(fs.dirname(output_filename))
 
-    def output_filename(self, modifier):
-        """Returns a filename inside the output dir that contains modifier.
-
-        For example, if test name is "fast/dom/foo.html" and modifier is "-expected.txt",
-        the return value is "/<path-to-root-output-dir>/fast/dom/foo-expected.txt".
-
-        Args:
-          modifier: a string to replace the extension of filename with
-
-        Return:
-          The absolute path to the output filename
-        """
-        fs = self._filesystem
-        output_filename = fs.join(self._root_output_dir, self._test_name)
-        base, extension = fs.splitext(output_filename)
-
-        # Below is an affordance for WPT test files that become multiple tests using different URL params,
-        # For example,
-        # - html/syntax/parsing/html5lib_adoption01.html
-        # Becomes two tests:
-        # - html/syntax/parsing/html5lib_adoption01.html?run_type=write
-        # - html/syntax/parsing/html5lib_adoption01.html?run_type=uri
-        # But previously their result file would be the same, since everything after the extension
-        # is removed. Instead, for files with URL params, we use the whole filename for writing results.
-        if '?' in extension:
-            # Question marks are reserved characters in Windows filenames.
-            sanitized_filename = output_filename.replace('?', '_')
-            return sanitized_filename + modifier
-
-        return base + modifier
-
     def _write_file(self, path, contents):
         if contents is not None:
             self._make_output_directory()
             self._filesystem.write_binary_file(path, contents)
 
-    def _output_testname(self, modifier):
-        fs = self._filesystem
-        return fs.splitext(fs.basename(self._test_name))[0] + modifier
+    def _output_filename(self, suffix, extension):
+        """Returns a filename based on the given suffix and extension.
+
+        For example, if test name is "fast/dom/foo.html", the suffix is
+        "-expected", and the extension is "-expected.txt", the return value is
+        "fast/dom/foo-expected.txt".
+        """
+        return self._port.output_filename(self._test_name, suffix, extension)
+
+    def _output_abspath(self, suffix, extension):
+        """Similar to _output_filename, but returns an absolute path in output dir."""
+        filename = self._output_filename(suffix, extension)
+        return self._filesystem.join(self._root_output_dir, filename)
 
     def write_output_files(self, file_type, output, expected):
         """Writes the test output, the expected output in the results directory.
@@ -184,26 +162,26 @@ class TestResultWriter(object):
           output: A string containing the test output
           expected: A string containing the expected test output
         """
-        actual_filename = self.output_filename(self.FILENAME_SUFFIX_ACTUAL + file_type)
-        expected_filename = self.output_filename(self.FILENAME_SUFFIX_EXPECTED + file_type)
+        actual_filename = self._output_abspath(self.FILENAME_SUFFIX_ACTUAL, file_type)
+        expected_filename = self._output_abspath(self.FILENAME_SUFFIX_EXPECTED, file_type)
 
         self._write_file(actual_filename, output)
         self._write_file(expected_filename, expected)
 
     def write_stderr(self, error):
-        filename = self.output_filename(self.FILENAME_SUFFIX_STDERR + ".txt")
+        filename = self._output_abspath(self.FILENAME_SUFFIX_STDERR, ".txt")
         self._write_file(filename, error)
 
     def write_crash_log(self, crash_log):
-        filename = self.output_filename(self.FILENAME_SUFFIX_CRASH_LOG + ".txt")
+        filename = self._output_abspath(self.FILENAME_SUFFIX_CRASH_LOG, ".txt")
         self._write_file(filename, crash_log.encode('utf8', 'replace'))
 
     def write_leak_log(self, leak_log):
-        filename = self.output_filename(self.FILENAME_SUFFIX_LEAK_LOG + ".txt")
+        filename = self._output_abspath(self.FILENAME_SUFFIX_LEAK_LOG, ".txt")
         self._write_file(filename, leak_log)
 
     def copy_sample_file(self, sample_file):
-        filename = self.output_filename(self.FILENAME_SUFFIX_SAMPLE + ".txt")
+        filename = self._output_abspath(self.FILENAME_SUFFIX_SAMPLE, ".txt")
         self._filesystem.copyfile(sample_file, filename)
 
     def write_text_files(self, actual_text, expected_text):
@@ -217,21 +195,21 @@ class TestResultWriter(object):
 
         # Output a plain-text diff file.
         file_type = '.txt'
-        actual_filename = self.output_filename(self.FILENAME_SUFFIX_ACTUAL + file_type)
-        expected_filename = self.output_filename(self.FILENAME_SUFFIX_EXPECTED + file_type)
+        actual_filename = self._output_abspath(self.FILENAME_SUFFIX_ACTUAL, file_type)
+        expected_filename = self._output_abspath(self.FILENAME_SUFFIX_EXPECTED, file_type)
         diff = unified_diff(expected_text, actual_text, expected_filename, actual_filename)
-        diff_filename = self.output_filename(self.FILENAME_SUFFIX_DIFF + file_type)
+        diff_filename = self._output_abspath(self.FILENAME_SUFFIX_DIFF, file_type)
         self._write_file(diff_filename, diff)
 
         # Output a HTML diff file.
-        html_diff_filename = self.output_filename(self.FILENAME_SUFFIX_HTML_DIFF)
+        html_diff_filename = self._output_abspath(self.FILENAME_SUFFIX_HTML_DIFF, '.html')
         html_diff_contents = html_diff(expected_text, actual_text)
         self._write_file(html_diff_filename, html_diff_contents)
 
     def create_repaint_overlay_result(self, actual_text, expected_text):
         html = repaint_overlay.generate_repaint_overlay_html(self._test_name, actual_text, expected_text)
         if html:
-            overlay_filename = self.output_filename(self.FILENAME_SUFFIX_OVERLAY)
+            overlay_filename = self._output_abspath(self.FILENAME_SUFFIX_OVERLAY, '.html')
             self._write_file(overlay_filename, html)
 
     def write_audio_files(self, actual_audio, expected_audio):
@@ -241,13 +219,13 @@ class TestResultWriter(object):
         self.write_output_files('.png', actual_image, expected_image)
 
     def write_image_diff_files(self, image_diff):
-        diff_filename = self.output_filename(self.FILENAME_SUFFIX_IMAGE_DIFF)
+        diff_filename = self._output_abspath(self.FILENAME_SUFFIX_DIFF, '.png')
         self._write_file(diff_filename, image_diff)
 
-        diffs_html_filename = self.output_filename(self.FILENAME_SUFFIX_IMAGE_DIFFS_HTML)
+        diffs_html_filename = self._output_abspath(self.FILENAME_SUFFIX_DIFFS, '.html')
         # FIXME: old-run-webkit-tests shows the diff percentage as the text contents of the "diff" link.
         # FIXME: old-run-webkit-tests include a link to the test file.
-        html = """<!DOCTYPE HTML>
+        html = ("""<!DOCTYPE HTML>
 <html>
 <head>
 <title>%(title)s</title>
@@ -292,12 +270,12 @@ Difference between images: <a href="%(diff_filename)s">diff</a><br>
 })();
 </script>
 </body>
-</html>
-""" % {
-            'title': self._test_name,
-            'diff_filename': self._output_testname(self.FILENAME_SUFFIX_IMAGE_DIFF),
-            'prefix': self._output_testname(''),
-        }
+</html>"""
+                % {
+                    'title': self._test_name,
+                    'diff_filename': self._output_filename(self.FILENAME_SUFFIX_DIFF, '.png'),
+                    'prefix': self._output_filename('', ''),
+                })
         self._write_file(diffs_html_filename, html)
 
     def write_reftest(self, src_filepath):

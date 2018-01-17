@@ -114,6 +114,13 @@ class Port(object):
     # URL to the build requirements page.
     BUILD_REQUIREMENTS_URL = ''
 
+    # The suffixes of baseline files (not extensions).
+    BASELINE_SUFFIX = '-expected'
+    BASELINE_MISMATCH_SUFFIX = '-expected-mismatch'
+
+    # All of the non-reftest baseline extensions we use.
+    BASELINE_EXTENSIONS = ('.wav', '.txt', '.png')
+
     # Because this is an abstract base class, arguments to functions may be
     # unused in this class - pylint: disable=unused-argument
 
@@ -482,17 +489,46 @@ class Port(object):
             # FIXME: How should this handle more than one type of reftest?
             baseline_dict['.' + reference_files[0][0]] = self.relative_test_filename(reference_files[0][1])
 
-        for extension in self.baseline_extensions():
+        for extension in self.BASELINE_EXTENSIONS:
             path = self.expected_filename(test_name, extension, return_default=False)
             baseline_dict[extension] = self.relative_test_filename(path) if path else path
 
         return baseline_dict
 
-    def baseline_extensions(self):
-        """Returns a tuple of all of the non-reftest baseline extensions we use."""
-        return ('.wav', '.txt', '.png')
+    def output_filename(self, test_name, suffix, extension):
+        """Generates the output filename for a test.
 
-    def expected_baselines(self, test_name, suffix, all_baselines=False):
+        This method gives a proper filename for various outputs of a test,
+        including baselines and actual results. Usually, the output filename
+        follows the pattern: test_name_without_ext+suffix+extension, but when
+        the test name contains query strings, e.g. external/wpt/foo.html?wss,
+        test_name_without_ext is mangled to be external/wpt/foo_wss.
+
+        It is encouraged to use this method instead of writing another mangling.
+
+        Args:
+            test_name: The name of a test.
+            suffix: A suffix string to add before the extension
+                (e.g. "-expected").
+            extension: The extension of the output file (starting with .).
+
+        Returns:
+            A string, the output filename.
+        """
+        test_name_root, test_name_ext = self._filesystem.splitext(test_name)
+
+        # WPT names might contain query strings, e.g. external/wpt/foo.html?wss,
+        # in which case we mangle test_name_root (the part of a path before the
+        # last extension point) to external/wpt/foo_wss, and the output filename
+        # becomes external/wpt/foo_wss-expected.txt.
+        index = test_name_ext.find('?')
+        if index != -1:
+            query_part = test_name_ext[index + 1:]
+            test_name_root += '_' + self._filesystem.sanitize_filename(query_part)
+
+        return test_name_root + suffix + extension
+
+    def expected_baselines(self, test_name, extension, all_baselines=False, match=True):
         """Given a test name, finds where the baseline results are located.
 
         Return values will be in the format appropriate for the current
@@ -505,15 +541,16 @@ class Port(object):
         platform specific.
 
         Args:
-            test_name: name of test file (usually a relative path under LayoutTests/)
-            suffix: file suffix of the expected results, including dot; e.g.
-                '.txt' or '.png'.  This should not be None, but may be an empty
-                string.
+            test_name: Name of test file (usually a relative path under LayoutTests/)
+            extension: File extension of the expected results, including dot;
+                e.g. '.txt' or '.png'.  This should not be None, but may be an
+                empty string.
             all_baselines: If True, return an ordered list of all baseline paths
                 for the given platform. If False, return only the first one.
+            match: Whether the baseline is a match or a mismatch.
 
         Returns:
-            a list of (platform_dir, results_filename) pairs, where
+            A list of (platform_dir, results_filename) pairs, where
                 platform_dir - abs path to the top of the results tree (or test
                     tree)
                 results_filename - relative path from top of tree to the results
@@ -521,7 +558,8 @@ class Port(object):
                 (port.join() of the two gives you the full path to the file,
                     unless None was returned.)
         """
-        baseline_filename = self._filesystem.splitext(test_name)[0] + '-expected' + suffix
+        baseline_filename = self.output_filename(
+            test_name, self.BASELINE_SUFFIX if match else self.BASELINE_MISMATCH_SUFFIX, extension)
         baseline_search_path = self.baseline_search_path()
 
         baselines = []
@@ -543,7 +581,8 @@ class Port(object):
 
         return [(None, baseline_filename)]
 
-    def expected_filename(self, test_name, suffix, return_default=True, fallback_base_for_virtual=True):
+    def expected_filename(self, test_name, extension,
+                          return_default=True, fallback_base_for_virtual=True, match=True):
         """Given a test name, returns an absolute path to its expected results.
 
         If no expected results are found in any of the searched directories,
@@ -555,27 +594,30 @@ class Port(object):
         the other baseline and filename manipulation routines.
 
         Args:
-            test_name: name of test file (usually a relative path under LayoutTests/)
-            suffix: file suffix of the expected results, including dot; e.g. '.txt'
-                or '.png'.  This should not be None, but may be an empty string.
-            platform: the most-specific directory name to use to build the
-                search list of directories, e.g., 'win'.
-            return_default: if True, returns the path to the generic expectation if nothing
-                else is found; if False, returns None.
-            fallback_base_for_virtual: For virtual test only. When no virtual specific
-                baseline is found, if this parameter is True, fallback to find baselines
-                of the base test; if False, depending on |return_default|, returns the
-                generic virtual baseline or None.
+            test_name: Name of test file (usually a relative path under LayoutTests/)
+            extension: File extension of the expected results, including dot;
+                e.g. '.txt' or '.png'.  This should not be None, but may be an
+                empty string.
+            return_default: If True, returns the path to the generic expectation
+                if nothing else is found; if False, returns None.
+            fallback_base_for_virtual: For virtual test only. When no virtual
+                specific baseline is found, if this parameter is True, fallback
+                to find baselines of the base test; if False, depending on
+                |return_default|, returns the generic virtual baseline or None.
+            match: Whether the baseline is a match or a mismatch.
+
+        Returns:
+            An absolute path to its expected results, or None if not found.
         """
         # FIXME: The [0] here is very mysterious, as is the destructured return.
-        platform_dir, baseline_filename = self.expected_baselines(test_name, suffix)[0]
+        platform_dir, baseline_filename = self.expected_baselines(test_name, extension, match=match)[0]
         if platform_dir:
             return self._filesystem.join(platform_dir, baseline_filename)
 
         if fallback_base_for_virtual:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
-                return self.expected_filename(actual_test_name, suffix, return_default)
+                return self.expected_filename(actual_test_name, extension, return_default, match=match)
 
         if return_default:
             return self._filesystem.join(self.layout_tests_dir(), baseline_filename)
@@ -660,9 +702,9 @@ class Port(object):
 
         # Try to find -expected.* or -expected-mismatch.* in the same directory.
         reftest_list = []
-        for expectation, prefix in (('==', ''), ('!=', '-mismatch')):
+        for expectation in ('==', '!='):
             for extension in Port.supported_file_extensions:
-                path = self.expected_filename(test_name, prefix + extension)
+                path = self.expected_filename(test_name, extension, match=(expectation == '=='))
                 if self._filesystem.exists(path):
                     reftest_list.append((expectation, path))
         if reftest_list:
@@ -722,8 +764,10 @@ class Port(object):
         return [self.relative_test_filename(f) for f in files]
 
     @staticmethod
-    # If any changes are made here be sure to update the isUsedInReftest method in old-run-webkit-tests as well.
     def is_reference_html_file(filesystem, dirname, filename):
+        # TODO(robertma): We probably do not need prefixes/suffixes other than
+        # -expected{-mismatch} any more. Or worse, there might be actual tests
+        # with these prefixes/suffixes.
         if filename.startswith('ref-') or filename.startswith('notref-'):
             return True
         filename_without_ext, _ = filesystem.splitext(filename)

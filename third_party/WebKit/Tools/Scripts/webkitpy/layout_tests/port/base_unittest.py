@@ -38,7 +38,6 @@ from webkitpy.common.system.platform_info_mock import MockPlatformInfo
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.common.path_finder import PathFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
 
@@ -118,6 +117,23 @@ class PortTest(unittest.TestCase):
         port = self.make_port()
         self.assertEqual(port.get_option('foo', 'bar'), 'bar')
 
+    def test_output_filename(self):
+        port = self.make_port()
+
+        # Normal test filename
+        test_file = 'fast/test.html'
+        self.assertEqual(port.output_filename(test_file, '-expected', '.txt'),
+                         'fast/test-expected.txt')
+        self.assertEqual(port.output_filename(test_file, '-expected-mismatch', '.png'),
+                         'fast/test-expected-mismatch.png')
+
+        # Test filename with query string
+        test_file = 'fast/test.html?wss&run_type=1'
+        self.assertEqual(port.output_filename(test_file, '-expected', '.txt'),
+                         'fast/test_wss_run_type=1-expected.txt')
+        self.assertEqual(port.output_filename(test_file, '-actual', '.png'),
+                         'fast/test_wss_run_type=1-actual.png')
+
     def test_expected_baselines(self):
         port = self.make_port(port_name='foo')
         port.FALLBACK_PATHS = {'': ['foo']}
@@ -130,6 +146,12 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False), None)
         self.assertEqual(port.expected_filename(test_file, '.txt'),
                          '/mock-checkout/third_party/WebKit/LayoutTests/fast/test-expected.txt')
+
+        # Mismatch baseline
+        self.assertEqual(port.expected_baselines(test_file, '.txt', match=False),
+                         [(None, 'fast/test-expected-mismatch.txt')])
+        self.assertEqual(port.expected_filename(test_file, '.txt', match=False),
+                         '/mock-checkout/third_party/WebKit/LayoutTests/fast/test-expected-mismatch.txt')
 
         # Platform-specific baseline
         self.assertEqual(port.baseline_version_dir(),
@@ -573,6 +595,10 @@ class PortTest(unittest.TestCase):
         self.assertFalse(port.is_wpt_test('dom/domparsing/namespaces-1.html'))
         self.assertFalse(port.is_wpt_test('rutabaga'))
 
+        self.assertTrue(port.is_wpt_test('virtual/a-name/external/wpt/baz/qux.htm'))
+        self.assertFalse(port.is_wpt_test('virtual/external/wpt/baz/qux.htm'))
+        self.assertFalse(port.is_wpt_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
+
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)
         filesystem = port.host.filesystem
@@ -774,14 +800,6 @@ class PortTest(unittest.TestCase):
     def test_missing_virtual_test_suite_file(self):
         port = self.make_port()
         self.assertRaises(AssertionError, port.virtual_test_suites)
-
-    def test_is_wpt_test(self):
-        port = self.make_port()
-        self.assertTrue(port.is_wpt_test('external/wpt/foo/bar.html'))
-        self.assertTrue(port.is_wpt_test('virtual/a-name/external/wpt/baz/qux.htm'))
-        self.assertFalse(port.is_wpt_test('http/wpt/foo.html'))
-        self.assertFalse(port.is_wpt_test('virtual/external/wpt/baz/qux.htm'))
-        self.assertFalse(port.is_wpt_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
 
     def test_default_results_directory(self):
         port = self.make_port(options=optparse.Values({'target': 'Default', 'configuration': 'Release'}))

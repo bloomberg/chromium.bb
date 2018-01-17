@@ -46,9 +46,6 @@ _log = logging.getLogger(__name__)
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, LEAK, SKIP, WONTFIX,
  SLOW, REBASELINE, NEEDS_REBASELINE_UNUSED, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
 
-# FIXME: Perhaps these two routines should be part of the Port instead?
-BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
-
 WEBKIT_BUG_PREFIX = 'webkit.org/b/'
 CHROMIUM_BUG_PREFIX = 'crbug.com/'
 SKIA_BUG_PREFIX = 'skbug.com/'

@@ -145,6 +145,14 @@ class GenericFileSystemTests(object):
         self.assertTrue(self.fs.exists('bardir'))
         self.assertTrue(self.fs.exists(self.fs.join('bardir', 'baz')))
 
+    def test_sanitize_filename(self):
+        self.assertEqual(self.fs.sanitize_filename('test.html'),
+                         'test.html')
+        self.assertEqual(self.fs.sanitize_filename('test.html?wss&run'),
+                         'test.html_wss_run')
+        self.assertEqual(self.fs.sanitize_filename('test.html?wss&run', replacement='-'),
+                         'test.html-wss-run')
+
 
 class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
 
