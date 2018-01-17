@@ -238,6 +238,10 @@
       status: "experimental",
     },
     {
+      name: "CSSLayoutAPI",
+      status: "experimental",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },

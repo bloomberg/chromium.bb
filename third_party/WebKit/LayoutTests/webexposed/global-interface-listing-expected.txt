@@ -560,6 +560,7 @@ interface CDATASection : Text
     attribute @@toStringTag
     method constructor
 interface CSS
+    static getter layoutWorklet
     static getter paintWorklet
     static method Hz
     static method Q
