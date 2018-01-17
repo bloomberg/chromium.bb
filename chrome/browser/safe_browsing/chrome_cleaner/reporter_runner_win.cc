@@ -845,6 +845,7 @@ class ReporterRunner {
     UMAHistogramReporter uma(suffix);
     switch (invocation_type_) {
       case SwReporterInvocationType::kUnspecified:
+      case SwReporterInvocationType::kMax:
         NOTREACHED();
         return false;
 
