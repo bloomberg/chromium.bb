@@ -127,16 +127,33 @@ class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param> {
 class CFLPredictTest : public ::testing::TestWithParam<predict_param> {
  public:
   virtual ~CFLPredictTest() {}
-  virtual void SetUp() { predict = GET_PARAM(1); }
+  virtual void SetUp() {
+    predict = GET_PARAM(1);
+    chroma_pels_ref = reinterpret_cast<uint8_t *>(
+        aom_memalign(32, sizeof(uint8_t) * CFL_BUF_SQUARE));
+    sub_luma_pels_ref = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+    chroma_pels = reinterpret_cast<uint8_t *>(
+        aom_memalign(32, sizeof(uint8_t) * CFL_BUF_SQUARE));
+    sub_luma_pels = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+  }
+
+  virtual void TearDown() {
+    aom_free(chroma_pels_ref);
+    aom_free(sub_luma_pels_ref);
+    aom_free(chroma_pels);
+    aom_free(sub_luma_pels);
+  }
 
  protected:
   int Width() const { return tx_size_wide[GET_PARAM(0)]; }
   int Height() const { return tx_size_high[GET_PARAM(0)]; }
   TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  DECLARE_ALIGNED(32, uint8_t, chroma_pels_ref[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, int16_t, sub_luma_pels_ref[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, uint8_t, chroma_pels[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, int16_t, sub_luma_pels[CFL_BUF_SQUARE]);
+  uint8_t *chroma_pels_ref;
+  int16_t *sub_luma_pels_ref;
+  uint8_t *chroma_pels;
+  int16_t *sub_luma_pels;
   get_predict_fn predict;
   int alpha_q3;
   uint8_t dc;
@@ -158,16 +175,33 @@ class CFLPredictTest : public ::testing::TestWithParam<predict_param> {
 class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd> {
  public:
   virtual ~CFLPredictHBDTest() {}
-  virtual void SetUp() { predict = GET_PARAM(1); }
+  virtual void SetUp() {
+    predict = GET_PARAM(1);
+    chroma_pels_ref = reinterpret_cast<uint16_t *>(
+        aom_memalign(32, sizeof(uint16_t) * CFL_BUF_SQUARE));
+    sub_luma_pels_ref = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+    chroma_pels = reinterpret_cast<uint16_t *>(
+        aom_memalign(32, sizeof(uint16_t) * CFL_BUF_SQUARE));
+    sub_luma_pels = reinterpret_cast<int16_t *>(
+        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+  }
+
+  virtual void TearDown() {
+    aom_free(chroma_pels_ref);
+    aom_free(sub_luma_pels_ref);
+    aom_free(chroma_pels);
+    aom_free(sub_luma_pels);
+  }
 
  protected:
   int Width() const { return tx_size_wide[GET_PARAM(0)]; }
   int Height() const { return tx_size_high[GET_PARAM(0)]; }
   TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  DECLARE_ALIGNED(32, uint16_t, chroma_pels_ref[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, int16_t, sub_luma_pels_ref[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, uint16_t, chroma_pels[CFL_BUF_SQUARE]);
-  DECLARE_ALIGNED(32, int16_t, sub_luma_pels[CFL_BUF_SQUARE]);
+  uint16_t *chroma_pels_ref;
+  int16_t *sub_luma_pels_ref;
+  uint16_t *chroma_pels;
+  int16_t *sub_luma_pels;
   get_predict_fn_hbd predict;
   int bd;
   int alpha_q3;
