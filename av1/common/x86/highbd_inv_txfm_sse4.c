@@ -831,6 +831,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       idct8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       idct8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 0, -shift[1], bd);
       break;
@@ -841,6 +842,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       idct8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 0, -shift[1], bd);
       break;
@@ -851,6 +853,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       idct8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 0, -shift[1], bd);
       break;
@@ -861,6 +864,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 0, -shift[1], bd);
       break;
@@ -871,6 +875,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       idct8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 1, -shift[1], bd);
       break;
@@ -881,6 +886,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       idct8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 1, 0, -shift[1], bd);
       break;
@@ -891,6 +897,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 1, 0, -shift[1], bd);
       break;
@@ -901,6 +908,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 1, 1, -shift[1], bd);
       break;
@@ -911,6 +919,7 @@ void av1_inv_txfm2d_add_8x8_sse4_1(const int32_t *coeff, uint16_t *output,
       transpose_8x8(in, out);
       iadst8x8_sse4_1(out, in, row_cfg->cos_bit[2]);
       transpose_8x8(in, out);
+      round_shift_8x8(out, -shift[0]);
       iadst8x8_sse4_1(out, in, col_cfg->cos_bit[2]);
       write_buffer_8x8(in, output, stride, 0, 1, -shift[1], bd);
       break;

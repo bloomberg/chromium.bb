@@ -246,14 +246,14 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 };
 
 static const int8_t inv_shift_4x4[2] = { 0, -4 };
-static const int8_t inv_shift_8x8[2] = { 0, -5 };
-static const int8_t inv_shift_16x16[2] = { -1, -5 };
-static const int8_t inv_shift_32x32[2] = { -1, -5 };
+static const int8_t inv_shift_8x8[2] = { -1, -4 };
+static const int8_t inv_shift_16x16[2] = { -2, -4 };
+static const int8_t inv_shift_32x32[2] = { -2, -4 };
 #if CONFIG_TX64X64
-static const int8_t inv_shift_64x64[2] = { -1, -5 };
+static const int8_t inv_shift_64x64[2] = { -2, -4 };
 #endif
-static const int8_t inv_shift_4x8[2] = { 0, -4 };
-static const int8_t inv_shift_8x4[2] = { 0, -4 };
+static const int8_t inv_shift_4x8[2] = { -1, -3 };
+static const int8_t inv_shift_8x4[2] = { -1, -3 };
 static const int8_t inv_shift_8x16[2] = { -1, -4 };
 static const int8_t inv_shift_16x8[2] = { -1, -4 };
 static const int8_t inv_shift_16x32[2] = { -1, -4 };
@@ -264,11 +264,11 @@ static const int8_t inv_shift_64x32[2] = { -1, -4 };
 #endif
 static const int8_t inv_shift_4x16[2] = { -1, -4 };
 static const int8_t inv_shift_16x4[2] = { -1, -4 };
-static const int8_t inv_shift_8x32[2] = { -1, -5 };
-static const int8_t inv_shift_32x8[2] = { -1, -5 };
+static const int8_t inv_shift_8x32[2] = { -2, -4 };
+static const int8_t inv_shift_32x8[2] = { -2, -4 };
 #if CONFIG_TX64X64
-static const int8_t inv_shift_16x64[2] = { -1, -5 };
-static const int8_t inv_shift_64x16[2] = { -1, -5 };
+static const int8_t inv_shift_16x64[2] = { -2, -4 };
+static const int8_t inv_shift_64x16[2] = { -2, -4 };
 #endif  // CONFIG_TX64X64
 
 const int8_t *inv_txfm_shift_ls[TX_SIZES_ALL] = {
