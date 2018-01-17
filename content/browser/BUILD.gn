@@ -1243,6 +1243,8 @@ jumbo_source_set("browser") {
     "renderer_host/input/mouse_wheel_phase_handler.h",
     "renderer_host/input/mouse_wheel_rails_filter_mac.cc",
     "renderer_host/input/mouse_wheel_rails_filter_mac.h",
+    "renderer_host/input/one_shot_timeout_monitor.cc",
+    "renderer_host/input/one_shot_timeout_monitor.h",
     "renderer_host/input/passthrough_touch_event_queue.cc",
     "renderer_host/input/passthrough_touch_event_queue.h",
     "renderer_host/input/render_widget_host_latency_tracker.cc",

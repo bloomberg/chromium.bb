@@ -18,6 +18,8 @@ const int64_t kHungRendererDelayMs = 30000;
 
 const int64_t kNewContentRenderingDelayMs = 4000;
 
+const int64_t kAsyncHitTestTimeoutMs = 5000;
+
 // 20MiB
 const size_t kMaxLengthOfDataURLString = 1024 * 1024 * 20;
 

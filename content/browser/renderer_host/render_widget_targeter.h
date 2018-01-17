@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_TARGETER_H_
 
 #include <queue>
+#include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
+#include "content/common/content_constants_internal.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
 
@@ -27,6 +30,7 @@ class FrameSinkId;
 namespace content {
 
 class RenderWidgetHostViewBase;
+class OneShotTimeoutMonitor;
 
 struct RenderWidgetTargetResult {
   RenderWidgetTargetResult();
@@ -70,6 +74,13 @@ class RenderWidgetTargeter {
                              const blink::WebInputEvent& event,
                              const ui::LatencyInfo& latency);
 
+  void ViewWillBeDestroyed(RenderWidgetHostViewBase* view);
+
+  void set_async_hit_test_timeout_delay_for_testing(
+      const base::TimeDelta& delay) {
+    async_hit_test_timeout_delay_ = delay;
+  }
+
  private:
   // Attempts to target and dispatch all events in the queue. It stops if it has
   // to query a client, or if the queue becomes empty.
@@ -78,11 +89,16 @@ class RenderWidgetTargeter {
   // Queries |target| to find the correct target for |event|.
   // |event| is in the coordinate space of |root_view|.
   // |target_location|, if set, is the location in |target|'s coordinate space.
+  // |last_request_target| and |last_target_location| provide a fallback target
+  // the case that the query times out. These should be null values when
+  // querying the root view, and the target's immediate parent view otherwise.
   void QueryClient(RenderWidgetHostViewBase* root_view,
                    RenderWidgetHostViewBase* target,
                    const blink::WebInputEvent& event,
                    const ui::LatencyInfo& latency,
-                   const gfx::PointF& target_location);
+                   const gfx::PointF& target_location,
+                   RenderWidgetHostViewBase* last_request_target,
+                   const gfx::PointF& last_target_location);
 
   // |event| is in the coordinate space of |root_view|. |target_location|, if
   // set, is the location in |target|'s coordinate space.
@@ -90,6 +106,7 @@ class RenderWidgetTargeter {
                         base::WeakPtr<RenderWidgetHostViewBase> target,
                         ui::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency,
+                        uint32_t request_id,
                         const gfx::PointF& target_location,
                         const viz::FrameSinkId& frame_sink_id);
 
@@ -100,6 +117,21 @@ class RenderWidgetTargeter {
                    const blink::WebInputEvent& event,
                    const ui::LatencyInfo& latency,
                    const base::Optional<gfx::PointF>& target_location);
+
+  // Callback when the hit testing timer fires, to resume event processing
+  // without further waiting for a response to the last targeting request.
+  void AsyncHitTestTimedOut(
+      base::WeakPtr<RenderWidgetHostViewBase> current_request_root_view,
+      base::WeakPtr<RenderWidgetHostViewBase> current_request_target,
+      const gfx::PointF& current_target_location,
+      base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
+      const gfx::PointF& last_target_location,
+      ui::WebScopedInputEvent event,
+      const ui::LatencyInfo& latency);
+
+  base::TimeDelta async_hit_test_timeout_delay() {
+    return async_hit_test_timeout_delay_;
+  }
 
   struct TargetingRequest {
     TargetingRequest();
@@ -113,7 +145,17 @@ class RenderWidgetTargeter {
   };
 
   bool request_in_flight_ = false;
+  uint32_t last_request_id_ = 0;
   std::queue<TargetingRequest> requests_;
+
+  std::unordered_set<RenderWidgetHostViewBase*> unresponsive_views_;
+
+  // This value limits how long to wait for a response from the renderer
+  // process before giving up and resuming event processing.
+  base::TimeDelta async_hit_test_timeout_delay_ =
+      base::TimeDelta::FromMilliseconds(kAsyncHitTestTimeoutMs);
+
+  std::unique_ptr<OneShotTimeoutMonitor> async_hit_test_timeout_;
 
   Delegate* const delegate_;
   base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_;
