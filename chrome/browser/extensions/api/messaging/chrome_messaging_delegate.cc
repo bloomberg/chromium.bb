@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/api/messaging/chrome_messaging_delegate.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
@@ -113,7 +114,7 @@ std::unique_ptr<MessagePort> ChromeMessagingDelegate::CreateReceiverForTab(
   if (!receiver_rfh)
     return nullptr;
 
-  return base::MakeUnique<ExtensionMessagePort>(
+  return std::make_unique<ExtensionMessagePort>(
       channel_delegate, receiver_port_id, extension_id, receiver_rfh,
       include_child_frames);
 }
@@ -133,7 +134,7 @@ ChromeMessagingDelegate::CreateReceiverForNativeApp(
       native_view, extension_id, native_app_name, allow_user_level, error_out);
   if (!native_host.get())
     return nullptr;
-  return base::MakeUnique<NativeMessagePort>(channel_delegate, receiver_port_id,
+  return std::make_unique<NativeMessagePort>(channel_delegate, receiver_port_id,
                                              std::move(native_host));
 }
 

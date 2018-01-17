@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -60,7 +61,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
                        OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension, nullptr,
-        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
+        std::make_unique<ExtensionInstallPrompt::Prompt>(type),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}

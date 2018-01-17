@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
@@ -383,16 +383,16 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
   DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
   base::DictionaryValue* extension_info_weak = NULL;
   if (!shared_extensions->GetDictionary(id, &extension_info_weak)) {
-    auto extension_info = base::MakeUnique<base::DictionaryValue>();
+    auto extension_info = std::make_unique<base::DictionaryValue>();
     extension_info_weak = extension_info.get();
     shared_extensions->Set(id, std::move(extension_info));
   }
 
   CHECK(!shared_extensions->HasKey(version));
-  auto version_info = base::MakeUnique<base::DictionaryValue>();
+  auto version_info = std::make_unique<base::DictionaryValue>();
   version_info->SetString(kSharedExtensionPath, shared_version_dir.value());
 
-  auto users = base::MakeUnique<base::ListValue>();
+  auto users = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < pending_installs.size(); i++) {
     ExtensionAssetsManagerHelper::PendingInstallInfo& info =
         pending_installs[i];

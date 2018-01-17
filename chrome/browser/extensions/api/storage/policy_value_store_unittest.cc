@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -51,7 +50,7 @@ class MutablePolicyValueStore : public PolicyValueStore {
       : PolicyValueStore(
             kTestExtensionId,
             base::MakeRefCounted<SettingsObserverList>(),
-            base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName, path)) {
+            std::make_unique<LeveldbValueStore>(kDatabaseUMAClientName, path)) {
   }
   ~MutablePolicyValueStore() override {}
 
@@ -102,7 +101,7 @@ class PolicyValueStoreTest : public testing::Test {
     observers_->AddObserver(&observer_);
     store_.reset(new PolicyValueStore(
         kTestExtensionId, observers_,
-        base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName,
+        std::make_unique<LeveldbValueStore>(kDatabaseUMAClientName,
                                             scoped_temp_dir_.GetPath())));
   }
 
@@ -141,7 +140,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
                expected.CreateDeepCopy(), nullptr);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(456), nullptr);
+               std::make_unique<base::Value>(456), nullptr);
   SetCurrentPolicy(policies);
 
   ValueStore::ReadResult result = store_->Get();

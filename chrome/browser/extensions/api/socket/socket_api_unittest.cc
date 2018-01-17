@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -22,7 +21,7 @@ namespace extensions {
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<ApiResourceManager<Socket>>(context);
+  return std::make_unique<ApiResourceManager<Socket>>(context);
 }
 
 class SocketUnitTest : public ExtensionApiUnittest {

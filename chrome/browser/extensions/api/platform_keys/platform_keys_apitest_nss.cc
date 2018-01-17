@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
   // To verify that the user is not prompted for any certificate selection,
   // set up a delegate that fails on any invocation.
   GetPlatformKeysService()->SetSelectDelegate(
-      base::MakeUnique<TestSelectDelegate>(net::CertificateList()));
+      std::make_unique<TestSelectDelegate>(net::CertificateList()));
 
   ASSERT_TRUE(RunExtensionTest("managedProfile")) << message_;
 }
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   certs.push_back(client_cert1_);
 
   GetPlatformKeysService()->SetSelectDelegate(
-      base::MakeUnique<TestSelectDelegate>(certs));
+      std::make_unique<TestSelectDelegate>(certs));
 
   ASSERT_TRUE(RunExtensionTest("corporateKeyWithPermissionTests")) << message_;
 }
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   // As the profile is managed, the user must not be able to grant any
   // certificate permission. Set up a delegate that fails on any invocation.
   GetPlatformKeysService()->SetSelectDelegate(
-      base::MakeUnique<TestSelectDelegate>(net::CertificateList()));
+      std::make_unique<TestSelectDelegate>(net::CertificateList()));
 
   ASSERT_TRUE(RunExtensionTest("policyDoesGrantAccessToNonCorporateKey"))
       << message_;

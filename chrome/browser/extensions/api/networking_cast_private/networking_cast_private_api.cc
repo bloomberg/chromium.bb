@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/common/extensions/api/networking_cast_private.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
@@ -47,7 +46,7 @@ cast_api::TDLSStatus ParseTDLSStatus(const std::string& status) {
 
 std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> AsCastCredentials(
     api::networking_cast_private::VerificationProperties& properties) {
-  return base::MakeUnique<NetworkingCastPrivateDelegate::Credentials>(
+  return std::make_unique<NetworkingCastPrivateDelegate::Credentials>(
       properties.certificate,
       properties.intermediate_certificates
           ? *properties.intermediate_certificates

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
@@ -177,7 +177,7 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
     Respond(Error("Failed to open process."));
     return;
   }
-  Respond(OneArgument(base::MakeUnique<base::Value>(terminal_id)));
+  Respond(OneArgument(std::make_unique<base::Value>(terminal_id)));
 }
 
 ExtensionFunction::ResponseAction TerminalPrivateSendInputFunction::Run() {
@@ -206,7 +206,7 @@ void TerminalPrivateSendInputFunction::SendInputOnRegistryTaskRunner(
 }
 
 void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 TerminalPrivateCloseTerminalProcessFunction::
@@ -241,7 +241,7 @@ void TerminalPrivateCloseTerminalProcessFunction::CloseOnRegistryTaskRunner(
 
 void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
     bool success) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 TerminalPrivateOnTerminalResizeFunction::
@@ -278,7 +278,7 @@ void TerminalPrivateOnTerminalResizeFunction::OnResizeOnRegistryTaskRunner(
 }
 
 void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 TerminalPrivateAckOutputFunction::~TerminalPrivateAckOutputFunction() {}

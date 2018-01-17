@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/navigation_observer.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -112,7 +111,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
         base::Bind(&NavigationObserver::OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension, nullptr,
-        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
+        std::make_unique<ExtensionInstallPrompt::Prompt>(type),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

@@ -4,11 +4,12 @@
 
 #include "chrome/browser/extensions/external_registry_loader_win.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -77,7 +78,7 @@ void ExternalRegistryLoader::StartLoading() {
 std::unique_ptr<base::DictionaryValue>
 ExternalRegistryLoader::LoadPrefsOnBlockingThread() {
   base::AssertBlockingAllowed();
-  auto prefs = base::MakeUnique<base::DictionaryValue>();
+  auto prefs = std::make_unique<base::DictionaryValue>();
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<base::string16> keys;

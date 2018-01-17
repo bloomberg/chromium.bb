@@ -11,7 +11,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
@@ -114,7 +113,7 @@ ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
     : context_(context),
       default_mode_(GetDefaultMode()),
       policy_extension_reinstaller_(
-          base::MakeUnique<PolicyExtensionReinstaller>(context_)) {}
+          std::make_unique<PolicyExtensionReinstaller>(context_)) {}
 
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }

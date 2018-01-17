@@ -5,13 +5,13 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1199,7 +1199,7 @@ ExtensionFunction::ResponseAction DeveloperPrivatePackDirectoryFunction::Run() {
   AddRef();  // Balanced in OnPackSuccess / OnPackFailure.
 
   pack_job_ =
-      base::MakeUnique<PackExtensionJob>(this, root_directory, key_file, flags);
+      std::make_unique<PackExtensionJob>(this, root_directory, key_file, flags);
   pack_job_->Start();
   return RespondLater();
 }
@@ -1312,7 +1312,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
   // TODO(grv) : The unpacked installer should fire an event when complete
   // and return the extension_id.
-  SetResult(base::MakeUnique<base::Value>("-1"));
+  SetResult(std::make_unique<base::Value>("-1"));
   SendResponse(true);
 }
 
@@ -1485,7 +1485,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(path.LossyDisplayName())));
+  Respond(OneArgument(std::make_unique<base::Value>(path.LossyDisplayName())));
   Release();
 }
 
@@ -1500,7 +1500,7 @@ DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateIsProfileManagedFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       Profile::FromBrowserContext(browser_context())->IsSupervised())));
 }
 

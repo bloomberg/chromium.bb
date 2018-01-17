@@ -709,7 +709,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
   }
 
   result_dictionary->Set(kAttachedImagesBlobInfoKey,
-                         base::MakeUnique<base::ListValue>());
+                         std::make_unique<base::ListValue>());
   metadata::AttachedImage* first_image = &attached_images->front();
   content::BrowserContext::CreateMemoryBackedBlob(
       GetProfile(), first_image->data.c_str(), first_image->data.size(), "",

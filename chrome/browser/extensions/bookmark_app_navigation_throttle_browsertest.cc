@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -298,7 +297,7 @@ const char kOutOfScopeUrlPath[] = "/out_of_scope/index.html";
 class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
  public:
   void SetUp() override {
-    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     scoped_feature_list_->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
     // Register a request handler that will return empty pages. Tests are
@@ -310,7 +309,7 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
               request.GetURL().path() == "/client-redirect") {
             return std::unique_ptr<HttpResponse>();
           }
-          auto response = base::MakeUnique<BasicHttpResponse>();
+          auto response = std::make_unique<BasicHttpResponse>();
           response->set_content_type("text/html");
           response->AddCustomHeader("Access-Control-Allow-Origin", "*");
           return static_cast<std::unique_ptr<HttpResponse>>(

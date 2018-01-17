@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -584,12 +583,12 @@ void CrxInstaller::CheckInstall() {
   }
 
   // Run the policy, requirements and blacklist checks in parallel.
-  check_group_ = base::MakeUnique<PreloadCheckGroup>();
+  check_group_ = std::make_unique<PreloadCheckGroup>();
 
-  policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension());
-  requirements_check_ = base::MakeUnique<RequirementsChecker>(extension());
+  policy_check_ = std::make_unique<PolicyCheck>(profile_, extension());
+  requirements_check_ = std::make_unique<RequirementsChecker>(extension());
   blacklist_check_ =
-      base::MakeUnique<BlacklistCheck>(Blacklist::Get(profile_), extension_);
+      std::make_unique<BlacklistCheck>(Blacklist::Get(profile_), extension_);
 
   check_group_->AddCheck(policy_check_.get());
   check_group_->AddCheck(requirements_check_.get());
@@ -1022,7 +1021,7 @@ void CrxInstaller::ConfirmReEnable() {
             service->profile(), extension());
     client_->ShowDialog(base::Bind(&CrxInstaller::OnInstallPromptDone, this),
                         extension(), nullptr,
-                        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
+                        std::make_unique<ExtensionInstallPrompt::Prompt>(type),
                         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

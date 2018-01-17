@@ -102,7 +102,7 @@ void ErrorConsole::SetReportingForExtension(const std::string& extension_id,
     mask &= ~(1 << type);
 
   prefs_->UpdateExtensionPref(extension_id, kStoreExtensionErrorsPref,
-                              base::MakeUnique<base::Value>(mask));
+                              std::make_unique<base::Value>(mask));
 }
 
 void ErrorConsole::SetReportingAllForExtension(
@@ -114,7 +114,7 @@ void ErrorConsole::SetReportingAllForExtension(
   int mask = enabled ? (1 << ExtensionError::NUM_ERROR_TYPES) - 1 : 0;
 
   prefs_->UpdateExtensionPref(extension_id, kStoreExtensionErrorsPref,
-                              base::MakeUnique<base::Value>(mask));
+                              std::make_unique<base::Value>(mask));
 }
 
 bool ErrorConsole::IsReportingEnabledForExtension(

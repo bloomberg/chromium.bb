@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -63,7 +62,7 @@ std::unique_ptr<std::vector<std::string>> GetValueList(
 std::unique_ptr<std::string> GetStringFromProfile(
     const autofill::AutofillProfile& profile,
     const autofill::ServerFieldType& type) {
-  return base::MakeUnique<std::string>(
+  return std::make_unique<std::string>(
       base::UTF16ToUTF8(profile.GetRawInfo(type)));
 }
 

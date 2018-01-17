@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -420,7 +419,7 @@ void BookmarkAppHelper::GenerateIcon(
     return;
 
   gfx::ImageSkia icon_image(
-      base::MakeUnique<GeneratedIconImageSource>(letter, color, output_size),
+      std::make_unique<GeneratedIconImageSource>(letter, color, output_size),
       gfx::Size(output_size, output_size));
   SkBitmap& dst = (*bitmaps)[output_size].bitmap;
   if (dst.tryAllocPixels(icon_image.bitmap()->info())) {

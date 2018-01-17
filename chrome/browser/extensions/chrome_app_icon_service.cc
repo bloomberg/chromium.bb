@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/chrome_app_icon_service.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_service_factory.h"
@@ -23,7 +22,7 @@ ChromeAppIconService* ChromeAppIconService::Get(
 ChromeAppIconService::ChromeAppIconService(content::BrowserContext* context)
     : context_(context), observer_(this), weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  app_updater_ = base::MakeUnique<LauncherExtensionAppUpdater>(this, context);
+  app_updater_ = std::make_unique<LauncherExtensionAppUpdater>(this, context);
 #endif
 
   observer_.Add(ExtensionRegistry::Get(context_));
@@ -41,7 +40,7 @@ std::unique_ptr<ChromeAppIcon> ChromeAppIconService::CreateIcon(
     ChromeAppIconDelegate* delegate,
     const std::string& app_id,
     int resource_size_in_dip) {
-  std::unique_ptr<ChromeAppIcon> icon = base::MakeUnique<ChromeAppIcon>(
+  std::unique_ptr<ChromeAppIcon> icon = std::make_unique<ChromeAppIcon>(
       delegate, context_,
       base::Bind(&ChromeAppIconService::OnIconDestroyed,
                  weak_ptr_factory_.GetWeakPtr()),

@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -602,7 +602,7 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
       notification_id = base::RandBytesAsString(16);
   }
 
-  SetResult(base::MakeUnique<base::Value>(notification_id));
+  SetResult(std::make_unique<base::Value>(notification_id));
 
   // TODO(crbug.com/749402): Cap the length of notification Ids to a certain
   // limit if the histogram indicates that this is safe to do.
@@ -635,7 +635,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
           CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
   if (!matched_notification) {
-    SetResult(base::MakeUnique<base::Value>(false));
+    SetResult(std::make_unique<base::Value>(false));
     SendResponse(true);
     return true;
   }
@@ -649,7 +649,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   // TODO(dewittj): Add more human-readable error strings if this fails.
   bool could_update_notification = UpdateNotification(
       params_->notification_id, &params_->options, &notification);
-  SetResult(base::MakeUnique<base::Value>(could_update_notification));
+  SetResult(std::make_unique<base::Value>(could_update_notification));
   if (!could_update_notification)
     return false;
 
@@ -672,7 +672,7 @@ bool NotificationsClearFunction::RunNotificationsApi() {
   bool cancel_result = GetDisplayHelper()->Close(
       CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
-  SetResult(base::MakeUnique<base::Value>(cancel_result));
+  SetResult(std::make_unique<base::Value>(cancel_result));
   SendResponse(true);
 
   return true;
@@ -717,7 +717,7 @@ bool NotificationsGetPermissionLevelFunction::RunNotificationsApi() {
           : api::notifications::PERMISSION_LEVEL_DENIED;
 
   SetResult(
-      base::MakeUnique<base::Value>(api::notifications::ToString(result)));
+      std::make_unique<base::Value>(api::notifications::ToString(result)));
   SendResponse(true);
 
   return true;

@@ -78,7 +78,7 @@ void ZipFileInstaller::Unzip(base::Optional<base::FilePath> unzip_dir) {
   }
   DCHECK(!utility_process_mojo_client_);
 
-  utility_process_mojo_client_ = base::MakeUnique<
+  utility_process_mojo_client_ = std::make_unique<
       content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
   utility_process_mojo_client_->set_error_callback(

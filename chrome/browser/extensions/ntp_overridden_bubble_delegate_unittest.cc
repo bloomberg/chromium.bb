@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 
+#include <memory>
+
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
@@ -19,7 +21,7 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildOverrideRegistrar(
     content::BrowserContext* context) {
-  return base::MakeUnique<ExtensionWebUIOverrideRegistrar>(context);
+  return std::make_unique<ExtensionWebUIOverrideRegistrar>(context);
 }
 
 scoped_refptr<const Extension> GetNtpExtension(const std::string& name) {
@@ -57,7 +59,7 @@ TEST_F(NtpOverriddenBubbleDelegateTest, TestAcknowledgeExistingExtensions) {
 
   auto include_extension = [this](const Extension* extension) {
     auto ntp_delegate =
-        base::MakeUnique<NtpOverriddenBubbleDelegate>(profile());
+        std::make_unique<NtpOverriddenBubbleDelegate>(profile());
     return ntp_delegate->ShouldIncludeExtension(extension);
   };
   // By default, we should warn about an extension overriding the NTP.

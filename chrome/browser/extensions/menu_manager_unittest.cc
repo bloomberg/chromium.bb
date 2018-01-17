@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -70,7 +69,7 @@ class MenuManagerTest : public testing::Test {
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(incognito, key);
     id.uid = next_id_++;
-    return base::MakeUnique<MenuItem>(id, "test", false, true, true, type,
+    return std::make_unique<MenuItem>(id, "test", false, true, true, type,
                                       contexts);
   }
 
@@ -82,7 +81,7 @@ class MenuManagerTest : public testing::Test {
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(false, key);
     id.string_uid = string_id;
-    return base::MakeUnique<MenuItem>(id, "test", false, true, true, type,
+    return std::make_unique<MenuItem>(id, "test", false, true, true, type,
                                       contexts);
   }
 
@@ -235,11 +234,11 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   int contexts_value = 0;
   ASSERT_TRUE(contexts.ToValue()->GetAsInteger(&contexts_value));
 
-  auto document_url_patterns = base::MakeUnique<base::ListValue>();
+  auto document_url_patterns = std::make_unique<base::ListValue>();
   document_url_patterns->AppendString("http://www.google.com/*");
   document_url_patterns->AppendString("http://www.reddit.com/*");
 
-  auto target_url_patterns = base::MakeUnique<base::ListValue>();
+  auto target_url_patterns = std::make_unique<base::ListValue>();
   target_url_patterns->AppendString("http://www.yahoo.com/*");
   target_url_patterns->AppendString("http://www.facebook.com/*");
 
@@ -505,7 +504,7 @@ class MockEventRouter : public EventRouter {
 // MockEventRouter factory function
 std::unique_ptr<KeyedService> MockEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return base::MakeUnique<MockEventRouter>(static_cast<Profile*>(context));
+  return std::make_unique<MockEventRouter>(static_cast<Profile*>(context));
 }
 
 }  // namespace

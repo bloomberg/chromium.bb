@@ -8,7 +8,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "extensions/common/error_utils.h"
@@ -146,7 +145,7 @@ std::unique_ptr<const PermissionSet> UnpackPermissionSet(
     }
   }
 
-  return base::MakeUnique<PermissionSet>(apis, manifest_permissions, origins,
+  return std::make_unique<PermissionSet>(apis, manifest_permissions, origins,
                                          URLPatternSet());
 }
 

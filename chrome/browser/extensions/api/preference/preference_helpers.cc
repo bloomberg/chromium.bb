@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -127,7 +128,7 @@ void DispatchEventToExtensions(Profile* profile,
 
       std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
       auto event =
-          base::MakeUnique<Event>(histogram_value, event_name,
+          std::make_unique<Event>(histogram_value, event_name,
                                   std::move(args_copy), restrict_to_profile);
       router->DispatchEventToExtension(extension->id(), std::move(event));
     }

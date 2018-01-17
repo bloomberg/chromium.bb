@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -121,7 +120,7 @@ void AddOverridesToList(base::ListValue* list, const GURL& override_url) {
     }
   }
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kEntry, spec);
   dict->SetBoolean(kActive, true);
   // Add the entry to the front of the list.
@@ -490,7 +489,7 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
     base::ListValue* page_overrides_weak = nullptr;
     if (!all_overrides->GetList(page_override_pair.first,
                                 &page_overrides_weak)) {
-      auto page_overrides = base::MakeUnique<base::ListValue>();
+      auto page_overrides = std::make_unique<base::ListValue>();
       page_overrides_weak = page_overrides.get();
       all_overrides->Set(page_override_pair.first, std::move(page_overrides));
     }

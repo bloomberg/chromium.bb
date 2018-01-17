@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/extension_registry.h"
@@ -93,7 +92,7 @@ void ChromeAppIcon::Reload() {
   const gfx::ImageSkia default_icon = extension && extension->is_app()
                                           ? util::GetDefaultAppIcon()
                                           : util::GetDefaultExtensionIcon();
-  icon_ = base::MakeUnique<IconImage>(
+  icon_ = std::make_unique<IconImage>(
       browser_context_, extension,
       extension ? IconsInfo::GetIcons(extension) : ExtensionIconSet(),
       resource_size_in_dip_, default_icon, this);
@@ -122,7 +121,7 @@ void ChromeAppIcon::UpdateIcon() {
   const Extension* extension = GetExtension();
   if (extension && extension->from_bookmark()) {
     image_skia_ =
-        gfx::ImageSkia(base::MakeUnique<RoundedCornersImageSource>(image_skia_),
+        gfx::ImageSkia(std::make_unique<RoundedCornersImageSource>(image_skia_),
                        image_skia_.size());
   }
 

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
@@ -124,12 +123,12 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
-    SetResult(base::MakeUnique<base::Value>(false));
+    SetResult(std::make_unique<base::Value>(false));
     SendResponse(false);
     return;
   }
 
-  SetResult(base::MakeUnique<base::Value>(true));
+  SetResult(std::make_unique<base::Value>(true));
   SendResponse(true);
 }
 
@@ -385,7 +384,7 @@ SyncFileSystemSetConflictResolutionPolicyFunction::Run() {
 ExtensionFunction::ResponseAction
 SyncFileSystemGetConflictResolutionPolicyFunction::Run() {
   return RespondNow(
-      OneArgument(base::MakeUnique<base::Value>(api::sync_file_system::ToString(
+      OneArgument(std::make_unique<base::Value>(api::sync_file_system::ToString(
           api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN))));
 }
 

@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
@@ -86,7 +86,7 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie1(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "ABC", "DEF", "www.example.com", "/", base::Time(), base::Time(),
           base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_DEFAULT));
@@ -106,7 +106,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("some cookie store", cookie1.store_id);
 
   std::unique_ptr<net::CanonicalCookie> canonical_cookie2(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "ABC", "DEF", ".example.com", "/", base::Time(),
           base::Time::FromDoubleT(10000), base::Time(), false, false,
           net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT));
@@ -120,7 +120,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ(10000, *cookie2.expiration_date);
 
   TestingProfile profile;
-  auto tab_ids_list = base::MakeUnique<base::ListValue>();
+  auto tab_ids_list = std::make_unique<base::ListValue>();
   std::vector<int> tab_ids;
   CookieStore cookie_store =
       cookies_helpers::CreateCookieStore(&profile, std::move(tab_ids_list));
@@ -130,7 +130,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
   std::unique_ptr<net::CanonicalCookie> cookie1(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "ABC", "DEF", ".example.com", "/", base::Time(), base::Time(),
           base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_DEFAULT));
@@ -139,7 +139,7 @@ TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
             cookies_helpers::GetURLFromCanonicalCookie(*cookie1).spec());
 
   std::unique_ptr<net::CanonicalCookie> cookie2(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "ABC", "DEF", ".helloworld.com", "/", base::Time(), base::Time(),
           base::Time(), true, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_DEFAULT));
@@ -168,14 +168,14 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Build up the Params struct.
     base::ListValue args;
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString(keys::kDomainKey, std::string(tests[i].filter));
     args.Set(0, std::move(dict));
     std::unique_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
     std::unique_ptr<net::CanonicalCookie> cookie(
-        base::MakeUnique<net::CanonicalCookie>(
+        std::make_unique<net::CanonicalCookie>(
             "name", std::string(), tests[i].domain, "/", base::Time(),
             base::Time(), base::Time(), false, false,
             net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));

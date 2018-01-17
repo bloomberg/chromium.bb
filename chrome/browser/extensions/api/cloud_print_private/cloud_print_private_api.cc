@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -77,7 +77,7 @@ CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
 }
 
 bool CloudPrintPrivateGetHostNameFunction::RunAsync() {
-  SetResult(base::MakeUnique<base::Value>(
+  SetResult(std::make_unique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetHostName()
           : net::GetHostName()));
@@ -122,7 +122,7 @@ CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
 }
 
 bool CloudPrintPrivateGetClientIdFunction::RunAsync() {
-  SetResult(base::MakeUnique<base::Value>(
+  SetResult(std::make_unique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetClientId()
           : google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT)));

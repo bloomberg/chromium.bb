@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   system->management_policy()->RegisterProvider(&policy);
   ExtensionDownloader::set_test_delegate(&downloader);
   service->AddProviderForTesting(
-      base::MakeUnique<TestExternalProvider>(service, id));
+      std::make_unique<TestExternalProvider>(service, id));
 
   base::FilePath crx_path =
       test_data_dir_.AppendASCII("content_verifier/v1.crx");

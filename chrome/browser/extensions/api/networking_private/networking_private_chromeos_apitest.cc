@@ -490,7 +490,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
   std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
   CreateNetworkingCastPrivateDelegate() {
-    return base::MakeUnique<TestNetworkingCastPrivateDelegate>();
+    return std::make_unique<TestNetworkingCastPrivateDelegate>();
   }
 
   bool SetupCertificates() {

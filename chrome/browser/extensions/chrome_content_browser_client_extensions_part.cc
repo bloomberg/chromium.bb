@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -918,10 +918,10 @@ void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
     std::vector<std::unique_ptr<storage::FileSystemBackend>>*
         additional_backends) {
   additional_backends->push_back(
-      base::MakeUnique<MediaFileSystemBackend>(storage_partition_path));
+      std::make_unique<MediaFileSystemBackend>(storage_partition_path));
 
   additional_backends->push_back(
-      base::MakeUnique<sync_file_system::SyncFileSystemBackend>(
+      std::make_unique<sync_file_system::SyncFileSystemBackend>(
           Profile::FromBrowserContext(browser_context)));
 }
 

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -218,13 +217,13 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
         // Sync and local values are the same, no changes to send.
       } else {
         // Sync value is different, update local setting with new value.
-        changes->push_back(base::MakeUnique<SettingSyncData>(
+        changes->push_back(std::make_unique<SettingSyncData>(
             syncer::SyncChange::ACTION_UPDATE, extension_id_, it.key(),
             std::move(sync_value)));
       }
     } else {
       // Not synced, delete local setting.
-      changes->push_back(base::MakeUnique<SettingSyncData>(
+      changes->push_back(std::make_unique<SettingSyncData>(
           syncer::SyncChange::ACTION_DELETE, extension_id_, it.key(),
           std::unique_ptr<base::Value>(new base::DictionaryValue())));
     }
@@ -237,7 +236,7 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     std::string key = base::DictionaryValue::Iterator(*sync_state).key();
     std::unique_ptr<base::Value> value;
     CHECK(sync_state->RemoveWithoutPathExpansion(key, &value));
-    changes->push_back(base::MakeUnique<SettingSyncData>(
+    changes->push_back(std::make_unique<SettingSyncData>(
         syncer::SyncChange::ACTION_ADD, extension_id_, key, std::move(value)));
   }
 

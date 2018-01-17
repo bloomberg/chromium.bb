@@ -4,10 +4,11 @@
 
 #include "chrome/browser/extensions/extension_icon_manager.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -42,7 +43,7 @@ class ScopedSetDeviceScaleFactor {
     command_line_.GetProcessCommandLine()->AppendSwitchASCII(
         switches::kForceDeviceScaleFactor, base::StringPrintf("%3.2f", scale));
     // This has to be inited after fiddling with the command line.
-    test_screen_ = base::MakeUnique<display::test::TestScreen>();
+    test_screen_ = std::make_unique<display::test::TestScreen>();
     display::Screen::SetScreenInstance(test_screen_.get());
   }
 
@@ -193,7 +194,7 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
 // Test what bitmaps are loaded when various combinations of scale factors are
 // supported.
 TEST_F(ExtensionIconManagerTest, ScaleFactors) {
-  auto profile = base::MakeUnique<TestingProfile>();
+  auto profile = std::make_unique<TestingProfile>();
   const gfx::Image default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;

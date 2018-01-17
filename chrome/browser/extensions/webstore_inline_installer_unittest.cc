@@ -5,7 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -97,7 +96,7 @@ bool WebstoreInlineInstallerTest::TestSingleVerifiedSite(
 bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
     const std::string& requestor_url,
     const std::vector<std::string>& verified_sites) {
-  auto sites = base::MakeUnique<base::ListValue>();
+  auto sites = std::make_unique<base::ListValue>();
   for (std::vector<std::string>::const_iterator it = verified_sites.begin();
        it != verified_sites.end(); ++it) {
     sites->AppendString(*it);

@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -657,7 +656,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       !browser_context()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if extension itself works in non-incognito
     // profile and CanCrossIncognito isn't allowed.
-    result = base::MakeUnique<base::Value>();
+    result = std::make_unique<base::Value>();
   } else {
     result = controller->CreateWindowValueWithTabs(extension());
   }
@@ -1744,7 +1743,7 @@ void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
     return;
   }
 
-  SetResult(base::MakeUnique<base::Value>(base64_result));
+  SetResult(std::make_unique<base::Value>(base64_result));
   SendResponse(true);
 }
 
@@ -1854,7 +1853,7 @@ void TabsDetectLanguageFunction::Observe(
 }
 
 void TabsDetectLanguageFunction::GotLanguage(const std::string& language) {
-  SetResult(base::MakeUnique<base::Value>(language));
+  SetResult(std::make_unique<base::Value>(language));
   SendResponse(true);
 
   Release();  // Balanced in Run()

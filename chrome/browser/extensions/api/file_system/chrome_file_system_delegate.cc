@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/file_system/file_entry_picker.h"
@@ -215,7 +214,7 @@ void DispatchVolumeListChangeEvent(content::BrowserContext* browser_context) {
       continue;
     event_router->DispatchEventToExtension(
         extension->id(),
-        base::MakeUnique<Event>(
+        std::make_unique<Event>(
             events::FILE_SYSTEM_ON_VOLUME_LIST_CHANGED,
             file_system::OnVolumeListChanged::kEventName,
             file_system::OnVolumeListChanged::Create(event_args)));
