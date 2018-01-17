@@ -72,10 +72,10 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   DCHECK(avrt_init) << "Failed to load the Avrt.dll";
 
   // Set up the desired capture format specified by the client.
-  format_.nSamplesPerSec = params.sample_rate();
   format_.wFormatTag = WAVE_FORMAT_PCM;
-  format_.wBitsPerSample = params.bits_per_sample();
   format_.nChannels = params.channels();
+  format_.nSamplesPerSec = params.sample_rate();
+  format_.wBitsPerSample = params.bits_per_sample();
   format_.nBlockAlign = (format_.wBitsPerSample / 8) * format_.nChannels;
   format_.nAvgBytesPerSec = format_.nSamplesPerSec * format_.nBlockAlign;
   format_.cbSize = 0;
@@ -647,63 +647,89 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
   DLOG_IF(ERROR, hresult == S_FALSE)
       << "Format is not supported but a closest match exists.";
 
-  if (hresult == S_FALSE &&
-      IsSupportedFormatForConversion(*closest_match.get())) {
-    DVLOG(1) << "Audio capture data conversion needed.";
-    // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
-    // we give to OnData so that each buffer we receive from the OS can be
-    // directly converted to a buffer that matches with what was asked for.
-    const double buffer_ratio =
-        format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
-    double new_frames_per_buffer = closest_match->nSamplesPerSec / buffer_ratio;
+  if (hresult == S_FALSE) {
+    WAVEFORMATEX new_format = {};
+    new_format.wFormatTag = WAVE_FORMAT_PCM;
+    new_format.nChannels = closest_match->nChannels;
+    new_format.nSamplesPerSec = closest_match->nSamplesPerSec;
 
-    const auto input_layout = GuessChannelLayout(closest_match->nChannels);
-    DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
-    const auto output_layout = GuessChannelLayout(format_.nChannels);
-    DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
+    // If the closest match is fixed point PCM (WAVE_FORMAT_PCM or
+    // KSDATAFORMAT_SUBTYPE_PCM), we use the closest match's bits per sample.
+    // Otherwise, we keep the bits sample as is since we still request fixed
+    // point PCM. In that case the closest match is typically in float format
+    // (KSDATAFORMAT_SUBTYPE_IEEE_FLOAT).
+    auto format_is_pcm = [](const WAVEFORMATEX* format) {
+      if (format->wFormatTag == WAVE_FORMAT_PCM)
+        return true;
+      if (format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        const WAVEFORMATEXTENSIBLE* format_ex =
+            reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(format);
+        return format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM;
+      }
+      return false;
+    };
+    new_format.wBitsPerSample = format_is_pcm(closest_match)
+                                    ? closest_match->wBitsPerSample
+                                    : format_.wBitsPerSample;
 
-    const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                input_layout, closest_match->nSamplesPerSec,
-                                closest_match->wBitsPerSample,
-                                static_cast<int>(new_frames_per_buffer));
+    new_format.nBlockAlign =
+        (new_format.wBitsPerSample / 8) * new_format.nChannels;
+    new_format.nAvgBytesPerSec =
+        new_format.nSamplesPerSec * new_format.nBlockAlign;
 
-    const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                 output_layout, format_.nSamplesPerSec,
-                                 format_.wBitsPerSample, packet_size_frames_);
+    if (IsSupportedFormatForConversion(new_format)) {
+      DVLOG(1) << "Audio capture data conversion needed.";
+      // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
+      // we give to OnData so that each buffer we receive from the OS can be
+      // directly converted to a buffer that matches with what was asked for.
+      const double buffer_ratio =
+          format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
+      double new_frames_per_buffer = new_format.nSamplesPerSec / buffer_ratio;
 
-    converter_.reset(new AudioConverter(input, output, false));
-    converter_->AddInput(this);
-    converter_->PrimeWithSilence();
-    convert_bus_ = AudioBus::Create(output);
+      const auto input_layout = GuessChannelLayout(new_format.nChannels);
+      DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
+      const auto output_layout = GuessChannelLayout(format_.nChannels);
+      DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
 
-    // Now change the format we're going to ask for to better match with what
-    // the OS can provide.  If we succeed in opening the stream with these
-    // params, we can take care of the required resampling.
-    format_.wBitsPerSample = closest_match->wBitsPerSample;
-    format_.nSamplesPerSec = closest_match->nSamplesPerSec;
-    format_.nChannels = closest_match->nChannels;
-    format_.nBlockAlign = (format_.wBitsPerSample / 8) * format_.nChannels;
-    format_.nAvgBytesPerSec = format_.nSamplesPerSec * format_.nBlockAlign;
-    DVLOG(1) << "Will convert audio from: \nbits: " << format_.wBitsPerSample
-             << "\nsample rate: " << format_.nSamplesPerSec
-             << "\nchannels: " << format_.nChannels
-             << "\nblock align: " << format_.nBlockAlign
-             << "\navg bytes per sec: " << format_.nAvgBytesPerSec;
+      const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                  input_layout, new_format.nSamplesPerSec,
+                                  new_format.wBitsPerSample,
+                                  static_cast<int>(new_frames_per_buffer));
 
-    // Update our packet size assumptions based on the new format.
-    const auto new_bytes_per_buffer =
-        static_cast<int>(new_frames_per_buffer) * format_.nBlockAlign;
-    packet_size_frames_ = new_bytes_per_buffer / format_.nBlockAlign;
-    packet_size_bytes_ = new_bytes_per_buffer;
-    frame_size_ = format_.nBlockAlign;
+      const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                   output_layout, format_.nSamplesPerSec,
+                                   format_.wBitsPerSample, packet_size_frames_);
 
-    imperfect_buffer_size_conversion_ =
-        std::modf(new_frames_per_buffer, &new_frames_per_buffer) != 0.0;
-    DVLOG_IF(1, imperfect_buffer_size_conversion_)
-        << "Audio capture data conversion: Need to inject fifo";
+      converter_.reset(new AudioConverter(input, output, false));
+      converter_->AddInput(this);
+      converter_->PrimeWithSilence();
+      convert_bus_ = AudioBus::Create(output);
 
-    // Indicate that we're good to go with a close match.
-    hresult = S_OK;
+      // Now change the format we're going to ask for to better match with what
+      // the OS can provide.  If we succeed in opening the stream with these
+      // params, we can take care of the required format conversion.
+      format_ = new_format;
+      DVLOG(1) << "Will convert audio from: \nbits: " << format_.wBitsPerSample
+               << "\nsample rate: " << format_.nSamplesPerSec
+               << "\nchannels: " << format_.nChannels
+               << "\nblock align: " << format_.nBlockAlign
+               << "\navg bytes per sec: " << format_.nAvgBytesPerSec;
+
+      // Update our packet size assumptions based on the new format.
+      const auto new_bytes_per_buffer =
+          static_cast<int>(new_frames_per_buffer) * format_.nBlockAlign;
+      packet_size_frames_ = new_bytes_per_buffer / format_.nBlockAlign;
+      packet_size_bytes_ = new_bytes_per_buffer;
+      frame_size_ = format_.nBlockAlign;
+
+      imperfect_buffer_size_conversion_ =
+          std::modf(new_frames_per_buffer, &new_frames_per_buffer) != 0.0;
+      DVLOG_IF(1, imperfect_buffer_size_conversion_)
+          << "Audio capture data conversion: Need to inject fifo";
+
+      // Indicate that we're good to go with a close match.
+      hresult = S_OK;
+    }
   }
 
   // At this point, |hresult| == S_OK if the desired format is supported. If
