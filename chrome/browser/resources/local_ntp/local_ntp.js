@@ -242,12 +242,11 @@ function getIsThemeDark() {
  * @private
  */
 function renderTheme() {
+  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, getIsThemeDark());
+
   var info = getThemeBackgroundInfo();
-  var isThemeDark = getIsThemeDark();
-  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, isThemeDark);
-  if (!info) {
+  if (!info)
     return;
-  }
 
   var background = [convertToRGBAColor(info.backgroundColorRgba),
                     info.imageUrl,
@@ -261,10 +260,21 @@ function renderTheme() {
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
+}
 
-  // Inform the most visited iframe of the new theme.
-  var themeinfo = {cmd: 'updateTheme'};
-  themeinfo.isThemeDark = isThemeDark;
+/**
+ * Sends the current theme info to the most visited iframe.
+ * @private
+ */
+function sendThemeInfoToMostVisitedIframe() {
+  var info = getThemeBackgroundInfo();
+  if (!info)
+    return;
+
+  var isThemeDark = getIsThemeDark();
+
+  var message = {cmd: 'updateTheme'};
+  message.isThemeDark = isThemeDark;
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
@@ -272,9 +282,9 @@ function renderTheme() {
   } else if (isThemeDark) {
     titleColor = NTP_DESIGN.titleColorAgainstDark;
   }
-  themeinfo.tileTitleColor = convertToRGBAColor(titleColor);
+  message.tileTitleColor = convertToRGBAColor(titleColor);
 
-  $(IDS.TILES_IFRAME).contentWindow.postMessage(themeinfo, '*');
+  $(IDS.TILES_IFRAME).contentWindow.postMessage(message, '*');
 }
 
 
@@ -307,6 +317,7 @@ function renderOneGoogleBarTheme() {
 function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
+  sendThemeInfoToMostVisitedIframe();
 }
 
 
@@ -622,6 +633,8 @@ function init() {
   ntpApiHandle.onthemechange = onThemeChange;
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
+  renderTheme();
+
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
@@ -759,7 +772,7 @@ function init() {
 
   iframe.onload = function() {
     reloadTiles();
-    renderTheme();
+    sendThemeInfoToMostVisitedIframe();
   };
 
   window.addEventListener('message', handlePostMessage);
