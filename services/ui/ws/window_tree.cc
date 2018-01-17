@@ -1939,9 +1939,10 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
       event_location = targeted_event->event_location();
       callback = targeted_event->TakeCallback();
     } while (!event_queue_.empty() && !GetDisplay(target));
-    if (target)
+    if (GetDisplay(target)) {
       DispatchInputEventImpl(target, *event, event_location,
                              std::move(callback));
+    }
   }
 }
 
