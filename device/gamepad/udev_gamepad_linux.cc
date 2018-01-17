@@ -12,9 +12,6 @@ namespace device {
 
 namespace {
 
-const char kInputSubsystem[] = "input";
-const char kHidrawSubsystem[] = "hidraw";
-
 int DeviceIndexFromDevicePath(const std::string& path,
                               const std::string& prefix) {
   if (!base::StartsWith(path, prefix, base::CompareCase::SENSITIVE))
@@ -30,6 +27,9 @@ int DeviceIndexFromDevicePath(const std::string& path,
 }
 
 }  // namespace
+
+const char UdevGamepadLinux::kInputSubsystem[] = "input";
+const char UdevGamepadLinux::kHidrawSubsystem[] = "hidraw";
 
 UdevGamepadLinux::UdevGamepadLinux(Type type,
                                    int index,

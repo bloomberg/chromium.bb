@@ -19,11 +19,6 @@
 #include "device/udev_linux/scoped_udev.h"
 #include "device/udev_linux/udev_linux.h"
 
-namespace {
-const char kInputSubsystem[] = "input";
-const char kHidrawSubsystem[] = "hidraw";
-}  // namespace
-
 namespace device {
 
 GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() = default;
@@ -41,14 +36,20 @@ GamepadSource GamepadPlatformDataFetcherLinux::source() {
 
 void GamepadPlatformDataFetcherLinux::OnAddedToProvider() {
   std::vector<UdevLinux::UdevMonitorFilter> filters;
-  filters.push_back(UdevLinux::UdevMonitorFilter(kInputSubsystem, nullptr));
-  filters.push_back(UdevLinux::UdevMonitorFilter(kHidrawSubsystem, nullptr));
+  filters.push_back(
+      UdevLinux::UdevMonitorFilter(UdevGamepadLinux::kInputSubsystem, nullptr));
+  filters.push_back(UdevLinux::UdevMonitorFilter(
+      UdevGamepadLinux::kHidrawSubsystem, nullptr));
   udev_.reset(new UdevLinux(
       filters, base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
                           base::Unretained(this))));
 
-  EnumerateSubsystemDevices(kInputSubsystem);
-  EnumerateSubsystemDevices(kHidrawSubsystem);
+  for (auto it = devices_.begin(); it != devices_.end(); ++it)
+    it->get()->Shutdown();
+  devices_.clear();
+
+  EnumerateSubsystemDevices(UdevGamepadLinux::kInputSubsystem);
+  EnumerateSubsystemDevices(UdevGamepadLinux::kHidrawSubsystem);
 }
 
 void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
@@ -132,7 +133,7 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
   // This function should just walk up the tree one level.
   udev_device* parent_dev =
       device::udev_device_get_parent_with_subsystem_devtype(
-          dev, kInputSubsystem, nullptr);
+          dev, UdevGamepadLinux::kInputSubsystem, nullptr);
   if (!parent_dev) {
     device->CloseJoydevNode();
     if (device->IsEmpty())
@@ -248,8 +249,6 @@ void GamepadPlatformDataFetcherLinux::EnumerateSubsystemDevices(
   ret = udev_enumerate_scan_devices(enumerate.get());
   if (ret != 0)
     return;
-
-  devices_.clear();
 
   udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
   for (udev_list_entry* dev_list_entry = devices; dev_list_entry != nullptr;
