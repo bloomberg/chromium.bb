@@ -252,18 +252,21 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
 
 std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
   std::string str;
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::String::Utf8Value exception(try_catch.Exception());
   v8::Local<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     str.append(base::StringPrintf("%s\n", *exception));
   } else {
     v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
-    int linenum = message->GetLineNumber();
-    int colnum = message->GetStartColumn();
+    int linenum = message->GetLineNumber(context).ToChecked();
+    int colnum = message->GetStartColumn(context).ToChecked();
     str.append(base::StringPrintf(
         "%s:%i:%i %s\n", *filename, linenum, colnum, *exception));
-    v8::String::Utf8Value sourceline(message->GetSourceLine());
+    v8::String::Utf8Value sourceline(
+        message->GetSourceLine(context).ToLocalChecked());
     str.append(base::StringPrintf("%s\n", *sourceline));
   }
   return str;
