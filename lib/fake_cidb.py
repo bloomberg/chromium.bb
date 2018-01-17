@@ -460,20 +460,19 @@ class FakeCIDBConnection(object):
 
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      starting_build_number=None, milestone_version=None,
-                      platform_version=None, starting_build_id=None,
-                      final=False, reverse=False):
+                      milestone_version=None, platform_version=None,
+                      starting_build_id=None, final=False, reverse=False):
     """Returns the build history for the given |build_config|."""
     return self.GetBuildsHistory(
         build_configs=[build_config], num_results=num_results,
         ignore_build_id=ignore_build_id, start_date=start_date,
-        end_date=end_date, starting_build_number=starting_build_number,
-        milestone_version=milestone_version, platform_version=platform_version,
-        starting_build_id=starting_build_id, final=final, reverse=reverse)
+        end_date=end_date, milestone_version=milestone_version,
+        platform_version=platform_version, starting_build_id=starting_build_id,
+        final=final, reverse=reverse)
 
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
-                       starting_build_number=None, milestone_version=None,
+                       milestone_version=None,
                        platform_version=None, starting_build_id=None,
                        final=False, reverse=False):
     """Returns the build history for the given |build_configs|."""
@@ -492,9 +491,6 @@ class FakeCIDBConnection(object):
                 if 'finish_time' in b and
                 b['finish_time'] and
                 b['finish_time'].date() <= end_date]
-    if starting_build_number is not None:
-      builds = [b for b in builds
-                if b['build_number'] >= starting_build_number]
     if milestone_version is not None:
       builds = [b for b in builds
                 if b.get('milestone_version') == milestone_version]

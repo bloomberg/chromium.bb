@@ -125,9 +125,7 @@ class CLStatsEngine(object):
 
   def Gather(self, start_date, end_date,
              master_config=constants.CQ_MASTER,
-             sort_by_build_number=True,
-             starting_build_number=None,
-             ending_build_number=None):
+             sort_by_build_number=True):
     """Fetches build data and failure reasons.
 
     Args:
@@ -139,10 +137,6 @@ class CLStatsEngine(object):
                      Default to CQ_MASTER.
       sort_by_build_number: Optional boolean. If True, builds will be
           sorted by build number.
-      starting_build_number: (optional) The lowest build number to
-          include in the results.
-      ending_build_number: (optional) The highest build number to include
-          in the results.
     """
     logging.info('Gathering data for %s from %s until %s', master_config,
                  start_date, end_date)
@@ -150,11 +144,7 @@ class CLStatsEngine(object):
         master_config,
         start_date=start_date,
         end_date=end_date,
-        starting_build_number=starting_build_number,
         num_results=self.db.NUM_RESULTS_NO_LIMIT)
-    if ending_build_number is not None:
-      self.builds = [x for x in self.builds
-                     if x['build_number'] <= ending_build_number]
     if self.builds:
       logging.info('Fetched %d builds (build_id: %d to %d)', len(self.builds),
                    self.builds[0]['id'], self.builds[-1]['id'])
@@ -799,9 +789,7 @@ def main(argv):
     master_config = constants.PFQ_MASTER
 
   cl_stats_engine = CLStatsEngine(db)
-  cl_stats_engine.Gather(start_date, end_date, master_config,
-                         starting_build_number=options.starting_build,
-                         ending_build_number=options.ending_build)
+  cl_stats_engine.Gather(start_date, end_date, master_config)
   summary = cl_stats_engine.Summarize(options.build_type,
                                       options.bad_patch_candidates)
 
