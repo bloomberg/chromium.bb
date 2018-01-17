@@ -830,7 +830,11 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
 
   // Allocate a size that is a system page smaller than a bucket. GetSize()
   // should return a larger size than we asked for now.
-  requested_size = (256 * 1024) - kSystemPageSize - kExtraAllocSize;
+  size_t num = 64;
+  while (num * kSystemPageSize >= 1024 * 1024) {
+    num /= 2;
+  }
+  requested_size = num * kSystemPageSize - kSystemPageSize - kExtraAllocSize;
   predicted_size = generic_allocator.root()->ActualSize(requested_size);
   ptr = generic_allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
