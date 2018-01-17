@@ -2096,14 +2096,23 @@ gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 				int **formats, int *num_formats)
 {
 	struct gl_renderer *gr = get_renderer(wc);
+	static const int fallback_formats[] = {
+		DRM_FORMAT_ARGB8888,
+		DRM_FORMAT_XRGB8888,
+		DRM_FORMAT_YUYV,
+		DRM_FORMAT_NV12,
+		DRM_FORMAT_YUV420,
+		DRM_FORMAT_YUV444,
+	};
+	bool fallback = false;
 	EGLint num;
 
 	assert(gr->has_dmabuf_import);
 
 	if (!gr->has_dmabuf_import_modifiers ||
 	    !gr->query_dmabuf_formats(gr->egl_display, 0, NULL, &num)) {
-		*num_formats = 0;
-		return;
+		num = gr->has_gl_texture_rg ? ARRAY_LENGTH(fallback_formats) : 2;
+		fallback = true;
 	}
 
 	*formats = calloc(num, sizeof(int));
@@ -2111,6 +2120,13 @@ gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 		*num_formats = 0;
 		return;
 	}
+
+	if (fallback) {
+		memcpy(formats, fallback_formats, num * sizeof(int));
+		*num_formats = num;
+		return;
+	}
+
 	if (!gr->query_dmabuf_formats(gr->egl_display, num, *formats, &num)) {
 		*num_formats = 0;
 		free(*formats);
