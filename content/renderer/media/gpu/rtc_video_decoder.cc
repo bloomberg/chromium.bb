@@ -45,6 +45,9 @@ const uint32_t kNumVDAErrorsBeforeSWFallback = 5;
 // resources.
 static const size_t kMaxInFlightDecodes = 8;
 
+// Maximum number of pending WebRTC buffers that are waiting for shared memory.
+static const size_t kMaxNumOfPendingBuffers = 8;
+
 // Number of allocated shared memory segments.
 static const size_t kNumSharedMemorySegments = 16;
 
@@ -614,7 +617,7 @@ bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
            << ". decode_buffers_ size=" << decode_buffers_.size()
            << ". available_shm size=" << available_shm_segments_.size();
   // Queued too many buffers. Something goes wrong.
-  if (pending_buffers_.size() >= rtc_video_decoder::kMaxNumOfPendingBuffers) {
+  if (pending_buffers_.size() >= kMaxNumOfPendingBuffers) {
     LOG(WARNING) << "Too many pending buffers!";
     return false;
   }
