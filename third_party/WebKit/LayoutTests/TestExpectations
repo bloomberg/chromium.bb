@@ -2698,6 +2698,15 @@ crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-r
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 
+# See https://bugs.chromium.org/p/chromium/issues/detail?id=568704#c18
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-a-bitrate.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-bitrate.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure Pass ]
+crbug.com/568704 external/wpt/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure Pass ]
+
 # Rebaseline for v8's --harmony-function-tostring
 crbug.com/753073 external/wpt/2dcontext/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.html [ NeedsManualRebaseline ]
 crbug.com/753073 external/wpt/2dcontext/fill-and-stroke-styles/2d.pattern.image.broken.html [ NeedsManualRebaseline ]
