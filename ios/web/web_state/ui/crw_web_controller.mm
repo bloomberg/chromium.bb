@@ -4423,6 +4423,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
+  BOOL committedNavigation =
+      [_navigationStates isCommittedNavigation:navigation];
+
   [self didReceiveWebViewNavigationDelegateCallback];
 
   // TODO(crbug.com/787497): Always use webView.backForwardList.currentItem.URL
@@ -4452,17 +4455,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // pending navigation information should be applied to state information.
   [self setDocumentURL:webViewURL];
 
-  // If |navigation| is nil (which happens for windows open by DOM), then it
-  // should be the first and the only pending navigation.
-  BOOL isLastNavigation =
-      !navigation ||
-      [[_navigationStates lastAddedNavigation] isEqual:navigation];
-
   // Update HTTP response headers.
   _webStateImpl->UpdateHttpResponseHeaders(_documentURL);
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
-  context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
+  // |context| will be nil if this navigation has been already committed and
+  // finished.
+  if (context) {
+    context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
+  }
 
   [self commitPendingNavigationInfo];
   if ([self currentBackForwardListItemHolder]->navigation_type() ==
@@ -4488,30 +4489,59 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [_windowIDJSManager inject];
   }
 
-  if (isLastNavigation) {
-    [self webPageChangedWithContext:context];
+  if (committedNavigation) {
+    // WKWebView called didCommitNavigation: with incorrect WKNavigation object.
+    // Correct WKNavigation object for this navigation was deallocated because
+    // WKWebView mistakenly cancelled the navigation and called
+    // didFailProvisionalNavigation. As a result web::NavigationContext for this
+    // navigation does not exist anymore. Find correct navigation item and make
+    // it committed.
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      bool found_correct_navigation_item = false;
+      for (size_t i = 0; i < self.sessionController.items.size(); i++) {
+        web::NavigationItem* item = self.sessionController.items[i].get();
+        found_correct_navigation_item = item->GetURL() == webViewURL;
+        if (found_correct_navigation_item) {
+          [self.sessionController goToItemAtIndex:i
+                         discardNonCommittedItems:NO];
+          break;
+        }
+      }
+      DCHECK(found_correct_navigation_item);
+    }
+    [self resetDocumentSpecificState];
+    [self didStartLoading];
   } else {
-    // WKWebView has more than one in progress navigation, and committed
-    // navigation was not the latest. Change last committed item to one that
-    // corresponds to committed navigation.
-    web::NavigationContextImpl* context =
-        [_navigationStates contextForNavigation:navigation];
-    int itemIndex = web::GetCommittedItemIndexWithUniqueID(
-        self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-    // Do not discard pending entry, because another pending navigation is still
-    // in progress and will commit or fail soon.
-    [self.sessionController goToItemAtIndex:itemIndex
-                   discardNonCommittedItems:NO];
-  }
+    // If |navigation| is nil (which happens for windows open by DOM), then it
+    // should be the first and the only pending navigation.
+    BOOL isLastNavigation =
+        !navigation ||
+        [[_navigationStates lastAddedNavigation] isEqual:navigation];
+    if (isLastNavigation) {
+      [self webPageChangedWithContext:context];
+    } else {
+      // WKWebView has more than one in progress navigation, and committed
+      // navigation was not the latest. Change last committed item to one that
+      // corresponds to committed navigation.
+      web::NavigationContextImpl* context =
+          [_navigationStates contextForNavigation:navigation];
+      int itemIndex = web::GetCommittedItemIndexWithUniqueID(
+          self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+      // Do not discard pending entry, because another pending navigation is
+      // still in progress and will commit or fail soon.
+      [self.sessionController goToItemAtIndex:itemIndex
+                     discardNonCommittedItems:NO];
+    }
 
-  self.webStateImpl->OnNavigationFinished(context);
+    self.webStateImpl->OnNavigationFinished(context);
+  }
 
   [self updateSSLStatusForCurrentNavigationItem];
 
   // Do not update the HTML5 history state or last committed item title for
   // placeholder page because the actual navigation item will not be committed
   // until the native content or WebUI is shown.
-  if (!IsPlaceholderUrl(context->GetUrl())) {
+  if (context && !IsPlaceholderUrl(context->GetUrl())) {
     [self updateHTML5HistoryState];
     [self setNavigationItemTitle:[_webView title]];
   }
