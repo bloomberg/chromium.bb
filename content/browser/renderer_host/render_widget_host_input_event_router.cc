@@ -131,6 +131,8 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     if (!last_mouse_move_target_ || view == last_mouse_move_root_view_)
       last_mouse_move_root_view_ = nullptr;
   }
+
+  event_targeter_->ViewWillBeDestroyed(view);
 }
 
 void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
@@ -1187,6 +1189,11 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
     hosts.push_back(entry.second);
 
   return hosts;
+}
+
+RenderWidgetTargeter*
+RenderWidgetHostInputEventRouter::GetRenderWidgetTargeterForTests() {
+  return event_targeter_.get();
 }
 
 RenderWidgetTargetResult

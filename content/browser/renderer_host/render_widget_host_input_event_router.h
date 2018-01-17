@@ -104,6 +104,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       gfx::PointF* transformed_point);
 
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
+  RenderWidgetTargeter* GetRenderWidgetTargeterForTests();
 
  private:
   struct HittestData {

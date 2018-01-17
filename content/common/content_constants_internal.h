@@ -19,6 +19,10 @@ CONTENT_EXPORT extern const int64_t kHungRendererDelayMs;
 // before clearing previously displayed graphics.
 extern const int64_t kNewContentRenderingDelayMs;
 
+// Maximum wait time for an asynchronous hit test request sent to a renderer
+// process (in milliseconds).
+CONTENT_EXPORT extern const int64_t kAsyncHitTestTimeoutMs;
+
 // The maximum length of string as data url.
 extern const size_t kMaxLengthOfDataURLString;
 
