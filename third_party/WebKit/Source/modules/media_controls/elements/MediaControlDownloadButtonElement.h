@@ -43,9 +43,6 @@ class MODULES_EXPORT MediaControlDownloadButtonElement final
   };
 
   void DefaultEventHandler(Event*) final;
-
-  // Points to an anchor element that contains the URL of the media file.
-  Member<HTMLAnchorElement> anchor_;
 };
 
 }  // namespace blink

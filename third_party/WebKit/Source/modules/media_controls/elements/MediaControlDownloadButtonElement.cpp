@@ -5,8 +5,8 @@
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 
 #include "core/dom/events/Event.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
@@ -52,7 +52,6 @@ bool MediaControlDownloadButtonElement::HasOverflowButton() const {
 }
 
 void MediaControlDownloadButtonElement::Trace(blink::Visitor* visitor) {
-  visitor->Trace(anchor_);
   MediaControlInputElement::Trace(visitor);
 }
 
@@ -75,13 +74,15 @@ void MediaControlDownloadButtonElement::DefaultEventHandler(Event* event) {
       !(url.IsNull() || url.IsEmpty())) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.Download"));
-    if (!anchor_) {
-      HTMLAnchorElement* anchor = HTMLAnchorElement::Create(GetDocument());
-      anchor->setAttribute(HTMLNames::downloadAttr, "");
-      anchor_ = anchor;
-    }
-    anchor_->SetURL(url);
-    anchor_->DispatchSimulatedClick(event);
+    ResourceRequest request(url);
+    request.SetUIStartTime(
+        (event->PlatformTimeStamp() - TimeTicks()).InSecondsF());
+    request.SetInputPerfMetricReportPolicy(
+        InputToLoadPerfMetricReportPolicy::kReportLink);
+    request.SetSuggestedFilename(String());
+    request.SetRequestContext(WebURLRequest::kRequestContextDownload);
+    request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
+    GetDocument().GetFrame()->Client()->DownloadURL(request, String());
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }
