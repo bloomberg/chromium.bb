@@ -243,3 +243,6 @@ crbug.com/777879 external/wpt/FileAPI/file/send-file-form.html [ Crash ]
 # Text-diff: total-byte-weight: {{true => false}}
 Bug(none) http/tests/devtools/audits2/audits2-limited-run.js [ Failure ]
 Bug(none) http/tests/devtools/audits2/audits2-successful-run.js [ Failure ]
+
+# Started failing @ r529490
+Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
