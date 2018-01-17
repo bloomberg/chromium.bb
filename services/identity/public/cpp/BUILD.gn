@@ -26,3 +26,20 @@ source_set("cpp_types") {
     "scope_set.h",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "identity_test_environment.cc",
+    "identity_test_environment.h",
+  ]
+
+  public_deps = [
+    ":cpp",
+  ]
+
+  deps = [
+    "//components/signin/core/browser:test_support",
+    "//components/sync_preferences:test_support",
+  ]
+}

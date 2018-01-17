@@ -65,14 +65,12 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/image_fetcher/core",
     "//components/leveldb_proto:test_support",
-
-    # TODO(blundell): Remove the below dep.
-    "//components/signin/core/browser:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",
     "//net:test_support",
     "//services/identity/public/cpp",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
