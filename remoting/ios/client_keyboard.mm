@@ -103,9 +103,7 @@
   _inputView =
       showsSoftKeyboard ? nil : [[UIView alloc] initWithFrame:CGRectZero];
 
-  if (self.isFirstResponder) {
-    [self reloadInputViews];
-  }
+  [self reloadInputViews];
 }
 
 - (BOOL)showsSoftKeyboard {
