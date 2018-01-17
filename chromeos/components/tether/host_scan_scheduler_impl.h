@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -14,6 +15,10 @@
 #include "chromeos/components/tether/host_scan_scheduler.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/network/network_state_handler_observer.h"
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace chromeos {
 
@@ -53,13 +58,15 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   void LogHostScanBatchMetric();
 
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
-                      std::unique_ptr<base::Clock> test_clock);
+                      std::unique_ptr<base::Clock> test_clock,
+                      scoped_refptr<base::TaskRunner> test_task_runner);
 
   NetworkStateHandler* network_state_handler_;
   HostScanner* host_scanner_;
 
   std::unique_ptr<base::Timer> timer_;
   std::unique_ptr<base::Clock> clock_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   base::Time last_scan_batch_start_timestamp_;
   base::Time last_scan_end_timestamp_;

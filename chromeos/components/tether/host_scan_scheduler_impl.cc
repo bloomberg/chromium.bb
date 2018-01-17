@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -47,6 +48,7 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
       host_scanner_(host_scanner),
       timer_(std::make_unique<base::OneShotTimer>()),
       clock_(std::make_unique<base::DefaultClock>()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
   host_scanner_->AddObserver(this);
@@ -76,10 +78,20 @@ void HostScanSchedulerImpl::ScheduleScan() {
 }
 
 void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
-  if ((!network || !network->IsConnectingOrConnected()) &&
-      !IsTetherNetworkConnectingOrConnected()) {
-    EnsureScan();
+  // If there is an active (i.e., connecting or connected) network, there is no
+  // need to schedule a scan.
+  if ((network && network->IsConnectingOrConnected()) ||
+      IsTetherNetworkConnectingOrConnected()) {
+    return;
   }
+
+  // Schedule a scan as part of a new task. Posting a task here ensures that
+  // processing the default network change is done after other
+  // NetworkStateHandlerObservers are finished running. Processing the
+  // network change immediately can cause crashes; see https://crbug.com/800370.
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&HostScanSchedulerImpl::EnsureScan,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanSchedulerImpl::ScanRequested() {
@@ -98,9 +110,11 @@ void HostScanSchedulerImpl::ScanFinished() {
 
 void HostScanSchedulerImpl::SetTestDoubles(
     std::unique_ptr<base::Timer> test_timer,
-    std::unique_ptr<base::Clock> test_clock) {
+    std::unique_ptr<base::Clock> test_clock,
+    scoped_refptr<base::TaskRunner> test_task_runner) {
   timer_ = std::move(test_timer);
   clock_ = std::move(test_clock);
+  task_runner_ = test_task_runner;
 }
 
 void HostScanSchedulerImpl::EnsureScan() {
