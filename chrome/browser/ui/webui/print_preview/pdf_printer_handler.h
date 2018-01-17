@@ -73,7 +73,8 @@ class PdfPrinterHandler : public PrinterHandler,
       const base::string16& job_title);
   static base::FilePath GetFileNameForURL(const GURL& url);
   static base::FilePath GetFileName(const GURL& url,
-                                    const base::string16& job_title);
+                                    const base::string16& job_title,
+                                    bool is_savable);
 
  protected:
   virtual void SelectFile(const base::FilePath& default_filename,
