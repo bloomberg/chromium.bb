@@ -3105,7 +3105,8 @@ void PDFiumEngine::LoadForm() {
     FPDF_LoadXFA(doc_);
 #endif
 
-    FPDF_SetFormFieldHighlightColor(form_, 0, kFormHighlightColor);
+    FPDF_SetFormFieldHighlightColor(form_, FPDF_FORMFIELD_UNKNOWN,
+                                    kFormHighlightColor);
     FPDF_SetFormFieldHighlightAlpha(form_, kFormHighlightAlpha);
   }
 }  // namespace chrome_pdf
@@ -3972,9 +3973,16 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
                                                  double page_x,
                                                  double page_y,
                                                  int form_type) {
+#if defined(PDF_ENABLE_XFA)
+  if (IS_XFA_FORMFIELD(form_type))
+    return form_type == FPDF_FORMFIELD_XFA_TEXTFIELD ||
+           form_type == FPDF_FORMFIELD_XFA_COMBOBOX;
+#endif  // defined(PDF_ENABLE_XFA)
+
   FPDF_ANNOTATION annot =
       FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
-  DCHECK(annot);
+  if (!annot)
+    return false;
 
   int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
   bool is_editable_form_text_area =
