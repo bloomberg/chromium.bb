@@ -456,7 +456,9 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
 
   // Some SAP-Type-2 append sequences, when buffering ByPts, require that we
   // coalesce |range_for_next_append_| with the range that is *before* it.
-  if (BufferingByPts() && range_for_next_append_ != ranges_.begin()) {
+  // Likewise, some overlap buffering sequences, when buffering ByDts, require
+  // similar.
+  if (range_for_next_append_ != ranges_.begin()) {
     auto prior_range = range_for_next_append_;
     prior_range--;
     MergeWithAdjacentRangeIfNecessary(prior_range);
