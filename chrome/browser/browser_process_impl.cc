@@ -362,6 +362,9 @@ void BrowserProcessImpl::StartTearDown() {
 
   if (local_state_)
     local_state_->CommitPendingWrite();
+
+  // This expects to be destroyed before the task scheduler is torn down.
+  system_network_context_manager_.reset();
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {
@@ -372,9 +375,6 @@ void BrowserProcessImpl::PostDestroyThreads() {
   // Must outlive the file thread.
   webrtc_log_uploader_.reset();
 #endif
-
-  // This observes |local_state_|, so should be destroyed before it.
-  system_network_context_manager_.reset();
 
   // Reset associated state right after actual thread is stopped,
   // as io_thread_.global_ cleanup happens in CleanUp on the IO
