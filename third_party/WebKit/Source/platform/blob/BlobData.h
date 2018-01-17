@@ -134,17 +134,6 @@ struct PLATFORM_EXPORT BlobDataItem {
   long long offset;
   long long length;
   double expected_modification_time;
-
- private:
-  friend class BlobData;
-
-  // Constructor for String type (partial string).
-  BlobDataItem(scoped_refptr<RawData> data, long long offset, long long length)
-      : type(kData),
-        data(std::move(data)),
-        offset(offset),
-        length(length),
-        expected_modification_time(InvalidFileTime()) {}
 };
 
 typedef Vector<BlobDataItem> BlobDataItemList;
@@ -176,7 +165,7 @@ class PLATFORM_EXPORT BlobData {
   const BlobDataItemList& Items() const { return items_; }
 
   void AppendBytes(const void*, size_t length);
-  void AppendData(scoped_refptr<RawData>, long long offset, long long length);
+  void AppendData(scoped_refptr<RawData>);
   void AppendFile(const String& path,
                   long long offset,
                   long long length,

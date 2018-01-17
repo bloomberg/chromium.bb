@@ -164,12 +164,10 @@ void BlobData::SetContentType(const String& content_type) {
     content_type_ = "";
 }
 
-void BlobData::AppendData(scoped_refptr<RawData> data,
-                          long long offset,
-                          long long length) {
+void BlobData::AppendData(scoped_refptr<RawData> data) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  items_.push_back(BlobDataItem(std::move(data), offset, length));
+  items_.push_back(BlobDataItem(std::move(data)));
 }
 
 void BlobData::AppendFile(const String& path,
