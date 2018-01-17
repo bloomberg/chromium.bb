@@ -31,10 +31,6 @@ namespace ukm {
 
 namespace {
 
-// The delay, in seconds, after starting recording before doing expensive
-// initialization work.
-constexpr int kInitializationDelaySeconds = 5;
-
 // Generates a new client id and stores it in prefs.
 uint64_t GenerateClientId(PrefService* pref_service) {
   uint64_t client_id = 0;
@@ -108,10 +104,7 @@ void UkmService::Initialize() {
   DVLOG(1) << "UkmService::Initialize";
   initialize_started_ = true;
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&UkmService::StartInitTask, self_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
+  StartInitTask();
 }
 
 void UkmService::EnableReporting() {
