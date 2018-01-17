@@ -16,6 +16,10 @@ class TextBreakIteratorTest : public ::testing::Test {
     test_string_ = String::FromUTF8(test_string);
   }
 
+  void SetTestString16(Vector<UChar> input) {
+    test_string_ = String(input.data(), static_cast<unsigned>(input.size()));
+  }
+
   // The expected break positions must be specified UTF-16 character boundaries.
   void MatchLineBreaks(
       LineBreakType line_break_type,
@@ -61,6 +65,10 @@ class TextBreakIteratorTest : public ::testing::Test {
                 ::testing::ElementsAreArray(expected_break_positions))
         << test_string_ << " " << break_iterator.BreakType() << " "
         << break_iterator.BreakSpace();
+  }
+
+  unsigned TestLengthOfGraphemeCluster() {
+    return LengthOfGraphemeCluster(test_string_);
   }
 
  private:
@@ -197,6 +205,67 @@ TEST_F(TextBreakIteratorTest, NextBreakOpportunityAtEnd) {
     break_iterator.SetBreakType(break_type);
     EXPECT_EQ(1u, break_iterator.NextBreakOpportunity(1));
   }
+}
+
+TEST_F(TextBreakIteratorTest, LengthOfGraphemeCluster) {
+  SetTestString("");
+  EXPECT_EQ(0u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({});
+  EXPECT_EQ(0u, TestLengthOfGraphemeCluster());
+
+  SetTestString("a");
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+  SetTestString("\n");
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+  SetTestString("\r");
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+  SetTestString16({'a'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+  SetTestString16({'\n'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+  SetTestString16({'\r'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString("abc");
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'a', 'b', 'c'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString("\r\n");
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'\r', '\n'});
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString("\n\r");
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'\n', '\r'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString("\r\n\r");
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'\r', '\n', '\r'});
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'g', 0x308});
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+  SetTestString16({0x1100, 0x1161, 0x11A8});
+  EXPECT_EQ(3u, TestLengthOfGraphemeCluster());
+  SetTestString16({0x0BA8, 0x0BBF});
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({0x308, 'g'});
+  EXPECT_EQ(1u, TestLengthOfGraphemeCluster());
+
+  SetTestString("\r\nbc");
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
+
+  SetTestString16({'g', 0x308, 'b', 'c'});
+  EXPECT_EQ(2u, TestLengthOfGraphemeCluster());
 }
 
 }  // namespace blink
