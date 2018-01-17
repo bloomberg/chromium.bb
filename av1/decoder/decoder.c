@@ -374,8 +374,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 #if !CONFIG_OBU
   av1_decode_frame_headers_and_setup(pbi, source, source + size, psource);
   if (!cm->show_existing_frame) {
-    const uint8_t *data =
-        source + pbi->uncomp_hdr_size + pbi->first_partition_size;
+    const uint8_t *data = source + pbi->uncomp_hdr_size;
     av1_decode_tg_tiles_and_wrapup(pbi, data, source + size, psource, 0,
                                    cm->tile_rows * cm->tile_cols - 1, 1);
   }

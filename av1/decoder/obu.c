@@ -62,9 +62,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 static uint32_t read_frame_header_obu(AV1Decoder *pbi, const uint8_t *data,
                                       const uint8_t *data_end,
                                       const uint8_t **p_data_end) {
-  const size_t header_size =
-      av1_decode_frame_headers_and_setup(pbi, data, data_end, p_data_end);
-  return (uint32_t)(pbi->uncomp_hdr_size + header_size);
+  av1_decode_frame_headers_and_setup(pbi, data, data_end, p_data_end);
+  return (uint32_t)(pbi->uncomp_hdr_size);
 }
 
 static uint32_t read_tile_group_header(AV1Decoder *pbi,
