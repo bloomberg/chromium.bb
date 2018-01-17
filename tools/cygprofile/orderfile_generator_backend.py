@@ -27,10 +27,8 @@ import tempfile
 import time
 
 import cygprofile_utils
-import patch_orderfile
 import process_profiles
 import profile_android_startup
-import symbol_extractor
 
 
 _SRC_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -425,6 +423,8 @@ class OrderfileGenerator(object):
   _CYGLOG_TO_ORDERFILE_SCRIPT = os.path.join(
       constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile',
       'cyglog_to_orderfile.py')
+  _PATCH_ORDERFILE_SCRIPT = os.path.join(
+      constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile', 'patch_orderfile.py')
   _CHECK_ORDERFILE_SCRIPT = os.path.join(
       constants.DIR_SOURCE_ROOT, 'tools', 'cygprofile', 'check_orderfile.py')
   _BUILD_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(
@@ -434,6 +434,8 @@ class OrderfileGenerator(object):
       _CLANK_REPO, 'orderfiles', 'unpatched_orderfile.%s')
   _MERGED_CYGLOG_FILENAME = os.path.join(
       constants.GetOutDirectory(), 'merged_cyglog')
+  _TEMP_ORDERFILE_FILENAME = os.path.join(
+      constants.GetOutDirectory(), 'tmp_orderfile')
 
   _PATH_TO_ORDERFILE = os.path.join(_CLANK_REPO, 'orderfiles',
                                     'orderfile.%s.out')
@@ -484,7 +486,6 @@ class OrderfileGenerator(object):
                                                       options.branch,
                                                       options.netrc)
     assert os.path.isdir(constants.DIR_SOURCE_ROOT), 'No src directory found'
-    symbol_extractor.SetArchitecture(options.arch)
 
   def _RunCygprofileUnitTests(self):
     """Builds, deploys and runs cygprofile_unittests."""
@@ -580,9 +581,25 @@ class OrderfileGenerator(object):
   def _PatchOrderfile(self):
     """Patches the orderfile using clean version of libchrome.so."""
     self._step_recorder.BeginStep('Patch Orderfile')
-    patch_orderfile.GeneratePatchedOrderfile(
-        self._GetUnpatchedOrderfileFilename(), self._compiler.lib_chrome_so,
-        self._GetPathToOrderfile())
+    try:
+      tmp_out = open(self._TEMP_ORDERFILE_FILENAME, 'w')
+      self._step_recorder.RunCommand([self._PATCH_ORDERFILE_SCRIPT,
+                                      self._GetUnpatchedOrderfileFilename(),
+                                      self._compiler.lib_chrome_so,
+                                      '--target-arch=' + self._options.arch],
+                                     constants.DIR_SOURCE_ROOT, stdout=tmp_out)
+      tmp_out.close()
+
+      self._RemoveBlanks(self._TEMP_ORDERFILE_FILENAME,
+                         self._GetPathToOrderfile())
+    except CommandError:
+      self._SaveForDebugging(self._GetUnpatchedOrderfileFilename())
+      self._SaveForDebuggingWithOverwrite(self._compiler.lib_chrome_so)
+      raise
+    finally:
+      tmp_out.close()
+      if os.path.isfile(self._TEMP_ORDERFILE_FILENAME):
+        os.unlink(self._TEMP_ORDERFILE_FILENAME)
 
   def _VerifySymbolOrder(self):
     self._step_recorder.BeginStep('Verify Symbol Order')

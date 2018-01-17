@@ -119,7 +119,6 @@ def _AllSymbolInfos(object_filenames):
   # not be a problem (hence no concurrency limit on the pool).
   symbol_infos_nested = pool.map(
       symbol_extractor.SymbolInfosFromBinary, object_filenames)
-  pool.close()
   result = []
   for symbol_infos in symbol_infos_nested:
     result += symbol_infos
