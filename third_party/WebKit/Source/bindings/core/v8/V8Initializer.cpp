@@ -353,7 +353,7 @@ static bool CodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     DCHECK(execution_context->IsDocument() ||
-           execution_context->IsPaintWorkletGlobalScope());
+           execution_context->IsMainThreadWorkletGlobalScope());
     if (ContentSecurityPolicy* policy =
             execution_context->GetContentSecurityPolicy()) {
       v8::String::Value source_str(context->GetIsolate(), source);

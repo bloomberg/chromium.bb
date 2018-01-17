@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
 
 namespace blink {
 
@@ -50,8 +51,9 @@ bool LayoutWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* LayoutWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  // TODO(ikilpatrick): implement.
-  return nullptr;
+  return new LayoutWorkletGlobalScopeProxy(
+      ToDocument(GetExecutionContext())->GetFrame(),
+      GetNumberOfGlobalScopes() + 1);
 }
 
 }  // namespace blink

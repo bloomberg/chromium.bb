@@ -172,12 +172,11 @@ bool ParsePaintFunction(v8::Isolate* isolate,
 PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   auto* global_scope =
-      new PaintWorkletGlobalScope(frame, std::move(creation_params), isolate,
+      new PaintWorkletGlobalScope(frame, std::move(creation_params),
                                   reporting_proxy, pending_generator_registry);
   String context_name("PaintWorklet #");
   context_name.append(String::Number(global_scope_number));
@@ -191,12 +190,10 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry)
     : MainThreadWorkletGlobalScope(frame,
                                    std::move(creation_params),
-                                   isolate,
                                    reporting_proxy),
       pending_generator_registry_(pending_generator_registry) {}
 
@@ -207,7 +204,7 @@ void PaintWorkletGlobalScope::Dispose() {
       ScriptController()->GetScriptState());
 
   pending_generator_registry_ = nullptr;
-  WorkletGlobalScope::Dispose();
+  MainThreadWorkletGlobalScope::Dispose();
 }
 
 void PaintWorkletGlobalScope::registerPaint(const String& name,

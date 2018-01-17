@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
+#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -15,14 +15,8 @@
 
 namespace blink {
 
-PaintWorkletGlobalScopeProxy* PaintWorkletGlobalScopeProxy::From(
-    WorkletGlobalScopeProxy* proxy) {
-  return static_cast<PaintWorkletGlobalScopeProxy*>(proxy);
-}
-
-PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
+LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
     LocalFrame* frame,
-    PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
@@ -36,12 +30,12 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       nullptr /* worker_clients */, document->AddressSpace(),
       OriginTrialContext::GetTokens(document).get(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault);
-  global_scope_ = PaintWorkletGlobalScope::Create(
-      frame, std::move(creation_params), *reporting_proxy_,
-      pending_generator_registry, global_scope_number);
+  global_scope_ =
+      LayoutWorkletGlobalScope::Create(frame, std::move(creation_params),
+                                       *reporting_proxy_, global_scope_number);
 }
 
-void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
+void LayoutWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     WorkletModuleResponsesMap* module_responses_map,
     network::mojom::FetchCredentialsMode credentials_mode,
@@ -53,12 +47,12 @@ void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
       std::move(outside_settings_task_runner), pending_tasks);
 }
 
-void PaintWorkletGlobalScopeProxy::WorkletObjectDestroyed() {
+void LayoutWorkletGlobalScopeProxy::WorkletObjectDestroyed() {
   DCHECK(IsMainThread());
   // Do nothing.
 }
 
-void PaintWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
+void LayoutWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
   DCHECK(IsMainThread());
   global_scope_->Terminate();
   // Nullify these fields to cut a potential reference cycle.
@@ -66,13 +60,7 @@ void PaintWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
   reporting_proxy_.reset();
 }
 
-CSSPaintDefinition* PaintWorkletGlobalScopeProxy::FindDefinition(
-    const String& name) {
-  DCHECK(IsMainThread());
-  return global_scope_->FindDefinition(name);
-}
-
-void PaintWorkletGlobalScopeProxy::Trace(blink::Visitor* visitor) {
+void LayoutWorkletGlobalScopeProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 

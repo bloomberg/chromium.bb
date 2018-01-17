@@ -259,6 +259,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'AnimationWorklet': 'IsAnimationWorkletGlobalScope',
     'AudioWorklet': 'IsAudioWorkletGlobalScope',
     'DedicatedWorker': 'IsDedicatedWorkerGlobalScope',
+    'LayoutWorklet': 'IsLayoutWorkletGlobalScope',
     'PaintWorklet': 'IsPaintWorkletGlobalScope',
     'ServiceWorker': 'IsServiceWorkerGlobalScope',
     'SharedWorker': 'IsSharedWorkerGlobalScope',

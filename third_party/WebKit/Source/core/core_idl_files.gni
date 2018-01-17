@@ -12,16 +12,18 @@ bindings_core_output_dir = "$bindings_output_dir/core"
 
 # Global constructors
 core_global_constructors_original_interfaces = [
-  "Window",
-  "SharedWorkerGlobalScope",
   "DedicatedWorkerGlobalScope",
+  "LayoutWorkletGlobalScope",
+  "SharedWorkerGlobalScope",
+  "Window",
 ]
 
 # The size and the order in the following list must match to the previous one.
 core_global_constructors_original_interface_basenames = [
-  "window",
-  "shared_worker_global_scope",
   "dedicated_worker_global_scope",
+  "layout_worklet_global_scope",
+  "shared_worker_global_scope",
+  "window",
 ]
 
 # The interfaces aren't technically files, but we can treat them as file names
@@ -290,6 +292,7 @@ core_idl_files =
                     "inspector/InspectorOverlayHost.idl",
                     "intersection_observer/IntersectionObserver.idl",
                     "intersection_observer/IntersectionObserverEntry.idl",
+                    "layout/custom/LayoutWorkletGlobalScope.idl",
                     "loader/appcache/ApplicationCache.idl",
                     "messaging/MessageChannel.idl",
                     "messaging/MessagePort.idl",

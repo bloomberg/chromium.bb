@@ -15,6 +15,7 @@ const offlineContext = new OfflineAudioContext(1, 1, 44100);
 
 if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   test(t => {
+    assert_not_equals(undefined, CSS.layoutWorklet);
     assert_not_equals(undefined, CSS.paintWorklet);
     assert_not_equals(undefined, window.animationWorklet);
     assert_not_equals(undefined, realTimeContext.audioWorklet);
@@ -24,6 +25,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
                     window.location.pathname;
 } else {
   test(t => {
+    assert_equals(undefined, CSS.layoutWorklet);
     assert_equals(undefined, CSS.paintWorklet);
     assert_equals(undefined, window.animationWorklet);
     assert_equals(undefined, realTimeContext.audioWorklet);
