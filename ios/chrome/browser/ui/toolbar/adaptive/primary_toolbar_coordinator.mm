@@ -97,6 +97,13 @@
       self.locationBarCoordinator.locationBarView;
 }
 
+- (void)stop {
+  self.started = NO;
+  self.toolbarViewController = nil;
+  [self.omniboxPopupCoordinator stop];
+  [self.locationBarCoordinator stop];
+}
+
 #pragma mark - Property Accessors
 
 - (UIViewController*)viewController {

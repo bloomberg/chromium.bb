@@ -16,7 +16,6 @@
 @synthesize backgroundView = _backgroundView;
 @synthesize toolbarCoordinator = _toolbarCoordinator;
 @synthesize delegate = _delegate;
-@synthesize toolsPopupController = _toolsPopupController;
 @synthesize URLLoader = _URLLoader;
 
 - (instancetype)initWithDispatcher:
