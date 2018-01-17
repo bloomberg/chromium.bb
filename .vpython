@@ -105,3 +105,18 @@ wheel: <
   name: "infra/python/wheels/coverage/${vpython_platform}"
   version: "version:4.3.4"
 >
+
+# Used by:
+#   chrome/browser/policy/test/policy_testserver.py
+wheel: <
+  name: "infra/python/wheels/protobuf-py2_py3"
+  version: "version:3.2.0"
+>
+wheel: <
+  name: "infra/python/wheels/six-py2_py3"
+  version: "version:1.10.0"
+>
+wheel: <
+  name: "infra/python/wheels/tlslite-py2_py3"
+  version: "version:0.4.9"
+>
