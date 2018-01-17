@@ -38,6 +38,9 @@ class StabilityMetricsProvider : public MetricsProvider {
   // Increments an Integer pref value specified by |path|.
   void IncrementPrefValue(const char* path);
 
+  // Gets pref value specified by |path| and resets it to 0 after retrieving.
+  int GetPrefValue(const char* path, int* value);
+
   // MetricsProvider:
   void ClearSavedStabilityMetrics() override;
   void ProvideStabilityMetrics(
