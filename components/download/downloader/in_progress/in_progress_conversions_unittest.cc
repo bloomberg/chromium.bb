@@ -44,13 +44,11 @@ TEST_F(InProgressConversionsTest, DownloadEntries) {
 
 TEST_F(InProgressConversionsTest, DownloadSource) {
   DownloadSource sources[] = {
-      DownloadSource::UNKNOWN,         DownloadSource::NAVIGATION,
-      DownloadSource::DRAG_AND_DROP,   DownloadSource::MANUAL_RESUMPTION,
-      DownloadSource::AUTO_RESUMPTION, DownloadSource::FROM_RENDERER,
-      DownloadSource::EXTENSION_API,   DownloadSource::EXTENSION_INSTALLER,
-      DownloadSource::PLUGIN,          DownloadSource::PLUGIN_INSTALLER,
-      DownloadSource::INTERNAL_API,    DownloadSource::SAVE_PACKAGE,
-      DownloadSource::OFFLINE_PAGE};
+      DownloadSource::UNKNOWN,       DownloadSource::NAVIGATION,
+      DownloadSource::DRAG_AND_DROP, DownloadSource::FROM_RENDERER,
+      DownloadSource::EXTENSION_API, DownloadSource::EXTENSION_INSTALLER,
+      DownloadSource::INTERNAL_API,  DownloadSource::WEB_CONTENTS_API,
+      DownloadSource::OFFLINE_PAGE,  DownloadSource::CONTEXT_MENU};
 
   for (auto source : sources) {
     EXPECT_EQ(source, DownloadSourceFromProto(DownloadSourceToProto(source)));

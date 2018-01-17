@@ -3276,7 +3276,7 @@ bool WebContentsImpl::IsSavable() {
 void WebContentsImpl::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
-    RecordDownloadSource(INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
+    RecordSavePackageEvent(SAVE_PACKAGE_DOWNLOAD_ON_NON_HTML);
     SaveFrame(GetLastCommittedURL(), Referrer());
     return;
   }
@@ -3370,6 +3370,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
       params->add_request_header(key_value.first, key_value.second);
     }
   }
+  params->set_download_source(DownloadSource::WEB_CONTENTS_API);
   BrowserContext::GetDownloadManager(GetBrowserContext())
       ->DownloadUrl(std::move(params));
 }

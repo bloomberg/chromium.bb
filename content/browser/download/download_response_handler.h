@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "content/browser/download/download_create_info.h"
+#include "content/public/browser/download_source.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_loader.mojom.h"
@@ -40,6 +41,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
                           bool is_parallel_request,
                           bool is_transient,
                           bool fetch_error_body,
+                          DownloadSource download_source,
                           std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
 
@@ -79,6 +81,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   GURL referrer_;
   bool is_transient_;
   bool fetch_error_body_;
+  DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
   GURL origin_;

@@ -10,8 +10,12 @@ DownloadEntry::DownloadEntry() = default;
 
 DownloadEntry::DownloadEntry(const DownloadEntry& other) = default;
 
-DownloadEntry::DownloadEntry(const std::string& guid, int64_t ukm_download_id)
-    : guid(guid), ukm_download_id(ukm_download_id) {}
+DownloadEntry::DownloadEntry(const std::string& guid,
+                             DownloadSource download_source,
+                             int64_t ukm_download_id)
+    : guid(guid),
+      download_source(download_source),
+      ukm_download_id(ukm_download_id) {}
 
 DownloadEntry::DownloadEntry(const std::string& guid,
                              const std::string& request_origin,

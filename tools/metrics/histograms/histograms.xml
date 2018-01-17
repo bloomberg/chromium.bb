@@ -17327,8 +17327,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Types of video files that are downloaded.</summary>
 </histogram>
 
-<histogram name="Download.Counts" enum="DownloadCountType">
-  <owner>asanka@chromium.org</owner>
+<histogram base="true" name="Download.Counts" enum="DownloadCountType">
+<!-- Name completed by histogram_suffixes name="DownloadSource" -->
+
+  <owner>xingliu@chromium.org</owner>
   <summary>
     Various individual counts in the download system; see DownloadCountType for
     details.
@@ -17636,8 +17638,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Download.InterruptedReason" enum="InterruptReason">
-  <owner>asanka@chromium.org</owner>
+<histogram base="true" name="Download.InterruptedReason" enum="InterruptReason">
+<!-- Name completed by histogram_suffixes name="DownloadSource" -->
+
+  <owner>xingliu@chromium.org</owner>
   <summary>The reason that a download was interrupted.</summary>
 </histogram>
 
@@ -18257,7 +18261,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Download.Sources" enum="DownloadSource">
-  <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprecated 1/2018, integrated into Download.Counts.DOWNLOAD_TRIGGERED_COUNT
+  </obsolete>
+  <owner>xingliu@chromium.org</owner>
   <summary>
     The initiation source (if initiated within the content layer of chrome) for
     a download.
@@ -18265,7 +18272,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Download.SourcesChrome" enum="ChromeDownloadSource">
-  <owner>asanka@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
   <summary>
     The initiation source (if initiated within the above-content layer of
     chrome) for a download.
@@ -103562,6 +103569,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PotentiallyUnwanted" label="File marked POTENTIALLY_UNWANTED"/>
   <suffix name="UncommonContent" label="File marked UNCOMMON_CONTENT"/>
   <affected-histogram name="Download.DownloadDangerPrompt"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DownloadSource" separator=".">
+  <suffix name="UnknownSource" label="UnknownSource."/>
+  <suffix name="Navigation" label="Navigation."/>
+  <suffix name="DragAndDrop" label="DragAndDrop."/>
+  <suffix name="FromRenderer" label="FromRenderer."/>
+  <suffix name="ExtensionAPI" label="ExtensionAPI."/>
+  <suffix name="ExtensionInstaller" label="ExtensionInstaller."/>
+  <suffix name="InternalAPI" label="InternalAPI."/>
+  <suffix name="WebContentsAPI" label="WebContentsAPI."/>
+  <suffix name="OfflinePage" label="OfflinePage."/>
+  <suffix name="ContextMenu" label="ContextMenu."/>
+  <affected-histogram name="Download.Counts"/>
+  <affected-histogram name="Download.InterruptedReason"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DownloadType" separator=".">

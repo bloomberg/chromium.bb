@@ -107,7 +107,7 @@ void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   BrowserContext* browser_context = render_process_host->GetBrowserContext();
   DownloadManager* download_manager =
       BrowserContext::GetDownloadManager(browser_context);
-  RecordDownloadSource(INITIATED_BY_RENDERER);
+  parameters->set_download_source(DownloadSource::FROM_RENDERER);
   download_manager->DownloadUrl(std::move(parameters));
 }
 
