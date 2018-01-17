@@ -1082,10 +1082,153 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, FromOutsideHostedApp) {
   }
 }
 
+// Helper class that sets up two isolated origins, where one is a subdomain of
+// the other: https://isolated.com and https://very.isolated.com.
+class HostedAppIsolatedOriginTest : public HostedAppProcessModelTest {
+ public:
+  HostedAppIsolatedOriginTest() {}
+  ~HostedAppIsolatedOriginTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    GURL isolated_url = embedded_test_server()->GetURL("isolated.com", "/");
+    GURL very_isolated_url =
+        embedded_test_server()->GetURL("very.isolated.com", "/");
+    std::string origin_list = base::StringPrintf(
+        "%s,%s", isolated_url.spec().c_str(), very_isolated_url.spec().c_str());
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+  }
+};
+
+// Check that a hosted app that is contained entirely within an isolated.com
+// isolated origin is allowed to load in a privileged app process. Also check
+// that very.isolated.com, which does *not* match all URLs in the hosted app's
+// extent, still ends up in its own non-app process.  See
+// https://crbug.com/799638.
+IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
+                       NestedIsolatedOriginStaysOutsideApp) {
+  // Set up and launch the hosted app.
+  GURL app_url =
+      embedded_test_server()->GetURL("isolated.com", "/frame_tree/simple.htm");
+
+  constexpr const char kHostedAppWithinIsolatedOriginManifest[] =
+      R"( { "name": "Hosted App Within Isolated Origin Test",
+            "version": "1",
+            "manifest_version": 2,
+            "app": {
+              "launch": {
+                "web_url": "%s"
+              },
+              "urls": ["http://*.isolated.com/frame_tree"]
+            }
+          } )";
+  extensions::TestExtensionDir test_app_dir;
+  test_app_dir.WriteManifest(base::StringPrintf(
+      kHostedAppWithinIsolatedOriginManifest, app_url.spec().c_str()));
+  SetupApp(test_app_dir.UnpackedPath(), false);
+
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+
+  // Check that the app loaded properly. Even though its URL is from an
+  // isolated origin (isolated.com), it should go into an app process because
+  // the app's extent is contained entirely within isolated.com.
+  RenderFrameHost* app = web_contents->GetMainFrame();
+  EXPECT_EQ(extensions::kExtensionScheme,
+            app->GetSiteInstance()->GetSiteURL().scheme());
+  GURL app_site = content::SiteInstance::GetSiteForURL(
+      app_browser_->profile(), app->GetLastCommittedURL());
+  EXPECT_EQ(extensions::kExtensionScheme, app_site.scheme());
+  EXPECT_TRUE(process_map_->Contains(app->GetProcess()->GetID()));
+
+  // Add a same-site subframe on isolated.com.  This should stay in app
+  // process.
+  GURL foo_isolated_url =
+      embedded_test_server()->GetURL("foo.isolated.com", "/title1.html");
+  TestSubframeProcess(app, foo_isolated_url, true /* expect_same_process */,
+                      true /* expect_app_process */);
+
+  // Add a subframe on very.isolated.com.  This should go into a separate,
+  // non-app process.
+  GURL very_isolated_url =
+      embedded_test_server()->GetURL("very.isolated.com", "/title2.html");
+  TestSubframeProcess(app, very_isolated_url, false /* expect_same_process */,
+                      false /* expect_app_process */);
+
+  // Similarly, a popup for very.isolated.com should go into a separate,
+  // non-app process.
+  TestPopupProcess(app, very_isolated_url, false /* expect_same_process */,
+                   false /* expect_app_process */);
+
+  // Navigating main frame from the app to very.isolated.com should also swap
+  // processes to a non-app process.
+  ui_test_utils::NavigateToURL(app_browser_, very_isolated_url);
+  EXPECT_FALSE(process_map_->Contains(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+
+  // Navigating main frame back to the app URL should go into an app process.
+  ui_test_utils::NavigateToURL(app_browser_, app_url);
+  EXPECT_TRUE(process_map_->Contains(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+}
+
+// Check that when a hosted app's extent contains multiple origins, one of
+// which is an isolated origin, loading an app URL in that isolated origin does
+// not go into the app process.
+IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
+                       AppBroaderThanIsolatedOrigin) {
+  // Set up and launch the hosted app, with the launch URL being in an isolated
+  // origin.
+  GURL app_url =
+      embedded_test_server()->GetURL("isolated.com", "/frame_tree/simple.htm");
+
+  constexpr const char kHostedAppBroaderThanIsolatedOriginManifest[] =
+      R"( { "name": "Hosted App Within Isolated Origin Test",
+            "version": "1",
+            "manifest_version": 2,
+            "app": {
+              "launch": {
+                "web_url": "%s"
+              },
+              "urls": ["http://*.isolated.com/frame_tree", "*://unisolated.com/"]
+            }
+          } )";
+  extensions::TestExtensionDir test_app_dir;
+  test_app_dir.WriteManifest(base::StringPrintf(
+      kHostedAppBroaderThanIsolatedOriginManifest, app_url.spec().c_str()));
+  SetupApp(test_app_dir.UnpackedPath(), false);
+
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+
+  // The app URL shouldn't have loaded in an app process, because that would
+  // allow isolated.com to share the app process with unisolated.com.
+  RenderFrameHost* app = web_contents->GetMainFrame();
+  EXPECT_FALSE(process_map_->Contains(app->GetProcess()->GetID()));
+  EXPECT_NE(extensions::kExtensionScheme,
+            app->GetSiteInstance()->GetSiteURL().scheme());
+
+  // In contrast, opening a popup or navigating to an app URL on unisolated.com
+  // is permitted to go into an app process.
+  GURL unisolated_app_url =
+      embedded_test_server()->GetURL("unisolated.com", "/title1.html");
+  TestPopupProcess(app, unisolated_app_url, false /* expect_same_process */,
+                   true /* expect_app_process */);
+
+  ui_test_utils::NavigateToURL(app_browser_, unisolated_app_url);
+  EXPECT_TRUE(process_map_->Contains(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+}
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */, HostedAppTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppPWAOnlyTest,
                         ::testing::Values(true));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppProcessModelTest,
+                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        HostedAppIsolatedOriginTest,
                         ::testing::Bool());

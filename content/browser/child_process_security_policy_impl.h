@@ -95,6 +95,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
   bool HasSpecificPermissionForOrigin(int child_id,
                                       const url::Origin& origin) override;
+  bool GetMatchingIsolatedOrigin(const url::Origin& origin,
+                                 url::Origin* result) override;
 
   // Returns if |child_id| can read all of the |files|.
   bool CanReadAllFiles(int child_id, const std::vector<base::FilePath>& files);
@@ -250,26 +252,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Note that unlike site URLs for regular web sites, isolated origins care
   // about port.
   bool IsIsolatedOrigin(const url::Origin& origin);
-
-  // This function will check whether |origin| requires process isolation, and
-  // if so, it will return true and put the most specific matching isolated
-  // origin into |result|.
-  //
-  // If |origin| does not require process isolation, this function will return
-  // false, and |result| will be a unique origin. This means that neither
-  // |origin|, nor any origins for which |origin| is a subdomain, have been
-  // registered as isolated origins.
-  //
-  // For example, if both https://isolated.com/ and
-  // https://bar.foo.isolated.com/ are registered as isolated origins, then the
-  // values returned in |result| are:
-  //   https://isolated.com/             -->  https://isolated.com/
-  //   https://foo.isolated.com/         -->  https://isolated.com/
-  //   https://bar.foo.isolated.com/     -->  https://bar.foo.isolated.com/
-  //   https://baz.bar.foo.isolated.com/ -->  https://bar.foo.isolated.com/
-  //   https://unisolated.com/           -->  (unique origin)
-  bool GetMatchingIsolatedOrigin(const url::Origin& origin,
-                                 url::Origin* result);
 
   // Removes a previously added isolated origin, currently only used in tests.
   //

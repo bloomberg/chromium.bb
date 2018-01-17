@@ -438,10 +438,7 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 // static
 GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
                                        const GURL& url) {
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  bool is_isolated_origin = policy->IsIsolatedOrigin(url::Origin::Create(url));
-  return GetContentClient()->browser()->GetEffectiveURL(browser_context, url,
-                                                        is_isolated_origin);
+  return GetContentClient()->browser()->GetEffectiveURL(browser_context, url);
 }
 
 // static
