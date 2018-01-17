@@ -298,7 +298,6 @@ source_set("base") {
     # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
 
-    "//media:media_dependent_config",
     "//media:subcomponent_config",
   ]
 

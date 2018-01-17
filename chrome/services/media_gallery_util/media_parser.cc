@@ -4,11 +4,13 @@
 
 #include "chrome/services/media_gallery_util/media_parser.h"
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
-#include "media/filters/media_file_checker.h"
-#endif
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
 #include "chrome/services/media_gallery_util/media_metadata_parser.h"
+#include "media/media_features.h"
+
+#if BUILDFLAG(ENABLE_FFMPEG)
+#include "media/filters/media_file_checker.h"
+#endif
 
 namespace {
 
@@ -45,7 +47,7 @@ void MediaParser::ParseMediaMetadata(
 void MediaParser::CheckMediaFile(base::TimeDelta decode_time,
                                  base::File file,
                                  CheckMediaFileCallback callback) {
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG)
   media::MediaFileChecker checker(std::move(file));
   std::move(callback).Run(checker.Start(decode_time));
 #else

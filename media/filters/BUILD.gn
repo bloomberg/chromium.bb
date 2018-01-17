@@ -164,27 +164,29 @@ source_set("filters") {
     deps += [ "//third_party/libaom" ]
   }
 
-  if (proprietary_codecs && media_use_ffmpeg) {
-    sources += [
-      "ffmpeg_aac_bitstream_converter.cc",
-      "ffmpeg_aac_bitstream_converter.h",
-      "ffmpeg_h264_to_annex_b_bitstream_converter.cc",
-      "ffmpeg_h264_to_annex_b_bitstream_converter.h",
-    ]
-  }
+  if (media_use_ffmpeg) {
+    if (proprietary_codecs) {
+      sources += [
+        "ffmpeg_aac_bitstream_converter.cc",
+        "ffmpeg_aac_bitstream_converter.h",
+        "ffmpeg_h264_to_annex_b_bitstream_converter.cc",
+        "ffmpeg_h264_to_annex_b_bitstream_converter.h",
+      ]
 
-  if (media_use_ffmpeg && !disable_ffmpeg_video_decoders) {
-    sources += [
-      "ffmpeg_video_decoder.cc",
-      "ffmpeg_video_decoder.h",
-    ]
-  }
+      if (enable_hevc_demuxing) {
+        sources += [
+          "ffmpeg_h265_to_annex_b_bitstream_converter.cc",
+          "ffmpeg_h265_to_annex_b_bitstream_converter.h",
+        ]
+      }
+    }
 
-  if (proprietary_codecs && media_use_ffmpeg && enable_hevc_demuxing) {
-    sources += [
-      "ffmpeg_h265_to_annex_b_bitstream_converter.cc",
-      "ffmpeg_h265_to_annex_b_bitstream_converter.h",
-    ]
+    if (enable_ffmpeg_video_decoders) {
+      sources += [
+        "ffmpeg_video_decoder.cc",
+        "ffmpeg_video_decoder.h",
+      ]
+    }
   }
 
   if (is_android) {
@@ -334,8 +336,7 @@ source_set("unit_tests") {
       ]
     }
 
-    if (!disable_ffmpeg_video_decoders) {
-      # FFmpeg on Android does not include video decoders.
+    if (enable_ffmpeg_video_decoders) {
       sources += [ "ffmpeg_video_decoder_unittest.cc" ]
     }
   }

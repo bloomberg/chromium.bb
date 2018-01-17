@@ -23,8 +23,11 @@ buildflag_header("media_features") {
     "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
     "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
     "ENABLE_DOLBY_VISION_DEMUXING=$enable_dolby_vision_demuxing",
+    "ENABLE_FFMPEG=$media_use_ffmpeg",
+    "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
+    "ENABLE_LIBVPX=$media_use_libvpx",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION=$enable_runtime_media_renderer_selection",
     "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
@@ -45,7 +48,6 @@ if (proprietary_codecs && media_use_ffmpeg) {
 # exported since things like USE_NEON and USE_CRAS have different meanings
 # elsewhere in the code base.
 config("media_config") {
-  configs = [ ":media_dependent_config" ]
   defines = []
   if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
     defines += [ "USE_NEON" ]
@@ -58,21 +60,6 @@ config("media_config") {
   }
   if (use_cras) {
     defines += [ "USE_CRAS" ]
-  }
-}
-
-# Common defines which must be set in targets which depend on //media.
-# TODO(dalecurtis): These should be converted to BUILDFLAGs.
-config("media_dependent_config") {
-  defines = []
-  if (!media_use_libvpx) {
-    defines += [ "MEDIA_DISABLE_LIBVPX" ]
-  }
-  if (!media_use_ffmpeg) {
-    defines += [ "MEDIA_DISABLE_FFMPEG" ]
-  }
-  if (disable_ffmpeg_video_decoders) {
-    defines += [ "DISABLE_FFMPEG_VIDEO_DECODERS" ]
   }
 }
 
@@ -113,7 +100,6 @@ component("media") {
     "//url",
   ]
 
-  all_dependent_configs = [ ":media_dependent_config" ]
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = media_subcomponent_deps
   public_deps += [

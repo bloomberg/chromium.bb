@@ -342,6 +342,7 @@ source_set("feature_h264_with_openh264_ffmpeg") {
   deps = [
     ":features",
     "//base",
+    "//media:media_features",
   ]
   sources = [
     "feature_h264_with_openh264_ffmpeg.cc",

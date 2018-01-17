@@ -13,13 +13,14 @@
 #include "base/threading/thread.h"
 #include "media/base/data_source.h"
 #include "media/filters/audio_video_metadata_extractor.h"
+#include "media/media_features.h"
 #include "net/base/mime_sniffer.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
 namespace {
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG)
 void SetStringScopedPtr(const std::string& value,
                         std::unique_ptr<std::string>* destination) {
   DCHECK(destination);
@@ -45,7 +46,7 @@ void ParseAudioVideoMetadata(
   DCHECK(source);
   DCHECK(metadata);
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG)
   media::AudioVideoMetadataExtractor extractor;
 
   if (!extractor.Extract(source, get_attached_images))

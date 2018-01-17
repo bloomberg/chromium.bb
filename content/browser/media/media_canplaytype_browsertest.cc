@@ -62,7 +62,7 @@ const char* kMp2tsProbably = kNot;
 // High 10-bit profile is only available when we can use ffmpeg to decode H.264.
 // Even though FFmpeg is used on Android, we only use platform decoders for
 // H.264
-#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 const char* kHi10pProbably = kPropProbably;
 #else
 const char* kHi10pProbably = kPropMaybe;

@@ -19,6 +19,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//media",
     "//mojo/public/cpp/bindings",
   ]
 
