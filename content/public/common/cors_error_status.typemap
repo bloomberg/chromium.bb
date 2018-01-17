@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//content/public/common/url_loader.mojom"
-public_headers = [ "//services/network/public/cpp/cors_error_status.h" ]
+public_headers = [ "//services/network/public/cpp/cors/cors_error_status.h" ]
 traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
 deps = [
   "//services/network/public/cpp",

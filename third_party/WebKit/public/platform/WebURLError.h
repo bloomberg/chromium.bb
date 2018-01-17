@@ -34,7 +34,7 @@
 #include "WebURL.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "services/network/public/cpp/cors_error_status.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 
 namespace blink {
 

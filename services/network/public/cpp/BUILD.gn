@@ -38,8 +38,8 @@ static_library("cpp") {
 
 static_library("typemap_dependencies") {
   sources = [
-    "cors_error_status.cc",  # TODO(toyoshim): Move into cors/ directory.
-    "cors_error_status.h",  # TODO(toyoshim): Move into cors/ directory.
+    "cors/cors_error_status.cc",
+    "cors/cors_error_status.h",
     "http_raw_request_response_info.cc",
     "http_raw_request_response_info.h",
     "network_param_ipc_traits.cc",
