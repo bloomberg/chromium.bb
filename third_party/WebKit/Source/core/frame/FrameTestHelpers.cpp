@@ -256,7 +256,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     void (*update_settings_func)(WebSettings*)) {
   Reset();
 
-  InitializeWebView(web_view_client);
+  InitializeWebView(web_view_client, opener ? opener->View() : nullptr);
   if (update_settings_func)
     update_settings_func(web_view_->GetSettings());
 
@@ -308,7 +308,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
     TestWebViewClient* web_view_client) {
   Reset();
 
-  InitializeWebView(web_view_client);
+  InitializeWebView(web_view_client, nullptr);
 
   auto owned_web_remote_frame_client =
       CreateDefaultClientIfNeeded(web_remote_frame_client);
@@ -358,10 +358,11 @@ void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
 }
 
-void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client) {
+void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
+                                      class WebView* opener) {
   owned_test_web_view_client_ = CreateDefaultClientIfNeeded(web_view_client);
-  web_view_ = static_cast<WebViewImpl*>(
-      WebView::Create(web_view_client, mojom::PageVisibilityState::kVisible));
+  web_view_ = static_cast<WebViewImpl*>(WebView::Create(
+      web_view_client, mojom::PageVisibilityState::kVisible, opener));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies

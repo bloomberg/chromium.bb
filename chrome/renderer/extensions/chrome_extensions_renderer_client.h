@@ -16,6 +16,7 @@
 class GURL;
 
 namespace blink {
+class WebFrame;
 class WebLocalFrame;
 struct WebPluginParams;
 class WebURL;
@@ -74,6 +75,8 @@ class ChromeExtensionsRendererClient
       content::RenderFrame* render_frame,
       const std::string& mime_type,
       const GURL& original_url);
+  static blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
+                                    const std::string& name);
 
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame);
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame);

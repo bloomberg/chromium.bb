@@ -32,6 +32,7 @@
 #include "core/exported/LocalFrameClientImpl.h"
 
 #include <memory>
+#include <utility>
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/CoreInitializer.h"
@@ -1144,6 +1145,11 @@ void LocalFrameClientImpl::DidChangeSelection(bool is_selection_empty) {
 void LocalFrameClientImpl::DidChangeContents() {
   if (web_frame_->Client())
     web_frame_->Client()->DidChangeContents();
+}
+
+Frame* LocalFrameClientImpl::FindFrame(const AtomicString& name) const {
+  DCHECK(web_frame_->Client());
+  return ToCoreFrame(web_frame_->Client()->FindFrame(name));
 }
 
 }  // namespace blink
