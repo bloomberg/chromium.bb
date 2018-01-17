@@ -81,7 +81,8 @@ class CORE_EXPORT InspectorNetworkAgent final
                        const FetchInitiatorInfo&,
                        ResourceRequestBlockedReason,
                        Resource::Type);
-  void DidChangeResourcePriority(unsigned long identifier,
+  void DidChangeResourcePriority(DocumentLoader*,
+                                 unsigned long identifier,
                                  ResourceLoadPriority);
   void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
@@ -90,7 +91,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        Resource::Type);
-  void MarkResourceAsCached(unsigned long identifier);
+  void MarkResourceAsCached(DocumentLoader*, unsigned long identifier);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
@@ -99,7 +100,8 @@ class CORE_EXPORT InspectorNetworkAgent final
                       DocumentLoader*,
                       const char* data,
                       int data_length);
-  void DidReceiveEncodedDataLength(unsigned long identifier,
+  void DidReceiveEncodedDataLength(DocumentLoader*,
+                                   unsigned long identifier,
                                    int encoded_data_length);
   void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,

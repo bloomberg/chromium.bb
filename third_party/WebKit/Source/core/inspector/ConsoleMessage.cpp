@@ -7,6 +7,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Time.h"
 #include "public/web/WebConsoleMessage.h"
@@ -19,10 +20,12 @@ ConsoleMessage* ConsoleMessage::CreateForRequest(
     MessageLevel level,
     const String& message,
     const String& url,
+    DocumentLoader* loader,
     unsigned long request_identifier) {
   ConsoleMessage* console_message = ConsoleMessage::Create(
       source, level, message, SourceLocation::Capture(url, 0, 0));
-  console_message->request_identifier_ = request_identifier;
+  console_message->request_identifier_ =
+      IdentifiersFactory::RequestId(loader, request_identifier);
   return console_message;
 }
 
@@ -63,7 +66,6 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
       level_(level),
       message_(message),
       location_(std::move(location)),
-      request_identifier_(0),
       timestamp_(WTF::CurrentTimeMS()),
       frame_(nullptr) {}
 
@@ -73,7 +75,7 @@ SourceLocation* ConsoleMessage::Location() const {
   return location_.get();
 }
 
-unsigned long ConsoleMessage::RequestIdentifier() const {
+const String& ConsoleMessage::RequestIdentifier() const {
   return request_identifier_;
 }
 

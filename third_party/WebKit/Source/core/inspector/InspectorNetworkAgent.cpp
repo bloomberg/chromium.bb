@@ -41,10 +41,8 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/NetworkResourcesData.h"
@@ -81,6 +79,7 @@
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
 
 namespace blink {
 
@@ -616,7 +615,7 @@ void InspectorNetworkAgent::DidBlockRequest(
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           ResourceResponse(), initiator_info, type);
 
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   String protocol_reason = BuildBlockedReason(reason);
   GetFrontend()->loadingFailed(
       request_id, CurrentTimeTicksInSeconds(),
@@ -626,9 +625,10 @@ void InspectorNetworkAgent::DidBlockRequest(
 }
 
 void InspectorNetworkAgent::DidChangeResourcePriority(
+    DocumentLoader* loader,
     unsigned long identifier,
     ResourceLoadPriority load_priority) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   GetFrontend()->resourceChangedPriority(request_id,
                                          ResourcePriorityJSON(load_priority),
                                          CurrentTimeTicksInSeconds());
@@ -642,8 +642,13 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
     InspectorPageAgent::ResourceType type) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
-  String loader_id = loader ? IdentifiersFactory::LoaderId(loader) : "";
+  String loader_id = IdentifiersFactory::LoaderId(loader);
+  // DocumentLoader doesn't have main resource set at the point, so RequestId()
+  // won't properly detect main resource. Workaround this by checking the
+  // frame type and manually setting request id to loader id.
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
+  if (request.GetFrameType() != network::mojom::RequestContextFrameType::kNone)
+    request_id = loader_id;
   NetworkResourcesData::ResourceData const* data =
       resources_data_->Data(request_id);
   // Support for POST request redirect
@@ -769,9 +774,10 @@ void InspectorNetworkAgent::WillSendRequest(
   }
 }
 
-void InspectorNetworkAgent::MarkResourceAsCached(unsigned long identifier) {
+void InspectorNetworkAgent::MarkResourceAsCached(DocumentLoader* loader,
+                                                 unsigned long identifier) {
   GetFrontend()->requestServedFromCache(
-      IdentifiersFactory::RequestId(identifier));
+      IdentifiersFactory::RequestId(loader, identifier));
 }
 
 void InspectorNetworkAgent::DidReceiveResourceResponse(
@@ -779,7 +785,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     DocumentLoader* loader,
     const ResourceResponse& response,
     Resource* cached_resource) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   bool is_not_modified = response.HttpStatusCode() == 304;
 
   bool resource_is_empty = true;
@@ -814,7 +820,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   String frame_id = loader && loader->GetFrame()
                         ? IdentifiersFactory::FrameId(loader->GetFrame())
                         : "";
-  String loader_id = loader ? IdentifiersFactory::LoaderId(loader) : "";
+  String loader_id = IdentifiersFactory::LoaderId(loader);
   resources_data_->ResponseReceived(request_id, frame_id, response);
   resources_data_->SetResourceType(request_id, type);
 
@@ -851,7 +857,7 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
                                            DocumentLoader* loader,
                                            const char* data,
                                            int data_length) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
   if (data) {
     NetworkResourcesData::ResourceData const* resource_data =
@@ -870,19 +876,20 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
 }
 
 void InspectorNetworkAgent::DidReceiveEncodedDataLength(
+    DocumentLoader* loader,
     unsigned long identifier,
     int encoded_data_length) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
 
 void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
-                                             DocumentLoader*,
+                                             DocumentLoader* loader,
                                              double monotonic_finish_time,
                                              int64_t encoded_data_length,
                                              int64_t decoded_body_length,
                                              bool blocked_cross_site_document) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
 
@@ -922,9 +929,9 @@ void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
 }
 
 void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
-                                           DocumentLoader*,
+                                           DocumentLoader* loader,
                                            const ResourceError& error) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
   bool canceled = error.IsCancellation();
   GetFrontend()->loadingFailed(
       request_id, CurrentTimeTicksInSeconds(),
@@ -935,13 +942,14 @@ void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
 
 void InspectorNetworkAgent::ScriptImported(unsigned long identifier,
                                            const String& source_string) {
-  resources_data_->SetResourceContent(IdentifiersFactory::RequestId(identifier),
-                                      source_string);
+  resources_data_->SetResourceContent(
+      IdentifiersFactory::SubresourceRequestId(identifier), source_string);
 }
 
 void InspectorNetworkAgent::DidReceiveScriptResponse(unsigned long identifier) {
-  resources_data_->SetResourceType(IdentifiersFactory::RequestId(identifier),
-                                   InspectorPageAgent::kScriptResource);
+  resources_data_->SetResourceType(
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      InspectorPageAgent::kScriptResource);
 }
 
 void InspectorNetworkAgent::ClearPendingRequestData() {
@@ -961,7 +969,7 @@ void InspectorNetworkAgent::DocumentThreadableLoaderStartedLoadingForClient(
   }
 
   known_request_id_map_.Set(client, identifier);
-  String request_id = IdentifiersFactory::RequestId(identifier);
+  String request_id = IdentifiersFactory::SubresourceRequestId(identifier);
   resources_data_->SetResourceType(request_id, pending_request_type_);
   if (pending_request_type_ == InspectorPageAgent::kXHRResource) {
     resources_data_->SetXHRReplayData(request_id,
@@ -1084,8 +1092,9 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
   if (it == known_request_id_map_.end())
     return;
   GetFrontend()->eventSourceMessageReceived(
-      IdentifiersFactory::RequestId(it->value), CurrentTimeTicksInSeconds(),
-      event_name.GetString(), event_id.GetString(), data);
+      IdentifiersFactory::SubresourceRequestId(it->value),
+      CurrentTimeTicksInSeconds(), event_name.GetString(), event_id.GetString(),
+      data);
 }
 
 void InspectorNetworkAgent::DidFinishEventSourceRequest(
@@ -1175,7 +1184,7 @@ void InspectorNetworkAgent::DidCreateWebSocket(Document* document,
           SourceLocation::Capture(document)->BuildInspectorObject();
   if (!current_stack_trace) {
     GetFrontend()->webSocketCreated(
-        IdentifiersFactory::RequestId(identifier),
+        IdentifiersFactory::SubresourceRequestId(identifier),
         UrlWithoutFragment(request_url).GetString());
     return;
   }
@@ -1185,9 +1194,9 @@ void InspectorNetworkAgent::DidCreateWebSocket(Document* document,
           .setType(protocol::Network::Initiator::TypeEnum::Script)
           .build();
   initiator_object->setStack(std::move(current_stack_trace));
-  GetFrontend()->webSocketCreated(IdentifiersFactory::RequestId(identifier),
-                                  UrlWithoutFragment(request_url).GetString(),
-                                  std::move(initiator_object));
+  GetFrontend()->webSocketCreated(
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      UrlWithoutFragment(request_url).GetString(), std::move(initiator_object));
 }
 
 void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
@@ -1200,8 +1209,8 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
           .setHeaders(BuildObjectForHeaders(request->HeaderFields()))
           .build();
   GetFrontend()->webSocketWillSendHandshakeRequest(
-      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
-      CurrentTime(), std::move(request_object));
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      CurrentTimeTicksInSeconds(), CurrentTime(), std::move(request_object));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
@@ -1226,14 +1235,15 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
       response_object->setRequestHeadersText(request->HeadersText());
   }
   GetFrontend()->webSocketHandshakeResponseReceived(
-      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
-      std::move(response_object));
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      CurrentTimeTicksInSeconds(), std::move(response_object));
 }
 
 void InspectorNetworkAgent::DidCloseWebSocket(Document*,
                                               unsigned long identifier) {
-  GetFrontend()->webSocketClosed(IdentifiersFactory::RequestId(identifier),
-                                 CurrentTimeTicksInSeconds());
+  GetFrontend()->webSocketClosed(
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      CurrentTimeTicksInSeconds());
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
@@ -1249,8 +1259,8 @@ void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
               String::FromUTF8WithLatin1Fallback(payload, payload_length))
           .build();
   GetFrontend()->webSocketFrameReceived(
-      IdentifiersFactory::RequestId(identifier), CurrentTimeTicksInSeconds(),
-      std::move(frame_object));
+      IdentifiersFactory::SubresourceRequestId(identifier),
+      CurrentTimeTicksInSeconds(), std::move(frame_object));
 }
 
 void InspectorNetworkAgent::DidSendWebSocketFrame(unsigned long identifier,
@@ -1265,17 +1275,17 @@ void InspectorNetworkAgent::DidSendWebSocketFrame(unsigned long identifier,
           .setPayloadData(
               String::FromUTF8WithLatin1Fallback(payload, payload_length))
           .build();
-  GetFrontend()->webSocketFrameSent(IdentifiersFactory::RequestId(identifier),
-                                    CurrentTimeTicksInSeconds(),
-                                    std::move(frame_object));
+  GetFrontend()->webSocketFrameSent(
+      IdentifiersFactory::RequestId(nullptr, identifier),
+      CurrentTimeTicksInSeconds(), std::move(frame_object));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketFrameError(
     unsigned long identifier,
     const String& error_message) {
-  GetFrontend()->webSocketFrameError(IdentifiersFactory::RequestId(identifier),
-                                     CurrentTimeTicksInSeconds(),
-                                     error_message);
+  GetFrontend()->webSocketFrameError(
+      IdentifiersFactory::RequestId(nullptr, identifier),
+      CurrentTimeTicksInSeconds(), error_message);
 }
 
 Response InspectorNetworkAgent::enable(Maybe<int> total_buffer_size,
