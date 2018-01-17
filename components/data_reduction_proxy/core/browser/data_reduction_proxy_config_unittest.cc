@@ -1023,8 +1023,9 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
 
   // Report failed warmup for a non-DataSaver proxy, and verify that it does not
   // change the list of data saver proxies.
-  test_config()->HandleWarmupFetcherResponse(net::ProxyServer(),
-                                             false /* success_response */);
+  test_config()->HandleWarmupFetcherResponse(
+      net::ProxyServer(),
+      WarmupURLFetcher::FetchResult::kFailed /* success_response */);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
@@ -1033,7 +1034,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
   // Report successful warmup of |kHttpsProxy|.
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, true);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kSuccessful);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectUniqueSample(
@@ -1045,7 +1047,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1057,7 +1060,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // list of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1068,7 +1072,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // |kHttpsProxy| should now be added back to the list of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, true);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kSuccessful);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1080,7 +1085,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // change in the list of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, true);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kSuccessful);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1091,7 +1097,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // |kHttpsProxy| should be removed again from the list of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1107,7 +1114,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // removed from the list of proxies.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(false /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({}), GetConfiguredProxiesForHttp());
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch."
@@ -1117,10 +1125,12 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   // Both proxies should be added back.
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(true /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, true);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kSuccessful);
   test_config()->SetInFlightWarmupProxyDetails(
       std::make_pair(false /* is_secure_proxy */, false /* is_core_proxy */));
-  test_config()->HandleWarmupFetcherResponse(kHttpProxy, true);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpProxy, WarmupURLFetcher::FetchResult::kSuccessful);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1142,7 +1152,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
 
   // If the warmup URL is unsuccessfully fetched using a non-data saver proxy,
   // then there is no change in the list of proxies.
-  test_config()->HandleWarmupFetcherResponse(kNonDataSaverProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kNonDataSaverProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 }
@@ -1187,7 +1198,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
       "DataReductionProxy.WarmupURL.FetchInitiated", 1);
 
   // The first probe should go through the HTTPS data saver proxy.
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
@@ -1205,7 +1217,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
       "DataReductionProxy.WarmupURL.FetchInitiated", 2);
 
   // The second probe should go through the HTTP data saver proxy.
-  test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>({}), GetConfiguredProxiesForHttp());
   histogram_tester.ExpectBucketCount(
@@ -1228,12 +1241,14 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
       EXPECT_EQ(std::make_pair(true, false),
                 test_config()->GetInFlightWarmupProxyDetails());
 
-      test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+      test_config()->HandleWarmupFetcherResponse(
+          kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
     } else {
       EXPECT_EQ(std::make_pair(false, false),
                 test_config()->GetInFlightWarmupProxyDetails());
 
-      test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+      test_config()->HandleWarmupFetcherResponse(
+          kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
     }
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount(
@@ -1270,7 +1285,8 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
     // Fetcher callback should not trigger fetching of probe URL since
     // kMaxWarmupURLFetchAttempts probes have been tried through each of the
     // data saver proxy.
-    test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+    test_config()->HandleWarmupFetcherResponse(
+        kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
     base::RunLoop().RunUntilIdle();
     // At most kMaxWarmupURLFetchAttempts warmup URLs should be fetched via
     // each of the two insecure proxies.
@@ -1308,7 +1324,8 @@ TEST_F(DataReductionProxyConfigTest,
       "DataReductionProxy.WarmupURL.FetchInitiated", 1);
 
   // The first probe should go through the HTTPS data saver proxy.
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.WarmupURL.FetchInitiated", 2);
@@ -1318,7 +1335,8 @@ TEST_F(DataReductionProxyConfigTest,
       "DataReductionProxy.WarmupURL.FetchInitiated", 2);
 
   // The second probe should go through the HTTP data saver proxy.
-  test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>({}), GetConfiguredProxiesForHttp());
   base::RunLoop().RunUntilIdle();
@@ -1332,9 +1350,11 @@ TEST_F(DataReductionProxyConfigTest,
     // Two more probes should go through the HTTPS data saver proxy, and two
     // more probes through the HTTP proxy.
     if (i <= 2) {
-      test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+      test_config()->HandleWarmupFetcherResponse(
+          kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
     } else {
-      test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+      test_config()->HandleWarmupFetcherResponse(
+          kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
     }
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount(
@@ -1365,16 +1385,19 @@ TEST_F(DataReductionProxyConfigTest,
 
   // At most kMaxWarmupURLFetchAttempts warmup URLs should be fetched via
   // secure proxy, and kMaxWarmupURLFetchAttempts via insecure.
-  test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
-  test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+  test_config()->HandleWarmupFetcherResponse(
+      kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.WarmupURL.FetchInitiated",
       kMaxWarmupURLFetchAttempts + kMaxWarmupURLFetchAttempts + 3);
 
   for (size_t i = 1; i <= 2; ++i) {
-    test_config()->HandleWarmupFetcherResponse(kHttpsProxy, false);
+    test_config()->HandleWarmupFetcherResponse(
+        kHttpsProxy, WarmupURLFetcher::FetchResult::kFailed);
     base::RunLoop().RunUntilIdle();
   }
   histogram_tester.ExpectTotalCount(
@@ -1382,7 +1405,8 @@ TEST_F(DataReductionProxyConfigTest,
       kMaxWarmupURLFetchAttempts + kMaxWarmupURLFetchAttempts + 5);
 
   for (size_t i = 1; i <= 2; ++i) {
-    test_config()->HandleWarmupFetcherResponse(kHttpProxy, false);
+    test_config()->HandleWarmupFetcherResponse(
+        kHttpProxy, WarmupURLFetcher::FetchResult::kFailed);
     base::RunLoop().RunUntilIdle();
   }
 
