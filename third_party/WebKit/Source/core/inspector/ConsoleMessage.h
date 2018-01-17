@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class DocumentLoader;
 class LocalFrame;
 class SourceLocation;
 
@@ -36,6 +37,7 @@ class CORE_EXPORT ConsoleMessage final
                                           MessageLevel,
                                           const String& message,
                                           const String& url,
+                                          DocumentLoader*,
                                           unsigned long request_identifier);
 
   // This creates message from WorkerMessageSource.
@@ -47,7 +49,7 @@ class CORE_EXPORT ConsoleMessage final
   ~ConsoleMessage();
 
   SourceLocation* Location() const;
-  unsigned long RequestIdentifier() const;
+  const String& RequestIdentifier() const;
   double Timestamp() const;
   MessageSource Source() const;
   MessageLevel Level() const;
@@ -69,7 +71,7 @@ class CORE_EXPORT ConsoleMessage final
   MessageLevel level_;
   String message_;
   std::unique_ptr<SourceLocation> location_;
-  unsigned long request_identifier_;
+  String request_identifier_;
   double timestamp_;
   String worker_id_;
   WeakMember<LocalFrame> frame_;

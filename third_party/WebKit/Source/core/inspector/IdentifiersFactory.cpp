@@ -49,8 +49,18 @@ String IdentifiersFactory::CreateIdentifier() {
 }
 
 // static
-String IdentifiersFactory::RequestId(unsigned long identifier) {
-  return identifier ? AddProcessIdPrefixTo(identifier) : String();
+String IdentifiersFactory::RequestId(DocumentLoader* loader,
+                                     unsigned long identifier) {
+  if (!identifier)
+    return String();
+  if (loader && loader->MainResourceIdentifier() == identifier)
+    return LoaderId(loader);
+  return AddProcessIdPrefixTo(identifier);
+}
+
+// static
+String IdentifiersFactory::SubresourceRequestId(unsigned long identifier) {
+  return RequestId(nullptr, identifier);
 }
 
 // static

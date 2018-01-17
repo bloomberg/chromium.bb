@@ -433,10 +433,11 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
     int intra_priority_value) {
   if (IsDetached())
     return;
-  TRACE_EVENT1(
-      "devtools.timeline", "ResourceChangePriority", "data",
-      InspectorChangeResourcePriorityEvent::Data(identifier, load_priority));
-  probe::didChangeResourcePriority(GetFrame(), identifier, load_priority);
+  TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
+               InspectorChangeResourcePriorityEvent::Data(
+                   MasterDocumentLoader(), identifier, load_priority));
+  probe::didChangeResourcePriority(GetFrame(), MasterDocumentLoader(),
+                                   identifier, load_priority);
 }
 
 void FrameFetchContext::PrepareRequest(ResourceRequest& request,
@@ -508,7 +509,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   if (response_type == ResourceResponseType::kFromMemoryCache) {
     // Note: probe::willSendRequest needs to precede before this probe method.
-    probe::markResourceAsCached(GetFrame(), identifier);
+    probe::markResourceAsCached(GetFrame(), MasterDocumentLoader(), identifier);
     if (response.IsNull())
       return;
   }
@@ -573,7 +574,8 @@ void FrameFetchContext::DispatchDidReceiveEncodedData(unsigned long identifier,
                                                       int encoded_data_length) {
   if (IsDetached())
     return;
-  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(), identifier,
+  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(),
+                                     MasterDocumentLoader(), identifier,
                                      encoded_data_length);
 }
 
@@ -586,7 +588,8 @@ void FrameFetchContext::DispatchDidDownloadData(unsigned long identifier,
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
   probe::didReceiveData(GetFrame()->GetDocument(), identifier,
                         MasterDocumentLoader(), nullptr, data_length);
-  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(), identifier,
+  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(),
+                                     MasterDocumentLoader(), identifier,
                                      encoded_data_length);
 }
 
@@ -640,8 +643,10 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
   }
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
-  if (!is_internal_request)
-    GetFrame()->Console().DidFailLoading(identifier, error);
+  if (!is_internal_request) {
+    GetFrame()->Console().DidFailLoading(MasterDocumentLoader(), identifier,
+                                         error);
+  }
 }
 
 void FrameFetchContext::DispatchDidLoadResourceFromMemoryCache(

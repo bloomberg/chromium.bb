@@ -617,7 +617,7 @@ void DocumentLoader::ResponseReceived(
                          GetFrameLoader().RequiredCSP() + "'.";
         ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
             kSecurityMessageSource, kErrorMessageLevel, message, response.Url(),
-            MainResourceIdentifier());
+            this, MainResourceIdentifier());
         frame_->GetDocument()->AddConsoleMessage(console_message);
         CancelLoadAfterCSPDenied(response);
         return;
