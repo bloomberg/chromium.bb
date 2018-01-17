@@ -21,8 +21,10 @@ extern "C" {
 #endif
 
 #if CONFIG_SPATIAL_SEGMENTATION
-/* Picks CDFs based on number of matching segment IDs */
+/* Picks CDFs based on number of matching/out-of-bounds segment IDs */
 static INLINE int pick_spatial_seg_cdf(int prev_ul, int prev_u, int prev_l) {
+  if (prev_ul < 0 || prev_u < 0 || prev_l < 0) /* Edge case */
+    return 0;
   if ((prev_ul == prev_u) && (prev_ul == prev_l))
     return 2;
   else if ((prev_ul == prev_u) || (prev_ul == prev_l) || (prev_u == prev_l))
@@ -31,8 +33,12 @@ static INLINE int pick_spatial_seg_cdf(int prev_ul, int prev_u, int prev_l) {
     return 0;
 }
 
+/* If 2 or more are identical returns that as predictor, otherwise prev_l */
 static INLINE int pick_spatial_seg_pred(int prev_ul, int prev_u, int prev_l) {
-  /* If 2 or more are identical returns that as predictor, otherwise prev_l */
+  if (prev_u == -1) /* Edge case */
+    return prev_l == -1 ? 0 : prev_l;
+  if (prev_l == -1) /* Edge case */
+    return prev_u;
   return (prev_ul == prev_u) ? prev_u : prev_l;
 }
 

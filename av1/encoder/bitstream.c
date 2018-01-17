@@ -593,9 +593,9 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
                              int mi_col, int skip) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  int prev_ul = 0; /* Top left segment_id */
-  int prev_l = 0;  /* Current left segment_id */
-  int prev_u = 0;  /* Current top segment_id */
+  int prev_ul = -1; /* Top left segment_id */
+  int prev_l = -1;  /* Current left segment_id */
+  int prev_u = -1;  /* Current top segment_id */
 
   if (!seg->enabled || !seg->update_map) return;
 

@@ -350,9 +350,9 @@ static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                            int mi_row, int mi_col, aom_reader *r, int skip) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   struct segmentation_probs *const segp = &ec_ctx->seg;
-  int prev_ul = 0; /* Top left segment_id */
-  int prev_l = 0;  /* Current left segment_id */
-  int prev_u = 0;  /* Current top segment_id */
+  int prev_ul = -1; /* Top left segment_id */
+  int prev_l = -1;  /* Current left segment_id */
+  int prev_u = -1;  /* Current top segment_id */
 
   if ((xd->up_available) && (xd->left_available))
     prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
