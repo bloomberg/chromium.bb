@@ -499,7 +499,7 @@ CHAR-LIMIT guidelines:
         Export passwords stored with Chrome
       </message>
       <message name="IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION" desc="Text shown to the user who initiated exporting passwords, as a warning before any passwords have been exported.">
-        Your passwords will be visible to anyone who can see the exported passwords file.
+        Your passwords will be visible to anyone who can see the exported file.
       </message>
 
       <!-- Lock Screen Fragment -->
