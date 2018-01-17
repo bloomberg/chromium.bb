@@ -24,7 +24,7 @@
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "gpu/ipc/common/memory_stats.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 
 namespace task_manager {
 
@@ -113,7 +113,7 @@ class TaskManagerImpl : public TaskManagerInterface,
       const gpu::VideoMemoryUsageStats& gpu_memory_stats);
   void OnReceivedMemoryDump(
       bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // task_manager::TaskManagerInterface:
   void Refresh() override;

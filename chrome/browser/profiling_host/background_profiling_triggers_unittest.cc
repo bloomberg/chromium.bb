@@ -21,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using GlobalMemoryDump = memory_instrumentation::GlobalMemoryDump;
 using GlobalMemoryDumpPtr = memory_instrumentation::mojom::GlobalMemoryDumpPtr;
 using ProcessMemoryDumpPtr =
     memory_instrumentation::mojom::ProcessMemoryDumpPtr;
@@ -116,36 +117,42 @@ class BackgroundProfilingTriggersTest : public testing::Test {
 TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_EmptyCases) {
   GlobalMemoryDumpPtr dump_empty(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump_empty));
+  triggers_.OnReceivedMemoryDump(
+      profiled_pids_, true, GlobalMemoryDump::MoveFrom(std::move(dump_empty)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_browser(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump_browser, 1, ProcessType::BROWSER, 1, 1, 1);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump_browser));
+  triggers_.OnReceivedMemoryDump(
+      profiled_pids_, true,
+      GlobalMemoryDump::MoveFrom(std::move(dump_browser)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_gpu(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump_gpu, 1, ProcessType::GPU, 1, 1, 1);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump_gpu));
+  triggers_.OnReceivedMemoryDump(
+      profiled_pids_, true, GlobalMemoryDump::MoveFrom(std::move(dump_gpu)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_renderer(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump_renderer, 1, ProcessType::RENDERER, 1, 1, 1);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
-                                 std::move(dump_renderer));
+  triggers_.OnReceivedMemoryDump(
+      profiled_pids_, true,
+      GlobalMemoryDump::MoveFrom(std::move(dump_renderer)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_other(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump_other, 1, ProcessType::OTHER, 1, 1, 1);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump_other));
+  triggers_.OnReceivedMemoryDump(
+      profiled_pids_, true, GlobalMemoryDump::MoveFrom(std::move(dump_other)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
   triggers_.Reset();
 }
@@ -158,7 +165,8 @@ TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_ProfiledPids) {
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
 
   // Small processes and OTHER type processes don't trigger.
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
 
   // Ensure each process type triggers.
@@ -166,21 +174,24 @@ TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_ProfiledPids) {
   dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
   PopulateMetrics(&dump, 1, ProcessType::BROWSER, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());
 
   triggers_.Reset();
   dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
   PopulateMetrics(&dump, 1, ProcessType::RENDERER, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());
 
   triggers_.Reset();
   dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
   PopulateMetrics(&dump, 1, ProcessType::GPU, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());
 }
 
@@ -190,13 +201,15 @@ TEST_F(BackgroundProfilingTriggersTest, OnlyProfiledProcessesTrigger) {
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump, 101, ProcessType::BROWSER, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_FALSE(triggers_.WasReportTriggered());
 
   dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
   PopulateMetrics(&dump, 1, ProcessType::BROWSER, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb, kProcessMallocTriggerKb);
-  triggers_.OnReceivedMemoryDump(profiled_pids_, true, std::move(dump));
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());
 }
 

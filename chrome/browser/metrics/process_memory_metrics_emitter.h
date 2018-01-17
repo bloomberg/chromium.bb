@@ -12,8 +12,8 @@
 #include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_introspector.mojom.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace ukm {
 class UkmRecorder;
@@ -44,7 +44,7 @@ class ProcessMemoryMetricsEmitter
   // is finished taking a memory dump.
   virtual void ReceivedMemoryDump(
       bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // Virtual for testing. Callback invoked when resource_coordinator service
   // returns info for each process.
@@ -79,7 +79,7 @@ class ProcessMemoryMetricsEmitter
   // The results of each request are cached. When both requests are finished,
   // the results are collated.
   bool memory_dump_in_progress_ = false;
-  memory_instrumentation::mojom::GlobalMemoryDumpPtr global_dump_;
+  std::unique_ptr<memory_instrumentation::GlobalMemoryDump> global_dump_;
   bool get_process_urls_in_progress_ = false;
 
   // The key is ProcessInfoPtr::pid.

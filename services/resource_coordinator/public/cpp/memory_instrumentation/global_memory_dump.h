@@ -41,14 +41,19 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT GlobalMemoryDump {
     DISALLOW_COPY_AND_ASSIGN(ProcessDump);
   };
 
-  GlobalMemoryDump(std::vector<mojom::ProcessMemoryDumpPtr> process_dumps);
   ~GlobalMemoryDump();
+
+  // Creates an owned instance of this class wrapping the given mojo struct.
+  static std::unique_ptr<GlobalMemoryDump> MoveFrom(
+      mojom::GlobalMemoryDumpPtr ptr);
 
   const std::forward_list<ProcessDump>& process_dumps() const {
     return process_dumps_;
   }
 
  private:
+  GlobalMemoryDump(std::vector<mojom::ProcessMemoryDumpPtr> process_dumps);
+
   std::forward_list<ProcessDump> process_dumps_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalMemoryDump);

@@ -138,7 +138,7 @@ void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
 void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     std::vector<base::ProcessId> profiled_pids,
     bool success,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!success) {
@@ -146,12 +146,12 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
   }
 
   bool should_send_report = false;
-  for (const auto& proc : dump->process_dumps) {
-    if (std::find(profiled_pids.begin(), profiled_pids.end(), proc->pid) ==
+  for (const auto& proc : dump->process_dumps()) {
+    if (std::find(profiled_pids.begin(), profiled_pids.end(), proc.pid()) ==
         profiled_pids.end())
       continue;
-    if (IsOverTriggerThreshold(GetContentProcessType(proc->process_type),
-                               proc->os_dump->private_footprint_kb)) {
+    if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
+                               proc.os_dump().private_footprint_kb)) {
       should_send_report = true;
       break;
     }
