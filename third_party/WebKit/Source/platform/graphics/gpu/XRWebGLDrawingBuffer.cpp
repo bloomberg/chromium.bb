@@ -2,13 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRWebGLDrawingBuffer.h"
+#include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGLFramebuffer.h"
-#include "modules/xr/XRSession.h"
-#include "modules/xr/XRView.h"
-#include "modules/xr/XRViewport.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -22,19 +17,25 @@ namespace blink {
 // some of the common bits into a base class?
 
 XRWebGLDrawingBuffer* XRWebGLDrawingBuffer::Create(
-    WebGLRenderingContextBase* webgl_context,
+    DrawingBuffer* drawing_buffer,
+    GLuint framebuffer,
     const IntSize& size,
     bool want_alpha_channel,
     bool want_depth_buffer,
     bool want_stencil_buffer,
     bool want_antialiasing,
     bool want_multiview) {
-  DCHECK(webgl_context);
+  DCHECK(drawing_buffer);
+
+  // Don't proceeed if the context is already lost.
+  if (drawing_buffer->destroyed())
+    return nullptr;
+
+  gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
 
   std::unique_ptr<Extensions3DUtil> extensions_util =
-      Extensions3DUtil::Create(webgl_context->ContextGL());
+      Extensions3DUtil::Create(gl);
   if (!extensions_util->IsValid()) {
-    // This might be the first time we notice that the GL context is lost.
     return nullptr;
   }
 
@@ -66,53 +67,40 @@ XRWebGLDrawingBuffer* XRWebGLDrawingBuffer::Create(
   // TODO(bajones): Support multiview.
   bool multiview_supported = false;
 
-  XRWebGLDrawingBuffer* drawing_buffer = new XRWebGLDrawingBuffer(
-      webgl_context, discard_framebuffer_supported, want_alpha_channel,
-      want_depth_buffer, want_stencil_buffer, multiview_supported);
-  if (!drawing_buffer->Initialize(size, multisample_supported,
-                                  multiview_supported)) {
+  XRWebGLDrawingBuffer* xr_drawing_buffer = new XRWebGLDrawingBuffer(
+      drawing_buffer, framebuffer, discard_framebuffer_supported,
+      want_alpha_channel, want_depth_buffer, want_stencil_buffer,
+      multiview_supported);
+  if (!xr_drawing_buffer->Initialize(size, multisample_supported,
+                                     multiview_supported)) {
     DLOG(ERROR) << "XRWebGLDrawingBuffer Initialization Failed";
     return nullptr;
   }
 
-  return drawing_buffer;
+  return xr_drawing_buffer;
 }
 
-XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(
-    WebGLRenderingContextBase* webgl_context,
-    bool discard_framebuffer_supported,
-    bool want_alpha_channel,
-    bool want_depth_buffer,
-    bool want_stencil_buffer,
-    bool multiview_supported)
-    : webgl_context_(webgl_context),
-      antialias_(false),
+XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
+                                           GLuint framebuffer,
+                                           bool discard_framebuffer_supported,
+                                           bool want_alpha_channel,
+                                           bool want_depth_buffer,
+                                           bool want_stencil_buffer,
+                                           bool multiview_supported)
+    : drawing_buffer_(drawing_buffer),
+      framebuffer_(framebuffer),
+      discard_framebuffer_supported_(discard_framebuffer_supported),
       depth_(want_depth_buffer),
       stencil_(want_stencil_buffer),
       alpha_(want_alpha_channel),
-      multiview_(false) {
-  contents_changed_ = true;  // TODO: Obviously something better than this.
-}
+      multiview_(false) {}
 
 // TODO(bajones): The GL resources allocated in this function are leaking. Add
 // a way to clean up the buffers when the layer is GCed or the session ends.
 bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
                                       bool use_multisampling,
                                       bool use_multiview) {
-  gpu::gles2::GLES2Interface* gl = gl_context();
-
-  // Determine the WebGL version of the context
-  switch (webgl_context_->Version()) {
-    case 1:
-      webgl_version_ = kWebGL1;
-      break;
-    case 2:
-      webgl_version_ = kWebGL2;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   std::unique_ptr<Extensions3DUtil> extensions_util =
       Extensions3DUtil::Create(gl);
@@ -133,29 +121,27 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
   }
 
   storage_texture_supported_ =
-      (webgl_version_ > kWebGL1 ||
+      (drawing_buffer_->webgl_version() > DrawingBuffer::kWebGL1 ||
        extensions_util->SupportsExtension("GL_EXT_texture_storage")) &&
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
   sample_count_ = std::min(4, max_sample_count);
 
-  // Create an opaque WebGL Framebuffer
-  framebuffer_ = WebGLFramebuffer::CreateOpaque(webgl_context_);
-
   Resize(size);
 
+  // It's possible that the drawing buffer allocation provokes a context loss,
+  // so check again just in case.
   if (gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-    // It's possible that the drawing buffer allocation provokes a context loss,
-    // so check again just in case.
     return false;
   }
 
   return true;
 }
 
-void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
-  if (webgl_context_->isContextLost())
-    return;
+bool XRWebGLDrawingBuffer::ContextLost() {
+  return drawing_buffer_->destroyed();
+}
 
+void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
   // Ensure we always have at least a 1x1 buffer
   IntSize adjusted_size(std::max(1, new_size.Width()),
                         std::max(1, new_size.Height()));
@@ -163,11 +149,15 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
   if (adjusted_size == size_)
     return;
 
+  // Don't attempt to resize if the context is lost.
+  if (ContextLost())
+    return;
+
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
   size_ = adjusted_size;
 
-  gpu::gles2::GLES2Interface* gl = gl_context();
-
-  gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_->Object());
+  gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
   // Provide a depth and/or stencil buffer if requested.
   if (depth_ || stencil_) {
@@ -246,18 +236,13 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
     DLOG(ERROR) << "Framebuffer incomplete";
   }
 
-  DrawingBuffer::Client* client =
-      static_cast<DrawingBuffer::Client*>(webgl_context_.Get());
+  DrawingBuffer::Client* client = drawing_buffer_->client();
   client->DrawingBufferClientRestoreRenderbufferBinding();
   client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
-void XRWebGLDrawingBuffer::MarkFramebufferComplete(bool complete) {
-  framebuffer_->MarkOpaqueBufferComplete(complete);
-}
-
 GLuint XRWebGLDrawingBuffer::CreateColorBuffer() {
-  gpu::gles2::GLES2Interface* gl = gl_context();
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   GLuint texture_id = 0;
   gl->GenTextures(1, &texture_id);
@@ -277,8 +262,7 @@ GLuint XRWebGLDrawingBuffer::CreateColorBuffer() {
                    0, gl_format, GL_UNSIGNED_BYTE, nullptr);
   }
 
-  DrawingBuffer::Client* client =
-      static_cast<DrawingBuffer::Client*>(webgl_context_.Get());
+  DrawingBuffer::Client* client = drawing_buffer_->client();
   client->DrawingBufferClientRestoreTexture2DBinding();
 
   return texture_id;
@@ -292,17 +276,13 @@ bool XRWebGLDrawingBuffer::WantExplicitResolve() const {
 // contain the previously rendered content, resolved from the multisample
 // renderbuffer if needed.
 void XRWebGLDrawingBuffer::SwapColorBuffers() {
-  if (webgl_context_->isContextLost())
-    return;
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
-  gpu::gles2::GLES2Interface* gl = gl_context();
-
-  DrawingBuffer::Client* client =
-      static_cast<DrawingBuffer::Client*>(webgl_context_.Get());
+  DrawingBuffer::Client* client = drawing_buffer_->client();
 
   // Resolve multisample buffers if needed
   if (WantExplicitResolve()) {
-    gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, framebuffer_->Object());
+    gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, framebuffer_);
     gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, resolved_framebuffer_);
     gl->Disable(GL_SCISSOR_TEST);
 
@@ -316,14 +296,20 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
 
     client->DrawingBufferClientRestoreScissorTest();
   } else {
-    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_->Object());
+    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     if (anti_aliasing_mode_ == kScreenSpaceAntialiasing)
       gl->ApplyScreenSpaceAntialiasingCHROMIUM();
   }
 
   // Swap buffers
   GLuint tmp = back_color_buffer_;
-  back_color_buffer_ = front_color_buffer_;
+
+  if (front_color_buffer_) {
+    back_color_buffer_ = front_color_buffer_;
+  } else {
+    back_color_buffer_ = CreateColorBuffer();
+  }
+
   front_color_buffer_ = tmp;
 
   if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
@@ -335,17 +321,56 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
                              GL_TEXTURE_2D, back_color_buffer_, 0);
   }
 
+  if (discard_framebuffer_supported_) {
+    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
+                                    GL_STENCIL_ATTACHMENT};
+    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+  }
+
   client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
-void XRWebGLDrawingBuffer::Trace(blink::Visitor* visitor) {
-  visitor->Trace(webgl_context_);
-  visitor->Trace(framebuffer_);
-}
+scoped_refptr<StaticBitmapImage>
+XRWebGLDrawingBuffer::TransferToStaticBitmapImage() {
+  gpu::Mailbox mailbox;
+  gpu::SyncToken sync_token;
+  bool success = false;
+  GLuint texture_id = 0;
 
-void XRWebGLDrawingBuffer::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(webgl_context_);
+  // Ensure the context isn't lost before continuing.
+  if (!ContextLost()) {
+    gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+    SwapColorBuffers();
+
+    gl->GenMailboxCHROMIUM(mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(front_color_buffer_, mailbox.name);
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+
+    // This should only fail if the context is lost during the buffer swap.
+    if (sync_token.HasData()) {
+      // Once we place the texture in the StaticBitmapImage it's effectively
+      // gone for good. So we'll null out the front_color_buffer_ here to ensure
+      // that a new one is created on the next swap.
+      texture_id = front_color_buffer_;
+      front_color_buffer_ = 0;
+      success = true;
+    }
+  }
+
+  if (!success) {
+    // If we can't get a mailbox, return an transparent black ImageBitmap.
+    // The only situation in which this could happen is when two or more calls
+    // to transferToImageBitmap are made back-to-back, or when the context gets
+    // lost.
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
+    return StaticBitmapImage::Create(surface->makeImageSnapshot());
+  }
+
+  return AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
+      mailbox, sync_token, texture_id,
+      drawing_buffer_->ContextProviderWeakPtr(), size_);
 }
 
 }  // namespace blink

@@ -1132,6 +1132,8 @@ jumbo_component("platform") {
     "graphics/gpu/WebGLImageConversion.h",
     "graphics/gpu/XRFrameTransport.cpp",
     "graphics/gpu/XRFrameTransport.h",
+    "graphics/gpu/XRWebGLDrawingBuffer.cpp",
+    "graphics/gpu/XRWebGLDrawingBuffer.h",
     "graphics/highcontrast/highcontrast_classifier.cc",
     "graphics/highcontrast/highcontrast_classifier.h",
     "graphics/paint/ClipDisplayItem.cpp",
