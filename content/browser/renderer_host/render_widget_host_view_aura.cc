@@ -25,7 +25,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/common/switches.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -1949,7 +1948,7 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   }
 
   const bool enable_viz =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
       features::IsSurfaceSynchronizationEnabled(), enable_viz);

@@ -34,7 +34,6 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -385,25 +384,21 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   touch_emulator_.reset();
   SetWidget(std::move(widget));
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHangMonitor)) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableHangMonitor)) {
     hang_monitor_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
                    weak_factory_.GetWeakPtr())));
   }
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewContentRenderingTimeout)) {
+  if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
     new_content_rendering_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
                    weak_factory_.GetWeakPtr())));
   }
 
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  enable_viz_ = command_line.HasSwitch(switches::kEnableViz);
+  enable_viz_ = base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
 
   delegate_->RenderWidgetCreated(this);
 }

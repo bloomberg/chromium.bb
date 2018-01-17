@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "content/child/child_process.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/connection_filter.h"
@@ -135,7 +135,7 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
     service_manager::Connector* connector) {
   viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
   if (GetContentClient()->gpu())
     deps.sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
   auto* process = ChildProcess::current();

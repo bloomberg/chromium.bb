@@ -7,9 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -81,8 +80,8 @@ void OffscreenCanvasSurfaceImpl::OnFrameTokenChanged(uint32_t frame_token) {
 void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,
                                          const viz::SurfaceSequence& sequence) {
   // TODO(kylechar): This is a hacky workaround for https://crbug.com/796700
-  // to unblock video with surfaces work. Remove before M65 branch.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz))
+  // to unblock video with surfaces work. Delete function M65 branch.
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
     return;
 
   auto* surface_manager = GetFrameSinkManager()->surface_manager();
@@ -92,8 +91,8 @@ void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,
 
 void OffscreenCanvasSurfaceImpl::Satisfy(const viz::SurfaceSequence& sequence) {
   // TODO(kylechar): This is a hacky workaround for https://crbug.com/796700
-  // to unblock video with surfaces work. Remove before M65 branch.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz))
+  // to unblock video with surfaces work. Delete function after M65 branch.
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
     return;
 
   auto* surface_manager = GetFrameSinkManager()->surface_manager();

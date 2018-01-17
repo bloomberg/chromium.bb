@@ -16,7 +16,6 @@ namespace switches {
 VIZ_COMMON_EXPORT extern const char kDeadlineToSynchronizeSurfaces[];
 VIZ_COMMON_EXPORT extern const char kDisableSurfaceReferences[];
 VIZ_COMMON_EXPORT extern const char kEnableSurfaceSynchronization[];
-VIZ_COMMON_EXPORT extern const char kEnableViz[];
 
 VIZ_COMMON_EXPORT uint32_t GetDeadlineToSynchronizeSurfaces();
 

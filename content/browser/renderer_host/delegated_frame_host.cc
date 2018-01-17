@@ -607,9 +607,9 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     UpdateGutters();
   }
 
-  // TODO(samans): Ensure that with --enable-viz the latest frame is evicted and
-  // that DelegatedFrameHost updates the SurfaceLayer when the frame becomes
-  // visible again.
+  // TODO(samans): Ensure that with VizDisplayCompositor enabled the latest
+  // frame is evicted and that DelegatedFrameHost updates the SurfaceLayer when
+  // the frame becomes visible again.
   if (!enable_viz_)
     support_->EvictCurrentSurface();
 

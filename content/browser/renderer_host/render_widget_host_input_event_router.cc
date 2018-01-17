@@ -6,10 +6,9 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
-#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -172,10 +171,9 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       in_touchscreen_gesture_pinch_(false),
       gesture_pinch_did_send_scroll_begin_(false),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
-      weak_ptr_factory_(this) {
-  enable_viz_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
-}
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      weak_ptr_factory_(this) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   // We may be destroyed before some of the owners in the map, so we must
@@ -952,7 +950,7 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
   if (!root_view)
     return nullptr;
   // TODO(kenrb): Pass screen coordinates through this method from all the
-  // callers. This will be broken with --enable-viz until then.
+  // callers. This will be broken with VizDisplayCompositor enabled until then.
   return RenderWidgetHostImpl::From(
       FindViewAtLocation(root_view, point, gfx::PointF(),
                          viz::EventSource::MOUSE, transformed_point)

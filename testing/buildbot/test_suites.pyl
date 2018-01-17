@@ -936,7 +936,7 @@
       'isolate_name': 'telemetry_perf_unittests',
       'args': [
         '--xvfb',
-        '--extra-browser-args=--enable-viz',
+        '--extra-browser-args=--enable-features=VizDisplayCompositor',
         '--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot',
         '--skip=measurements.tab_switching_unittest.TabSwitchingUnittest.testTabSwitching',
       ],
@@ -948,7 +948,7 @@
     'telemetry_unittests_viz': {
       'isolate_name': 'telemetry_unittests',
       'args': [
-        '--extra-browser-args=--enable-viz',
+        '--extra-browser-args=--enable-features=VizDisplayCompositor',
         '--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed',
         '--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot',
         '--skip=telemetry.internal.backends.chrome.tab_list_backend_unittest.TabListBackendTest.testNewTab',
@@ -1609,7 +1609,7 @@
     },
     'viz_browser_tests': {
       'args': [
-        '--enable-viz',
+        '--enable-features=VizDisplayCompositor',
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter'
       ],
       'swarming': {
@@ -1619,7 +1619,7 @@
     },
     'viz_content_browsertests': {
       'args': [
-        '--enable-viz',
+        '--enable-features=VizDisplayCompositor',
         '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter',
       ],
       'swarming': {
@@ -1629,7 +1629,7 @@
     },
     'viz_content_unittests': {
       'args': [
-        '--enable-viz',
+        '--enable-features=VizDisplayCompositor',
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
@@ -1639,7 +1639,7 @@
   'viz_gtests': {
     'viz_content_browsertests': {
       'args': [
-        '--enable-viz',
+        '--enable-features=VizDisplayCompositor',
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter'
       ],
       'swarming': {
@@ -1649,7 +1649,7 @@
     },
     'viz_content_unittests': {
       'args': [
-        '--enable-viz',
+        '--enable-features=VizDisplayCompositor',
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
