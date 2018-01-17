@@ -39,21 +39,34 @@ namespace {
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 
 blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
+    blink::WebScreenOrientationLockType natural_orientation,
     arc::mojom::OrientationLock orientation_lock) {
   DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
+
+  // In Android, "portrait" means 90 degrees counterclockwise rotation
+  // on naturally landscape devices.
+  bool reverse_portrait_orientation =
+      natural_orientation == blink::kWebScreenOrientationLockLandscape;
+
   switch (orientation_lock) {
     case arc::mojom::OrientationLock::PORTRAIT:
       return blink::kWebScreenOrientationLockPortrait;
     case arc::mojom::OrientationLock::LANDSCAPE:
       return blink::kWebScreenOrientationLockLandscape;
-    case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
-      return blink::kWebScreenOrientationLockPortraitPrimary;
     case arc::mojom::OrientationLock::LANDSCAPE_PRIMARY:
       return blink::kWebScreenOrientationLockLandscapePrimary;
-    case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
-      return blink::kWebScreenOrientationLockPortraitSecondary;
     case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
       return blink::kWebScreenOrientationLockLandscapeSecondary;
+
+    case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
+      return reverse_portrait_orientation
+                 ? blink::kWebScreenOrientationLockPortraitSecondary
+                 : blink::kWebScreenOrientationLockPortraitPrimary;
+
+    case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
+      return reverse_portrait_orientation
+                 ? blink::kWebScreenOrientationLockPortraitPrimary
+                 : blink::kWebScreenOrientationLockPortraitSecondary;
     default:
       return blink::kWebScreenOrientationLockAny;
   }
@@ -657,9 +670,14 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
           ScreenOrientationController::LockCompletionBehavior::DisableSensor;
     }
   }
+
+  blink::WebScreenOrientationLockType natural_orientation =
+      ash::Shell::Get()->screen_orientation_controller()->natural_orientation();
+
   ash::Shell* shell = ash::Shell::Get();
   shell->screen_orientation_controller()->LockOrientationForWindow(
-      window, BlinkOrientationLockFromMojom(orientation_lock),
+      window,
+      BlinkOrientationLockFromMojom(natural_orientation, orientation_lock),
       lock_completion_behavior);
 }
 
