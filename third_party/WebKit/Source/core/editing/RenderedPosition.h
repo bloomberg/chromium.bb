@@ -86,8 +86,8 @@ class CORE_EXPORT RenderedPosition {
 
   IntRect AbsoluteRect(LayoutUnit* extra_width_to_end_of_line = nullptr) const;
 
-  void PositionInGraphicsLayerBacking(CompositedSelectionBound&,
-                                      bool selection_start) const;
+  CompositedSelectionBound PositionInGraphicsLayerBacking(
+      bool selection_start) const;
 
   // Returns whether this position is not visible on the screen (because
   // clipped out).
