@@ -166,14 +166,6 @@ bool PrintViewManagerBase::PrintDocument(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const gfx::Point& offsets) {
-  std::unique_ptr<PdfMetafileSkia> metafile =
-      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
-  if (!metafile->InitFromData(print_data->front(), print_data->size())) {
-    NOTREACHED() << "Invalid metafile";
-    web_contents()->Stop();
-    return false;
-  }
-
 #if defined(OS_WIN)
   if (PrintedDocument::HasDebugDumpPath())
     document->DebugDumpData(print_data.get(), FILE_PATH_LITERAL(".pdf"));
@@ -199,6 +191,10 @@ bool PrintViewManagerBase::PrintDocument(
                                         print_text_with_gdi);
   }
 #else
+  std::unique_ptr<PdfMetafileSkia> metafile =
+      std::make_unique<PdfMetafileSkia>(SkiaDocumentType::PDF);
+  CHECK(metafile->InitFromData(print_data->front(), print_data->size()));
+
   // Update the rendered document. It will send notifications to the listener.
   document->SetDocument(std::move(metafile), page_size, content_area);
   ShouldQuitFromInnerMessageLoop();
