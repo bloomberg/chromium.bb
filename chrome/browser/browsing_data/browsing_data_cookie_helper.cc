@@ -27,8 +27,9 @@ namespace {
 
 const char kGlobalCookieSetURL[] = "chrome://cookieset";
 
-void OnFetchComplete(const BrowsingDataCookieHelper::FetchCallback& callback,
-                     const net::CookieList& cookies) {
+void OnCookieFetchComplete(
+    const BrowsingDataCookieHelper::FetchCallback& callback,
+    const net::CookieList& cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -70,7 +71,7 @@ void BrowsingDataCookieHelper::FetchCookiesOnIOThread(
   DCHECK(!callback.is_null());
   request_context_getter_->GetURLRequestContext()
       ->cookie_store()
-      ->GetAllCookiesAsync(base::BindOnce(&OnFetchComplete, callback));
+      ->GetAllCookiesAsync(base::BindOnce(&OnCookieFetchComplete, callback));
 }
 
 void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
