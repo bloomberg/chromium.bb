@@ -201,12 +201,14 @@ TEST_F(CRWWKNavigationStatesTest, PendingNavigations) {
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
 
   // Commit navigation_1.
+  EXPECT_FALSE([states_ isCommittedNavigation:navigation1_]);
   [states_ setState:WKNavigationState::COMMITTED forNavigation:navigation1_];
   ASSERT_EQ(WKNavigationState::COMMITTED,
             [states_ stateForNavigation:navigation1_]);
   ASSERT_EQ(2U, [states_ pendingNavigations].count);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation2_]);
   EXPECT_TRUE([[states_ pendingNavigations] containsObject:navigation3_]);
+  EXPECT_TRUE([states_ isCommittedNavigation:navigation1_]);
 
   // Finish navigation_1.
   [states_ setState:WKNavigationState::FINISHED forNavigation:navigation1_];

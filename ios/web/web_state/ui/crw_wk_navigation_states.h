@@ -93,6 +93,12 @@ enum class WKNavigationState : int {
 // This array may contain NSNull to represent null WKNavigation.
 - (NSSet*)pendingNavigations;
 
+// webView:didCommitNavigation: can be called multiple times.
+// webView:didFinishNavigation: can be called before
+// webView:didCommitNavigation:. This method returns YES if the given navigation
+// has ever been committed.
+- (BOOL)isCommittedNavigation:(WKNavigation*)navigation;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_

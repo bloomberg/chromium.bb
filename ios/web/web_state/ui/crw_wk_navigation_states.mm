@@ -22,6 +22,9 @@
 // navigations).
 @property(nonatomic, assign, readonly) NSUInteger index;
 
+// didCommitNavigation: can be called multiple times for the same navigation.
+@property(nonatomic, assign, getter=isCommitted) BOOL committed;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 // Initializes record with state and index values.
@@ -42,6 +45,7 @@
 @implementation CRWWKNavigationsStateRecord
 @synthesize state = _state;
 @synthesize index = _index;
+@synthesize committed = _committed;
 
 #ifndef NDEBUG
 - (NSString*)description {
@@ -131,6 +135,9 @@
             state == web::WKNavigationState::COMMITTED));
     record.state = state;
   }
+  if (state == web::WKNavigationState::COMMITTED) {
+    record.committed = YES;
+  }
   [_records setObject:record forKey:key];
 }
 
@@ -213,6 +220,12 @@
     // |_nullNavigation| is a key for storing null navigations.
     *outNavigation = nil;
   }
+}
+
+- (BOOL)isCommittedNavigation:(WKNavigation*)navigation {
+  id key = [self keyForNavigation:navigation];
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
+  return record.committed;
 }
 
 @end
