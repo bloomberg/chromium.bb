@@ -182,6 +182,7 @@ if (is_android) {
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaDrmSessionManager.java",
       "java/src/org/chromium/media/MediaDrmStorageBridge.java",
+      "java/src/org/chromium/media/MediaFormatBuilder.java",
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
@@ -193,6 +194,7 @@ if (is_android) {
     java_files = [
       "java/src/test/org/chromium/media/AudioTrackOutputStreamTest.java",
       "java/src/test/org/chromium/media/BitrateAdjusterTest.java",
+      "java/src/test/org/chromium/media/MediaFormatBuilderTest.java",
     ]
     deps = [
       ":media_java",
