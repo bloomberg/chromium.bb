@@ -121,8 +121,8 @@
     assert_array_equals(eventLog, [
       'beforeinput: isComposing=true, data=""',
       'compositionupdate: data=""',
-      'input: isComposing=false, data="null", inputType=deleteContentBackward',
       'textInput: data=""',
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
       'compositionend: data=""',
     ]);
   }, 'setComposition with open composition, empty text');
@@ -181,8 +181,8 @@
     assert_array_equals(eventLog, [
       'beforeinput: isComposing=true, data=""',
       'compositionupdate: data=""',
-      'input: isComposing=false, data="null", inputType=deleteContentBackward',
       'textInput: data=""',
+      'input: isComposing=false, data="null", inputType=deleteContentBackward',
       'compositionend: data=""',
     ]);
   }, 'insertText with open composition, empty text');
@@ -287,7 +287,6 @@
       'compositionupdate: data="hello"',
       'textInput: data="h"',
       'input: isComposing=true, data="h", inputType=insertCompositionText',
-      'compositionend: data="hello"',
       'compositionend: data="hello"',
     ]);
   }, 'unmarkAndUnselectText, too long for input');
