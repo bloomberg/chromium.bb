@@ -11,6 +11,7 @@ include_rules = [
   "+crypto",
   "+google_apis",
   "+grit",
+  "+net",
   "+services/metrics/public/cpp",
 ]
 

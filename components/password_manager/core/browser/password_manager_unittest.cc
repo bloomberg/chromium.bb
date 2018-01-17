@@ -62,7 +62,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
-  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
   // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.
@@ -155,8 +154,6 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(manager_.get()));
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
-    EXPECT_CALL(client_, DidLastPageLoadEncounterSSLErrors())
-        .WillRepeatedly(Return(false));
 
     ON_CALL(client_, GetMainFrameURL()).WillByDefault(ReturnRef(test_url_));
   }
