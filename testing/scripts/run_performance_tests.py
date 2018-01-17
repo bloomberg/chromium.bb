@@ -56,7 +56,7 @@ import run_telemetry_benchmark_as_googletest
 def sharding_map_path():
   return os.path.join(
       os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-      'benchmark_sharding_map.json')
+      'benchmark_bot_map.json')
 
 def main():
   parser = argparse.ArgumentParser()

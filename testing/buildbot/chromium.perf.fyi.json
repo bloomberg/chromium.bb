@@ -471,6 +471,45 @@
           "ignore_task_failure": false,
           "io_timeout": 3600
         }
+      },
+      {
+        "args": [
+          "-v",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--xvfb",
+          "--browser=release"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [],
+          "script": "//tools/perf/upload_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "peformance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        },
+        "trigger_script": {
+          "args": [
+            "--bot-id",
+            "swarm846-c4",
+            "--bot-id",
+            "swarm847-c4"
+          ],
+          "script": "//tools/perf/perf_device_trigger.py"
+        }
       }
     ]
   },

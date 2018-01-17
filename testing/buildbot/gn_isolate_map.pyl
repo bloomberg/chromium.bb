@@ -978,6 +978,14 @@
       "../../tools/perf/run_benchmark",
     ],
   },
+  "performance_test_suite": {
+    "label": "//chrome/test:performance_test_suite",
+    "type": "script",
+    "script": "//testing/scripts/run_performance_tests.py",
+    "args": [
+      "../../tools/perf/run_benchmark",
+    ],
+  },
   "telemetry_perf_webview_tests": {
     "label": "//chrome/test:telemetry_perf_webview_tests",
     "type": "script",
