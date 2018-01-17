@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
@@ -36,6 +37,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 #include "printing/units.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -202,9 +204,14 @@ void PdfPrinterHandler::StartPrint(
   content::WebContents* initiator =
       dialog_controller ? dialog_controller->GetInitiator(preview_web_contents_)
                         : nullptr;
-  const GURL& initiator_url =
-      initiator ? initiator->GetLastCommittedURL() : GURL::EmptyGURL();
-  base::FilePath path = GetFileName(initiator_url, job_title);
+
+  GURL initiator_url;
+  bool is_savable = false;
+  if (initiator) {
+    initiator_url = initiator->GetLastCommittedURL();
+    is_savable = initiator->IsSavable();
+  }
+  base::FilePath path = GetFileName(initiator_url, job_title, is_savable);
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
@@ -235,6 +242,7 @@ void PdfPrinterHandler::SetPdfSavedClosureForTesting(
 // static
 base::FilePath PdfPrinterHandler::GetFileNameForPrintJobTitle(
     const base::string16& job_title) {
+  DCHECK(!job_title.empty());
 #if defined(OS_WIN)
   base::FilePath::StringType print_job_title(job_title);
 #elif defined(OS_POSIX)
@@ -280,10 +288,18 @@ base::FilePath PdfPrinterHandler::GetFileNameForURL(const GURL& url) {
 
 // static
 base::FilePath PdfPrinterHandler::GetFileName(const GURL& url,
-                                              const base::string16& job_title) {
-  bool title_is_url = url_formatter::FormatUrl(url) == job_title;
-  return title_is_url ? GetFileNameForURL(url)
-                      : GetFileNameForPrintJobTitle(job_title);
+                                              const base::string16& job_title,
+                                              bool is_savable) {
+  if (is_savable) {
+    bool title_is_url =
+        job_title.empty() || url_formatter::FormatUrl(url) == job_title;
+    return title_is_url ? GetFileNameForURL(url)
+                        : GetFileNameForPrintJobTitle(job_title);
+  }
+  base::FilePath name = net::GenerateFileName(
+      url, std::string(), std::string(), std::string(), std::string(),
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+  return name.ReplaceExtension(kPdfExtension);
 }
 
 void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
