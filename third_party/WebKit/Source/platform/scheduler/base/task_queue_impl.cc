@@ -342,9 +342,13 @@ TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
         main_thread_only().delayed_fence = base::nullopt;
         DCHECK_EQ(main_thread_only().current_fence,
                   static_cast<EnqueueOrder>(EnqueueOrderValues::kNone));
-        bool task_unblocked = InsertFenceImpl(task.enqueue_order());
-        DCHECK(!task_unblocked)
-            << "Activating a delayed fence shouldn't unblock new work";
+        main_thread_only().current_fence = task.enqueue_order();
+        // Do not trigger WorkQueueSets notification when taking incoming
+        // immediate queue.
+        main_thread_only().immediate_work_queue->InsertFenceSilently(
+            main_thread_only().current_fence);
+        main_thread_only().delayed_work_queue->InsertFenceSilently(
+            main_thread_only().current_fence);
         break;
       }
     }
@@ -604,7 +608,11 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
 
   // Tasks posted after this point will have a strictly higher enqueue order
   // and will be blocked from running.
-  bool task_unblocked = InsertFenceImpl(current_fence);
+  main_thread_only().current_fence = current_fence;
+  bool task_unblocked =
+      main_thread_only().immediate_work_queue->InsertFence(current_fence);
+  task_unblocked |=
+      main_thread_only().delayed_work_queue->InsertFence(current_fence);
 
   if (!task_unblocked && previous_fence && previous_fence < current_fence) {
     base::AutoLock lock(immediate_incoming_queue_lock_);
@@ -650,14 +658,6 @@ void TaskQueueImpl::RemoveFence() {
     main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
         FROM_HERE);
   }
-}
-
-bool TaskQueueImpl::InsertFenceImpl(EnqueueOrder fence) {
-  main_thread_only().current_fence = fence;
-  bool task_unblocked =
-      main_thread_only().immediate_work_queue->InsertFence(fence);
-  task_unblocked |= main_thread_only().delayed_work_queue->InsertFence(fence);
-  return task_unblocked;
 }
 
 bool TaskQueueImpl::BlockedByFence() const {
