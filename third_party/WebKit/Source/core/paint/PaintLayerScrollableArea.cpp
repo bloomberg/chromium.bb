@@ -674,6 +674,11 @@ bool PaintLayerScrollableArea::ShouldSuspendScrollAnimations() const {
 void PaintLayerScrollableArea::ScrollbarVisibilityChanged() {
   UpdateScrollbarEnabledState();
 
+  // Paint properties need to be updated, because clip rects
+  // are affected by overlay scrollbars.
+  layer_.GetLayoutObject().SetNeedsPaintPropertyUpdate();
+
+  // TODO(chrishr): this should be able to be removed.
   layer_.ClearClipRects();
 
   if (LayoutView* view = GetLayoutBox()->View())

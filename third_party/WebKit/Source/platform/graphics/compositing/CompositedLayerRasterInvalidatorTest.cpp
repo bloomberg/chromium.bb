@@ -274,7 +274,6 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
-  LOG(ERROR) << "new_clip_rect: " << clip_rect.ToString();
   scoped_refptr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       clip_rect);
