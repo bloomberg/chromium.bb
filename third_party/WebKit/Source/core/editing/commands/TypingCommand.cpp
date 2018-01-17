@@ -177,9 +177,7 @@ TypingCommand::TypingCommand(Document& document,
       granularity_(granularity),
       composition_type_(composition_type),
       kill_ring_(options & kKillRing),
-      opened_by_backward_delete_(false),
-      should_retain_autocorrection_indicator_(options &
-                                              kRetainAutocorrectionIndicator) {
+      opened_by_backward_delete_(false) {
   UpdatePreservesTypingStyle(command_type_);
 }
 
@@ -403,8 +401,6 @@ void TypingCommand::InsertText(
     }
 
     last_typing_command->SetCompositionType(composition_type);
-    last_typing_command->SetShouldRetainAutocorrectionIndicator(
-        options & kRetainAutocorrectionIndicator);
     last_typing_command->is_incremental_insertion_ = is_incremental_insertion;
     last_typing_command->selection_start_ = selection_start;
     last_typing_command->input_type_ = input_type;
@@ -442,7 +438,6 @@ void TypingCommand::InsertText(
 bool TypingCommand::InsertLineBreak(Document& document) {
   if (TypingCommand* last_typing_command =
           LastTypingCommandIfStillOpenForTyping(document.GetFrame())) {
-    last_typing_command->SetShouldRetainAutocorrectionIndicator(false);
     EditingState editing_state;
     EventQueueScope event_queue_scope;
     last_typing_command->InsertLineBreak(&editing_state);
@@ -471,7 +466,6 @@ bool TypingCommand::InsertParagraphSeparatorInQuotedContent(
 bool TypingCommand::InsertParagraphSeparator(Document& document) {
   if (TypingCommand* last_typing_command =
           LastTypingCommandIfStillOpenForTyping(document.GetFrame())) {
-    last_typing_command->SetShouldRetainAutocorrectionIndicator(false);
     EditingState editing_state;
     EventQueueScope event_queue_scope;
     last_typing_command->InsertParagraphSeparator(&editing_state);

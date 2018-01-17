@@ -149,9 +149,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   InputEvent::InputType GetInputType() const override;
   bool IsTypingCommand() const override;
   bool PreservesTypingStyle() const override { return preserves_typing_style_; }
-  void SetShouldRetainAutocorrectionIndicator(bool retain) override {
-    should_retain_autocorrection_indicator_ = retain;
-  }
 
   void UpdatePreservesTypingStyle(ETypingCommand);
   void TypingAddedToOpenCommand(ETypingCommand);
@@ -196,8 +193,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   // the characters that were deleted, but only if the typing command being
   // undone was opened with a backward delete.
   bool opened_by_backward_delete_;
-
-  bool should_retain_autocorrection_indicator_;
 
   bool is_incremental_insertion_;
   size_t selection_start_;

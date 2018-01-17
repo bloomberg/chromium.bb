@@ -157,7 +157,6 @@ bool CompositeEditCommand::Apply() {
   // do it on their own (see TypingCommand::typingAddedToOpenCommand).
   if (!IsTypingCommand())
     frame->GetEditor().AppliedEditing(this);
-  SetShouldRetainAutocorrectionIndicator(false);
   return !editing_state.IsAborted();
 }
 
@@ -191,8 +190,6 @@ bool CompositeEditCommand::IsDragAndDropCommand() const {
 bool CompositeEditCommand::IsReplaceSelectionCommand() const {
   return false;
 }
-
-void CompositeEditCommand::SetShouldRetainAutocorrectionIndicator(bool) {}
 
 //
 // sugary-sweet convenience functions to help create and apply edit commands in
