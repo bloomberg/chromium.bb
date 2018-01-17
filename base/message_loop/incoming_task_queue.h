@@ -224,8 +224,8 @@ class BASE_EXPORT IncomingTaskQueue
   // Number of high resolution tasks in the sequence affine queues above.
   int pending_high_res_tasks_ = 0;
 
-  // Lock that protects |message_loop_| to prevent it from being deleted while
-  // a request is made to schedule work.
+  // Lock that serializes |message_loop_->ScheduleWork()| calls as well as
+  // prevents |message_loop_| from being made nullptr during such a call.
   base::Lock message_loop_lock_;
 
   // Points to the message loop that owns |this|.
