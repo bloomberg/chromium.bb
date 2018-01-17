@@ -58,7 +58,8 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       renderer_param_version_(0u),
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
-      did_activate_pending_tree_count_(0u) {
+      did_activate_pending_tree_count_(0u),
+      did_request_compute_scroll_(false) {
   client_->DidInitializeCompositor(this, process_id_, routing_id_);
 }
 
@@ -354,6 +355,12 @@ void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
 
 void SynchronousCompositorHost::OnComputeScroll(
     base::TimeTicks animation_time) {
+  // Scroll is computed in DidSendBeginFrame after the first time this
+  // function is called.
+  if (did_request_compute_scroll_)
+    return;
+  did_request_compute_scroll_ = true;
+
   if (!need_animate_scroll_)
     return;
   need_animate_scroll_ = false;
@@ -372,8 +379,15 @@ void SynchronousCompositorHost::DidOverscroll(
 }
 
 void SynchronousCompositorHost::DidSendBeginFrame(
-    ui::WindowAndroid* window_android) {
+    ui::WindowAndroid* window_android,
+    const viz::BeginFrameArgs& args) {
   compute_scroll_needs_synchronous_draw_ = false;
+  if (need_animate_scroll_ && did_request_compute_scroll_) {
+    need_animate_scroll_ = false;
+    sender_->Send(
+        new SyncCompositorMsg_ComputeScroll(routing_id_, args.frame_time));
+  }
+
   if (SynchronousCompositorBrowserFilter* filter = GetFilter())
     filter->SyncStateAfterVSync(window_android, this);
 }

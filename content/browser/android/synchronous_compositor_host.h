@@ -64,7 +64,8 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
-  void DidSendBeginFrame(ui::WindowAndroid* window_android);
+  void DidSendBeginFrame(ui::WindowAndroid* window_android,
+                         const viz::BeginFrameArgs& args);
   bool OnMessageReceived(const IPC::Message& message);
 
   // Called by SynchronousCompositorBrowserFilter.
@@ -112,6 +113,10 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
   uint32_t did_activate_pending_tree_count_;
+
+  // Set to true if OnComputeScroll is called (either directly or by super()).
+  // Otherwise, we shouldn't animate fling gestures in DidSendBeginFrame.
+  bool did_request_compute_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorHost);
 };
