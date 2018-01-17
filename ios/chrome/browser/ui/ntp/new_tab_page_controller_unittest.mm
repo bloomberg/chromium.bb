@@ -77,9 +77,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
         [[NewTabPageController alloc] initWithUrl:url
                                            loader:nil
                                           focuser:nil
-                                      ntpObserver:nil
                                      browserState:chrome_browser_state_.get()
-                                       colorCache:nil
                                   toolbarDelegate:nil
                                          tabModel:tabModel_
                              parentViewController:parentViewController_
@@ -90,10 +88,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                  initWithUrl:url
                       loader:nil
                      focuser:nil
-                 ntpObserver:nil
                 browserState:chrome_browser_state_
                                  ->GetOffTheRecordChromeBrowserState()
-                  colorCache:nil
              toolbarDelegate:nil
                     tabModel:nil
         parentViewController:parentViewController_
@@ -134,14 +130,6 @@ TEST_F(NewTabPageControllerTest, TestWantsLocationBarHintText) {
 
   // Default incognito always does.
   EXPECT_EQ(YES, [incognitoController_ wantsLocationBarHintText]);
-}
-
-TEST_F(NewTabPageControllerTest, NewTabPageIdentifierConversion) {
-  EXPECT_EQ("open_tabs",
-            NewTabPage::FragmentFromIdentifier(ntp_home::RECENT_TABS_PANEL));
-  EXPECT_EQ("", NewTabPage::FragmentFromIdentifier(ntp_home::NONE));
-  EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment("garbage"));
-  EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment(""));
 }
 
 }  // anonymous namespace
