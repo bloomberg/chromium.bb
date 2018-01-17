@@ -760,7 +760,7 @@ void Layer::SetShowPrimarySurface(
     surface_layer_ = new_layer;
   }
 
-  surface_layer_->SetPrimarySurfaceId(surface_id);
+  surface_layer_->SetPrimarySurfaceId(surface_id, base::nullopt);
   surface_layer_->SetBackgroundColor(default_background_color);
 
   frame_size_in_dip_ = frame_size_in_dip;

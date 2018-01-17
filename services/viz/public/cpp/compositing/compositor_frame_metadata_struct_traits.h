@@ -9,6 +9,7 @@
 
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
+#include "services/viz/public/cpp/compositing/frame_deadline_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom-shared.h"
 
 namespace mojo {
@@ -114,9 +115,9 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.activation_dependencies;
   }
 
-  static bool can_activate_before_dependencies(
+  static const base::Optional<uint32_t>& deadline_in_frames(
       const viz::CompositorFrameMetadata& metadata) {
-    return metadata.can_activate_before_dependencies;
+    return metadata.deadline_in_frames;
   }
 
   static uint32_t content_source_id(

@@ -1033,6 +1033,13 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         frame->activation_dependencies.end(),
         append_quads_data.activation_dependencies.begin(),
         append_quads_data.activation_dependencies.end());
+    if (append_quads_data.deadline_in_frames) {
+      if (!frame->deadline_in_frames)
+        frame->deadline_in_frames = 0u;
+
+      frame->deadline_in_frames = std::max(
+          *frame->deadline_in_frames, *append_quads_data.deadline_in_frames);
+    }
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -1872,6 +1879,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
+  metadata.deadline_in_frames = frame->deadline_in_frames;
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
 
   RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();

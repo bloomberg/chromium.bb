@@ -249,6 +249,7 @@ class CC_EXPORT LayerTreeHostImpl
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
     std::vector<viz::SurfaceId> activation_dependencies;
+    base::Optional<uint32_t> deadline_in_frames;
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     viz::RenderPassList render_passes;

@@ -4273,7 +4273,7 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     child->SetPosition(gfx::PointF(25.f * i, 0.f));
     child->SetBounds(gfx::Size(1, 1));
     child->SetDrawsContent(true);
-    child->SetPrimarySurfaceId(primary_surfaces[i]);
+    child->SetPrimarySurfaceId(primary_surfaces[i], base::nullopt);
     child->SetFallbackSurfaceId(fallback_surfaces[i]);
     root->test_properties()->AddChild(std::move(child));
   }

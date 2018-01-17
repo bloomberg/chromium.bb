@@ -42,11 +42,10 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->frame_token = data.frame_token();
   out->presentation_token = data.presentation_token();
   out->root_background_color = data.root_background_color();
-  out->can_activate_before_dependencies =
-      data.can_activate_before_dependencies();
   return data.ReadSelection(&out->selection) &&
          data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&
+         data.ReadDeadlineInFrames(&out->deadline_in_frames) &&
          data.ReadActivationDependencies(&out->activation_dependencies) &&
          data.ReadBeginFrameAck(&out->begin_frame_ack);
 }

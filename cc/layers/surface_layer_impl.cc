@@ -26,11 +26,15 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
-void SurfaceLayerImpl::SetPrimarySurfaceId(const viz::SurfaceId& surface_id) {
-  if (primary_surface_id_ == surface_id)
+void SurfaceLayerImpl::SetPrimarySurfaceId(
+    const viz::SurfaceId& surface_id,
+    base::Optional<uint32_t> deadline_in_frames) {
+  if (primary_surface_id_ == surface_id &&
+      deadline_in_frames_ == deadline_in_frames) {
     return;
-
+  }
   primary_surface_id_ = surface_id;
+  deadline_in_frames_ = deadline_in_frames;
   NoteLayerPropertyChanged();
 }
 
@@ -53,7 +57,8 @@ void SurfaceLayerImpl::SetStretchContentToFillBounds(bool stretch_content) {
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetPrimarySurfaceId(primary_surface_id_);
+  layer_impl->SetPrimarySurfaceId(primary_surface_id_, deadline_in_frames_);
+  deadline_in_frames_.reset();
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }
@@ -69,11 +74,16 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       fallback_surface_id_.is_valid()
           ? base::Optional<viz::SurfaceId>(fallback_surface_id_)
           : base::nullopt);
-  // Emitting a fallback viz::SurfaceDrawQuad is unnecessary if the primary and
-  // fallback surface Ids match.
   if (primary && fallback_surface_id_ != primary_surface_id_) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(primary_surface_id_);
+    if (deadline_in_frames_) {
+      if (!append_quads_data->deadline_in_frames)
+        append_quads_data->deadline_in_frames = 0u;
+      append_quads_data->deadline_in_frames = std::max(
+          *append_quads_data->deadline_in_frames, *deadline_in_frames_);
+      deadline_in_frames_.reset();
+    }
   }
 }
 

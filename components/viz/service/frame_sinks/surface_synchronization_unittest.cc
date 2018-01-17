@@ -48,12 +48,14 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id,
 CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> activation_dependencies,
     std::vector<SurfaceId> referenced_surfaces,
-    std::vector<TransferableResource> resource_list) {
+    std::vector<TransferableResource> resource_list,
+    base::Optional<uint32_t> deadline_in_frames = base::nullopt) {
   return CompositorFrameBuilder()
       .AddDefaultRenderPass()
       .SetActivationDependencies(std::move(activation_dependencies))
       .SetReferencedSurfaces(std::move(referenced_surfaces))
       .SetTransferableResources(std::move(resource_list))
+      .SetDeadlineInFrames(deadline_in_frames)
       .Build();
 }
 
@@ -1567,13 +1569,13 @@ TEST_F(SurfaceSynchronizationTest, IndependentDeadlines) {
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(),
       MakeCompositorFrame({arbitrary_id}, empty_surface_ids(),
-                          std::vector<TransferableResource>()));
+                          std::vector<TransferableResource>(), 3));
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_TRUE(child_surface1()->has_deadline());
 
   // Advance to the next BeginFrame. |child_id1|'s pending Frame should activate
-  // after 3 frames.
+  // after 2 frames.
   SendNextBeginFrame();
 
   // Submit another CompositorFrame to |child_id2| that blocks on
@@ -1587,20 +1589,22 @@ TEST_F(SurfaceSynchronizationTest, IndependentDeadlines) {
   EXPECT_TRUE(child_surface2()->has_deadline());
 
   // If we issue another two BeginFrames both children should remain blocked.
-  for (int i = 0; i < 2; ++i) {
-    SendNextBeginFrame();
-    EXPECT_TRUE(child_surface1()->has_deadline());
-    EXPECT_TRUE(child_surface2()->has_deadline());
-  }
+  SendNextBeginFrame();
+  EXPECT_TRUE(child_surface1()->has_deadline());
+  EXPECT_TRUE(child_surface2()->has_deadline());
 
   // Issuing another BeginFrame should activate the frame in |child_id1| but not
   // |child_id2|. This verifies that |child_id1| and |child_id2| have different
   // deadlines.
   SendNextBeginFrame();
 
+  EXPECT_TRUE(child_surface2()->has_deadline());
+
   EXPECT_FALSE(child_surface1()->has_deadline());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
+
+  SendNextBeginFrame();
 
   EXPECT_TRUE(child_surface2()->has_deadline());
   EXPECT_TRUE(child_surface2()->HasPendingFrame());
