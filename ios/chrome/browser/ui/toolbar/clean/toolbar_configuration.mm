@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,20 +36,38 @@
 }
 
 - (UIColor*)backgroundColor {
-  switch (self.style) {
-    case NORMAL:
-      return UIColorFromRGB(kToolbarBackgroundColor);
-    case INCOGNITO:
-      return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+  if (IsAdaptiveToolbarEnabled()) {
+    switch (self.style) {
+      case NORMAL:
+        return UIColorFromRGB(kAdaptiveToolbarBackgroundColor);
+      case INCOGNITO:
+        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+    }
+  } else {
+    switch (self.style) {
+      case NORMAL:
+        return UIColorFromRGB(kToolbarBackgroundColor);
+      case INCOGNITO:
+        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+    }
   }
 }
 
 - (UIColor*)omniboxBackgroundColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor whiteColor];
-    case INCOGNITO:
-      return UIColorFromRGB(kIcongnitoLocationBackgroundColor);
+  if (IsAdaptiveToolbarEnabled()) {
+    switch (self.style) {
+      case NORMAL:
+        return UIColorFromRGB(kAdaptiveLocationBackgroundColor);
+      case INCOGNITO:
+        return UIColorFromRGB(kIcongnitoAdaptiveLocationBackgroundColor);
+    }
+  } else {
+    switch (self.style) {
+      case NORMAL:
+        return [UIColor whiteColor];
+      case INCOGNITO:
+        return UIColorFromRGB(kIcongnitoLocationBackgroundColor);
+    }
   }
 }
 

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
@@ -98,6 +99,8 @@
   }
   DCHECK(self.buttonFactory);
 
+  self.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self setUpLocationBar];
@@ -111,7 +114,10 @@
 // Sets the location bar container and its view if present.
 - (void)setUpLocationBar {
   self.locationBarContainer = [[UIView alloc] init];
-  self.locationBarContainer.backgroundColor = [UIColor whiteColor];
+  self.locationBarContainer.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.omniboxBackgroundColor;
+  self.locationBarContainer.layer.cornerRadius =
+      kAdaptiveLocationBarCornerRadius;
   [self.locationBarContainer
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];
@@ -188,11 +194,14 @@
     [self.locationBarContainer.trailingAnchor
         constraintEqualToAnchor:self.trailingStackView.leadingAnchor],
     [self.locationBarContainer.bottomAnchor
-        constraintEqualToAnchor:safeArea.bottomAnchor],
+        constraintEqualToAnchor:self.bottomAnchor
+                       constant:-kLocationBarVerticalMargin],
     [self.locationBarContainer.topAnchor
-        constraintEqualToAnchor:self.topSafeAnchor],
+        constraintEqualToAnchor:self.topSafeAnchor
+                       constant:kLocationBarVerticalMargin],
     [self.locationBarContainer.heightAnchor
-        constraintEqualToConstant:kToolbarHeight],
+        constraintEqualToConstant:kToolbarHeight -
+                                  2 * kLocationBarVerticalMargin],
   ]];
 
   // Trailing StackView constraints.

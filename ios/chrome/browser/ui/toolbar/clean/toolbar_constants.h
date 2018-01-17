@@ -56,4 +56,12 @@ extern const NSInteger kShowTabStripButtonMaxTabCount;
 // Animation constants.
 extern const LayoutOffset kToolbarButtonAnimationOffset;
 
+// Adaptive Toolbar styling.
+extern const CGFloat kAdaptiveToolbarBackgroundColor;
+
+// Adaptive Location bar constants.
+extern const CGFloat kAdaptiveLocationBarCornerRadius;
+extern const CGFloat kAdaptiveLocationBackgroundColor;
+extern const CGFloat kIcongnitoAdaptiveLocationBackgroundColor;
+
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSTANTS_H_
