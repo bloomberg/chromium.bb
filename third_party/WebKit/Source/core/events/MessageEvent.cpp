@@ -109,9 +109,6 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       last_event_id_(last_event_id),
       source_(source),
       ports_(ports) {
-  if (data_as_serialized_script_value_)
-    data_as_serialized_script_value_->Value()
-        ->RegisterMemoryAllocatedWithCurrentScriptContext();
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -130,9 +127,6 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       source_(source),
       channels_(std::move(channels)),
       suborigin_(suborigin) {
-  if (data_as_serialized_script_value_)
-    data_as_serialized_script_value_->Value()
-        ->RegisterMemoryAllocatedWithCurrentScriptContext();
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -218,10 +212,6 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   ports_ = ports;
   is_ports_dirty_ = true;
   suborigin_ = "";
-
-  if (data_as_serialized_script_value_)
-    data_as_serialized_script_value_->Value()
-        ->RegisterMemoryAllocatedWithCurrentScriptContext();
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
