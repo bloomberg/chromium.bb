@@ -87,8 +87,6 @@ component("midi") {
     "midi_message_queue.h",
     "midi_port_info.cc",
     "midi_port_info.h",
-    "midi_scheduler.cc",
-    "midi_scheduler.h",
     "midi_service.cc",
     "midi_service.h",
     "midi_switches.cc",
