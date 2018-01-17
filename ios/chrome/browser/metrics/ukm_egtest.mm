@@ -253,7 +253,11 @@ void SignOut() {
   SignOut();
 
   AssertUKMEnabled(false);
+  // Client ID should have been reset by signout.
+  GREYAssert(original_client_id != metrics::UkmEGTestHelper::client_id(),
+             @"Client ID was not reset.");
 
+  original_client_id = metrics::UkmEGTestHelper::client_id();
   SignInWithPromo();
 
   AssertUKMEnabled(true);
