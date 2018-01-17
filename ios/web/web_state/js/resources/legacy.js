@@ -26,10 +26,6 @@ goog.provide('__crWeb.legacy');
     // Send the favicons to the browser.
     __gCrWeb.message.invokeOnHost({'command': 'document.favicons',
                                    'favicons': __gCrWeb.common.getFavicons()});
-
-    // Add placeholders for plugin content.
-    if (__gCrWeb.common.updatePluginPlaceholders())
-      __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});
   }
 
 }());  // End of anonymouse object

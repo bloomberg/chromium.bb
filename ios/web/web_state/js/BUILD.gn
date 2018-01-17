@@ -14,8 +14,6 @@ source_set("js") {
   sources = [
     "crw_js_injection_manager.mm",
     "crw_js_injection_receiver.mm",
-    "crw_js_plugin_placeholder_manager.h",
-    "crw_js_plugin_placeholder_manager.mm",
     "crw_js_post_request_loader.h",
     "crw_js_post_request_loader.mm",
     "crw_js_window_id_manager.h",

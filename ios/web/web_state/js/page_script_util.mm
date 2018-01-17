@@ -40,6 +40,17 @@ NSString* MakeScriptInjectableOnce(NSString* script_identifier,
   return [NSString stringWithFormat:once_wrapper, script];
 }
 
+// Returns a string with \ and ' escaped.
+// This is used instead of GetQuotedJSONString because that will convert
+// UTF-16 to UTF-8, which can cause problems when injecting scripts depending
+// on the page encoding (see crbug.com/302741).
+NSString* EscapedQuotedString(NSString* string) {
+  string =
+      [string stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+  return [string stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+  ;
+}
+
 }  // namespace
 
 namespace web {
@@ -78,12 +89,24 @@ NSString* GetDocumentStartScriptForMainFrame(BrowserState* browser_state) {
 
   NSString* script =
       [NSString stringWithFormat:@"%@; %@", web_bundle, embedder_page_script];
-  return MakeScriptInjectableOnce(@"early_main_frame", script);
+  return MakeScriptInjectableOnce(@"start_main_frame", script);
 }
 
 NSString* GetDocumentStartScriptForAllFrames(BrowserState* browser_state) {
-  return MakeScriptInjectableOnce(@"early_all_frames",
+  return MakeScriptInjectableOnce(@"start_all_frames",
                                   GetPageScript(@"all_frames_web_bundle"));
+}
+
+NSString* GetDocumentEndScriptForAllFrames(BrowserState* browser_state) {
+  NSString* plugin_not_supported_text =
+      base::SysUTF16ToNSString(GetWebClient()->GetPluginNotSupportedText());
+
+  NSString* script = [GetPageScript(@"plugin_placeholder")
+      stringByReplacingOccurrencesOfString:@"$(PLUGIN_NOT_SUPPORTED_TEXT)"
+                                withString:EscapedQuotedString(
+                                               plugin_not_supported_text)];
+
+  return MakeScriptInjectableOnce(@"end_all_frames", script);
 }
 
 }  // namespace web
