@@ -59,6 +59,8 @@ void SyncDisableObserver::OnStateChanged(syncer::SyncService* sync) {
   bool must_purge =
       // Trigger a purge if history sync was disabled.
       (previous_state.history_enabled && !state.history_enabled) ||
+      // Trigger a purge if engine has become disabled.
+      (previous_state.initialized && !state.initialized) ||
       // Trigger a purge if the user added a passphrase.  Since we can't detect
       // the use of a passphrase while the engine is not initialized, we may
       // miss the transition if the user adds a passphrase in this state.
