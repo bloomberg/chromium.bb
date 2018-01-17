@@ -34,10 +34,6 @@ void RegisterBrowserViewProfilePrefs(
   registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                                 ui::GetCustomFramePrefDefault());
 #endif
-
-  registry->RegisterIntegerPref(
-      prefs::kBackShortcutBubbleShownCount, 0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void MigrateBrowserTabStripPrefs(PrefService* prefs) {

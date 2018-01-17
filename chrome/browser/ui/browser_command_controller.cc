@@ -307,18 +307,10 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
   // declaration order in browser.h!
   switch (id) {
     // Navigation commands
-    case IDC_BACKSPACE_BACK:
-      window()->MaybeShowNewBackShortcutBubble(false);
-      break;
     case IDC_BACK:
-      window()->HideNewBackShortcutBubble();
       GoBack(browser_, disposition);
       break;
-    case IDC_BACKSPACE_FORWARD:
-      window()->MaybeShowNewBackShortcutBubble(true);
-      break;
     case IDC_FORWARD:
-      window()->HideNewBackShortcutBubble();
       GoForward(browser_, disposition);
       break;
     case IDC_RELOAD:
@@ -999,11 +991,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
     return;
 
   // Navigation commands
-  command_updater_.UpdateCommandEnabled(IDC_BACKSPACE_BACK,
-                                        CanGoBack(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BACK, CanGoBack(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_BACKSPACE_FORWARD,
-                                        CanGoForward(browser_));
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, CanGoForward(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, CanReload(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE,

@@ -2777,8 +2777,6 @@ split_static_library("ui") {
       "views/login_handler_views.cc",
       "views/login_view.cc",
       "views/login_view.h",
-      "views/new_back_shortcut_bubble.cc",
-      "views/new_back_shortcut_bubble.h",
       "views/overlay/overlay_window_views.cc",
       "views/overlay/overlay_window_views.h",
       "views/page_info/chosen_object_view.cc",
