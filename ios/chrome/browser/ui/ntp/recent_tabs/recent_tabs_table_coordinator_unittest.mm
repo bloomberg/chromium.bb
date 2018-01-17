@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/ntp/centering_scrollview.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 #include "ios/chrome/test/block_cleanup_test.h"

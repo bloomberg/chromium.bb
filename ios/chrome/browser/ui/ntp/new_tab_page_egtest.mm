@@ -29,14 +29,6 @@
 
 namespace {
 
-void DismissNewTabPagePanel() {
-  if (!IsIPadIdiom()) {
-    id<GREYMatcher> matcher = grey_allOf(grey_accessibilityID(@"Exit"),
-                                         grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-  }
-}
-
 // Pauses until the history label has disappeared.  History should not show on
 // incognito.
 void WaitForHistoryToDisappear() {
@@ -54,19 +46,6 @@ void WaitForHistoryToDisappear() {
                   }] waitWithTimeout:testing::kWaitForUIElementTimeout];
 }
 
-// Displays the |panel_type| new tab page.  An a phone this will send a command
-// to display a dialog, on tablet this calls -selectPanel to slide the NTP.
-void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
-  NewTabPageController* ntp_controller =
-      chrome_test_util::GetCurrentNewTabPageController();
-  if (IsIPadIdiom()) {
-    [ntp_controller selectPanel:panel_type];
-  } else if (panel_type == ntp_home::RECENT_TABS_PANEL) {
-    [chrome_test_util::BrowserCommandDispatcherForMainBVC() showRecentTabs];
-  }
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
 }  // namespace
 
 @interface NewTabPageTestCase : ChromeTestCase
@@ -78,21 +57,12 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 
 // Tests that all items are accessible on the most visited page.
 - (void)testAccessibilityOnMostVisited {
-  SelectNewTabPagePanel(ntp_home::HOME_PANEL);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all items are accessible on the open tabs page.
-- (void)testAccessibilityOnOpenTabs {
-  SelectNewTabPagePanel(ntp_home::RECENT_TABS_PANEL);
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  DismissNewTabPagePanel();
 }
 
 // Tests that all items are accessible on the incognito page.
 - (void)testAccessibilityOnIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
-  SelectNewTabPagePanel(ntp_home::INCOGNITO_PANEL);
   WaitForHistoryToDisappear();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");

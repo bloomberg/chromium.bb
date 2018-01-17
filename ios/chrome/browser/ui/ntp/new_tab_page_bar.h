@@ -11,9 +11,7 @@
 
 @protocol NewTabPageBarDelegate
 // Called when new tab page bar item is selected and the selection is changed.
-// If |changePanel| is true, bring the panel into view in the scroll view.
-- (void)newTabBarItemDidChange:(NewTabPageBarItem*)selectedItem
-                   changePanel:(BOOL)changePanel;
+- (void)newTabBarItemDidChange:(NewTabPageBarItem*)selectedItem;
 @end
 
 // The bar in the new tab page that switches between the provided choices.

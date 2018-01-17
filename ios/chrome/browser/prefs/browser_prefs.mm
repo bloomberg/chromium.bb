@@ -171,4 +171,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 08/2015.
   prefs->ClearPref(::prefs::kSigninSharedAuthenticationUserId);
+
+  // Added 01/2018.
+  prefs->ClearPref(::prefs::kNtpShownPage);
 }

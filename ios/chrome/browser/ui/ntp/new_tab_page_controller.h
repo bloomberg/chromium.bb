@@ -19,15 +19,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace NewTabPage {
-
-// Converts from a NewTabPage::PanelIdentifier to a URL #fragment
-// and vice versa.
-ntp_home::PanelIdentifier IdentifierFromFragment(const std::string& fragment);
-std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
-
-}  // namespace NewTabPage
-
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol CRWSwipeRecognizerProvider;
@@ -39,13 +30,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 @protocol SnackbarCommands;
 @class TabModel;
 @protocol UrlLoader;
-
-// This protocol provides callbacks for when the NewTabPageController changes
-// panels.
-@protocol NewTabPageControllerObserver
-// The current visible panel has changed.
-- (void)selectedPanelDidChange;
-@end
 
 // A controller for the New Tab Page user interface. Supports multiple "panels",
 // each with its own controller. The panels are created lazily.
@@ -76,14 +60,10 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 
 // Init with the given url (presumably "chrome://newtab") and loader object.
 // |loader| may be nil, but isn't retained so it must outlive this controller.
-// Dominant color cache is passed to bookmark controller only, to optimize
-// favicon processing.
 - (id)initWithUrl:(const GURL&)url
                   loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
-             ntpObserver:(id<NewTabPageControllerObserver>)ntpObserver
             browserState:(ios::ChromeBrowserState*)browserState
-              colorCache:(NSMutableDictionary*)colorCache
          toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
@@ -94,9 +74,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
                              SnackbarCommands,
                              UrlLoader>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset;
-
-// Select a panel based on the given |panelType|.
-- (void)selectPanel:(ntp_home::PanelIdentifier)panelType;
 
 // Returns |YES| if the current visible controller should show the keyboard
 // shield.

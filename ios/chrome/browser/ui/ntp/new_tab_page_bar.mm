@@ -206,8 +206,7 @@ const CGFloat kRegularLayoutButtonWidth = 168;
   NSUInteger buttonIndex = [self.buttons indexOfObject:button];
   if (buttonIndex != NSNotFound) {
     self.selectedIndex = buttonIndex;
-    [delegate_ newTabBarItemDidChange:[self.items objectAtIndex:buttonIndex]
-                          changePanel:YES];
+    [delegate_ newTabBarItemDidChange:[self.items objectAtIndex:buttonIndex]];
   }
 }
 

@@ -418,7 +418,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     ManageAccountsDelegate,
                                     MFMailComposeViewControllerDelegate,
                                     NetExportTabHelperDelegate,
-                                    NewTabPageControllerObserver,
                                     OverscrollActionsControllerDelegate,
                                     PageInfoPresentation,
                                     PassKitDialogProvider,
@@ -535,9 +534,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The image fetcher used to save images and perform image-based searches.
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
-
-  // Dominant color cache. Key: (NSString*)url, val: (UIColor*)dominantColor.
-  NSMutableDictionary* _dominantColorCache;
 
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bookmarkModelBridge;
@@ -1884,7 +1880,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
       _browserState->GetRequestContext());
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
-  _dominantColorCache = [[NSMutableDictionary alloc] init];
 
   // Register for bookmark changed notification (BookmarkModel may be null
   // during testing, so explicitly support this).
@@ -3743,12 +3738,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return self.headerHeight + StatusBarHeight();
 }
 
-#pragma mark - NewTabPageControllerObserver methods.
-
-- (void)selectedPanelDidChange {
-  [self updateToolbar];
-}
-
 #pragma mark - CRWNativeContentProvider methods
 
 // TODO(crbug.com/725241): This method is deprecated and should be removed by
@@ -3795,20 +3784,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
         [[NewTabPageController alloc] initWithUrl:url
                                            loader:self
                                           focuser:self.primaryToolbarCoordinator
-                                      ntpObserver:self
                                      browserState:_browserState
-                                       colorCache:_dominantColorCache
                                   toolbarDelegate:self.toolbarInterface
                                          tabModel:_model
                              parentViewController:self
                                        dispatcher:self.dispatcher
                                     safeAreaInset:safeAreaInset];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
-
-    // Panel is always NTP for iPhone.
-    ntp_home::PanelIdentifier panelType = ntp_home::HOME_PANEL;
-
-    [pageController selectPanel:panelType];
     nativeController = pageController;
   } else if (url_host == kChromeUIOfflineHost &&
              [self hasControllerForURL:url]) {
