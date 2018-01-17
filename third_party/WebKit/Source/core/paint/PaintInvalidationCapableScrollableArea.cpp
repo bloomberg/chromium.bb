@@ -214,47 +214,24 @@ void PaintInvalidationCapableScrollableArea::ClearPreviousVisualRects() {
 void PaintInvalidationCapableScrollableArea::SetHorizontalScrollbarVisualRect(
     const LayoutRect& rect) {
   horizontal_scrollbar_visual_rect_ = rect;
-
-  if (Scrollbar* scrollbar = HorizontalScrollbar()) {
-    // Composited scrollbar paints into its own backing, so set its visual rect
-    // to the visual rect of the backing.
-    if (const auto* graphics_layer = LayerForHorizontalScrollbar())
-      scrollbar->SetVisualRect(graphics_layer->VisualRect());
-    else
-      scrollbar->SetVisualRect(rect);
-  }
+  if (Scrollbar* scrollbar = HorizontalScrollbar())
+    scrollbar->SetVisualRect(rect);
 }
 
 void PaintInvalidationCapableScrollableArea::SetVerticalScrollbarVisualRect(
     const LayoutRect& rect) {
   vertical_scrollbar_visual_rect_ = rect;
-
-  if (Scrollbar* scrollbar = VerticalScrollbar()) {
-    // Composited scrollbar paints into its own backing, so set its visual rect
-    // to the visual rect of the backing.
-    if (const auto* layer = LayerForVerticalScrollbar())
-      scrollbar->SetVisualRect(layer->VisualRect());
-    else
-      scrollbar->SetVisualRect(rect);
-  }
+  if (Scrollbar* scrollbar = VerticalScrollbar())
+    scrollbar->SetVisualRect(rect);
 }
 
 void PaintInvalidationCapableScrollableArea::
     SetScrollCornerAndResizerVisualRect(const LayoutRect& rect) {
   scroll_corner_and_resizer_visual_rect_ = rect;
-
-  // Composited scroll corner and resizer paint into their own backing, so set
-  // their visual rect to the visual rect of the backing.
-  const auto* layer = LayerForScrollCorner();
-  auto custom_visual_rect = layer ? layer->VisualRect() : rect;
-  if (LayoutScrollbarPart* scroll_corner = ScrollCorner()) {
-    scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(
-        custom_visual_rect);
-  }
-  if (LayoutScrollbarPart* resizer = Resizer()) {
-    resizer->GetMutableForPainting().FirstFragment().SetVisualRect(
-        custom_visual_rect);
-  }
+  if (LayoutScrollbarPart* scroll_corner = ScrollCorner())
+    scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
+  if (LayoutScrollbarPart* resizer = Resizer())
+    resizer->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
 }
 
 void PaintInvalidationCapableScrollableArea::

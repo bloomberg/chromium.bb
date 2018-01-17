@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 
 namespace blink {
@@ -32,17 +33,8 @@ void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
 IntRect CompositedLayerRasterInvalidator::MapRectFromChunkToLayer(
     const FloatRect& r,
     const PaintChunk& chunk) const {
-  FloatClipRect rect(r);
-  GeometryMapper::LocalToAncestorVisualRect(
-      chunk.properties.property_tree_state, layer_state_, rect);
-  if (rect.Rect().IsEmpty())
-    return IntRect();
-
-  // Now rect is in the space of the containing transform node of pending_layer,
-  // so need to subtract off the layer offset.
-  rect.Rect().Move(-layer_bounds_.x(), -layer_bounds_.y());
-  rect.Rect().Inflate(chunk.outset_for_raster_effects);
-  return ClipByLayerBounds(EnclosingIntRect(rect.Rect()));
+  return ClipByLayerBounds(PaintChunksToCcLayer::MapRectFromChunkToLayer(
+      r, chunk, layer_state_, layer_bounds_.OffsetFromOrigin()));
 }
 
 TransformationMatrix CompositedLayerRasterInvalidator::ChunkToLayerTransform(

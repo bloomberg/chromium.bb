@@ -19,9 +19,9 @@ namespace blink {
 
 namespace {
 
-constexpr gfx::Rect g_large_rect(-200000, -200000, 400000, 400000);
 void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
-                                          cc::DisplayItemList& list) {
+                                          cc::DisplayItemList& list,
+                                          const IntRect& visual_rect_in_layer) {
   DCHECK(display_item.IsDrawing());
 
   sk_sp<const PaintRecord> record =
@@ -30,11 +30,7 @@ void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
     return;
   list.StartPaint();
   list.push<cc::DrawRecordOp>(std::move(record));
-  // TODO(trchen): Pass correct visual rect here.
-  // The visual rect of the item can be used by cc to skip replaying items
-  // that can't be seen. To workaround a space conversion bug, the optimization
-  // is suppressed by passing a large rect.
-  list.EndPaintOfUnpaired(g_large_rect);
+  list.EndPaintOfUnpaired(visual_rect_in_layer);
 }
 
 void AppendRestore(cc::DisplayItemList& list, size_t n) {
@@ -47,8 +43,11 @@ void AppendRestore(cc::DisplayItemList& list, size_t n) {
 class ConversionContext {
  public:
   ConversionContext(const PropertyTreeState& layer_state,
+                    const gfx::Vector2dF& layer_offset,
                     cc::DisplayItemList& cc_list)
-      : current_transform_(layer_state.Transform()),
+      : layer_state_(layer_state),
+        layer_offset_(layer_offset),
+        current_transform_(layer_state.Transform()),
         current_clip_(layer_state.Clip()),
         current_effect_(layer_state.Effect()),
         cc_list_(cc_list) {}
@@ -129,6 +128,9 @@ class ConversionContext {
   // the output clip of the target effect.
   // The current effect will change to the target effect.
   void SwitchToEffect(const EffectPaintPropertyNode*);
+
+  const PropertyTreeState& layer_state_;
+  gfx::Vector2dF layer_offset_;
 
   const TransformPaintPropertyNode* current_transform_;
   const ClipPaintPropertyNode* current_clip_;
@@ -360,8 +362,13 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
                   chunk_state.Transform(), current_transform_))));
       cc_list_.EndPaintOfPairedBegin();
     }
-    for (const auto& item : display_items.ItemsInPaintChunk(chunk))
-      AppendDisplayItemToCcDisplayItemList(item, cc_list_);
+    for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
+      AppendDisplayItemToCcDisplayItemList(
+          item, cc_list_,
+          PaintChunksToCcLayer::MapRectFromChunkToLayer(
+              FloatRect(item.VisualRect()), chunk, layer_state_,
+              layer_offset_));
+    }
     if (transformed)
       AppendRestore(cc_list_, 1);
   }
@@ -383,7 +390,8 @@ void PaintChunksToCcLayer::ConvertInto(
     cc_list.EndPaintOfPairedBegin();
   }
 
-  ConversionContext(layer_state, cc_list).Convert(paint_chunks, display_items);
+  ConversionContext(layer_state, layer_offset, cc_list)
+      .Convert(paint_chunks, display_items);
 
   if (need_translate)
     AppendRestore(cc_list, 1);
@@ -416,12 +424,30 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     if (auto record = params.tracking.UnderInvalidationRecord()) {
       cc_list->StartPaint();
       cc_list->push<cc::DrawRecordOp>(std::move(record));
-      cc_list->EndPaintOfUnpaired(g_large_rect);
+      cc_list->EndPaintOfUnpaired(params.interest_rect);
     }
   }
 
   cc_list->Finalize();
   return cc_list;
+}
+
+IntRect PaintChunksToCcLayer::MapRectFromChunkToLayer(
+    const FloatRect& r,
+    const PaintChunk& chunk,
+    const PropertyTreeState& layer_state,
+    const gfx::Vector2dF& layer_offset) {
+  FloatClipRect rect(r);
+  GeometryMapper::LocalToAncestorVisualRect(
+      chunk.properties.property_tree_state, layer_state, rect);
+  if (rect.Rect().IsEmpty())
+    return IntRect();
+
+  // Now rect is in the space of the containing transform node of layer,
+  // so need to subtract off the layer offset.
+  rect.Rect().Move(-layer_offset.x(), -layer_offset.y());
+  rect.Rect().Inflate(chunk.outset_for_raster_effects);
+  return EnclosingIntRect(rect.Rect());
 }
 
 }  // namespace blink

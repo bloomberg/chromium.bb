@@ -31,23 +31,6 @@ class PaintChunksToCcLayerTest : public ::testing::Test,
   PaintChunksToCcLayerTest() : ScopedSlimmingPaintV2ForTest(true) {}
 };
 
-const char* GetOpName(cc::PaintOpType op) {
-  if (op == cc::PaintOpType::ClipRect)
-    return "ClipRect";
-  if (op == cc::PaintOpType::Concat)
-    return "Concat";
-  if (op == cc::PaintOpType::DrawRecord)
-    return "DrawRecord";
-  if (op == cc::PaintOpType::Save)
-    return "Save";
-  if (op == cc::PaintOpType::SaveLayer)
-    return "SaveLayer";
-  if (op == cc::PaintOpType::Restore)
-    return "Restore";
-  NOTREACHED();
-  return "ERROR";
-}
-
 // A simple matcher that only looks for a few ops, ignoring all else.
 // Recognized ops: ClipRect, Concat, DrawRecord, Save, SaveLayer, Restore.
 class PaintRecordMatcher
@@ -74,10 +57,11 @@ class PaintRecordMatcher
         case cc::PaintOpType::Save:
         case cc::PaintOpType::SaveLayer:
         case cc::PaintOpType::Restore:
+        case cc::PaintOpType::Translate:
           if (next == expected_ops_.end()) {
             if (listener->IsInterested()) {
-              *listener << "unexpected op " << GetOpName(op) << " at index "
-                        << op_idx << ", expecting end of list.";
+              *listener << "unexpected op " << cc::PaintOpTypeToString(op)
+                        << " at index " << op_idx << ", expecting end of list.";
             }
             return false;
           }
@@ -86,8 +70,9 @@ class PaintRecordMatcher
             continue;
           }
           if (listener->IsInterested()) {
-            *listener << "unexpected op " << GetOpName(op) << " at index "
-                      << op_idx << ", expecting " << GetOpName(*next) << "(#"
+            *listener << "unexpected op " << cc::PaintOpTypeToString(op)
+                      << " at index " << op_idx << ", expecting "
+                      << cc::PaintOpTypeToString(*next) << "(#"
                       << (next - expected_ops_.begin()) << ").";
           }
           return false;
@@ -98,8 +83,9 @@ class PaintRecordMatcher
     if (next == expected_ops_.end())
       return true;
     if (listener->IsInterested()) {
-      *listener << "unexpected end of list, expecting " << GetOpName(*next)
-                << "(#" << (next - expected_ops_.begin()) << ").";
+      *listener << "unexpected end of list, expecting "
+                << cc::PaintOpTypeToString(*next) << "(#"
+                << (next - expected_ops_.begin()) << ").";
     }
     return false;
   }
@@ -111,7 +97,7 @@ class PaintRecordMatcher
         first = false;
       else
         *os << ", ";
-      *os << GetOpName(op);
+      *os << cc::PaintOpTypeToString(op);
     }
     *os << "]";
   }
@@ -132,7 +118,8 @@ const EffectPaintPropertyNode* e0() {
 }
 
 PaintChunk::Id DefaultId() {
-  DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
+  DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client,
+                      ("FakeDisplayItemClient", LayoutRect(0, 0, 100, 100)));
   return PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst);
 }
 
@@ -145,7 +132,8 @@ struct TestChunks {
                 const EffectPaintPropertyNode* e) {
     size_t i = items.size();
     auto record = sk_make_sp<PaintRecord>();
-    record->push<cc::NoopOp>();
+    record->push<cc::DrawRectOp>(SkRect::MakeXYWH(0, 0, 100, 100),
+                                 cc::PaintFlags());
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
     chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
@@ -503,6 +491,35 @@ TEST_F(PaintChunksToCcLayerTest,
           {cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e2>
            cc::PaintOpType::DrawRecord,                             // <p0/>
            cc::PaintOpType::Restore, cc::PaintOpType::Restore})));  // </e2>
+}
+
+TEST_F(PaintChunksToCcLayerTest, VisualRect) {
+  auto layer_transform = TransformPaintPropertyNode::Create(
+      t0(), TransformationMatrix().Scale(20), FloatPoint3D());
+  auto chunk_transform = TransformPaintPropertyNode::Create(
+      layer_transform.get(), TransformationMatrix().Translate(50, 100),
+      FloatPoint3D());
+
+  TestChunks chunks;
+  chunks.AddChunk(chunk_transform.get(), c0(), e0());
+
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+      cc::DisplayItemList::kTopLevelDisplayItemList);
+  PaintChunksToCcLayer::ConvertInto(
+      chunks.GetChunkList(),
+      PropertyTreeState(layer_transform.get(), c0(), e0()),
+      gfx::Vector2dF(100, 200), chunks.items, *cc_list);
+  EXPECT_EQ(gfx::Rect(-50, -100, 100, 100), cc_list->VisualRectForTesting(4));
+
+  EXPECT_THAT(cc_list->ReleaseAsRecord(),
+              Pointee(PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save,         //
+                   cc::PaintOpType::Translate,    // <layer_offset>
+                   cc::PaintOpType::Save,         //
+                   cc::PaintOpType::Concat,       // <layer_transform>
+                   cc::PaintOpType::DrawRecord,   // <p0/>
+                   cc::PaintOpType::Restore,      // </layer_transform>
+                   cc::PaintOpType::Restore})));  // </layer_offset>
 }
 
 }  // namespace

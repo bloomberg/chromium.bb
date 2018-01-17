@@ -94,7 +94,6 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 crbug.com/771643 fast/forms/focus-on-control-with-zero-size.html [ Crash ]
 crbug.com/771643 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
 crbug.com/771643 fast/replaced/width100percent-textarea.html [ Failure ]
-crbug.com/771643 http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Crash ]
 crbug.com/771643 http/tests/misc/slow-loading-mask.html [ Failure ]
 crbug.com/771643 images/cross-fade-invalidation.html [ Failure ]
 crbug.com/771643 images/drag-image-transformed-parent.html [ Failure ]
@@ -125,5 +124,4 @@ crbug.com/771643 virtual/gpu-rasterization/images/drag-image-transformed-parent.
 crbug.com/771643 virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Timeout ]
 crbug.com/771643 virtual/rootlayerscrolls/scrollbars/border-box-rect-clips-scrollbars.html [ Failure ]
 crbug.com/771643 virtual/rootlayerscrolls/scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
-crbug.com/771643 virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Crash ]
 crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
