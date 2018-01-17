@@ -408,6 +408,11 @@
     'blink_paint': {
       'filepath': 'third_party/WebKit/Source/core/paint/'
     },
+    'blink_paintworklet': {
+      'filepath': 'third_party/WebKit/Source/modules/csspaint/' \
+                  '|third_party/WebKit/LayoutTests/http/tests/csspaint/' \
+                  '|third_party/WebKit/LayoutTests/externla/wpt/css/css-paint-api/'
+    },
     'blink_performance_timing': {
       'filepath': 'third_party/WebKit/Source/core/timing/'
     },
@@ -1797,6 +1802,7 @@
                                     'mlamouri+watch-blink@chromium.org'],
     'blink_paint' : ['blink-reviews-paint@chromium.org',
                      'dongseong.hwang@intel.com'],
+    'blink_paintworklet' : ['xidachen@chromium.org'],
     'blink_performance_timing': ['panicker+watch@chromium.org'],
     'blink_permissions': ['mlamouri+watch-blink@chromium.org'],
     'blink_platform': ['kinuko+watch@chromium.org'],
