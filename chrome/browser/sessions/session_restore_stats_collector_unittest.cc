@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host.h"
@@ -222,11 +225,11 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
   }
 
   void Show(size_t tab_index) {
-    restored_tabs_[tab_index].contents()->GetRenderWidgetHostView()->Show();
+    restored_tabs_[tab_index].contents()->WasShown();
   }
 
   void Hide(size_t tab_index) {
-    restored_tabs_[tab_index].contents()->GetRenderWidgetHostView()->Hide();
+    restored_tabs_[tab_index].contents()->WasHidden();
   }
 
   // Creates a restored tab backed by dummy WebContents/NavigationController/
@@ -235,6 +238,10 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
   void CreateRestoredTab(bool is_active) {
     content::WebContents* contents =
         test_web_contents_factory_->CreateWebContents(&testing_profile_);
+    std::vector<std::unique_ptr<content::NavigationEntry>> entries;
+    entries.push_back(content::NavigationEntry::Create());
+    contents->GetController().Restore(
+        0, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
     restored_tabs_.push_back(RestoredTab(contents, is_active, false, false));
     if (is_active)
       Show(restored_tabs_.size() - 1);
