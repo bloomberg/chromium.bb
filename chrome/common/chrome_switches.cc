@@ -791,12 +791,6 @@ const char kMarketUrlForTesting[] = "market-url-for-testing";
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 
-// Specifies a particular tab management experiment to enable.
-const char kTabManagementExperimentTypeDisabled[] =
-    "tab-management-experiment-type-disabled";
-const char kTabManagementExperimentTypeElderberry[] =
-    "tab-management-experiment-type-elderberry";
-
 // Custom WebAPK server URL for the sake of testing.
 const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)

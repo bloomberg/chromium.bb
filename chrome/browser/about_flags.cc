@@ -713,16 +713,6 @@ const FeatureEntry::FeatureVariation
          arraysize(kCondensedTileLayoutForLargeScreensEnabled), nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::Choice kHerbPrototypeChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     switches::kTabManagementExperimentTypeDisabled, ""},
-    {flag_descriptions::kHerbPrototypeFlavorElderberry,
-     switches::kTabManagementExperimentTypeElderberry, ""},
-};
-#endif  // OS_ANDROID
-
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
     {flag_descriptions::kEnableUseZoomForDsfChoiceDefault, "", ""},
     {flag_descriptions::kEnableUseZoomForDsfChoiceEnabled,
@@ -2394,12 +2384,6 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
 #endif  // TOOLKIT_VIEWS || OS_ANDROID
-#if defined(OS_ANDROID)
-    {"tab-management-experiment-type",
-     flag_descriptions::kHerbPrototypeChoicesName,
-     flag_descriptions::kHerbPrototypeChoicesDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kHerbPrototypeChoices)},
-#endif  // OS_ANDROID
 #if defined(OS_MACOSX)
     {"mac-md-download-shelf",
      flag_descriptions::kEnableMacMaterialDesignDownloadShelfName,

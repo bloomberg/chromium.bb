@@ -8,9 +8,7 @@ import android.content.SharedPreferences;
 import android.os.StrictMode;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
 import java.util.Set;
@@ -41,7 +39,6 @@ public class ChromePreferenceManager {
             "contextual_search_tap_quick_answer_count";
     private static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
             "contextual_search_current_week_number";
-    private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String CHROME_HOME_ENABLED_KEY = "chrome_home_enabled";
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
     private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
@@ -312,21 +309,6 @@ public class ChromePreferenceManager {
      */
     public void setContextualSearchCurrentWeekNumber(int weekNumber) {
         writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
-    }
-
-    /**
-     * @return Which UI prototype the user is testing. This is cached from native via
-     *         {@link FeatureUtilities#cacheHerbFlavor}.
-     */
-    public String getCachedHerbFlavor() {
-        return mSharedPreferences.getString(HERB_FLAVOR_KEY, ChromeSwitches.HERB_FLAVOR_DISABLED);
-    }
-
-    /**
-     * Caches which UI prototype the user is testing.
-     */
-    public void setCachedHerbFlavor(String flavor) {
-        writeString(HERB_FLAVOR_KEY, flavor);
     }
 
     public boolean getCachedChromeDefaultBrowser() {
