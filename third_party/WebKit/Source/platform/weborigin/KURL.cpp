@@ -626,11 +626,6 @@ void KURL::SetPath(const String& path) {
 }
 
 String DecodeURLEscapeSequences(const String& string) {
-  return DecodeURLEscapeSequences(string, UTF8Encoding());
-}
-
-String DecodeURLEscapeSequences(const String& string,
-                                const WTF::TextEncoding& encoding) {
   StringUTF8Adaptor string_utf8(string);
   url::RawCanonOutputT<base::char16> unescaped;
   url::DecodeURLEscapeSequences(string_utf8.Data(), string_utf8.length(),
