@@ -121,21 +121,10 @@ class SearchBoxBackground : public views::Background {
 class SearchBoxImageButton : public views::ImageButton {
  public:
   explicit SearchBoxImageButton(views::ButtonListener* listener)
-      : ImageButton(listener), selected_(false) {
+      : ImageButton(listener) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
   ~SearchBoxImageButton() override {}
-
-  bool selected() { return selected_; }
-  void SetSelected(bool selected) {
-    if (selected_ == selected)
-      return;
-
-    selected_ = selected;
-    SchedulePaint();
-    if (selected)
-      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
-  }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     // Disable space key to press the button. The keyboard events received
@@ -151,14 +140,12 @@ class SearchBoxImageButton : public views::ImageButton {
  private:
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (state() == STATE_PRESSED || selected_) {
+    if (state() == STATE_PRESSED) {
       canvas->FillRect(gfx::Rect(size()), kSelectedColor);
     }
   }
 
   const char* GetClassName() const override { return "SearchBoxImageButton"; }
-
-  bool selected_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxImageButton);
 };
@@ -211,8 +198,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       view_delegate_(view_delegate),
       content_container_(new views::View),
       search_box_(new SearchBoxTextfield(this)),
-      app_list_view_(app_list_view),
-      focused_view_(FOCUS_NONE) {
+      app_list_view_(app_list_view) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -327,112 +313,6 @@ views::ImageButton* SearchBoxView::back_button() {
 
 views::ImageButton* SearchBoxView::close_button() {
   return static_cast<views::ImageButton*>(close_button_);
-}
-
-bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
-  DCHECK(IsArrowKey(event));
-
-  // Special case when focus is on |search_box_| and query exists has already
-  // been handled before. Here, left and right arrow should work in the same way
-  // as shift+tab and tab.
-  if (event.key_code() == ui::VKEY_LEFT)
-    return MoveTabFocus(true);
-  if (event.key_code() == ui::VKEY_RIGHT)
-    return MoveTabFocus(false);
-  if (back_button_)
-    back_button_->SetSelected(false);
-  if (close_button_)
-    close_button_->SetSelected(false);
-  const bool move_up = event.key_code() == ui::VKEY_UP;
-
-  switch (focused_view_) {
-    case FOCUS_NONE:
-      focused_view_ = move_up ? FOCUS_NONE : FOCUS_SEARCH_BOX;
-      break;
-    case FOCUS_BACK_BUTTON:
-    case FOCUS_SEARCH_BOX:
-    case FOCUS_CLOSE_BUTTON:
-      focused_view_ = move_up ? FOCUS_NONE : FOCUS_CONTENTS_VIEW;
-      break;
-    case FOCUS_CONTENTS_VIEW:
-      focused_view_ = move_up ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
-  return (focused_view_ < FOCUS_CONTENTS_VIEW);
-}
-
-// Returns true if set internally, i.e. if focused_view_ != CONTENTS_VIEW.
-// Note: because we always want to be able to type in the edit box, this is only
-// a faux-focus so that buttons can respond to the ENTER key.
-bool SearchBoxView::MoveTabFocus(bool move_backwards) {
-  if (back_button_)
-    back_button_->SetSelected(false);
-  if (speech_button_)
-    speech_button_->SetSelected(false);
-  if (close_button_)
-    close_button_->SetSelected(false);
-
-  switch (focused_view_) {
-    case FOCUS_NONE:
-      focused_view_ = move_backwards ? FOCUS_NONE
-                                     : (back_button_ && back_button_->visible()
-                                            ? FOCUS_BACK_BUTTON
-                                            : FOCUS_SEARCH_BOX);
-      break;
-    // TODO(weidongg): Remove handling of back button when fullscreen app list
-    // folder is supported.
-    case FOCUS_BACK_BUTTON:
-      focused_view_ = move_backwards ? FOCUS_NONE : FOCUS_SEARCH_BOX;
-      break;
-    case FOCUS_SEARCH_BOX:
-      if (move_backwards) {
-        focused_view_ = back_button_ && back_button_->visible()
-                            ? FOCUS_BACK_BUTTON
-                            : FOCUS_NONE;
-      } else {
-        focused_view_ = close_button_ && close_button_->visible()
-                            ? FOCUS_CLOSE_BUTTON
-                            : FOCUS_CONTENTS_VIEW;
-      }
-      break;
-    case FOCUS_CLOSE_BUTTON:
-      focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
-      break;
-    case FOCUS_CONTENTS_VIEW:
-      focused_view_ =
-          move_backwards
-              ? (close_button_ && close_button_->visible() ? FOCUS_CLOSE_BUTTON
-                                                           : FOCUS_SEARCH_BOX)
-              : FOCUS_CONTENTS_VIEW;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  switch (focused_view_) {
-    case FOCUS_BACK_BUTTON:
-      if (back_button_)
-        back_button_->SetSelected(true);
-      break;
-    case FOCUS_MIC_BUTTON:
-      if (speech_button_)
-        speech_button_->SetSelected(true);
-      break;
-    case FOCUS_CLOSE_BUTTON:
-      if (close_button_)
-        close_button_->SetSelected(true);
-      break;
-    default:
-      break;
-  }
-
-  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
-
-  return (focused_view_ < FOCUS_CONTENTS_VIEW);
 }
 
 void SearchBoxView::SetBackButtonLabel(bool folder) {
@@ -668,12 +548,6 @@ void SearchBoxView::UpdateOpacity() {
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   contents_view->search_results_page_view()->layer()->SetOpacity(
       should_restore_opacity ? 1.0f : opacity);
-}
-
-bool SearchBoxView::IsArrowKey(const ui::KeyEvent& event) {
-  return event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN ||
-         event.key_code() == ui::VKEY_LEFT ||
-         event.key_code() == ui::VKEY_RIGHT;
 }
 
 views::View* SearchBoxView::GetSelectedViewInContentsView() const {
