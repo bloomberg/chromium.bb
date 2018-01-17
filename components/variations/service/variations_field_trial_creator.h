@@ -37,13 +37,6 @@ class VariationsFieldTrialCreator {
   VariationsSeedStore* seed_store() { return &seed_store_; }
   const VariationsSeedStore& seed_store() const { return seed_store_; }
 
-  bool create_trials_from_seed_called() const {
-    return create_trials_from_seed_called_;
-  }
-
-  // Exposed for testing.
-  void SetCreateTrialsFromSeedCalledForTesting(bool called);
-
   // Sets up field trials based on stored variations seed data. Returns whether
   // setup completed successfully.
   // |kEnableGpuBenchmarking|, |kEnableFeatures|, |kDisableFeatures| are
@@ -128,8 +121,8 @@ class VariationsFieldTrialCreator {
 
   VariationsSeedStore seed_store_;
 
-  // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
-  // it gets called prior to |StartRepeatedVariationsSeedFetch|.
+  // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that it is
+  // called at most once.
   bool create_trials_from_seed_called_;
 
   // Indiciate if OverrideVariationsPlatform has been used to set

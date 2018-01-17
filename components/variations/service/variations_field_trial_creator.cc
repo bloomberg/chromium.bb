@@ -238,11 +238,6 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   return true;
 }
 
-void VariationsFieldTrialCreator::SetCreateTrialsFromSeedCalledForTesting(
-    bool called) {
-  create_trials_from_seed_called_ = called;
-}
-
 std::unique_ptr<ClientFilterableState>
 VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
     const base::Version& version) {

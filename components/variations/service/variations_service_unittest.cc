@@ -112,8 +112,6 @@ class TestVariationsService : public VariationsService {
         delta_compressed_seed_(false),
         gzip_compressed_seed_(false),
         insecurely_fetched_seed_(false) {
-    // Set this so StartRepeatedVariationsSeedFetch can be called in tests.
-    SetCreateTrialsFromSeedCalledForTesting(true);
     set_variations_server_url(GetVariationsServerURL(
         local_state, std::string(), use_secure_url ? USE_HTTPS : USE_HTTP));
   }
@@ -903,7 +901,6 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), UIStringOverrider());
 
-  service.SetCreateTrialsFromSeedCalledForTesting(true);
   net::TestURLFetcherFactory factory;
   // This will actually start the fetch.
   service.PerformPreMainMessageLoopStartup();

@@ -146,7 +146,7 @@ bool VariationsSeedStore::LoadSeed(VariationsSeed* seed,
     return false;
   }
 
-  variations_serial_number_ = seed->serial_number();
+  latest_serial_number_ = seed->serial_number();
   RecordLoadSeedResult(LoadSeedResult::SUCCESS);
   return true;
 }
@@ -277,6 +277,24 @@ void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
 
   local_state_->SetInt64(prefs::kVariationsSeedDate,
                          server_date_fetched.ToInternalValue());
+}
+
+const std::string& VariationsSeedStore::GetLatestSerialNumber() {
+  if (latest_serial_number_.empty()) {
+    // Efficiency note: This code should rarely be reached; typically, the
+    // latest serial number should be cached via the call to LoadSeed(). The
+    // call to ParseFromString() can be expensive, so it's best to only perform
+    // it once, if possible: [ https://crbug.com/761684#c2 ]. At the time of
+    // this writing, the only expected code path that should reach this code is
+    // when running in safe mode.
+    std::string seed_data;
+    VariationsSeed seed;
+    if (ReadSeedData(&seed_data) == LoadSeedResult::SUCCESS &&
+        seed.ParseFromString(seed_data)) {
+      latest_serial_number_ = seed.serial_number();
+    }
+  }
+  return latest_serial_number_;
 }
 
 // static
@@ -411,7 +429,7 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
   UpdateSeedDateAndLogDayChange(date_fetched);
   local_state_->SetString(prefs::kVariationsSeedSignature,
                           base64_seed_signature);
-  variations_serial_number_ = seed.serial_number();
+  latest_serial_number_ = seed.serial_number();
   if (parsed_seed)
     seed.Swap(parsed_seed);
 
