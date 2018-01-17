@@ -16,7 +16,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Document.h"
-#include "bindings/core/v8/string_or_trusted_url.h"
+#include "bindings/core/v8/usv_string_or_trusted_url.h"
 #include "bindings/tests/idls/core/TestInterfaceDocument.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
