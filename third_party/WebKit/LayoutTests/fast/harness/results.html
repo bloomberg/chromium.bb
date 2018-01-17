@@ -424,8 +424,22 @@ class PathParser {
     let href;
     [href, this.dir, this.file] = path.match("/(.*/)?(.*)");
     this.dir = this.dir || "";
-    [, this.basename, this.extension] = this.file.match(/(.*)\.(\w+)/);
-    this.testHref = this.testBaseHref() + href.replace(/\/virtual\/[^\/]*/, "");
+    [, this.raw_basename, this.raw_extension] = this.file.match(/(.+)\.(.+)/);
+
+    // WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py output_filename()
+    let index = this.raw_extension.indexOf("?");
+    if (index > -1) {
+      let query_string = this.raw_extension.slice(index + 1);
+      query_string = query_string.replace(/[~#%&*{}\:<>?\/|"]/g, "_");
+      this.basename = this.raw_basename + "_" + query_string;
+      this.extension = this.raw_extension.slice(0, index);
+    } else {
+      [this.basename, this.extension] = [this.raw_basename, this.raw_extension];
+    }
+
+    href = href.replace(/^\/virtual\/[^\/]*/, "");  // virtual suites
+    href = href.replace(/\?.*$/, "");               // query strings (variants)
+    this.testHref = this.testBaseHref() + href;
   }
 
   static initGlobals(fullResults) {
