@@ -361,7 +361,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     @Override
     public void destroy() {
-        mBottomSheetObserver.onDestroy();
         mSheet.getNewTabController().removeObserver(this);
         mLocationBar.removeUrlFocusChangeListener(this);
         if (mAnimator != null) {
@@ -370,6 +369,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         }
 
         if (mSuggestionsInitialized) {
+            mBottomSheetObserver.onDestroy();
             mSuggestionsUiDelegate.onDestroy();
             mTileGroupDelegate.destroy();
             TemplateUrlService.getInstance().removeObserver(this);
