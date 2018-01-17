@@ -46,18 +46,18 @@ config("config") {
 use_assembler = (is_win || is_linux) &&
                 (target_cpu == "x86" || target_cpu == "x64") && !is_msan
 
-yasm_defines = []
-if (!is_component_build) {
-  if (is_mac || is_ios) {
-    yasm_defines += [ "WELS_PRIVATE_EXTERN=:private_extern" ]
-  } else if (is_linux || is_android || is_fuchsia) {
-    yasm_defines += [ "WELS_PRIVATE_EXTERN=:hidden" ]
-  }
-}
-
 # This IF statement will make the targets visible only on specific builds,
 # which will lead to failures on other platforms if accidentally invoked.
 if (use_assembler) {
+  yasm_defines = []
+  if (!is_component_build) {
+    if (is_mac || is_ios) {
+      yasm_defines += [ "WELS_PRIVATE_EXTERN=:private_extern" ]
+    } else if (is_linux || is_android || is_fuchsia) {
+      yasm_defines += [ "WELS_PRIVATE_EXTERN=:hidden" ]
+    }
+  }
+
   yasm_assemble("openh264_common_yasm") {
     include_dirs = openh264_common_include_dirs
     sources = openh264_common_sources_asm_x86
