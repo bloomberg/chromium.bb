@@ -139,17 +139,10 @@ bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
     if (relative_change < kRelativeIntervalDifferenceThreshold) {
       if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
           new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
-#if defined(OS_CHROMEOS)
-        // On ash platforms (ChromeOS essentially), the real refresh interval is
-        // queried from XRandR, regardless of the value calculated here, and
-        // this value is overriden by ui::CompositorVSyncManager.  The log
-        // should not be fatal in this case. Reconsider all this when XRandR
-        // support is added to non-ash platforms.
+        // For ChromeOS, we get the refresh interval from DRM through Ozone.
+        // For Linux, we could use XRandR.
         // http://crbug.com/340851
         LOG(ERROR)
-#else
-        LOG(FATAL)
-#endif  // OS_CHROMEOS
             << "Calculated bogus refresh interval=" << new_interval
             << ", last_timebase_=" << last_timebase_
             << ", timebase=" << timebase
