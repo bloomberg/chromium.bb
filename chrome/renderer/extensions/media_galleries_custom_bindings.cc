@@ -34,7 +34,7 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsString());
 
-  std::string fs_mount(*v8::String::Utf8Value(args[0]));
+  std::string fs_mount(*v8::String::Utf8Value(args.GetIsolate(), args[0]));
   CHECK(!fs_mount.empty());
 
   blink::WebLocalFrame* webframe =

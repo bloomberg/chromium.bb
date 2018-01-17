@@ -83,7 +83,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return std::string();
     }
-    v8::String::Utf8Value utf8(temp);
+    v8::String::Utf8Value utf8(isolate_, temp);
     return std::string(*utf8, utf8.length());
   }
 
@@ -102,7 +102,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return std::string();
     }
-    v8::String::Utf8Value utf8(temp);
+    v8::String::Utf8Value utf8(isolate_, temp);
     return std::string(*utf8, utf8.length());
   }
 

@@ -54,7 +54,7 @@ void RuntimeCustomBindings::GetExtensionViews(
   int tab_id = args[1]->Int32Value();
 
   std::string view_type_string =
-      base::ToUpperASCII(*v8::String::Utf8Value(args[2]));
+      base::ToUpperASCII(*v8::String::Utf8Value(args.GetIsolate(), args[2]));
   // |view_type| == VIEW_TYPE_INVALID means getting any type of
   // views.
   ViewType view_type = VIEW_TYPE_INVALID;

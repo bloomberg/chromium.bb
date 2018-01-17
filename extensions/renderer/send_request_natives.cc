@@ -32,7 +32,7 @@ void SendRequestNatives::StartRequest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   base::ElapsedTimer timer;
   CHECK_EQ(5, args.Length());
-  std::string name = *v8::String::Utf8Value(args[0]);
+  std::string name = *v8::String::Utf8Value(args.GetIsolate(), args[0]);
   bool has_callback = args[2]->BooleanValue();
   bool for_io_thread = args[3]->BooleanValue();
   bool preserve_null_in_objects = args[4]->BooleanValue();

@@ -139,7 +139,8 @@ void EventBindings::AttachEventHandler(
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsBoolean());
-  AttachEvent(*v8::String::Utf8Value(args[0]), args[1]->BooleanValue());
+  AttachEvent(*v8::String::Utf8Value(args.GetIsolate(), args[0]),
+              args[1]->BooleanValue());
 }
 
 void EventBindings::AttachEvent(const std::string& event_name,
@@ -180,7 +181,7 @@ void EventBindings::DetachEventHandler(
   CHECK(args[2]->IsBoolean());
   bool was_manual = args[1]->BooleanValue();
   bool supports_lazy_listeners = args[2]->BooleanValue();
-  DetachEvent(*v8::String::Utf8Value(args[0]),
+  DetachEvent(*v8::String::Utf8Value(args.GetIsolate(), args[0]),
               was_manual && supports_lazy_listeners);
 }
 
@@ -218,7 +219,7 @@ void EventBindings::AttachFilteredEvent(
   CHECK(args[1]->IsObject());
   CHECK(args[2]->IsBoolean());
 
-  std::string event_name = *v8::String::Utf8Value(args[0]);
+  std::string event_name = *v8::String::Utf8Value(args.GetIsolate(), args[0]);
   if (!context()->HasAccessOrThrowError(event_name))
     return;
 

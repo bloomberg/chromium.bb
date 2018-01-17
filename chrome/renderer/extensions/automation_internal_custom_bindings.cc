@@ -237,7 +237,7 @@ class NodeIDPlusAttributeWrapper
 
     int tree_id = args[0]->Int32Value();
     int node_id = args[1]->Int32Value();
-    std::string attribute = *v8::String::Utf8Value(args[2]);
+    std::string attribute = *v8::String::Utf8Value(isolate, args[2]);
 
     AutomationAXTreeWrapper* tree_wrapper =
         automation_bindings_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
@@ -897,7 +897,7 @@ void AutomationInternalCustomBindings::AddTreeChangeObserver(
 
   TreeChangeObserver observer;
   observer.id = args[0]->Int32Value();
-  std::string filter_str = *v8::String::Utf8Value(args[1]);
+  std::string filter_str = *v8::String::Utf8Value(args.GetIsolate(), args[1]);
   observer.filter = api::automation::ParseTreeChangeObserverFilter(filter_str);
 
   tree_change_observers_.push_back(observer);

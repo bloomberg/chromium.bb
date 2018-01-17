@@ -530,7 +530,7 @@ bool ArgumentSpec::ParseArgumentToObject(
     // excluded by GetOwnPropertyNames()). If you try to set anything else
     // (e.g. an object), it is converted to a string.
     DCHECK(key->IsString() || key->IsNumber());
-    v8::String::Utf8Value utf8_key(key);
+    v8::String::Utf8Value utf8_key(context->GetIsolate(), key);
 
     ArgumentSpec* property_spec = nullptr;
     auto iter = properties_.find(*utf8_key);
@@ -626,7 +626,8 @@ bool ArgumentSpec::ParseArgumentToObject(
     v8::Local<v8::Value> next_check = object;
     do {
       v8::Local<v8::Object> current = next_check.As<v8::Object>();
-      v8::String::Utf8Value constructor(current->GetConstructorName());
+      v8::String::Utf8Value constructor(context->GetIsolate(),
+                                        current->GetConstructorName());
       if (*instance_of_ ==
           base::StringPiece(*constructor, constructor.length())) {
         found = true;

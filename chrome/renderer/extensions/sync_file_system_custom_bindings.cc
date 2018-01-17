@@ -38,12 +38,13 @@ void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
     return;
   }
 
-  std::string name(*v8::String::Utf8Value(args[0]));
+  v8::Isolate* isolate = args.GetIsolate();
+  std::string name(*v8::String::Utf8Value(isolate, args[0]));
   if (name.empty()) {
     NOTREACHED();
     return;
   }
-  std::string root_url(*v8::String::Utf8Value(args[1]));
+  std::string root_url(*v8::String::Utf8Value(isolate, args[1]));
   if (root_url.empty()) {
     NOTREACHED();
     return;
@@ -55,7 +56,7 @@ void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
       blink::WebDOMFileSystem::Create(
           webframe, blink::kWebFileSystemTypeExternal,
           blink::WebString::FromUTF8(name), GURL(root_url))
-          .ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
+          .ToV8Value(context()->v8_context()->Global(), isolate));
 }
 
 }  // namespace extensions

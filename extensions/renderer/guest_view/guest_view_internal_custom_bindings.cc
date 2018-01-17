@@ -434,7 +434,8 @@ void GuestViewInternalCustomBindings::RegisterView(
                   v8::WeakCallbackType::kParameter);
 
   // Let the GuestViewManager know that a GuestView has been created.
-  const std::string& view_type = *v8::String::Utf8Value(args[2]);
+  const std::string& view_type =
+      *v8::String::Utf8Value(args.GetIsolate(), args[2]);
   content::RenderThread::Get()->Send(
       new GuestViewHostMsg_ViewCreated(view_instance_id, view_type));
 }

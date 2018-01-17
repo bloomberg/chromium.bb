@@ -9673,7 +9673,8 @@ TEST_P(WebFrameSwapTest, RemoteWindowNamedAccess) {
 }
 
 TEST_P(WebFrameSwapTest, RemoteWindowToString) {
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope scope(isolate);
 
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
   LastChild(MainFrame())->Swap(remote_frame);
@@ -9681,7 +9682,8 @@ TEST_P(WebFrameSwapTest, RemoteWindowToString) {
       MainFrame()->ExecuteScriptAndReturnValue(
           WebScriptSource("Object.prototype.toString.call(window[2])"));
   ASSERT_FALSE(to_string_result.IsEmpty());
-  EXPECT_STREQ("[object Object]", *v8::String::Utf8Value(to_string_result));
+  EXPECT_STREQ("[object Object]",
+               *v8::String::Utf8Value(isolate, to_string_result));
 }
 
 // TODO(alexmos, dcheng): This test and some other OOPIF tests use

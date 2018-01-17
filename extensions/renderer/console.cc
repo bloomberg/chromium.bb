@@ -38,7 +38,7 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   for (int i = 0; i < info.Length(); ++i) {
     if (i > 0)
       message += " ";
-    message += *v8::String::Utf8Value(info[i]);
+    message += *v8::String::Utf8Value(info.GetIsolate(), info[i]);
   }
 
   // A worker's ScriptContext neither lives in ScriptContextSet nor it has a

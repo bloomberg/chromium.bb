@@ -356,7 +356,7 @@ static bool CodeGenerationCheckCallbackInMainThread(
            execution_context->IsPaintWorkletGlobalScope());
     if (ContentSecurityPolicy* policy =
             execution_context->GetContentSecurityPolicy()) {
-      v8::String::Value source_str(source);
+      v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
                             static_cast<size_t>(source_str.length()));
@@ -376,7 +376,7 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     if (ContentSecurityPolicy* policy =
             ToDocument(execution_context)->GetContentSecurityPolicy()) {
-      v8::String::Value source_str(source);
+      v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
                             static_cast<size_t>(source_str.length()));

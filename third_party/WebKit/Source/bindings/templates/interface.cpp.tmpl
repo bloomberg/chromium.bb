@@ -682,7 +682,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
   if (holder.IsEmpty())
     return;
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
-  v8::String::Utf8Value methodName(name);
+  v8::String::Utf8Value methodName(info.GetIsolate(), name);
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "{{interface_name}}", *methodName);
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
     return;
