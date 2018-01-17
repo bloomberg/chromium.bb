@@ -35,7 +35,8 @@ class Zygote {
   Zygote(int sandbox_flags,
          std::vector<std::unique_ptr<ZygoteForkDelegate>> helpers,
          const std::vector<base::ProcessHandle>& extra_children,
-         const std::vector<int>& extra_fds);
+         const std::vector<int>& extra_fds,
+         const base::GlobalDescriptors::Descriptor& ipc_backchannel);
   ~Zygote();
 
   bool ProcessRequests();
@@ -153,6 +154,10 @@ class Zygote {
 
   // The vector contains the child processes that need to be reaped.
   std::vector<ZygoteProcessInfo> to_reap_;
+
+  // Sandbox IPC channel for renderers to invoke services from the browser. See
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  base::GlobalDescriptors::Descriptor ipc_backchannel_;
 };
 
 }  // namespace content
