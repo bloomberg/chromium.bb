@@ -1539,9 +1539,6 @@ extern const char kDisableLockScreenAppsDescription[];
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 
-extern const char kDisableTabletSplitViewName[];
-extern const char kDisableTabletSplitViewDescription[];
-
 extern const char kEnablePerUserTimezoneName[];
 extern const char kEnablePerUserTimezoneDescription[];
 
@@ -1568,6 +1565,9 @@ extern const char kEnableFloatingVirtualKeyboardDescription[];
 
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
+
+extern const char kEnableTabletSplitViewName[];
+extern const char kEnableTabletSplitViewDescription[];
 
 extern const char kEnableZipArchiverPackerName[];
 extern const char kEnableZipArchiverPackerDescription[];
