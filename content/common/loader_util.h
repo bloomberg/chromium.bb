@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/common/resource_type.h"
 
+class GURL;
+
 namespace net {
 class HttpRawRequestHeaders;
 class HttpResponseHeaders;
@@ -39,6 +41,9 @@ scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
 void AttachAcceptHeader(ResourceType type, net::URLRequest* request);
 
 int BuildLoadFlagsForRequest(const network::ResourceRequest& request_data);
+
+// Returns the referrer based on the validity of the URL and command line flags.
+std::string ComputeReferrer(const GURL& referrer);
 
 }  // namespace content
 

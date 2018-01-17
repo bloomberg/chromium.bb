@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "content/common/loader_util.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"
@@ -126,14 +127,6 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   if (!response_head.headers->IsRedirect(&new_location))
     return base::nullopt;
 
-  std::string referrer_string;
-  net::URLRequest::ReferrerPolicy referrer_policy;
-  Referrer::ComputeReferrerInfo(
-      &referrer_string, &referrer_policy,
-      Referrer(original_request.referrer,
-               Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                   original_request.referrer_policy)));
-
   // If the request is a MAIN_FRAME request, the first-party URL gets
   // updated on redirects.
   const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
@@ -143,7 +136,8 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   return net::RedirectInfo::ComputeRedirectInfo(
       original_request.method, original_request.url,
       original_request.site_for_cookies, first_party_url_policy,
-      referrer_policy, referrer_string, response_head.headers.get(),
+      original_request.referrer_policy,
+      ComputeReferrer(original_request.referrer), response_head.headers.get(),
       response_head.headers->response_code(),
       original_request.url.Resolve(new_location), token_binding_negotiated);
 }

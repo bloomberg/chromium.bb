@@ -24,7 +24,6 @@
 #include "content/network/url_loader.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -65,7 +64,6 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
-  request.referrer_policy = Referrer::GetDefaultReferrerPolicy();
   request.load_flags = 0;
   request.plugin_child_id = -1;
   request.resource_type = type;

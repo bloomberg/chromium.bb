@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -15,6 +17,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -153,6 +156,15 @@ int BuildLoadFlagsForRequest(const network::ResourceRequest& request) {
   }
 
   return load_flags;
+}
+
+std::string ComputeReferrer(const GURL& referrer) {
+  if (!referrer.is_valid() || base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kNoReferrers)) {
+    return std::string();
+  }
+
+  return referrer.spec();
 }
 
 }  // namespace content
