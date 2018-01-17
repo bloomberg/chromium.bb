@@ -624,8 +624,8 @@
     "args": ["--enable-features=ModuleScriptsImportMetaUrl"]
   },
   {
-    "prefix": "reporting",
-    "base": "external/wpt/content-security-policy/reporting",
+    "prefix": "reporting-api",
+    "base": "external/wpt/content-security-policy/reporting-api",
     "args": ["--enable-features=Reporting"]
   },
   {

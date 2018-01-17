@@ -6827,8 +6827,6 @@ crbug.com/591099 http/tests/security/contentSecurityPolicy/1.1/plugintypes-notyp
 crbug.com/591099 http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
-crbug.com/591099 http/tests/security/contentSecurityPolicy/multiple-report-policies.php [ Failure ]
-crbug.com/591099 http/tests/security/contentSecurityPolicy/report-multiple-violations-01.php [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/script-src-none-inline-event.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/xsl-img-blocked.php [ Failure ]
