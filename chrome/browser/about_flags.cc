@@ -1021,8 +1021,12 @@ const FeatureEntry::Choice kOOPHPStackModeChoices[] = {
      switches::kMemlogStackModeMixed},
 };
 
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches5[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "5"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches8[] = {
@@ -1034,8 +1038,12 @@ const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
 
 const FeatureEntry::FeatureVariation
     kOmniboxUIMaxAutocompleteMatchesVariations[] = {
+        {"3 matches", kOmniboxUIMaxAutocompleteMatches3,
+         arraysize(kOmniboxUIMaxAutocompleteMatches3), nullptr},
         {"4 matches", kOmniboxUIMaxAutocompleteMatches4,
          arraysize(kOmniboxUIMaxAutocompleteMatches4), nullptr},
+        {"5 matches", kOmniboxUIMaxAutocompleteMatches5,
+         arraysize(kOmniboxUIMaxAutocompleteMatches5), nullptr},
         {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
          arraysize(kOmniboxUIMaxAutocompleteMatches6), nullptr},
         {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
