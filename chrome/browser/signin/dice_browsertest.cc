@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -955,6 +954,9 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
   SendRefreshTokenResponse();
   EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
 
+  // Receive ENABLE_SYNC.
+  SendEnableSyncResponse();
+
   // Check that the Dice request header was sent, with no signout confirmation.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   EXPECT_EQ(
@@ -962,9 +964,6 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
                          "signout_mode=no_confirmation",
                          signin::kDiceProtocolVersion, client_id.c_str()),
       dice_request_header_);
-
-  // Receive ENABLE_SYNC.
-  SendEnableSyncResponse();
 
   WaitForSigninSucceeded();
   EXPECT_EQ(GetMainAccountID(),
@@ -979,9 +978,9 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
       GURL(chrome::kChromeUINewTabURL),
       content::NotificationService::AllSources());
 
-  // Dismiss the Sync confirmation UI.
-  EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(30)));
+  // Dismiss the OneClickSigninSyncStarter.
+  LoginUIServiceFactory::GetForProfile(browser()->profile())
+      ->SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 }
 
 // Tests that Sync is enabled if the ENABLE_SYNC response is received before the
@@ -1002,6 +1001,11 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
       https_server_.GetURL(kEnableSyncURL),
       content::NotificationService::AllSources());
 
+  // Receive token.
+  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  SendRefreshTokenResponse();
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+
   // Check that the Dice request header was sent, with no signout confirmation.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   EXPECT_EQ(
@@ -1009,11 +1013,6 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
                          "signout_mode=no_confirmation",
                          signin::kDiceProtocolVersion, client_id.c_str()),
       dice_request_header_);
-
-  // Receive token.
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  SendRefreshTokenResponse();
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
 
   WaitForSigninSucceeded();
   EXPECT_EQ(GetMainAccountID(),
@@ -1028,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationChromeSynEndpointBrowserTest,
       GURL(chrome::kChromeUINewTabURL),
       content::NotificationService::AllSources());
 
-  // Dismiss the Sync confirmation UI.
-  EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(30)));
+  // Dismiss the OneClickSigninSyncStarter.
+  LoginUIServiceFactory::GetForProfile(browser()->profile())
+      ->SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 }

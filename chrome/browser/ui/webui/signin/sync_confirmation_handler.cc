@@ -76,7 +76,15 @@ void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
   did_user_explicitly_interact = true;
-  CloseModalSigninWindow(LoginUIService::ABORT_SIGNIN);
+  base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+  LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
+      LoginUIService::ABORT_SIGNIN);
+  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+      signin_metrics::ABORT_SIGNIN,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
+
+  if (browser_)
+    browser_->signin_view_controller()->CloseModalSignin();
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
@@ -110,19 +118,6 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
 
 void SyncConfirmationHandler::CloseModalSigninWindow(
     LoginUIService::SyncConfirmationUIClosedResult result) {
-  switch (result) {
-    case LoginUIService::CONFIGURE_SYNC_FIRST:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
-      break;
-    case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
-      break;
-    case LoginUIService::ABORT_SIGNIN:
-      base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
-      break;
-  }
   LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
       result);
   if (browser_)

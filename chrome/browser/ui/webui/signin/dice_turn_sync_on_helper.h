@@ -7,33 +7,14 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
-class Browser;
-class BrowserList;
-class ProfileOAuth2TokenService;
-class SigninManager;
-
-namespace browser_sync {
-class ProfileSyncService;
-}
-
-namespace syncer {
-class SyncSetupInProgressHandle;
-}
-
 // Handles details of signing the user in with SigninManager and turning on
 // sync for an account that is already present in the token service.
-class DiceTurnSyncOnHelper : public BrowserListObserver,
-                             public LoginUIService::Observer {
+class DiceTurnSyncOnHelper {
  public:
   // Behavior when the signin is aborted (by an error or cancelled by the user).
   enum class SigninAbortedMode {
@@ -52,112 +33,39 @@ class DiceTurnSyncOnHelper : public BrowserListObserver,
                        const std::string& account_id,
                        SigninAbortedMode signin_aborted_mode);
 
+  virtual ~DiceTurnSyncOnHelper();
+
  private:
-  enum class ProfileMode {
-    // Attempts to sign the user in |profile_|. Note that if the account to be
-    // signed in is a managed account, then a profile confirmation dialog is
-    // shown and the user has the possibility to create a new profile before
-    // signing in.
-    CURRENT_PROFILE,
-
-    // Creates a new profile and signs the user in this new profile.
-    NEW_PROFILE
-  };
-
-  // User input handler for the signin confirmation dialog.
-  class SigninDialogDelegate : public ui::ProfileSigninConfirmationDelegate {
-   public:
-    explicit SigninDialogDelegate(
-        base::WeakPtr<DiceTurnSyncOnHelper> sync_starter);
-    ~SigninDialogDelegate() override;
-    void OnCancelSignin() override;
-    void OnContinueSignin() override;
-    void OnSigninWithNewProfile() override;
-
-   private:
-    base::WeakPtr<DiceTurnSyncOnHelper> sync_starter_;
-  };
-  friend class SigninDialogDelegate;
-
-  // DiceTurnSyncOnHelper deletes itself.
-  ~DiceTurnSyncOnHelper() override;
-
   // Handles can offer sign-in errors.  It returns true if there is an error,
   // and false otherwise.
-  bool HasCanOfferSigninError();
+  bool HandleCanOfferSigninError();
+
+  // Handles cross account sign in error. If |account_info_| does not match the
+  // last authenticated account of the current profile, then Chrome will show a
+  // confirmation dialog before starting sync. It returns true if there is a
+  // cross account error, and false otherwise.
+  bool HandleCrossAccountError();
 
   // Callback used with ConfirmEmailDialogDelegate.
   void ConfirmEmailAction(SigninEmailConfirmationDialog::Action action);
 
-  // Turns sync on with the current profile or a new profile.
-  void TurnSyncOnWithProfileMode(ProfileMode profile_mode);
+  // Creates the sync starter.
+  void CreateSyncStarter(OneClickSigninSyncStarter::ProfileMode profile_mode);
 
-  // Callback invoked once policy registration is complete. If registration
-  // fails, |dm_token| and |client_id| will be empty.
-  void OnRegisteredForPolicy(const std::string& dm_token,
-                             const std::string& client_id);
-
-  // Helper function that loads policy with the cached |dm_token_| and
-  // |client_id|, then completes the signin process.
-  void LoadPolicyWithCachedCredentials();
-
-  // Callback invoked when a policy fetch request has completed. |success| is
-  // true if policy was successfully fetched.
-  void OnPolicyFetchComplete(bool success);
-
-  // Called to create a new profile, which is then signed in with the
-  // in-progress auth credentials currently stored in this object.
-  void CreateNewSignedInProfile();
-
-  // Callback invoked once a profile is created, so we can complete the
-  // credentials transfer, load policy, and open the first window.
-  void CompleteInitForNewProfile(Profile* new_profile,
-                                 Profile::CreateStatus status);
-
-  // Returns the ProfileSyncService, or nullptr if sync is not allowed.
-  browser_sync::ProfileSyncService* GetProfileSyncService();
-
-  // Completes the signin in SigninManager and displays the Sync confirmation
-  // UI.
-  void SigninAndShowSyncConfirmationUI();
-
-  // LoginUIService::Observer override. Deletes this object.
-  void OnSyncConfirmationUIClosed(
-      LoginUIService::SyncConfirmationUIClosedResult result) override;
-
-  // BrowserListObserver override.
-  void OnBrowserRemoved(Browser* browser) override;
-
-  // Aborts the flow and deletes this object.
-  void AbortAndDelete();
+  // Aborts the flow.
+  void Abort();
 
   Profile* profile_;
   Browser* browser_;
-  SigninManager* signin_manager_;
-  ProfileOAuth2TokenService* token_service_;
-  const signin_metrics::AccessPoint signin_access_point_;
-  const signin_metrics::Reason signin_reason_;
+  signin_metrics::AccessPoint signin_access_point_;
+  signin_metrics::Reason signin_reason_;
 
   // Whether the refresh token should be deleted if the Sync flow is aborted.
-  const SigninAbortedMode signin_aborted_mode_;
+  SigninAbortedMode signin_aborted_mode_;
 
   // Account information.
   const AccountInfo account_info_;
 
-  // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
-
-  // Policy credentials we keep while determining whether to create
-  // a new profile for an enterprise user or not.
-  std::string dm_token_;
-  std::string client_id_;
-
-  ScopedObserver<BrowserList, BrowserListObserver>
-      scoped_browser_list_observer_;
-  ScopedObserver<LoginUIService, LoginUIService::Observer>
-      scoped_login_ui_service_observer_;
-
-  base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };
 

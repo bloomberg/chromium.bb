@@ -100,8 +100,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   BrowserList::AddObserver(this);
   Initialize(profile, browser);
 
-  DCHECK(!signin::IsDicePrepareMigrationEnabled());
-  DCHECK(!refresh_token.empty());
+  DCHECK(!refresh_token.empty() || signin::IsDicePrepareMigrationEnabled());
   SigninManagerFactory::GetForProfile(profile_)->StartSignInWithRefreshToken(
       refresh_token, gaia_id, email, password,
       base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
@@ -161,10 +160,19 @@ void OneClickSigninSyncStarter::ConfirmSignin(ProfileMode profile_mode,
       // initialized.
       policy::UserPolicySigninService* policy_service =
           policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-      policy_service->RegisterForPolicyWithLoginToken(
-          signin->GetUsernameForAuthInProgress(), oauth_token,
-          base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
-                     weak_pointer_factory_.GetWeakPtr()));
+      if (oauth_token.empty()) {
+        DCHECK(signin::IsDicePrepareMigrationEnabled());
+        policy_service->RegisterForPolicyWithAccountId(
+            signin->GetUsernameForAuthInProgress(),
+            signin->GetAccountIdForAuthInProgress(),
+            base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
+                       weak_pointer_factory_.GetWeakPtr()));
+      } else {
+        policy_service->RegisterForPolicyWithLoginToken(
+            signin->GetUsernameForAuthInProgress(), oauth_token,
+            base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
+                       weak_pointer_factory_.GetWeakPtr()));
+      }
       break;
     }
     case NEW_PROFILE:
@@ -311,9 +319,16 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED:
+      if (signin::IsDicePrepareMigrationEnabled()) {
+        // When DICE is enabled, the refresh token is not copied to the new
+        // profile and the user needs to sign in to the new profile in order
+        // to enable sync.
+        CancelSigninAndStartNewSigninInNewProfile(new_profile);
+      } else {
         // Pre-DICE, the refresh token is copied to the new profile and the user
         // does not need to autehnticate in the new profile.
         CopyCredentialsToNewProfileAndFinishSignin(new_profile);
+      }
       break;
     case Profile::CREATE_STATUS_REMOTE_FAIL:
     case Profile::CREATE_STATUS_CANCELED:
@@ -323,6 +338,21 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       return;
     }
   }
+}
+
+void OneClickSigninSyncStarter::CancelSigninAndStartNewSigninInNewProfile(
+    Profile* new_profile) {
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  std::string email = signin_manager->GetUsernameForAuthInProgress();
+  CancelSigninAndDelete();
+
+  profiles::FindOrCreateNewWindowForProfile(
+      new_profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
+  Browser* browser = chrome::FindTabbedBrowser(new_profile, false);
+  browser->signin_view_controller()->ShowDiceSigninTab(
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser,
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, email);
 }
 
 void OneClickSigninSyncStarter::CopyCredentialsToNewProfileAndFinishSignin(
@@ -381,11 +411,21 @@ void OneClickSigninSyncStarter::CopyCredentialsToNewProfileAndFinishSignin(
 void OneClickSigninSyncStarter::CancelSigninAndDelete() {
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   DCHECK(signin_manager->AuthInProgress());
-  // SignoutAndRemoveAllAccounts does not actually remove the accounts if the
-  // signin is still pending. See http://crbug.com/799437.
-  signin_manager->SignOutAndRemoveAllAccounts(
-      signin_metrics::ABORT_SIGNIN,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
+  if (signin::IsDicePrepareMigrationEnabled()) {
+    // TODO: Do not delete the token if it existed prior this login flow. See
+    // http://crbug.com/797342.
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+        ->RevokeCredentials(signin_manager->GetAccountIdForAuthInProgress());
+    signin_manager->SignOutAndKeepAllAccounts(
+        signin_metrics::ABORT_SIGNIN,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  } else {
+    // SignoutAndRemoveAllAccounts does not actually remove the accounts if the
+    // signin is still pending. See http://crbug.com/799437.
+    signin_manager->SignOutAndRemoveAllAccounts(
+        signin_metrics::ABORT_SIGNIN,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  }
   // The statement above results in a call to SigninFailed() which will free
   // this object, so do not refer to the OneClickSigninSyncStarter object
   // after this point.
@@ -440,9 +480,13 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
 
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
       ShowSyncSetupSettingsSubpage();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
       ProfileSyncService* profile_sync_service = GetProfileSyncService();
       if (profile_sync_service)
         profile_sync_service->SetFirstSetupComplete();
@@ -450,9 +494,6 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
-      SigninManagerFactory::GetForProfile(profile_)->SignOut(
-          signin_metrics::ABORT_SIGNIN,
-          signin_metrics::SignoutDelete::IGNORE_METRIC);
       FinishProfileSyncServiceSetup();
       break;
   }
