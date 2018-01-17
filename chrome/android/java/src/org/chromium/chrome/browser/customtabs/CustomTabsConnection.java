@@ -404,6 +404,13 @@ public class CustomTabsConnection {
             tasks.add(new Runnable() {
                 @Override
                 public void run() {
+                    // Temporary fix for https://crbug.com/797832.
+                    // TODO(lizeb): Properly fix instead of papering over the bug, this code should
+                    // not be scheduled unless startup is done. See https://crbug.com/797832.
+                    if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                                    .isStartupSuccessfullyCompleted()) {
+                        return;
+                    }
                     try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
                         WarmupManager.getInstance().createSpareWebContents();
                     }
