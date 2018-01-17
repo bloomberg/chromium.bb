@@ -88,19 +88,6 @@ static void RemoveFromOriginMap(const KURL& url) {
     OriginMap()->erase(url.GetString());
 }
 
-void BlobRegistry::RegisterBlobData(const String& uuid,
-                                    std::unique_ptr<BlobData> data) {
-  GetBlobRegistry()->RegisterBlobData(uuid, WebBlobData(std::move(data)));
-}
-
-void BlobRegistry::AddBlobDataRef(const String& uuid) {
-  GetBlobRegistry()->AddBlobDataRef(uuid);
-}
-
-void BlobRegistry::RemoveBlobDataRef(const String& uuid) {
-  GetBlobRegistry()->RemoveBlobDataRef(uuid);
-}
-
 void BlobRegistry::RegisterPublicBlobURL(SecurityOrigin* origin,
                                          const KURL& url,
                                          scoped_refptr<BlobDataHandle> handle) {

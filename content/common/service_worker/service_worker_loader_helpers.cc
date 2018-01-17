@@ -56,7 +56,6 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(
   new_request->method = request.method;
   // |blob_uuid| and |blob_size| aren't used in MojoBlobs, so just clear them.
   // The caller is responsible for setting the MojoBlob field |blob| if needed.
-  DCHECK(features::IsMojoBlobsEnabled());
   new_request->blob_uuid.clear();
   new_request->blob_size = 0;
   new_request->credentials_mode = request.fetch_credentials_mode;

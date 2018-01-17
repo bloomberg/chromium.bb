@@ -56,7 +56,6 @@ CONTENT_EXPORT extern const base::Feature kNetworkService;
 CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
-CONTENT_EXPORT extern const base::Feature kMojoBlobs;
 CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
 CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
@@ -132,8 +131,6 @@ CONTENT_EXPORT extern const base::Feature kWebNfc;
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
 #endif  // defined(OS_MACOSX)
-
-CONTENT_EXPORT bool IsMojoBlobsEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

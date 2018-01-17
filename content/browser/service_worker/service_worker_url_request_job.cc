@@ -615,14 +615,12 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   *blob_uuid = blob_builder.uuid();
   *blob_size = request_body_blob_data_handle_->size();
 
-  if (features::IsMojoBlobsEnabled()) {
-    blink::mojom::BlobPtr blob_ptr;
-    storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(
-                                  *request_body_blob_data_handle_),
-                              MakeRequest(&blob_ptr));
-    request_body_blob_handle_ =
-        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
-  }
+  blink::mojom::BlobPtr blob_ptr;
+  storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(
+                                *request_body_blob_data_handle_),
+                            MakeRequest(&blob_ptr));
+  request_body_blob_handle_ =
+      base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
 }
 
 bool ServiceWorkerURLRequestJob::ShouldRecordNavigationMetrics(

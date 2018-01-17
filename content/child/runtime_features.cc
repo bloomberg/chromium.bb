@@ -296,8 +296,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(
           features::kServiceWorkerScriptFullCodeCache));
 
-  WebRuntimeFeatures::EnableMojoBlobs(features::IsMojoBlobsEnabled());
-
   WebRuntimeFeatures::EnableNetworkService(
       base::FeatureList::IsEnabled(features::kNetworkService));
 

@@ -599,10 +599,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       path, quota_manager_proxy.get(), context->GetSpecialStoragePolicy(),
       blob_context.get(), partition->url_loader_factory_getter_.get());
 
-  if (features::IsMojoBlobsEnabled()) {
-    partition->blob_registry_ = BlobRegistryWrapper::Create(
-        blob_context, partition->filesystem_context_);
-  }
+  partition->blob_registry_ =
+      BlobRegistryWrapper::Create(blob_context, partition->filesystem_context_);
 
   partition->appcache_service_->set_url_loader_factory_getter(
       partition->url_loader_factory_getter_.get());

@@ -29,12 +29,8 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
-#include "storage/browser/blob/blob_transport_host.h"
-#include "storage/common/blob_storage/blob_item_bytes_request.h"
-#include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using RequestMemoryCallback = storage::BlobTransportHost::RequestMemoryCallback;
 using FileCreationInfo = storage::BlobMemoryController::FileCreationInfo;
 
 namespace storage {

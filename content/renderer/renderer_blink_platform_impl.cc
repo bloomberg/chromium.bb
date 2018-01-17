@@ -294,9 +294,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
     shared_bitmap_manager_ =
         RenderThreadImpl::current()->shared_bitmap_manager();
-    blob_registry_.reset(new WebBlobRegistryImpl(
-        RenderThreadImpl::current()->GetIOTaskRunner().get(),
-        base::ThreadTaskRunnerHandle::Get(), thread_safe_sender_.get()));
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
     web_idb_factory_.reset(new WebIDBFactoryImpl(
         sync_message_filter_,
         RenderThreadImpl::current()->GetIOTaskRunner().get()));

@@ -185,9 +185,6 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kMainThreadBusyScrollIntervention{
     "MainThreadBusyScrollIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Blob mojofication.
-const base::Feature kMojoBlobs{"MojoBlobs", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Mojo-based Input Event routing.
 const base::Feature kMojoInputMessages{"MojoInputMessages",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
@@ -526,10 +523,5 @@ const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsMojoBlobsEnabled() {
-  return base::FeatureList::IsEnabled(features::kMojoBlobs) ||
-         base::FeatureList::IsEnabled(features::kNetworkService);
-}
 
 }  // namespace features

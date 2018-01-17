@@ -415,12 +415,9 @@ class CacheStorageManagerTest : public testing::Test {
         blob_storage_context_->AddFinishedBlob(blob_data.get());
 
     scoped_refptr<storage::BlobHandle> blob_handle;
-    if (features::IsMojoBlobsEnabled()) {
-      blink::mojom::BlobPtr blob;
-      storage::BlobImpl::Create(std::move(blob_data_handle),
-                                MakeRequest(&blob));
-      blob_handle = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
-    }
+    blink::mojom::BlobPtr blob;
+    storage::BlobImpl::Create(std::move(blob_data_handle), MakeRequest(&blob));
+    blob_handle = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
 
     std::unique_ptr<std::vector<GURL>> url_list =
         std::make_unique<std::vector<GURL>>();

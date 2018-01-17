@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/UUID.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
@@ -180,8 +179,7 @@ struct ExpectedElement {
 
 class BlobDataHandleTest : public ::testing::Test {
  public:
-  BlobDataHandleTest()
-      : enable_mojo_blobs_(true), blob_registry_binding_(&mock_blob_registry_) {
+  BlobDataHandleTest() : blob_registry_binding_(&mock_blob_registry_) {
     blob_registry_binding_.Bind(MakeRequest(&blob_registry_ptr_));
     BlobDataHandle::SetBlobRegistryForTesting(blob_registry_ptr_.get());
   }
@@ -306,7 +304,6 @@ class BlobDataHandleTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ScopedMojoBlobsForTest enable_mojo_blobs_;
   MockBlobRegistry mock_blob_registry_;
   BlobRegistryPtr blob_registry_ptr_;
   mojo::Binding<BlobRegistry> blob_registry_binding_;

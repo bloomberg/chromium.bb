@@ -12,60 +12,28 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/common/content_features.h"
-#include "ipc/ipc_platform_file.h"
-#include "services/network/public/cpp/data_element.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
-#include "storage/common/blob_storage/blob_item_bytes_request.h"
-#include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "url/gurl.h"
 
-using network::DataElement;
 using storage::BlobStorageContext;
-using storage::BlobStorageRegistry;
-using storage::BlobStatus;
-using storage::FileSystemURL;
 
 namespace content {
 namespace {
-using network::DataElement;
-using storage::BlobStorageContext;
-using storage::BlobStorageRegistry;
-using storage::BlobStatus;
-using storage::FileSystemURL;
-
 // These are used for UMA stats, don't change.
 enum RefcountOperation {
   BDH_DECREMENT = 0,
   BDH_INCREMENT,
   BDH_TRACING_ENUM_LAST
 };
-
 } // namespace
-
-BlobDispatcherHost::HostedBlobState::HostedBlobState(
-    std::unique_ptr<storage::BlobDataHandle> handle)
-    : handle(std::move(handle)) {}
-BlobDispatcherHost::HostedBlobState::~HostedBlobState() {}
-
-BlobDispatcherHost::HostedBlobState::HostedBlobState(HostedBlobState&&) =
-    default;
-BlobDispatcherHost::HostedBlobState& BlobDispatcherHost::HostedBlobState::
-operator=(BlobDispatcherHost::HostedBlobState&&) = default;
 
 BlobDispatcherHost::BlobDispatcherHost(
     int process_id,
-    scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-    scoped_refptr<storage::FileSystemContext> file_system_context)
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : BrowserMessageFilter(BlobMsgStart),
       process_id_(process_id),
-      file_system_context_(std::move(file_system_context)),
       blob_storage_context_(std::move(blob_storage_context)) {}
 
 BlobDispatcherHost::~BlobDispatcherHost() {
@@ -75,241 +43,16 @@ BlobDispatcherHost::~BlobDispatcherHost() {
 void BlobDispatcherHost::OnChannelClosing() {
   ClearHostFromBlobStorageContext();
   public_blob_urls_.clear();
-  blobs_inuse_map_.clear();
 }
 
 bool BlobDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  // Note: The only time a renderer sends a blob status message is to cancel.
-  if (features::IsMojoBlobsEnabled()) {
-    IPC_BEGIN_MESSAGE_MAP(BlobDispatcherHost, message)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterPublicURL,
-                          OnRegisterPublicBlobURL)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_RevokePublicURL, OnRevokePublicBlobURL)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-  } else {
-    IPC_BEGIN_MESSAGE_MAP(BlobDispatcherHost, message)
-      IPC_MESSAGE_HANDLER(BlobStorageMsg_RegisterBlob, OnRegisterBlob)
-      IPC_MESSAGE_HANDLER(BlobStorageMsg_MemoryItemResponse,
-                          OnMemoryItemResponse)
-      IPC_MESSAGE_HANDLER(BlobStorageMsg_SendBlobStatus, OnCancelBuildingBlob)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_IncrementRefCount,
-                          OnIncrementBlobRefCount)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_DecrementRefCount,
-                          OnDecrementBlobRefCount)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterPublicURL,
-                          OnRegisterPublicBlobURL)
-      IPC_MESSAGE_HANDLER(BlobHostMsg_RevokePublicURL, OnRevokePublicBlobURL)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-  }
+  IPC_BEGIN_MESSAGE_MAP(BlobDispatcherHost, message)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterPublicURL, OnRegisterPublicBlobURL)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RevokePublicURL, OnRevokePublicBlobURL)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void BlobDispatcherHost::OnRegisterBlob(
-    const std::string& uuid,
-    const std::string& content_type,
-    const std::string& content_disposition,
-    const std::vector<network::DataElement>& descriptions) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BlobStorageContext* context = this->context();
-  if (uuid.empty() || context->registry().HasEntry(uuid) ||
-      transport_host_.IsBeingBuilt(uuid)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_UUID_REGISTERED);
-    return;
-  }
-
-  DCHECK(!base::ContainsKey(blobs_inuse_map_, uuid));
-
-  ChildProcessSecurityPolicyImpl* security_policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  for (const DataElement& item : descriptions) {
-    // For each source object that provides the data for the blob, ensure that
-    // this process has permission to read it.
-    switch (item.type()) {
-      case DataElement::TYPE_FILE_FILESYSTEM: {
-        FileSystemURL filesystem_url(
-            file_system_context_->CrackURL(item.filesystem_url()));
-        if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
-            !security_policy->CanReadFileSystemFile(process_id_,
-                                                    filesystem_url)) {
-          DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
-                   << "): Invalid or prohibited FileSystem URL: "
-                   << filesystem_url.DebugString();
-          HostedBlobState hosted_state(context->AddBrokenBlob(
-              uuid, content_type, content_disposition,
-              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE));
-          blobs_inuse_map_.insert(
-              std::make_pair(uuid, std::move(hosted_state)));
-          SendFinalBlobStatus(uuid,
-                              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
-          return;
-        }
-        break;
-      }
-      case DataElement::TYPE_FILE: {
-        if (!security_policy->CanReadFile(process_id_, item.path())) {
-          DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
-                   << "): Invalid or prohibited FilePath: "
-                   << item.path().value();
-          HostedBlobState hosted_state(context->AddBrokenBlob(
-              uuid, content_type, content_disposition,
-              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE));
-          blobs_inuse_map_.insert(
-              std::make_pair(uuid, std::move(hosted_state)));
-          SendFinalBlobStatus(uuid,
-                              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
-          return;
-        }
-        break;
-      }
-      case DataElement::TYPE_BLOB:
-      case DataElement::TYPE_BYTES_DESCRIPTION:
-      case DataElement::TYPE_BYTES: {
-        // Bytes are already in hand; no need to check read permission.
-        // TODO(nick): For TYPE_BLOB, can we actually get here for blobs
-        // originally created by other processes? If so, is that cool?
-        break;
-      }
-      case DataElement::TYPE_RAW_FILE:
-      case DataElement::TYPE_UNKNOWN:
-      case DataElement::TYPE_DATA_PIPE:
-      case DataElement::TYPE_DISK_CACHE_ENTRY: {
-        NOTREACHED();  // Should have been caught by IPC deserialization.
-        break;
-      }
-    }
-  }
-
-  HostedBlobState hosted_state(transport_host_.StartBuildingBlob(
-      uuid, content_type, content_disposition, descriptions, context,
-      file_system_context_,
-      base::Bind(&BlobDispatcherHost::SendMemoryRequest, base::Unretained(this),
-                 uuid),
-      base::Bind(&BlobDispatcherHost::SendFinalBlobStatus,
-                 base::Unretained(this), uuid)));
-  blobs_inuse_map_.insert(std::make_pair(uuid, std::move(hosted_state)));
-}
-
-void BlobDispatcherHost::OnMemoryItemResponse(
-    const std::string& uuid,
-    const std::vector<storage::BlobItemBytesResponse>& responses) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (uuid.empty()) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_CONSTRUCTION_FAILED);
-    return;
-  }
-  BlobStorageContext* context = this->context();
-  const storage::BlobEntry* entry = context->registry().GetEntry(uuid);
-  if (!entry || BlobStatusIsError(entry->status())) {
-    // We ignore messages for blobs that don't exist to handle the case where
-    // the renderer de-refs a blob that we're still constructing, and there are
-    // no references to that blob. We ignore broken as well, in the case where
-    // we decided to break a blob after sending the memory request.
-    // Note: if a blob is broken, then it can't be in the transport_host.
-    // Second, if the last dereference of the blob happened on a different host,
-    // then we still haven't gotten rid of the 'building' state in the original
-    // host. So we call cancel, and send the message just in case that happens.
-    if (transport_host_.IsBeingBuilt(uuid)) {
-      transport_host_.CancelBuildingBlob(
-          uuid, BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING, context);
-    }
-    return;
-  }
-  if (!transport_host_.IsBeingBuilt(uuid)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_CONSTRUCTION_FAILED);
-    return;
-  }
-  transport_host_.OnMemoryResponses(uuid, responses, context);
-}
-
-void BlobDispatcherHost::OnCancelBuildingBlob(const std::string& uuid,
-                                              const storage::BlobStatus code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (uuid.empty()) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_CONSTRUCTION_FAILED);
-    return;
-  }
-  BlobStorageContext* context = this->context();
-  const storage::BlobEntry* entry = context->registry().GetEntry(uuid);
-  if (!entry || BlobStatusIsError(entry->status())) {
-    // We ignore messages for blobs that don't exist to handle the case where
-    // the renderer de-refs a blob that we're still constructing, and there are
-    // no references to that blob. We ignore broken as well, in the case where
-    // we decided to break a blob and the renderer also decided to cancel.
-    // Note: if a blob is broken, then it can't be in the transport_host.
-    // Second, if the last dereference of the blob happened on a different host,
-    // then we still haven't gotten rid of the 'building' state in the original
-    // host. So we call cancel just in case this happens.
-    if (transport_host_.IsBeingBuilt(uuid)) {
-      transport_host_.CancelBuildingBlob(
-          uuid, BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING, context);
-    }
-    return;
-  }
-  if (!transport_host_.IsBeingBuilt(uuid) ||
-      !storage::BlobStatusIsError(code)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_CONSTRUCTION_FAILED);
-    return;
-  }
-  VLOG(1) << "Blob construction of " << uuid << " cancelled by renderer. "
-          << " Reason: " << static_cast<int>(code) << ".";
-  transport_host_.CancelBuildingBlob(uuid, code, context);
-}
-
-void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BlobStorageContext* context = this->context();
-  if (uuid.empty()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
-    return;
-  }
-  if (!context->registry().HasEntry(uuid)) {
-    DVLOG(1) << "BlobDispatcherHost::OnIncrementBlobRefCount(" << uuid
-             << "): Unknown UUID.";
-    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_INCREMENT,
-                              BDH_TRACING_ENUM_LAST);
-    return;
-  }
-  auto state_it = blobs_inuse_map_.find(uuid);
-  if (state_it != blobs_inuse_map_.end()) {
-    state_it->second.refcount += 1;
-    return;
-  }
-  blobs_inuse_map_.insert(std::make_pair(
-      uuid, HostedBlobState(context->GetBlobDataFromUUID(uuid))));
-}
-
-void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (uuid.empty()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
-    return;
-  }
-  auto state_it = blobs_inuse_map_.find(uuid);
-  if (state_it == blobs_inuse_map_.end()) {
-    DVLOG(1) << "BlobDispatcherHost::OnDecrementBlobRefCount(" << uuid
-             << "): Unknown UUID.";
-    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_DECREMENT,
-                              BDH_TRACING_ENUM_LAST);
-    return;
-  }
-  state_it->second.refcount -= 1;
-  if (state_it->second.refcount == 0) {
-    blobs_inuse_map_.erase(state_it);
-
-    // If we're being built still and we don't have any other references, cancel
-    // construction.
-    BlobStorageContext* context = this->context();
-    if (transport_host_.IsBeingBuilt(uuid) &&
-        !context->registry().HasEntry(uuid)) {
-      transport_host_.CancelBuildingBlob(
-          uuid, BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING, context);
-    }
-  }
 }
 
 void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
@@ -335,7 +78,7 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
     return;
   }
   BlobStorageContext* context = this->context();
-  if (!IsInUseInHost(uuid) || context->registry().IsURLMapped(public_url)) {
+  if (context->registry().IsURLMapped(public_url)) {
     DVLOG(1) << "BlobDispatcherHost::OnRegisterPublicBlobURL("
              << public_url.spec() << ", " << uuid << "): Invalid url or uuid.";
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
@@ -368,38 +111,6 @@ storage::BlobStorageContext* BlobDispatcherHost::context() {
   return blob_storage_context_->context();
 }
 
-void BlobDispatcherHost::SendMemoryRequest(
-    const std::string& uuid,
-    std::vector<storage::BlobItemBytesRequest> requests,
-    std::vector<base::SharedMemoryHandle> memory_handles,
-    std::vector<base::File> files) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::vector<IPC::PlatformFileForTransit> file_handles;
-  for (base::File& file : files) {
-    file_handles.push_back(IPC::TakePlatformFileForTransit(std::move(file)));
-  }
-  Send(new BlobStorageMsg_RequestMemoryItem(uuid, requests, memory_handles,
-                                            file_handles));
-}
-
-void BlobDispatcherHost::SendFinalBlobStatus(const std::string& uuid,
-                                             BlobStatus status) {
-  DCHECK(!BlobStatusIsPending(status));
-  if (storage::BlobStatusIsBadIPC(status)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_CONSTRUCTION_FAILED);
-  }
-  Send(new BlobStorageMsg_SendBlobStatus(uuid, status));
-}
-
-bool BlobDispatcherHost::IsInUseInHost(const std::string& uuid) {
-  // IsInUseInHost is not a security check, as renderers can arbitrarily start
-  // using blobs by sending an IncrementRefCount IPC. Furthermore with mojo
-  // blobs it doesn't make sense anymore to try to decide if a blob is in use in
-  // a process, so just always return true in that case.
-  return features::IsMojoBlobsEnabled() ||
-         base::ContainsKey(blobs_inuse_map_, uuid);
-}
-
 bool BlobDispatcherHost::IsUrlRegisteredInHost(const GURL& blob_url) {
   return base::ContainsKey(public_blob_urls_, blob_url);
 }
@@ -409,9 +120,6 @@ void BlobDispatcherHost::ClearHostFromBlobStorageContext() {
   for (const auto& url : public_blob_urls_) {
     context->RevokePublicBlobURL(url);
   }
-  // Keep the blobs alive for the BlobTransportHost call.
-  transport_host_.CancelAll(context);
-  blobs_inuse_map_.clear();
 }
 
 }  // namespace content

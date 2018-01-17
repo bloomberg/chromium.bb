@@ -17,13 +17,6 @@ class MockWebBlobRegistryImpl : public blink::WebBlobRegistry {
   MockWebBlobRegistryImpl();
   ~MockWebBlobRegistryImpl() override;
 
-  void RegisterBlobData(const blink::WebString& uuid,
-                        const blink::WebBlobData& data) override;
-  std::unique_ptr<Builder> CreateBuilder(
-      const blink::WebString& uuid,
-      const blink::WebString& contentType) override;
-  void AddBlobDataRef(const blink::WebString& uuid) override;
-  void RemoveBlobDataRef(const blink::WebString& uuid) override;
   void RegisterPublicBlobURL(const blink::WebURL&,
                              const blink::WebString& uuid) override;
   void RevokePublicBlobURL(const blink::WebURL&) override;

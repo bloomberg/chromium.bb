@@ -32,68 +32,17 @@
 #define WebBlobRegistry_h
 
 #include "WebCommon.h"
-#include "WebThreadSafeData.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-
-#include <memory>
 
 namespace blink {
 
-class WebBlobData;
 class WebString;
 class WebURL;
 
-// Acts as singleton facade for all Blob interactions ouside of blink.  This
-// includes blob:
-// * creation,
-// * reference counting,
-// * publishing, and
-// * streaming.
+// Acts as singleton facade for all Blob URL interactions ouside of blink.
 class WebBlobRegistry {
  public:
-  // Builder class for creating blobs. The blob is built on calling the
-  // Build() method, where IPCs are sent to the browser.
-  // Preconditions:
-  // * Not meant to be used on multiple threads.
-  // * Must not be kept alive longer than creator WebBlobRegistry (shouldn't
-  //   be an issue because of the singleton nature of the WebBlobRegistry)
-  // * Append.* methods are invalid after Build() is called.
-  class Builder {
-   public:
-    virtual ~Builder() = default;
-    virtual void AppendData(const WebThreadSafeData&) = 0;
-    virtual void AppendFile(const WebString& path,
-                            uint64_t offset,
-                            uint64_t length,
-                            double expected_modification_time) = 0;
-    // Calling this method ensures the given blob lives for the creation of
-    // the new blob.
-    virtual void AppendBlob(const WebString& uuid,
-                            uint64_t offset,
-                            uint64_t length) = 0;
-    virtual void AppendFileSystemURL(const WebURL&,
-                                     uint64_t offset,
-                                     uint64_t length,
-                                     double expected_modification_time) = 0;
-
-    // Builds the blob. All calls to Append* are invalid after calling this
-    // method.
-    virtual void Build() = 0;
-  };
-
   virtual ~WebBlobRegistry() = default;
 
-  // TODO(dmurph): Deprecate and migrate to CreateBuilder
-  virtual void RegisterBlobData(const WebString& uuid, const WebBlobData&) {}
-
-  // The blob is finalized (and sent to the browser) on calling Build() on the
-  // Builder object.
-  virtual std::unique_ptr<Builder> CreateBuilder(
-      const WebString& uuid,
-      const WebString& content_type) = 0;
-
-  virtual void AddBlobDataRef(const WebString& uuid) {}
-  virtual void RemoveBlobDataRef(const WebString& uuid) {}
   virtual void RegisterPublicBlobURL(const WebURL&, const WebString& uuid) {}
   virtual void RevokePublicBlobURL(const WebURL&) {}
 };

@@ -56,7 +56,6 @@ scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
 }
 
 BlobRegistryWrapper::BlobRegistryWrapper() {
-  DCHECK(features::IsMojoBlobsEnabled());
 }
 
 void BlobRegistryWrapper::Bind(int process_id,
