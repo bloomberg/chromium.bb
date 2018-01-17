@@ -28,54 +28,54 @@ namespace {
 
 // For temporary errors (HTTP 500, RST, etc).
 const net::BackoffEntry::Policy kRetrySoonPolicy = {
-  // Number of initial errors to ignore before starting to back off.
-  0,
+    // Number of initial errors to ignore before starting to back off.
+    0,
 
-  // Initial delay in ms: 60 seconds.
-  1000 * 60,
+    // Initial delay in ms: 15 seconds.
+    1000 * 15,
 
-  // Factor by which the waiting time is multiplied.
-  2,
+    // Factor by which the waiting time is multiplied.
+    2,
 
-  // Fuzzing percentage; this spreads delays randomly between 80% and 100%
-  // of the calculated time.
-  0.20,
+    // Fuzzing percentage; this spreads delays randomly between 80% and 100%
+    // of the calculated time.
+    0.20,
 
-  // Maximum delay in ms: 12 hours.
-  1000 * 60 * 60 * 12,
+    // Maximum delay in ms: 12 hours.
+    1000 * 60 * 60 * 12,
 
-  // When to discard an entry: never.
-  -1,
+    // When to discard an entry: never.
+    -1,
 
-  // |always_use_initial_delay|; false means that the initial delay is
-  // applied after the first error, and starts backing off from there.
-  false,
+    // |always_use_initial_delay|; false means that the initial delay is
+    // applied after the first error, and starts backing off from there.
+    false,
 };
 
 // For other errors (request failed, server errors).
 const net::BackoffEntry::Policy kRetryLaterPolicy = {
-  // Number of initial errors to ignore before starting to back off.
-  0,
+    // Number of initial errors to ignore before starting to back off.
+    0,
 
-  // Initial delay in ms: 1 hour.
-  1000 * 60 * 60,
+    // Initial delay in ms: 1 minute.
+    1000 * 60,
 
-  // Factor by which the waiting time is multiplied.
-  2,
+    // Factor by which the waiting time is multiplied.
+    2,
 
-  // Fuzzing percentage; this spreads delays randomly between 80% and 100%
-  // of the calculated time.
-  0.20,
+    // Fuzzing percentage; this spreads delays randomly between 80% and 100%
+    // of the calculated time.
+    0.20,
 
-  // Maximum delay in ms: 12 hours.
-  1000 * 60 * 60 * 12,
+    // Maximum delay in ms: 12 hours.
+    1000 * 60 * 60 * 12,
 
-  // When to discard an entry: never.
-  -1,
+    // When to discard an entry: never.
+    -1,
 
-  // |always_use_initial_delay|; false means that the initial delay is
-  // applied after the first error, and starts backing off from there.
-  false,
+    // |always_use_initial_delay|; false means that the initial delay is
+    // applied after the first error, and starts backing off from there.
+    false,
 };
 
 // When the data fails validation (maybe because the policy URL and the data
