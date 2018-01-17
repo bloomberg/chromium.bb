@@ -54,8 +54,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
     kSelectInsertedText = 1 << 0,
     kKillRing = 1 << 1,
     kRetainAutocorrectionIndicator = 1 << 2,
-    kPreventSpellChecking = 1 << 3,
-    kSmartDelete = 1 << 4
+    kSmartDelete = 1 << 3
   };
   typedef unsigned Options;
 
