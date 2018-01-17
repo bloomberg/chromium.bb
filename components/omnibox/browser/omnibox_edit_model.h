@@ -117,8 +117,8 @@ class OmniboxEditModel {
   // Returns the match for the current text. If the user has not edited the text
   // this is the match corresponding to the permanent text. Returns the
   // alternate nav URL, if |alternate_nav_url| is non-NULL and there is such a
-  // URL.
-  AutocompleteMatch CurrentMatch(GURL* alternate_nav_url) const;
+  // URL. Virtual for testing.
+  virtual AutocompleteMatch CurrentMatch(GURL* alternate_nav_url) const;
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.
@@ -302,7 +302,7 @@ class OmniboxEditModel {
   bool is_pasting() const { return paste_state_ == PASTING; }
 
   // Called when the user presses up or down.  |count| is a repeat count,
-  // negative for moving up, positive for moving down.
+  // negative for moving up, positive for moving down. Virtual for testing.
   virtual void OnUpOrDownKeyPressed(int count);
 
   // Called when any relevant data changes.  This rolls together several
@@ -377,7 +377,8 @@ class OmniboxEditModel {
 
   // Returns true if the popup exists and is open.  (This is a convenience
   // wrapper for the benefit of test code, which may not have a popup model.)
-  bool PopupIsOpen() const;
+  // Virtual for testing.
+  virtual bool PopupIsOpen() const;
 
   // Called whenever user_text_ should change.
   void InternalSetUserText(const base::string16& text);
