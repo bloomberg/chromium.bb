@@ -84,6 +84,7 @@ class PageHandler : public DevToolsDomainHandler,
   Response Enable() override;
   Response Disable() override;
 
+  Response Crash() override;
   Response Reload(Maybe<bool> bypassCache,
                   Maybe<std::string> script_to_evaluate_on_load) override;
   void Navigate(const std::string& url,
