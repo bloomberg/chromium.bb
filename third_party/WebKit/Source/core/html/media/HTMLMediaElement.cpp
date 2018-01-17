@@ -3925,6 +3925,7 @@ void HTMLMediaElement::TraceWrappers(
   visitor->TraceWrappers(audio_tracks_);
   visitor->TraceWrappers(text_tracks_);
   HTMLElement::TraceWrappers(visitor);
+  Supplementable<HTMLMediaElement>::TraceWrappers(visitor);
 }
 
 void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {

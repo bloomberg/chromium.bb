@@ -179,6 +179,7 @@ void ResizeObserver::Trace(blink::Visitor* visitor) {
 void ResizeObserver::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink

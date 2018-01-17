@@ -74,6 +74,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
 
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
   static void ThrowReadOnly(ExceptionState&);

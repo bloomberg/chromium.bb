@@ -122,6 +122,7 @@ void ScriptCustomElementDefinition::TraceWrappers(
   visitor->TraceWrappers(disconnected_callback_.Cast<v8::Value>());
   visitor->TraceWrappers(adopted_callback_.Cast<v8::Value>());
   visitor->TraceWrappers(attribute_changed_callback_.Cast<v8::Value>());
+  CustomElementDefinition::TraceWrappers(visitor);
 }
 
 HTMLElement* ScriptCustomElementDefinition::HandleCreateElementSyncException(

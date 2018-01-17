@@ -60,6 +60,7 @@ void MojoWatcher::Trace(blink::Visitor* visitor) {
 }
 
 void MojoWatcher::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  ScriptWrappable::TraceWrappers(visitor);
   visitor->TraceWrappers(callback_);
 }
 

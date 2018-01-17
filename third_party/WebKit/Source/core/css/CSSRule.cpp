@@ -73,6 +73,7 @@ void CSSRule::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappersWithManualWriteBarrier(parent_rule_);
   else
     visitor->TraceWrappersWithManualWriteBarrier(parent_style_sheet_);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink
