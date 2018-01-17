@@ -618,8 +618,10 @@ MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
     case HTMLMediaElement::kNetworkLoading:
       if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
         return ControlsState::kLoadingMetadata;
-      if (!MediaElement().paused())
+      if (!MediaElement().paused() &&
+          MediaElement().getReadyState() != HTMLMediaElement::kHaveEnoughData) {
         return ControlsState::kBuffering;
+      }
       break;
     case HTMLMediaElement::kNetworkIdle:
       if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
