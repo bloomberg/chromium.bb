@@ -3028,10 +3028,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
 }
 
-LayoutPoint PaintLayer::Location() const {
-#if DCHECK_IS_ON()
-  DCHECK(!needs_position_update_);
-#endif
+LayoutPoint PaintLayer::LocationInternal() const {
   LayoutPoint result(location_);
   PaintLayer* containing_layer = ContainingLayer();
   if (containing_layer && containing_layer->IsRootLayer() &&
