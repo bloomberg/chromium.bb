@@ -16,8 +16,8 @@ public interface VrShell {
     /**
      * Performs native VrShell initialization.
      */
-    void initializeNative(
-            Tab currentTab, boolean forWebVr, boolean webVrAutopresentationExpected, boolean inCct);
+    void initializeNative(Tab currentTab, boolean forWebVr, boolean webVrAutopresentationExpected,
+            boolean inCct, boolean browsingDisabled);
 
     /**
      * Pauses VrShell.

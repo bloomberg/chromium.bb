@@ -115,7 +115,7 @@ public class VrTestFramework {
             throws InterruptedException {
         int result = mRule.loadUrl(url, timeoutSec);
         Assert.assertTrue("JavaScript initialization successful",
-                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_SHORT_MS,
+                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
                         mRule.getActivity().getActivityTab().getWebContents()));
         return result;
     }
