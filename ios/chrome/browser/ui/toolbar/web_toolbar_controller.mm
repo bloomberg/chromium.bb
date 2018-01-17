@@ -1925,10 +1925,6 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
   [self.dispatcher preloadVoiceSearch];
 }
 
-- (void)navigateToMemexTabSwitcher {
-  // no-op since WTC won't support the memex Tab Switcher.
-}
-
 #pragma mark - UIViewController
 
 - (void)viewSafeAreaInsetsDidChange {

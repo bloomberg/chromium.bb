@@ -12,10 +12,6 @@
 
 // Triggers the animation of the tools menu button.
 - (void)triggerToolsMenuButtonAnimation;
-
-// Navigates to the Memex tab switcher.
-// TODO(crbug.com/799601): Delete this once its not needed.
-- (void)navigateToMemexTabSwitcher;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_TOOLBAR_COMMANDS_H_

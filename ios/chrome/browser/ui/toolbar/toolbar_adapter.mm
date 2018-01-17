@@ -92,10 +92,6 @@
   [self.toolbarCoordinator resetToolbarAfterSideSwipeSnapshot];
 }
 
-- (void)navigateToMemexTabSwitcher {
-  [self.toolbarCoordinator navigateToMemexTabSwitcher];
-}
-
 #pragma mark - Abstract Toolbar
 
 - (void)setShareButtonEnabled:(BOOL)enabled {

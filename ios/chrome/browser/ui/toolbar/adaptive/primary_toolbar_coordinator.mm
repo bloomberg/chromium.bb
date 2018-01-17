@@ -98,6 +98,24 @@
   return omniboxViewIOS->IsPopupOpen();
 }
 
+#pragma mark - ToolbarCoordinating
+
+- (void)updateToolbarState {
+}
+
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+}
+
+#pragma mark - ToolbarCommands
+
+- (void)contractToolbar {
+  // TODO(crbug.com/801082): Implement that.
+}
+
+- (void)triggerToolsMenuButtonAnimation {
+  // TODO(crbug.com/801083): Implement that.
+}
+
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {

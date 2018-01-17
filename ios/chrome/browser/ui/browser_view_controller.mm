@@ -4691,6 +4691,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (void)navigateToMemexTabSwitcher {
+  // TODO(crbug.com/799601): Delete this once its not needed.
+  const GURL memexURL("https://chrome-memex.appspot.com");
+  [self loadURL:memexURL
+               referrer:web::Referrer()
+             transition:ui::PAGE_TRANSITION_LINK
+      rendererInitiated:NO];
+}
+
 #pragma mark - ToolbarOwner (Public)
 
 - (CGFloat)toolbarHeight {
