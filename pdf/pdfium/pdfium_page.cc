@@ -305,7 +305,8 @@ PDFiumPage::Area PDFiumPage::FormTypeToArea(int form_type) {
     case FPDF_FORMFIELD_TEXTFIELD:
 #if defined(PDF_ENABLE_XFA)
     // TODO(bug_353450): figure out selection and copying for XFA fields.
-    case FPDF_FORMFIELD_XFA:
+    case FPDF_FORMFIELD_XFA_COMBOBOX:
+    case FPDF_FORMFIELD_XFA_TEXTFIELD:
 #endif
       return FORM_TEXT_AREA;
     default:

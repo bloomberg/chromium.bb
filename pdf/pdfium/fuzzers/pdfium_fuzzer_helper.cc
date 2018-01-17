@@ -184,7 +184,7 @@ void PDFiumFuzzerHelper::RenderPdf(const char* pBuf, size_t len) {
   if (!OnFormFillEnvLoaded(doc.get()))
     return;
 
-  FPDF_SetFormFieldHighlightColor(form.get(), 0, 0xFFE4DD);
+  FPDF_SetFormFieldHighlightColor(form.get(), FPDF_FORMFIELD_UNKNOWN, 0xFFE4DD);
   FPDF_SetFormFieldHighlightAlpha(form.get(), 100);
   FORM_DoDocumentJSAction(form.get());
   FORM_DoDocumentOpenAction(form.get());
