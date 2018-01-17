@@ -710,6 +710,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   TaskRunnerTimer<WebGLRenderingContextBase> dispatch_context_lost_event_timer_;
   bool restore_allowed_;
   TaskRunnerTimer<WebGLRenderingContextBase> restore_timer_;
+  scoped_refptr<WebTaskRunner> task_runner_;
 
   bool marked_canvas_dirty_;
   bool animation_frame_in_progress_;
@@ -1696,6 +1697,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool IsPaintable() const final { return GetDrawingBuffer(); }
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) const;
+  void HoldReferenceToDrawingBuffer(DrawingBuffer*);
 };
 
 // TODO(fserb): remove this.

@@ -996,6 +996,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       restore_timer_(task_runner,
                      this,
                      &WebGLRenderingContextBase::MaybeRestoreContext),
+      task_runner_(task_runner),
       generated_image_cache_(4),
       synthesized_errors_to_console_(true),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
@@ -6304,8 +6305,25 @@ void WebGLRenderingContextBase::LoseContextImpl(
 
   RemoveAllCompressedTextureFormats();
 
-  if (mode != kRealLostContext)
-    DestroyContext();
+  // If the DrawingBuffer is destroyed during a real lost context event it
+  // causes the CommandBufferProxy that the DrawingBuffer owns, which is what
+  // issued the lost context event in the first place, to be destroyed before
+  // the event is done being handled. This causes a crash when an outstanding
+  // AutoLock goes out of scope. To avoid this, we create a no-op task to hold
+  // a reference to the DrawingBuffer until this function is done executing.
+  if (mode == kRealLostContext) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        WTF::Bind(&WebGLRenderingContextBase::HoldReferenceToDrawingBuffer,
+                  WrapWeakPersistent(this), WTF::RetainedRef(drawing_buffer_)));
+  }
+
+  // Always destroy the context, regardless of context loss mode. This will
+  // set drawing_buffer_ to null, but it won't actually be destroyed until the
+  // above task is executed. drawing_buffer_ is recreated in the event that the
+  // context is restored by MaybeRestoreContext. If this was a real lost context
+  // the OpenGL calls done during DrawingBuffer destruction will be ignored.
+  DestroyContext();
 
   ConsoleDisplayPreference display =
       (mode == kRealLostContext) ? kDisplayInConsole : kDontDisplayInConsole;
@@ -6322,6 +6340,10 @@ void WebGLRenderingContextBase::LoseContextImpl(
   // Always defer the dispatch of the context lost event, to implement
   // the spec behavior of queueing a task.
   dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+}
+
+void WebGLRenderingContextBase::HoldReferenceToDrawingBuffer(DrawingBuffer*) {
+  // This function intentionally left blank.
 }
 
 void WebGLRenderingContextBase::ForceRestoreContext() {
@@ -7513,13 +7535,9 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     }
   }
 
-  // If the context was lost due to RealLostContext, we need to destroy the old
-  // DrawingBuffer before creating new DrawingBuffer to ensure resource budget
-  // enough.
-  if (GetDrawingBuffer()) {
-    drawing_buffer_->BeginDestruction();
-    drawing_buffer_ = nullptr;
-  }
+  // Drawing buffer should have aready been destroyed during context loss to
+  // ensure its resources were freed.
+  DCHECK(!GetDrawingBuffer());
 
   auto execution_context = Host()->GetTopExecutionContext();
   Platform::ContextAttributes attributes = ToPlatformContextAttributes(
