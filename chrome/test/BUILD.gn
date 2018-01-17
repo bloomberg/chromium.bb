@@ -687,6 +687,7 @@ test("browser_tests") {
       # files will probably not be applicable.
       "../browser/speech/extension_api/tts_extension_apitest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
+      "../browser/speech/speech_recognizer_browsertest.cc",
       "../browser/spellchecker/spellcheck_mac_view_browsertest.mm",
       "../browser/spellchecker/spellcheck_service_browsertest.cc",
       "../browser/ssl/cert_verifier_browser_test.cc",
@@ -1912,7 +1913,6 @@ test("browser_tests") {
         "../browser/ui/app_list/app_list_controller_browsertest.cc",
         "../browser/ui/app_list/app_list_service_impl_browsertest.cc",
         "../browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc",
-        "../browser/ui/app_list/speech_recognizer_browsertest.cc",
       ]
     }
     if (enable_service_discovery) {

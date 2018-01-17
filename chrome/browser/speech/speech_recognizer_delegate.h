@@ -2,19 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_DELEGATE_H_
-#define CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_DELEGATE_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_DELEGATE_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_DELEGATE_H_
 
 #include <stdint.h>
 #include <string>
 
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/strings/string16.h"
 
-namespace app_list {
+// Requires cleanup. See crbug.com/800374.
+enum SpeechRecognizerState {
+  SPEECH_RECOGNIZER_OFF = 0,
+  SPEECH_RECOGNIZER_READY,
+  SPEECH_RECOGNIZER_RECOGNIZING,
+  SPEECH_RECOGNIZER_IN_SPEECH,
+  SPEECH_RECOGNIZER_STOPPING,
+  SPEECH_RECOGNIZER_NETWORK_ERROR,
+};
 
-// Delegate for the app list speech recognizer. All methods are called from the
-// UI thread.
+// Delegate for speech recognizer. All methods are called from the UI
+// thread.
 class SpeechRecognizerDelegate {
  public:
   // Receive a speech recognition result. |is_final| indicated whether the
@@ -27,7 +34,7 @@ class SpeechRecognizerDelegate {
 
   // Invoked when the state of speech recognition is changed.
   virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) = 0;
+      SpeechRecognizerState new_state) = 0;
 
   // Get the OAuth2 scope and token to pass to the speech recognizer. Does not
   // modify the arguments if no auth token is available or allowed.
@@ -38,6 +45,4 @@ class SpeechRecognizerDelegate {
   virtual ~SpeechRecognizerDelegate() {}
 };
 
-}  // namespace app_list
-
-#endif  // CHROME_BROWSER_UI_APP_LIST_SPEECH_RECOGNIZER_DELEGATE_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_DELEGATE_H_

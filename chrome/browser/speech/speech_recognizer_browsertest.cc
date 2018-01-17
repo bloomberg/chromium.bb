@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/speech_recognizer.h"
+#include "chrome/browser/speech/speech_recognizer.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/speech_recognizer_delegate.h"
+#include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -25,8 +25,6 @@
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
-namespace app_list {
-
 class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
  public:
   MockSpeechRecognizerDelegate() : weak_factory_(this) {}
@@ -37,7 +35,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
 
   MOCK_METHOD2(OnSpeechResult, void(const base::string16&, bool));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
-  MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognitionState));
+  MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerState));
   MOCK_METHOD2(GetSpeechAuthParameters, void(std::string*, std::string*));
 
  private:
@@ -72,19 +70,14 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AppListSpeechRecognizerBrowserTest, RecognizeSpeech) {
   SpeechRecognizer recognizer(mock_speech_delegate_->GetWeakPtr(),
-                              browser()->profile()->GetRequestContext(),
-                              "en");
+                              browser()->profile()->GetRequestContext(), "en");
 
   base::RunLoop run_loop;
   EXPECT_CALL(*mock_speech_delegate_,
               OnSpeechResult(base::ASCIIToUTF16("Pictures of the moon"), true));
   EXPECT_CALL(*mock_speech_delegate_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY))
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   recognizer.Start(nullptr);
   run_loop.Run();
 }
-
-}  // namespace app_list
-
-

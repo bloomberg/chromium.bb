@@ -682,5 +682,10 @@ bool IsNetworkSettingsConfigEnabled() {
       chromeos::switches::kDisableNetworkSettingsConfig);
 }
 
+bool AreExperimentalAccessibilityFeaturesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableExperimentalAccessibilityFeatures);
+}
+
 }  // namespace switches
 }  // namespace chromeos

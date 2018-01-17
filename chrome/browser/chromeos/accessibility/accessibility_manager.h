@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
 #include <set>
+#include <string>
 
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
@@ -27,6 +28,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
+class DictationChromeos;
 class Profile;
 
 namespace gfx {
@@ -300,6 +302,9 @@ class AccessibilityManager
   // Set the keys to be captured by Switch Access.
   void SetSwitchAccessKeys(const std::set<int>& key_codes);
 
+  // Starts or stops dictation (type what you speak).
+  void ToggleDictation();
+
  protected:
   AccessibilityManager();
   ~AccessibilityManager() override;
@@ -440,6 +445,8 @@ class AccessibilityManager
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
   bool app_terminating_ = false;
+
+  std::unique_ptr<DictationChromeos> dictation_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
+#include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -1114,6 +1116,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
 
+  // Clear all dictation state on profile change.
+  dictation_.reset();
+
   if (profile) {
     // TODO(yoshiki): Move following code to PrefHandler.
     pref_change_registrar_.reset(new PrefChangeRegistrar);
@@ -1532,6 +1537,16 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
 void AccessibilityManager::SetSwitchAccessKeys(const std::set<int>& key_codes) {
   if (switch_access_enabled_)
     switch_access_event_handler_->SetKeysToCapture(key_codes);
+}
+
+void AccessibilityManager::ToggleDictation() {
+  if (!profile_)
+    return;
+
+  if (!dictation_.get())
+    dictation_ = std::make_unique<DictationChromeos>(profile_);
+
+  dictation_->OnToggleDictation();
 }
 
 }  // namespace chromeos

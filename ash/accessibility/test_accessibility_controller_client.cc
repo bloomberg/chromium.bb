@@ -41,6 +41,8 @@ void TestAccessibilityControllerClient::HandleAccessibilityGesture(
   last_a11y_gesture_ = gesture;
 }
 
+void TestAccessibilityControllerClient::ToggleDictation() {}
+
 int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
   int32_t tmp = sound_key_;
   sound_key_ = -1;

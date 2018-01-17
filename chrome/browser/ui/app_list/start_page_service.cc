@@ -23,8 +23,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/speech_auth_helper.h"
-#include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/zoom/zoom_controller.h"
@@ -58,7 +59,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/app_list/app_list_switches.h"
-#include "chromeos/audio/cras_audio_handler.h"
 
 using base::RecordAction;
 using base::UserMetricsAction;
@@ -103,9 +103,9 @@ const net::BackoffEntry::Policy kDoodleBackoffPolicy = {
   false,
 };
 
-bool InSpeechRecognition(SpeechRecognitionState state) {
-  return state == SPEECH_RECOGNITION_RECOGNIZING ||
-      state == SPEECH_RECOGNITION_IN_SPEECH;
+bool InSpeechRecognition(SpeechRecognizerState state) {
+  return state == SPEECH_RECOGNIZER_RECOGNIZING ||
+         state == SPEECH_RECOGNIZER_IN_SPEECH;
 }
 
 }  // namespace
@@ -292,7 +292,7 @@ StartPageService* StartPageService::Get(Profile* profile) {
 StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
       profile_destroy_observer_(new ProfileDestroyObserver(this)),
-      state_(app_list::SPEECH_RECOGNITION_READY),
+      state_(SPEECH_RECOGNIZER_READY),
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false),
       webui_finished_loading_(false),
@@ -336,12 +336,13 @@ void StartPageService::OnNetworkChanged(bool available) {
 
 void StartPageService::UpdateRecognitionState() {
   if (ShouldEnableSpeechRecognition()) {
-    if (state_ == SPEECH_RECOGNITION_OFF ||
-        state_ == SPEECH_RECOGNITION_NETWORK_ERROR)
-      OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+    if (state_ == SPEECH_RECOGNIZER_OFF ||
+        state_ == SPEECH_RECOGNIZER_NETWORK_ERROR)
+      OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
   } else {
-    OnSpeechRecognitionStateChanged(network_available_ ? SPEECH_RECOGNITION_OFF
-                                        : SPEECH_RECOGNITION_NETWORK_ERROR);
+    OnSpeechRecognitionStateChanged(network_available_
+                                        ? SPEECH_RECOGNIZER_OFF
+                                        : SPEECH_RECOGNIZER_NETWORK_ERROR);
   }
 }
 
@@ -417,7 +418,7 @@ void StartPageService::StopSpeechRecognition() {
   // When the SpeechRecognizer is destroyed above, we get stuck in the current
   // speech state instead of being reset into the READY state. Reset the speech
   // state explicitly so that speech works when the launcher is opened again.
-  OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 content::WebContents* StartPageService::GetStartPageContents() {
@@ -447,21 +448,21 @@ void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
 }
 
 void StartPageService::OnSpeechRecognitionStateChanged(
-    SpeechRecognitionState new_state) {
+    SpeechRecognizerState new_state) {
   // Sometimes this can be called even though there are no audio input devices.
   if (audio_status_ && !audio_status_->CanListen())
-    new_state = SPEECH_RECOGNITION_OFF;
+    new_state = SPEECH_RECOGNIZER_OFF;
   if (!microphone_available_)
-    new_state = SPEECH_RECOGNITION_OFF;
+    new_state = SPEECH_RECOGNIZER_OFF;
   if (!network_available_)
-    new_state = SPEECH_RECOGNITION_NETWORK_ERROR;
+    new_state = SPEECH_RECOGNIZER_NETWORK_ERROR;
 
   if (state_ == new_state)
     return;
 
-  if ((new_state == SPEECH_RECOGNITION_READY ||
-       new_state == SPEECH_RECOGNITION_OFF ||
-       new_state == SPEECH_RECOGNITION_NETWORK_ERROR) &&
+  if ((new_state == SPEECH_RECOGNIZER_READY ||
+       new_state == SPEECH_RECOGNIZER_OFF ||
+       new_state == SPEECH_RECOGNIZER_NETWORK_ERROR) &&
       speech_recognizer_) {
     speech_recognizer_->Stop();
   }

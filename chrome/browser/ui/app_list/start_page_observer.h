@@ -9,6 +9,7 @@
 
 #include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/speech/speech_recognizer_delegate.h"
 
 namespace app_list {
 
@@ -19,7 +20,7 @@ class StartPageObserver {
 
   // Invoked when the online speech recognition state is changed.
   virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) = 0;
+      SpeechRecognizerState new_state) = 0;
 
  protected:
   virtual ~StartPageObserver() {}

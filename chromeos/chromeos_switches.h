@@ -200,6 +200,9 @@ CHROMEOS_EXPORT bool IsSigninFrameClientCertsEnabled();
 // frame on the Chrome OS sign-in screen.
 CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
 
+// Returns true if experimental accessibility features are enabled.
+CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
+
 }  // namespace switches
 }  // namespace chromeos
 

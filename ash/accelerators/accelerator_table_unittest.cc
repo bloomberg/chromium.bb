@@ -22,7 +22,7 @@ constexpr int kNonSearchAcceleratorsNum = 92;
 // TODO: adding Search-based accelerators should not update this hash
 // (crbug.com/778432).
 constexpr char kNonSearchAcceleratorsHash[] =
-    "a3d17aec3739137a1ba9e2f1abdadf88";
+    "cc7e1da44f75a8bc3a8605a06934c8a4";
 
 struct Cmp {
   bool operator()(const AcceleratorData& lhs, const AcceleratorData& rhs) {

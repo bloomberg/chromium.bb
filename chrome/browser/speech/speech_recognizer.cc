@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/speech_recognizer.h"
+#include "chrome/browser/speech/speech_recognizer.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/app_list/speech_recognizer_delegate.h"
+#include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
@@ -23,8 +23,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace app_list {
 
 // Length of timeout to cancel recognition if there's no speech heard.
 static const int kNoSpeechTimeoutInSeconds = 5;
@@ -60,7 +58,7 @@ class SpeechRecognizer::EventListener
   friend class base::RefCountedThreadSafe<SpeechRecognizer::EventListener>;
   ~EventListener() override;
 
-  void NotifyRecognitionStateChanged(SpeechRecognitionState new_state);
+  void NotifyRecognitionStateChanged(SpeechRecognizerState new_state);
 
   // Starts a timer for |timeout_seconds|. When the timer expires, will stop
   // capturing audio and get a final utterance from the recognition manager.
@@ -76,11 +74,13 @@ class SpeechRecognizer::EventListener
       int session_id,
       const content::SpeechRecognitionResults& results) override;
   void OnRecognitionError(
-      int session_id, const content::SpeechRecognitionError& error) override;
+      int session_id,
+      const content::SpeechRecognitionError& error) override;
   void OnSoundStart(int session_id) override;
   void OnSoundEnd(int session_id) override;
-  void OnAudioLevelsChange(
-      int session_id, float volume, float noise_volume) override;
+  void OnAudioLevelsChange(int session_id,
+                           float volume,
+                           float noise_volume) override;
   void OnEnvironmentEstimationComplete(int session_id) override;
   void OnAudioStart(int session_id) override;
   void OnAudioEnd(int session_id) override;
@@ -161,20 +161,17 @@ void SpeechRecognizer::EventListener::StopOnIOThread() {
 }
 
 void SpeechRecognizer::EventListener::NotifyRecognitionStateChanged(
-    SpeechRecognitionState new_state) {
+    SpeechRecognizerState new_state) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechRecognizerDelegate::OnSpeechRecognitionStateChanged,
-                 delegate_,
-                 new_state));
+                 delegate_, new_state));
 }
 
 void SpeechRecognizer::EventListener::StartSpeechTimeout(int timeout_seconds) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   speech_timeout_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(timeout_seconds),
+      FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds),
       base::Bind(&SpeechRecognizer::EventListener::SpeechTimeout, this));
 }
 
@@ -189,16 +186,17 @@ void SpeechRecognizer::EventListener::SpeechTimeout() {
 }
 
 void SpeechRecognizer::EventListener::OnRecognitionStart(int session_id) {
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_RECOGNIZING);
 }
 
 void SpeechRecognizer::EventListener::OnRecognitionEnd(int session_id) {
   StopOnIOThread();
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 void SpeechRecognizer::EventListener::OnRecognitionResults(
-    int session_id, const content::SpeechRecognitionResults& results) {
+    int session_id,
+    const content::SpeechRecognitionResults& results) {
   base::string16 result_str;
   size_t final_count = 0;
   // The number of results with |is_provisional| false. If |final_count| ==
@@ -210,12 +208,9 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
     result_str += result.hypotheses[0].utterance;
   }
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&SpeechRecognizerDelegate::OnSpeechResult,
-                 delegate_,
-                 result_str,
-                 final_count == results.size()));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&SpeechRecognizerDelegate::OnSpeechResult, delegate_,
+                 result_str, final_count == results.size()));
 
   // Stop the moment we have a final result. If we receive any new or changed
   // text, restart the timer to give the user more time to speak. (The timer is
@@ -229,26 +224,28 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
 }
 
 void SpeechRecognizer::EventListener::OnRecognitionError(
-    int session_id, const content::SpeechRecognitionError& error) {
+    int session_id,
+    const content::SpeechRecognitionError& error) {
   StopOnIOThread();
   if (error.code == content::SPEECH_RECOGNITION_ERROR_NETWORK) {
-    NotifyRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR);
+    NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_NETWORK_ERROR);
   }
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 void SpeechRecognizer::EventListener::OnSoundStart(int session_id) {
   StartSpeechTimeout(kNoSpeechTimeoutInSeconds);
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_IN_SPEECH);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_IN_SPEECH);
 }
 
 void SpeechRecognizer::EventListener::OnSoundEnd(int session_id) {
   StopOnIOThread();
-  NotifyRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_RECOGNIZING);
 }
 
-void SpeechRecognizer::EventListener::OnAudioLevelsChange(
-    int session_id, float volume, float noise_volume) {
+void SpeechRecognizer::EventListener::OnAudioLevelsChange(int session_id,
+                                                          float volume,
+                                                          float noise_volume) {
   DCHECK_LE(0.0, volume);
   DCHECK_GE(1.0, volume);
   DCHECK_LE(0.0, noise_volume);
@@ -258,30 +255,25 @@ void SpeechRecognizer::EventListener::OnAudioLevelsChange(
   // See: content/public/browser/speech_recognition_event_listener.h
   int16_t sound_level = static_cast<int16_t>(INT16_MAX * volume);
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechRecognizerDelegate::OnSpeechSoundLevelChanged,
-                 delegate_,
-                 sound_level));
+                 delegate_, sound_level));
 }
 
 void SpeechRecognizer::EventListener::OnEnvironmentEstimationComplete(
-    int session_id) {
-}
+    int session_id) {}
 
-void SpeechRecognizer::EventListener::OnAudioStart(int session_id) {
-}
+void SpeechRecognizer::EventListener::OnAudioStart(int session_id) {}
 
-void SpeechRecognizer::EventListener::OnAudioEnd(int session_id) {
-}
+void SpeechRecognizer::EventListener::OnAudioEnd(int session_id) {}
 
 SpeechRecognizer::SpeechRecognizer(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
     net::URLRequestContextGetter* url_request_context_getter,
     const std::string& locale)
     : delegate_(delegate),
-      speech_event_listener_(new EventListener(
-          delegate, url_request_context_getter, locale)) {
+      speech_event_listener_(
+          new EventListener(delegate, url_request_context_getter, locale)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -298,22 +290,15 @@ void SpeechRecognizer::Start(
   delegate_->GetSpeechAuthParameters(&auth_scope, &auth_token);
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechRecognizer::EventListener::StartOnIOThread,
-                 speech_event_listener_,
-                 auth_scope,
-                 auth_token,
-                 preamble));
+                 speech_event_listener_, auth_scope, auth_token, preamble));
 }
 
 void SpeechRecognizer::Stop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechRecognizer::EventListener::StopOnIOThread,
                  speech_event_listener_));
 }
-
-}  // namespace app_list
