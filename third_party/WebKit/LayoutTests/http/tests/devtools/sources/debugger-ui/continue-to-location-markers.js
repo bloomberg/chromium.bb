@@ -73,6 +73,11 @@
           bar1().then(bar2);
 
           bar1().then(/* comment */ bar2.bind(null));
+
+          let blob = new Blob([''], {type: 'application/javascript'});
+          let worker = new Worker(URL.createObjectURL(blob));
+          worker.postMessage('hello!');
+
           return 10;
         }
     `);
