@@ -723,4 +723,19 @@ TEST_F(MagnificationControllerTest, MoveMouseToSecondDisplay) {
   EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
 }
 
+TEST_F(MagnificationControllerTest, AdjustScaleFromScroll) {
+  // 0 to 1 maps to 1 to 20
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ(20.0f, GetMagnificationController()->GetScaleFromScroll(1));
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScaleFromScroll(0));
+
+  // It doesn't matter the starting point, the mapping is consistent.
+  GetMagnificationController()->SetScale(20.0f, false);
+  EXPECT_EQ(20.0f, GetMagnificationController()->GetScaleFromScroll(1));
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScaleFromScroll(0));
+
+  // And the mapping is not linear.
+  EXPECT_NE(21.0f / 2.0f, GetMagnificationController()->GetScaleFromScroll(.5));
+}
+
 }  // namespace ash
