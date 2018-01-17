@@ -29,7 +29,7 @@
      {"sha2hashstr",                                                         \
       "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"}}}, \
    {"rtanalytics-light",                                                     \
-    {{"env_version", "1.0"},                                                 \
+    {{"env_version", "1.1"},                                                 \
      {"sha2hashstr",                                                         \
       "69f09d33c439c2ab55bbbe24b47ab55cb3f6c0bd1f1ef46eefea3216ec925038"}}}, \
    {"rtanalytics-full",                                                      \
