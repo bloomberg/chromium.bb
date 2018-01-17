@@ -771,7 +771,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
         CanvasResourceProvider::Create(
             size, CanvasResourceProvider::kAcceleratedResourceUsage,
             SharedGpuContext::ContextProviderWrapper());
-    if (!resource_provider && resource_provider->IsValid())
+    if (!resource_provider || !resource_provider->IsValid())
       return nullptr;
     if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
                                                kBackBuffer)) {
