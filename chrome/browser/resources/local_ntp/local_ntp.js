@@ -1145,6 +1145,8 @@ var applyDoodleMetadata = function() {
       logoDoodleIframe.title = targetDoodle.metadata.altText;
       logoDoodleIframe.src = targetDoodle.metadata.fullPageUrl;
       document.body.style.setProperty(
+          '--logo-iframe-width', targetDoodle.metadata.iframeWidthPx + 'px');
+      document.body.style.setProperty(
           '--logo-iframe-height', targetDoodle.metadata.iframeHeightPx + 'px');
       document.body.style.setProperty(
           '--logo-iframe-initial-height',
