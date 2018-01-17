@@ -56,6 +56,7 @@ class DocumentLoader;
 class Element;
 class ExceptionState;
 class FloatQuad;
+class HTMLFrameOwnerElement;
 class HTMLSlotElement;
 class V0InsertionPoint;
 class InspectedFrames;
@@ -226,6 +227,7 @@ class CORE_EXPORT InspectorDOMAgent final
   void DidPerformElementShadowDistribution(Element*);
   void DidPerformSlotDistribution(HTMLSlotElement*);
   void FrameDocumentUpdated(LocalFrame*);
+  void FrameDisconnected(LocalFrame*, HTMLFrameOwnerElement*);
   void PseudoElementCreated(PseudoElement*);
   void PseudoElementDestroyed(PseudoElement*);
 
@@ -285,7 +287,7 @@ class CORE_EXPORT InspectorDOMAgent final
                                 int depth = 1,
                                 bool traverse_frames = false);
 
-  void InvalidateFrameOwnerElement(LocalFrame*);
+  void InvalidateFrameOwnerElement(HTMLFrameOwnerElement*);
 
   std::unique_ptr<protocol::DOM::Node> BuildObjectForNode(
       Node*,
