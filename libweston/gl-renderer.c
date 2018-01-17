@@ -3685,10 +3685,12 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	else
 		ec->read_format = PIXMAN_a8b8g8r8;
 
-	if (weston_check_egl_extension(extensions, "GL_EXT_unpack_subimage"))
+	if (gr->gl_version >= GR_GL_VERSION(3, 0) ||
+	    weston_check_egl_extension(extensions, "GL_EXT_unpack_subimage"))
 		gr->has_unpack_subimage = 1;
 
-	if (weston_check_egl_extension(extensions, "GL_EXT_texture_rg"))
+	if (gr->gl_version >= GR_GL_VERSION(3, 0) ||
+	    weston_check_egl_extension(extensions, "GL_EXT_texture_rg"))
 		gr->has_gl_texture_rg = 1;
 
 	if (weston_check_egl_extension(extensions, "GL_OES_EGL_image_external"))
