@@ -9,10 +9,12 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
@@ -98,6 +100,9 @@ public class VrShellDelegate
     static final String VR_ENTRY_RESULT_ACTION =
             "org.chromium.chrome.browser.vr_shell.VrEntryResult";
 
+    private static final String VR_INTENT_DISPATCHER_COMPONENT =
+            "com.google.android.apps.chrome.VrIntentDispatcher";
+
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
     private static final int EXPECT_DON_TIMEOUT_MS = 2000;
 
@@ -112,8 +117,9 @@ public class VrShellDelegate
     private static VrBroadcastReceiver sVrBroadcastReceiver;
     private static boolean sRegisteredDaydreamHook;
     private static boolean sAddedBlackOverlayView;
-    private static boolean sRegisteredVrAssetsComponent = false;
-    private static boolean sChromeStarted = false;
+    private static boolean sRegisteredVrAssetsComponent;
+    private static boolean sChromeStarted;
+    private static Boolean sIconComponentEnabled;
 
     private ChromeActivity mActivity;
 
@@ -345,6 +351,7 @@ public class VrShellDelegate
                 int vrSupportLevel =
                         getVrSupportLevel(api, wrapper.createVrCoreVersionChecker(), null);
                 if (!isVrShellEnabled(vrSupportLevel)) return null;
+                updateDayreamIconComponentState(activity);
                 return api;
             }
 
@@ -455,6 +462,19 @@ public class VrShellDelegate
         ThreadUtils.assertOnUiThread();
         sInstance = new VrShellDelegate(activity, wrapper);
         return sInstance;
+    }
+
+    private static void updateDayreamIconComponentState(ChromeActivity activity) {
+        boolean enabled = ChromeFeatureList.isEnabled(ChromeFeatureList.VR_ICON_IN_DAYDREAM_HOME);
+
+        if (sIconComponentEnabled != null && enabled == sIconComponentEnabled) return;
+
+        int componentState = enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                                     : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        ComponentName component = new ComponentName(activity, VR_INTENT_DISPATCHER_COMPONENT);
+        activity.getPackageManager().setComponentEnabledSetting(
+                component, componentState, PackageManager.DONT_KILL_APP);
+        sIconComponentEnabled = enabled;
     }
 
     private static boolean activitySupportsPresentation(Activity activity) {
@@ -958,25 +978,24 @@ public class VrShellDelegate
      * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
-        if (VrIntentUtils.isVrIntent(intent)) {
-            // If we get an intent while we're already in VR, we do nothing. This is mostly
-            // because crbug.com/780673 since on Android O, every intent gets dispatched twice.
-            if (sInstance != null && sInstance.mInVr) return;
-            if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
-            // We add a black overlay view so that we can show black while the VR UI is loading.
-            // Note that this alone isn't sufficient to prevent 2D UI from showing when
-            // auto-presenting WebVR. See comment about the custom animation in {@link
-            // getVrIntentOptions}.
-            // TODO(crbug.com/775574): This hack doesn't really work to hide the 2D UI on Samsung
-            // devices since Chrome gets paused and we prematurely remove the overlay.
-            addBlackOverlayViewForActivity(activity);
+        if (!VrIntentUtils.isVrIntent(intent)) return;
+        // If we get an intent while we're already in VR, we do nothing. This is mostly
+        // because crbug.com/780673 since on Android O, every intent gets dispatched twice.
+        if (sInstance != null && sInstance.mInVr) return;
+        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
+        // We add a black overlay view so that we can show black while the VR UI is loading.
+        // Note that this alone isn't sufficient to prevent 2D UI from showing when
+        // auto-presenting WebVR. See comment about the custom animation in {@link
+        // getVrIntentOptions}.
+        // TODO(crbug.com/775574): This hack doesn't really work to hide the 2D UI on Samsung
+        // devices since Chrome gets paused and we prematurely remove the overlay.
+        addBlackOverlayViewForActivity(activity);
 
-            // Enable VR mode and hide system UI. We do this here so we don't get kicked out of
-            // VR mode and to prevent seeing a flash of system UI.
-            getVrClassesWrapper().setVrModeEnabled(activity, true);
-            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            activity.getWindow().getDecorView().setSystemUiVisibility(VR_SYSTEM_UI_FLAGS);
-        }
+        // Enable VR mode and hide system UI. We do this here so we don't get kicked out of
+        // VR mode and to prevent seeing a flash of system UI.
+        getVrClassesWrapper().setVrModeEnabled(activity, true);
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        activity.getWindow().getDecorView().setSystemUiVisibility(VR_SYSTEM_UI_FLAGS);
     }
 
     /**
@@ -1227,6 +1246,7 @@ public class VrShellDelegate
                     if (!sRegisteredVrAssetsComponent) {
                         registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
                     }
+                    updateDayreamIconComponentState(mActivity);
                 }
             });
         }
