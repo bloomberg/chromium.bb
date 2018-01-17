@@ -91,6 +91,7 @@ class ManagePasswordsUIController
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIconView* icon);
 
+  // True iff the bubble is to be opened automatically.
   bool IsAutomaticallyOpeningBubble() const {
     return bubble_status_ == SHOULD_POP_UP;
   }
@@ -158,6 +159,12 @@ class ManagePasswordsUIController
   // Check if |web_contents()| is attached to some Browser. Mocked in tests.
   virtual bool HasBrowserWindow() const;
 
+  // True if the bubble is to be opened automatically or after re-auth.
+  bool ShouldBubblePopUp() const {
+    return IsAutomaticallyOpeningBubble() ||
+           bubble_status_ == SHOULD_POP_UP_AFTER_REAUTH;
+  }
+
   // Overwrites the client for |passwords_data_|.
   void set_client(password_manager::PasswordManagerClient* client) {
     passwords_data_.set_client(client);
@@ -176,6 +183,8 @@ class ManagePasswordsUIController
     // The bubble is to be popped up in the next call to
     // UpdateBubbleAndIconVisibility().
     SHOULD_POP_UP,
+    // The bubble is to be reopened after re-authentication.
+    SHOULD_POP_UP_AFTER_REAUTH,
     SHOWN,
     // Same as SHOWN but the icon is to be updated when the bubble is closed.
     SHOWN_PENDING_ICON_UPDATE,
