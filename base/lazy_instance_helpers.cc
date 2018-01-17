@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/lazy_instance.h"
+#include "base/lazy_instance_helpers.h"
 
 #include "base/at_exit.h"
 #include "base/atomicops.h"
@@ -11,18 +11,17 @@
 namespace base {
 namespace internal {
 
-// TODO(joth): This function could be shared with Singleton, in place of its
-// WaitForInstance() call.
 bool NeedsLazyInstance(subtle::AtomicWord* state) {
   // Try to create the instance, if we're the first, will go from 0 to
   // kLazyInstanceStateCreating, otherwise we've already been beaten here.
   // The memory access has no memory ordering as state 0 and
   // kLazyInstanceStateCreating have no associated data (memory barriers are
   // all about ordering of memory accesses to *associated* data).
-  if (subtle::NoBarrier_CompareAndSwap(state, 0,
-                                       kLazyInstanceStateCreating) == 0)
+  if (subtle::NoBarrier_CompareAndSwap(state, 0, kLazyInstanceStateCreating) ==
+      0) {
     // Caller must create instance
     return true;
+  }
 
   // It's either in the process of being created, or already created. Spin.
   // The load has acquire memory ordering as a thread which sees
@@ -51,13 +50,13 @@ void CompleteLazyInstance(subtle::AtomicWord* state,
                           subtle::AtomicWord new_instance,
                           void (*destructor)(void*),
                           void* destructor_arg) {
-  // Instance is created, go from CREATING to CREATED.
-  // Releases visibility over private_buf_ to readers. Pairing Acquire_Load's
-  // are in NeedsInstance() and Pointer().
+  // Instance is created, go from CREATING to CREATED (or reset it if
+  // |new_instance| is null). Releases visibility over |private_buf_| to
+  // readers. Pairing Acquire_Load is in NeedsLazyInstance().
   subtle::Release_Store(state, new_instance);
 
   // Make sure that the lazily instantiated object will get destroyed at exit.
-  if (destructor)
+  if (new_instance && destructor)
     AtExitManager::RegisterCallback(destructor, destructor_arg);
 }
 
