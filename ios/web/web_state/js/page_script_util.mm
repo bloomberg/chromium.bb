@@ -61,10 +61,10 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 
-NSString* GetEarlyPageScriptForMainFrame(BrowserState* browser_state) {
+NSString* GetDocumentStartScriptForMainFrame(BrowserState* browser_state) {
   DCHECK(GetWebClient());
   NSString* embedder_page_script =
-      GetWebClient()->GetEarlyPageScriptForMainFrame(browser_state);
+      GetWebClient()->GetDocumentStartScriptForMainFrame(browser_state);
   DCHECK(embedder_page_script);
 
   NSString* web_bundle = GetPageScript(@"main_frame_web_bundle");
@@ -81,7 +81,7 @@ NSString* GetEarlyPageScriptForMainFrame(BrowserState* browser_state) {
   return MakeScriptInjectableOnce(@"early_main_frame", script);
 }
 
-NSString* GetEarlyPageScriptForAllFrames(BrowserState* browser_state) {
+NSString* GetDocumentStartScriptForAllFrames(BrowserState* browser_state) {
   return MakeScriptInjectableOnce(@"early_all_frames",
                                   GetPageScript(@"all_frames_web_bundle"));
 }

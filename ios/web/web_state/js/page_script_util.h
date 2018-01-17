@@ -18,11 +18,11 @@ NSString* GetPageScript(NSString* script_file_name);
 
 // Returns an autoreleased string containing the JavaScript to be injected into
 // the main frame of the web view as early as possible.
-NSString* GetEarlyPageScriptForMainFrame(BrowserState* browser_state);
+NSString* GetDocumentStartScriptForMainFrame(BrowserState* browser_state);
 
 // Returns an autoreleased string containing the JavaScript to be injected into
 // all frames of the web view as early as possible.
-NSString* GetEarlyPageScriptForAllFrames(BrowserState* browser_state);
+NSString* GetDocumentStartScriptForAllFrames(BrowserState* browser_state);
 
 }  // namespace web
 
