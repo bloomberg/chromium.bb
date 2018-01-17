@@ -20,6 +20,34 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertEquals(
         'this.is.a', patch_orderfile.RemoveSuffixes(with_part))
 
+  def testAliasClonedSymbols(self):
+    symbol_infos = [
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12,
+                                    section='.text'),
+        symbol_extractor.SymbolInfo(name='aSymbol.clone.', offset=8, size=1,
+                                    section='.text')]
+    (offset_to_symbol_infos, name_to_symbol_infos) = \
+        patch_orderfile._GroupSymbolInfos(symbol_infos)
+    self.assertEquals(len(offset_to_symbol_infos), 2)
+    for i in range(2):
+      s = symbol_infos[i]
+      matching = offset_to_symbol_infos[s.offset][0]
+      self.assertEquals(matching.offset, s.offset)
+      self.assertEquals(matching.size, s.size)
+    self.assertEquals(len(name_to_symbol_infos), 1)
+    self.assertEquals(len(name_to_symbol_infos['aSymbol']), 2)
+
+  def testGroupSymbolsByOffset(self):
+    symbol_infos = (
+        symbol_extractor.SymbolInfo(name='aSymbol', offset=0x42, size=0x12,
+                                    section='.text'),
+        symbol_extractor.SymbolInfo(name='anotherSymbol', offset=0x42, size=1,
+                                    section='.text'))
+    (offset_to_symbol_infos, _) = \
+        patch_orderfile._GroupSymbolInfos(symbol_infos)
+    self.assertEquals(len(offset_to_symbol_infos), 1)
+    self.assertEquals(tuple(offset_to_symbol_infos[0x42]), symbol_infos)
+
   def testSymbolsWithSameOffset(self):
     symbol_name = "dummySymbol"
     symbol_name2 = "other"
@@ -42,21 +70,21 @@ class TestPatchOrderFile(unittest.TestCase):
 
   def testSectionNameToSymbols(self):
     mapping = {'.text.foo': ['foo'],
-               '.text.hot.bar': ['bar', 'bar1']}
+               '.text.startup.bar': ['bar', 'bar1']}
     self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
                       '.text.foo', mapping)),
                       ['foo'])
     self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
-                      '.text.hot.bar', mapping)),
+                      '.text.startup.bar', mapping)),
                       ['bar', 'bar1'])
     self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
-                      '.text.hot.bar', mapping)),
+                      '.text.startup.bar', mapping)),
                       ['bar', 'bar1'])
     self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
                       '.text.hot.foobar', mapping)),
                       ['foobar'])
     self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
-                      '.text.unlikely.*', mapping)),
+                      '.text.startup.*', mapping)),
                       [])
 
   def testSectionMatchingRules(self):
@@ -83,13 +111,13 @@ class TestPatchOrderFile(unittest.TestCase):
         section_name1,
         section_name3,
         section_name3 + '.*',
+        '.text.startup.' + symbol_name1,
         '.text.hot.' + symbol_name1,
         '.text.unlikely.' + symbol_name1,
-        symbol_name1,
+        '.text.startup.symbol2',
         '.text.hot.symbol2',
         '.text.unlikely.symbol2',
-        '.text.symbol2',
-        'symbol2']
+        '.text.symbol2']
     self.assertEqual(expected, list(patch_orderfile._SectionMatchingRules(
         section_name1, name_to_symbol_infos, offset_to_symbol_infos,
         section_to_symbols_map, symbol_to_sections_map, suffixed)))
