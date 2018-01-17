@@ -2356,7 +2356,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
       2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      &spdy_headers_frame_length, &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length,
+      &header_stream_offset));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
@@ -2482,7 +2483,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
       2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      &spdy_headers_frame_length, &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length,
+      &header_stream_offset));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,

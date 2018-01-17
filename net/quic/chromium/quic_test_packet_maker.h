@@ -27,6 +27,12 @@ namespace test {
 
 class QuicTestPacketMaker {
  public:
+  // |client_headers_include_h2_stream_dependency| affects the output of
+  // the MakeRequestHeaders...() methods. If its value is true, then request
+  // headers are constructed with the exclusive flag set to true and the parent
+  // stream id set to the |parent_stream_id| param of MakeRequestHeaders...().
+  // Otherwise, headers are constructed with the exclusive flag set to false and
+  // the parent stream ID set to 0 (ignoring the |parent_stream_id| param).
   QuicTestPacketMaker(QuicTransportVersion version,
                       QuicConnectionId connection_id,
                       MockClock* clock,
@@ -138,6 +144,7 @@ class QuicTestPacketMaker {
       bool fin,
       SpdyPriority priority,
       SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
       QuicStreamOffset* header_stream_offset,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data_writes);
@@ -151,6 +158,7 @@ class QuicTestPacketMaker {
       bool fin,
       SpdyPriority priority,
       SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length);
 
   std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersPacket(
@@ -160,6 +168,7 @@ class QuicTestPacketMaker {
       bool fin,
       SpdyPriority priority,
       SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset);
 
@@ -171,6 +180,7 @@ class QuicTestPacketMaker {
       bool fin,
       SpdyPriority priority,
       SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset,
       std::string* stream_data);
@@ -184,6 +194,7 @@ class QuicTestPacketMaker {
                                              bool fin,
                                              SpdyPriority priority,
                                              SpdyHeaderBlock headers,
+                                             QuicStreamId parent_stream_id,
                                              QuicStreamOffset* offset);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
@@ -248,12 +259,6 @@ class QuicTestPacketMaker {
   SpdyHeaderBlock GetResponseHeaders(const std::string& status,
                                      const std::string& alt_svc);
 
-  // Tests where a stream is destroyed followed by generating a request header
-  // for a different stream should call this after the first stream is
-  // destroyed. This updates |priority_id_lists_| so that the HTTP2 stream
-  // dependency info in generated request headers are correct.
-  void ClientUpdateWithStreamDestruction(QuicStreamId stream_id);
-
  private:
   std::unique_ptr<QuicReceivedPacket> MakePacket(const QuicPacketHeader& header,
                                                  const QuicFrame& frame);
@@ -267,7 +272,8 @@ class QuicTestPacketMaker {
   SpdySerializedFrame MakeSpdyHeadersFrame(QuicStreamId stream_id,
                                            bool fin,
                                            SpdyPriority priority,
-                                           SpdyHeaderBlock headers);
+                                           SpdyHeaderBlock headers,
+                                           QuicStreamId parent_stream_id);
 
   QuicTransportVersion version_;
   QuicConnectionId connection_id_;
@@ -279,12 +285,9 @@ class QuicTestPacketMaker {
   QuicPacketHeader header_;
   Perspective perspective_;
 
-  // If true, generated request headers will include HTTP2 stream dependency
-  // info.
+  // If true, generated request headers will include non-default HTTP2 stream
+  // dependency info.
   bool client_headers_include_h2_stream_dependency_;
-  // Keeps track of the stream IDs for which request headers have been created,
-  // grouped by SpdyPriority.
-  std::vector<QuicStreamId> priority_id_lists_[kV3LowestPriority + 1];
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestPacketMaker);
 };

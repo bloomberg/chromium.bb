@@ -155,7 +155,7 @@ class HttpProxyClientSocketWrapperTest
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
-        std::move(block), nullptr, &header_stream_offset_);
+        std::move(block), 0, nullptr, &header_stream_offset_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectReplyPacket(

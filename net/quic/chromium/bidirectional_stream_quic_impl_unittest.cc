@@ -585,12 +585,26 @@ class BidirectionalStreamQuicImplTest
       RequestPriority request_priority,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
+    return ConstructRequestHeadersPacketInner(
+        packet_number, stream_id, fin, request_priority, 0,
+        spdy_headers_frame_length, offset);
+  }
+
+  std::unique_ptr<QuicReceivedPacket> ConstructRequestHeadersPacketInner(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool fin,
+      RequestPriority request_priority,
+      QuicStreamId parent_stream_id,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* offset) {
     SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     std::unique_ptr<QuicReceivedPacket> packet(
         client_maker_.MakeRequestHeadersPacket(
             packet_number, stream_id, kIncludeVersion, fin, priority,
-            std::move(request_headers_), spdy_headers_frame_length, offset));
+            std::move(request_headers_), parent_stream_id,
+            spdy_headers_frame_length, offset));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicTextUtils::HexDump(packet->AsStringPiece());
     return packet;
@@ -609,7 +623,7 @@ class BidirectionalStreamQuicImplTest
     std::unique_ptr<QuicReceivedPacket> packet(
         client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
             packet_number, stream_id_, kIncludeVersion, fin, priority,
-            std::move(request_headers_), header_stream_offset,
+            std::move(request_headers_), 0, header_stream_offset,
             spdy_headers_frame_length, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicTextUtils::HexDump(packet->AsStringPiece());
@@ -903,8 +917,8 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   // SetRequest() again for second request as |request_headers_| was moved.
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(1), kFin, DEFAULT_PRIORITY, nullptr,
-      &offset));
+      2, GetNthClientInitiatedStreamId(1), kFin, DEFAULT_PRIORITY,
+      GetNthClientInitiatedStreamId(0), nullptr, &offset));
   AddWrite(ConstructInitialSettingsPacket(3, &offset));
   AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   Initialize();
