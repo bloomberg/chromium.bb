@@ -69,6 +69,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
+  void SetWantsAnimateOnlyBeginFrames();
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.

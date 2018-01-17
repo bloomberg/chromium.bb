@@ -1850,7 +1850,7 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
     client->LayoutOverlay();
 }
 
-void WebViewImpl::UpdateAllLifecyclePhases() {
+void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
   if (!MainFrameImpl())
     return;
@@ -1858,9 +1858,12 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
 
-  PageWidgetDelegate::UpdateAllLifecyclePhases(*page_,
-                                               *MainFrameImpl()->GetFrame());
+  PageWidgetDelegate::UpdateLifecycle(*page_, *MainFrameImpl()->GetFrame(),
+                                      requested_update);
   UpdateLayerTreeBackgroundColor();
+
+  if (requested_update == LifecycleUpdate::kPrePaint)
+    return;
 
   if (auto* client = GetValidationMessageClient())
     client->PaintOverlay();

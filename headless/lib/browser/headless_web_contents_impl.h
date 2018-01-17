@@ -149,6 +149,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void BeginFrame(const base::TimeTicks& frame_timeticks,
                   const base::TimeTicks& deadline,
                   const base::TimeDelta& interval,
+                  bool animate_only,
                   bool capture_screenshot,
                   const FrameFinishedCallback& frame_finished_callback);
   bool HasPendingFrame() const { return !pending_frames_.empty(); }

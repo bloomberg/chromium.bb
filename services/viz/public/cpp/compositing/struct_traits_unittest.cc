@@ -97,6 +97,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   const bool on_critical_path = true;
   const uint64_t source_id = 5;
   const uint64_t sequence_number = 10;
+  const bool animate_only = true;
   BeginFrameArgs input;
   input.source_id = source_id;
   input.sequence_number = sequence_number;
@@ -105,6 +106,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   input.interval = interval;
   input.type = type;
   input.on_critical_path = on_critical_path;
+  input.animate_only = animate_only;
 
   BeginFrameArgs output;
   SerializeAndDeserialize<mojom::BeginFrameArgs>(input, &output);
@@ -116,6 +118,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(type, output.type);
   EXPECT_EQ(on_critical_path, output.on_critical_path);
+  EXPECT_EQ(animate_only, output.animate_only);
 }
 
 TEST_F(StructTraitsTest, BeginFrameAck) {

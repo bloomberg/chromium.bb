@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "content/common/content_export.h"
 
 namespace cc {
@@ -77,7 +78,8 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Requests a visual frame-based update to the state of the delegate if there
   // an update available.
-  virtual void UpdateVisualState() = 0;
+  using VisualStateUpdate = cc::LayerTreeHostClient::VisualStateUpdate;
+  virtual void UpdateVisualState(VisualStateUpdate requested_update) = 0;
 
   // Indicates that the compositor is about to begin a frame. This is primarily
   // to signal to flow control mechanisms that a frame is beginning, not to

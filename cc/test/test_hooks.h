@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 namespace viz {
@@ -98,7 +99,8 @@ class TestHooks : public AnimationDelegate {
   virtual void BeginMainFrame(const viz::BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
-  virtual void UpdateLayerTreeHost() {}
+  virtual void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) {}
   virtual void DidInitializeLayerTreeFrameSink() {}
   virtual void DidFailToInitializeLayerTreeFrameSink() {}
   virtual void DidAddAnimation() {}

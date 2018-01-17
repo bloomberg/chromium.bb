@@ -273,18 +273,21 @@ void WebFrameWidgetImpl::BeginFrame(double last_frame_time_monotonic) {
     GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
 
-void WebFrameWidgetImpl::UpdateAllLifecyclePhases() {
+void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
   if (!local_root_)
     return;
 
-  if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
+  bool pre_paint_only = requested_update == LifecycleUpdate::kPrePaint;
+
+  WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl();
+  if (devtools && !pre_paint_only)
     devtools->PaintOverlay();
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       local_root_->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::UpdateAllLifecyclePhases(*GetPage(),
-                                               *local_root_->GetFrame());
+  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *local_root_->GetFrame(),
+                                      requested_update);
   UpdateLayerTreeBackgroundColor();
 }
 

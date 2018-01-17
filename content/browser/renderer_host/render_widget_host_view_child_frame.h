@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::Size GetPhysicalBackingSize() const override;
   bool IsMouseLocked() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
 
   // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

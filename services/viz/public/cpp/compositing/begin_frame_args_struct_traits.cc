@@ -21,6 +21,7 @@ bool StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::
   // TODO(eseckler): Use EnumTraits for |type|.
   out->type = static_cast<viz::BeginFrameArgs::BeginFrameArgsType>(data.type());
   out->on_critical_path = data.on_critical_path();
+  out->animate_only = data.animate_only();
   return true;
 }
 

@@ -88,6 +88,10 @@ void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
+void RootCompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames() {
+  support_->SetWantsAnimateOnlyBeginFrames();
+}
+
 void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,

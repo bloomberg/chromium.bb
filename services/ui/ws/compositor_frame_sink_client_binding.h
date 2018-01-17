@@ -35,6 +35,7 @@ class CompositorFrameSinkClientBinding
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void SetWantsAnimateOnlyBeginFrames() override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
 
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;

@@ -37,6 +37,7 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
+  bool WantsAnimateOnlyBeginFrames() const override;
 
  private:
   void CancelInternal(bool deadline);

@@ -22,6 +22,7 @@ struct BeginFrameArgs {
   uint64 sequence_number;
   BeginFrameArgsType type;
   bool on_critical_path;
+  bool animate_only;
 };
 
 // See cc/output/begin_frame_args.h.

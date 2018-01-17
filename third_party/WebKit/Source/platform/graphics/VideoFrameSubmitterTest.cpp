@@ -55,6 +55,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   ~MockCompositorFrameSink() = default;
 
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
+  MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void());
 
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& id,

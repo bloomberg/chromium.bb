@@ -254,7 +254,8 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
     ASSERT_TRUE(scrollable_.get());
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     if (TestEnded())
       return;
     static const gfx::Vector2d delta = gfx::Vector2d(0, 10);

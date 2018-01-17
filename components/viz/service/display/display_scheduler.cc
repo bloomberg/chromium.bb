@@ -37,6 +37,13 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       weak_ptr_factory_(this) {
   begin_frame_deadline_closure_ = base::Bind(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
+
+  // The DisplayScheduler handles animate_only BeginFrames as if they were
+  // normal BeginFrames: Clients won't commit a CompositorFrame but will still
+  // acknowledge when they have completed the BeginFrame via BeginFrameAcks and
+  // the DisplayScheduler will still indicate when all clients have finished via
+  // DisplayObserver::OnDisplayDidFinishFrame.
+  wants_animate_only_begin_frames_ = true;
 }
 
 DisplayScheduler::~DisplayScheduler() {

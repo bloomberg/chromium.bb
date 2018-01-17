@@ -105,7 +105,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     if (!layer_tree_host()->SourceFrameNumber()) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
@@ -648,7 +649,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     num_scrolls_++;
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     EXPECT_VECTOR_EQ(gfx::Vector2d(),
                      expected_no_scroll_layer_->scroll_offset());
 
@@ -851,7 +853,8 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     if (!layer_tree_host()->SourceFrameNumber()) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
@@ -1127,7 +1130,8 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     PostSetNeedsCommitToMainThread();
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     Layer* root = layer_tree_host()->root_layer();
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->SourceFrameNumber()) {
@@ -1550,7 +1554,8 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
     num_commits_++;
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
@@ -2054,7 +2059,8 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
     PostSetNeedsCommitToMainThread();
   }
 
-  void UpdateLayerTreeHost() override {
+  void UpdateLayerTreeHost(
+      LayerTreeHostClient::VisualStateUpdate requested_update) override {
     Layer* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();
     if (layer_tree_host()->SourceFrameNumber() == 0) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());

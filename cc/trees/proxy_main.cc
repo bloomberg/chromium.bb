@@ -33,6 +33,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       max_requested_pipeline_stage_(NO_PIPELINE_STAGE),
       current_pipeline_stage_(NO_PIPELINE_STAGE),
       final_pipeline_stage_(NO_PIPELINE_STAGE),
+      deferred_final_pipeline_stage_(NO_PIPELINE_STAGE),
       commit_waits_for_activation_(false),
       started_(false),
       defer_commits_(false),
@@ -141,7 +142,25 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->ImageDecodesFinished(
       std::move(begin_main_frame_state->completed_image_decode_requests));
 
-  if (defer_commits_) {
+  final_pipeline_stage_ = max_requested_pipeline_stage_;
+  max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
+
+  // When we don't need to produce a CompositorFrame, there's also no need to
+  // paint or commit our updates. We still need to run layout though, as it can
+  // have side effects on page loading behavior.
+  bool skip_paint_and_commit =
+      begin_main_frame_state->begin_frame_args.animate_only;
+
+  // If commits are deferred, skip the entire pipeline.
+  bool skip_full_pipeline = defer_commits_;
+
+  // We may have previously skipped paint and commit. If we should still skip it
+  // now, and there was no intermediate request for a commit since the last
+  // BeginMainFrame, we can skip the full pipeline.
+  skip_full_pipeline |=
+      skip_paint_and_commit && final_pipeline_stage_ == NO_PIPELINE_STAGE;
+
+  if (skip_full_pipeline) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
                          TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
@@ -151,11 +170,16 @@ void ProxyMain::BeginMainFrame(
                                   CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
                                   begin_main_frame_start_time,
                                   base::Passed(&empty_swap_promises)));
+    // When we stop deferring commits, we should resume any previously requested
+    // pipeline stages.
+    deferred_final_pipeline_stage_ =
+        std::max(final_pipeline_stage_, deferred_final_pipeline_stage_);
     return;
   }
 
-  final_pipeline_stage_ = max_requested_pipeline_stage_;
-  max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
+  final_pipeline_stage_ =
+      std::max(final_pipeline_stage_, deferred_final_pipeline_stage_);
+  deferred_final_pipeline_stage_ = NO_PIPELINE_STAGE;
 
   if (!layer_tree_host_->IsVisible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
@@ -196,11 +220,15 @@ void ProxyMain::BeginMainFrame(
 
   // See LayerTreeHostClient::MainFrameUpdate for more documentation on
   // what this does.
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(
+      skip_paint_and_commit ? LayerTreeHost::VisualStateUpdate::kPrePaint
+                            : LayerTreeHost::VisualStateUpdate::kAll);
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  if (defer_commits_) {
+  skip_paint_and_commit |= defer_commits_;
+
+  if (skip_paint_and_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
@@ -216,7 +244,7 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->DidBeginMainFrame();
     // When we stop deferring commits, we should resume any previously requested
     // pipeline stages.
-    max_requested_pipeline_stage_ = final_pipeline_stage_;
+    deferred_final_pipeline_stage_ = final_pipeline_stage_;
     return;
   }
 

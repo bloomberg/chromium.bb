@@ -560,6 +560,27 @@ class ExternalBeginFrameSourceTest : public ::testing::Test {
   }
 };
 
+TEST_F(ExternalBeginFrameSourceTest, OnAnimateOnlyBeginFrameOptIn) {
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
+  source_->AddObserver(obs_.get());
+
+  // By default, an observer doesn't receive animate_only BeginFrames.
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, 0, 2, TicksFromMicroseconds(10000));
+  args.animate_only = true;
+  source_->OnBeginFrame(args);
+
+  // When opting in, an observer receives animate_only BeginFrames.
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
+                                        TicksFromMicroseconds(10000));
+  args.animate_only = true;
+  EXPECT_CALL(*obs_, WantsAnimateOnlyBeginFrames())
+      .WillOnce(::testing::Return(true));
+  EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
+  source_->OnBeginFrame(args);
+}
+
 // https://crbug.com/690127: Duplicate BeginFrame caused DCHECK crash.
 TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);

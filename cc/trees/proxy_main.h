@@ -121,6 +121,9 @@ class CC_EXPORT ProxyMain : public Proxy {
   // will stop. Only valid while we are executing the pipeline (i.e.,
   // |current_pipeline_stage| is set to a pipeline stage).
   CommitPipelineStage final_pipeline_stage_;
+  // The final_pipeline_stage_ that was requested before the last commit was
+  // deferred.
+  CommitPipelineStage deferred_final_pipeline_stage_;
 
   bool commit_waits_for_activation_;
 

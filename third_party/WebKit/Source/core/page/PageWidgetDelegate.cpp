@@ -56,9 +56,15 @@ void PageWidgetDelegate::Animate(Page& page,
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
 }
 
-void PageWidgetDelegate::UpdateAllLifecyclePhases(Page& page,
-                                                  LocalFrame& root) {
-  page.Animator().UpdateAllLifecyclePhases(root);
+void PageWidgetDelegate::UpdateLifecycle(
+    Page& page,
+    LocalFrame& root,
+    WebWidget::LifecycleUpdate requested_update) {
+  if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
+    page.Animator().UpdateLifecycleToPrePaintClean(root);
+  } else {
+    page.Animator().UpdateAllLifecyclePhases(root);
+  }
 }
 
 static void PaintInternal(Page& page,

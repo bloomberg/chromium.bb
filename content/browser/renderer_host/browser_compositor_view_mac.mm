@@ -496,6 +496,10 @@ void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
   delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
+void BrowserCompositorMac::SetWantsAnimateOnlyBeginFrames() {
+  delegated_frame_host_->SetWantsAnimateOnlyBeginFrames();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 

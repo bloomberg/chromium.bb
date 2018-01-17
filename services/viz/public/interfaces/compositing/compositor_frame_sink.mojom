@@ -22,6 +22,11 @@ interface CompositorFrameSink {
   // Lets the display compositor know that the client wishes to receive the next
   // BeginFrame event.
   SetNeedsBeginFrame(bool needs_begin_frame);
+  
+  // Lets the display compositor know that the client also wants to receive
+  // BeginFrames with the animate_only flag set. Only clients that opt in
+  // will receive such BeginFrames.
+  SetWantsAnimateOnlyBeginFrames();
 
   // Submits a CompositorFrame to the display compositor that will be presented
   // to screen the next time frames from all CompositorFrameSinks are aggregated

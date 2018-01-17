@@ -99,11 +99,14 @@ TEST(BeginFrameArgsTest, Create) {
   BeginFrameArgs args1;
   EXPECT_FALSE(args1.IsValid()) << args1;
   EXPECT_TRUE(args1.on_critical_path);
+  EXPECT_FALSE(args1.animate_only);
 
   BeginFrameArgs args2 = BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, 123, 10, base::TimeTicks() + k1Usec,
       base::TimeTicks() + k2Usec, k3Usec, BeginFrameArgs::NORMAL);
   EXPECT_TRUE(args2.IsValid()) << args2;
+  EXPECT_TRUE(args2.on_critical_path);
+  EXPECT_FALSE(args2.animate_only);
   EXPECT_EQ(123u, args2.source_id) << args2;
   EXPECT_EQ(10u, args2.sequence_number) << args2;
   EXPECT_EQ(k1Usec, args2.frame_time.since_origin()) << args2;

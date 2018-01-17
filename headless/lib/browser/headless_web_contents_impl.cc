@@ -635,6 +635,7 @@ void HeadlessWebContentsImpl::BeginFrame(
     const base::TimeTicks& frame_timeticks,
     const base::TimeTicks& deadline,
     const base::TimeDelta& interval,
+    bool animate_only,
     bool capture_screenshot,
     const FrameFinishedCallback& frame_finished_callback) {
   DCHECK(begin_frame_control_enabled_);
@@ -666,9 +667,12 @@ void HeadlessWebContentsImpl::BeginFrame(
   ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
   DCHECK(compositor);
 
-  compositor->IssueExternalBeginFrame(viz::BeginFrameArgs::Create(
+  auto args = viz::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, begin_frame_source_id_, sequence_number,
-      frame_timeticks, deadline, interval, viz::BeginFrameArgs::NORMAL));
+      frame_timeticks, deadline, interval, viz::BeginFrameArgs::NORMAL);
+  args.animate_only = animate_only;
+
+  compositor->IssueExternalBeginFrame(args);
 }
 
 HeadlessWebContents::Builder::Builder(
