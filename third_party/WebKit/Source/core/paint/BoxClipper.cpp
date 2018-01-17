@@ -44,16 +44,8 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto* fragment = paint_info.FragmentToPaint(box_);
-    if (!fragment)
-      return;
-    const auto* properties = fragment->PaintProperties();
-    if (!properties || !properties->OverflowClip())
-      return;
-
-    scoped_clip_property_.emplace(paint_info.context.GetPaintController(),
-                                  properties->OverflowClip(), box,
-                                  paint_info.DisplayItemTypeForClipping());
+    InitializeScopedClipProperty(paint_info.FragmentToPaint(box_), box,
+                                 paint_info);
     return;
   }
 
