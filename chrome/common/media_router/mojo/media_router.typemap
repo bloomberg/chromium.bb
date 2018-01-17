@@ -14,8 +14,11 @@ public_headers = [
   "//content/public/common/presentation_connection_message.h",
   "//content/public/common/presentation_info.h",
 ]
-deps = [
+public_deps = [
+  "//chrome/common/media_router:router",
   "//content/public/common",
+]
+deps = [
   "//net",
   "//third_party/icu",  # For issue.h
   "//url",

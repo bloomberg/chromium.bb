@@ -1469,7 +1469,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_outer_layout->SetName(kOmniboxOuterLayout);
   omnibox_outer_layout->set_margin(kSuggestionGapDMM);
   omnibox_outer_layout->SetTranslate(
-      0, kUrlBarVerticalOffsetDMM - 0.5 * kOmniboxHeightDMM,
+      0, kUrlBarVerticalOffsetDMM - 0.5f * kOmniboxHeightDMM,
       kOmniboxShadowOffset);
   omnibox_outer_layout->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA([](Model* m) { return m->omnibox_editing_enabled(); },

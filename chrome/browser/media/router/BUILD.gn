@@ -20,6 +20,7 @@ static_library("router") {
   ]
   public_deps = [
     "//chrome/common/media_router:router",
+    "//chrome/common/media_router/mojo:media_router",
   ]
   sources = [
     "issue_manager.cc",

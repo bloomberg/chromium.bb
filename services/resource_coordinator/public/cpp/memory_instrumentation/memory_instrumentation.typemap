@@ -11,6 +11,10 @@ public_headers = [
   "//base/trace_event/memory_dump_manager.h",
 ]
 traits_headers = [ "//services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.h" ]
+sources = [
+  "//services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.cc",
+  "//services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.h",
+]
 deps = [
   "//base",
 ]

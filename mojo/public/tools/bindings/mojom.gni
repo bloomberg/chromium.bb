@@ -867,12 +867,6 @@ template("mojom") {
         _typemap_config = {
         }
         _typemap_config = typemap.config
-        if (defined(_typemap_config.public_headers)) {
-          sources += _typemap_config.public_headers
-        }
-        if (defined(_typemap_config.traits_headers)) {
-          sources += _typemap_config.traits_headers
-        }
         if (defined(_typemap_config.sources)) {
           sources += _typemap_config.sources
         }

@@ -11,4 +11,7 @@ sources = [
 public_deps = [
   "//ui/gfx",
 ]
+deps = [
+  "//ui/gfx/geometry/mojo:struct_traits",
+]
 type_mappings = [ "gfx.mojom.CALayerParams=gfx::CALayerParams" ]

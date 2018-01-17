@@ -801,6 +801,7 @@ cc_test("cc_perftests") {
     "//gpu",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc/common:struct_traits",
     "//media",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",

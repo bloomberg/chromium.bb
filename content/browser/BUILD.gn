@@ -106,6 +106,7 @@ jumbo_source_set("browser") {
     "//media/mojo/interfaces:constants",
     "//media/mojo/services",
     "//mojo/common",
+    "//mojo/common:values_struct_traits",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js:resources",
@@ -1825,7 +1826,10 @@ jumbo_source_set("browser") {
         "media/capture/cursor_renderer_mac.h",
         "media/capture/cursor_renderer_mac.mm",
       ]
-      deps += [ "//sandbox/mac:seatbelt" ]
+      deps += [
+        "//sandbox/mac:seatbelt",
+        "//sandbox/mac:seatbelt_extension",
+      ]
     }
     if (enable_webrtc) {
       sources += [

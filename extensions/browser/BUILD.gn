@@ -590,6 +590,7 @@ source_set("unit_tests") {
     "//components/update_client",
     "//components/url_matcher",
     "//components/user_prefs",
+    "//components/version_info",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
     "//extensions:extensions_browser_resources",

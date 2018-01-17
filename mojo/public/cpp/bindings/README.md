@@ -1159,7 +1159,10 @@ Let's place this `geometry.typemap` file alongside our Mojom file:
 mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 public_headers = [ "//ui/gfx/geometry/rect.h" ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
-sources = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.cc" ]
+sources = [
+  "//ui/gfx/geometry/mojo/geometry_struct_traits.cc",
+  "//ui/gfx/geometry/mojo/geometry_struct_traits.h",
+]
 public_deps = [ "//ui/gfx/geometry" ]
 type_mappings = [
   "gfx.mojom.Rect=gfx::Rect",
@@ -1177,8 +1180,9 @@ Let's look at each of the variables above:
   here.
 * `traits_headers`: Headers which contain the relevant `StructTraits`
   specialization(s) for any type mappings described by this file.
-* `sources`: Any private implementation sources needed for the `StructTraits`
-  definition.
+* `sources`: Any implementation sources and headers needed for the
+  `StructTraits` definition. These sources are compiled directly into the
+  generated C++ bindings target for a `mojom` file applying this typemap.
 * `public_deps`: Target dependencies exposed by the `public_headers` and
   `traits_headers`.
 * `deps`: Target dependencies exposed by `sources` but not already covered by
