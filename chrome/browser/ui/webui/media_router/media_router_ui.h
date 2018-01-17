@@ -45,7 +45,6 @@ class Browser;
 
 namespace media_router {
 
-class EventPageRequestManager;
 class IssueManager;
 class IssuesObserver;
 class MediaRoute;
@@ -166,8 +165,6 @@ class MediaRouterUI
   const base::Optional<MediaCastMode>& forced_cast_mode() const {
     return forced_cast_mode_;
   }
-
-  virtual const std::string& GetRouteProviderExtensionId() const;
 
   // Called to track UI metrics.
   void SetUIInitializationTimer(const base::Time& start_time);
@@ -436,9 +433,6 @@ class MediaRouterUI
 
   // Pointer to the MediaRouter for this instance's BrowserContext.
   MediaRouter* router_;
-
-  // Request manager for the Media Router component extension.
-  const EventPageRequestManager* event_page_request_manager_;
 
   // The start time for UI initialization metrics timer. When a dialog has been
   // been painted and initialized with initial data, this should be cleared.

@@ -156,7 +156,6 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
 std::unique_ptr<base::DictionaryValue> RouteToValue(
     const MediaRoute& route,
     bool can_join,
-    const std::string& extension_id,
     bool incognito,
     int current_cast_mode) {
   auto dictionary = std::make_unique<base::DictionaryValue>();
@@ -289,9 +288,8 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
   if (route) {
     int current_cast_mode = CurrentCastModeForRouteId(
         route->media_route_id(), media_router_ui_->routes_and_cast_modes());
-    std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
-        *route, false, media_router_ui_->GetRouteProviderExtensionId(),
-        incognito_, current_cast_mode));
+    std::unique_ptr<base::DictionaryValue> route_value(
+        RouteToValue(*route, false, incognito_, current_cast_mode));
     web_ui()->CallJavascriptFunctionUnsafe(kOnCreateRouteResponseReceived,
                                            base::Value(sink_id), *route_value,
                                            base::Value(route->for_display()));
@@ -1110,16 +1108,14 @@ std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
     const std::unordered_map<MediaRoute::Id, MediaCastMode>& current_cast_modes)
     const {
   auto value = std::make_unique<base::ListValue>();
-  const std::string& extension_id =
-      media_router_ui_->GetRouteProviderExtensionId();
 
   for (const MediaRoute& route : routes) {
     bool can_join =
         base::ContainsValue(joinable_route_ids, route.media_route_id());
     int current_cast_mode =
         CurrentCastModeForRouteId(route.media_route_id(), current_cast_modes);
-    std::unique_ptr<base::DictionaryValue> route_val(RouteToValue(
-        route, can_join, extension_id, incognito_, current_cast_mode));
+    std::unique_ptr<base::DictionaryValue> route_val(
+        RouteToValue(route, can_join, incognito_, current_cast_mode));
     value->Append(std::move(route_val));
   }
 
