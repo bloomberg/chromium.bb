@@ -38,7 +38,9 @@
 
 namespace blink {
 
+class BlobBytesConsumer;
 class BlobDataHandle;
+class BlobURLRegistry;
 class KURL;
 class SecurityOrigin;
 
@@ -46,7 +48,15 @@ class SecurityOrigin;
 class PLATFORM_EXPORT BlobRegistry {
   STATIC_ONLY(BlobRegistry);
 
- public:
+  // Calling methods in this class directly won't work when Blob URL management
+  // is switched to mojo. Instead codew should call PublicURLManager methods to
+  // create/revoke blob URLs.
+  // To avoid new usage of these methods, mark all as private with friends for
+  // existing usage.
+ private:
+  friend class BlobBytesConsumer;
+  friend class BlobURLRegistry;
+
   // Methods for controlling Blob URLs.
   static void RegisterPublicBlobURL(SecurityOrigin*,
                                     const KURL&,
