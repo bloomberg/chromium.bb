@@ -3542,12 +3542,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSpeculativePreconnectFeatureVariations,
                                     "SpeculativePreconnectValidation")},
 
-#if defined(OS_ANDROID)
-    {"enable-async-dns", flag_descriptions::kAsyncDnsName,
-     flag_descriptions::kAsyncDnsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kAsyncDns)},
-#endif  // defined(OS_ANDROID)
-
     {"enable-overflow-icons-for-media-controls",
      flag_descriptions::kOverflowIconsForMediaControlsName,
      flag_descriptions::kOverflowIconsForMediaControlsDescription, kOsAll,
