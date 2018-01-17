@@ -23,7 +23,7 @@ html {
    * the same.
    */
   --logo-iframe-initial-height: var(--logo-height);
-  --logo-iframe-height: var(--logo-iframe-initial-height);
+  --logo-iframe-height: var(--logo-height);
   --logo-iframe-resize-duration: 150ms;
   --logo-iframe-width: 500px;
 
