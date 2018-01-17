@@ -33,6 +33,9 @@ extern const base::Feature kHttpFormWarningFeature;
 
 // Describes the overall security state of the page.
 //
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
 // If you change this enum, you may need to update the UI icons in
 // ToolbarModelImpl::GetVectorIcon and GetIconForSecurityState.
 //
@@ -41,7 +44,7 @@ extern const base::Feature kHttpFormWarningFeature;
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConnectionSecurityLevel
 enum SecurityLevel {
   // HTTP/no URL/HTTPS but with insecure passive content on the page.
-  NONE,
+  NONE = 0,
 
   // HTTP, in a case where we want to show a visible warning about the page's
   // lack of security.
@@ -49,25 +52,27 @@ enum SecurityLevel {
   // The criteria used to classify pages as NONE vs. HTTP_SHOW_WARNING will
   // change over time. Eventually, NONE will be eliminated.
   // See https://crbug.com/647754.
-  HTTP_SHOW_WARNING,
+  HTTP_SHOW_WARNING = 1,
 
   // HTTPS with valid EV cert.
-  EV_SECURE,
+  EV_SECURE = 2,
 
   // HTTPS (non-EV) with valid cert.
-  SECURE,
+  SECURE = 3,
 
   // HTTPS, but a certificate chain anchored to a root certificate installed
   // by the system administrator has been observed in this profile, suggesting
   // a MITM was present.
   //
   // Used only on ChromeOS, this status is unreached on other platforms.
-  SECURE_WITH_POLICY_INSTALLED_CERT,
+  SECURE_WITH_POLICY_INSTALLED_CERT = 4,
 
   // Attempted HTTPS and failed, page not authenticated, HTTPS with
   // insecure active content on the page, malware, phishing, or any other
   // serious security issue that could be dangerous.
-  DANGEROUS,
+  DANGEROUS = 5,
+
+  SECURITY_LEVEL_COUNT
 };
 
 // The ContentStatus enum is used to describe content on the page that

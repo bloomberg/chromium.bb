@@ -72,14 +72,14 @@ class SecurityStateTabHelperHistogramTest
     else
       input_events.credit_card_field_edited = true;
     SetInputEvents(entry, input_events);
-    helper_->VisibleSecurityStateChanged();
+    helper_->DidChangeVisibleSecurityState();
   }
 
   void ClearInputEvents() {
     content::NavigationEntry* entry =
         web_contents()->GetController().GetVisibleEntry();
     SetInputEvents(entry, security_state::InsecureInputEventData());
-    helper_->VisibleSecurityStateChanged();
+    helper_->DidChangeVisibleSecurityState();
   }
 
   const std::string HistogramName() {

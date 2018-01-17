@@ -2549,4 +2549,81 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   }
 }
 
+// Tests that the histogram for security level is recorded correctly for HTTP
+// pages.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HTTPSecurityLevelHistogram) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::
+            kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards}});
+
+  const char kHistogramName[] = "Security.SecurityLevel.NoncryptographicScheme";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    base::HistogramTester histograms;
+    // Use a non-local hostname so that password fields (added below) downgrade
+    // the security level.
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html"));
+    histograms.ExpectUniqueSample(kHistogramName,
+                                  security_state::HTTP_SHOW_WARNING, 1);
+  }
+
+  // Add a password field and check that the histogram is recorded correctly.
+  {
+    base::HistogramTester histograms;
+    SecurityStyleTestObserver observer(contents);
+    EXPECT_TRUE(
+        content::ExecuteScript(contents,
+                               "var i = document.createElement('input');"
+                               "i.type = 'password';"
+                               "document.body.appendChild(i);"));
+    observer.WaitForDidChangeVisibleSecurityState();
+    histograms.ExpectUniqueSample(kHistogramName, security_state::DANGEROUS, 1);
+  }
+}
+
+// Tests that the histogram for security level is recorded correctly for HTTPS
+// pages.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       HTTPSSecurityLevelHistogram) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  const char kHistogramName[] = "Security.SecurityLevel.CryptographicScheme";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    base::HistogramTester histograms;
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server_.GetURL("/title1.html"));
+    histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
+  }
+
+  // Load mixed content and check that the histogram is recorded correctly.
+  {
+    base::HistogramTester histograms;
+    SecurityStyleTestObserver observer(contents);
+    EXPECT_TRUE(content::ExecuteScript(contents,
+                                       "var i = document.createElement('img');"
+                                       "i.src = 'http://example.test';"
+                                       "document.body.appendChild(i);"));
+    observer.WaitForDidChangeVisibleSecurityState();
+    histograms.ExpectUniqueSample(kHistogramName, security_state::NONE, 1);
+  }
+
+  // Navigate away and the histogram should be recorded exactly once again, when
+  // the new navigation commits.
+  {
+    base::HistogramTester histograms;
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server_.GetURL("/title2.html"));
+    histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
+  }
+}
+
 }  // namespace
