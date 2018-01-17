@@ -93,6 +93,7 @@ class ImageBitmapFactories final
   virtual ~ImageBitmapFactories() = default;
 
   void Trace(blink::Visitor*);
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   static const char* SupplementName();

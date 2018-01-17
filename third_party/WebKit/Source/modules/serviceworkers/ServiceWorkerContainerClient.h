@@ -43,6 +43,11 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     Supplement<WorkerClients>::Trace(visitor);
   }
 
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+    Supplement<Document>::TraceWrappers(visitor);
+    Supplement<WorkerClients>::TraceWrappers(visitor);
+  }
+
  private:
   std::unique_ptr<WebServiceWorkerProvider> provider_;
 };

@@ -57,6 +57,7 @@ void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
 void ModuleTreeLinker::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(result_);
+  SingleModuleClient::TraceWrappers(visitor);
 }
 
 #if DCHECK_IS_ON()

@@ -18,7 +18,7 @@ class PLATFORM_EXPORT TraceWrapperBase {
   ~TraceWrapperBase() = default;
   virtual bool IsScriptWrappable() const { return false; }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {}
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const = 0;
 };
 
 }  // namespace blink

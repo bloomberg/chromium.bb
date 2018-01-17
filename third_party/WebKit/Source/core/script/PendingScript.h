@@ -82,6 +82,7 @@ class CORE_EXPORT PendingScript
   virtual ScriptType GetScriptType() const = 0;
 
   virtual void Trace(blink::Visitor*);
+  void TraceWrappers(const ScriptWrappableVisitor*) const override {}
 
   // Returns false if the script should not be run due to MIME type check.
   // Should be called just before GetSource().
