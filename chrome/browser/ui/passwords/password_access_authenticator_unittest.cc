@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/password_access_authenticator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +48,29 @@ TEST(PasswordAccessAuthenticatorTest, Expiration) {
   reauth_called = false;
 
   EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(reauth_called);
+}
+
+// Check that a forced authentication ignores previous successful challenges.
+TEST(PasswordAccessAuthenticatorTest, ForceReauth) {
+  bool reauth_called = false;
+
+  auto clock_owned = std::make_unique<base::SimpleTestClock>();
+  base::SimpleTestClock* clock = clock_owned.get();
+  clock->Advance(base::TimeDelta::FromSeconds(123));
+
+  PasswordAccessAuthenticator authenticator(base::BindRepeating(
+      &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
+  authenticator.SetClockForTesting(std::move(clock_owned));
+
+  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated());
+  EXPECT_TRUE(reauth_called);
+
+  clock->Advance(base::TimeDelta::FromSeconds(
+      PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
+  reauth_called = false;
+
+  EXPECT_TRUE(authenticator.ForceUserReauthentication());
   EXPECT_TRUE(reauth_called);
 }
 

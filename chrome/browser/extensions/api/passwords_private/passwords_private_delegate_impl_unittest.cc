@@ -269,6 +269,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {
   delegate.ExportPasswords(nullptr);
   EXPECT_TRUE(reauth_called);
 
+  // Export should ignore previous reauthentication results.
+  reauth_called = false;
+  delegate.ExportPasswords(nullptr);
+  EXPECT_TRUE(reauth_called);
+
   // TODO(crbug.com/341477): Once the export flow has defined messages to UI,
   // such as progress indication, intercept them with PasswordEventObserver and
   // check that exporting is aborted if the authentication failed.

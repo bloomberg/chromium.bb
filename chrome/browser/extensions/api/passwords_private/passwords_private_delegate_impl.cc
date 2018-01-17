@@ -246,7 +246,7 @@ void PasswordsPrivateDelegateImpl::ExportPasswords(
   // exiting this method. TODO(crbug.com/495290): Pass the native window
   // directly to the reauth-handling code.
   web_contents_ = web_contents;
-  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
+  if (!password_access_authenticator_.ForceUserReauthentication()) {
     return;
   }
 
