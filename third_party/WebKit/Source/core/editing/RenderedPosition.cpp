@@ -295,8 +295,7 @@ FloatPoint RenderedPosition::LocalToInvalidationBackingPoint(
 void RenderedPosition::GetLocalSelectionEndpoints(
     bool selection_start,
     LayoutPoint& edge_top_in_layer,
-    LayoutPoint& edge_bottom_in_layer,
-    bool& is_text_direction_rtl) const {
+    LayoutPoint& edge_bottom_in_layer) const {
   const LayoutRect rect = layout_object_->LocalCaretRect(inline_box_, offset_);
   if (layout_object_->Style()->IsHorizontalWritingMode()) {
     edge_top_in_layer = rect.MinXMinYCorner();
@@ -314,9 +313,6 @@ void RenderedPosition::GetLocalSelectionEndpoints(
     edge_bottom_in_layer.SetX(edge_top_in_layer.X());
     edge_top_in_layer.SetX(x_swap);
   }
-
-  // Flipped blocks writing mode is not only vertical but also right to left.
-  is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
 }
 
 void RenderedPosition::PositionInGraphicsLayerBacking(
@@ -331,7 +327,11 @@ void RenderedPosition::PositionInGraphicsLayerBacking(
   LayoutPoint edge_top_in_layer;
   LayoutPoint edge_bottom_in_layer;
   GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
-                             edge_bottom_in_layer, bound.is_text_direction_rtl);
+                             edge_bottom_in_layer);
+  // Flipped blocks writing mode is not only vertical but also right to left.
+  if (!layout_object_->Style()->IsHorizontalWritingMode()) {
+    bound.is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
+  }
 
   bound.edge_top_in_layer =
       LocalToInvalidationBackingPoint(edge_top_in_layer, &bound.layer);
@@ -370,9 +370,8 @@ bool RenderedPosition::IsVisible(bool selection_start) {
 
   LayoutPoint edge_top_in_layer;
   LayoutPoint edge_bottom_in_layer;
-  bool ignored2;
   GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
-                             edge_bottom_in_layer, ignored2);
+                             edge_bottom_in_layer);
   LayoutPoint sample_point =
       GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer);
 
