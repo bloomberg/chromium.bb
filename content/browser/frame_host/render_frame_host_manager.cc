@@ -700,6 +700,14 @@ void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
   }
 }
 
+void RenderFrameHostManager::OnEnforceInsecureNavigationsSet(
+    const std::vector<uint32_t>& insecure_navigations_set) {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(new FrameMsg_EnforceInsecureNavigationsSet(
+        pair.second->GetRoutingID(), insecure_navigations_set));
+  }
+}
+
 void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
   DCHECK(frame_tree_node_->parent());
   SiteInstance* parent_site_instance =

@@ -58,6 +58,9 @@ void RemoteFrame::Navigate(Document& origin_document,
   frame_request.SetReplacesCurrentItem(replace_current_item);
   frame_request.GetResourceRequest().SetHasUserGesture(
       user_gesture_status == UserGestureStatus::kActive);
+  frame_request.GetResourceRequest().SetFrameType(
+      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                    : network::mojom::RequestContextFrameType::kNested);
   Navigate(frame_request);
 }
 
@@ -65,9 +68,11 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
   FrameLoadRequest frame_request(passed_request);
 
   // The process where this frame actually lives won't have sufficient
-  // information to determine correct referrer, since it won't have access to
-  // the originDocument. Set it now.
+  // information to determine correct referrer and upgrade the url, since it
+  // won't have access to the originDocument. Do it now.
   FrameLoader::SetReferrerForFrameRequest(frame_request);
+  FrameLoader::UpgradeInsecureRequest(frame_request.GetResourceRequest(),
+                                      frame_request.OriginDocument());
 
   frame_request.GetResourceRequest().SetHasUserGesture(
       Frame::HasTransientUserActivation(this));

@@ -22,6 +22,7 @@ FrameReplicationState::FrameReplicationState(
     const std::string& name,
     const std::string& unique_name,
     blink::WebInsecureRequestPolicy insecure_request_policy,
+    const std::vector<uint32_t>& insecure_navigations_set,
     bool has_potentially_trustworthy_unique_origin,
     bool has_received_user_gesture,
     bool has_received_user_gesture_before_nav)
@@ -31,6 +32,7 @@ FrameReplicationState::FrameReplicationState(
       active_sandbox_flags(blink::WebSandboxFlags::kNone),
       scope(scope),
       insecure_request_policy(insecure_request_policy),
+      insecure_navigations_set(insecure_navigations_set),
       has_potentially_trustworthy_unique_origin(
           has_potentially_trustworthy_unique_origin),
       has_received_user_gesture(has_received_user_gesture),

@@ -916,6 +916,13 @@ void LocalFrameClientImpl::DidEnforceInsecureRequestPolicy(
   web_frame_->Client()->DidEnforceInsecureRequestPolicy(policy);
 }
 
+void LocalFrameClientImpl::DidEnforceInsecureNavigationsSet(
+    const std::vector<unsigned>& set) {
+  if (!web_frame_->Client())
+    return;
+  web_frame_->Client()->DidEnforceInsecureNavigationsSet(set);
+}
+
 void LocalFrameClientImpl::DidChangeFramePolicy(
     Frame* child_frame,
     SandboxFlags flags,

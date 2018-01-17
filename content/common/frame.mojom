@@ -252,6 +252,8 @@ interface FrameHost {
   // Argument |policy_bitmap| represents blink::WebInsecureRequestPolicy uint8
   // bitfield.
   EnforceInsecureRequestPolicy(uint8 policy_bitmap);
+  // Elements of |set| are hashes of hosts to upgrade.
+  EnforceInsecureNavigationsSet(array<uint32> set);
 
   // Notifies the browser process that HTTP headers which affect the frame
   // polices were delivered with the document being loaded into the frame. This

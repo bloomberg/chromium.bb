@@ -474,6 +474,7 @@ void NavigatorImpl::DidNavigate(
       params.origin, params.has_potentially_trustworthy_unique_origin);
 
   frame_tree_node->SetInsecureRequestPolicy(params.insecure_request_policy);
+  frame_tree_node->SetInsecureNavigationsSet(params.insecure_navigations_set);
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.

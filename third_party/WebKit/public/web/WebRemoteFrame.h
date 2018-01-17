@@ -87,6 +87,8 @@ class WebRemoteFrame : public WebFrame {
   // Set frame enforcement of insecure request policy replicated from another
   // process.
   virtual void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
+  virtual void SetReplicatedInsecureNavigationsSet(
+      const std::vector<unsigned>&) = 0;
 
   virtual void DispatchLoadEventOnFrameOwner() = 0;
 

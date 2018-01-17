@@ -221,6 +221,7 @@ class CORE_EXPORT FrameLoader final {
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
+  static void UpgradeInsecureRequest(ResourceRequest&, Document*);
 
   void ClientDroppedNavigation();
 
@@ -259,8 +260,6 @@ class CORE_EXPORT FrameLoader final {
   void ScheduleCheckCompleted();
 
   void DetachDocumentLoader(Member<DocumentLoader>&);
-
-  void UpgradeInsecureRequest(ResourceRequest&, Document*) const;
 
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;

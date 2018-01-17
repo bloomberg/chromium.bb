@@ -341,6 +341,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // The insecure request policy the document for the load is enforcing.
   IPC_STRUCT_MEMBER(blink::WebInsecureRequestPolicy, insecure_request_policy)
 
+  // The upgrade insecure navigations set the document for the load is
+  // enforcing.
+  IPC_STRUCT_MEMBER(std::vector<uint32_t>, insecure_navigations_set)
+
   // True if the document for the load is a unique origin that should be
   // considered potentially trustworthy.
   IPC_STRUCT_MEMBER(bool, has_potentially_trustworthy_unique_origin)
@@ -457,6 +461,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_csp_headers)
   IPC_STRUCT_TRAITS_MEMBER(scope)
   IPC_STRUCT_TRAITS_MEMBER(insecure_request_policy)
+  IPC_STRUCT_TRAITS_MEMBER(insecure_navigations_set)
   IPC_STRUCT_TRAITS_MEMBER(has_potentially_trustworthy_unique_origin)
   IPC_STRUCT_TRAITS_MEMBER(has_received_user_gesture_before_nav)
 IPC_STRUCT_TRAITS_END()
@@ -865,6 +870,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_ResetContentSecurityPolicy)
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
+
+// Update a proxy's replicated set for enforcement of insecure navigations.
+// Used when the frame's set is changed in another process.
+IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureNavigationsSet,
+                    std::vector<uint32_t> /* set */)
 
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.

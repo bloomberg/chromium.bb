@@ -174,8 +174,9 @@ void ContentSecurityPolicy::SetupSelf(const SecurityOrigin& security_origin) {
 void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
   DCHECK(execution_context_ &&
          execution_context_->GetSecurityContext().GetSecurityOrigin());
+  SecurityContext& security_context = execution_context_->GetSecurityContext();
 
-  SetupSelf(*execution_context_->GetSecurityContext().GetSecurityOrigin());
+  SetupSelf(*security_context.GetSecurityOrigin());
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
@@ -185,28 +186,29 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
     if (document)
       document->EnforceSandboxFlags(sandbox_mask_);
     else
-      execution_context_->GetSecurityContext().ApplySandboxFlags(sandbox_mask_);
+      security_context.ApplySandboxFlags(sandbox_mask_);
   }
   if (treat_as_public_address_) {
-    execution_context_->GetSecurityContext().SetAddressSpace(
-        mojom::IPAddressSpace::kPublic);
+    security_context.SetAddressSpace(mojom::IPAddressSpace::kPublic);
   }
   if (require_safe_types_)
-    execution_context_->GetSecurityContext().SetRequireTrustedTypes();
+    security_context.SetRequireTrustedTypes();
 
-  if (document) {
-    document->EnforceInsecureRequestPolicy(insecure_request_policy_);
-  } else {
-    execution_context_->GetSecurityContext().SetInsecureRequestPolicy(
-        insecure_request_policy_);
-  }
+  // Upgrade Insecure Requests: Update the policy.
+  security_context.SetInsecureRequestPolicy(
+      security_context.GetInsecureRequestPolicy() | insecure_request_policy_);
+  if (document)
+    document->DidEnforceInsecureRequestPolicy();
 
+  // Upgrade Insecure Requests: Update the set of insecure URLs to upgrade.
   if (insecure_request_policy_ & kUpgradeInsecureRequests) {
     UseCounter::Count(execution_context_,
                       WebFeature::kUpgradeInsecureRequestsEnabled);
     if (!execution_context_->Url().Host().IsEmpty()) {
-      execution_context_->GetSecurityContext().AddInsecureNavigationUpgrade(
-          execution_context_->Url().Host().Impl()->GetHash());
+      uint32_t hash = execution_context_->Url().Host().Impl()->GetHash();
+      security_context.AddInsecureNavigationUpgrade(hash);
+      if (document)
+        document->DidEnforceInsecureNavigationsSet();
     }
   }
 
