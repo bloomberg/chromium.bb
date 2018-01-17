@@ -1108,6 +1108,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ssl/CaptivePortalHelper.java",
   "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
   "java/src/org/chromium/chrome/browser/suggestions/ContextualSuggestionsCardViewHolder.java",
+  "java/src/org/chromium/chrome/browser/suggestions/ContextualSuggestionsSection.java",
   "java/src/org/chromium/chrome/browser/suggestions/DestructionObserver.java",
   "java/src/org/chromium/chrome/browser/suggestions/ImageFetcher.java",
   "java/src/org/chromium/chrome/browser/suggestions/LogoItem.java",

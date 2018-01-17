@@ -88,6 +88,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
     &kContextualSearchTapDisableOverride,
+    &kContextualSuggestionsAboveArticles,
     &kContextualSuggestionsCarousel,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
@@ -262,6 +263,9 @@ const base::Feature kContextualSearchTapDisableOverride{
 
 const base::Feature kContextualSuggestionsCarousel{
     "ContextualSuggestionsCarousel", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSuggestionsAboveArticles{
+    "ContextualSuggestionsAboveArticles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
