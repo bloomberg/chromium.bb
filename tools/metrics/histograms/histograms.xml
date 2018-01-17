@@ -83485,6 +83485,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SoftwareReporter.Cleaner.NumberOfDownloadAttempts"
     units="counts">
+  <obsolete>
+    Deprecated on 2018-01-15.
+  </obsolete>
   <owner>ftirelo@chromium.org</owner>
   <summary>
     The number of attempts to download the Chrome Cleanup tool until it either
@@ -101670,7 +101673,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Download failed without an OK HTTP response code."/>
   <suffix name="DownloadSuccess" label="Download succeeded."/>
   <suffix name="NetworkError" label="Download failed due to a network error."/>
-  <affected-histogram name="SoftwareReporter.Cleaner.NumberOfDownloadAttempts"/>
+  <affected-histogram name="SoftwareReporter.Cleaner.NumberOfDownloadAttempts">
+    <obsolete>
+      Removed Jan 2018
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="SoftwareReporter.Cleaner.TimeToCompleteDownload"/>
 </histogram_suffixes>
 

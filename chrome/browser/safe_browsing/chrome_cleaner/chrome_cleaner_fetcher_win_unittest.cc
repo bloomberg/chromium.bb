@@ -77,15 +77,6 @@ class ChromeCleanerFetcherTest : public ::testing::Test,
     fetcher_->delegate()->OnURLFetchComplete(fetcher_);
   }
 
-  void SetNetworkError() {
-    // Set up the fetcher to return failure other than HTTP_NOT_FOUND.
-    fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
-    // For this test, just use any http response code other than net::HTTP_OK
-    // and net::HTTP_NOT_FOUND.
-    fetcher_->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-    fetcher_->delegate()->OnURLFetchComplete(fetcher_);
-  }
-
  protected:
   // TestURLFetcher requires a MessageLoop and an IO thread to release
   // URLRequestContextGetter in URLFetcher::Core.
@@ -134,54 +125,13 @@ TEST_F(ChromeCleanerFetcherTest, NotFoundOnServer) {
   EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kNotFoundOnServer);
 }
 
-TEST_F(ChromeCleanerFetcherTest, NetworkError_SucceededAfterRetry) {
-  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
-    SetNetworkError();
-
-    EXPECT_FALSE(callback_called_);
-
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  SetNetworkSuccess(net::HTTP_OK);
-
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(downloaded_path_, response_path_);
-  EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kSuccess);
-}
-
-TEST_F(ChromeCleanerFetcherTest, NetworkError_NotFoundAfterRetry) {
-  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
-    SetNetworkError();
-
-    EXPECT_FALSE(callback_called_);
-
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  SetNetworkSuccess(net::HTTP_NOT_FOUND);
-
-  EXPECT_TRUE(callback_called_);
-  EXPECT_TRUE(downloaded_path_.empty());
-  EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kNotFoundOnServer);
-}
-
-TEST_F(ChromeCleanerFetcherTest, NetworkError_AllAttemptsFailed) {
-  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
-    SetNetworkError();
-
-    EXPECT_FALSE(callback_called_);
-
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  SetNetworkError();
+TEST_F(ChromeCleanerFetcherTest, NetworkError) {
+  // Set up the fetcher to return failure other than HTTP_NOT_FOUND.
+  fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
+  // For this test, just use any http response code other than net::HTTP_OK
+  // and net::HTTP_NOT_FOUND.
+  fetcher_->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
+  fetcher_->delegate()->OnURLFetchComplete(fetcher_);
 
   EXPECT_TRUE(callback_called_);
   EXPECT_TRUE(downloaded_path_.empty());
