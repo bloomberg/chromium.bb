@@ -498,7 +498,12 @@ class RectangleText {
         available_pixel_height_(available_pixel_height),
         wrap_behavior_(wrap_behavior),
         typesetter_(typesetter),
-        lines_(lines) {}
+        current_width_(0),
+        current_height_(0),
+        last_line_ended_in_lf_(false),
+        lines_(lines),
+        insufficient_width_(false),
+        insufficient_height_(false) {}
 
   // Perform deferred initializions following creation.  Must be called
   // before any input can be added via AddString().
@@ -560,29 +565,26 @@ class RectangleText {
   const Typesetter typesetter_;
 
   // The current running width.
-  float current_width_ = 0;
+  float current_width_;
 
   // The current running height.
-  int current_height_ = 0;
+  int current_height_;
 
   // The current line of text.
   base::string16 current_line_;
 
   // Indicates whether the last line ended with \n.
-  bool last_line_ended_in_lf_ = false;
+  bool last_line_ended_in_lf_;
 
   // The output vector of lines.
   std::vector<base::string16>* lines_;
 
   // Indicates whether a word was so long that it had to be truncated or elided
   // to fit the available width.
-  bool insufficient_width_ = false;
+  bool insufficient_width_;
 
   // Indicates whether there were too many lines for the available height.
-  bool insufficient_height_ = false;
-
-  // Indicates whether the very first word was truncated.
-  bool first_word_truncated_ = false;
+  bool insufficient_height_;
 
   DISALLOW_COPY_AND_ASSIGN(RectangleText);
 };
@@ -617,8 +619,7 @@ int RectangleText::Finalize() {
   if (last_line_ended_in_lf_)
     lines_->push_back(base::string16());
   return (insufficient_width_ ? INSUFFICIENT_SPACE_HORIZONTAL : 0) |
-         (insufficient_height_ ? INSUFFICIENT_SPACE_VERTICAL : 0) |
-         (first_word_truncated_ ? INSUFFICIENT_SPACE_FOR_FIRST_WORD : 0);
+         (insufficient_height_ ? INSUFFICIENT_SPACE_VERTICAL : 0);
 }
 
 void RectangleText::AddLine(const base::string16& line) {
@@ -686,8 +687,6 @@ int RectangleText::AddWordOverflow(const base::string16& word) {
     if (!NewLine())
       return 0;
     lines_added++;
-  } else if (lines_->empty()) {
-    first_word_truncated_ = true;
   }
 
   if (wrap_behavior_ == IGNORE_LONG_WORDS) {
