@@ -511,6 +511,7 @@ core_dependency_idl_files =
                     "fullscreen/ElementFullscreen.idl",
                     "html/HTMLHyperlinkElementUtils.idl",
                     "imagebitmap/ImageBitmapFactories.idl",
+                    "layout/custom/CSSLayoutWorklet.idl",
                     "svg/SVGDocument.idl",
                     "svg/SVGFilterPrimitiveStandardAttributes.idl",
                     "svg/SVGFitToViewBox.idl",
