@@ -238,7 +238,7 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
-  if (bubble_status_ == SHOULD_POP_UP) {
+  if (ShouldBubblePopUp()) {
     DCHECK(!dialog_controller_);
     // This will detach any existing bubble so OnBubbleHidden() isn't called.
     weak_ptr_factory_.InvalidateWeakPtrs();
@@ -247,7 +247,7 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
     icon->SetState(GetState());
     ShowBubbleWithoutUserInteraction();
     // If the bubble appeared then the status is updated in OnBubbleShown().
-    if (bubble_status_ == SHOULD_POP_UP)
+    if (ShouldBubblePopUp())
       bubble_status_ = NOT_SHOWN;
   } else {
     password_manager::ui::State state = GetState();
@@ -603,7 +603,7 @@ base::TimeDelta ManagePasswordsUIController::GetTimeoutForSaveFallback() {
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
-  DCHECK(IsAutomaticallyOpeningBubble());
+  DCHECK(ShouldBubblePopUp());
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;
@@ -645,7 +645,7 @@ void ManagePasswordsUIController::ReopenBubbleAfterAuth(
     return;
   if (auth_is_successful)
     are_passwords_revealed_when_next_bubble_is_opened_ = true;
-  bubble_status_ = SHOULD_POP_UP;
+  bubble_status_ = SHOULD_POP_UP_AFTER_REAUTH;
   UpdateBubbleAndIconVisibility();
 }
 
