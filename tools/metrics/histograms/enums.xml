@@ -32273,45 +32273,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="TokenDisabled"/>
 </enum>
 
-<enum name="OSAgnosticErrno">
-  <summary>Errno values with the same meanings on Mac/Win/Linux.</summary>
-  <int value="0" label="0">No error</int>
-  <int value="1" label="EPERM">Operation not permitted</int>
-  <int value="2" label="ENOENT">No such file or directory</int>
-  <int value="3" label="ESRCH">No such process</int>
-  <int value="4" label="EINTR">Interrupted function call</int>
-  <int value="5" label="EIO">Input/output error</int>
-  <int value="6" label="ENXIO">No such device or address</int>
-  <int value="7" label="E2BIG">Arg list too long</int>
-  <int value="8" label="ENOEXEC">Exec format error</int>
-  <int value="9" label="EBADF">Bad file descriptor</int>
-  <int value="10" label="ECHILD">No child processes</int>
-  <int value="11" label="EDEADLK">Resource deadlock avoided</int>
-  <int value="12" label="ENOMEM">Cannot allocate memory</int>
-  <int value="13" label="EACCES">Permission denied</int>
-  <int value="14" label="EFAULT">Bad address</int>
-  <int value="15" label="ENOTBLK">Not a block device</int>
-  <int value="16" label="EBUSY">Resource busy</int>
-  <int value="17" label="EEXIST">File exists</int>
-  <int value="18" label="EXDEV">Improper link</int>
-  <int value="19" label="ENODEV">Operation not supported by device</int>
-  <int value="20" label="ENOTDIR">Not a directory</int>
-  <int value="21" label="EISDIR">Is a directory</int>
-  <int value="22" label="EINVAL">Invalid argument</int>
-  <int value="23" label="ENFILE">Too many open files in system</int>
-  <int value="24" label="EMFILE">Too many open files</int>
-  <int value="25" label="ENOTTY">Inappropriate ioctl for device</int>
-  <int value="26" label="ETXTBSY">Text file busy</int>
-  <int value="27" label="EFBIG">File too large</int>
-  <int value="28" label="ENOSPC">Device out of space</int>
-  <int value="29" label="ESPIPE">Illegal seek</int>
-  <int value="30" label="EROFS">Read-only file system</int>
-  <int value="31" label="EMLINK">Too many links</int>
-  <int value="32" label="EPIPE">Broken pipe</int>
-  <int value="33" label="EDOM">Numerical argument out of domain</int>
-  <int value="34" label="ERANGE">Numerical result out of range</int>
-</enum>
-
 <enum name="OsSuite">
   <int value="0" label="Windows Home Edition (or unknown)"/>
   <int value="1" label="Windows Professional/Ultimate Editions"/>
@@ -34497,6 +34458,78 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Wrong Username"/>
   <int value="10" label="Policy Parse Error"/>
   <int value="11" label="Bad Key Validation Signature"/>
+</enum>
+
+<enum name="PopularOSErrno">
+  <summary>
+    Popular errno values. See the descriptions on &quot;*/*/*&quot; labels for
+    the applicable OS, usually Linux/Mac/Windows. See
+    http://www.ioplex.com/~miallen/errcmp.html and
+    http://www.ioplex.com/~miallen/errcmpp.html for more info.
+  </summary>
+  <int value="0" label="0">No error</int>
+  <int value="1" label="EPERM">Operation not permitted</int>
+  <int value="2" label="ENOENT">No such file or directory</int>
+  <int value="3" label="ESRCH">No such process</int>
+  <int value="4" label="EINTR">Interrupted function call</int>
+  <int value="5" label="EIO">Input/output error</int>
+  <int value="6" label="ENXIO">No such device or address</int>
+  <int value="7" label="E2BIG">Arg list too long</int>
+  <int value="8" label="ENOEXEC">Exec format error</int>
+  <int value="9" label="EBADF">Bad file descriptor</int>
+  <int value="10" label="ECHILD">No child processes</int>
+  <int value="11" label="EAGAIN/EDEADLK/EAGAIN">
+    Try again on Linux. Resource deadlock avoided on Mac. Resource temporarily
+    unavailable on Windows.
+  </int>
+  <int value="12" label="ENOMEM">Cannot allocate memory</int>
+  <int value="13" label="EACCES">Permission denied</int>
+  <int value="14" label="EFAULT">Bad address</int>
+  <int value="15" label="ENOTBLK">Not a block device</int>
+  <int value="16" label="EBUSY">Resource busy</int>
+  <int value="17" label="EEXIST">File exists</int>
+  <int value="18" label="EXDEV">Improper link</int>
+  <int value="19" label="ENODEV">Operation not supported by device</int>
+  <int value="20" label="ENOTDIR">Not a directory</int>
+  <int value="21" label="EISDIR">Is a directory</int>
+  <int value="22" label="EINVAL">Invalid argument</int>
+  <int value="23" label="ENFILE">Too many open files in system</int>
+  <int value="24" label="EMFILE">Too many open files</int>
+  <int value="25" label="ENOTTY">Inappropriate ioctl for device</int>
+  <int value="26" label="ETXTBSY">Text file busy</int>
+  <int value="27" label="EFBIG">File too large</int>
+  <int value="28" label="ENOSPC">Device out of space</int>
+  <int value="29" label="ESPIPE">Illegal seek</int>
+  <int value="30" label="EROFS">Read-only file system</int>
+  <int value="31" label="EMLINK">Too many links</int>
+  <int value="32" label="EPIPE">Broken pipe</int>
+  <int value="33" label="EDOM">Numerical argument out of domain</int>
+  <int value="34" label="ERANGE">Numerical result out of range</int>
+  <int value="35" label="EDEADLK/EAGAIN/EUCLEAN">
+    Resource deadlock would occur on Linux. Resource temporarily unavailable on
+    Mac. Unknown error on Windows.
+  </int>
+  <int value="36" label="ENAMETOOLONG/EINPROGRESS/EDEADLK">
+    File name too long on Linux. Operation now in progress on Mac. Resource
+    deadlock avoided on Windows.
+  </int>
+  <int value="45" label="EL2NSYNC/EOPNOTSUPP/_">
+    Level 2 not synchronized on Linux. Operation not supported on Mac. Resource
+    deadlock avoided on Windows.
+  </int>
+  <int value="63" label="ENOSR/ENAMETOOLONG/_">
+    Out of streams resources on Linux. File name too long on Mac.
+  </int>
+  <int value="69" label="ESRMNT/EDQUOT/_">
+    Srmount error on Linux. Disk quota exceeded on Mac.
+  </int>
+  <int value="92" label="ENOPROTOOPT/EILSEQ/_">
+    Protocol not supported on Linux. Illegal byte sequence on Mac.
+  </int>
+  <int value="95" label="EOPNOTSUPP/_/_">
+    Operation not supported on transport endpoint on Linux.
+  </int>
+  <int value="122" label="EDQUOT/_/_">Quota exceeeded on Linux.</int>
 </enum>
 
 <enum name="PopupBlockerAction">
