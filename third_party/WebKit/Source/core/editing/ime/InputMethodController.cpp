@@ -750,8 +750,7 @@ void InputMethodController::SetComposition(
       // It's weird to call |setComposition()| with empty text outside
       // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so
       // we simply delete selection without sending extra events.
-      TypingCommand::DeleteSelection(GetDocument(),
-                                     TypingCommand::kPreventSpellChecking);
+      TypingCommand::DeleteSelection(GetDocument());
     }
 
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -776,10 +775,9 @@ void InputMethodController::SetComposition(
 
   // Suppress input event until after we move the caret to the new position.
   EventQueueScope scope;
-  InsertTextDuringCompositionWithEvents(
-      GetFrame(), text,
-      TypingCommand::kSelectInsertedText | TypingCommand::kPreventSpellChecking,
-      TypingCommand::kTextCompositionUpdate);
+  InsertTextDuringCompositionWithEvents(GetFrame(), text,
+                                        TypingCommand::kSelectInsertedText,
+                                        TypingCommand::kTextCompositionUpdate);
   // Event handlers might destroy document.
   if (!IsAvailable())
     return;
