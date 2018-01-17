@@ -157,6 +157,9 @@ class CORE_EXPORT InputMethodController final
   // Returns true if moved caret successfully.
   bool MoveCaret(int new_caret_position);
 
+  // Returns false if the frame is destroyed, true otherwise.
+  bool DispatchCompositionStartEvent(const String& text) WARN_UNUSED_RESULT;
+
   PlainTextRange CreateSelectionRangeForSetComposition(
       int selection_start,
       int selection_end,
