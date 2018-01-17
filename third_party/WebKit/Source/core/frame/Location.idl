@@ -55,9 +55,6 @@
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject].
     readonly attribute DOMStringList ancestorOrigins;
 
-    // TODO(foolip): Per spec, Location implements URLUtils. The below is
-    // mostly like the URLUtils interface, but with some members missing and
-    // using DOMString instead of USVString.
     [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
     // TODO(yukishiino): Use [Unforgeable] stringifier instead of toString.
     DOMString toString();
