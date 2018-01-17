@@ -172,6 +172,12 @@ void FakePowerManagerClient::GetSwitchStates(
                                 SwitchStates{lid_state_, tablet_mode_}));
 }
 
+void FakePowerManagerClient::GetInactivityDelays(
+    DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), inactivity_delays_));
+}
+
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
   ++num_pending_suspend_readiness_callbacks_;
 
@@ -249,6 +255,13 @@ void FakePowerManagerClient::SetTabletMode(TabletMode mode,
   tablet_mode_ = mode;
   for (auto& observer : observers_)
     observer.TabletModeEventReceived(mode, timestamp);
+}
+
+void FakePowerManagerClient::SetInactivityDelays(
+    const power_manager::PowerManagementPolicy::Delays& delays) {
+  inactivity_delays_ = delays;
+  for (auto& observer : observers_)
+    observer.InactivityDelaysChanged(delays);
 }
 
 void FakePowerManagerClient::UpdatePowerProperties(
