@@ -109,4 +109,24 @@ TEST_F(InsertListCommandTest, InsertListOnEmptyHiddenElements) {
       "</button>",
       GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
+
+// Refer https://crbug.com/797520
+TEST_F(InsertListCommandTest, InsertListWithCollapsedVisibility) {
+  GetDocument().setDesignMode("on");
+  InsertStyleElement(
+      "ul { visibility:collapse; }"
+      "dl { visibility:visible; }");
+
+  Selection().SetSelection(SetSelectionTextToBody("^<dl>a</dl>|"));
+  InsertListCommand* command =
+      InsertListCommand::Create(GetDocument(), InsertListCommand::kOrderedList);
+
+  // Crash happens here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<dl>"
+      "<ol></ol><ul>^a|</ul>"
+      "</dl>",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
 }
