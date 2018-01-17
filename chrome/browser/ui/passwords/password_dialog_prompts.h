@@ -13,9 +13,6 @@ class WebContents;
 
 class PasswordDialogController;
 
-// Layout constants
-const int kDesiredWidth = 370;
-
 // The default inset from BubbleFrameView.
 const int kTitleTopInset = 12;
 
