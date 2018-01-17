@@ -213,6 +213,12 @@ void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
 }
 
 void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {
+  if (!local_root_) {
+    // We should figure out why we get here when there is no local root
+    // (https://crbug.com/792345).
+    return;
+  }
+
   // TODO(alexmos, kenrb): resizing behavior such as this should be changed
   // to use Page messages.  This uses the visual viewport size to set size on
   // both the WebViewImpl size and the Page's VisualViewport. If there are
