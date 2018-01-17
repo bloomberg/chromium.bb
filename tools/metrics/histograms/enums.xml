@@ -3253,6 +3253,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="AddFolder"/>
   <int value="18" label="Import"/>
   <int value="19" label="Export"/>
+  <int value="20" label="Help center"/>
 </enum>
 
 <enum name="BookmarksEntryPoint">

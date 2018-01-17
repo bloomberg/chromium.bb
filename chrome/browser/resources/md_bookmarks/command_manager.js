@@ -218,10 +218,10 @@ cr.define('bookmarks', function() {
         case Command.SORT:
         case Command.EXPORT:
         case Command.IMPORT:
+        case Command.HELP_CENTER:
           return true;
-        default:
-          return false;
       }
+      return assert(false);
     },
 
     /**
@@ -391,6 +391,9 @@ cr.define('bookmarks', function() {
           break;
         case Command.EXPORT:
           chrome.bookmarks.export();
+          break;
+        case Command.HELP_CENTER:
+          window.open('https://support.google.com/chrome/?p=bookmarks');
           break;
         default:
           assert(false);
@@ -617,6 +620,9 @@ cr.define('bookmarks', function() {
         case Command.EXPORT:
           label = 'menuExport';
           break;
+        case Command.HELP_CENTER:
+          label = 'menuHelpCenter';
+          break;
       }
       assert(label);
 
@@ -666,6 +672,8 @@ cr.define('bookmarks', function() {
             // <hr>
             Command.IMPORT,
             Command.EXPORT,
+            // <hr>
+            Command.HELP_CENTER,
           ];
         case MenuSource.LIST:
           return [
@@ -693,7 +701,8 @@ cr.define('bookmarks', function() {
      * @private
      */
     showDividerAfter_: function(command, itemIds) {
-      return ((command == Command.SORT || command == Command.ADD_FOLDER) &&
+      return ((command == Command.SORT || command == Command.ADD_FOLDER ||
+               command == Command.EXPORT) &&
               this.menuSource_ == MenuSource.TOOLBAR) ||
           (command == Command.DELETE &&
            (this.globalCanEdit_ || this.isSingleBookmark_(itemIds)));
