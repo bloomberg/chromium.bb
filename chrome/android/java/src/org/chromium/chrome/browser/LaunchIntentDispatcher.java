@@ -20,6 +20,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.CachedMetrics;
@@ -301,6 +302,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
             context.grantUriPermission(
                     context.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.OPEN_CUSTOM_TABS_IN_NEW_TASK)) {
+            newIntent.setFlags(newIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK);
         }
 
         // If a CCT intent triggers First Run, then NEW_TASK will be automatically applied.  As
