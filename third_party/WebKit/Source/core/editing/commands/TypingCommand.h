@@ -152,9 +152,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void SetShouldRetainAutocorrectionIndicator(bool retain) override {
     should_retain_autocorrection_indicator_ = retain;
   }
-  void SetShouldPreventSpellChecking(bool prevent) {
-    should_prevent_spell_checking_ = prevent;
-  }
 
   void UpdatePreservesTypingStyle(ETypingCommand);
   void TypingAddedToOpenCommand(ETypingCommand);
@@ -201,7 +198,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   bool opened_by_backward_delete_;
 
   bool should_retain_autocorrection_indicator_;
-  bool should_prevent_spell_checking_;
 
   bool is_incremental_insertion_;
   size_t selection_start_;
