@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/omnibox/test_omnibox_client.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/test_omnibox_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
