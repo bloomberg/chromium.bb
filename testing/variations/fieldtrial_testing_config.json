@@ -431,6 +431,28 @@
             ]
         }
     ],
+    "AutofillGooglePayBranding": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillCreditCardDropdownGooglePayBranding",
+                        "AutofillUpstreamUseGooglePayBranding",
+                        "AutofillUseNewSettingsNameInDropdown"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillProfileCleanup": [
         {
             "platforms": [
