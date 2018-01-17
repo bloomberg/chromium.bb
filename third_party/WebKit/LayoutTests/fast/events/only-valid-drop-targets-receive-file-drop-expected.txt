@@ -1,3 +1,4 @@
+CONFIRM NAVIGATION
 To run this test manually, drag a file to one of the two boxes below.
 
 Dropping in drop target 1 should result in a drop event.
