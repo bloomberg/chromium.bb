@@ -5,6 +5,9 @@
 #include "components/previews/content/previews_optimization_guide.h"
 
 #include "base/bind.h"
+#include "base/files/file.h"
+#include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -12,6 +15,88 @@
 #include "url/gurl.h"
 
 namespace previews {
+
+namespace {
+
+// Enumerates the possible outcomes of processing previews hints. Used in UMA
+// histograms, so the order of enumerators should not be changed.
+//
+// Keep in sync with PreviewsProcessHintsResult in
+// tools/metrics/histograms/enums.xml.
+enum class PreviewsProcessHintsResult {
+  PROCESSED_NO_PREVIEWS_HINTS = 0,
+  PROCESSED_PREVIEWS_HINTS = 1,
+  FAILED_FINISH_PROCESSING = 2,
+
+  // Insert new values before this line.
+  MAX,
+};
+
+void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.ProcessHintsResult",
+                            static_cast<int>(result),
+                            static_cast<int>(PreviewsProcessHintsResult::MAX));
+}
+
+// Name of sentinel file to guard potential crash loops while processing
+// the config into hints. It holds the version of the config that is/was
+// being processed into hints.
+const base::FilePath::CharType kSentinelFileName[] =
+    FILE_PATH_LITERAL("previews_config_sentinel.txt");
+
+// Creates the sentinel file (at |sentinel_path|) to persistently mark the
+// beginning of processing the configuration data for Previews hints. It
+// records the configuration version in the file. Returns true when the
+// sentinel file is successfully created and processing should continue.
+// Returns false if the processing should not continue because the
+// file exists with the same version (indicating that processing that version
+// failed previously (possibly crash or shutdown). Should be run in the
+// background (e.g., same task as Hints.CreateFromConfig).
+bool CreateSentinelFile(const base::FilePath& sentinel_path,
+                        const base::Version& version) {
+  DCHECK(version.IsValid());
+
+  if (base::PathExists(sentinel_path)) {
+    // Processing apparently did not complete previously, check its version.
+    std::string content;
+    if (!base::ReadFileToString(sentinel_path, &content)) {
+      DLOG(WARNING) << "Error reading previews config sentinel file";
+      // Attempt to delete sentinel for fresh start next time.
+      base::DeleteFile(sentinel_path, false /* recursive */);
+      return false;
+    }
+    base::Version previous_attempted_version(content);
+    if (!previous_attempted_version.IsValid()) {
+      DLOG(ERROR) << "Bad contents in previews config sentinel file";
+      // Attempt to delete sentinel for fresh start next time.
+      base::DeleteFile(sentinel_path, false /* recursive */);
+      return false;
+    }
+    if (previous_attempted_version.CompareTo(version) == 0) {
+      // Previously attempted same version without completion.
+      return false;
+    }
+  }
+
+  // Write config version in the sentinel file.
+  std::string new_sentinel_value = version.GetString();
+  if (base::WriteFile(sentinel_path, new_sentinel_value.data(),
+                      new_sentinel_value.length()) <= 0) {
+    DLOG(ERROR) << "Failed to create sentinel file " << sentinel_path;
+    return false;
+  }
+  return true;
+}
+
+// Deletes the sentinel file. This should be done once processing the
+// configuration is complete and should be done in the background (e.g.,
+// same task as Hints.CreateFromConfig).
+void DeleteSentinelFile(const base::FilePath& sentinel_path) {
+  if (!base::DeleteFile(sentinel_path, false /* recursive */))
+    DLOG(ERROR) << "Error deleting sentinel file";
+}
+
+}  // namespace
 
 // Holds previews hints extracted from the configuration sent by the
 // Optimization Guide Service.
@@ -21,7 +106,8 @@ class PreviewsOptimizationGuide::Hints {
 
   // Creates a Hints instance from the provided configuration.
   static std::unique_ptr<Hints> CreateFromConfig(
-      const optimization_guide::proto::Configuration& config);
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& info);
 
   // Whether the URL is whitelisted for the given previews type.
   bool IsWhitelisted(const GURL& url, PreviewsType type);
@@ -46,8 +132,19 @@ PreviewsOptimizationGuide::Hints::~Hints() {}
 // static
 std::unique_ptr<PreviewsOptimizationGuide::Hints>
 PreviewsOptimizationGuide::Hints::CreateFromConfig(
-    const optimization_guide::proto::Configuration& config) {
+    const optimization_guide::proto::Configuration& config,
+    const optimization_guide::ComponentInfo& info) {
+  base::FilePath sentinel_path(
+      info.hints_path.DirName().Append(kSentinelFileName));
+  if (!CreateSentinelFile(sentinel_path, info.hints_version)) {
+    std::unique_ptr<Hints> no_hints;
+    RecordProcessHintsResult(
+        PreviewsProcessHintsResult::FAILED_FINISH_PROCESSING);
+    return no_hints;
+  }
+
   std::unique_ptr<Hints> hints(new Hints());
+
   // The condition set ID is a simple increasing counter that matches the
   // order of hints in the config (where earlier hints in the config take
   // precendence over later hints in the config if there are multiple matches).
@@ -93,6 +190,12 @@ PreviewsOptimizationGuide::Hints::CreateFromConfig(
     id++;
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
+  // Completed processing hints data without crashing so clear sentinel.
+  DeleteSentinelFile(sentinel_path);
+  RecordProcessHintsResult(
+      all_conditions.empty()
+          ? PreviewsProcessHintsResult::PROCESSED_NO_PREVIEWS_HINTS
+          : PreviewsProcessHintsResult::PROCESSED_PREVIEWS_HINTS);
   return hints;
 }
 
@@ -142,13 +245,14 @@ bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
 }
 
 void PreviewsOptimizationGuide::OnHintsProcessed(
-    const optimization_guide::proto::Configuration& config) {
+    const optimization_guide::proto::Configuration& config,
+    const optimization_guide::ComponentInfo& info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&PreviewsOptimizationGuide::Hints::CreateFromConfig,
-                     config),
+                     config, info),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
                      io_weak_ptr_factory_.GetWeakPtr()));
 }

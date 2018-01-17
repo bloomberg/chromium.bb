@@ -67926,6 +67926,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Previews.ProcessHintsResult" enum="PreviewsProcessHintsResult">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Whether processing the previews hints succeeded and if any previews hints
+    were found. Recorded when the PreviewsOptimizationGuide receives a
+    notification to process hints.
+  </summary>
+</histogram>
+
 <histogram name="PrinterService.PrinterServiceEvent"
     enum="PrinterServiceEventType">
   <owner>vitalybuka@chromium.org</owner>

@@ -35235,6 +35235,19 @@ Called by update_net_trust_anchors.py.-->
       label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
+<enum name="PreviewsProcessHintsResult">
+  <int value="0" label="No hints found">
+    Previews processed but no Previews hints found.
+  </int>
+  <int value="1" label="Hints found">
+    Previews processed and Previews hints found.
+  </int>
+  <int value="2" label="Failed processing">
+    Failed to finish processing same version previously so skipping to avoid
+    potential crash loop.
+  </int>
+</enum>
+
 <enum name="PreviewsType">
   <int value="0" label="None"/>
   <int value="1" label="Offline"/>

@@ -9,6 +9,20 @@
 
 namespace optimization_guide {
 
+// Encapsulates information about a version of optimization hints data received
+// from the components server.
+struct ComponentInfo {
+  ComponentInfo(const base::Version& hints_version,
+                const base::FilePath& hints_path);
+  ~ComponentInfo();
+
+  // The version of the hints content.
+  const base::Version hints_version;
+
+  // The path to the file containing the hints protobuf file.
+  const base::FilePath hints_path;
+};
+
 // Interface for objects that wish to be notified of changes in the Optimization
 // Guide Service.
 //
@@ -16,7 +30,9 @@ namespace optimization_guide {
 class OptimizationGuideServiceObserver {
  public:
   // Called when the hints have been processed.
-  virtual void OnHintsProcessed(const proto::Configuration& config) = 0;
+  virtual void OnHintsProcessed(
+      const proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) = 0;
 
  protected:
   virtual ~OptimizationGuideServiceObserver() {}

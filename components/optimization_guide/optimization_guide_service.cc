@@ -128,15 +128,16 @@ void OptimizationGuideService::ProcessHintsInBackground(
   io_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&OptimizationGuideService::DispatchHintsOnIOThread,
-                     base::Unretained(this), new_config));
+                     base::Unretained(this), new_config, component_info));
 }
 
 void OptimizationGuideService::DispatchHintsOnIOThread(
-    const proto::Configuration& config) {
+    const proto::Configuration& config,
+    const ComponentInfo& component_info) {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   for (auto& observer : observers_)
-    observer.OnHintsProcessed(config);
+    observer.OnHintsProcessed(config, component_info);
 }
 
 }  // namespace optimization_guide
