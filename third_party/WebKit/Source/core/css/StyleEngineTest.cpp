@@ -21,6 +21,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/WebFloatRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,8 +109,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
     <div id='t5'>I animate!</div>
     <div id='t6'>Stop!</div>
     <div id='t7'>Go</div>
-    <div id='t8' class='red'>Green</div>
-    <div id='t9' style='color: black !important'>Black</div>
+    <div id='t8' style='color: white !important'>screen: Red; print: Black</div>
+    <div id='t9' class='red'>Green</div>
+    <div id='t10' style='color: black !important'>Black</div>
     <div></div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -407,50 +409,98 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(255, 255, 255),
       t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  // Author style sheets
+  // Media queries
 
   Element* t8 = GetDocument().getElementById("t8");
-  Element* t9 = GetDocument().getElementById("t9");
   ASSERT_TRUE(t8);
-  ASSERT_TRUE(t9);
   ASSERT_TRUE(t8->GetComputedStyle());
-  ASSERT_TRUE(t9->GetComputedStyle());
+  EXPECT_EQ(
+      MakeRGB(255, 255, 255),
+      t8->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  StyleSheetContents* media_queries_parsed_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  media_queries_parsed_sheet->ParseString(
+      "@media screen {"
+      " #t8 {"
+      "  color: red !important;"
+      " }"
+      "}"
+      "@media print {"
+      " #t8 {"
+      "  color: black !important;"
+      " }"
+      "}");
+  WebStyleSheetId media_queries_sheet_id =
+      GetStyleEngine().InjectSheet(media_queries_parsed_sheet,
+                                   WebDocument::kUserOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
+
+  FloatSize page_size(400, 400);
+  GetDocument().GetFrame()->SetPrinting(true, page_size, page_size, 1);
+  ASSERT_TRUE(t8->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(0, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                   GetCSSPropertyColor()));
+
+  GetDocument().GetFrame()->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  ASSERT_TRUE(t8->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+
+  GetStyleEngine().RemoveInjectedSheet(media_queries_sheet_id);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t8->GetComputedStyle());
+  EXPECT_EQ(
+      MakeRGB(255, 255, 255),
+      t8->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  // Author style sheets
+
+  Element* t9 = GetDocument().getElementById("t9");
+  Element* t10 = GetDocument().getElementById("t10");
+  ASSERT_TRUE(t9);
+  ASSERT_TRUE(t10);
+  ASSERT_TRUE(t9->GetComputedStyle());
+  ASSERT_TRUE(t10->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
+                                   GetCSSPropertyColor()));
 
   StyleSheetContents* parsed_author_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
   parsed_author_sheet->ParseString(
-      "#t8 {"
+      "#t9 {"
       " color: green;"
       "}"
-      "#t9 {"
+      "#t10 {"
       " color: white !important;"
       "}");
   WebStyleSheetId author_sheet_id =
       GetStyleEngine().InjectSheet(parsed_author_sheet,
                                    WebDocument::kAuthorOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  ASSERT_TRUE(t8->GetComputedStyle());
   ASSERT_TRUE(t9->GetComputedStyle());
+  ASSERT_TRUE(t10->GetComputedStyle());
 
   // Specificity works within author origin.
-  EXPECT_EQ(MakeRGB(0, 128, 0), t8->GetComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(MakeRGB(0, 128, 0), t9->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
   // Important author rules do not override important inline author rules.
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
+                                   GetCSSPropertyColor()));
 
   GetStyleEngine().RemoveInjectedSheet(author_sheet_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  ASSERT_TRUE(t8->GetComputedStyle());
   ASSERT_TRUE(t9->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
+  ASSERT_TRUE(t10->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
+                                   GetCSSPropertyColor()));
 }
 
 TEST_F(StyleEngineTest, IgnoreInvalidPropertyValue) {

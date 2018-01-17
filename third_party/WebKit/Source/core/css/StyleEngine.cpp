@@ -310,6 +310,8 @@ void StyleEngine::MediaQueryAffectingValueChanged(
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged() {
+  if (ClearMediaQueryDependentRuleSets(active_user_style_sheets_))
+    MarkUserStyleDirty();
   if (GetDocumentStyleSheetCollection().MediaQueryAffectingValueChanged())
     SetNeedsActiveStyleUpdate(GetDocument());
   MediaQueryAffectingValueChanged(active_tree_scopes_);
@@ -656,6 +658,18 @@ CSSStyleSheet* StyleEngine::ParseSheet(Element& element,
                                             GetDocument().Encoding());
   style_sheet->Contents()->ParseStringAtPosition(text, start_position);
   return style_sheet;
+}
+
+void StyleEngine::CollectUserStyleFeaturesTo(RuleFeatureSet& features) const {
+  for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
+    CSSStyleSheet* sheet = active_user_style_sheets_[i].first;
+    features.ViewportDependentMediaQueryResults().AppendVector(
+        sheet->ViewportDependentMediaQueryResults());
+    features.DeviceDependentMediaQueryResults().AppendVector(
+        sheet->DeviceDependentMediaQueryResults());
+    DCHECK(sheet->Contents()->HasRuleSet());
+    features.Add(sheet->Contents()->GetRuleSet().Features());
+  }
 }
 
 void StyleEngine::CollectScopedStyleFeaturesTo(RuleFeatureSet& features) const {
