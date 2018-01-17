@@ -835,6 +835,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     virtual WebGLExtension* GetExtensionObjectIfAlreadyEnabled() = 0;
 
     virtual void Trace(blink::Visitor* visitor) {}
+    void TraceWrappers(const ScriptWrappableVisitor*) const override {}
 
    private:
     bool draft_;

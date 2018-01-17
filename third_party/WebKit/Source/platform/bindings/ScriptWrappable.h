@@ -58,6 +58,11 @@ class PLATFORM_EXPORT ScriptWrappable
 
   virtual void Trace(blink::Visitor*) {}
 
+  void TraceWrappers(const ScriptWrappableVisitor*) const override {
+    // TODO(mlippautz/ulan): Trace |main_world_wrapper_| here once the GC plugin
+    // can make sure that all children properly dispatch to ScriptWrappable.
+  }
+
   bool IsScriptWrappable() const override { return true; }
 
   template <typename T>
