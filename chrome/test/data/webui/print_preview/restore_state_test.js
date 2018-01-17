@@ -7,6 +7,7 @@ cr.define('restore_state_test', function() {
   const TestNames = {
     RestoreTrueValues: 'restore true values',
     RestoreFalseValues: 'restore false values',
+    SaveValues: 'save values',
   };
 
   const suiteName = 'RestoreStateTest';
@@ -136,6 +137,114 @@ cr.define('restore_state_test', function() {
         isColorEnabled: false,
       };
       return testInitializeWithStickySettings(stickySettings);
+    });
+
+    /**
+     * Tests that setting the settings values results in the correct serialized
+     * values being sent to the native layer.
+     */
+    test(assert(TestNames.SaveValues), function() {
+      /**
+       * Array of section names, setting names, keys for serialized state, and
+       * values for testing.
+       * @type {Array<{section: string,
+       *               settingName: string,
+       *               key: string,
+       *               value: *}>}
+       */
+      const testData = [
+        {
+          section: 'print-preview-copies-settings',
+          settingName: 'collate',
+          key: 'isCollateEnabled',
+          value: true,
+        },
+        {
+          section: 'print-preview-layout-settings',
+          settingName: 'layout',
+          key: 'isLandscapeEnabled',
+          value: true,
+        },
+        {
+          section: 'print-preview-color-settings',
+          settingName: 'color',
+          key: 'isColorEnabled',
+          value: false,
+        },
+        {
+          section: 'print-preview-media-size-settings',
+          settingName: 'mediaSize',
+          key: 'mediaSize',
+          value: {width_microns: 20000, height_microns: 20000},
+        },
+        {
+          section: 'print-preview-margins-settings',
+          settingName: 'margins',
+          key: 'marginsType',
+          value: print_preview.ticket_items.MarginsTypeValue.MINIMUM,
+        },
+        {
+          section: 'print-preview-dpi-settings',
+          settingName: 'dpi',
+          key: 'dpi',
+          value: {horizontal_dpi: 1000, vertical_dpi: 1000},
+        },
+        {
+          section: 'print-preview-scaling-settings',
+          settingName: 'scaling',
+          key: 'scaling',
+          value: '85',
+        },
+        {
+          section: 'print-preview-other-options-settings',
+          settingName: 'duplex',
+          key: 'isDuplexEnabled',
+          value: false,
+        },
+        {
+          section: 'print-preview-other-options-settings',
+          settingName: 'headerFooter',
+          key: 'isHeaderFooterEnabled',
+          value: false,
+        },
+        {
+          section: 'print-preview-other-options-settings',
+          settingName: 'cssBackground',
+          key: 'isCssBackgroundEnabled',
+          value: true,
+        }
+      ];
+
+      // Setup
+      nativeLayer.setInitialSettings(initialSettings);
+      nativeLayer.setLocalDestinationCapabilities(
+          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
+
+      page = document.createElement('print-preview-app');
+      document.body.appendChild(page);
+
+      return nativeLayer.whenCalled('getInitialSettings')
+          .then(function() {
+            // Set all the settings sections.
+            testData.forEach((testValue, index) => {
+              if (index == testData.length - 1)
+                nativeLayer.resetResolver('saveAppState');
+              page.$$(testValue.section)
+                  .setSetting(testValue.settingName, testValue.value);
+            });
+            // Wait on only the last call to saveAppState, which should
+            // contain all the update settings values.
+            return nativeLayer.whenCalled('saveAppState');
+          })
+          .then(function(serializedSettingsStr) {
+            const serializedSettings = JSON.parse(serializedSettingsStr);
+            // Validate serialized state.
+            testData.forEach(testValue => {
+              expectEquals(
+                  JSON.stringify(testValue.value),
+                  JSON.stringify(serializedSettings[testValue.key]));
+            });
+          });
     });
   });
 

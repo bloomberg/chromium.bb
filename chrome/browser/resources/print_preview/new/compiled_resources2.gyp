@@ -26,7 +26,6 @@
         '../data/compiled_resources2.gyp:document_info',
         '../data/compiled_resources2.gyp:measurement_system',
         '../data/compiled_resources2.gyp:user_info',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:webui_listener_tracker',
       ],
@@ -156,9 +155,9 @@
       'target_name': 'model',
       'dependencies': [
         'settings_behavior',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:document_info',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
