@@ -166,6 +166,8 @@ class CORE_EXPORT InputMethodController final
   // Implements |DocumentShutdownObserver|.
   void ContextDestroyed(Document*) final;
 
+  enum class TypingContinuation;
+
   // Returns true if setting selection to specified offsets, otherwise false.
   bool SetEditableSelectionOffsets(const PlainTextRange&, TypingContinuation);
 
