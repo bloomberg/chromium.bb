@@ -279,6 +279,7 @@ void LockManager::Trace(blink::Visitor* visitor) {
 void LockManager::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (auto request : pending_requests_)
     visitor->TraceWrappers(request);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 void LockManager::ContextDestroyed(ExecutionContext*) {

@@ -263,6 +263,7 @@ void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
 void V8AbstractEventListener::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(listener_.Cast<v8::Value>());
+  EventListener::TraceWrappers(visitor);
 }
 
 }  // namespace blink

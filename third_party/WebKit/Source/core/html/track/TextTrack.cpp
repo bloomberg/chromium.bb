@@ -380,5 +380,6 @@ void TextTrack::Trace(blink::Visitor* visitor) {
 void TextTrack::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(cues_);
   EventTargetWithInlineData::TraceWrappers(visitor);
+  TrackBase::TraceWrappers(visitor);
 }
 }  // namespace blink

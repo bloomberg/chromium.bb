@@ -180,6 +180,7 @@ void HTMLDocumentParser::Trace(blink::Visitor* visitor) {
 void HTMLDocumentParser::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(script_runner_);
+  ScriptableDocumentParser::TraceWrappers(visitor);
 }
 
 void HTMLDocumentParser::Detach() {

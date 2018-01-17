@@ -7345,6 +7345,7 @@ void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(scripted_idle_task_controller_);
   visitor->TraceWrappers(intersection_observer_controller_);
   ContainerNode::TraceWrappers(visitor);
+  ExecutionContext::TraceWrappers(visitor);
   Supplementable<Document>::TraceWrappers(visitor);
 }
 

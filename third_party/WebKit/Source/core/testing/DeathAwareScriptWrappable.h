@@ -53,6 +53,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
       visitor->TraceWrappers(pair.key);
       visitor->TraceWrappers(pair.value);
     }
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
   void SetWrappedDependency(DeathAwareScriptWrappable* dependency) {

@@ -76,6 +76,7 @@ class MutationObserver::V8DelegateImpl final
 
   virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(callback_);
+    MutationObserver::Delegate::TraceWrappers(visitor);
   }
 
  private:
@@ -383,6 +384,7 @@ void MutationObserver::TraceWrappers(
   visitor->TraceWrappers(delegate_);
   for (auto record : records_)
     visitor->TraceWrappers(record);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink

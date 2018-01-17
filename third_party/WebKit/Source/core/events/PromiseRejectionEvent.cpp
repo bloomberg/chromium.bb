@@ -67,6 +67,7 @@ void PromiseRejectionEvent::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(promise_);
   visitor->TraceWrappers(reason_);
+  Event::TraceWrappers(visitor);
 }
 
 }  // namespace blink

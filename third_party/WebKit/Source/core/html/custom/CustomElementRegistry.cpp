@@ -100,6 +100,7 @@ void CustomElementRegistry::TraceWrappers(
   visitor->TraceWrappers(reaction_stack_);
   for (auto definition : definitions_)
     visitor->TraceWrappers(definition);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 CustomElementDefinition* CustomElementRegistry::define(

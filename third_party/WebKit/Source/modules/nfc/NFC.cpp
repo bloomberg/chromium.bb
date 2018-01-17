@@ -930,6 +930,7 @@ void NFC::Trace(blink::Visitor* visitor) {
 void NFC::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& callback : callbacks_.Values())
     visitor->TraceWrappers(callback);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink
