@@ -60,6 +60,8 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
   // Indicates whether the associated binding has been completed.
   bool is_bound() const { return !!endpoint_client_; }
 
+  explicit operator bool() const { return !!endpoint_client_; }
+
   // Sends a message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to
   // verify that no message was sent on a message pipe in response to some

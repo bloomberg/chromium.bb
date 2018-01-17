@@ -50,6 +50,8 @@ class AssociatedInterfaceRequest {
   // handle.
   bool is_pending() const { return handle_.is_valid(); }
 
+  explicit operator bool() const { return handle_; }
+
   ScopedInterfaceEndpointHandle PassHandle() { return std::move(handle_); }
 
   const ScopedInterfaceEndpointHandle& handle() const { return handle_; }

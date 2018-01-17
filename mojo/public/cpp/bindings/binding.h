@@ -194,6 +194,8 @@ class Binding {
   // pipe has been bound to the implementation).
   bool is_bound() const { return internal_state_.is_bound(); }
 
+  explicit operator bool() const { return internal_state_.is_bound(); }
+
   // Returns the value of the handle currently bound to this Binding which can
   // be used to make explicit Wait/WaitMany calls. Requires that the Binding be
   // bound. Ownership of the handle is retained by the Binding, it is not
