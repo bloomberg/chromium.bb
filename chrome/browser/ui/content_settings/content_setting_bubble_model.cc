@@ -1444,7 +1444,9 @@ ContentSettingSubresourceFilterBubbleModel::
 ContentSettingSubresourceFilterBubbleModel::
     ~ContentSettingSubresourceFilterBubbleModel() {}
 
-void ContentSettingSubresourceFilterBubbleModel::SetTitle() {}
+void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
+  set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TITLE));
+}
 
 void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
   // The experimental UI includes the permission UI, which allows us to

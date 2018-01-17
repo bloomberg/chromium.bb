@@ -947,7 +947,8 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
                                                      profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  EXPECT_TRUE(bubble_content.title.empty());
+  EXPECT_EQ(bubble_content.title,
+            l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TITLE));
   EXPECT_EQ(bubble_content.message,
             l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
