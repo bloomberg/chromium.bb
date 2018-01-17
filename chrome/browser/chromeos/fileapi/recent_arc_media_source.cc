@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -282,7 +281,7 @@ RecentArcMediaSource::RecentArcMediaSource(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const char* root_id : kMediaDocumentsProviderRootIds)
-    roots_.emplace_back(base::MakeUnique<MediaRoot>(root_id, profile_));
+    roots_.emplace_back(std::make_unique<MediaRoot>(root_id, profile_));
 }
 
 RecentArcMediaSource::~RecentArcMediaSource() {

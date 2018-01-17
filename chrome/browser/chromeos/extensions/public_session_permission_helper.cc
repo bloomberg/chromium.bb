@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -37,7 +36,7 @@ namespace {
 
 std::unique_ptr<ExtensionInstallPrompt> CreateExtensionInstallPrompt(
     content::WebContents* web_contents) {
-  return base::MakeUnique<ExtensionInstallPrompt>(web_contents);
+  return std::make_unique<ExtensionInstallPrompt>(web_contents);
 }
 
 bool PermissionCheckNeeded(const Extension* extension) {
@@ -139,11 +138,11 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
     prompted_permission_set_.insert(permission.id());
     new_apis.insert(permission.id());
   }
-  auto permission_set = base::MakeUnique<PermissionSet>(
+  auto permission_set = std::make_unique<PermissionSet>(
       new_apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
   auto prompt = prompt_factory.Run(web_contents);
 
-  auto permissions_prompt = base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+  auto permissions_prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
       ExtensionInstallPrompt::PERMISSIONS_PROMPT);
   // activeTab has no permission message by default, so one is added here.
   if (unprompted_permissions.ContainsID(APIPermission::kActiveTab)) {

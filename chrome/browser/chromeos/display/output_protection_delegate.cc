@@ -103,9 +103,9 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
     return false;
 
   if (ash_util::IsRunningInMash())
-    controller_ = base::MakeUnique<OutputProtectionControllerMus>();
+    controller_ = std::make_unique<OutputProtectionControllerMus>();
   else
-    controller_ = base::MakeUnique<OutputProtectionControllerAsh>();
+    controller_ = std::make_unique<OutputProtectionControllerAsh>();
 
   display_id_ = display_id;
   window_ = window;

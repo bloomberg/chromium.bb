@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -156,7 +155,7 @@ void SessionManagerOperation::ValidateDeviceSettings(
   }
 
   std::unique_ptr<em::PolicyFetchResponse> policy =
-      base::MakeUnique<em::PolicyFetchResponse>();
+      std::make_unique<em::PolicyFetchResponse>();
   if (!policy->ParseFromString(policy_blob) || !policy->IsInitialized()) {
     ReportResult(DeviceSettingsService::STORE_INVALID_POLICY);
     return;

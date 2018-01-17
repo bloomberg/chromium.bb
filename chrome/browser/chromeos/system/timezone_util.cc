@@ -14,7 +14,6 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/unicodestring.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -161,9 +160,9 @@ base::string16 GetCurrentTimezoneName() {
 // Creates a list of pairs of each timezone's ID and name.
 std::unique_ptr<base::ListValue> GetTimezoneList() {
   const auto& timezones = TimezoneSettings::GetInstance()->GetTimezoneList();
-  auto timezone_list = base::MakeUnique<base::ListValue>();
+  auto timezone_list = std::make_unique<base::ListValue>();
   for (const auto& timezone : timezones) {
-    auto option = base::MakeUnique<base::ListValue>();
+    auto option = std::make_unique<base::ListValue>();
     option->AppendString(TimezoneSettings::GetTimezoneID(*timezone));
     option->AppendString(GetTimezoneName(*timezone));
     timezone_list->Append(std::move(option));

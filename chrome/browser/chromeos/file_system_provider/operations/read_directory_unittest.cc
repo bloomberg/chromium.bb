@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
@@ -69,7 +68,7 @@ class CallbackLogger {
                        storage::AsyncFileUtil::EntryList entry_list,
                        bool has_more) {
     events_.push_back(
-        base::MakeUnique<Event>(result, std::move(entry_list), has_more));
+        std::make_unique<Event>(result, std::move(entry_list), has_more));
   }
 
   std::vector<std::unique_ptr<Event>>& events() { return events_; }

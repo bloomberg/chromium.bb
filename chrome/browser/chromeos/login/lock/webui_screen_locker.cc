@@ -101,7 +101,7 @@ bool WebUIScreenLocker::ShouldPreloadLockScreen() {
 
 // static
 std::unique_ptr<views::WebView> WebUIScreenLocker::DoPreload(Profile* profile) {
-  auto web_view = base::MakeUnique<views::WebView>(profile);
+  auto web_view = std::make_unique<views::WebView>(profile);
   web_view->set_owned_by_client();
   web_view->LoadInitialURL(GURL(kLoginURL));
   InitializeWebView(web_view.get(), l10n_util::GetStringUTF16(

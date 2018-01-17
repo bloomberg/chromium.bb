@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 
 namespace em = enterprise_management;
@@ -34,7 +33,7 @@ std::unique_ptr<WeeklyTime> ExtractWeeklyTimeFromProto(
                << ").";
     return nullptr;
   }
-  return base::MakeUnique<WeeklyTime>(container.day_of_week(), time_of_day);
+  return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day);
 }
 
 std::vector<OffHoursInterval> ExtractOffHoursIntervalsFromProto(
@@ -72,17 +71,17 @@ std::unique_ptr<base::DictionaryValue> ConvertOffHoursProtoToValue(
   base::Optional<std::string> timezone = ExtractTimezoneFromProto(container);
   if (!timezone)
     return nullptr;
-  auto off_hours = base::MakeUnique<base::DictionaryValue>();
+  auto off_hours = std::make_unique<base::DictionaryValue>();
   off_hours->SetString("timezone", *timezone);
   std::vector<OffHoursInterval> intervals =
       ExtractOffHoursIntervalsFromProto(container);
-  auto intervals_value = base::MakeUnique<base::ListValue>();
+  auto intervals_value = std::make_unique<base::ListValue>();
   for (const auto& interval : intervals)
     intervals_value->Append(interval.ToValue());
   off_hours->SetList("intervals", std::move(intervals_value));
   std::vector<int> ignored_policy_proto_tags =
       ExtractIgnoredPolicyProtoTagsFromProto(container);
-  auto ignored_policies_value = base::MakeUnique<base::ListValue>();
+  auto ignored_policies_value = std::make_unique<base::ListValue>();
   for (const auto& policy : ignored_policy_proto_tags)
     ignored_policies_value->GetList().emplace_back(policy);
   off_hours->SetList("ignored_policy_proto_tags",

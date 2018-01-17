@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -80,7 +79,7 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
   user->SetStubImage(
-      base::MakeUnique<user_manager::UserImage>(
+      std::make_unique<user_manager::UserImage>(
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_PROFILE, false);
@@ -134,7 +133,7 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
   user->SetStubImage(
-      base::MakeUnique<user_manager::UserImage>(
+      std::make_unique<user_manager::UserImage>(
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_PROFILE, false);
@@ -608,7 +607,7 @@ bool FakeChromeUserManager::IsUserAllowed(
 }
 
 void FakeChromeUserManager::CreateLocalState() {
-  local_state_ = base::MakeUnique<TestingPrefServiceSimple>();
+  local_state_ = std::make_unique<TestingPrefServiceSimple>();
   user_manager::known_user::RegisterPrefs(local_state_->registry());
 }
 

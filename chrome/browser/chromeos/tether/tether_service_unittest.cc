@@ -218,7 +218,7 @@ class FakeRemoteDeviceProviderFactory
       const std::string& user_private_key,
       cryptauth::SecureMessageDelegate::Factory*
           secure_message_delegate_factory) override {
-    return base::MakeUnique<cryptauth::FakeRemoteDeviceProvider>();
+    return std::make_unique<cryptauth::FakeRemoteDeviceProvider>();
   }
 };
 
@@ -271,12 +271,12 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     profile_ = builder.Build();
 
     fake_power_manager_client_ =
-        base::MakeUnique<chromeos::FakePowerManagerClient>();
+        std::make_unique<chromeos::FakePowerManagerClient>();
 
     fake_cryptauth_service_ =
-        base::MakeUnique<cryptauth::FakeCryptAuthService>();
+        std::make_unique<cryptauth::FakeCryptAuthService>();
     fake_cryptauth_gcm_manager_ =
-        base::MakeUnique<cryptauth::FakeCryptAuthGCMManager>("registrationId");
+        std::make_unique<cryptauth::FakeCryptAuthGCMManager>("registrationId");
     mock_enrollment_manager_ =
         base::WrapUnique(new NiceMock<MockCryptAuthEnrollmentManager>(
             fake_cryptauth_gcm_manager_.get()));

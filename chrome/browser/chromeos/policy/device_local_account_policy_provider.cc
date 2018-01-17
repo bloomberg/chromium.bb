@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
@@ -63,7 +62,7 @@ DeviceLocalAccountPolicyProvider::Create(
     chrome_policy_overrides->Set(
         key::kLidCloseAction, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        base::MakeUnique<base::Value>(
+        std::make_unique<base::Value>(
             chromeos::PowerPolicyController::ACTION_STOP_SESSION),
         nullptr);
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
@@ -71,13 +70,13 @@ DeviceLocalAccountPolicyProvider::Create(
     chrome_policy_overrides->Set(
         key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        base::MakeUnique<base::Value>("Never"), nullptr);
+        std::make_unique<base::Value>("Never"), nullptr);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
     chrome_policy_overrides->Set(key::kShowLogoutButtonInTray,
                                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                                  POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                                 base::MakeUnique<base::Value>(true), nullptr);
+                                 std::make_unique<base::Value>(true), nullptr);
   }
 
   std::unique_ptr<DeviceLocalAccountPolicyProvider> provider(

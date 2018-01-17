@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -46,7 +48,7 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
                            base::Bind(&ArcKioskController::CloseSplashScreen,
                                       weak_ptr_factory_.GetWeakPtr()));
 
-  login_performer_ = base::MakeUnique<ChromeLoginPerformer>(this);
+  login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   login_performer_->LoginAsArcKioskAccount(account_id);
 }
 

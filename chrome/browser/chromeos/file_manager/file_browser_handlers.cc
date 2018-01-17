@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -388,16 +388,16 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->AppendString(action_id_);
-  auto details = base::MakeUnique<base::DictionaryValue>();
+  auto details = std::make_unique<base::DictionaryValue>();
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
-  auto file_entries = base::MakeUnique<base::ListValue>();
+  auto file_entries = std::make_unique<base::ListValue>();
 
   for (EntryDefinitionList::const_iterator iter =
            entry_definition_list->begin();
        iter != entry_definition_list->end();
        ++iter) {
-    auto file_def = base::MakeUnique<base::DictionaryValue>();
+    auto file_def = std::make_unique<base::DictionaryValue>();
     file_def->SetString("fileSystemName", iter->file_system_name);
     file_def->SetString("fileSystemRoot", iter->file_system_root_url);
     file_def->SetString("fileFullPath",
@@ -408,7 +408,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
 
   details->Set("entries", std::move(file_entries));
   event_args->Append(std::move(details));
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
       "fileBrowserHandler.onExecute", std::move(event_args), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
@@ -26,7 +26,7 @@ MockInputMethodManagerImpl::State::Clone() const {
 std::unique_ptr<InputMethodDescriptors>
 MockInputMethodManagerImpl::State::GetActiveInputMethods() const {
   std::unique_ptr<InputMethodDescriptors> result =
-      base::MakeUnique<InputMethodDescriptors>();
+      std::make_unique<InputMethodDescriptors>();
   result->push_back(InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result;
 }

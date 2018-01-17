@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -161,7 +160,7 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   // Set |kStringPolicy| to a string value.
   cloud_policy_store_.policy_map_.Set(
       kStringPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(std::string()),
+      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(std::string()),
       nullptr);
   // Make |k10BytePolicy| reference 10 bytes of external data.
   SetExternalDataReference(
@@ -194,7 +193,7 @@ void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
       policy_details_.GetCallback(), message_loop_.task_runner(),
       message_loop_.task_runner()));
   external_data_manager_->SetExternalDataStore(
-      base::MakeUnique<CloudExternalDataStore>(
+      std::make_unique<CloudExternalDataStore>(
           kCacheKey, message_loop_.task_runner(), resource_cache_.get()));
   external_data_manager_->SetPolicyStore(&cloud_policy_store_);
 }
@@ -215,7 +214,7 @@ void CloudExternalDataManagerBaseTest::SetExternalDataReference(
   cloud_policy_store_.policy_map_.Set(
       policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
       std::move(metadata),
-      base::MakeUnique<ExternalDataFetcher>(
+      std::make_unique<ExternalDataFetcher>(
           external_data_manager_->weak_factory_.GetWeakPtr(), policy));
 }
 

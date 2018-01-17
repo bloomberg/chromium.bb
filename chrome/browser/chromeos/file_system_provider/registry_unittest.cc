@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/pref_names.h"
@@ -58,7 +57,7 @@ void RememberFakeFileSystem(TestingProfile* profile,
   ASSERT_TRUE(pref_service);
 
   base::DictionaryValue extensions;
-  auto file_system = base::MakeUnique<base::DictionaryValue>();
+  auto file_system = std::make_unique<base::DictionaryValue>();
   file_system->SetKey(kPrefKeyFileSystemId, base::Value(kFileSystemId));
   file_system->SetKey(kPrefKeyDisplayName, base::Value(kDisplayName));
   file_system->SetKey(kPrefKeyWritable, base::Value(writable));
@@ -68,13 +67,13 @@ void RememberFakeFileSystem(TestingProfile* profile,
                       base::Value(opened_files_limit));
 
   // Remember watchers.
-  auto watcher_value = base::MakeUnique<base::DictionaryValue>();
+  auto watcher_value = std::make_unique<base::DictionaryValue>();
   watcher_value->SetKey(kPrefKeyWatcherEntryPath,
                         base::Value(watcher.entry_path.value()));
   watcher_value->SetKey(kPrefKeyWatcherRecursive,
                         base::Value(watcher.recursive));
   watcher_value->SetKey(kPrefKeyWatcherLastTag, base::Value(watcher.last_tag));
-  auto persistent_origins_value = base::MakeUnique<base::ListValue>();
+  auto persistent_origins_value = std::make_unique<base::ListValue>();
   for (const auto& subscriber_it : watcher.subscribers) {
     if (subscriber_it.second.persistent)
       persistent_origins_value->AppendString(subscriber_it.first.spec());
@@ -82,11 +81,11 @@ void RememberFakeFileSystem(TestingProfile* profile,
 
   watcher_value->SetWithoutPathExpansion(kPrefKeyWatcherPersistentOrigins,
                                          std::move(persistent_origins_value));
-  auto watchers = base::MakeUnique<base::DictionaryValue>();
+  auto watchers = std::make_unique<base::DictionaryValue>();
   watchers->SetWithoutPathExpansion(watcher.entry_path.value(),
                                     std::move(watcher_value));
   file_system->SetWithoutPathExpansion(kPrefKeyWatchers, std::move(watchers));
-  auto file_systems = base::MakeUnique<base::DictionaryValue>();
+  auto file_systems = std::make_unique<base::DictionaryValue>();
   file_systems->SetWithoutPathExpansion(kFileSystemId, std::move(file_system));
   extensions.SetWithoutPathExpansion(kProviderId.ToString(),
                                      std::move(file_systems));

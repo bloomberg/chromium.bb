@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -168,7 +167,7 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   invalidation::InvalidationService* invalidation_service =
       invalidation_provider->GetInvalidationService();
   profile_invalidation_service_observers_.push_back(
-      base::MakeUnique<InvalidationServiceObserver>(this,
+      std::make_unique<InvalidationServiceObserver>(this,
                                                     invalidation_service));
 
   if (profile_invalidation_service_observers_.back()->IsServiceConnected()) {

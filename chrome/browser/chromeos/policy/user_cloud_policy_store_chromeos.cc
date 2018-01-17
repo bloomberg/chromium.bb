@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
@@ -45,7 +44,7 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
       session_manager_client_(session_manager_client),
       account_id_(account_id),
       is_active_directory_(is_active_directory),
-      cached_policy_key_loader_(base::MakeUnique<CachedPolicyKeyLoaderChromeOS>(
+      cached_policy_key_loader_(std::make_unique<CachedPolicyKeyLoaderChromeOS>(
           cryptohome_client,
           background_task_runner,
           account_id,

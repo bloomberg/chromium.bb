@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
+#include <memory>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
@@ -260,7 +262,7 @@ void WebUILoginView::Init() {
   }
 
   if (!webui_login_) {
-    webui_login_ = base::MakeUnique<views::WebView>(signin_profile);
+    webui_login_ = std::make_unique<views::WebView>(signin_profile);
     webui_login_->set_owned_by_client();
     is_reusing_webview_ = false;
   }

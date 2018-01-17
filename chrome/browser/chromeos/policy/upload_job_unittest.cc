@@ -376,7 +376,7 @@ TEST_F(UploadRequestTest, TestRequestStructure) {
   oauth2_service_.SetTokenValid(kTokenValid);
   oauth2_service_.AddTokenToQueue(kTokenValid);
   std::unique_ptr<UploadJob> upload_job =
-      PrepareUploadJob(base::MakeUnique<RepeatingMimeBoundaryGenerator>('A'));
+      PrepareUploadJob(std::make_unique<RepeatingMimeBoundaryGenerator>('A'));
   SetExpectedRequestContent(
       "--AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n"
       "Content-Disposition: form-data; "

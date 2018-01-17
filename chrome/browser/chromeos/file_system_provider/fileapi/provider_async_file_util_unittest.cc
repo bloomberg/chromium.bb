@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
@@ -154,7 +153,7 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
 
   std::unique_ptr<storage::FileSystemOperationContext>
   CreateOperationContext() {
-    return base::MakeUnique<storage::FileSystemOperationContext>(
+    return std::make_unique<storage::FileSystemOperationContext>(
         file_system_context_.get());
   }
 

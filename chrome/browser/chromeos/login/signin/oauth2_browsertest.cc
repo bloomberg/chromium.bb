@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -567,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_OverlappingContinueSessionRestore) {
 
   // Blocks database thread to control TokenService::LoadCredentials timing.
   // TODO(achuith): Fix this. crbug.com/753615.
-  auto thread_blocker = base::MakeUnique<ThreadBlocker>(nullptr);
+  auto thread_blocker = std::make_unique<ThreadBlocker>(nullptr);
 
   // Signs in as the existing user created in pre test.
   EXPECT_TRUE(

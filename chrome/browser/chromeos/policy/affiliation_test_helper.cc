@@ -5,11 +5,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
@@ -104,7 +104,7 @@ void SetUserAffiliationIDs(
 void PreLoginUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   users_pref->AppendIfNotPresent(
-      base::MakeUnique<base::Value>(account_id.GetUserEmail()));
+      std::make_unique<base::Value>(account_id.GetUserEmail()));
   if (user_manager::UserManager::IsInitialized())
     user_manager::known_user::SetProfileEverInitialized(account_id, false);
 

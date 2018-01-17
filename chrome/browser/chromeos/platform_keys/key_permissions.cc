@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
@@ -458,7 +457,7 @@ void KeyPermissions::CreatePermissionObjectAndPassToCallback(
     const std::string& extension_id,
     const PermissionsCallback& callback,
     std::unique_ptr<base::Value> value) {
-  callback.Run(base::MakeUnique<PermissionsForExtension>(
+  callback.Run(std::make_unique<PermissionsForExtension>(
       extension_id, std::move(value), profile_prefs_, profile_policies_, this));
 }
 

@@ -109,7 +109,7 @@ class ExternalCacheImplTest : public testing::Test,
 
   std::unique_ptr<base::DictionaryValue> CreateEntryWithUpdateUrl(
       bool from_webstore) {
-    auto entry = base::MakeUnique<base::DictionaryValue>();
+    auto entry = std::make_unique<base::DictionaryValue>();
     entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
                      from_webstore
                          ? extension_urls::GetWebstoreUpdateUrl().spec()

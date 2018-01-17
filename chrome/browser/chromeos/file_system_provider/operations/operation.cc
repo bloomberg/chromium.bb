@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension_id.h"
@@ -50,7 +49,7 @@ bool Operation::SendEvent(int request_id,
                           extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
                           std::unique_ptr<base::ListValue> event_args) {
-  return dispatch_event_impl_.Run(base::MakeUnique<extensions::Event>(
+  return dispatch_event_impl_.Run(std::make_unique<extensions::Event>(
       histogram_value, event_name, std::move(event_args)));
 }
 

@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -112,7 +111,7 @@ void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
   if (!policy_blob.empty() && !is_active_directory_managed_) {
     base::FilePath policy_key_dir;
     CHECK(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
-    cached_policy_key_loader_ = base::MakeUnique<CachedPolicyKeyLoaderChromeOS>(
+    cached_policy_key_loader_ = std::make_unique<CachedPolicyKeyLoaderChromeOS>(
         cryptohome_client_, task_runner_, account_id_, policy_key_dir);
     cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::Bind(
         &PreSigninPolicyFetcher::OnPolicyKeyLoaded,
@@ -157,7 +156,7 @@ void PreSigninPolicyFetcher::OnUnmountTemporaryUserHome(
   }
 
   // Parse policy.
-  auto policy = base::MakeUnique<em::PolicyFetchResponse>();
+  auto policy = std::make_unique<em::PolicyFetchResponse>();
   if (!policy->ParseFromString(policy_blob)) {
     NotifyCallback(PolicyFetchResult::ERROR, nullptr);
     return;
@@ -233,7 +232,7 @@ void PreSigninPolicyFetcher::OnPolicyFetched(CloudPolicyClient* client) {
   // Make a copy because there's currently no way to transfer ownership out of
   // CloudPolicyClient.
   auto fetched_policy_copy =
-      base::MakeUnique<em::PolicyFetchResponse>(*fetched_policy);
+      std::make_unique<em::PolicyFetchResponse>(*fetched_policy);
 
   // Validate fresh policy.
   UserCloudPolicyValidator::StartValidation(

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/shell.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
@@ -519,7 +519,7 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     std::unique_ptr<base::DictionaryValue> local_copy = value->CreateDeepCopy();
     // Copy that would be passed to WebUI. It has some extra values for
     // displaying, but does not contain sensitive data, such as master password.
-    auto ui_copy = base::MakeUnique<base::DictionaryValue>();
+    auto ui_copy = std::make_unique<base::DictionaryValue>();
 
     int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
     std::string chromeos_avatar;

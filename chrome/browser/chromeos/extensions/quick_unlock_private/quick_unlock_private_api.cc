@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -221,7 +222,7 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
       CheckCredential::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  auto result = base::MakeUnique<CredentialCheck>();
+  auto result = std::make_unique<CredentialCheck>();
 
   // Only handles pins for now.
   if (params_->mode != QuickUnlockMode::QUICK_UNLOCK_MODE_PIN)
@@ -270,7 +271,7 @@ QuickUnlockPrivateGetCredentialRequirementsFunction::Run() {
       GetCredentialRequirements::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  auto result = base::MakeUnique<CredentialRequirements>();
+  auto result = std::make_unique<CredentialRequirements>();
 
   GetSanitizedPolicyPinMinMaxLength(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),

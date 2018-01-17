@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -47,7 +46,7 @@ bool SettingsAllowUpdateViaPowerwash(const base::Value* settings) {
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
   std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
 
   if (settings.has_allow_user_initiated_powerwash()) {
     result->SetPath({kSettingsKeyAllowPowerwash},

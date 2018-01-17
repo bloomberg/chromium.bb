@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/i18n/time_formatting.h"
@@ -41,9 +42,9 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
       version_info_updater_(this),
       weak_factory_(this) {
   LoginScreenClient::Get()->SetDelegate(this);
-  user_selection_screen_proxy_ = base::MakeUnique<UserSelectionScreenProxy>();
+  user_selection_screen_proxy_ = std::make_unique<UserSelectionScreenProxy>();
   user_selection_screen_ =
-      base::MakeUnique<ChromeUserSelectionScreen>(kLockDisplay);
+      std::make_unique<ChromeUserSelectionScreen>(kLockDisplay);
   user_selection_screen_->SetView(user_selection_screen_proxy_.get());
 
   allowed_input_methods_subscription_ =

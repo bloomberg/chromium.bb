@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -246,7 +245,7 @@ bool CloudExternalDataManagerBase::Backend::OnDownloadSuccess(
   const FetchCallbackList& pending_callbacks = pending_downloads_[policy];
   for (FetchCallbackList::const_iterator it = pending_callbacks.begin();
        it != pending_callbacks.end(); ++it) {
-    RunCallback(*it, base::MakeUnique<std::string>(data));
+    RunCallback(*it, std::make_unique<std::string>(data));
   }
   pending_downloads_.erase(policy);
   return true;

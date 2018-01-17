@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -558,7 +557,7 @@ void DidSelectCertificatesOnIOThread(
   // api. This assumes that the necessary keys can be found later with
   // crypto::FindNSSKeyFromPublicKeyInfo.
   std::unique_ptr<net::CertificateList> certs =
-      base::MakeUnique<net::CertificateList>();
+      std::make_unique<net::CertificateList>();
   for (const std::unique_ptr<net::ClientCertIdentity>& identity : identities)
     certs->push_back(identity->certificate());
   state->CallBack(FROM_HERE, std::move(certs), std::string() /* no error */);
@@ -571,7 +570,7 @@ void SelectCertificatesOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->cert_store_.reset(new ClientCertStoreChromeOS(
       nullptr,  // no additional provider
-      base::MakeUnique<ClientCertFilterChromeOS>(state->use_system_key_slot_,
+      std::make_unique<ClientCertFilterChromeOS>(state->use_system_key_slot_,
                                                  state->username_hash_),
       ClientCertStoreChromeOS::PasswordDelegateFactory()));
 

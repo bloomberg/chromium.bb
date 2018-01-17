@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -28,7 +28,7 @@ void ExtensionTabUtilDelegateChromeOS::ScrubTabForExtension(
     return;
   }
   // Scrub URL down to the origin (security reasons inside Public Sessions).
-  tab->url = base::MakeUnique<std::string>(GURL(*tab->url).GetOrigin().spec());
+  tab->url = std::make_unique<std::string>(GURL(*tab->url).GetOrigin().spec());
 }
 
 }  // namespace extensions

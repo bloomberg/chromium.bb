@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_mount.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -154,7 +154,7 @@ void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
   }
 
   // Pass back the actual source path of the mount point.
-  SetResult(base::MakeUnique<base::Value>(file_path.AsUTF8Unsafe()));
+  SetResult(std::make_unique<base::Value>(file_path.AsUTF8Unsafe()));
   SendResponse(true);
 
   // MountPath() takes a std::string.

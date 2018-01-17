@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/proxy/ui_proxy_config.h"
@@ -19,14 +18,14 @@ namespace {
 
 std::unique_ptr<base::Value> CreateServerHostValue(
     const UIProxyConfig::ManualProxy& proxy) {
-  return proxy.server.is_valid() ? base::MakeUnique<base::Value>(
+  return proxy.server.is_valid() ? std::make_unique<base::Value>(
                                        proxy.server.host_port_pair().host())
                                  : nullptr;
 }
 
 std::unique_ptr<base::Value> CreateServerPortValue(
     const UIProxyConfig::ManualProxy& proxy) {
-  return proxy.server.is_valid() ? base::MakeUnique<base::Value>(
+  return proxy.server.is_valid() ? std::make_unique<base::Value>(
                                        proxy.server.host_port_pair().port())
                                  : nullptr;
 }
@@ -296,7 +295,7 @@ bool GetProxyPrefValue(const std::string& network_guid,
     if (config.mode == UIProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
       data =
-          base::MakeUnique<base::Value>(config.automatic_proxy.pac_url.spec());
+          std::make_unique<base::Value>(config.automatic_proxy.pac_url.spec());
     }
   } else if (path == kProxySingleHttp) {
     data = CreateServerHostValue(config.single_proxy);
@@ -309,12 +308,12 @@ bool GetProxyPrefValue(const std::string& network_guid,
   } else if (path == kProxyType) {
     if (config.mode == UIProxyConfig::MODE_AUTO_DETECT ||
         config.mode == UIProxyConfig::MODE_PAC_SCRIPT) {
-      data = base::MakeUnique<base::Value>(3);
+      data = std::make_unique<base::Value>(3);
     } else if (config.mode == UIProxyConfig::MODE_SINGLE_PROXY ||
                config.mode == UIProxyConfig::MODE_PROXY_PER_SCHEME) {
-      data = base::MakeUnique<base::Value>(2);
+      data = std::make_unique<base::Value>(2);
     } else {
-      data = base::MakeUnique<base::Value>(1);
+      data = std::make_unique<base::Value>(1);
     }
     switch (config.state) {
       case ProxyPrefs::CONFIG_POLICY:
@@ -332,10 +331,10 @@ bool GetProxyPrefValue(const std::string& network_guid,
         break;
     }
   } else if (path == kProxySingle) {
-    data = base::MakeUnique<base::Value>(config.mode ==
+    data = std::make_unique<base::Value>(config.mode ==
                                          UIProxyConfig::MODE_SINGLE_PROXY);
   } else if (path == kProxyUsePacUrl) {
-    data = base::MakeUnique<base::Value>(config.mode ==
+    data = std::make_unique<base::Value>(config.mode ==
                                          UIProxyConfig::MODE_PAC_SCRIPT);
   } else if (path == kProxyFtpUrl) {
     data = CreateServerHostValue(config.ftp_proxy);
@@ -350,7 +349,7 @@ bool GetProxyPrefValue(const std::string& network_guid,
   } else if (path == kProxySocksPort) {
     data = CreateServerPortValue(config.socks_proxy);
   } else if (path == kProxyIgnoreList) {
-    auto list = base::MakeUnique<base::ListValue>();
+    auto list = std::make_unique<base::ListValue>();
     const auto& bypass_rules = config.bypass_rules.rules();
     for (const auto& rule : bypass_rules)
       list->AppendString(rule->ToString());
@@ -361,9 +360,9 @@ bool GetProxyPrefValue(const std::string& network_guid,
   }
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   if (!data)
-    data = base::MakeUnique<base::Value>(base::Value::Type::STRING);
+    data = std::make_unique<base::Value>(base::Value::Type::STRING);
   dict->Set("value", std::move(data));
   if (path == kProxyType) {
     if (!controlled_by.empty())

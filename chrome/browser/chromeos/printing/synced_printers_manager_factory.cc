@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,7 +59,7 @@ SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
           profile->GetPath());
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
-      base::MakeUnique<PrintersSyncBridge>(
+      std::make_unique<PrintersSyncBridge>(
           store_factory, base::BindRepeating(base::IgnoreResult(
                              &base::debug::DumpWithoutCrashing)));
 

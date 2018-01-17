@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 
 namespace policy {
@@ -16,7 +15,7 @@ OffHoursInterval::OffHoursInterval(const WeeklyTime& start,
 }
 
 std::unique_ptr<base::DictionaryValue> OffHoursInterval::ToValue() const {
-  auto interval = base::MakeUnique<base::DictionaryValue>();
+  auto interval = std::make_unique<base::DictionaryValue>();
   interval->SetDictionary("start", start_.ToValue());
   interval->SetDictionary("end", end_.ToValue());
   return interval;

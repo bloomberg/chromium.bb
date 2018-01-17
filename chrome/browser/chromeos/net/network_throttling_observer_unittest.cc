@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/common/pref_names.h"
@@ -25,10 +24,10 @@ class NetworkThrottlingObserverTest : public ::testing::Test {
     DBusThreadManager::Initialize();
     network_state_handler_ = NetworkStateHandler::InitializeForTest();
     NetworkHandler::Initialize();
-    local_state_ = base::MakeUnique<TestingPrefServiceSimple>();
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
     local_state_->registry()->RegisterDictionaryPref(
         prefs::kNetworkThrottlingEnabled);
-    observer_ = base::MakeUnique<NetworkThrottlingObserver>(local_state_.get());
+    observer_ = std::make_unique<NetworkThrottlingObserver>(local_state_.get());
   }
 
   ~NetworkThrottlingObserverTest() override {

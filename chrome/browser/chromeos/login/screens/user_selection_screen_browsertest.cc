@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -46,7 +45,7 @@ class UserSelectionScreenTest : public LoginManagerTest {
 
   // LoginManagerTest:
   void SetUpInProcessBrowserTestFixture() override {
-    auto cryptohome_client = base::MakeUnique<chromeos::FakeCryptohomeClient>();
+    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
     fake_cryptohome_client_ = cryptohome_client.get();
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::move(cryptohome_client));

@@ -143,7 +143,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
       override {
     if (kiosk_account_)
-      return base::MakeUnique<policy::DeviceLocalAccount>(*kiosk_account_);
+      return std::make_unique<policy::DeviceLocalAccount>(*kiosk_account_);
     return std::unique_ptr<policy::DeviceLocalAccount>();
   }
 
@@ -316,7 +316,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     // Initialize our mock mounted disk volumes.
     std::unique_ptr<chromeos::disks::MockDiskMountManager>
         mock_disk_mount_manager =
-            base::MakeUnique<chromeos::disks::MockDiskMountManager>();
+            std::make_unique<chromeos::disks::MockDiskMountManager>();
     AddMountPoint("/mount/volume1");
     AddMountPoint("/mount/volume2");
     EXPECT_CALL(*mock_disk_mount_manager, mount_points())
@@ -460,7 +460,7 @@ class DeviceStatusCollectorTest : public testing::Test {
           .WillRepeatedly(Return(true));
     }
 
-    testing_profile_ = base::MakeUnique<TestingProfile>();
+    testing_profile_ = std::make_unique<TestingProfile>();
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, testing_profile_.get());
 
@@ -1114,7 +1114,7 @@ TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
                          base::Bind(&GetFakeAndroidStatus, kArcStatus,
                              kDroidGuardInfo));
   status_collector_->set_kiosk_account(
-      base::MakeUnique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
   testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
                                            true);
@@ -1136,7 +1136,7 @@ TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
 
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
-      base::MakeUnique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
 
   GetStatus();
@@ -1214,7 +1214,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // ReportDeviceSessionStatus only controls Kiosk reporting, ARC reporting
   // has to be disabled serarately.
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
@@ -1228,7 +1228,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
 TEST_F(DeviceStatusCollectorTest, ReportKioskSessionStatus) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
 
   // Set up a device-local account for single-app kiosk mode.
@@ -1251,7 +1251,7 @@ TEST_F(DeviceStatusCollectorTest, ReportKioskSessionStatus) {
 TEST_F(DeviceStatusCollectorTest, ReportArcKioskSessionStatus) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_arc_kiosk_device_local_account_));
 
   // Set up a device-local account for single-app ARC kiosk mode.
@@ -1353,7 +1353,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1234.0.0");
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
 
@@ -1378,7 +1378,7 @@ TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
       fake_kiosk_device_local_account_, "1235");
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
 
   GetStatus();
@@ -1396,7 +1396,7 @@ TEST_F(DeviceStatusCollectorTest, ReportRunningArcKioskApp) {
   MockRunningKioskApp(fake_arc_kiosk_device_local_account_,
                       true /* arc_kiosk */);
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_arc_kiosk_device_local_account_));
 
   GetStatus();
@@ -1703,7 +1703,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Mock that we are in kiosk mode so we report network state.
   status_collector_->set_kiosk_account(
-      base::MakeUnique<policy::DeviceLocalAccount>(
+      std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
 
   // Interfaces should be reported by default.

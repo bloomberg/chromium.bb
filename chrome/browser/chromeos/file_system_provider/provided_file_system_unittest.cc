@@ -84,10 +84,10 @@ class FakeEventRouter : public extensions::EventRouter {
 
     if (reply_result_ == base::File::FILE_OK) {
       base::ListValue value_as_list;
-      value_as_list.Set(0, base::MakeUnique<base::Value>(kFileSystemId));
-      value_as_list.Set(1, base::MakeUnique<base::Value>(request_id));
+      value_as_list.Set(0, std::make_unique<base::Value>(kFileSystemId));
+      value_as_list.Set(1, std::make_unique<base::Value>(request_id));
       value_as_list.Set(2,
-                        base::MakeUnique<base::Value>(0) /* execution_time */);
+                        std::make_unique<base::Value>(0) /* execution_time */);
 
       using extensions::api::file_system_provider_internal::
           OperationRequestedSuccess::Params;
@@ -99,7 +99,7 @@ class FakeEventRouter : public extensions::EventRouter {
           false /* has_more */);
     } else {
       file_system_->GetRequestManager()->RejectRequest(
-          request_id, base::MakeUnique<RequestValue>(), reply_result_);
+          request_id, std::make_unique<RequestValue>(), reply_result_);
     }
   }
 
@@ -145,7 +145,7 @@ class Observer : public ProvidedFileSystemObserver {
                         const base::Closure& callback) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     change_events_.push_back(
-        base::MakeUnique<ChangeEvent>(change_type, changes));
+        std::make_unique<ChangeEvent>(change_type, changes));
     complete_callback_ = callback;
   }
 

@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -143,7 +142,7 @@ class LockScreenAppManagerImplTest
   void SetUp() override {
     // Initialize command line so chromeos::NoteTakingHelper thinks note taking
     // on lock screen is enabled.
-    command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
+    command_line_ = std::make_unique<base::test::ScopedCommandLine>();
     command_line_->GetProcessCommandLine()->InitFromArgv(
         {"", "--enable-lock-screen-apps", "--force-enable-stylus-tools"});
 
@@ -154,8 +153,8 @@ class LockScreenAppManagerImplTest
     InitExtensionSystem(profile());
 
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
-    arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
-        base::MakeUnique<arc::ArcSessionRunner>(
+    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+        std::make_unique<arc::ArcSessionRunner>(
             base::Bind(&ArcSessionFactory)));
 
     chromeos::NoteTakingHelper::Initialize();
@@ -163,7 +162,7 @@ class LockScreenAppManagerImplTest
         profile());
 
     lock_screen_profile_creator_ =
-        base::MakeUnique<lock_screen_apps::FakeLockScreenProfileCreator>(
+        std::make_unique<lock_screen_apps::FakeLockScreenProfileCreator>(
             &profile_manager_);
     lock_screen_profile_creator_->Initialize();
 
@@ -405,7 +404,7 @@ class LockScreenAppManagerImplTest
   AppManager* app_manager() { return app_manager_.get(); }
 
   void ResetAppManager() {
-    app_manager_ = base::MakeUnique<AppManagerImpl>(&tick_clock_);
+    app_manager_ = std::make_unique<AppManagerImpl>(&tick_clock_);
   }
 
   int note_taking_changed_count() const { return note_taking_changed_count_; }

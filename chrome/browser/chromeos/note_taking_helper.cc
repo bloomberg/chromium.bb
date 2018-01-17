@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -117,7 +116,7 @@ std::unique_ptr<std::set<std::string>> GetAllowedLockScreenApps(
     return nullptr;
   }
 
-  auto allowed_apps = base::MakeUnique<std::set<std::string>>();
+  auto allowed_apps = std::make_unique<std::set<std::string>>();
   for (const base::Value& app_value : allowed_apps_list->GetList()) {
     if (!app_value.is_string()) {
       LOG(ERROR) << "Invalid app ID value " << app_value;
@@ -226,7 +225,7 @@ std::unique_ptr<NoteTakingAppInfo> NoteTakingHelper::GetPreferredChromeAppInfo(
   }
 
   std::unique_ptr<NoteTakingAppInfo> info =
-      base::MakeUnique<NoteTakingAppInfo>();
+      std::make_unique<NoteTakingAppInfo>();
   info->name = preferred_app->name();
   info->app_id = preferred_app->id();
   info->preferred = true;
@@ -529,7 +528,7 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
       LOG(WARNING) << "Failed to find Chrome note-taking app " << app_id;
       return LaunchResult::CHROME_APP_MISSING;
     }
-    auto action_data = base::MakeUnique<app_runtime::ActionData>();
+    auto action_data = std::make_unique<app_runtime::ActionData>();
     action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
     launch_chrome_app_callback_.Run(profile, app, std::move(action_data), path);
     return LaunchResult::CHROME_SUCCESS;

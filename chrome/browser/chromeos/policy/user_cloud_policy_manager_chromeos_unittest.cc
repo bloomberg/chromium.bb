@@ -90,7 +90,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   // in the test.
   void MakeManagerWithPreloadedStore(int fetch_timeout_seconds) {
     std::unique_ptr<MockCloudPolicyStore> store =
-        base::MakeUnique<MockCloudPolicyStore>();
+        std::make_unique<MockCloudPolicyStore>();
     store->policy_.reset(new em::PolicyData(policy_data_));
     store->policy_map_.CopyFrom(policy_map_);
     store->NotifyStoreLoaded();
@@ -139,7 +139,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     GetExpectedDefaultPolicy(&policy_map_);
     policy_map_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::Value>("http://chromium.org"),
+                    std::make_unique<base::Value>("http://chromium.org"),
                     nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
@@ -180,7 +180,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
   void MakeManagerWithEmptyStore(int fetch_timeout) {
     std::unique_ptr<MockCloudPolicyStore> store =
-        base::MakeUnique<MockCloudPolicyStore>();
+        std::make_unique<MockCloudPolicyStore>();
     EXPECT_CALL(*store, Load());
     CreateManager(std::move(store), fetch_timeout);
     EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -27,7 +26,7 @@ void CupsPrintJobNotificationManager::OnPrintJobCreated(CupsPrintJob* job) {
   if (base::ContainsKey(notification_map_, job))
     return;
   notification_map_[job] =
-      base::MakeUnique<CupsPrintJobNotification>(this, job, profile_);
+      std::make_unique<CupsPrintJobNotification>(this, job, profile_);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobStarted(CupsPrintJob* job) {

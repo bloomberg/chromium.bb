@@ -13,7 +13,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -520,7 +519,7 @@ TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
   network_configs->Append(std::move(ethernet_policy));
 
   profile_prefs_.SetUserPref(::proxy_config::prefs::kUseSharedProxies,
-                             base::MakeUnique<base::Value>(false));
+                             std::make_unique<base::Value>(false));
   profile_prefs_.SetManagedPref(::onc::prefs::kOpenNetworkConfiguration,
                                 std::move(network_configs));
 

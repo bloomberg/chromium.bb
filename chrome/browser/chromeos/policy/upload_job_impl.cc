@@ -10,7 +10,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -196,7 +195,7 @@ void UploadJobImpl::AddDataSegment(
   if (state_ != IDLE)
     return;
 
-  data_segments_.push_back(base::MakeUnique<DataSegment>(
+  data_segments_.push_back(std::make_unique<DataSegment>(
       name, filename, std::move(data), header_entries));
 }
 

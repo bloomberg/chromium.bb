@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
@@ -24,7 +23,7 @@ DeviceLocalAccountExternalDataManager::DeviceLocalAccountExternalDataManager(
     : CloudExternalDataManagerBase(get_policy_details,
                                    backend_task_runner,
                                    io_task_runner) {
-  SetExternalDataStore(base::MakeUnique<CloudExternalDataStore>(
+  SetExternalDataStore(std::make_unique<CloudExternalDataStore>(
       account_id, backend_task_runner, resource_cache));
 }
 

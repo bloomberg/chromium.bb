@@ -131,13 +131,13 @@ class EventLogger {
   virtual ~EventLogger() {}
 
   void OnExecute(int request_id) {
-    execute_events_.push_back(base::MakeUnique<ExecuteEvent>(request_id));
+    execute_events_.push_back(std::make_unique<ExecuteEvent>(request_id));
   }
 
   void OnSuccess(int request_id,
                  std::unique_ptr<RequestValue> result,
                  bool has_more) {
-    success_events_.push_back(base::MakeUnique<SuccessEvent>(
+    success_events_.push_back(std::make_unique<SuccessEvent>(
         request_id, std::move(result), has_more));
   }
 
@@ -145,7 +145,7 @@ class EventLogger {
                std::unique_ptr<RequestValue> result,
                base::File::Error error) {
     error_events_.push_back(
-        base::MakeUnique<ErrorEvent>(request_id, std::move(result), error));
+        std::make_unique<ErrorEvent>(request_id, std::move(result), error));
   }
 
   std::vector<std::unique_ptr<ExecuteEvent>>& execute_events() {

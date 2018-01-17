@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -38,7 +37,7 @@ using syncer::MetadataChangeList;
 
 std::unique_ptr<EntityData> CopyToEntityData(
     const sync_pb::PrinterSpecifics& specifics) {
-  auto entity_data = base::MakeUnique<EntityData>();
+  auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_printer() = specifics;
   entity_data->non_unique_name =
       specifics.display_name().empty() ? "PRINTER" : specifics.display_name();
@@ -99,7 +98,7 @@ class PrintersSyncBridge::StoreProxy {
     {
       base::AutoLock lock(owner_->data_lock_);
       for (const ModelTypeStore::Record& r : *record_list) {
-        auto specifics = base::MakeUnique<sync_pb::PrinterSpecifics>();
+        auto specifics = std::make_unique<sync_pb::PrinterSpecifics>();
         if (specifics->ParseFromString(r.value)) {
           auto& dest = owner_->all_data_[specifics->id()];
           dest = std::move(specifics);
@@ -153,7 +152,7 @@ PrintersSyncBridge::PrintersSyncBridge(
     : ModelTypeSyncBridge(base::BindRepeating(&ModelTypeChangeProcessor::Create,
                                               error_callback),
                           syncer::PRINTERS),
-      store_delegate_(base::MakeUnique<StoreProxy>(this, callback)),
+      store_delegate_(std::make_unique<StoreProxy>(this, callback)),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
 PrintersSyncBridge::~PrintersSyncBridge() {}
@@ -182,7 +181,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
       sync_entity_ids.insert(specifics.id());
 
       // Write the update to local storage even if we already have it.
-      StoreSpecifics(base::MakeUnique<sync_pb::PrinterSpecifics>(specifics),
+      StoreSpecifics(std::make_unique<sync_pb::PrinterSpecifics>(specifics),
                      batch.get());
     }
 
@@ -227,7 +226,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
         const sync_pb::PrinterSpecifics& specifics =
             change.data().specifics.printer();
         DCHECK_EQ(id, specifics.id());
-        StoreSpecifics(base::MakeUnique<sync_pb::PrinterSpecifics>(specifics),
+        StoreSpecifics(std::make_unique<sync_pb::PrinterSpecifics>(specifics),
                        batch.get());
       }
     }
@@ -243,7 +242,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
 
 void PrintersSyncBridge::GetData(StorageKeyList storage_keys,
                                  DataCallback callback) {
-  auto batch = base::MakeUnique<syncer::MutableDataBatch>();
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
   {
     base::AutoLock lock(data_lock_);
     for (const auto& key : storage_keys) {
@@ -257,7 +256,7 @@ void PrintersSyncBridge::GetData(StorageKeyList storage_keys,
 }
 
 void PrintersSyncBridge::GetAllData(DataCallback callback) {
-  auto batch = base::MakeUnique<syncer::MutableDataBatch>();
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
   {
     base::AutoLock lock(data_lock_);
     for (const auto& entry : all_data_) {

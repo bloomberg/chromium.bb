@@ -10,7 +10,6 @@
 
 #include "base/big_endian.h"
 #include "base/md5.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -154,7 +153,7 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
     return nullptr;
   }
 
-  auto printer = base::MakeUnique<Printer>();
+  auto printer = std::make_unique<Printer>();
   printer->set_manufacturer(base::UTF16ToUTF8(device.manufacturer_string()));
   printer->set_model(base::UTF16ToUTF8(device.product_string()));
   // Synthesize make-and-model string for printer identification.

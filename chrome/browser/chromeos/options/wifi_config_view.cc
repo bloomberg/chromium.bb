@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
@@ -893,7 +892,7 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties,
     properties->SetKey(shill::kEapPasswordProperty,
                        base::Value(GetPassphrase()));
   }
-  auto pem_list = base::MakeUnique<base::ListValue>();
+  auto pem_list = std::make_unique<base::ListValue>();
   std::string ca_cert_pem = GetEapServerCaCertPEM();
   if (!ca_cert_pem.empty())
     pem_list->AppendString(ca_cert_pem);

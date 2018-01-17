@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -47,7 +48,7 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id());
 
   // The router will only send the event to extensions that are listening.
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
       OnChanged::kEventName, std::move(args), context_);
   router->BroadcastEvent(std::move(event));

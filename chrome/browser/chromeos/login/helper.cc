@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -105,11 +107,11 @@ void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
   std::unique_ptr<base::DictionaryValue> copied_onc(
       new base::DictionaryValue());
   copied_onc->Set(onc::toplevel_config::kType,
-                  base::MakeUnique<base::Value>(onc::network_type::kWiFi));
+                  std::make_unique<base::Value>(onc::network_type::kWiFi));
   copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
-                  base::MakeUnique<base::Value>(hex_ssid));
+                  std::make_unique<base::Value>(hex_ssid));
   copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
-                  base::MakeUnique<base::Value>(security));
+                  std::make_unique<base::Value>(security));
   base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
 }
 
@@ -125,7 +127,7 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
   if (!root || !root->GetAsDictionary(&toplevel_onc)) {
     LOG(ERROR) << kInvalidJsonError << ": " << error;
     std::unique_ptr<base::DictionaryValue> error_data =
-        base::MakeUnique<base::DictionaryValue>();
+        std::make_unique<base::DictionaryValue>();
     error_data->SetString(network_handler::kErrorName, kInvalidJsonError);
     error_data->SetString(network_handler::kErrorDetail, error);
     error_callback.Run(kInvalidJsonError, std::move(error_data));

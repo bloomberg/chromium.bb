@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -182,12 +181,12 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
   device::UsbService* usb_service =
       device::DeviceClient::Get()->GetUsbService();
-  return base::MakeUnique<UsbPrinterDetectorImpl>(usb_service);
+  return std::make_unique<UsbPrinterDetectorImpl>(usb_service);
 }
 
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::CreateForTesting(
     device::UsbService* usb_service) {
-  return base::MakeUnique<UsbPrinterDetectorImpl>(usb_service);
+  return std::make_unique<UsbPrinterDetectorImpl>(usb_service);
 }
 
 }  // namespace chromeos

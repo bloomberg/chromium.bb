@@ -19,7 +19,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -266,7 +265,7 @@ std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
   for (const auto& device_local_account : accounts) {
     if (AccountId::FromUserEmail(device_local_account.user_id) ==
         user->GetAccountId()) {
-      return base::MakeUnique<policy::DeviceLocalAccount>(device_local_account);
+      return std::make_unique<policy::DeviceLocalAccount>(device_local_account);
     }
   }
   LOG(WARNING) << "Kiosk app not found in list of device-local accounts";
@@ -425,9 +424,9 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   policy::DeviceStatusCollector::StatusCallback response_;
   std::unique_ptr<em::DeviceStatusReportRequest> device_status_ =
-      base::MakeUnique<em::DeviceStatusReportRequest>();
+      std::make_unique<em::DeviceStatusReportRequest>();
   std::unique_ptr<em::SessionStatusReportRequest> session_status_ =
-      base::MakeUnique<em::SessionStatusReportRequest>();
+      std::make_unique<em::SessionStatusReportRequest>();
 };
 
 DeviceStatusCollector::DeviceStatusCollector(
@@ -523,7 +522,7 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
-                                   base::MakeUnique<base::DictionaryValue>());
+                                   std::make_unique<base::DictionaryValue>());
 }
 
 // static

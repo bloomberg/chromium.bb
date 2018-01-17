@@ -576,7 +576,7 @@ void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
                                          const std::string& extension_id,
                                          const GenerateKeyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartOrQueueTask(base::MakeUnique<GenerateRSAKeyTask>(
+  StartOrQueueTask(std::make_unique<GenerateRSAKeyTask>(
       token_id, modulus_length, extension_id, callback, &key_permissions_, this,
       browser_context_));
 }
@@ -614,7 +614,7 @@ void PlatformKeysService::SelectClientCertificates(
     const SelectCertificatesCallback& callback,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartOrQueueTask(base::MakeUnique<SelectTask>(
+  StartOrQueueTask(std::make_unique<SelectTask>(
       request, std::move(client_certificates), interactive, extension_id,
       callback, web_contents, &key_permissions_, this));
 }

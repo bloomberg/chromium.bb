@@ -116,7 +116,7 @@ class DeviceOffHoursControllerSimpleTest
         base::WrapUnique(power_manager_client_));
 
     device_settings_service_.SetDeviceOffHoursControllerForTesting(
-        base::MakeUnique<policy::off_hours::DeviceOffHoursController>());
+        std::make_unique<policy::off_hours::DeviceOffHoursController>());
     device_off_hours_controller_ =
         device_settings_service_.device_off_hours_controller();
   }
@@ -301,7 +301,7 @@ class DeviceOffHoursControllerFakeClockTest
     system_clock_client()->set_network_synchronized(true);
     system_clock_client()->NotifyObserversSystemClockUpdated();
     std::unique_ptr<base::SimpleTestClock> test_clock =
-        base::MakeUnique<base::SimpleTestClock>();
+        std::make_unique<base::SimpleTestClock>();
     test_clock_ = test_clock.get();
     // Clocks are set to 1970-01-01 00:00:00 UTC, Thursday.
     test_clock_->SetNow(base::Time::UnixEpoch());

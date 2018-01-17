@@ -789,7 +789,7 @@ void LoginDisplayHostWebUI::StartArcKiosk(const AccountId& account_id) {
   login_view_->set_should_emit_login_prompt_visible(false);
 
   arc_kiosk_controller_ =
-      base::MakeUnique<ArcKioskController>(this, GetOobeUI());
+      std::make_unique<ArcKioskController>(this, GetOobeUI());
 
   arc_kiosk_controller_->StartArcKiosk(account_id);
 }
@@ -1307,7 +1307,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
       switch_locale.clear();
 
     std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data =
-        base::MakeUnique<ShowLoginWizardSwitchLanguageCallbackData>(
+        std::make_unique<ShowLoginWizardSwitchLanguageCallbackData>(
             first_screen, nullptr);
     TriggerShowLoginWizardFinish(switch_locale, std::move(data));
     return;

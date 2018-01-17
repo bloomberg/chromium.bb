@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -193,7 +192,7 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
 
     // Set up fake install attributes.
     std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        base::MakeUnique<chromeos::StubInstallAttributes>();
+        std::make_unique<chromeos::StubInstallAttributes>();
     attributes->SetCloudManaged("fake-domain", "fake-id");
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
         attributes.release());

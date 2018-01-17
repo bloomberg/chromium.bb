@@ -103,10 +103,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     // Callbacks may ensue immediately when the observer proxies are set up, so
     // these instantiations must come after everything else is initialized.
     usb_detector_observer_proxy_ =
-        base::MakeUnique<PrinterDetectorObserverProxy>(this, kUsbDetector,
+        std::make_unique<PrinterDetectorObserverProxy>(this, kUsbDetector,
                                                        usb_detector_.get());
     zeroconf_detector_observer_proxy_ =
-        base::MakeUnique<PrinterDetectorObserverProxy>(
+        std::make_unique<PrinterDetectorObserverProxy>(
             this, kZeroconfDetector, zeroconf_detector_.get());
   }
 
@@ -192,7 +192,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     for (const auto& printer_list : printers_) {
       for (const auto& printer : printer_list) {
         if (printer.id() == id) {
-          return base::MakeUnique<Printer>(printer);
+          return std::make_unique<Printer>(printer);
         }
       }
     }
@@ -524,7 +524,7 @@ void PrinterDetectorObserverProxy::OnPrintersFound(
 // static
 std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
     Profile* profile) {
-  return base::MakeUnique<CupsPrintersManagerImpl>(
+  return std::make_unique<CupsPrintersManagerImpl>(
       SyncedPrintersManagerFactory::GetInstance()->GetForBrowserContext(
           profile),
       UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(profile),
@@ -539,7 +539,7 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
     std::unique_ptr<PrinterDetector> zeroconf_detector,
     scoped_refptr<PpdProvider> ppd_provider,
     PrinterEventTracker* event_tracker) {
-  return base::MakeUnique<CupsPrintersManagerImpl>(
+  return std::make_unique<CupsPrintersManagerImpl>(
       synced_printers_manager, std::move(usb_detector),
       std::move(zeroconf_detector), std::move(ppd_provider), event_tracker);
 }

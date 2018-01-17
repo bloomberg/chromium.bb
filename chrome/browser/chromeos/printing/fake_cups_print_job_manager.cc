@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
@@ -34,7 +33,7 @@ bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
   Printer printer(printer_name);
   printer.set_display_name(printer_name);
   // Create a new print job.
-  std::unique_ptr<CupsPrintJob> new_job = base::MakeUnique<CupsPrintJob>(
+  std::unique_ptr<CupsPrintJob> new_job = std::make_unique<CupsPrintJob>(
       printer, next_job_id_++, title, total_page_number);
   print_jobs_.push_back(std::move(new_job));
 

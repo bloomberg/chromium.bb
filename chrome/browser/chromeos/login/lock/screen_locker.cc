@@ -207,14 +207,14 @@ void ScreenLocker::Init() {
     web_ui_->LockScreen();
 
     // Ownership of |icon_image_source| is passed.
-    screenlock_icon_provider_ = base::MakeUnique<ScreenlockIconProvider>();
+    screenlock_icon_provider_ = std::make_unique<ScreenlockIconProvider>();
     ScreenlockIconSource* screenlock_icon_source =
         new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
     content::URLDataSource::Add(web_ui_->web_contents()->GetBrowserContext(),
                                 screenlock_icon_source);
   } else {
     // Create delegate that calls into the views-based lock screen via mojo.
-    views_screen_locker_ = base::MakeUnique<ViewsScreenLocker>(this);
+    views_screen_locker_ = std::make_unique<ViewsScreenLocker>(this);
     delegate_ = views_screen_locker_.get();
 
     // Create and display lock screen.

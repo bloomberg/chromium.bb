@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -133,14 +132,14 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
 
   void LoadSystemLogs(LogUploadCallback upload_callback) override {
     EXPECT_TRUE(is_upload_allowed_);
-    std::move(upload_callback).Run(
-        base::MakeUnique<SystemLogUploader::SystemLogs>(system_logs_));
+    std::move(upload_callback)
+        .Run(std::make_unique<SystemLogUploader::SystemLogs>(system_logs_));
   }
 
   std::unique_ptr<UploadJob> CreateUploadJob(
       const GURL& url,
       UploadJob::Delegate* delegate) override {
-    return base::MakeUnique<MockUploadJob>(url, delegate, is_upload_error_,
+    return std::make_unique<MockUploadJob>(url, delegate, is_upload_error_,
                                            system_logs_.size() + 1);
   }
 

@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -141,7 +140,7 @@ void StateController::SetLockScreenLockScreenProfileCreatorForTesting(
 
 void StateController::Initialize() {
   if (!tick_clock_)
-    tick_clock_ = base::MakeUnique<base::DefaultTickClock>();
+    tick_clock_ = std::make_unique<base::DefaultTickClock>();
 
   // The tray action ptr might be set previously if the client was being created
   // for testing.
@@ -217,7 +216,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   }
 
   lock_screen_data_ =
-      base::MakeUnique<extensions::lock_screen_data::LockScreenItemStorage>(
+      std::make_unique<extensions::lock_screen_data::LockScreenItemStorage>(
           profile, g_browser_process->local_state(), crypto_key,
           base_path.AppendASCII("lock_screen_app_data"),
           base_path.AppendASCII("lock_screen_app_data_v2"));
@@ -229,14 +228,14 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   // Lock screen profile creator might have been set by a test.
   if (!lock_screen_profile_creator_) {
     lock_screen_profile_creator_ =
-        base::MakeUnique<LockScreenProfileCreatorImpl>(profile,
+        std::make_unique<LockScreenProfileCreatorImpl>(profile,
                                                        tick_clock_.get());
   }
   lock_screen_profile_creator_->Initialize();
 
   // App manager might have been set previously by a test.
   if (!app_manager_)
-    app_manager_ = base::MakeUnique<AppManagerImpl>(tick_clock_.get());
+    app_manager_ = std::make_unique<AppManagerImpl>(tick_clock_.get());
   app_manager_->Initialize(profile, lock_screen_profile_creator_.get());
 
   first_app_run_toast_manager_ =
@@ -359,7 +358,7 @@ void StateController::OnSessionStateChanged() {
       base::Bind(&StateController::OnNoteTakingAvailabilityChanged,
                  base::Unretained(this)));
   note_app_window_metrics_ =
-      base::MakeUnique<AppWindowMetricsTracker>(tick_clock_.get());
+      std::make_unique<AppWindowMetricsTracker>(tick_clock_.get());
   lock_screen_data_->SetSessionLocked(true);
   OnNoteTakingAvailabilityChanged();
 }
