@@ -28,18 +28,24 @@ class TestObserver : public OptimizationGuideServiceObserver {
 
   ~TestObserver() override {}
 
-  void OnHintsProcessed(const proto::Configuration& config) override {
+  void OnHintsProcessed(
+      const proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override {
     received_notification_ = true;
     received_config_ = config;
+    received_version_ = component_info.hints_version;
   }
 
   bool received_notification() const { return received_notification_; }
 
   proto::Configuration received_config() const { return received_config_; }
 
+  base::Version received_version() const { return received_version_; }
+
  private:
   bool received_notification_;
   proto::Configuration received_config_;
+  base::Version received_version_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -211,7 +217,8 @@ TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
   hint->set_key("google.com");
   ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
 
-  UpdateHints(base::Version("1.0.0"), filePath);
+  base::Version hints_version("1.0.0");
+  UpdateHints(hints_version, filePath);
 
   RunUntilIdle();
 
@@ -219,6 +226,7 @@ TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
   proto::Configuration received_config = observer()->received_config();
   ASSERT_EQ(1, received_config.hints_size());
   ASSERT_EQ("google.com", received_config.hints()[0].key());
+  EXPECT_EQ(0, observer()->received_version().CompareTo(hints_version));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(OptimizationGuideService::ProcessHintsResult::SUCCESS),

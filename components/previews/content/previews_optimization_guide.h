@@ -51,7 +51,8 @@ class PreviewsOptimizationGuide
 
   // optimization_guide::OptimizationGuideServiceObserver implementation:
   void OnHintsProcessed(
-      const optimization_guide::proto::Configuration& config) override;
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override;
 
  private:
   class Hints;
