@@ -3618,8 +3618,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	EGLConfig context_config;
 	EGLBoolean ret;
 
-	static const EGLint context_attribs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
+	EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 0,
 		EGL_NONE
 	};
 
@@ -3634,12 +3634,22 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	if (gr->has_configless_context)
 		context_config = EGL_NO_CONFIG_KHR;
 
+	/* try to create an OpenGLES 3 context first */
+	context_attribs[1] = 3;
 	gr->egl_context = eglCreateContext(gr->egl_display, context_config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (gr->egl_context == NULL) {
-		weston_log("failed to create context\n");
-		gl_renderer_print_egl_error_state();
-		return -1;
+		/* and then fallback to OpenGLES 2 */
+		context_attribs[1] = 2;
+		gr->egl_context = eglCreateContext(gr->egl_display,
+						   context_config,
+						   EGL_NO_CONTEXT,
+						   context_attribs);
+		if (gr->egl_context == NULL) {
+			weston_log("failed to create context\n");
+			gl_renderer_print_egl_error_state();
+			return -1;
+		}
 	}
 
 	ret = eglMakeCurrent(gr->egl_display, egl_surface,
