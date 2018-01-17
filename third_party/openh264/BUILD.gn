@@ -10,7 +10,15 @@ import("//third_party/yasm/yasm_assemble.gni")
 # Config shared by all openh264 targets.
 config("config") {
   cflags = []
-  defines = []
+
+  if (is_chromeos && target_cpu == "arm") {
+    # HAVE_NEON and __chromeos__ are needed for enabling NEON on ChromeOS
+    # devices.
+    defines = [
+      "HAVE_NEON",
+      "__chromeos__",
+    ]
+  }
 
   # GCC and clang flags. MSVS (is_win && !is_clang) does not use cflags.
   if (!is_win || is_clang) {
@@ -115,6 +123,9 @@ if (use_assembler) {
 
 source_set("common") {
   sources = openh264_common_sources
+  if (is_chromeos && target_cpu == "arm") {
+    sources += openh264_common_sources_asm_arm
+  }
   include_dirs = openh264_common_include_dirs
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -138,6 +149,9 @@ source_set("common") {
 
 source_set("processing") {
   sources = openh264_processing_sources
+  if (is_chromeos && target_cpu == "arm") {
+    sources += openh264_processing_sources_asm_arm
+  }
   include_dirs = openh264_processing_include_dirs
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -154,6 +168,9 @@ source_set("processing") {
 
 source_set("encoder") {
   sources = openh264_encoder_sources
+  if (is_chromeos && target_cpu == "arm") {
+    sources += openh264_encoder_sources_asm_arm
+  }
   include_dirs = openh264_encoder_include_dirs
 
   configs -= [ "//build/config/compiler:chromium_code" ]
