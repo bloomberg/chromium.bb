@@ -20,6 +20,7 @@ type:*BlockIUnknownMethods*
 type:*BlockRefType*
 type:*SkAutoTUnref*
 type:*SkBlockComRef*
+type:*RemoveIUnknown*
 src:*atlcomcli.h
 
 # invalid downcasts for IPC messages
