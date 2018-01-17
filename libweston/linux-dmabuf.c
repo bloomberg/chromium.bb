@@ -488,8 +488,6 @@ bind_linux_dmabuf(struct wl_client *client,
 	wl_resource_set_implementation(resource, &linux_dmabuf_implementation,
 				       compositor, NULL);
 
-	if (version < ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
-		return;
 	/*
 	 * Use EGL_EXT_image_dma_buf_import_modifiers to query and advertise
 	 * format/modifier codes.
@@ -510,11 +508,18 @@ bind_linux_dmabuf(struct wl_client *client,
 			modifiers = &modifier_invalid;
 		}
 		for (j = 0; j < num_modifiers; j++) {
-			uint32_t modifier_lo = modifiers[j] & 0xFFFFFFFF;
-			uint32_t modifier_hi = modifiers[j] >> 32;
-			zwp_linux_dmabuf_v1_send_modifier(resource, formats[i],
-							  modifier_hi,
-							  modifier_lo);
+			if (version >= ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION) {
+				uint32_t modifier_lo = modifiers[j] & 0xFFFFFFFF;
+				uint32_t modifier_hi = modifiers[j] >> 32;
+				zwp_linux_dmabuf_v1_send_modifier(resource,
+								  formats[i],
+								  modifier_hi,
+								  modifier_lo);
+			} else if (modifiers[j] == DRM_FORMAT_MOD_LINEAR ||
+				   modifiers == &modifier_invalid) {
+				zwp_linux_dmabuf_v1_send_format(resource,
+								formats[i]);
+			}
 		}
 		if (modifiers != &modifier_invalid)
 			free(modifiers);
