@@ -814,6 +814,8 @@ bool PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
     return false;
 
   DisableCompositingQueryAsserts disabler;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    inner_compositor->RootLayer()->EnsureCompositedLayerMapping();
   layer->GetCompositedLayerMapping()->SetSublayers(
       GraphicsLayerVector(1, inner_compositor->RootGraphicsLayer()));
   return true;
