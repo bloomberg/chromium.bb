@@ -167,6 +167,22 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
         script, result);
   }
 
+  // Executes |script| and stores the result as a string in |result|. Blocks
+  // until a notification has been added to the |display_service_tester_|'s
+  // display service.
+  void RunScriptAndWaitForNotificationAdded(const std::string& script,
+                                            std::string* result) const {
+    base::RunLoop run_loop;
+    display_service_tester_->SetNotificationAddedClosure(
+        run_loop.QuitClosure());
+    ASSERT_TRUE(RunScript(script, result));
+    run_loop.Run();
+
+    // Clear the closure.
+    display_service_tester_->SetNotificationAddedClosure(
+        base::RepeatingClosure());
+  }
+
   GURL TestPageUrl() const {
     return https_server_->GetURL(std::string("/") + kTestFileName);
   }
@@ -304,8 +320,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
           icon: 'icon.png',
           badge: 'icon.png',
           timestamp: 621046800000,
+          vibrate: [500, 200, 100],
           renotify: true,
-          silent: true,
           requireInteraction: true,
           data: [
             { property: 'value' }
@@ -335,8 +351,11 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
   EXPECT_TRUE(all_options_notification.small_image().IsEmpty());
+
+  EXPECT_THAT(all_options_notification.vibration_pattern(),
+              testing::ElementsAreArray({500, 200, 100}));
+
   EXPECT_TRUE(all_options_notification.renotify());
-  EXPECT_TRUE(all_options_notification.silent());
   EXPECT_TRUE(all_options_notification.never_timeout());
   EXPECT_DOUBLE_EQ(kNotificationTimestamp,
                    all_options_notification.timestamp().ToJsTime());
@@ -983,21 +1002,13 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // First, test the default values.
 
   std::string script_result;
-  {
-    // This closure ensures the notification has been shown before we check it.
-    // TODO(crbug.com/595685): We can dispense with this closure once the show
-    // event is implemented via mojo.
-    base::RunLoop run_loop;
-    display_service_tester_->SetNotificationAddedClosure(
-        run_loop.QuitClosure());
-
-    ASSERT_TRUE(RunScript(
-        "DisplayNonPersistentNotificationWithoutWaitingForEvent('Title')",
-        &script_result));
-    EXPECT_EQ("sync-ok", script_result);
-
-    run_loop.Run();
-  }
+  // TODO(crbug.com/595685): Can simply call
+  // 'RunScript("DisplayNonPersistentNotification(...' once the show event is
+  // implemented via mojo, here and elsewhere in this test.
+  RunScriptAndWaitForNotificationAdded(
+      "DisplayNonPersistentNotificationWithoutWaitingForEvent('Title')",
+      &script_result);
+  EXPECT_EQ("sync-ok", script_result);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications(false /* is_persistent */);
@@ -1015,19 +1026,17 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   EXPECT_FALSE(default_notification.silent());
   EXPECT_FALSE(default_notification.never_timeout());
   EXPECT_EQ(0u, default_notification.buttons().size());
-  // TODO(https://crbug.com/595685): Test the default notification timestamp.
+
+  // Verify that the notification's default timestamp is set in the last 30
+  // seconds. (30 has no significance, just needs to be significantly high to
+  // avoid test flakiness.)
+  EXPECT_NEAR(default_notification.timestamp().ToJsTime(),
+              base::Time::Now().ToJsTime(), 30 * 1000);
 
   // Now, test the non-default values.
 
-  {
-    // This closure ensures the notification has been shown before we check it.
-    // TODO(crbug.com/595685): We can dispense with this closure once the show
-    // event is implemented via mojo.
-    base::RunLoop run_loop;
-    display_service_tester_->SetNotificationAddedClosure(
-        run_loop.QuitClosure());
-    ASSERT_TRUE(RunScript(
-        R"(DisplayNonPersistentNotificationWithoutWaitingForEvent('Title2', {
+  RunScriptAndWaitForNotificationAdded(
+      R"(DisplayNonPersistentNotificationWithoutWaitingForEvent('Title2', {
           body: 'Contents',
           tag: 'replace-id',
           dir: 'rtl',
@@ -1036,21 +1045,49 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
           icon: 'icon.png',
           badge: 'icon.png',
           timestamp: 621046800000,
+          vibrate: [500, 200, 100],
           renotify: true,
-          silent: true,
           requireInteraction: true,
           data: [
             { property: 'value' }
           ]
         }))",
-        &script_result));
-    EXPECT_EQ("sync-ok", script_result);
-
-    run_loop.Run();
-  }
+      &script_result);
+  EXPECT_EQ("sync-ok", script_result);
 
   notifications = GetDisplayedNotifications(false /* is_persistent */);
   ASSERT_EQ(2u, notifications.size());
 
-  // TODO(https://crbug.com/595685): Test the rest of the properties.
+  message_center::Notification notification = notifications[1];
+  EXPECT_EQ("Title2", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
+
+  // The js-provided tag should be part of the id.
+  EXPECT_FALSE(notification.id().find("replace-id") == std::string::npos);
+
+  EXPECT_THAT(notification.vibration_pattern(),
+              testing::ElementsAreArray({500, 200, 100}));
+
+  EXPECT_TRUE(notification.renotify());
+  EXPECT_TRUE(notification.never_timeout());
+  EXPECT_DOUBLE_EQ(621046800000., notification.timestamp().ToJsTime());
+
+  // TODO(https://crbug.com/595685): Pass resources via mojo and test them here.
+
+  // Test that notifications with the same tag replace each other and have
+  // identical ids.
+
+  RunScriptAndWaitForNotificationAdded(
+      R"(DisplayNonPersistentNotificationWithoutWaitingForEvent('Title3', {
+          tag: 'replace-id'
+        }))",
+      &script_result);
+  EXPECT_EQ("sync-ok", script_result);
+
+  notifications = GetDisplayedNotifications(false /* is_persistent */);
+  ASSERT_EQ(2u, notifications.size());
+
+  message_center::Notification replacement = notifications[1];
+  EXPECT_EQ("Title3", base::UTF16ToUTF8(replacement.title()));
+  EXPECT_EQ(notification.id(), replacement.id());
 }

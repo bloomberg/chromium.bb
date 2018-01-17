@@ -17,6 +17,7 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 class V8NotificationPermissionCallback;
+struct WebNotificationData;
 
 // The notification manager, unique to the execution context, is responsible for
 // connecting and communicating with the Mojo notification service.
@@ -43,7 +44,7 @@ class NotificationManager final
       V8NotificationPermissionCallback* deprecated_callback);
 
   // Shows a notification that is not tied to any service worker.
-  void DisplayNonPersistentNotification(const String& title);
+  void DisplayNonPersistentNotification(const WebNotificationData&);
 
   virtual void Trace(blink::Visitor*);
 
