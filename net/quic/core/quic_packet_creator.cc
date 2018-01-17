@@ -481,7 +481,7 @@ QuicPacketCreator::SerializeConnectivityProbingPacket() {
 
   std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
   size_t length = framer_->BuildConnectivityProbingPacket(header, buffer.get(),
-                                                          max_packet_length_);
+                                                          max_plaintext_size_);
   DCHECK(length);
 
   const size_t encrypted_length = framer_->EncryptInPlace(
