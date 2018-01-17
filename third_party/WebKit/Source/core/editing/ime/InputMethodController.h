@@ -86,7 +86,6 @@ class CORE_EXPORT InputMethodController final
   void CancelComposition();
 
   EphemeralRange CompositionEphemeralRange() const;
-  Range* CompositionRange() const;
 
   void Clear();
   void DocumentAttached(Document*);
@@ -111,6 +110,8 @@ class CORE_EXPORT InputMethodController final
   void WillChangeFocus();
 
  private:
+  friend class InputMethodControllerTest;
+
   Document& GetDocument() const;
   bool IsAvailable() const;
 
