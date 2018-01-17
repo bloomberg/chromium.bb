@@ -124,3 +124,23 @@ message DeleteEntryOptions {
   // Boolean indicating whether the delete should be recursive for directories.
   optional bool recursive = 3;
 }
+
+// Used for passing inputs into SmbProvider.CreateFile().
+message CreateFileOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the file to be created. Paths are relative to the mount root,
+  // e.g. "/animals/dog.jpg".
+  optional string file_path = 2;
+}
+
+// Used for passing inputs into SmbProvider.Truncate().
+message TruncateOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the file to be truncated. Paths are relative to the mount root,
+  // e.g. "/animals/dog.jpg".
+  optional string file_path = 2;
+  // New desired length of the file.
+  optional int64 length = 3;
+}
