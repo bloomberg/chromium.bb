@@ -2503,10 +2503,6 @@ const char kDisableTabletAutohideTitlebarsDescription[] =
     "Disable tablet mode autohide titlebars functionality. The user will be "
     "able to see the titlebar in tablet mode.";
 
-const char kDisableTabletSplitViewName[] = "Disable split view in Tablet mode";
-const char kDisableTabletSplitViewDescription[] =
-    "Disable split view for Chrome OS tablet mode.";
-
 const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
 const char kEnablePerUserTimezoneDescription[] =
     "Chrome OS system timezone preference is stored and handled for each user "
@@ -2549,6 +2545,10 @@ const char kEnableFloatingVirtualKeyboardDescription[] =
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
+
+const char kEnableTabletSplitViewName[] = "Split view in Tablet mode";
+const char kEnableTabletSplitViewDescription[] =
+    "Enable split view for Chrome OS tablet mode.";
 
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
