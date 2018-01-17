@@ -536,6 +536,21 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (!speculative_render_frame_host_ ||
         speculative_render_frame_host_->GetSiteInstance() !=
             dest_site_instance.get()) {
+      // If there is a speculative RenderFrameHost trying to commit a
+      // navigation, inform the NavigationController that the load of the
+      // corresponding NavigationEntry stopped if needed. This is the case if
+      // the new navigation was started from BeginNavigation. If the navigation
+      // was started through the NavigationController, the NavigationController
+      // has already updated its state properly, and doesn't need to be
+      // notified.
+      if (speculative_render_frame_host_ &&
+          speculative_render_frame_host_->navigation_handle() &&
+          request.from_begin_navigation()) {
+        frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+            speculative_render_frame_host_->navigation_handle()
+                ->pending_nav_entry_id());
+      }
+
       // If a previous speculative RenderFrameHost didn't exist or if its
       // SiteInstance differs from the one for the current URL, a new one needs
       // to be created.
@@ -635,14 +650,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
 void RenderFrameHostManager::CleanUpNavigation() {
   if (speculative_render_frame_host_) {
-    // If the speculative RenderFrameHost is trying to commit a navigation,
-    // inform the NavigationController that the load of the corresponding
-    // NavigationEntry stopped.
-    if (speculative_render_frame_host_->navigation_handle()) {
-      frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-          speculative_render_frame_host_->navigation_handle()
-              ->pending_nav_entry_id());
-    }
     bool was_loading = speculative_render_frame_host_->is_loading();
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
     if (was_loading)
