@@ -1,5 +1,6 @@
 # This OWNERS file also covers:
 #
+# //content/common/notifications/
 # //content/renderer/notifications/
 # //content/test/mock_platform_notification_service.*
 

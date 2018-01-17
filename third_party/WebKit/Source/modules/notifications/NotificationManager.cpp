@@ -15,6 +15,8 @@
 #include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "public/platform/modules/notifications/WebNotificationData.h"
+#include "public/platform/modules/notifications/notification.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -108,9 +110,9 @@ void NotificationManager::OnPermissionServiceConnectionError() {
 }
 
 void NotificationManager::DisplayNonPersistentNotification(
-    const String& title) {
-  // TODO(crbug.com/595685): Pass the rest of the notification properties here.
-  GetNotificationService()->DisplayNonPersistentNotification(title);
+    const WebNotificationData& notification_data) {
+  // TODO(crbug.com/595685): Pass the notification resources through here too.
+  GetNotificationService()->DisplayNonPersistentNotification(notification_data);
 }
 
 const mojom::blink::NotificationServicePtr&

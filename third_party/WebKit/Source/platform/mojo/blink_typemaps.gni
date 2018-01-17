@@ -17,4 +17,5 @@ typemaps = [
   "//third_party/WebKit/Source/platform/mojo/Time.typemap",
   "//third_party/WebKit/public/platform/modules/bluetooth/Bluetooth.typemap",
   "//third_party/WebKit/public/platform/modules/fetch/FetchAPIRequest.typemap",
+  "//third_party/WebKit/public/platform/modules/notifications/NotificationTypes.typemap",
 ]

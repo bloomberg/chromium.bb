@@ -763,6 +763,7 @@ mojom("mojo_bindings") {
     "platform/modules/locks/lock_manager.mojom",
     "platform/modules/manifest/manifest.mojom",
     "platform/modules/manifest/manifest_manager.mojom",
+    "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/payments/payment_app.mojom",
     "platform/modules/permissions/permission.mojom",

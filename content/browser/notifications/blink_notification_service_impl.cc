@@ -12,6 +12,7 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/notification_resources.h"
+#include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
@@ -74,12 +75,10 @@ void BlinkNotificationServiceImpl::OnConnectionError() {
 }
 
 void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
-    const base::string16& title) {
+    const PlatformNotificationData& platform_notification_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!Service())
     return;
-  PlatformNotificationData platform_notification_data;
-  platform_notification_data.title = title;
 
   // TODO(https://crbug.com/595685): Generate a GUID in the
   // NotificationIdGenerator instead.
@@ -92,8 +91,7 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
               origin_.GetURL(), platform_notification_data.tag, request_id,
               render_process_id_);
 
-  // TODO(crbug.com/595685): Plumb through the rest of the notification data and
-  // the notification resources from blink.
+  // TODO(crbug.com/595685): Pass the actual notification resources here.
   // Using base::Unretained is safe because Service() returns a singleton.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

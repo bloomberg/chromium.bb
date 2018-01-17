@@ -197,7 +197,7 @@ void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
 
   if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
     NotificationManager::From(execution_context)
-        ->DisplayNonPersistentNotification(data_.title);
+        ->DisplayNonPersistentNotification(data_);
   } else {
     GetWebNotificationManager()->Show(WebSecurityOrigin(origin), data_,
                                       loader->GetResources(), this);
