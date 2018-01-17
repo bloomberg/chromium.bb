@@ -80,7 +80,6 @@
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
-#import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/navigation_context_impl.h"
@@ -812,9 +811,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // data relevant to the message, and |context| contains contextual information
 // about web view state needed for some handlers.
 
-// Handles 'addPluginPlaceholders' message.
-- (BOOL)handleAddPluginPlaceholdersMessage:(base::DictionaryValue*)message
-                                   context:(NSDictionary*)context;
 // Handles 'chrome.send' message.
 - (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
                         context:(NSDictionary*)context;
@@ -2229,8 +2225,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     handlers = new std::map<std::string, SEL>();
-    (*handlers)["addPluginPlaceholders"] =
-        @selector(handleAddPluginPlaceholdersMessage:context:);
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
     (*handlers)["console"] = @selector(handleConsoleMessage:context:);
     (*handlers)["document.favicons"] =
@@ -2315,16 +2309,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 #pragma mark -
 #pragma mark JavaScript message handlers
-
-- (BOOL)handleAddPluginPlaceholdersMessage:(base::DictionaryValue*)message
-                                   context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  // Inject the script that adds the plugin placeholders.
-  [[_jsInjectionReceiver
-      instanceOfClass:[CRWJSPluginPlaceholderManager class]] inject];
-  return YES;
-}
 
 - (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
                         context:(NSDictionary*)context {

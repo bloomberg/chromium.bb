@@ -7,14 +7,151 @@
 //
 // Installs and runs the plugin placeholder function on the |__gCrWeb| object.
 
+goog.provide('__crWeb.plugin');
+
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
+ * TODO(crbug.com/802344): Cleanup this file.
  */
 __gCrWeb['plugin'] = {};
 
 /* Beginning of anonymous object. */
 (function() {
+
+  /**
+   * Checks whether an <object> node is plugin content (as <object> can also be
+   * used to embed images).
+   * @param {HTMLElement} node The <object> node to check.
+   * @return {boolean} Whether the node appears to be a plugin.
+   * @private
+   */
+  var objectNodeIsPlugin_ = function(node) {
+    return node.hasAttribute('classid') ||
+      (node.hasAttribute('type') && node.type.indexOf('image/') != 0);
+  };
+
+  /**
+   * Checks whether a node has fallback content, which will be displayed in
+   * browsers which do not support the required plugin to display the node's
+   * content.
+   * @param {HTMLElement} node The node to check.
+   * @return {boolean} Whether the node has any fallback content.
+   * @private
+   */
+  var nodeHasFallbackContent_ = function(node) {
+    if (node.textContent.trim().length > 0) {
+      return true;
+    }
+
+    var childrenCount = node.children.length;
+    for (var i = 0; i < childrenCount; i++) {
+      var childNode = /** @type {!HTMLElement} */(node.children[i]);
+      // Do not consider <param> elements which affect the contents of the
+      // parent object node as fallback content.
+      if (childNode.tagName !== 'PARAM') {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  /**
+   * Finds the child embed element of node, if one exists.
+   * @param {HTMLElement} node The node to check.
+   * @return {HTMLElement} The embed fallback node, if one exists.
+   * @private
+   */
+  var getChildEmbedElement_ = function(node) {
+    var childrenCount = node.children.length;
+    if (childrenCount == 0) {
+      return null;
+    }
+    for (var i = 0; i < childrenCount; i++) {
+      var childNode = /** @type {!HTMLElement} */(node.children[i]);
+      if (childNode.tagName === 'EMBED') {
+        return childNode;
+      }
+    }
+    return null;
+  };
+
+  /**
+   * Checks if an embed node explicitly defines the content type to be flash.
+   * @param {HTMLElement} node The node to check.
+   * @return {boolean} Whether the node is known to be flash content.
+   * @private
+   */
+  var embedNodeIsKnownFlashContent_ = function(node) {
+    return node.hasAttribute('type') &&
+      (node.type.indexOf('application/x-shockwave-flash') == 0 ||
+      node.type.indexOf('application/vnd.adobe.flash-movie') == 0);
+  };
+
+  /**
+   * Checks whether a plugin is supported. A supported plugin must have fallback
+   * content and that fallback content must not be known flash content.
+   * @param {HTMLElement} node The node to check.
+   * @return {boolean} Whether the node is supported.
+   * @private
+   */
+  var pluginNodeIsSupported_ = function(node) {
+    if (!nodeHasFallbackContent_(node)) {
+      return false;
+    }
+
+    var embedChildNode = getChildEmbedElement_(node);
+    if (embedChildNode && embedNodeIsKnownFlashContent_(embedChildNode)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * Returns a list of plugin elements in the document that have either no
+   * fallback content or have fallback content that is explicitly defined as
+   * flash. For nested plugins, only the innermost plugin element is returned.
+   * @return {!Array<!HTMLElement>} A list of plugin elements.
+   * @private
+   */
+  var findPluginNodesWithoutFallback_ = function() {
+    var i, pluginNodes = [];
+    var objects = document.getElementsByTagName('object');
+    var objectCount = objects.length;
+    for (i = 0; i < objectCount; i++) {
+      var object = /** @type {!HTMLElement} */(objects[i]);
+      if (objectNodeIsPlugin_(object) &&
+          !pluginNodeIsSupported_(object)) {
+        pluginNodes.push(object);
+      }
+    }
+    var applets = document.getElementsByTagName('applet');
+    var appletsCount = applets.length;
+    for (i = 0; i < appletsCount; i++) {
+      var applet = /** @type {!HTMLElement} */(applets[i]);
+      if (!pluginNodeIsSupported_(applet)) {
+        pluginNodes.push(applet);
+      }
+    }
+    return pluginNodes;
+  };
+
+  /**
+   * Finds and stores any plugins that don't have placeholders.
+   * Returns true if any plugins without placeholders are found.
+   */
+  __gCrWeb['plugin'].updatePluginPlaceholders = function() {
+    var plugins = findPluginNodesWithoutFallback_();
+    if (plugins.length > 0) {
+      // Store the list of plugins in a known place for the replacement script
+      // to use, then trigger it.
+      __gCrWeb['placeholderTargetPlugins'] = plugins;
+      return true;
+    }
+    return false;
+  };
 
   /* Data-URL version of plugin_blocked_android.png. Served this way rather
    * than with an intercepted URL to avoid messing up https pages.
@@ -127,7 +264,7 @@ __gCrWeb['plugin'] = {};
    * that are "significant" (see above).
    * @param {string} message The message to show in the placeholder.
    */
-  __gCrWeb['plugin']['addPluginPlaceholders'] = function(message) {
+  __gCrWeb['plugin'].addPluginPlaceholders = function(message) {
     var i, plugins = __gCrWeb['placeholderTargetPlugins'];
     for (i = 0; i < plugins.length; i++) {
       var plugin = plugins[i];
@@ -196,4 +333,12 @@ __gCrWeb['plugin'] = {};
       plugin.insertBefore(placeholder, plugin.firstChild);
     }
   };
+
+ // Add placeholders for plugin content.
+ if (__gCrWeb['plugin'].updatePluginPlaceholders()) {
+   // web::GetDocumentEndScriptForAllFrames replaces
+   // $(PLUGIN_NOT_SUPPORTED_TEXT) with approproate string upon injection.
+   __gCrWeb['plugin'].addPluginPlaceholders('$(PLUGIN_NOT_SUPPORTED_TEXT)');
+ }
+
 }());  // End of anonymous object

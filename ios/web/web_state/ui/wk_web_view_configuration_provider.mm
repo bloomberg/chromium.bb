@@ -43,6 +43,16 @@ WKUserScript* InternalGetDocumentStartScriptForAllFrames(
       forMainFrameOnly:NO];
 }
 
+// Returns an autoreleased instance of WKUserScript to be added to
+// configuration's userContentController.
+WKUserScript* InternalGetDocumentEndScriptForAllFrames(
+    BrowserState* browser_state) {
+  return [[WKUserScript alloc]
+        initWithSource:GetDocumentEndScriptForAllFrames(browser_state)
+         injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+      forMainFrameOnly:NO];
+}
+
 }  // namespace
 
 // static
@@ -88,6 +98,8 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentStartScriptForMainFrame(
                           browser_state_)];
+    [[configuration_ userContentController]
+        addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
   }
   // Prevent callers from changing the internals of configuration.
   return [configuration_ copy];
