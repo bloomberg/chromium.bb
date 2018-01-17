@@ -198,6 +198,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual void SetIsInert(bool) = 0;
   void UpdateInertIfPossible();
 
+  String GetDevToolsFrameToken() const { return devtools_frame_token_; }
+
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
@@ -233,6 +235,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   const Member<WindowProxyManager> window_proxy_manager_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
+  String devtools_frame_token_;
 };
 
 inline FrameClient* Frame::Client() const {

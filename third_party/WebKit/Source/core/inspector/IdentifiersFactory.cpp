@@ -54,17 +54,17 @@ String IdentifiersFactory::RequestId(unsigned long identifier) {
 }
 
 // static
-String IdentifiersFactory::FrameId(LocalFrame* frame) {
+String IdentifiersFactory::FrameId(Frame* frame) {
   if (!frame)
     return g_empty_string;
-  return frame->GetInstrumentationToken();
+  return frame->GetDevToolsFrameToken();
 }
 
 // static
 LocalFrame* IdentifiersFactory::FrameById(InspectedFrames* inspected_frames,
                                           const String& frame_id) {
   for (auto* frame : *inspected_frames) {
-    if (frame->Client() && frame->GetInstrumentationToken() == frame_id)
+    if (frame->Client() && frame->GetDevToolsFrameToken() == frame_id)
       return frame;
   }
   return nullptr;

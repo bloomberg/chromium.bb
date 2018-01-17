@@ -1107,8 +1107,8 @@ void LocalFrameClientImpl::DidBlockFramebust(const KURL& url) {
   web_frame_->Client()->DidBlockFramebust(url);
 }
 
-String LocalFrameClientImpl::GetInstrumentationToken() {
-  return web_frame_->Client()->GetInstrumentationToken();
+String LocalFrameClientImpl::GetDevToolsFrameToken() const {
+  return web_frame_->Client()->GetDevToolsFrameToken();
 }
 
 void LocalFrameClientImpl::ScrollRectToVisibleInParentFrame(

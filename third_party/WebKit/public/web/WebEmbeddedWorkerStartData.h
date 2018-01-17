@@ -54,7 +54,7 @@ struct WebEmbeddedWorkerStartData {
   WaitForDebuggerMode wait_for_debugger_mode;
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
-  WebString instrumentation_token;
+  WebString devtools_frame_token;
   WebSettings::V8CacheOptions v8_cache_options;
 
   mojom::IPAddressSpace address_space;

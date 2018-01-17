@@ -4586,7 +4586,7 @@ void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
   Send(new FrameHostMsg_DidBlockFramebust(GetRoutingID(), url));
 }
 
-blink::WebString RenderFrameImpl::GetInstrumentationToken() {
+blink::WebString RenderFrameImpl::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }
 

@@ -331,7 +331,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
           web_local_frame_impl_->GetFrame())),
       inspected_frames_(new InspectedFrames(
           web_local_frame_impl_->GetFrame(),
-          web_local_frame_impl_->GetFrame()->GetInstrumentationToken())),
+          web_local_frame_impl_->GetFrame()->GetDevToolsFrameToken())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
       include_view_agents_(include_view_agents),
       layer_tree_id_(0) {

@@ -140,7 +140,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
       WebEmbeddedWorkerStartData::kPauseAfterDownload)
     pause_after_download_state_ = kDoPauseAfterDownload;
 
-  instrumentation_token_ = data.instrumentation_token;
+  devtools_frame_token_ = data.devtools_frame_token;
   shadow_page_ = std::make_unique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
 
@@ -323,8 +323,8 @@ void WebEmbeddedWorkerImpl::ResumeStartup() {
     shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
-const WebString& WebEmbeddedWorkerImpl::GetInstrumentationToken() {
-  return instrumentation_token_;
+const WebString& WebEmbeddedWorkerImpl::GetDevToolsFrameToken() {
+  return devtools_frame_token_;
 }
 
 void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {

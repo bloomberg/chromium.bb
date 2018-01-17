@@ -183,6 +183,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void AdvanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;
   void FrameFocused() override;
+  blink::WebString GetDevToolsFrameToken() override;
 
   // IPC handlers
   void OnDidStartLoading();
@@ -254,6 +255,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   RenderViewImpl* render_view_;
   RenderWidget* render_widget_;
+
+  // Contains string to be used as a frame id in the devtools protocol.
+  // It is derived from the content's devtools_frame_token, is
+  // defined by the browser and passed into Blink upon frame creation.
+  blink::WebString devtools_frame_token_;
 
   // TODO(fsamuel): We might want to unify this with content::ResizeParams.
   // TODO(fsamuel): Most RenderFrameProxys don't host viz::Surfaces and
