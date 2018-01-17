@@ -26,6 +26,7 @@ class CertVerifierBrowserTest : public InProcessBrowserTest {
   ~CertVerifierBrowserTest() override;
 
   // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
 

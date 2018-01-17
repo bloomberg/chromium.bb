@@ -4779,6 +4779,7 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest,
   CommonNameMismatchBrowserTest() : CertVerifierBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
     // Enable finch experiment for SSL common name mismatch handling.
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "SSLCommonNameMismatchHandling/Enabled/");
@@ -5775,6 +5776,7 @@ class SSLUICaptivePortalListResourceBundleTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
     if (GetParam()) {
       command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
@@ -6049,6 +6051,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
     if (GetParam()) {
       command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
@@ -6511,6 +6514,7 @@ class SuperfishSSLUITest : public CertVerifierBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    CertVerifierBrowserTest::SetUpCommandLine(command_line);
     if (GetParam()) {
       command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
