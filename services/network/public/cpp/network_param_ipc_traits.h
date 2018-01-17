@@ -19,7 +19,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/cors_error_status.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "url/ipc/url_param_traits.h"
 

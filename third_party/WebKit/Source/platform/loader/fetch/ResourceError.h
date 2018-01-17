@@ -34,7 +34,7 @@
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLError.h"
-#include "services/network/public/cpp/cors_error_status.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 
 namespace blink {
 

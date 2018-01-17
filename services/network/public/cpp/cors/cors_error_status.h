@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_ERROR_STATUS_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_CORS_ERROR_STATUS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_headers.h"
@@ -39,4 +39,4 @@ struct CORSErrorStatus {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_CORS_ERROR_STATUS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
