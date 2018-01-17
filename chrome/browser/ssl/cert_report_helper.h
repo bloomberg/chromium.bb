@@ -87,10 +87,6 @@ class CertReportHelper {
   // error for this page.
   bool ShouldReportCertificateError();
 
-  // Returns the boolean value of the given |pref| from the PrefService of the
-  // Profile associated with |web_contents_|.
-  bool IsPrefEnabled(const char* pref);
-
   // Handles reports of invalid SSL certificates.
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
   // The WebContents for which this helper sends reports.

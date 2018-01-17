@@ -195,7 +195,8 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
   return base::FieldTrialList::FindFullName(kFinchExperimentName) ==
              kFinchGroupShowPossiblySend &&
          !in_incognito &&
-         IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+         safe_browsing::IsExtendedReportingOptInAllowed(
+             *GetProfile(web_contents_)->GetPrefs());
 }
 
 bool CertReportHelper::ShouldReportCertificateError() {
@@ -222,8 +223,4 @@ bool CertReportHelper::ShouldReportCertificateError() {
     }
   }
   return false;
-}
-
-bool CertReportHelper::IsPrefEnabled(const char* pref) {
-  return GetProfile(web_contents_)->GetPrefs()->GetBoolean(pref);
 }
