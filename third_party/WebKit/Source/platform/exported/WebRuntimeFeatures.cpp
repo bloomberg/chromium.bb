@@ -294,10 +294,6 @@ void WebRuntimeFeatures::EnableTurnOff2DAndOpacityCompositorAnimations(
       enable);
 }
 
-void WebRuntimeFeatures::EnablePreventLayerSquashing(bool enable) {
-  RuntimeEnabledFeatures::SetPreventLayerSquashingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebGLDraftExtensions(bool enable) {
   RuntimeEnabledFeatures::SetWebGLDraftExtensionsEnabled(enable);
 }

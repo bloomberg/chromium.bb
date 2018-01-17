@@ -28,8 +28,7 @@ using SquashingDisallowedReasons = unsigned;
   V(ScrollChildWithCompositedDescendants)       \
   V(SquashingLayerIsAnimating)                  \
   V(RenderingContextMismatch)                   \
-  V(FragmentedContent)                          \
-  V(PrecedingLayerPrecludesSquashing)
+  V(FragmentedContent)
 
 class PLATFORM_EXPORT SquashingDisallowedReason {
  private:

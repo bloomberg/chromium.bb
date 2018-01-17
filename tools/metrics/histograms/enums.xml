@@ -25532,7 +25532,6 @@ from previous Chrome versions.
   <int value="-1174267639" label="ClientLoFi:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
-  <int value="-1171900360" label="EnablePreventLayerSquashing:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
   <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
@@ -26622,7 +26621,6 @@ from previous Chrome versions.
   <int value="1719189460" label="EnablePasswordSelection:disabled"/>
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1724800383" label="AsmJsToWebAssembly:disabled"/>
-  <int value="1725954299" label="EnablePreventLayerSquashing:enabled"/>
   <int value="1730094138" label="enable-md-storage-manager"/>
   <int value="1730236697" label="force-device-scale-factor"/>
   <int value="1730416578" label="NTPCondensedLayout:enabled"/>

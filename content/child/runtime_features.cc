@@ -312,9 +312,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
     WebRuntimeFeatures::EnableCompositorTouchAction(true);
 
-  WebRuntimeFeatures::EnablePreventLayerSquashing(
-      base::FeatureList::IsEnabled(features::kEnablePreventLayerSquashing));
-
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     WebRuntimeFeatures::EnableGenericSensor(true);
     if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))

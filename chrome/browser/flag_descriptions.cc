@@ -1506,11 +1506,6 @@ const char kTrySupportedChannelLayoutsDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kEnablePreventLayerSquashingName[] = "Prevent layer squashing";
-const char kEnablePreventLayerSquashingDescription[] =
-    "When enabled, the compositor will avoid combining composited layers in "
-    "more situations.";
-
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
