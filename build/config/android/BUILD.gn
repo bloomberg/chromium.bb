@@ -52,25 +52,25 @@ config("compiler") {
   # calculation in //build/config/android/config.gni
   if (current_cpu == "arm") {
     abi_target = "arm-linux-androideabi"
-    compile_api_level = 16
+    compile_api_level = android32_ndk_api_level
   } else if (current_cpu == "x86") {
     abi_target = "i686-linux-android"
-    compile_api_level = 16
+    compile_api_level = android32_ndk_api_level
   } else if (current_cpu == "arm64") {
     abi_target = "aarch64-linux-android"
-    compile_api_level = 21
+    compile_api_level = android64_ndk_api_level
   } else if (current_cpu == "x64") {
     # Place holder for x64 support, not tested.
     # TODO: Enable clang support for Android x64. http://crbug.com/539781
     abi_target = "x86_64-linux-android"
-    compile_api_level = 21
+    compile_api_level = android64_ndk_api_level
   } else if (current_cpu == "mipsel") {
     abi_target = "mipsel-linux-android"
-    compile_api_level = 16
+    compile_api_level = android32_ndk_api_level
   } else if (current_cpu == "mips64el") {
     # Place holder for mips64 support, not tested.
     abi_target = "mips64el-linux-android"
-    compile_api_level = 21
+    compile_api_level = android64_ndk_api_level
   } else {
     assert(false, "Architecture not supported")
   }
