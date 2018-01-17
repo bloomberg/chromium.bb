@@ -21,7 +21,10 @@ declare_args() {
 
 declare_args() {
   # Enable VR device support whenever VR device SDK(s) are supported.
-  enable_vr = enable_gvr_services || enable_openvr || enable_oculus_vr
+  # We enable VR on Linux even though VR features aren't usable because
+  # the binary size impact is small and allows many VR tests to run on Linux
+  enable_vr = enable_gvr_services || enable_openvr || enable_oculus_vr ||
+              (is_linux && (current_cpu == "x64" || current_cpu == "x86"))
 
   # Whether to include VR extras like test APKs in non-VR-specific targets
   include_vr_data = false
