@@ -49,13 +49,13 @@ bool LayoutSVGBlock::AllowsOverflowClip() const {
   // b) refactor overflow logic out of Layer (as suggested by dhyatt), which is
   //    a large task
   //
-  // Until this is resolved, disable overflow support. Opera/FF don't support it
-  // as well at the moment (Feb 2010).
+  // Until this is resolved, let this function return false, and create overflow
+  // clip in PaintPropertyTreeBuilder and apply overflow clip in
+  // SVGForeignObjectPainter.
   //
   // Note: This does NOT affect overflow handling on outer/inner <svg> elements
-  // - this is handled
-  // manually by LayoutSVGRoot - which owns the documents enclosing root layer
-  // and thus works fine.
+  // - this is handled manually by LayoutSVGRoot - which owns the documents
+  // enclosing root layer and thus works fine.
   return false;
 }
 
