@@ -1831,12 +1831,10 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
     return;
   }
 
-  // Try again after decoding the ref, based on the document's encoding.
+  // Try again after decoding the fragment.
   if (frame_->GetDocument()->Encoding().IsValid()) {
-    ProcessUrlFragmentHelper(
-        DecodeURLEscapeSequences(fragment_identifier,
-                                 frame_->GetDocument()->Encoding()),
-        behavior);
+    ProcessUrlFragmentHelper(DecodeURLEscapeSequences(fragment_identifier),
+                             behavior);
   }
 }
 
