@@ -425,12 +425,7 @@ void PaintOpWriter::Write(const ComposePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
-  std::vector<SkIRect> region;
-  for (SkRegion::Iterator it(filter.region()); !it.done(); it.next())
-    region.push_back(it.rect());
-  WriteSimple(static_cast<size_t>(region.size()));
-  for (auto& rect : region)
-    WriteSimple(rect);
+  Write(filter.region());
   WriteSimple(filter.inner_min());
   WriteSimple(filter.outer_max());
   Write(filter.input().get());
@@ -628,6 +623,16 @@ void PaintOpWriter::Write(const PaintImage& image) {
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        kLow_SkFilterQuality, SkMatrix::I());
   Write(draw_image);
+}
+
+void PaintOpWriter::Write(const SkRegion& region) {
+  size_t bytes_required = region.writeToMemory(nullptr);
+  std::unique_ptr<char[]> data(new char[bytes_required]);
+  size_t bytes_written = region.writeToMemory(data.get());
+  DCHECK_EQ(bytes_required, bytes_written);
+
+  WriteSimple(bytes_written);
+  WriteData(bytes_written, data.get());
 }
 
 }  // namespace cc

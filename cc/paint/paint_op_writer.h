@@ -121,6 +121,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   void Write(const PaintRecord* record);
   void Write(const PaintImage& image);
+  void Write(const SkRegion& region);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;
