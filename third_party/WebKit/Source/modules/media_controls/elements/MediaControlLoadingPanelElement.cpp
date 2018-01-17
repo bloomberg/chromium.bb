@@ -11,6 +11,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/media/HTMLMediaElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/style/ComputedStyle.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/MediaControlsResourceLoader.h"
@@ -19,7 +20,9 @@
 namespace {
 
 static const char kAnimationIterationCountName[] = "animation-iteration-count";
+static const char kClassAttributeName[] = "class";
 static const char kInfinite[] = "infinite";
+static const char kNoFrameAvailableSpinnerClass[] = "dark";
 
 }  // namespace
 
@@ -71,12 +74,13 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
 
   // The spinner is responsible for rotating the elements below. The square
   // edges will be cut off by the frame above.
-  HTMLDivElement* spinner =
+  spinner_ =
       MediaControlElementsHelper::CreateDivWithId("spinner", spinner_frame);
+  SetSpinnerClassIfNecessary();
 
   // The layer performs a secondary "fill-unfill-rotate" animation.
   HTMLDivElement* layer =
-      MediaControlElementsHelper::CreateDivWithId("layer", spinner);
+      MediaControlElementsHelper::CreateDivWithId("layer", spinner_);
 
   // The spinner is split into two halves, one on the left (1) and the other
   // on the right (2). The mask elements stop the background from overlapping
@@ -126,6 +130,7 @@ void MediaControlLoadingPanelElement::CleanupShadowDOM() {
   event_listener_->Detach();
   shadow_root->RemoveChildren();
 
+  spinner_.Clear();
   mask1_background_.Clear();
   mask2_background_.Clear();
   event_listener_.Clear();
@@ -207,6 +212,24 @@ void MediaControlLoadingPanelElement::OnAnimationEnd() {
 
 void MediaControlLoadingPanelElement::OnAnimationIteration() {
   animation_count_ += 1;
+  SetSpinnerClassIfNecessary();
+}
+
+void MediaControlLoadingPanelElement::SetSpinnerClassIfNecessary() {
+  if (!spinner_)
+    return;
+
+  HTMLVideoElement& video_element =
+      static_cast<HTMLVideoElement&>(MediaElement());
+  if (!video_element.ShouldDisplayPosterImage() &&
+      !video_element.HasAvailableVideoFrame()) {
+    if (!spinner_->hasAttribute(kClassAttributeName)) {
+      spinner_->setAttribute(kClassAttributeName,
+                             kNoFrameAvailableSpinnerClass);
+    }
+  } else {
+    spinner_->removeAttribute(kClassAttributeName);
+  }
 }
 
 Element& MediaControlLoadingPanelElement::WatchedAnimationElement() const {
@@ -218,6 +241,7 @@ void MediaControlLoadingPanelElement::Trace(blink::Visitor* visitor) {
   MediaControlAnimationEventListener::Observer::Trace(visitor);
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
+  visitor->Trace(spinner_);
   visitor->Trace(mask1_background_);
   visitor->Trace(mask2_background_);
 }
