@@ -131,7 +131,6 @@ class AppCacheDispatcher;
 class AecDumpMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
-class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
 class CategorizedWorkerPool;
@@ -655,7 +654,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   // Used on the renderer and IPC threads.
-  scoped_refptr<BlobMessageFilter> blob_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 

@@ -188,10 +188,6 @@ void WebRuntimeFeatures::EnableModuleScriptsImportMetaUrl(bool enable) {
   RuntimeEnabledFeatures::SetModuleScriptsImportMetaUrlEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableMojoBlobs(bool enable) {
-  RuntimeEnabledFeatures::SetMojoBlobsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableNotificationConstructor(bool enable) {
   RuntimeEnabledFeatures::SetNotificationConstructorEnabled(enable);
 }

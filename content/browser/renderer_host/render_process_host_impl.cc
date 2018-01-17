@@ -1766,9 +1766,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       storage_partition_impl_->GetFileSystemContext(),
       blob_storage_context.get()));
-  AddFilter(new BlobDispatcherHost(
-      GetID(), blob_storage_context,
-      base::WrapRefCounted(storage_partition_impl_->GetFileSystemContext())));
+  AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
 #endif
@@ -1961,11 +1959,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(this)));
   }
 
-  if (features::IsMojoBlobsEnabled()) {
-    registry->AddInterface(
-        base::Bind(&BlobRegistryWrapper::Bind,
-                   storage_partition_impl_->GetBlobRegistry(), GetID()));
-  }
+  registry->AddInterface(
+      base::BindRepeating(&BlobRegistryWrapper::Bind,
+                          storage_partition_impl_->GetBlobRegistry(), GetID()));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));

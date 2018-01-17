@@ -251,7 +251,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
                            blink::WebString::FromUTF8(pair.second));
   }
   if (!request.blob_uuid.empty()) {
-    DCHECK_EQ(request.blob != nullptr, features::IsMojoBlobsEnabled());
+    DCHECK(request.blob);
     mojo::ScopedMessagePipeHandle blob_pipe;
     if (request.blob)
       blob_pipe = request.blob->Clone().PassInterface().PassHandle();
@@ -294,7 +294,7 @@ void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
                             blink::WebString::FromUTF8(pair.second));
   }
   if (!response.blob_uuid.empty()) {
-    DCHECK_EQ(response.blob != nullptr, features::IsMojoBlobsEnabled());
+    DCHECK(response.blob);
     mojo::ScopedMessagePipeHandle blob_pipe;
     if (response.blob)
       blob_pipe = response.blob->Clone().PassInterface().PassHandle();

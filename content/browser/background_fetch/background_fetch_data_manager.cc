@@ -379,16 +379,13 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
         if (blob_data_handle) {
           settled_fetch.response.blob_uuid = blob_data_handle->uuid();
           settled_fetch.response.blob_size = blob_data_handle->size();
-          if (features::IsMojoBlobsEnabled()) {
-            blink::mojom::BlobPtr blob_ptr;
-            storage::BlobImpl::Create(
-                std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
-                MakeRequest(&blob_ptr));
+          blink::mojom::BlobPtr blob_ptr;
+          storage::BlobImpl::Create(
+              std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
+              MakeRequest(&blob_ptr));
 
-            settled_fetch.response.blob =
-                base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
-          }
-
+          settled_fetch.response.blob =
+              base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
           blob_data_handles.push_back(std::move(blob_data_handle));
         }
       }

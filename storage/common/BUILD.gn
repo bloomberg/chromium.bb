@@ -9,10 +9,6 @@ component("common") {
   sources = [
     "blob_storage/blob_handle.cc",
     "blob_storage/blob_handle.h",
-    "blob_storage/blob_item_bytes_request.cc",
-    "blob_storage/blob_item_bytes_request.h",
-    "blob_storage/blob_item_bytes_response.cc",
-    "blob_storage/blob_item_bytes_response.h",
     "blob_storage/blob_storage_constants.cc",
     "blob_storage/blob_storage_constants.h",
     "database/database_connections.cc",

@@ -434,13 +434,11 @@ class CacheStorageCacheTest : public testing::Test {
     blob_handle_ = BuildBlobHandle("blob-id:myblob", expected_blob_data_);
 
     scoped_refptr<storage::BlobHandle> blob;
-    if (features::IsMojoBlobsEnabled()) {
-      blink::mojom::BlobPtr blob_ptr;
-      storage::BlobImpl::Create(
-          std::make_unique<storage::BlobDataHandle>(*blob_handle_),
-          MakeRequest(&blob_ptr));
-      blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
-    }
+    blink::mojom::BlobPtr blob_ptr;
+    storage::BlobImpl::Create(
+        std::make_unique<storage::BlobDataHandle>(*blob_handle_),
+        MakeRequest(&blob_ptr));
+    blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
 
     body_response_ = CreateResponse(
         "http://example.com/body.html",
@@ -493,14 +491,12 @@ class CacheStorageCacheTest : public testing::Test {
                               ServiceWorkerResponse* response) {
     response->side_data_blob_uuid = side_data_blob_handle->uuid();
     response->side_data_blob_size = side_data_blob_handle->size();
-    if (features::IsMojoBlobsEnabled()) {
-      blink::mojom::BlobPtr blob_ptr;
-      storage::BlobImpl::Create(
-          std::make_unique<storage::BlobDataHandle>(*side_data_blob_handle),
-          MakeRequest(&blob_ptr));
-      response->side_data_blob =
-          base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
-    }
+    blink::mojom::BlobPtr blob_ptr;
+    storage::BlobImpl::Create(
+        std::make_unique<storage::BlobDataHandle>(*side_data_blob_handle),
+        MakeRequest(&blob_ptr));
+    response->side_data_blob =
+        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
   }
 
   std::unique_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(

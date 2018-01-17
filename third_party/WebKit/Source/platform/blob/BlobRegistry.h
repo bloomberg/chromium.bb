@@ -31,7 +31,6 @@
 #ifndef BlobRegistry_h
 #define BlobRegistry_h
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
@@ -39,7 +38,6 @@
 
 namespace blink {
 
-class BlobData;
 class BlobDataHandle;
 class KURL;
 class SecurityOrigin;
@@ -49,10 +47,7 @@ class PLATFORM_EXPORT BlobRegistry {
   STATIC_ONLY(BlobRegistry);
 
  public:
-  // Methods for controlling Blobs.
-  static void RegisterBlobData(const String& uuid, std::unique_ptr<BlobData>);
-  static void AddBlobDataRef(const String& uuid);
-  static void RemoveBlobDataRef(const String& uuid);
+  // Methods for controlling Blob URLs.
   static void RegisterPublicBlobURL(SecurityOrigin*,
                                     const KURL&,
                                     scoped_refptr<BlobDataHandle>);
