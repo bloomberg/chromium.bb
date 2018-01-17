@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/zlib/zlib.h"
@@ -40,8 +41,6 @@ const int kLogListLimitLines = 50;
 const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
-
-const int kHttpResponseOk = 200;
 
 // Adds the header section for a gzip file to the multipart |post_data|.
 void AddMultipartFileContentHeader(std::string* post_data,
@@ -164,7 +163,7 @@ void WebRtcLogUploader::PrepareMultipartPostData(
   // implemented according to the test plan. http://crbug.com/257329.
   if (post_data_) {
     *post_data_ = *post_data;
-    NotifyUploadDone(kHttpResponseOk, "", upload_done_data);
+    NotifyUploadDone(net::HTTP_OK, "", upload_done_data);
     return;
   }
 
@@ -302,7 +301,7 @@ void WebRtcLogUploader::OnURLFetchComplete(
     // The log path can be empty here if we failed getting it before. We still
     // upload the log if that's the case.
     std::string report_id;
-    if (response_code == kHttpResponseOk &&
+    if (response_code == net::HTTP_OK &&
         source->GetResponseAsString(&report_id) &&
         !it->second.log_path.empty()) {
       // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
@@ -620,7 +619,7 @@ void WebRtcLogUploader::NotifyUploadDone(
       base::BindOnce(&WebRtcLoggingHandlerHost::UploadLogDone,
                      upload_done_data.host));
   if (!upload_done_data.callback.is_null()) {
-    bool success = response_code == kHttpResponseOk;
+    bool success = response_code == net::HTTP_OK;
     std::string error_message;
     if (!success) {
       error_message = "Uploading failed, response code: " +

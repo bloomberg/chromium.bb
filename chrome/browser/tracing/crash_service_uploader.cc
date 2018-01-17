@@ -25,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/network_delegate.h"
+#include "net/http/http_status_code.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -43,7 +44,6 @@ const char kUploadURL[] = "https://clients2.google.com/cr/report";
 const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
-const int kHttpResponseOk = 200;
 
 // Allow up to 10MB for trace upload
 const size_t kMaxUploadBytes = 10000000;
@@ -86,7 +86,7 @@ void TraceCrashServiceUploader::OnURLFetchComplete(
   DCHECK_EQ(source, url_fetcher_.get());
   int response_code = source->GetResponseCode();
   string feedback;
-  bool success = (response_code == kHttpResponseOk);
+  bool success = (response_code == net::HTTP_OK);
   if (success) {
     source->GetResponseAsString(&feedback);
   } else {
