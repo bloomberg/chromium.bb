@@ -1,23 +1,15 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+
 <p>This tests for a drag select crasher.</p>
 <div id="div" contenteditable="true"><span id="start">Start here.</span> <input id="end" type="text"></div>
-<ul id="console"></ul>
+This uses the eventSender to perform a drag select.  To run it manually, mouse down over 'start here' and drag to the left, over the input field.
 
 <script>
-function log(str) {
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(str));
-    var console = document.getElementById("console");
-    console.appendChild(li);
-}
-function shouldBe(expected, actual) {
-    if (expected != actual)
-        log("Failure. Expected: " + expected + ", Actual: " + actual);
-    else
-        log("Passed");
-}
-alert( 5 / 29);
-if (window.testRunner) {
-    
+test(function() {
+    if (!window.testRunner)
+        return;
     var div = document.getElementById("div");
     var sel = window.getSelection();
     sel.collapse(div, 0);
@@ -39,9 +31,5 @@ if (window.testRunner) {
 
     eventSender.mouseMoveTo(endx, endy);
     eventSender.mouseUp();
-
-    
-} else {
-    log("This uses the eventSender to perform a drag select.  To run it manually, mouse down over 'start here' and drag to the left, over the input field.");
-}
+}, "Passes if no crash");
 </script>
