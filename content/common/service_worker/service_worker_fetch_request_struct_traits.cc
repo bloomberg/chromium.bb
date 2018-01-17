@@ -10,44 +10,9 @@
 
 namespace mojo {
 
-using blink::mojom::FetchRedirectMode;
 using blink::mojom::RequestContextType;
 using blink::mojom::ServiceWorkerFetchType;
 using network::mojom::FetchRequestMode;
-
-FetchRedirectMode
-EnumTraits<FetchRedirectMode, content::FetchRedirectMode>::ToMojom(
-    content::FetchRedirectMode input) {
-  switch (input) {
-    case content::FetchRedirectMode::FOLLOW_MODE:
-      return FetchRedirectMode::FOLLOW;
-    case content::FetchRedirectMode::ERROR_MODE:
-      return FetchRedirectMode::ERROR_MODE;
-    case content::FetchRedirectMode::MANUAL_MODE:
-      return FetchRedirectMode::MANUAL;
-  }
-
-  NOTREACHED();
-  return FetchRedirectMode::ERROR_MODE;
-}
-
-bool EnumTraits<FetchRedirectMode, content::FetchRedirectMode>::FromMojom(
-    FetchRedirectMode input,
-    content::FetchRedirectMode* out) {
-  switch (input) {
-    case FetchRedirectMode::FOLLOW:
-      *out = content::FetchRedirectMode::FOLLOW_MODE;
-      return true;
-    case FetchRedirectMode::ERROR_MODE:
-      *out = content::FetchRedirectMode::ERROR_MODE;
-      return true;
-    case FetchRedirectMode::MANUAL:
-      *out = content::FetchRedirectMode::MANUAL_MODE;
-      return true;
-  }
-
-  return false;
-}
 
 RequestContextType
 EnumTraits<RequestContextType, content::RequestContextType>::ToMojom(

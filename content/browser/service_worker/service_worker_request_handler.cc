@@ -115,10 +115,10 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
       provider_host->CreateRequestHandler(
           network::mojom::FetchRequestMode::kNavigate,
           network::mojom::FetchCredentialsMode::kInclude,
-          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          false /* keepalive */, resource_type, request_context_type,
-          frame_type, blob_storage_context->AsWeakPtr(), body,
-          skip_service_worker));
+          network::mojom::FetchRedirectMode::kManual,
+          std::string() /* integrity */, false /* keepalive */, resource_type,
+          request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
+          body, skip_service_worker));
   if (handler)
     request->SetUserData(&user_data_key_, std::move(handler));
 
@@ -170,10 +170,10 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
       provider_host->CreateRequestHandler(
           network::mojom::FetchRequestMode::kNavigate,
           network::mojom::FetchCredentialsMode::kInclude,
-          FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          false /* keepalive */, resource_type, request_context_type,
-          frame_type, blob_storage_context->AsWeakPtr(), body,
-          skip_service_worker));
+          network::mojom::FetchRedirectMode::kManual,
+          std::string() /* integrity */, false /* keepalive */, resource_type,
+          request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
+          body, skip_service_worker));
 
   // Transfer ownership to the ServiceWorkerNavigationHandleCore.
   // In the case of a successful navigation, the SWProviderHost will be
@@ -195,7 +195,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     bool skip_service_worker,
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchCredentialsMode credentials_mode,
-    FetchRedirectMode redirect_mode,
+    network::mojom::FetchRedirectMode redirect_mode,
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,

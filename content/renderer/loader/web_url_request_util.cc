@@ -544,18 +544,6 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(FetchRedirectMode::FOLLOW_MODE,
-                   WebURLRequest::kFetchRedirectModeFollow);
-STATIC_ASSERT_ENUM(FetchRedirectMode::ERROR_MODE,
-                   WebURLRequest::kFetchRedirectModeError);
-STATIC_ASSERT_ENUM(FetchRedirectMode::MANUAL_MODE,
-                   WebURLRequest::kFetchRedirectModeManual);
-
-FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
-    const WebURLRequest& request) {
-  return static_cast<FetchRedirectMode>(request.GetFetchRedirectMode());
-}
-
 std::string GetFetchIntegrityForWebURLRequest(const WebURLRequest& request) {
   return request.GetFetchIntegrity().Utf8();
 }

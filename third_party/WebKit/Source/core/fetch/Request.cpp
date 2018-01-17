@@ -274,11 +274,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
   if (init.Redirect() == "follow") {
-    request->SetRedirect(WebURLRequest::kFetchRedirectModeFollow);
+    request->SetRedirect(network::mojom::FetchRedirectMode::kFollow);
   } else if (init.Redirect() == "error") {
-    request->SetRedirect(WebURLRequest::kFetchRedirectModeError);
+    request->SetRedirect(network::mojom::FetchRedirectMode::kError);
   } else if (init.Redirect() == "manual") {
-    request->SetRedirect(WebURLRequest::kFetchRedirectModeManual);
+    request->SetRedirect(network::mojom::FetchRedirectMode::kManual);
   }
 
   // "If |init|'s integrity member is present, set |request|'s
@@ -660,11 +660,11 @@ String Request::cache() const {
 String Request::redirect() const {
   // "The redirect attribute's getter must return request's redirect mode."
   switch (request_->Redirect()) {
-    case WebURLRequest::kFetchRedirectModeFollow:
+    case network::mojom::FetchRedirectMode::kFollow:
       return "follow";
-    case WebURLRequest::kFetchRedirectModeError:
+    case network::mojom::FetchRedirectMode::kError:
       return "error";
-    case WebURLRequest::kFetchRedirectModeManual:
+    case network::mojom::FetchRedirectMode::kManual:
       return "manual";
   }
   NOTREACHED();

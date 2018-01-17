@@ -102,7 +102,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
       network::mojom::FetchCredentialsMode::kOmit;
   blink::mojom::FetchCacheMode cache_mode =
       blink::mojom::FetchCacheMode::kDefault;
-  FetchRedirectMode redirect_mode = FetchRedirectMode::FOLLOW_MODE;
+  network::mojom::FetchRedirectMode redirect_mode =
+      network::mojom::FetchRedirectMode::kFollow;
   std::string integrity;
   bool keepalive = false;
   std::string client_id;

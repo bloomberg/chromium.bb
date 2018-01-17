@@ -205,7 +205,7 @@ void ResourceLoader::CancelForRedirectAccessCheckError(
 
 static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
   return request.GetFetchRedirectMode() ==
-             WebURLRequest::kFetchRedirectModeManual &&
+             network::mojom::FetchRedirectMode::kManual &&
          request.GetRequestContext() == WebURLRequest::kRequestContextFetch;
 }
 

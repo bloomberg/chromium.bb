@@ -87,7 +87,7 @@ FrameLoadRequest::FrameLoadRequest(
   resource_request_.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
   resource_request_.SetFetchRedirectMode(
-      WebURLRequest::kFetchRedirectModeManual);
+      network::mojom::FetchRedirectMode::kManual);
 
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());

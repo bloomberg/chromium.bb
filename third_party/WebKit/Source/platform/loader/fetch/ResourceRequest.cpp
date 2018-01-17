@@ -69,7 +69,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       frame_type_(network::mojom::RequestContextFrameType::kNone),
       fetch_request_mode_(network::mojom::FetchRequestMode::kNoCORS),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
-      fetch_redirect_mode_(WebURLRequest::kFetchRedirectModeFollow),
+      fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       referrer_policy_(kReferrerPolicyDefault),
       did_set_http_referrer_(false),
       check_for_browser_side_navigation_(true),

@@ -263,7 +263,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // same-origin redirects are not counted here.
   int cors_redirect_limit_;
 
-  WebURLRequest::FetchRedirectMode redirect_mode_;
+  network::mojom::FetchRedirectMode redirect_mode_;
 
   // Holds the referrer after a redirect response was received. This referrer is
   // used to populate the HTTP Referer header when following the redirect.

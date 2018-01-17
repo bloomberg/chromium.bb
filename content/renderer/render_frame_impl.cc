@@ -6668,8 +6668,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
             info.url_request.GetFetchRequestMode());
   DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
             info.url_request.GetFetchCredentialsMode());
-  DCHECK(GetFetchRedirectModeForWebURLRequest(info.url_request) ==
-         FetchRedirectMode::MANUAL_MODE);
+  DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
+            info.url_request.GetFetchRedirectMode());
   DCHECK(frame_->Parent() ||
          info.url_request.GetFrameType() ==
              network::mojom::RequestContextFrameType::kTopLevel);

@@ -16,7 +16,6 @@ sources = [
   "//content/common/service_worker/service_worker_fetch_request_struct_traits.cc",
 ]
 type_mappings = [
-  "blink.mojom.FetchRedirectMode=::content::FetchRedirectMode",
   "blink.mojom.FetchAPIRequest=::content::ServiceWorkerFetchRequest",
   "blink.mojom.RequestContextType=::content::RequestContextType",
   "blink.mojom.ServiceWorkerFetchType=::content::ServiceWorkerFetchType",

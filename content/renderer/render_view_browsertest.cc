@@ -596,7 +596,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
   request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
-  request.SetFetchRedirectMode(blink::WebURLRequest::kFetchRedirectModeManual);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
   blink::WebFrameClient::NavigationPolicyInfo policy_info(request);

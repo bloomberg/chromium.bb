@@ -15,42 +15,7 @@
 
 namespace mojo {
 
-using blink::mojom::FetchRedirectMode;
 using blink::mojom::RequestContextType;
-
-FetchRedirectMode
-EnumTraits<FetchRedirectMode, blink::WebURLRequest::FetchRedirectMode>::ToMojom(
-    blink::WebURLRequest::FetchRedirectMode input) {
-  switch (input) {
-    case blink::WebURLRequest::kFetchRedirectModeFollow:
-      return FetchRedirectMode::FOLLOW;
-    case blink::WebURLRequest::kFetchRedirectModeError:
-      return FetchRedirectMode::ERROR_MODE;
-    case blink::WebURLRequest::kFetchRedirectModeManual:
-      return FetchRedirectMode::MANUAL;
-  }
-
-  NOTREACHED();
-  return FetchRedirectMode::ERROR_MODE;
-}
-
-bool EnumTraits<FetchRedirectMode, blink::WebURLRequest::FetchRedirectMode>::
-    FromMojom(FetchRedirectMode input,
-              blink::WebURLRequest::FetchRedirectMode* out) {
-  switch (input) {
-    case FetchRedirectMode::FOLLOW:
-      *out = blink::WebURLRequest::kFetchRedirectModeFollow;
-      return true;
-    case FetchRedirectMode::ERROR_MODE:
-      *out = blink::WebURLRequest::kFetchRedirectModeError;
-      return true;
-    case FetchRedirectMode::MANUAL:
-      *out = blink::WebURLRequest::kFetchRedirectModeManual;
-      return true;
-  }
-
-  return false;
-}
 
 RequestContextType
 EnumTraits<RequestContextType, blink::WebURLRequest::RequestContext>::ToMojom(
@@ -335,7 +300,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   blink::mojom::blink::BlobPtr blob;
   blink::Referrer referrer;
   network::mojom::FetchCredentialsMode credentialsMode;
-  blink::WebURLRequest::FetchRedirectMode redirectMode;
+  network::mojom::FetchRedirectMode redirectMode;
   WTF::String integrity;
   WTF::String clientId;
 

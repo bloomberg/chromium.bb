@@ -86,14 +86,6 @@ enum FetchCacheMode {
   kUnspecifiedForceCacheMiss,
 };
 
-// The redirect mode indicating how redirects should be handled.
-// https://fetch.spec.whatwg.org/#concept-request-redirect-mode
-enum FetchRedirectMode {
-  FOLLOW,
-  ERROR_MODE,
-  MANUAL,
-};
-
 // Whether this is a regular fetch, or a foreign fetch request (now removed).
 // TODO(falken): Remove this since it's always FETCH.
 enum ServiceWorkerFetchType {
@@ -114,7 +106,7 @@ struct FetchAPIRequest {
   Referrer referrer;
   network.mojom.FetchCredentialsMode credentials_mode;
   FetchCacheMode cache_mode;
-  FetchRedirectMode redirect_mode;
+  network.mojom.FetchRedirectMode redirect_mode;
   string? integrity;
   bool keepalive;
   string? client_id;

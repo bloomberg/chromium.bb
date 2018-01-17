@@ -19,6 +19,17 @@ enum FetchRequestMode {
   kLast = kNavigate
 };
 
+// Corresponds to Fetch request's "redirect mode":
+// https://fetch.spec.whatwg.org/#concept-request-redirect-mode
+enum FetchRedirectMode {
+  kFollow,
+  kError,
+  kManual,
+
+  // Update kLast if a new type is appended. Used for IPC_ENUM_TRAITS_MAX_VALUE.
+  kLast = kManual
+};
+
 // Corresponds to Fetch request's "credentials mode":
 // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
 enum FetchCredentialsMode {
@@ -26,7 +37,7 @@ enum FetchCredentialsMode {
   kSameOrigin,
   kInclude,
 
-  // Update kLast if a new type is appended.
+  // Update kLast if a new type is appended. Used for IPC_ENUM_TRAITS_MAX_VALUE.
   kLast = kInclude
 };
 

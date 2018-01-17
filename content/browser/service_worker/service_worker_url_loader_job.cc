@@ -73,9 +73,8 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
             resource_request_.fetch_request_mode);
   DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
             resource_request_.fetch_credentials_mode);
-  DCHECK_EQ(
-      FetchRedirectMode::MANUAL_MODE,
-      static_cast<FetchRedirectMode>(resource_request_.fetch_redirect_mode));
+  DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
+            resource_request_.fetch_redirect_mode);
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
 }

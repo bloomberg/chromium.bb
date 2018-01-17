@@ -90,8 +90,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetKeepalive(bool);
   bool Keepalive() const;
 
-  void SetRedirectMode(WebURLRequest::FetchRedirectMode);
-  WebURLRequest::FetchRedirectMode RedirectMode() const;
+  void SetRedirectMode(network::mojom::FetchRedirectMode);
+  network::mojom::FetchRedirectMode RedirectMode() const;
 
   void SetRequestContext(WebURLRequest::RequestContext);
   WebURLRequest::RequestContext GetRequestContext() const;

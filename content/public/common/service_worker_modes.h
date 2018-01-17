@@ -10,16 +10,6 @@ namespace content {
 // Indicates no service worker provider.
 static const int kInvalidServiceWorkerProviderId = -1;
 
-// The enum entries below are written to histograms and thus cannot be deleted
-// or reordered.
-// New entries must be added immediately before the end.
-enum class FetchRedirectMode {
-  FOLLOW_MODE,
-  ERROR_MODE,
-  MANUAL_MODE,
-  LAST = MANUAL_MODE
-};
-
 // Whether this is a regular fetch, or a foreign fetch request (now removed).
 // Duplicate of blink::mojom::ServiceWorkerFetchType.
 // TODO(falken): Remove this since it's always FETCH.

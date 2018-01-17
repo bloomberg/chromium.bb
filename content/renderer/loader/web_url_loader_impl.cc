@@ -663,8 +663,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       static_cast<int>(GetServiceWorkerModeForWebURLRequest(request));
   resource_request->fetch_request_mode = request.GetFetchRequestMode();
   resource_request->fetch_credentials_mode = request.GetFetchCredentialsMode();
-  resource_request->fetch_redirect_mode =
-      static_cast<int>(GetFetchRedirectModeForWebURLRequest(request));
+  resource_request->fetch_redirect_mode = request.GetFetchRedirectMode();
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =

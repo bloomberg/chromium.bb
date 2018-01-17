@@ -839,8 +839,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
   new_request->fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kInclude;
-  new_request->fetch_redirect_mode =
-      static_cast<int>(FetchRedirectMode::MANUAL_MODE);
+  new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
 
   // Check if a web UI scheme wants to handle this request.
   FrameTreeNode* frame_tree_node =

@@ -70,10 +70,10 @@ class FetchRequestData final
     cache_mode_ = cache_mode;
   }
   mojom::FetchCacheMode CacheMode() const { return cache_mode_; }
-  void SetRedirect(WebURLRequest::FetchRedirectMode redirect) {
+  void SetRedirect(network::mojom::FetchRedirectMode redirect) {
     redirect_ = redirect;
   }
-  WebURLRequest::FetchRedirectMode Redirect() const { return redirect_; }
+  network::mojom::FetchRedirectMode Redirect() const { return redirect_; }
   void SetResponseTainting(Tainting tainting) { response_tainting_ = tainting; }
   Tainting ResponseTainting() const { return response_tainting_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
@@ -123,7 +123,7 @@ class FetchRequestData final
   // behavior. We must transfer the mode to the network layer and service
   // worker.
   mojom::FetchCacheMode cache_mode_;
-  WebURLRequest::FetchRedirectMode redirect_;
+  network::mojom::FetchRedirectMode redirect_;
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;
