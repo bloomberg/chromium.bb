@@ -307,6 +307,17 @@ struct TraceIfNeeded {
     static void Trace(Visitor*, T*);
 };
 
+class ScriptWrappableVisitor {};
+
+class TraceWrapperBase {
+ public:
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const = 0;
+};
+
+class ScriptWrappable : public TraceWrapperBase {
+ public:
+  void TraceWrappers(const ScriptWrappableVisitor*) const override {}
+};
 }
 
 namespace WTF {

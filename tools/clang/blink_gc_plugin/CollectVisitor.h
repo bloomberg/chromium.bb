@@ -20,6 +20,7 @@ class CollectVisitor : public clang::RecursiveASTVisitor<CollectVisitor> {
 
   RecordVector& record_decls();
   MethodVector& trace_decls();
+  MethodVector& trace_wrapper_decls();
 
   // Collect record declarations, including nested declarations.
   bool VisitCXXRecordDecl(clang::CXXRecordDecl* record);
@@ -30,6 +31,7 @@ class CollectVisitor : public clang::RecursiveASTVisitor<CollectVisitor> {
  private:
   RecordVector record_decls_;
   MethodVector trace_decls_;
+  MethodVector trace_wrapper_decls_;
 };
 
 #endif  // TOOLS_BLINK_GC_PLUGIN_COLLECT_VISITOR_H_

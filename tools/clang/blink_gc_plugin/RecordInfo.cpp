@@ -24,7 +24,9 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       is_declaring_local_trace_(kNotComputed),
       is_eagerly_finalized_(kNotComputed),
       determined_trace_methods_(false),
+      determined_wrapper_trace_methods_(false),
       trace_method_(0),
+      trace_wrappers_method_(0),
       trace_dispatch_method_(0),
       finalize_dispatch_method_(0),
       is_gc_derived_(false) {}
@@ -170,6 +172,14 @@ bool RecordInfo::IsGCAllocated() {
   return IsGCDerived() || IsHeapAllocatedCollection();
 }
 
+bool RecordInfo::IsTraceWrapperBase() {
+  for (const auto& gc_base : gc_base_names_) {
+    if (Config::IsTraceWrapperBase(gc_base))
+      return true;
+  }
+  return false;
+}
+
 bool RecordInfo::IsEagerlyFinalized() {
   if (is_eagerly_finalized_ != kNotComputed)
     return is_eagerly_finalized_;
@@ -292,11 +302,33 @@ bool RecordInfo::RequiresTraceMethod() {
   return fields_need_tracing_.IsNeeded();
 }
 
+bool RecordInfo::RequiresTraceWrappersMethod() {
+  if (IsStackAllocated())
+    return false;
+
+  if (IsTraceWrapperBase())
+    return true;
+
+  unsigned bases_with_trace_wrappers = 0;
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (it->second.NeedsWrapperTracing().IsNeeded())
+      ++bases_with_trace_wrappers;
+  }
+  if (bases_with_trace_wrappers > 1)
+    return true;
+  return false;
+}
+
 // Get the actual tracing method (ie, can be traceAfterDispatch if there is a
 // dispatch method).
 CXXMethodDecl* RecordInfo::GetTraceMethod() {
   DetermineTracingMethods();
   return trace_method_;
+}
+
+CXXMethodDecl* RecordInfo::GetTraceWrappersMethod() {
+  DetermineWrapperTracingMethods();
+  return trace_wrappers_method_;
 }
 
 // Get the static trace dispatch method.
@@ -321,6 +353,16 @@ bool RecordInfo::InheritsTrace() {
     return true;
   for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
     if (it->second.info()->InheritsTrace())
+      return true;
+  }
+  return false;
+}
+
+bool RecordInfo::InheritsTraceWrappers() {
+  if (GetTraceWrappersMethod())
+    return true;
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (it->second.info()->InheritsTraceWrappers())
       return true;
   }
   return false;
@@ -392,7 +434,11 @@ RecordInfo::Bases* RecordInfo::CollectBases() {
     TracingStatus status = info->InheritsTrace()
                                ? TracingStatus::Needed()
                                : TracingStatus::Unneeded();
-    bases->push_back(std::make_pair(base, BasePoint(spec, info, status)));
+    TracingStatus wrapper_status = info->InheritsTraceWrappers()
+                                       ? TracingStatus::Needed()
+                                       : TracingStatus::Unneeded();
+    bases->push_back(
+        std::make_pair(base, BasePoint(spec, info, status, wrapper_status)));
   }
   return bases;
 }
@@ -429,6 +475,36 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
   }
   fields_need_tracing_ = fields_status;
   return fields;
+}
+
+void RecordInfo::DetermineWrapperTracingMethods() {
+  if (determined_wrapper_trace_methods_)
+    return;
+  determined_wrapper_trace_methods_ = true;
+
+  if (Config::IsTraceWrapperBase(name_))
+    return;
+
+  CXXMethodDecl* trace_wrappers = nullptr;
+  for (Decl* decl : record_->decls()) {
+    CXXMethodDecl* method = dyn_cast<CXXMethodDecl>(decl);
+    if (!method) {
+      if (FunctionTemplateDecl* func_template =
+              dyn_cast<FunctionTemplateDecl>(decl))
+        method = dyn_cast<CXXMethodDecl>(func_template->getTemplatedDecl());
+    }
+    if (!method)
+      continue;
+
+    switch (Config::GetTraceWrappersMethodType(method)) {
+      case Config::TRACE_METHOD:
+        trace_wrappers = method;
+        break;
+      case Config::NOT_TRACE_METHOD:
+        break;
+    }
+  }
+  trace_wrappers_method_ = trace_wrappers;
 }
 
 void RecordInfo::DetermineTracingMethods() {
@@ -557,6 +633,18 @@ TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
     GetFields();
 
   return fields_need_tracing_;
+}
+
+TracingStatus RecordInfo::NeedsWrapperTracing() {
+  if (IsStackAllocated())
+    return TracingStatus::Unneeded();
+
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (it->second.info()->NeedsWrapperTracing().IsNeeded())
+      return TracingStatus::Needed();
+  }
+
+  return TracingStatus::Unneeded();
 }
 
 static bool isInStdNamespace(clang::Sema& sema, NamespaceDecl* ns)

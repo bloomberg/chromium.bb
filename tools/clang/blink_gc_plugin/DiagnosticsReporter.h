@@ -30,6 +30,9 @@ class DiagnosticsReporter {
   void BaseRequiresTracing(RecordInfo* derived,
                            clang::CXXMethodDecl* trace,
                            clang::CXXRecordDecl* base);
+  void BaseRequiresWrapperTracing(RecordInfo* derived,
+                                  clang::CXXMethodDecl* trace,
+                                  clang::CXXRecordDecl* base);
   void FieldsImproperlyTraced(RecordInfo* info,
                               clang::CXXMethodDecl* trace);
   void ClassContainsInvalidFields(
@@ -103,6 +106,7 @@ class DiagnosticsReporter {
   unsigned diag_class_must_left_mostly_derive_gc_;
   unsigned diag_class_requires_trace_method_;
   unsigned diag_base_requires_tracing_;
+  unsigned diag_base_requires_wrapper_tracing_;
   unsigned diag_fields_require_tracing_;
   unsigned diag_fields_improperly_traced_;
   unsigned diag_class_contains_invalid_fields_;
