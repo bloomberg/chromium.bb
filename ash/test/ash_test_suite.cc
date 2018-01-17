@@ -73,8 +73,9 @@ void AshTestSuite::Initialize() {
     env_->set_context_factory(context_factory_.get());
     env_->set_context_factory_private(nullptr);
     // mus needs to host viz, because ash by itself cannot.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kMus, switches::kMusHostVizValue);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kMusHostingViz);
   }
 }
 

@@ -37,8 +37,9 @@ void MashTestSuite::Initialize() {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kOverrideUseSoftwareGLForTests);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMus, switches::kMusHostVizValue);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kMusHostingViz);
 
   // Load ash mus strings and resources; not 'common' (Chrome) resources.
   base::FilePath resources;

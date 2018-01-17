@@ -151,8 +151,9 @@ void AuraTestBase::ConfigureBackend(BackendType type) {
   if (type != BackendType::CLASSIC)
     EnableMusWithTestWindowTree();
   if (type == BackendType::MUS_HOSTING_VIZ) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kMus, switches::kMusHostVizValue);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kMusHostingViz);
   }
 }
 

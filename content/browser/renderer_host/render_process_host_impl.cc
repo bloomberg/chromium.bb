@@ -2704,6 +2704,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if BUILDFLAG(ENABLE_MUS)
     switches::kMus,
+    switches::kMusHostingViz,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
