@@ -430,7 +430,7 @@ class QuicStreamFactoryTestBase {
     size_t spdy_headers_frame_len;
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
-        std::move(headers), &spdy_headers_frame_len);
+        std::move(headers), 0, &spdy_headers_frame_len);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructGetRequestPacket(
@@ -446,7 +446,7 @@ class QuicStreamFactoryTestBase {
     size_t spdy_headers_frame_len;
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
-        std::move(headers), &spdy_headers_frame_len, offset);
+        std::move(headers), 0, &spdy_headers_frame_len, offset);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructOkResponsePacket(

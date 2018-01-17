@@ -293,8 +293,8 @@ class QuicProxyClientSocketTest
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
-        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), nullptr,
-        &header_stream_offset_);
+        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), 0,
+        nullptr, &header_stream_offset_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructConnectAuthRequestPacket(
@@ -304,8 +304,8 @@ class QuicProxyClientSocketTest
     block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
-        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), nullptr,
-        &header_stream_offset_);
+        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), 0,
+        nullptr, &header_stream_offset_);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructDataPacket(

@@ -383,12 +383,13 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     bool fin,
     SpdyPriority priority,
     SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id,
     QuicStreamOffset* header_stream_offset,
     size_t* spdy_headers_frame_length,
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
-  SpdySerializedFrame spdy_frame =
-      MakeSpdyHeadersFrame(stream_id, fin, priority, std::move(headers));
+  SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
+      stream_id, fin, priority, std::move(headers), parent_stream_id);
 
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
@@ -429,10 +430,11 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     bool fin,
     SpdyPriority priority,
     SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id,
     size_t* spdy_headers_frame_length) {
   return MakeRequestHeadersPacket(
       packet_number, stream_id, should_include_version, fin, priority,
-      std::move(headers), spdy_headers_frame_length, nullptr);
+      std::move(headers), parent_stream_id, spdy_headers_frame_length, nullptr);
 }
 
 // If |offset| is provided, will use the value when creating the packet.
@@ -444,12 +446,13 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(QuicPacketNumber packet_number,
                                               bool fin,
                                               SpdyPriority priority,
                                               SpdyHeaderBlock headers,
+                                              QuicStreamId parent_stream_id,
                                               size_t* spdy_headers_frame_length,
                                               QuicStreamOffset* offset) {
   std::string unused_stream_data;
   return MakeRequestHeadersPacketAndSaveData(
       packet_number, stream_id, should_include_version, fin, priority,
-      std::move(headers), spdy_headers_frame_length, offset,
+      std::move(headers), parent_stream_id, spdy_headers_frame_length, offset,
       &unused_stream_data);
 }
 
@@ -461,12 +464,13 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
     bool fin,
     SpdyPriority priority,
     SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id,
     size_t* spdy_headers_frame_length,
     QuicStreamOffset* offset,
     std::string* stream_data) {
   InitializeHeader(packet_number, should_include_version);
-  SpdySerializedFrame spdy_frame =
-      MakeSpdyHeadersFrame(stream_id, fin, priority, std::move(headers));
+  SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
+      stream_id, fin, priority, std::move(headers), parent_stream_id);
   *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
 
   if (spdy_headers_frame_length)
@@ -491,24 +495,14 @@ SpdySerializedFrame QuicTestPacketMaker::MakeSpdyHeadersFrame(
     QuicStreamId stream_id,
     bool fin,
     SpdyPriority priority,
-    SpdyHeaderBlock headers) {
+    SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id) {
   SpdyHeadersIR headers_frame(stream_id, std::move(headers));
   headers_frame.set_fin(fin);
   headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
   headers_frame.set_has_priority(true);
 
   if (client_headers_include_h2_stream_dependency_) {
-    // Parent stream is the most recently created stream of the next higher
-    // priority (i.e. next lower SpdyPriority value).
-    QuicStreamId parent_stream_id = 0;
-    for (int p = priority; p >= 0; --p) {
-      if (!priority_id_lists_[p].empty()) {
-        parent_stream_id = priority_id_lists_[p].back();
-        break;
-      }
-    }
-    priority_id_lists_[priority].push_back(stream_id);
-
     headers_frame.set_parent_stream_id(parent_stream_id);
     headers_frame.set_exclusive(true);
   } else {
@@ -529,10 +523,11 @@ QuicTestPacketMaker::MakeRequestHeadersPacketWithOffsetTracking(
     bool fin,
     SpdyPriority priority,
     SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id,
     QuicStreamOffset* offset) {
-  return MakeRequestHeadersPacket(packet_number, stream_id,
-                                  should_include_version, fin, priority,
-                                  std::move(headers), nullptr, offset);
+  return MakeRequestHeadersPacket(
+      packet_number, stream_id, should_include_version, fin, priority,
+      std::move(headers), parent_stream_id, nullptr, offset);
 }
 
 // If |offset| is provided, will use the value when creating the packet.
@@ -744,21 +739,6 @@ QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
       kHeadersStreamId, false, 0,
       QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, QuicFrame(&quic_frame));
-}
-
-void QuicTestPacketMaker::ClientUpdateWithStreamDestruction(
-    QuicStreamId stream_id) {
-  DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
-  if (client_headers_include_h2_stream_dependency_) {
-    for (auto& list : priority_id_lists_) {
-      for (auto it = list.begin(); it != list.end(); ++it) {
-        if (*it == stream_id) {
-          list.erase(it);
-          return;
-        }
-      }
-    }
-  }
 }
 
 }  // namespace test
