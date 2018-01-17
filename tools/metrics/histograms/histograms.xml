@@ -21683,6 +21683,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.TimestampHasValidTimebase" enum="EventTimestampValidity">
+  <obsolete>
+    Deprecated as of 1/2018 in issue 650338 (http://crbug.com/650338). Using a
+    DCHECK instead.
+  </obsolete>
   <owner>majidvp@chromium.org</owner>
   <owner>caseq@chromium.org</owner>
   <summary>
@@ -111205,6 +111209,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="TimestampTimebaseProcess" separator=".">
+  <obsolete>
+    Deprecated as of 11/2017 in Issue 650338. Using a DCHECK instead.
+  </obsolete>
   <suffix name="Browser"/>
   <suffix name="Renderer"/>
   <affected-histogram name="Event.TimestampHasValidTimebase"/>

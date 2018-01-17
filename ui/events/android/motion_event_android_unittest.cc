@@ -11,6 +11,7 @@
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/motion_event_test_utils.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 
 namespace ui {
 class MotionEvent;
@@ -54,6 +55,9 @@ TEST(MotionEventAndroidTest, Constructor) {
   int event_time_ms = 5;
   base::TimeTicks event_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms);
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(event_time);
+
   MotionEventAndroid::Pointer p0(
       1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f, kAndroidToolTypeFinger);
   MotionEventAndroid::Pointer p1(2, -13.7f, 7.13f, 3.5f, 12.1f, -0.1f, 0.4f,
@@ -101,6 +105,9 @@ TEST(MotionEventAndroidTest, Constructor) {
 }
 
 TEST(MotionEventAndroidTest, Clone) {
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks());
+
   const int pointer_count = 1;
   MotionEventAndroid::Pointer p0(
       1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f, kAndroidToolTypeFinger);
@@ -115,6 +122,11 @@ TEST(MotionEventAndroidTest, Clone) {
 
 TEST(MotionEventAndroidTest, Cancel) {
   const int event_time_ms = 5;
+  base::TimeTicks event_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms);
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(event_time);
+
   const int pointer_count = 1;
   MotionEventAndroid::Pointer p0(
       1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f, kAndroidToolTypeFinger);
@@ -125,9 +137,7 @@ TEST(MotionEventAndroidTest, Cancel) {
 
   std::unique_ptr<MotionEvent> cancel_event = event.Cancel();
   EXPECT_EQ(MotionEvent::ACTION_CANCEL, cancel_event->GetAction());
-  EXPECT_EQ(
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms),
-      cancel_event->GetEventTime());
+  EXPECT_EQ(event_time, cancel_event->GetEventTime());
   EXPECT_EQ(p0.pos_x_pixels * kPixToDip, cancel_event->GetX(0));
   EXPECT_EQ(p0.pos_y_pixels * kPixToDip, cancel_event->GetY(0));
   EXPECT_EQ(static_cast<size_t>(pointer_count),
@@ -136,6 +146,9 @@ TEST(MotionEventAndroidTest, Cancel) {
 }
 
 TEST(MotionEventAndroidTest, InvalidOrientationsSanitized) {
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks());
+
   int pointer_count = 2;
   float orientation0 = 1e10f;
   float orientation1 = std::numeric_limits<float>::quiet_NaN();
@@ -150,6 +163,9 @@ TEST(MotionEventAndroidTest, InvalidOrientationsSanitized) {
 }
 
 TEST(MotionEventAndroidTest, NonEmptyHistoryForNonMoveEventsSanitized) {
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks());
+
   int pointer_count = 1;
   size_t history_size = 5;
   MotionEventAndroid::Pointer p0(0, 0, 0, 0, 0, 0, 0, 0);
@@ -162,6 +178,9 @@ TEST(MotionEventAndroidTest, NonEmptyHistoryForNonMoveEventsSanitized) {
 }
 
 TEST(MotionEventAndroidTest, ActionIndexForPointerDown) {
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks());
+
   MotionEventAndroid::Pointer p0(
       1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f, kAndroidToolTypeFinger);
   MotionEventAndroid::Pointer p1(
