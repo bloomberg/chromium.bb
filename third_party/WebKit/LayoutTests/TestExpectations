@@ -488,11 +488,13 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-continuation.ht
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-wrap-with-parent-padding.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-offset.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/positionedLifetime.html [ Failure ]
 
 ### Image/text failures also on LayoutNG
 crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-inline-in-centred-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/br-client-rect.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/break-between-nobr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/drawStyledEmptyInlines.html [ Failure ]
