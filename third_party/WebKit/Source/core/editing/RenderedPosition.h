@@ -56,10 +56,8 @@ class CORE_EXPORT RenderedPosition {
   bool IsEquivalent(const RenderedPosition&) const;
 
   bool IsNull() const { return !layout_object_; }
-  // TODO(crbug.com/766448): Change return type to |const RootInlineBox*|.
-  RootInlineBox* RootBox() const {
-    return const_cast<RootInlineBox*>(inline_box_ ? &inline_box_->Root()
-                                                  : nullptr);
+  const RootInlineBox* RootBox() const {
+    return inline_box_ ? &inline_box_->Root() : nullptr;
   }
 
   unsigned char BidiLevelOnLeft() const;

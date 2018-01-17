@@ -437,7 +437,7 @@ static bool IsEditableLeaf(InlineBox* leaf) {
 
 InlineBox* RootInlineBox::ClosestLeafChildForPoint(
     const LayoutPoint& point_in_contents,
-    bool only_editable_leaves) {
+    bool only_editable_leaves) const {
   return ClosestLeafChildForLogicalLeftPosition(
       Block().IsHorizontalWritingMode() ? point_in_contents.X()
                                         : point_in_contents.Y(),
@@ -446,7 +446,7 @@ InlineBox* RootInlineBox::ClosestLeafChildForPoint(
 
 InlineBox* RootInlineBox::ClosestLeafChildForLogicalLeftPosition(
     LayoutUnit left_position,
-    bool only_editable_leaves) {
+    bool only_editable_leaves) const {
   InlineBox* first_leaf = FirstLeafChild();
   InlineBox* last_leaf = LastLeafChild();
 
