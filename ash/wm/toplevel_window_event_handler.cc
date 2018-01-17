@@ -41,6 +41,25 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   wm_toplevel_window_event_handler_.OnGestureEvent(event, target);
 }
 
+bool ToplevelWindowEventHandler::AttemptToStartDrag(
+    aura::Window* window,
+    const gfx::Point& point_in_parent,
+    int window_component,
+    const wm::WmToplevelWindowEventHandler::EndClosure& end_closure) {
+  aura::Window* gesture_target =
+      wm_toplevel_window_event_handler_.gesture_target();
+  ::wm::WindowMoveSource source = gesture_target
+                                      ? ::wm::WINDOW_MOVE_SOURCE_TOUCH
+                                      : ::wm::WINDOW_MOVE_SOURCE_MOUSE;
+  if (gesture_target) {
+    ui::GestureRecognizer::Get()->TransferEventsTo(
+        gesture_target, window,
+        ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+  }
+  return wm_toplevel_window_event_handler_.AttemptToStartDrag(
+      window, point_in_parent, window_component, source, end_closure);
+}
+
 ::wm::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window* source,
     const gfx::Vector2d& drag_offset,

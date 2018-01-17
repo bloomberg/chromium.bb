@@ -183,6 +183,8 @@ void WmToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 
 void WmToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event,
                                                 aura::Window* target) {
+  UpdateGestureTarget(nullptr);
+
   if (event->handled())
     return;
   if ((event->flags() &
@@ -222,6 +224,11 @@ void WmToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event,
 
 void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
                                                   aura::Window* target) {
+  if (event->type() == ui::ET_GESTURE_END)
+    UpdateGestureTarget(nullptr);
+  else if (event->type() == ui::ET_GESTURE_BEGIN)
+    UpdateGestureTarget(target);
+
   if (event->handled())
     return;
   if (!target->delegate())
@@ -414,6 +421,8 @@ void WmToplevelWindowEventHandler::RevertDrag() {
 }
 
 bool WmToplevelWindowEventHandler::CompleteDrag(DragResult result) {
+  UpdateGestureTarget(nullptr);
+
   if (!window_resizer_)
     return false;
 
@@ -580,6 +589,23 @@ void WmToplevelWindowEventHandler::ResizerWindowDestroyed() {
 
 void WmToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
   CompleteDrag(DragResult::REVERT);
+}
+
+void WmToplevelWindowEventHandler::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(gesture_target_, window);
+  if (gesture_target_ == window)
+    UpdateGestureTarget(nullptr);
+}
+
+void WmToplevelWindowEventHandler::UpdateGestureTarget(aura::Window* target) {
+  if (gesture_target_ == target)
+    return;
+
+  if (gesture_target_)
+    gesture_target_->RemoveObserver(this);
+  gesture_target_ = target;
+  if (gesture_target_)
+    gesture_target_->AddObserver(this);
 }
 
 }  // namespace wm

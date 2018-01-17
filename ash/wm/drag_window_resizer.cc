@@ -62,15 +62,16 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DragWindowResizer::CompleteDrag() {
+  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  ::wm::ConvertPointToScreen(GetTarget()->parent(),
+                             &last_mouse_location_in_screen);
+  window_state_->OnCompleteDrag(last_mouse_location_in_screen);
   next_window_resizer_->CompleteDrag();
 
   GetTarget()->layer()->SetOpacity(details().initial_opacity);
   drag_window_controller_.reset();
 
   // Check if the destination is another display.
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
-  ::wm::ConvertPointToScreen(GetTarget()->parent(),
-                             &last_mouse_location_in_screen);
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display dst_display =
       screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
@@ -108,6 +109,10 @@ void DragWindowResizer::CompleteDrag() {
 }
 
 void DragWindowResizer::RevertDrag() {
+  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  ::wm::ConvertPointToScreen(GetTarget()->parent(),
+                             &last_mouse_location_in_screen);
+  window_state_->OnRevertDrag(last_mouse_location_in_screen);
   next_window_resizer_->RevertDrag();
 
   drag_window_controller_.reset();
