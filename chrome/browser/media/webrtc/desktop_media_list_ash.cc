@@ -17,13 +17,13 @@ using content::DesktopMediaID;
 namespace {
 
 // Update the list twice per second.
-const int kDefaultUpdatePeriod = 500;
+const int kDefaultDesktopMediaListUpdatePeriod = 500;
 
 }  // namespace
 
 DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Type type)
-    : DesktopMediaListBase(
-          base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
+    : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
+          kDefaultDesktopMediaListUpdatePeriod)),
       weak_factory_(this) {
   DCHECK(type == content::DesktopMediaID::TYPE_SCREEN ||
          type == content::DesktopMediaID::TYPE_WINDOW);
