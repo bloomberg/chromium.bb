@@ -225,13 +225,20 @@ class ASH_EXPORT WallpaperController
   // Returns the prominent color based on |color_profile|.
   SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
 
-  // Provides current image on the wallpaper, or empty gfx::ImageSkia if there
-  // is no image, e.g. wallpaper is none.
+  // Returns current image on the wallpaper, or an empty image if there's no
+  // wallpaper.
   gfx::ImageSkia GetWallpaper() const;
+
+  // Returns the original image id of the wallpaper before resizing, or 0 if
+  // there's no wallpaper.
   uint32_t GetWallpaperOriginalImageId() const;
 
+  // Returns the layout of the current wallpaper, or an invalid value if there's
+  // no wallpaper.
   wallpaper::WallpaperLayout GetWallpaperLayout() const;
 
+  // Returns the type of the current wallpaper, or an invalid value if there's
+  // no wallpaper.
   wallpaper::WallpaperType GetWallpaperType() const;
 
   // Sets the wallpaper and alerts observers of changes.
@@ -277,6 +284,11 @@ class ASH_EXPORT WallpaperController
   // Prepares wallpaper to lock screen transition. Will apply blur if
   // |locking| is true and remove it otherwise.
   void PrepareWallpaperForLockScreenChange(bool locking);
+
+  // Returns the location of the active user's wallpaper (either an URL or a
+  // file path). Returns an empty string if there's no active user, or the
+  // active user has not set a user wallpaper.
+  std::string GetActiveUserWallpaperLocation();
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -357,19 +369,6 @@ class ASH_EXPORT WallpaperController
 
   // Gets path of encoded wallpaper from cache. Returns true if success.
   bool GetPathFromCache(const AccountId& account_id, base::FilePath* path);
-
-  // TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
-  // Returns the pointer of |current_user_wallpaper_info_|.
-  wallpaper::WallpaperInfo* GetCurrentUserWallpaperInfo();
-
-  // TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
-  // Returns the pointer of |wallpaper_cache_map_|.
-  CustomWallpaperMap* GetWallpaperCacheMap();
-
-  // TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
-  // Returns the account id of |current_user_|, or an empty account id if
-  // |current_user_| is null.
-  AccountId GetCurrentUserAccountId();
 
   // mojom::WallpaperController overrides:
   void Init(mojom::WallpaperControllerClientPtr client,
@@ -589,10 +588,9 @@ class ASH_EXPORT WallpaperController
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;
 
-  // Cached current user wallpaper info. Note its location is used as a key for
-  // storing |prominent_colors_| in the wallpaper::kWallpaperColors pref. An
-  // empty string disables color caching.
-  wallpaper::WallpaperInfo current_user_wallpaper_info_;
+  // The wallpaper info for ephemeral users, which is not stored to local state.
+  // See |WallpaperUserInfo::is_ephemeral| for details.
+  std::map<AccountId, wallpaper::WallpaperInfo> ephemeral_users_wallpaper_info_;
 
   // Cached user info of the current user.
   mojom::WallpaperUserInfoPtr current_user_;

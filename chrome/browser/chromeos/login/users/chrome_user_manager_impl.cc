@@ -826,14 +826,8 @@ void ChromeUserManagerImpl::RegularUserLoggedIn(
                                    owner_account_id.GetUserEmail());
     SetOwnerId(owner_account_id);
   }
-
-  if (IsCurrentUserNew())
-    WallpaperManager::Get()->ShowUserWallpaper(account_id);
-
+  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), false);
-
-  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
 }
@@ -859,15 +853,11 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
   if (!GetActiveUser()) {
     SetIsCurrentUserNew(true);
     active_user_ = user_manager::User::CreateSupervisedUser(account_id);
-    // Leaving OAuth token status at the default state = unknown.
-    WallpaperManager::Get()->ShowUserWallpaper(account_id);
   } else {
-    if (supervised_user_manager_->CheckForFirstRun(account_id.GetUserEmail())) {
+    if (supervised_user_manager_->CheckForFirstRun(account_id.GetUserEmail()))
       SetIsCurrentUserNew(true);
-      WallpaperManager::Get()->ShowUserWallpaper(account_id);
-    } else {
+    else
       SetIsCurrentUserNew(false);
-    }
   }
 
   // Add the user to the front of the user list.
@@ -883,7 +873,7 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
   }
 
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), true);
-  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
@@ -902,10 +892,9 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // For public account, it's possible that the user-policy controlled wallpaper
   // was fetched/cleared at the login screen (while for a regular user it was
   // always fetched/cleared inside a user session), in the case the user-policy
-  // controlled wallpaper was cached/cleared by not updated in the login screen,
-  // so we need to update the wallpaper after the public user logged in.
-  WallpaperManager::Get()->ShowUserWallpaper(user->GetAccountId());
-  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+  // controlled wallpaper was fetched/cleared but not updated in the login
+  // screen, we need to update the wallpaper after the public user logged in.
+  WallpaperControllerClient::Get()->ShowUserWallpaper(user->GetAccountId());
 
   SetPublicAccountDelegates();
 }

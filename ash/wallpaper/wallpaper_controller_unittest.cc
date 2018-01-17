@@ -358,8 +358,6 @@ class WallpaperControllerTest : public AshTestBase {
     wallpaper_user_info->type = user_manager::USER_TYPE_REGULAR;
     wallpaper_user_info->is_ephemeral = false;
     wallpaper_user_info->has_gaia_account = true;
-
-    controller_->current_user_wallpaper_info_ = wallpaper::WallpaperInfo();
     ClearWallpaperCount();
     ClearDecodeFilePaths();
 

@@ -28,6 +28,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -596,18 +597,6 @@ void WallpaperController::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-gfx::ImageSkia WallpaperController::GetWallpaper() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->image();
-  return gfx::ImageSkia();
-}
-
-uint32_t WallpaperController::GetWallpaperOriginalImageId() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->original_image_id();
-  return 0;
-}
-
 void WallpaperController::AddObserver(WallpaperControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -623,16 +612,28 @@ SkColor WallpaperController::GetProminentColor(
   return prominent_colors_[static_cast<int>(type)];
 }
 
+gfx::ImageSkia WallpaperController::GetWallpaper() const {
+  if (current_wallpaper_)
+    return current_wallpaper_->image();
+  return gfx::ImageSkia();
+}
+
+uint32_t WallpaperController::GetWallpaperOriginalImageId() const {
+  if (current_wallpaper_)
+    return current_wallpaper_->original_image_id();
+  return 0;
+}
+
 wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   if (current_wallpaper_)
     return current_wallpaper_->wallpaper_info().layout;
-  return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
+  return wallpaper::NUM_WALLPAPER_LAYOUT;
 }
 
 wallpaper::WallpaperType WallpaperController::GetWallpaperType() const {
   if (current_wallpaper_)
     return current_wallpaper_->wallpaper_info().type;
-  return wallpaper::DEFAULT;
+  return wallpaper::WALLPAPER_TYPE_COUNT;
 }
 
 void WallpaperController::SetDefaultWallpaperImpl(
@@ -720,7 +721,6 @@ void WallpaperController::SetCustomizedDefaultWallpaperPaths(
 
 void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
                                             const WallpaperInfo& info) {
-  current_user_wallpaper_info_ = info;
   wallpaper::WallpaperLayout layout = info.layout;
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
@@ -730,6 +730,9 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
     VLOG(1) << "Wallpaper is already loaded";
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
+                            wallpaper::WALLPAPER_TYPE_COUNT);
 
   // Cancel any in-flight color calculation because we have a new wallpaper.
   if (color_calculator_) {
@@ -794,6 +797,21 @@ void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
     for (auto& observer : observers_)
       observer.OnWallpaperBlurChanged();
   }
+}
+
+std::string WallpaperController::GetActiveUserWallpaperLocation() {
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  if (!active_user_session)
+    return std::string();
+
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id, &info,
+                            !active_user_session->user_info->is_ephemeral)) {
+    return std::string();
+  }
+  return info.location;
 }
 
 void WallpaperController::OnDisplayConfigurationChanged() {
@@ -905,12 +923,10 @@ bool WallpaperController::IsBlurEnabled() const {
 void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
                                                const WallpaperInfo& info,
                                                bool is_persistent) {
-  // TODO(xdai): Remove this line after wallpaper refactoring is done.
-  // |current_user_wallpaper_info_| will be later updated in SetWallpaperImage()
-  // so theoretically it should be safe to remove the udpate here.
-  current_user_wallpaper_info_ = info;
-  if (!is_persistent)
+  if (!is_persistent) {
+    ephemeral_users_wallpaper_info_[account_id] = info;
     return;
+  }
 
   PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
   // Local state can be null in tests.
@@ -941,11 +957,13 @@ bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
                                                WallpaperInfo* info,
                                                bool is_persistent) const {
   if (!is_persistent) {
-    // Default to the values cached in memory.
-    *info = current_user_wallpaper_info_;
+    // Ephemeral users do not save anything to local state. Return true if the
+    // info can be found in the map, otherwise return false.
+    auto it = ephemeral_users_wallpaper_info_.find(account_id);
+    if (it == ephemeral_users_wallpaper_info_.end())
+      return false;
 
-    // Ephemeral users do not save anything to local state. But we have got
-    // wallpaper info from memory. Returns true.
+    *info = it->second;
     return true;
   }
 
@@ -1034,20 +1052,6 @@ bool WallpaperController::GetPathFromCache(const AccountId& account_id,
     return true;
   }
   return false;
-}
-
-wallpaper::WallpaperInfo* WallpaperController::GetCurrentUserWallpaperInfo() {
-  return &current_user_wallpaper_info_;
-}
-
-CustomWallpaperMap* WallpaperController::GetWallpaperCacheMap() {
-  return &wallpaper_cache_map_;
-}
-
-AccountId WallpaperController::GetCurrentUserAccountId() {
-  if (current_user_)
-    return current_user_->account_id;
-  return EmptyAccountId();
 }
 
 void WallpaperController::Init(
@@ -1208,7 +1212,6 @@ void WallpaperController::ShowUserWallpaper(
     InitializeUserWallpaperInfo(account_id, is_persistent);
     GetUserWallpaperInfo(account_id, &info, is_persistent);
   }
-  current_user_wallpaper_info_ = info;
 
   gfx::ImageSkia user_wallpaper;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
@@ -1310,10 +1313,12 @@ void WallpaperController::OnWallpaperResized() {
 void WallpaperController::OnColorCalculationComplete() {
   const std::vector<SkColor> colors = color_calculator_->prominent_colors();
   color_calculator_.reset();
-  // TODO(crbug.com/787134): The prominent colors of wallpapers with empty
+  // Use |WallpaperInfo::location| as the key for storing |prominent_colors_| in
+  // the |wallpaper::kWallpaperColors| pref.
+  // TODO(crbug.com/787134): The |prominent_colors_| of wallpapers with empty
   // location should be cached as well.
-  if (!current_user_wallpaper_info_.location.empty())
-    CacheProminentColors(colors, current_user_wallpaper_info_.location);
+  if (!current_wallpaper_->wallpaper_info().location.empty())
+    CacheProminentColors(colors, current_wallpaper_->wallpaper_info().location);
   SetProminentColors(colors);
 }
 
@@ -1683,14 +1688,19 @@ void WallpaperController::SetProminentColors(
 }
 
 void WallpaperController::CalculateWallpaperColors() {
+  if (!current_wallpaper_)
+    return;
+
+  // Cancel any in-flight color calculation.
   if (color_calculator_) {
     color_calculator_->RemoveObserver(this);
     color_calculator_.reset();
   }
 
-  if (!current_user_wallpaper_info_.location.empty()) {
+  // Fetch the color cache if it exists.
+  if (!current_wallpaper_->wallpaper_info().location.empty()) {
     base::Optional<std::vector<SkColor>> cached_colors =
-        GetCachedColors(current_user_wallpaper_info_.location);
+        GetCachedColors(current_wallpaper_->wallpaper_info().location);
     if (cached_colors.has_value()) {
       SetProminentColors(cached_colors.value());
       return;
@@ -1743,9 +1753,10 @@ bool WallpaperController::MoveToUnlockedContainer() {
 }
 
 bool WallpaperController::IsDevicePolicyWallpaper() const {
-  if (current_wallpaper_)
+  if (current_wallpaper_) {
     return current_wallpaper_->wallpaper_info().type ==
            wallpaper::WallpaperType::DEVICE;
+  }
   return false;
 }
 

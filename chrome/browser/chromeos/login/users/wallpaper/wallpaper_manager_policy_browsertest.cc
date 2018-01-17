@@ -313,8 +313,10 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
   // Obtain WallpaperInfo for |user_number| from WallpaperManager.
   void GetUserWallpaperInfo(int user_number,
                             wallpaper::WallpaperInfo* wallpaper_info) {
-    WallpaperManager::Get()->GetUserWallpaperInfo(testUsers_[user_number],
-                                                  wallpaper_info);
+    ash::Shell::Get()->wallpaper_controller()->GetUserWallpaperInfo(
+        testUsers_[user_number], wallpaper_info,
+        !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+            testUsers_[user_number]) /*is_persistent=*/);
   }
 
   base::FilePath test_data_dir_;

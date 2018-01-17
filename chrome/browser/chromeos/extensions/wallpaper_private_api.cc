@@ -182,12 +182,14 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  wallpaper::WallpaperInfo info;
-
-  if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info))
-    dict->SetString("currentWallpaper", info.location);
+  // TODO(crbug.com/777293, 776464): Make it work under mash (most likely by
+  // creating a mojo callback).
+  dict->SetString("currentWallpaper",
+                  ash::Shell::HasInstance()
+                      ? ash::Shell::Get()
+                            ->wallpaper_controller()
+                            ->GetActiveUserWallpaperLocation()
+                      : std::string());
 
 #if defined(GOOGLE_CHROME_BUILD)
   dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);

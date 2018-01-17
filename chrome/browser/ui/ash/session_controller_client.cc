@@ -89,6 +89,8 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->account_id = user.GetAccountId();
   session->user_info->display_name = base::UTF16ToUTF8(user.display_name());
   session->user_info->display_email = user.display_email();
+  session->user_info->is_ephemeral =
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
   if (profile)
     session->user_info->is_new_profile = profile->IsNewProfile();
 
