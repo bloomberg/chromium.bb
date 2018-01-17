@@ -32,9 +32,10 @@ void RecordHistogramsOnLauncherThread(base::TimeDelta launch_time) {
 }  // namespace
 
 ChildProcessLauncherHelper::Process::Process(Process&& other)
-  : process(std::move(other.process))
-#if defined(OS_LINUX)
-   , zygote(other.zygote)
+    : process(std::move(other.process))
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+      ,
+      zygote(other.zygote)
 #endif
 {
 }
@@ -44,7 +45,7 @@ ChildProcessLauncherHelper::Process::Process::operator=(
     ChildProcessLauncherHelper::Process&& other) {
   DCHECK_NE(this, &other);
   process = std::move(other.process);
-#if defined(OS_LINUX)
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
   zygote = other.zygote;
 #endif
   return *this;

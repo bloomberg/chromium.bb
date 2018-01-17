@@ -338,6 +338,7 @@ source_set("common") {
     "//content/app/resources",
     "//content/public/common:interfaces",
     "//content/public/common:service_names",
+    "//content/public/common:zygote_features",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//gpu",
