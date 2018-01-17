@@ -53,13 +53,13 @@ class NodeTest : public EditingTestBase {
   //      + test node
   //      |  + #shadow
   //      |    + div class="test"
-  Node* InitializeShadowDOMTree(Element* test_node) {
+  Node* InitializeUserAgentShadowTree(Element* test_node) {
     SetBodyContent("<div id=\"root\"></div>");
     Element* root = GetDocument().getElementById("root");
-    ShadowRoot& first_shadow = root->CreateLegacyUserAgentShadowRootV0();
+    ShadowRoot& first_shadow = root->CreateUserAgentShadowRootV1();
 
     first_shadow.AppendChild(test_node);
-    ShadowRoot& second_shadow = test_node->CreateLegacyUserAgentShadowRootV0();
+    ShadowRoot& second_shadow = test_node->CreateUserAgentShadowRootV1();
 
     HTMLDivElement* class_div = HTMLDivElement::Create(GetDocument());
     class_div->setAttribute("class", "test");
@@ -301,19 +301,19 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_V0Content) {
 TEST_F(NodeTest, HasMediaControlAncestor_Fail) {
   HTMLDivElement* node = HTMLDivElement::Create(GetDocument());
   EXPECT_FALSE(node->HasMediaControlAncestor());
-  EXPECT_FALSE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
+  EXPECT_FALSE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }
 
 TEST_F(NodeTest, HasMediaControlAncestor_MediaControlElement) {
   FakeMediaControlElement* node = new FakeMediaControlElement(GetDocument());
   EXPECT_TRUE(node->HasMediaControlAncestor());
-  EXPECT_TRUE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
+  EXPECT_TRUE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }
 
 TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
   FakeMediaControls* node = new FakeMediaControls(GetDocument());
   EXPECT_TRUE(node->HasMediaControlAncestor());
-  EXPECT_TRUE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
+  EXPECT_TRUE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }
 
 }  // namespace blink
