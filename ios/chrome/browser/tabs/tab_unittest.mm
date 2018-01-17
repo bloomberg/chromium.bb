@@ -44,8 +44,8 @@
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -205,29 +205,27 @@ class TabTest : public BlockCleanupTest {
     BlockCleanupTest::TearDown();
   }
 
-  void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
+  void BrowseTo(const GURL& user_url,
+                const GURL& redirect_url,
+                NSString* title) {
     DCHECK_EQ(tab_.webState, web_state_impl_.get());
 
-    std::unique_ptr<web::NavigationContext> context1 =
-        web::NavigationContextImpl::CreateNavigationContext(
-            web_state_impl_.get(), userUrl,
-            ui::PageTransition::PAGE_TRANSITION_TYPED, false);
-    web_state_impl_->OnNavigationStarted(context1.get());
+    web::FakeNavigationContext context1;
+    context1.SetUrl(user_url);
+    web_state_impl_->OnNavigationStarted(&context1);
 
     web::Referrer empty_referrer;
     [tab_ navigationManagerImpl]->AddPendingItem(
-        redirectUrl, empty_referrer, ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+        redirect_url, empty_referrer, ui::PAGE_TRANSITION_CLIENT_REDIRECT,
         web::NavigationInitiationType::RENDERER_INITIATED,
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-    std::unique_ptr<web::NavigationContext> context2 =
-        web::NavigationContextImpl::CreateNavigationContext(
-            web_state_impl_.get(), redirectUrl,
-            ui::PageTransition::PAGE_TRANSITION_TYPED, false);
-    web_state_impl_->OnNavigationStarted(context2.get());
+    web::FakeNavigationContext context2;
+    context2.SetUrl(redirect_url);
+    web_state_impl_->OnNavigationStarted(&context2);
     [tab_ navigationManagerImpl]->CommitPendingItem();
-    web_state_impl_->UpdateHttpResponseHeaders(redirectUrl);
-    web_state_impl_->OnNavigationFinished(context2.get());
+    web_state_impl_->UpdateHttpResponseHeaders(redirect_url);
+    web_state_impl_->OnNavigationFinished(&context2);
     web_state_impl_->SetIsLoading(true);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
@@ -235,7 +233,7 @@ class TabTest : public BlockCleanupTest {
 
     web_state_impl_->OnTitleChanged();
     web_state_impl_->SetIsLoading(false);
-    web_state_impl_->OnPageLoaded(redirectUrl, true);
+    web_state_impl_->OnPageLoaded(redirect_url, true);
   }
 
   void BrowseToNewTab() {
