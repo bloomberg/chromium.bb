@@ -22,7 +22,7 @@
 // https://html.spec.whatwg.org/#the-htmloptionscollection-interface
 
 interface HTMLOptionsCollection : HTMLCollection {
-    // inherits item()
+    // Inherits item() and namedItem()
     [CEReactions, RaisesException=Setter] attribute unsigned long length; // shadows inherited length
     // FIXME: The spec has a legacycaller HTMLOptionElement? (DOMString name);
     [CEReactions, RaisesException] setter void (unsigned long index, HTMLOptionElement? option);
@@ -30,11 +30,8 @@ interface HTMLOptionsCollection : HTMLCollection {
     [CEReactions] void remove(long index);
     attribute long selectedIndex;
 
-    // TODO(tkent): We need to declare this indexed property getter because our
-    // IDL compiler doesn't support inheritance of indexed property
-    // getters. crbug.com/752877
+    // TODO(tkent): We need to declare these getters because our IDL compiler
+    // doesn't support inheritance of anonymous getters. crbug.com/752877
     [ImplementedAs=item] getter Element? (unsigned long index);
-
-    // TODO(tkent): This should return only Element. crbug.com/695902
-    [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
+    [ImplementedAs=namedItem] getter Element? (DOMString name);
 };

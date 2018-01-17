@@ -1575,7 +1575,6 @@ enum WebFeature {
   kPersistentClientHintHeader = 2065,
   kStyleSheetListNonNullAnonymousNamedGetter = 2066,
   kOffMainThreadFetch = 2067,
-  kHTMLOptionsCollectionNamedGetterReturnsNodeList = 2068,
   kARIAActiveDescendantAttribute = 2069,
   kARIAAtomicAttribute = 2070,
   kARIAAutocompleteAttribute = 2071,

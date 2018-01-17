@@ -3248,7 +3248,6 @@ interface HTMLOptionsCollection : HTMLCollection
     method @@iterator
     method add
     method constructor
-    method namedItem
     method remove
     setter length
     setter selectedIndex

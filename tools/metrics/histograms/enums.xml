@@ -17369,7 +17369,8 @@ Called by update_net_error_codes.py.-->
   <int value="2065" label="PersistentClientHintHeader"/>
   <int value="2066" label="StyleSheetListNonNullAnonymousNamedGetter"/>
   <int value="2067" label="OffMainThreadFetch"/>
-  <int value="2068" label="HTMLOptionsCollectionNamedGetterReturnsNodeList"/>
+  <int value="2068"
+      label="OBSOLETE_HTMLOptionsCollectionNamedGetterReturnsNodeList"/>
   <int value="2069" label="ARIAActiveDescendantAttribute"/>
   <int value="2070" label="ARIAAtomicAttribute"/>
   <int value="2071" label="ARIAAutocompleteAttribute"/>

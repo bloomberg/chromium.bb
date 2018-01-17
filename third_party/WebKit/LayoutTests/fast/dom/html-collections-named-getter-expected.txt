@@ -30,24 +30,6 @@ PASS form.removeChild(elements[0]); form.elements['foo'] is elements[1]
 PASS removeTestElements(); form.elements.length is 0
 PASS form.elements['no-such-element'] is undefined.
 
-select.options
-PASS form.appendChild(createElementWithId('select', 'bar')); form.elements.length is 1
-PASS select = form.elements[0]; select.options instanceof HTMLOptionsCollection is true
-PASS select.options instanceof HTMLCollection is true
-PASS select.options.length is 0
-PASS elements = [createElementWithId('option', 'foo'), createElementWithId('option', 'foo')];
-     select.appendChild(elements[0]); select.options.length is 1
-PASS select.options['foo'] is elements[0]
-PASS select.appendChild(elements[1]); select.options.length is 2
-PASS select.options['foo'].toString() is '[object NodeList]'
-PASS select.options['foo'].length is 2
-PASS select.options['foo'][0] is elements[0]
-PASS select.options['foo'][1] is elements[1]
-PASS select.removeChild(elements[0]); select.options['foo'] is elements[1]
-PASS select.innerHTML = ''; select.options.length is 0
-PASS removeTestElements(); form.elements.length is 0
-PASS select.options['no-such-element'] is undefined.
-
 document.images
 PASS document.images.length is 0
 PASS elements[0] = insertElementWithId('img', 'foo'); document.images.length is 1
