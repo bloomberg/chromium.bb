@@ -1208,10 +1208,6 @@ extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];
 
-extern const char kHerbPrototypeChoicesName[];
-extern const char kHerbPrototypeChoicesDescription[];
-extern const char kHerbPrototypeFlavorElderberry[];
-
 extern const char kKeepPrefetchedContentSuggestionsName[];
 extern const char kKeepPrefetchedContentSuggestionsDescription[];
 

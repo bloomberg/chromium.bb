@@ -243,8 +243,6 @@ extern const char kForceShowUpdateMenuItem[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kMarketUrlForTesting[];
 extern const char kProgressBarAnimation[];
-extern const char kTabManagementExperimentTypeDisabled[];
-extern const char kTabManagementExperimentTypeElderberry[];
 extern const char kWebApkServerUrl[];
 #endif  // defined(OS_ANDROID)
 

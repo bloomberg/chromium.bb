@@ -15,12 +15,8 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
-import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
-import org.chromium.base.FieldTrialList;
-import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -46,8 +42,6 @@ import java.util.List;
  */
 public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
-    private static final String HERB_EXPERIMENT_NAME = "TabManagementExperiment";
-    private static final String HERB_EXPERIMENT_FLAVOR_PARAM = "type";
 
     private static final String SYNTHETIC_CHROME_HOME_EXPERIMENT_NAME = "SyntheticChromeHome";
     private static final String ENABLED_EXPERIMENT_GROUP = "Enabled";
@@ -58,9 +52,6 @@ public class FeatureUtilities {
     private static Boolean sChromeHomeEnabled;
     private static boolean sChromeHomeNeedsUpdate;
     private static String sChromeHomeSwipeLogicType;
-
-    private static String sCachedHerbFlavor;
-    private static boolean sIsHerbFlavorCached;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -158,41 +149,10 @@ public class FeatureUtilities {
         nativeSetIsInMultiWindowMode(isInMultiWindowMode);
     }
 
-    private static boolean isHerbDisallowed(Context context) {
-        return isDocumentMode(context);
-    }
-
-    /**
-     * @return Which flavor of Herb is being tested.
-     *         See {@link ChromeSwitches#HERB_FLAVOR_ELDERBERRY} and its related switches.
-     */
-    public static String getHerbFlavor() {
-        Context context = ContextUtils.getApplicationContext();
-        if (isHerbDisallowed(context)) return ChromeSwitches.HERB_FLAVOR_DISABLED;
-
-        if (!sIsHerbFlavorCached) {
-            sCachedHerbFlavor = null;
-
-            // Allowing disk access for preferences while prototyping.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            try {
-                sCachedHerbFlavor = ChromePreferenceManager.getInstance().getCachedHerbFlavor();
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-
-            sIsHerbFlavorCached = true;
-            Log.d(TAG, "Retrieved cached Herb flavor: " + sCachedHerbFlavor);
-        }
-
-        return sCachedHerbFlavor;
-    }
-
     /**
      * Caches flags that must take effect on startup but are set via native code.
      */
     public static void cacheNativeFlags() {
-        cacheHerbFlavor();
         cacheChromeHomeEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
 
@@ -218,41 +178,6 @@ public class FeatureUtilities {
             cacheChromeHomeEnabled();
             notifyChromeHomeStatusChanged(isChromeHomeEnabled());
             sChromeHomeNeedsUpdate = false;
-        }
-    }
-
-    /**
-     * Caches which flavor of Herb the user prefers from native.
-     */
-    private static void cacheHerbFlavor() {
-        Context context = ContextUtils.getApplicationContext();
-        if (isHerbDisallowed(context)) return;
-
-        String oldFlavor = getHerbFlavor();
-
-        // Check the experiment value before the command line to put the user in the correct group.
-        // The first clause does the null checks so so we can freely use the startsWith() function.
-        String newFlavor = FieldTrialList.findFullName(HERB_EXPERIMENT_NAME);
-        Log.d(TAG, "Experiment flavor: " + newFlavor);
-        if (!TextUtils.isEmpty(newFlavor)
-                && newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
-        } else {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
-        }
-
-        CommandLine instance = CommandLine.getInstance();
-        if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DISABLED_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
-        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_ELDERBERRY_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
-        }
-
-        Log.d(TAG, "Caching flavor: " + newFlavor);
-        sCachedHerbFlavor = newFlavor;
-
-        if (!TextUtils.equals(oldFlavor, newFlavor)) {
-            ChromePreferenceManager.getInstance().setCachedHerbFlavor(newFlavor);
         }
     }
 

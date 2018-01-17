@@ -58,8 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeSwitches.GOOGLE_BASE_URL + "=http://example.com/",
-        ChromeSwitches.HERB_FLAVOR_DISABLED_SWITCH})
+        ChromeSwitches.GOOGLE_BASE_URL + "=http://example.com/"})
 public class ContextMenuTest implements CustomMainActivityStart {
     @Rule
     public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);

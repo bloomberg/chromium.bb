@@ -132,20 +132,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_HUNG_RENDERER_INFOBAR = "enable-hung-renderer-infobar";
 
     /**
-     * Determines which of the Herb prototypes is being tested.
-     * See about:flags for descriptions.
-     */
-    public static final String HERB_FLAVOR_DISABLED_SWITCH =
-            "tab-management-experiment-type-disabled";
-    public static final String HERB_FLAVOR_ELDERBERRY_SWITCH =
-            "tab-management-experiment-type-elderberry";
-
-    public static final String HERB_FLAVOR_DEFAULT = "Default";
-    public static final String HERB_FLAVOR_CONTROL = "Control";
-    public static final String HERB_FLAVOR_DISABLED = "Disabled";
-    public static final String HERB_FLAVOR_ELDERBERRY = "Elderberry";
-
-    /**
      * Set the partner-defined homepage URL, for testing.
      */
     public static final String PARTNER_HOMEPAGE_FOR_TESTING = "partner-homepage-for-testing";
