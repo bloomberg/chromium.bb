@@ -2,21 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview.ticket_items');
-
-/**
- * Must be kept in sync with the C++ MarginType enum in
- * printing/print_job_constants.h.
- * @enum {number}
- */
-print_preview.ticket_items.MarginsTypeValue = {
-  DEFAULT: 0,
-  NO_MARGINS: 1,
-  MINIMUM: 2,
-  CUSTOM: 3
-};
-
-
 cr.define('print_preview.ticket_items', function() {
   'use strict';
 

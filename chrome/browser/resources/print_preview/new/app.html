@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/webui_listener_tracker.html">
 <link rel="import" href="../native_layer.html">
@@ -58,7 +57,9 @@
       }
     </style>
     <print-preview-model id="model" settings="{{settings}}"
-        destination="{{destination_}}" document-info="{{documentInfo_}}">
+        destination="{{destination_}}" document-info="{{documentInfo_}}"
+        recent-destinations="{{recentDestinations_}}"
+        on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
     <div id="sidebar">
       <print-preview-header destination="[[destination_]]" state="{{state_}}"

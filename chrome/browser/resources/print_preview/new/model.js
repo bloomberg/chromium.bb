@@ -3,18 +3,51 @@
 // found in the LICENSE file.
 
 cr.exportPath('print_preview_new');
+/**
+ * @typedef {{
+ *    version: string,
+ *    recentDestinations: (!Array<!print_preview.RecentDestination> |
+ *                         undefined),
+ *    dpi: ({horizontal_dpi: number,
+ *           vertical_dpi: number,
+ *           is_default: (boolean | undefined)} | undefined),
+ *    mediaSize: ({height_microns: number,
+ *                 width_microns: number,
+ *                 custom_display_name: (string | undefined),
+ *                 is_default: (boolean | undefined)} | undefined),
+ *    marginsType: (print_preview.ticket_items.MarginsTypeValue | undefined),
+ *    customMargins: ({marginTop: number,
+ *                     marginBottom: number,
+ *                     marginLeft: number,
+ *                     marginRight: number} | undefined),
+ *    isColorEnabled: (boolean | undefined),
+ *    isDuplexEnabled: (boolean | undefined),
+ *    isHeaderFooterEnabled: (boolean | undefined),
+ *    isLandscapeEnabled: (boolean | undefined),
+ *    isCollateEnabled: (boolean | undefined),
+ *    isFitToPageEnabled: (boolean | undefined),
+ *    isCssBackgroundEnabled: (boolean | undefined),
+ *    scaling: (string | undefined),
+ *    vendor_options: (Object | undefined)
+ * }}
+ */
+print_preview_new.SerializedSettings;
+
+(function() {
+'use strict';
+
+/** @type {number} Number of recent destinations to save. */
+const NUM_DESTINATIONS = 3;
 
 /**
- * Must be kept in sync with the C++ MarginType enum in
- * printing/print_job_constants.h.
- * @enum {number}
+ * Sticky setting names. Alphabetical except for fitToPage, which must be set
+ * after scaling in updateFromStickySettings().
+ * @type {Array<string>}
  */
-print_preview_new.MarginsTypeValue = {
-  DEFAULT: 0,
-  NO_MARGINS: 1,
-  MINIMUM: 2,
-  CUSTOM: 3
-};
+const STICKY_SETTING_NAMES = [
+  'collate', 'color', 'cssBackground', 'dpi', 'duplex', 'headerFooter',
+  'layout', 'margins', 'mediaSize', 'scaling', 'fitToPage'
+];
 
 Polymer({
   is: 'print-preview-model',
@@ -23,25 +56,7 @@ Polymer({
     /**
      * Object containing current settings of Print Preview, for use by Polymer
      * controls.
-     * @type {{
-     *   pages: !print_preview_new.Setting,
-     *   copies: !print_preview_new.Setting,
-     *   collate: !print_preview_new.Setting,
-     *   layout: !print_preview_new.Setting,
-     *   color: !print_preview_new.Setting,
-     *   mediaSize: !print_preview_new.Setting,
-     *   margins: !print_preview_new.Setting,
-     *   dpi: !print_preview_new.Setting,
-     *   fitToPage: !print_preview_new.Setting,
-     *   scaling: !print_preview_new.Setting,
-     *   duplex: !print_preview_new.Setting,
-     *   cssBackground: !print_preview_new.Setting,
-     *   selectionOnly: !print_preview_new.Setting,
-     *   headerFooter: !print_preview_new.Setting,
-     *   rasterize: !print_preview_new.Setting,
-     *   vendorItems: !print_preview_new.Setting,
-     *   otherOptions: !print_preview_new.Setting,
-     * }}
+     * @type {!print_preview_new.Settings}
      */
     settings: {
       type: Object,
@@ -51,26 +66,31 @@ Polymer({
           value: [1],
           valid: true,
           available: true,
+          key: '',
         },
         copies: {
           value: '1',
           valid: true,
           available: true,
+          key: '',
         },
         collate: {
           value: true,
           valid: true,
           available: true,
+          key: 'isCollateEnabled',
         },
         layout: {
           value: false, /* portrait */
           valid: true,
           available: true,
+          key: 'isLandscapeEnabled',
         },
         color: {
           value: true, /* color */
           valid: true,
           available: true,
+          key: 'isColorEnabled',
         },
         mediaSize: {
           value: {
@@ -79,56 +99,67 @@ Polymer({
           },
           valid: true,
           available: true,
+          key: 'mediaSize',
         },
         margins: {
           value: 0,
           valid: true,
           available: true,
+          key: 'marginsType',
         },
         dpi: {
           value: {},
           valid: true,
           available: true,
+          key: 'dpi',
         },
         fitToPage: {
           value: false,
           valid: true,
           available: true,
+          key: 'isFitToPageEnabled',
         },
         scaling: {
           value: '100',
           valid: true,
           available: true,
+          key: 'scaling',
         },
         duplex: {
           value: true,
           valid: true,
           available: true,
+          key: 'isDuplexEnabled',
         },
         cssBackground: {
           value: false,
           valid: true,
           available: true,
+          key: 'isCssBackgroundEnabled',
         },
         selectionOnly: {
           value: false,
           valid: true,
           available: true,
+          key: '',
         },
         headerFooter: {
           value: true,
           valid: true,
           available: true,
+          key: 'isHeaderFooterEnabled',
         },
         rasterize: {
           value: false,
           valid: true,
           available: true,
+          key: '',
         },
         vendorItems: {
           value: {},
           valid: true,
           available: true,
+          key: '',
         },
         // This does not represent a real setting value, and is used only to
         // expose the availability of the other options settings section.
@@ -136,6 +167,7 @@ Polymer({
           value: null,
           valid: true,
           available: true,
+          key: '',
         },
       },
     },
@@ -146,6 +178,13 @@ Polymer({
       notify: true,
     },
 
+    /** @type {!Array<!print_preview.RecentDestination>} */
+    recentDestinations: {
+      type: Array,
+      notify: true,
+      value: [],
+    },
+
     /** @type {print_preview.DocumentInfo} */
     documentInfo: {
       type: Object,
@@ -153,11 +192,22 @@ Polymer({
     },
   },
 
-  observers:
-      ['updateSettings_(' +
-       'destination.id, destination.capabilities, ' +
-       'documentInfo.isModifiable, documentInfo.hasCssMediaStyles,' +
-       'documentInfo.hasSelection)'],
+  observers: [
+    'updateSettings_(' +
+        'destination.id, destination.capabilities, ' +
+        'documentInfo.isModifiable, documentInfo.hasCssMediaStyles,' +
+        'documentInfo.hasSelection)',
+    'updateRecentDestinations_(destination, destination.capabilities)',
+    'stickySettingsChanged_(' +
+        'settings.collate.value, settings.layout.value, settings.color.value,' +
+        'settings.mediaSize.value, settings.margins.value, ' +
+        'settings.dpi.value, settings.fitToPage.value, ' +
+        'settings.scaling.value, settings.duplex.value, ' +
+        'settings.headerFooter.value, settings.cssBackground.value)',
+  ],
+
+  /** @private {boolean} */
+  initialized_: false,
 
   /**
    * Updates the availability of the settings sections and values of dpi and
@@ -262,5 +312,99 @@ Polymer({
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.value', caps.dpi.option[0]);
     }
-  }
+  },
+
+  /** @private */
+  updateRecentDestinations_: function() {
+    if (!this.initialized_)
+      return;
+
+    // Determine if this destination is already in the recent destinations,
+    // and where in the array it is located.
+    const newDestination =
+        print_preview.makeRecentDestination(assert(this.destination));
+    let indexFound = this.recentDestinations.findIndex(function(recent) {
+      return (
+          newDestination.id == recent.id &&
+          newDestination.origin == recent.origin);
+    });
+
+    // No change
+    if (indexFound == 0 &&
+        this.recentDestinations[0].capabilities ==
+            newDestination.capabilities) {
+      return;
+    }
+
+    // Shift the array so that the nth most recent destination is located at
+    // index n.
+    if (indexFound == -1 &&
+        this.recentDestinations.length == NUM_DESTINATIONS) {
+      indexFound = NUM_DESTINATIONS - 1;
+    }
+    if (indexFound != -1)
+      this.recentDestinations.splice(indexFound, 1);
+
+    // Add the most recent destination
+    this.recentDestinations.splice(0, 0, newDestination);
+    this.notifyPath('recentDestinations');
+
+    // Persist sticky settings.
+    this.stickySettingsChanged_();
+  },
+
+  /**
+   * @param {?string} savedSettingsStr The sticky settings from native layer
+   */
+  updateFromStickySettings: function(savedSettingsStr) {
+    this.initialized_ = true;
+    if (!savedSettingsStr)
+      return;
+
+    let savedSettings;
+    try {
+      savedSettings = /** @type {print_preview_new.SerializedSettings} */ (
+          JSON.parse(savedSettingsStr));
+    } catch (e) {
+      console.error('Unable to parse state ' + e);
+      return;  // use default values rather than updating.
+    }
+    if (savedSettings.version != 2)
+      return;
+
+    let recentDestinations = savedSettings.recentDestinations || [];
+    if (!Array.isArray(recentDestinations)) {
+      recentDestinations = [recentDestinations];
+    }
+    this.recentDestinations = recentDestinations;
+
+    // Reset initialized, or stickySettingsChanged_ will get called for
+    // every setting that gets set below.
+    this.initialized_ = false;
+    STICKY_SETTING_NAMES.forEach(settingName => {
+      const setting = this.get(settingName, this.settings);
+      const value = savedSettings[setting.key];
+      if (value != undefined)
+        this.set(`settings.${settingName}.value`, value);
+    });
+    this.initialized_ = true;
+  },
+
+  /** @private */
+  stickySettingsChanged_: function() {
+    if (!this.initialized_)
+      return;
+
+    const serialization = {
+      version: 2,
+      recentDestinations: this.recentDestinations,
+    };
+
+    STICKY_SETTING_NAMES.forEach(settingName => {
+      const setting = this.get(settingName, this.settings);
+      serialization[assert(setting.key)] = setting.value;
+    });
+    this.fire('save-sticky-settings', JSON.stringify(serialization));
+  },
 });
+})();
