@@ -25,7 +25,9 @@ class RenderTextWrapper {
                           bool value,
                           const gfx::Range& range);
 
-  virtual void SetStrikeThicknessFactor(SkScalar factor);
+  virtual void ApplyWeight(gfx::Font::Weight weight, const gfx::Range& range);
+
+  virtual void SetDirectionalityMode(gfx::DirectionalityMode mode);
 
  private:
   gfx::RenderText* render_text_ = nullptr;
