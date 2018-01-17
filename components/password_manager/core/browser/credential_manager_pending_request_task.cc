@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -121,7 +122,7 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
       mediation_(mediation),
       origin_(delegate_->GetOrigin()),
       include_passwords_(include_passwords) {
-  CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
+  CHECK(!net::IsCertStatusError(delegate_->client()->GetMainFrameCertStatus()));
   for (const GURL& federation : request_federations)
     federations_.insert(
         url::Origin::Create(federation.GetOrigin()).Serialize());

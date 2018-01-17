@@ -48,8 +48,8 @@ bool PasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
 
-bool PasswordManagerClient::DidLastPageLoadEncounterSSLErrors() const {
-  return false;
+net::CertStatus PasswordManagerClient::GetMainFrameCertStatus() const {
+  return 0;
 }
 
 bool PasswordManagerClient::IsIncognito() const {

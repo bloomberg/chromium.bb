@@ -133,12 +133,11 @@ class MockPasswordProtectionService
 // http://crbug.com/474577.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
+  MOCK_CONST_METHOD0(GetMainFrameCertStatus, net::CertStatus());
 
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {
-    ON_CALL(*this, DidLastPageLoadEncounterSSLErrors())
-        .WillByDefault(testing::Return(false));
+    ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
 #if defined(SAFE_BROWSING_DB_LOCAL)
     password_protection_service_ =
         base::MakeUnique<MockPasswordProtectionService>();
@@ -409,9 +408,9 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
           web_contents()->GetBrowserContext(), nullptr));
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
-  // Functionality disabled if there is SSL errors.
-  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
-      .WillRepeatedly(Return(true));
+  // Functionality disabled if there is an SSL error.
+  EXPECT_CALL(*client, GetMainFrameCertStatus())
+      .WillRepeatedly(Return(net::CERT_STATUS_AUTHORITY_INVALID));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
 
@@ -424,8 +423,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
 
   // Functionality disabled if there are no SSL errors, but the manager itself
   // is disabled.
-  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
@@ -433,8 +431,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
 
   // Functionality enabled if there are no SSL errors and the manager is
   // enabled.
-  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
                        base::MakeUnique<base::Value>(true));
   EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
