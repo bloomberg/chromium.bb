@@ -232,6 +232,13 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
   // PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
   DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
 
+  if (&client == &object_) {
+    TRACE_EVENT_INSTANT1(
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+        "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorPaintInvalidationTrackingEvent::Data(object_));
+  }
+
   client.SetDisplayItemsUncached(reason);
 
   if (LocalFrameView* frame_view = object_.GetFrameView())
@@ -341,13 +348,6 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
 
   CHECK(object_.IsRooted());
 
-  // FIXME: Unify "devtools.timeline.invalidationTracking" and
-  // "blink.invalidation". crbug.com/413527.
-  TRACE_EVENT_INSTANT1(
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-      "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorPaintInvalidationTrackingEvent::Data(
-          &object_, paint_invalidation_container));
   TRACE_EVENT2(
       TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
       "LayoutObject::invalidatePaintUsingContainer()", "object",
