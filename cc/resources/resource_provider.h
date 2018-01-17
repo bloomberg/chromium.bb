@@ -27,7 +27,6 @@
 #include "cc/resources/return_callback.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource.h"
-#include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -86,31 +85,6 @@ class CC_EXPORT ResourceProvider
 
   GLenum GetResourceTextureTarget(viz::ResourceId id);
 
-  void DeleteResource(viz::ResourceId id);
-
-  class CC_EXPORT SynchronousFence : public viz::ResourceFence {
-   public:
-    explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
-
-    // viz::ResourceFence implementation.
-    void Set() override;
-    bool HasPassed() override;
-    void Wait() override;
-
-    // Returns true if fence has been set but not yet synchornized.
-    bool has_synchronized() const { return has_synchronized_; }
-
-   private:
-    ~SynchronousFence() override;
-
-    void Synchronize();
-
-    gpu::gles2::GLES2Interface* gl_;
-    bool has_synchronized_;
-
-    DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
-  };
-
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
@@ -136,11 +110,6 @@ class CC_EXPORT ResourceProvider
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
 
   void WaitSyncTokenInternal(viz::internal::Resource* resource);
-
-  bool ReadLockFenceHasPassed(const viz::internal::Resource* resource) {
-    return !resource->read_lock_fence.get() ||
-           resource->read_lock_fence->HasPassed();
-  }
 
   // Returns null if we do not have a viz::ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
