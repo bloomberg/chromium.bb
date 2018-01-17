@@ -30,6 +30,8 @@ class ScreenOrientationControllerTestApi {
 
   blink::WebScreenOrientationLockType GetCurrentOrientation() const;
 
+  void UpdateNaturalOrientation();
+
  private:
   ScreenOrientationController* controller_;
 

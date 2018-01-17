@@ -33,4 +33,8 @@ ScreenOrientationControllerTestApi::GetCurrentOrientation() const {
   return controller_->GetCurrentOrientation();
 }
 
+void ScreenOrientationControllerTestApi::UpdateNaturalOrientation() {
+  controller_->UpdateNaturalOrientationForTest();
+}
+
 }  // namespace ash

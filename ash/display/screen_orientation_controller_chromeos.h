@@ -60,6 +60,10 @@ class ASH_EXPORT ScreenOrientationController
   ScreenOrientationController();
   ~ScreenOrientationController() override;
 
+  blink::WebScreenOrientationLockType natural_orientation() const {
+    return natural_orientation_;
+  };
+
   // Add/Remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -207,6 +211,8 @@ class ASH_EXPORT ScreenOrientationController
   // same screen orientation. Returns true if |rotation_locked_orientation_|
   // allows rotation.
   bool CanRotateInLockedState();
+
+  void UpdateNaturalOrientationForTest();
 
   // The orientation of the display when at a rotation of 0.
   blink::WebScreenOrientationLockType natural_orientation_;
