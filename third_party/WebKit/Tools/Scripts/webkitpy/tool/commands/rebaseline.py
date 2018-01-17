@@ -34,12 +34,17 @@ import re
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.buildbot import Build
-from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
+from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.port import factory
+from webkitpy.layout_tests.port import base, factory
 from webkitpy.tool.commands.command import Command
 
 _log = logging.getLogger(__name__)
+
+# For CLI compatibility, we would like a list of baseline extensions without
+# the leading dot.
+# TODO(robertma): Investigate changing the CLI.
+BASELINE_SUFFIX_LIST = tuple(ext[1:] for ext in base.Port.BASELINE_EXTENSIONS)
 
 
 class AbstractRebaseliningCommand(Command):
@@ -81,14 +86,19 @@ class AbstractRebaseliningCommand(Command):
         port = self._tool.port_factory.get_from_builder_name(builder_name)
         return port.baseline_version_dir()
 
-    def _test_root(self, test_name):
-        return self._tool.filesystem.splitext(test_name)[0]
+    @property
+    def _host_port(self):
+        return self._tool.port_factory.get()
 
     def _file_name_for_actual_result(self, test_name, suffix):
-        return '%s-actual.%s' % (self._test_root(test_name), suffix)
+        # output_filename takes extensions starting with '.'.
+        return self._host_port.output_filename(
+            test_name, TestResultWriter.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
 
     def _file_name_for_expected_result(self, test_name, suffix):
-        return '%s-expected.%s' % (self._test_root(test_name), suffix)
+        # output_filename takes extensions starting with '.'.
+        return self._host_port.output_filename(
+            test_name, TestResultWriter.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
 
 
 class ChangeSet(object):

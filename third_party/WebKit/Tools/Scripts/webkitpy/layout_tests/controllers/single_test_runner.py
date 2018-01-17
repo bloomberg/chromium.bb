@@ -87,7 +87,7 @@ class SingleTestRunner(object):
             # 'foo-expected.png', we should warn users. One test file must be used exclusively
             # in either layout tests or reftests, but not in both. Text expectation is an
             # exception.
-            for suffix in self._port.baseline_extensions():
+            for suffix in self._port.BASELINE_EXTENSIONS:
                 if suffix == '.txt':
                     continue
                 expected_filename = self._port.expected_filename(self._test_name, suffix)
