@@ -21,7 +21,7 @@ namespace ui {
 WaylandTest::WaylandTest() {
 #if BUILDFLAG(USE_XKBCOMMON)
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-      std::make_unique<MockWaylandXkbKeyboardLayoutEngine>(
+      std::make_unique<WaylandXkbKeyboardLayoutEngineImpl>(
           xkb_evdev_code_converter_));
 #else
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(

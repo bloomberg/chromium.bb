@@ -95,14 +95,6 @@ source_set("wayland_unittests") {
     "wayland_window_unittest.cc",
   ]
 
-  import("//ui/base/ui_features.gni")
-  if (use_xkbcommon) {
-    sources += [
-      "mock_wayland_xkb_keyboard_layout_engine.cc",
-      "mock_wayland_xkb_keyboard_layout_engine.h",
-    ]
-  }
-
   deps = [
     ":wayland",
     "//testing/gmock",
@@ -114,6 +106,15 @@ source_set("wayland_unittests") {
     "//ui/gfx:test_support",
     "//ui/ozone:platform",
   ]
+
+  import("//ui/base/ui_features.gni")
+  if (use_xkbcommon) {
+    sources += [
+      "mock_wayland_xkb_keyboard_layout_engine.cc",
+      "mock_wayland_xkb_keyboard_layout_engine.h",
+    ]
+    deps += [ "//ui/events/keycodes:xkb" ]
+  }
 
   defines = [ "WL_HIDE_DEPRECATED" ]
 }
