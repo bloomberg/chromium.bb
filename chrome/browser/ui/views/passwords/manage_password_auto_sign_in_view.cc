@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -27,11 +26,21 @@ int ManagePasswordAutoSignInView::auto_signin_toast_timeout_ = 3;
 ManagePasswordAutoSignInView::~ManagePasswordAutoSignInView() = default;
 
 ManagePasswordAutoSignInView::ManagePasswordAutoSignInView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent), observed_browser_(this) {
+    content::WebContents* web_contents,
+    views::View* anchor_view,
+    const gfx::Point& anchor_point,
+    DisplayReason reason)
+    : ManagePasswordsBubbleDelegateViewBase(web_contents,
+                                            anchor_view,
+                                            anchor_point,
+                                            reason) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  const autofill::PasswordForm& form = parent_->model()->pending_password();
+  const autofill::PasswordForm& form = model()->pending_password();
   base::string16 upper_text, lower_text = form.username_value;
+
+  set_margins(
+      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
+
   if (ChromeLayoutProvider::Get()->IsHarmonyMode()) {
     upper_text =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD);
@@ -41,32 +50,22 @@ ManagePasswordAutoSignInView::ManagePasswordAutoSignInView(
   }
   CredentialsItemView* credential = new CredentialsItemView(
       this, upper_text, lower_text, kButtonHoverColor, &form,
-      content::BrowserContext::GetDefaultStoragePartition(
-          parent_->model()->GetProfile())
+      content::BrowserContext::GetDefaultStoragePartition(model()->GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess());
   credential->SetEnabled(false);
   AddChildView(credential);
 
   // Setup the observer and maybe start the timer.
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(parent_->GetWebContents());
+  Browser* browser = chrome::FindBrowserWithWebContents(GetWebContents());
   DCHECK(browser);
 
 // Sign-in dialogs opened for inactive browser windows do not auto-close on
 // MacOS. This matches existing Cocoa bubble behavior.
 // TODO(varkha): Remove the limitation as part of http://crbug/671916 .
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  observed_browser_.Add(browser_view->GetWidget());
-#endif
-  if (browser->window()->IsActive())
+  if (browser->window()->IsActive()) {
     timer_.Start(FROM_HERE, GetTimeout(), this,
                  &ManagePasswordAutoSignInView::OnTimer);
-}
-
-void ManagePasswordAutoSignInView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  NOTREACHED();
+  }
 }
 
 void ManagePasswordAutoSignInView::OnWidgetActivationChanged(
@@ -76,15 +75,28 @@ void ManagePasswordAutoSignInView::OnWidgetActivationChanged(
     timer_.Start(FROM_HERE, GetTimeout(), this,
                  &ManagePasswordAutoSignInView::OnTimer);
   }
+  LocationBarBubbleDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
-void ManagePasswordAutoSignInView::OnWidgetClosing(views::Widget* widget) {
-  observed_browser_.RemoveAll();
+int ManagePasswordAutoSignInView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+gfx::Size ManagePasswordAutoSignInView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void ManagePasswordAutoSignInView::ButtonPressed(views::Button* sender,
+                                                 const ui::Event& event) {
+  NOTREACHED();
 }
 
 void ManagePasswordAutoSignInView::OnTimer() {
-  parent_->model()->OnAutoSignInToastTimeout();
-  parent_->CloseBubble();
+  model()->OnAutoSignInToastTimeout();
+  CloseBubble();
 }
 
 base::TimeDelta ManagePasswordAutoSignInView::GetTimeout() {

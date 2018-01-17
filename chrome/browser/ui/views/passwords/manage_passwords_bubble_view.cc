@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
@@ -327,8 +326,6 @@ void ManagePasswordsBubbleView::CreateChild() {
     AddChildView(new ManagePasswordUpdatePendingView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new ManagePasswordSaveConfirmationView(this));
-  } else if (model()->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
-    AddChildView(new ManagePasswordAutoSignInView(this));
   } else if (model()->state() ==
              password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     AddChildView(new ManagePasswordSignInPromoView(this));

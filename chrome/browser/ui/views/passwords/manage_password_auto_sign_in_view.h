@@ -6,20 +6,21 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_AUTO_SIGN_IN_VIEW_H_
 
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-class ManagePasswordsBubbleView;
-
 // A view containing just one credential that was used for for automatic signing
 // in.
-class ManagePasswordAutoSignInView : public views::View,
-                                     public views::ButtonListener,
-                                     public views::WidgetObserver {
+class ManagePasswordAutoSignInView
+    : public ManagePasswordsBubbleDelegateViewBase,
+      public views::ButtonListener {
  public:
-  explicit ManagePasswordAutoSignInView(ManagePasswordsBubbleView* parent);
+  explicit ManagePasswordAutoSignInView(content::WebContents* web_contents,
+                                        views::View* anchor_view,
+                                        const gfx::Point& anchor_point,
+                                        DisplayReason reason);
 
 #if defined(UNIT_TEST)
   static void set_auto_signin_toast_timeout(int seconds) {
@@ -30,20 +31,18 @@ class ManagePasswordAutoSignInView : public views::View,
  private:
   ~ManagePasswordAutoSignInView() override;
 
+  // LocationBarBubbleDelegateView:
+  int GetDialogButtons() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::WidgetObserver:
-  // Tracks the state of the browser window.
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-  void OnWidgetClosing(views::Widget* widget) override;
 
   void OnTimer();
   static base::TimeDelta GetTimeout();
 
   base::OneShotTimer timer_;
-  ManagePasswordsBubbleView* parent_;
-  ScopedObserver<views::Widget, views::WidgetObserver> observed_browser_;
 
   // The timeout in seconds for the auto sign-in toast.
   static int auto_signin_toast_timeout_;
