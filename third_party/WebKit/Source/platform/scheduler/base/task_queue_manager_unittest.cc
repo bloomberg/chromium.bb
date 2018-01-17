@@ -3227,7 +3227,8 @@ void SetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue,
                           start_counter));
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
       [](int* counter, const TaskQueue::Task& task, base::TimeTicks start,
-         base::TimeTicks end) { ++(*counter); },
+         base::TimeTicks end,
+         base::Optional<base::TimeDelta> thread_time) { ++(*counter); },
       complete_counter));
 }
 
@@ -3236,9 +3237,9 @@ void UnsetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue) {
       base::RepeatingCallback<void(const TaskQueue::Task& task,
                                    base::TimeTicks start)>());
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-      base::RepeatingCallback<void(const TaskQueue::Task& task,
-                                   base::TimeTicks start,
-                                   base::TimeTicks end)>());
+      base::RepeatingCallback<void(
+          const TaskQueue::Task& task, base::TimeTicks start,
+          base::TimeTicks end, base::Optional<base::TimeDelta> thread_time)>());
 }
 }  // namespace
 

@@ -33,9 +33,8 @@ class BudgetPoolTest : public ::testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
-    scheduler_.reset(
-        new RendererSchedulerImpl(CreateTaskQueueManagerWithUnownedClockForTest(
-            nullptr, mock_task_runner_, &clock_)));
+    scheduler_.reset(new RendererSchedulerImpl(
+        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_)));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     start_time_ = clock_.NowTicks();
   }

@@ -21,7 +21,8 @@ class PLATFORM_EXPORT WorkerTaskQueue : public TaskQueue {
 
   void OnTaskCompleted(const TaskQueue::Task& task,
                        base::TimeTicks start,
-                       base::TimeTicks end);
+                       base::TimeTicks end,
+                       base::Optional<base::TimeDelta> thread_time);
 
  private:
   // Not owned.

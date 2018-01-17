@@ -19,7 +19,8 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
   void RecordTaskMetrics(WorkerTaskQueue* queue,
                          const TaskQueue::Task& task,
                          base::TimeTicks start_time,
-                         base::TimeTicks end_time);
+                         base::TimeTicks end_time,
+                         base::Optional<base::TimeDelta> thread_time);
 
   using MetricsHelper::SetThreadType;
 

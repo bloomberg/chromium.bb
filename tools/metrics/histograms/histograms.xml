@@ -71199,6 +71199,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskCPUDurationPerThreadType"
+    enum="RendererSchedulerThreadType" units="ms">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Total cpu time of renderer tasks split by per thread type. Wall time is
+    tracked by RendererScheduler.TaskDurationPerThreadType histogram. This
+    histogram is used to compare CPU usage of tasks from different threads.
+
+    Only 1% of randomly sampled tasks have cpu time measured and report duration
+    for this histogram.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskDurationPerFrameType"
     enum="RendererSchedulerFrameType" units="ms">
   <obsolete>

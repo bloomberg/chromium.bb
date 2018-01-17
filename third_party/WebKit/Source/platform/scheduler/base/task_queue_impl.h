@@ -133,9 +133,12 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   using OnNextWakeUpChangedCallback = base::Callback<void(base::TimeTicks)>;
   using OnTaskStartedHandler =
-      base::Callback<void(const TaskQueue::Task&, base::TimeTicks)>;
-  using OnTaskCompletedHandler = base::Callback<
-      void(const TaskQueue::Task&, base::TimeTicks, base::TimeTicks)>;
+      base::RepeatingCallback<void(const TaskQueue::Task&, base::TimeTicks)>;
+  using OnTaskCompletedHandler =
+      base::RepeatingCallback<void(const TaskQueue::Task&,
+                                   base::TimeTicks,
+                                   base::TimeTicks,
+                                   base::Optional<base::TimeDelta>)>;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -267,7 +270,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
   void OnTaskCompleted(const TaskQueue::Task& task,
                        base::TimeTicks start,
-                       base::TimeTicks end);
+                       base::TimeTicks end,
+                       base::Optional<base::TimeDelta> thread_time);
   bool RequiresTaskTiming() const;
 
   base::WeakPtr<TaskQueueManager> GetTaskQueueManagerWeakPtr();

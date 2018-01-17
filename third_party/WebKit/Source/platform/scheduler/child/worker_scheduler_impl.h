@@ -47,7 +47,8 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                        const TaskQueue::Task& task,
                        base::TimeTicks start,
-                       base::TimeTicks end) override;
+                       base::TimeTicks end,
+                       base::Optional<base::TimeDelta> thread_time) override;
 
   // TaskTimeObserver implementation:
   void WillProcessTask(double start_time) override;
