@@ -1293,6 +1293,9 @@ void CompositeEditCommand::MoveParagraphWithClones(
     HTMLElement* block_element,
     Node* outer_node,
     EditingState* editing_state) {
+  // InsertListCommandTest.InsertListWithCollapsedVisibility reaches here.
+  ABORT_EDITING_COMMAND_IF(start_of_paragraph_to_move.IsNull());
+  ABORT_EDITING_COMMAND_IF(end_of_paragraph_to_move.IsNull());
   DCHECK(outer_node);
   DCHECK(block_element);
 
