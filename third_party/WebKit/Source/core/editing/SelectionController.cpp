@@ -531,8 +531,11 @@ void SelectionController::UpdateSelectionForMouseDrag(
           : SelectionInFlatTree::Builder().Collapse(adjusted_position).Build();
 
   SetNonDirectionalSelectionIfNeeded(
-      adjusted_selection, Selection().Granularity(),
-      kAdjustEndpointsAtBidiBoundary, HandleVisibility::kNotVisible);
+      adjusted_selection,
+      SetSelectionOptions::Builder()
+          .SetGranularity(Selection().Granularity())
+          .Build(),
+      kAdjustEndpointsAtBidiBoundary);
 }
 
 bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
@@ -563,14 +566,25 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
   if (visible_selection.IsRange()) {
     selection_state_ = SelectionState::kExtendedSelection;
     SetNonDirectionalSelectionIfNeeded(
-        selection, granularity, kDoNotAdjustEndpoints, handle_visibility);
+        selection,
+        SetSelectionOptions::Builder()
+            .SetGranularity(granularity)
+            .SetShouldShowHandle(handle_visibility ==
+                                 HandleVisibility::kVisible)
+            .Build(),
+        kDoNotAdjustEndpoints);
 
     return true;
   }
 
   selection_state_ = SelectionState::kPlacedCaret;
-  SetNonDirectionalSelectionIfNeeded(selection, TextGranularity::kCharacter,
-                                     kDoNotAdjustEndpoints, handle_visibility);
+  SetNonDirectionalSelectionIfNeeded(
+      selection,
+      SetSelectionOptions::Builder()
+          .SetGranularity(granularity)
+          .SetShouldShowHandle(handle_visibility == HandleVisibility::kVisible)
+          .Build(),
+      kDoNotAdjustEndpoints);
   return true;
 }
 
@@ -830,9 +844,8 @@ static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
 // |newSelection|.
 void SelectionController::SetNonDirectionalSelectionIfNeeded(
     const SelectionInFlatTree& passed_selection,
-    TextGranularity granularity,
-    EndPointsAdjustmentMode endpoints_adjustment_mode,
-    HandleVisibility handle_visibility) {
+    const SetSelectionOptions& set_selection_options,
+    EndPointsAdjustmentMode endpoints_adjustment_mode) {
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -881,20 +894,16 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
       frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional() ||
       new_selection.IsDirectional());
   const SelectionInFlatTree& selection_in_flat_tree = builder.Build();
-  const bool should_show_handle =
-      handle_visibility == HandleVisibility::kVisible;
   if (Selection().ComputeVisibleSelectionInFlatTree() ==
           CreateVisibleSelection(selection_in_flat_tree) &&
-      Selection().IsHandleVisible() == should_show_handle)
+      Selection().IsHandleVisible() == set_selection_options.ShouldShowHandle())
     return;
   Selection().SetSelection(
       ConvertToSelectionInDOMTree(selection_in_flat_tree),
-      SetSelectionOptions::Builder()
+      SetSelectionOptions::Builder(set_selection_options)
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetCursorAlignOnScroll(CursorAlignOnScroll::kIfNeeded)
-          .SetGranularity(granularity)
-          .SetShouldShowHandle(should_show_handle)
           .Build());
 }
 
