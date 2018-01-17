@@ -699,6 +699,7 @@ NetworkHandler::NetworkHandler(const std::string& host_id)
       enabled_(false),
       host_id_(host_id),
       bypass_service_worker_(false),
+      cache_disabled_(false),
       weak_factory_(this) {
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)
@@ -742,6 +743,11 @@ Response NetworkHandler::Disable() {
   interception_handle_.reset();
   SetNetworkConditions(nullptr);
   extra_headers_.clear();
+  return Response::FallThrough();
+}
+
+Response NetworkHandler::SetCacheDisabled(bool cache_disabled) {
+  cache_disabled_ = cache_disabled;
   return Response::FallThrough();
 }
 
@@ -1316,13 +1322,15 @@ bool NetworkHandler::ShouldCancelNavigation(
 }
 
 void NetworkHandler::WillSendNavigationRequest(net::HttpRequestHeaders* headers,
-                                               bool* skip_service_worker) {
+                                               bool* skip_service_worker,
+                                               bool* disable_cache) {
   headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId, host_id_);
   if (!user_agent_.empty())
     headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
   *skip_service_worker |= bypass_service_worker_;
+  *disable_cache |= cache_disabled_;
 }
 
 namespace {

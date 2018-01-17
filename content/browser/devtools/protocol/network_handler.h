@@ -58,6 +58,8 @@ class NetworkHandler : public DevToolsDomainHandler,
                   Maybe<int> max_post_data_size) override;
   Response Disable() override;
 
+  Response SetCacheDisabled(bool cache_disabled) override;
+
   void ClearBrowserCache(
       std::unique_ptr<ClearBrowserCacheCallback> callback) override;
 
@@ -139,7 +141,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       NavigationHandle* navigation_handle);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void WillSendNavigationRequest(net::HttpRequestHeaders* headers,
-                                 bool* skip_service_worker);
+                                 bool* skip_service_worker,
+                                 bool* disable_cache);
 
  private:
   void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
@@ -154,6 +157,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   std::string host_id_;
   std::unique_ptr<InterceptionHandle> interception_handle_;
   bool bypass_service_worker_;
+  bool cache_disabled_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

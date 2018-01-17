@@ -578,12 +578,6 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
           ? WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Present
           : WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Absent;
 
-  // Caching could be disabled for requests initiated by DevTools.
-  // TODO(ananta)
-  // We should extract the network cache state into a global component which
-  // can be queried here and wherever necessary.
-  navigation_info.is_cache_disabled =
-      DevToolsAgent() ? DevToolsAgent()->CacheDisabled() : false;
   if (form)
     navigation_info.form = WebFormElement(form);
 

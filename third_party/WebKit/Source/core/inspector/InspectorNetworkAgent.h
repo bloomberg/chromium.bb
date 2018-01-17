@@ -245,7 +245,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                             const KURL&,
                             String* content,
                             bool* base64_encoded);
-  bool CacheDisabled();
 
  private:
   void Enable(int total_buffer_size,

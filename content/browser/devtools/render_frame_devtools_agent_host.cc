@@ -49,6 +49,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
@@ -220,6 +221,7 @@ void RenderFrameDevToolsAgentHost::OnWillSendNavigationRequest(
     FrameTreeNode* frame_tree_node,
     mojom::BeginNavigationParams* begin_params,
     bool* report_raw_headers) {
+  bool disable_cache = false;
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
   if (!agent_host)
@@ -230,9 +232,16 @@ void RenderFrameDevToolsAgentHost::OnWillSendNavigationRequest(
     if (!network->enabled())
       continue;
     *report_raw_headers = true;
-    network->WillSendNavigationRequest(&headers,
-                                       &begin_params->skip_service_worker);
+    network->WillSendNavigationRequest(
+        &headers, &begin_params->skip_service_worker, &disable_cache);
   }
+  if (disable_cache) {
+    begin_params->load_flags &=
+        ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
+          net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
+    begin_params->load_flags |= net::LOAD_BYPASS_CACHE;
+  }
+
   begin_params->headers = headers.ToString();
 }
 

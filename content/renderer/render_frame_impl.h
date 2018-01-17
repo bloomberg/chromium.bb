@@ -1565,7 +1565,6 @@ class CONTENT_EXPORT RenderFrameImpl
     bool history_navigation_in_new_child_frame;
     bool client_redirect;
     blink::WebTriggeringEventInfo triggering_event_info;
-    bool cache_disabled;
     blink::WebFormElement form;
     blink::WebSourceLocation source_location;
 
