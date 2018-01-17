@@ -53,7 +53,7 @@ void LogStreamCreationResult(bool for_device_change,
 }  // namespace
 
 AudioOutputController::ErrorStatisticsTracker::ErrorStatisticsTracker()
-    : on_more_io_data_called_(0) {
+    : start_time_(base::TimeTicks::Now()), on_more_io_data_called_(0) {
   // WedgeCheck() will look to see if |on_more_io_data_called_| is true after
   // the timeout expires and log this as a UMA stat. If the stream is
   // paused/closed before the timer fires, nothing is logged.
@@ -62,6 +62,8 @@ AudioOutputController::ErrorStatisticsTracker::ErrorStatisticsTracker()
 }
 
 AudioOutputController::ErrorStatisticsTracker::~ErrorStatisticsTracker() {
+  UMA_HISTOGRAM_LONG_TIMES("Media.OutputStreamDuration",
+                           base::TimeTicks::Now() - start_time_);
   UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputController.CallbackError",
                         error_during_callback_);
 }

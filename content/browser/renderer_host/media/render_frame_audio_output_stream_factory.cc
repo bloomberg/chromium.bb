@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
@@ -69,6 +70,8 @@ RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
 
 RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  UMA_HISTOGRAM_EXACT_LINEAR("Media.Audio.OutputStreamsCanceledByBrowser",
+                             stream_providers_.size(), 50);
   // Make sure to close all streams.
   stream_providers_.clear();
 }

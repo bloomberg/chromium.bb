@@ -215,6 +215,8 @@ class MEDIA_EXPORT AudioOutputController
    private:
     void WedgeCheck();
 
+    const base::TimeTicks start_time_;
+
     bool error_during_callback_ = false;
 
     // Flags when we've asked for a stream to start but it never did.
