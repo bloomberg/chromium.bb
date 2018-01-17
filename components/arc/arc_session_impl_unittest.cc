@@ -9,11 +9,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_session_impl.h"
@@ -643,6 +645,56 @@ TEST_F(ArcSessionImplTest, ArcStopInstance_WrongContainerInstanceId) {
   EXPECT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
             arc_session->GetStateForTesting());
 }
+
+struct PackagesCacheModeState {
+  // Possible values for chromeos::switches::kArcPackagesCacheMode
+  const char* chrome_switch;
+  ArcInstanceMode start_mode;
+  login_manager::StartArcInstanceRequest_PackageCacheMode
+      expected_packages_cache_mode;
+};
+
+constexpr PackagesCacheModeState kPackagesCacheModeStates[] = {
+    {nullptr, ArcInstanceMode::FULL_INSTANCE,
+     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+    {nullptr, ArcInstanceMode::MINI_INSTANCE,
+     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+    {ArcSessionImpl::kPackagesCacheModeCopy, ArcInstanceMode::FULL_INSTANCE,
+     login_manager::StartArcInstanceRequest_PackageCacheMode_COPY_ON_INIT},
+    {ArcSessionImpl::kPackagesCacheModeCopy, ArcInstanceMode::MINI_INSTANCE,
+     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+    {ArcSessionImpl::kPackagesCacheModeSkipCopy, ArcInstanceMode::FULL_INSTANCE,
+     login_manager::
+         StartArcInstanceRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT},
+    {ArcSessionImpl::kPackagesCacheModeCopy, ArcInstanceMode::MINI_INSTANCE,
+     login_manager::StartArcInstanceRequest_PackageCacheMode_DEFAULT},
+};
+
+class ArcSessionImplPackagesCacheModeTest
+    : public ArcSessionImplTest,
+      public ::testing::WithParamInterface<PackagesCacheModeState> {};
+
+TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
+  std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> arc_session =
+      CreateArcSession();
+
+  const PackagesCacheModeState& state = GetParam();
+  if (state.chrome_switch) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitchASCII(chromeos::switches::kArcPackagesCacheMode,
+                                    state.chrome_switch);
+  }
+
+  arc_session->Start(state.start_mode);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(state.expected_packages_cache_mode, GetSessionManagerClient()
+                                                    ->last_start_arc_request()
+                                                    .packages_cache_mode());
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        ArcSessionImplPackagesCacheModeTest,
+                        ::testing::ValuesIn(kPackagesCacheModeStates));
 
 }  // namespace
 }  // namespace arc

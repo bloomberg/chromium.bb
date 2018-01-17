@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_scheduler/post_task.h"
@@ -19,6 +20,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
@@ -239,6 +241,9 @@ void ArcSessionDelegateImpl::OnMojoConnected(
 
 }  // namespace
 
+const char ArcSessionImpl::kPackagesCacheModeCopy[] = "copy";
+const char ArcSessionImpl::kPackagesCacheModeSkipCopy[] = "skip-copy";
+
 // static
 std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
     ArcBridgeService* arc_bridge_service) {
@@ -407,35 +412,48 @@ void ArcSessionImpl::SendStartArcInstanceDBusMessage(
     chromeos::SessionManagerClient::StartArcInstanceCallback callback) {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  const bool native_bridge_experiment =
-      base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature);
+
+  login_manager::StartArcInstanceRequest request;
+  request.set_native_bridge_experiment(
+      base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+
   if (target_mode == ArcInstanceMode::MINI_INSTANCE) {
-    session_manager_client->StartArcInstance(
-        chromeos::SessionManagerClient::ArcStartupMode::LOGIN_SCREEN,
-        // All variables below except |callback| will be ignored.
-        cryptohome::Identification(), false, false, native_bridge_experiment,
-        std::move(callback));
+    request.set_for_login_screen(true);
+    session_manager_client->StartArcInstance(request, std::move(callback));
     return;
   }
   DCHECK_EQ(ArcInstanceMode::FULL_INSTANCE, target_mode);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   DCHECK(user_manager->GetPrimaryUser());
-  const cryptohome::Identification cryptohome_id(
-      user_manager->GetPrimaryUser()->GetAccountId());
-
-  const bool skip_boot_completed_broadcast =
-      !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature);
+  request.set_account_id(
+      cryptohome::Identification(user_manager->GetPrimaryUser()->GetAccountId())
+          .id());
+  request.set_skip_boot_completed_broadcast(
+      !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature));
 
   // We only enable /vendor/priv-app when voice interaction is enabled because
   // voice interaction service apk would be bundled in this location.
-  const bool scan_vendor_priv_app =
-      chromeos::switches::IsVoiceInteractionEnabled();
+  request.set_scan_vendor_priv_app(
+      chromeos::switches::IsVoiceInteractionEnabled());
 
-  session_manager_client->StartArcInstance(
-      chromeos::SessionManagerClient::ArcStartupMode::FULL, cryptohome_id,
-      skip_boot_completed_broadcast, scan_vendor_priv_app,
-      native_bridge_experiment, std::move(callback));
+  // Set packages cache mode coming from autotests.
+  const std::string packages_cache_mode_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kArcPackagesCacheMode);
+  if (packages_cache_mode_string == kPackagesCacheModeSkipCopy) {
+    request.set_packages_cache_mode(
+        login_manager::
+            StartArcInstanceRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT);
+  } else if (packages_cache_mode_string == kPackagesCacheModeCopy) {
+    request.set_packages_cache_mode(
+        login_manager::StartArcInstanceRequest_PackageCacheMode_COPY_ON_INIT);
+  } else if (!packages_cache_mode_string.empty()) {
+    VLOG(2) << "Invalid packages cache mode switch "
+            << packages_cache_mode_string << ".";
+  }
+
+  session_manager_client->StartArcInstance(request, std::move(callback));
 }
 
 void ArcSessionImpl::OnMojoConnected(

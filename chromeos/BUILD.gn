@@ -599,6 +599,7 @@ static_library("test_support_without_gmock") {
     ":biod_proto",
     ":chromeos",
     ":cryptohome_proto",
+    ":login_manager_proto",
     ":power_manager_proto",
     "//components/policy/proto",
     "//crypto",

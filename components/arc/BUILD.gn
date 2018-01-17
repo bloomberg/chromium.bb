@@ -149,6 +149,7 @@ static_library("arc_base") {
     "//ash/public/cpp",
     "//base",
     "//chromeos",
+    "//chromeos:login_manager_proto",
     "//components/keyed_service/content",
     "//components/prefs",
     "//components/signin/core/account_id",

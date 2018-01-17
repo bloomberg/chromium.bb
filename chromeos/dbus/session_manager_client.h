@@ -24,6 +24,10 @@ namespace cryptohome {
 class Identification;
 }
 
+namespace login_manager {
+class StartArcInstanceRequest;
+}
+
 namespace chromeos {
 
 // SessionManagerClient is used to communicate with the session manager.
@@ -293,12 +297,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       base::OnceCallback<void(StartArcInstanceResult result,
                               const std::string& container_instance_id,
                               base::ScopedFD server_socket)>;
-  virtual void StartArcInstance(ArcStartupMode startup_mode,
-                                const cryptohome::Identification& cryptohome_id,
-                                bool skip_boot_completed_broadcast,
-                                bool scan_vendor_priv_app,
-                                bool native_bridge_experiment,
-                                StartArcInstanceCallback callback) = 0;
+  virtual void StartArcInstance(
+      const login_manager::StartArcInstanceRequest& request,
+      StartArcInstanceCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result; true on success, false on failure (either
