@@ -3369,6 +3369,7 @@
       'Linux Tests': {
         'args': [
           '--xvfb',
+          '--jobs=1',
         ],
       },
       'Linux Tests (dbg)(1)': {
