@@ -8,16 +8,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -73,8 +72,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       next_surface_sequence_(1u),
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
-      enable_viz_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableViz)),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       background_color_(SK_ColorWHITE),
       scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {

@@ -6,9 +6,8 @@
 
 #include <limits>
 
-#include "base/command_line.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/common/switches.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -34,8 +33,8 @@ class FakeReflector : public ui::Reflector {
 }  // namespace
 
 TestImageTransportFactory::TestImageTransportFactory()
-    : enable_viz_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableViz)),
+    : enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       frame_sink_id_allocator_(kDefaultClientId) {
   if (enable_viz_) {
     test_frame_sink_manager_impl_ =
@@ -148,7 +147,8 @@ TestImageTransportFactory::GetHostFrameSinkManager() {
 
 viz::FrameSinkManagerImpl* TestImageTransportFactory::GetFrameSinkManager() {
   if (enable_viz_) {
-    // Nothing should use FrameSinkManagerImpl with --enable-viz.
+    // Nothing should use FrameSinkManagerImpl with VizDisplayCompositor
+    // enabled.
     NOTREACHED();
     return nullptr;
   }
@@ -171,7 +171,7 @@ TestImageTransportFactory::GetContextFactoryPrivate() {
 
 viz::GLHelper* TestImageTransportFactory::GetGLHelper() {
   if (enable_viz_) {
-    // Nothing should use GLHelper with --enable-viz.
+    // Nothing should use GLHelper with VizDisplayCompositor enabled.
     NOTREACHED();
     return nullptr;
   }

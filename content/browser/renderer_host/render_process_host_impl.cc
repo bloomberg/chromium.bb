@@ -2656,7 +2656,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kRunAllCompositorStagesBeforeDraw,
     switches::kDisableSurfaceReferences,
     switches::kEnableSurfaceSynchronization,
-    switches::kEnableViz,
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

@@ -32,9 +32,9 @@ namespace content {
 // ContextFactoryPrivate. This class tries to do very little, mostly setting up
 // HostFrameSinkManager and returning fake implementations where possible.
 //
-// This class will change behavior depending on the --enable-viz flag. With the
-// flag it behaves like VizProcessTransportFactory, otherwise it behaves like
-// GpuProcessTransportFactory.
+// This class will change behavior depending on the VizDisplayCompositor
+// feature. With the feature enabled it behaves like VizProcessTransportFactory,
+// otherwise it behaves like GpuProcessTransportFactory.
 class TestImageTransportFactory : public ui::ContextFactory,
                                   public ui::ContextFactoryPrivate,
                                   public ImageTransportFactory {

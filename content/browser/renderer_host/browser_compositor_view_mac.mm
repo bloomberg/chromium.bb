@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/switches.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/public/browser/browser_thread.h"
@@ -183,8 +182,8 @@ BrowserCompositorMac::BrowserCompositorMac(
     const viz::FrameSinkId& frame_sink_id)
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
-      enable_viz_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableViz)),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       weak_factory_(this) {
   g_browser_compositor_count += 1;
 
