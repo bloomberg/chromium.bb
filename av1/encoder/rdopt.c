@@ -2855,9 +2855,9 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
-      best_tx_size = mic->mbmi.tx_size;
+      best_tx_size = mbmi->tx_size;
       filter_intra_mode_info = mbmi->filter_intra_mode_info;
-      best_tx_type = mic->mbmi.tx_type;
+      best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
       memcpy(best_txk_type, mbmi->txk_type,
              sizeof(*best_txk_type) *
@@ -2962,7 +2962,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   int i, angle_delta, best_angle_delta = 0;
   int first_try = 1;
   int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
-  TX_SIZE best_tx_size = mic->mbmi.tx_size;
+  TX_SIZE best_tx_size = mbmi->tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
   const int n4 = bsize_to_num_blk(bsize);
