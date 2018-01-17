@@ -208,7 +208,8 @@ class MediaSourcePipelineIntegrationFuzzerTest
 // Disable noisy logging.
 struct Environment {
   Environment() {
-    // Note, use logging::LOG_VERBOSE here to assist local debugging.
+    // Note, instead of LOG_FATAL, use a value at or below logging::LOG_VERBOSE
+    // here to assist local debugging.
     logging::SetMinLogLevel(logging::LOG_FATAL);
   }
 };

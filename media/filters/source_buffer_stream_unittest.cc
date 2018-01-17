@@ -5633,6 +5633,83 @@ TEST_P(SourceBufferStreamTest, AllowIncrementalAppendsToCoalesceRangeGap) {
   CheckNoNextBuffer();
 }
 
+TEST_P(SourceBufferStreamTest, PreciselyOverlapLastAudioFrameAppended_1) {
+  // Appends an audio frame, A, which is then immediately followed by a
+  // subsequent frame, B. Then appends a new frame, C, which precisely overlaps
+  // frame B, and verifies that there is exactly 1 buffered range resulting.
+  SetAudioStream();
+
+  // Frame A
+  NewCodedFrameGroupAppend("0D10K");
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,10) }");
+  CheckExpectedRangeEndTimes("{ <0,10> }");
+  CheckExpectedBuffers("0K");
+  CheckNoNextBuffer();
+
+  // Frame B
+  NewCodedFrameGroupAppend("10D10K");
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,20) }");
+  CheckExpectedRangeEndTimes("{ <10,20> }");
+  CheckExpectedBuffers("0K 10K");
+  CheckNoNextBuffer();
+
+  // Frame C. FrameProcessor won't signal a new CFG here when buffering by DTS,
+  // because the DTS remains continuous per MSE spec. When buffering by PTS,
+  // though, FrameProcessor signals new CFG more granularly, including in this
+  // case.
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    AppendBuffers("10D10K");
+  } else {
+    NewCodedFrameGroupAppend("10D10K");
+  }
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,20) }");
+  CheckExpectedRangeEndTimes("{ <10,20> }");
+  CheckExpectedBuffers("0K 10K");
+  CheckNoNextBuffer();
+}
+
+TEST_P(SourceBufferStreamTest, PreciselyOverlapLastAudioFrameAppended_2) {
+  // Appends an audio frame, A, which is then splice-trim-truncated by a
+  // subsequent frame, B. Then appends a new frame, C, which precisely overlaps
+  // frame B, and verifies that there is exactly 1 buffered range resulting.
+  SetAudioStream();
+
+  // Frame A
+  NewCodedFrameGroupAppend("0D100K");
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,100) }");
+  CheckExpectedRangeEndTimes("{ <0,100> }");
+  CheckExpectedBuffers("0K");
+  CheckNoNextBuffer();
+
+  // Frame B
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(60000, 0, 40000));
+  NewCodedFrameGroupAppend("60D10K");
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,70) }");
+  CheckExpectedRangeEndTimes("{ <60,70> }");
+  CheckExpectedBuffers("0K 60K");
+  CheckNoNextBuffer();
+
+  // Frame C. FrameProcessor won't signal a new CFG here when buffering by DTS,
+  // because the DTS remains continuous per MSE spec. When buffering by PTS,
+  // though, FrameProcessor signals new CFG more granularly, including in this
+  // case.
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    AppendBuffers("60D10K");
+  } else {
+    NewCodedFrameGroupAppend("60D10K");
+  }
+  SeekToTimestampMs(0);
+  CheckExpectedRangesByTimestamp("{ [0,70) }");
+  CheckExpectedRangeEndTimes("{ <60,70> }");
+  CheckExpectedBuffers("0K 60K");
+  CheckNoNextBuffer();
+}
+
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));
