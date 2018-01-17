@@ -64,3 +64,6 @@
 # https://crbug.com/779645 - requires ability to set address-space limits.
 -PartitionAllocTest.RepeatedReturnNull
 -PartitionAllocTest.RepeatedReturnNullDirect
+
+# https://crbug.com/801353 - takes 50x-100x the normal time to execute on bots.
+-PersistentMemoryAllocatorTest.ParallelismTest
