@@ -8,9 +8,12 @@
 Starting with a list of symbols in a binary and an orderfile (ordered list of
 sections), matches the symbols in the orderfile and augments each symbol with
 the symbols residing at the same address (due to having identical code).  The
-output is a list of section matching rules appropriate for the linker option
--section-ordering-file.  These section matching rules include both actual
-section names and names with wildcard (*) suffixes.
+output is a list of section or symbols matching rules appropriate for the linker
+option -section-ordering-file for gold and --symbol-ordering-file for lld. Both
+linkers are fine with extra directives that aren't matched in the binary, so we
+construct a file suitable for both, concatenating sections and symbols. We
+assume that the unpatched orderfile is built for gold, that is, it only contains
+sections.
 
 Note: It is possible to have.
 - Several symbols mapping to the same offset in the binary.
@@ -22,14 +25,15 @@ The general pipeline is:
 2. Get the symbol names from the orderfile
 3. Find the orderfile symbol names in the symbols coming from the binary
 4. For each symbol found, get all the symbols at the same address
-5. Output them to an updated orderfile, with several different prefixes
-   and suffixes
-6. Output catch-all section matching rules for unprofiled methods.
+5. Output them to an updated orderfile suitable for gold and lld
+6. Output catch-all section matching rules for unprofiled methods. This is
+   ineffective for lld, as it doesn't handle wildcards, but puts unordered
+   symbols after the ordered ones.
 """
 
+import argparse
 import collections
 import logging
-import optparse
 import sys
 
 import cyglog_to_orderfile
@@ -38,7 +42,9 @@ import symbol_extractor
 
 # Prefixes for the symbols. We strip them from the incoming symbols, and add
 # them back in the output file.
-_PREFIXES = ('.text.startup.', '.text.hot.', '.text.unlikely.', '.text.')
+# Output sections are constructed as prefix + symbol_name, hence the empty
+# prefix is used to generate the symbol entry for lld.
+_PREFIXES = ('.text.hot.', '.text.unlikely.', '.text.', '')
 
 # Suffixes for the symbols.  These are due to method splitting for inlining and
 # method cloning for various reasons including constant propagation and
@@ -83,28 +89,6 @@ def _UniqueGenerator(generator):
   return _FilteringFunction
 
 
-def _GroupSymbolInfos(symbol_infos):
-  """Groups the symbol infos by name and offset.
-
-  Args:
-    symbol_infos: an iterable of SymbolInfo
-
-  Returns:
-    The same output as _GroupSymbolInfosFromBinary.
-  """
-  # Map the addresses to symbols.
-  offset_to_symbol_infos = collections.defaultdict(list)
-  name_to_symbol_infos = collections.defaultdict(list)
-  for symbol in symbol_infos:
-    symbol = symbol_extractor.SymbolInfo(name=RemoveSuffixes(symbol.name),
-                                         offset=symbol.offset,
-                                         size=symbol.size,
-                                         section=symbol.section)
-    offset_to_symbol_infos[symbol.offset].append(symbol)
-    name_to_symbol_infos[symbol.name].append(symbol)
-  return (dict(offset_to_symbol_infos), dict(name_to_symbol_infos))
-
-
 def _GroupSymbolInfosFromBinary(binary_filename):
   """Group all the symbols from a binary by name and offset.
 
@@ -118,7 +102,10 @@ def _GroupSymbolInfosFromBinary(binary_filename):
     - name_to_symbol_infos: {name: [symbol_info1, ...]}
   """
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
-  return _GroupSymbolInfos(symbol_infos)
+  symbol_infos_no_suffixes = [
+      s._replace(name=RemoveSuffixes(s.name)) for s in symbol_infos]
+  return (symbol_extractor.GroupSymbolInfosByOffset(symbol_infos_no_suffixes),
+          symbol_extractor.GroupSymbolInfosByName(symbol_infos_no_suffixes))
 
 
 def _StripPrefix(line):
@@ -131,8 +118,11 @@ def _StripPrefix(line):
   Returns:
     The symbol, SymbolName in the example above.
   """
+  # Went away with GCC, make sure it doesn't come back, as the orderfile
+  # no longer contains it.
+  assert not line.startswith('.text.startup.')
   for prefix in _PREFIXES:
-    if line.startswith(prefix):
+    if prefix and line.startswith(prefix):
       return line[len(prefix):]
   return line  # Unprefixed case
 
@@ -257,6 +247,7 @@ def _SectionMatchingRules(section_name, name_to_symbol_infos,
       # problems with unexpected suffixes.
       yield name + '.*'
 
+
 def _ExpandSection(section_name, name_to_symbol_infos, offset_to_symbol_infos,
                    section_to_symbols_map, symbol_to_sections_map):
   """Yields the set of section names for section_name.
@@ -364,24 +355,18 @@ def _StripSuffixes(section_list):
   return [RemoveSuffixes(section) for section in section_list]
 
 
-def main(argv):
-  parser = optparse.OptionParser(usage=
-      'usage: %prog [options] <unpatched_orderfile> <library>')
-  parser.add_option('--target-arch', action='store', dest='arch',
-                    choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
-                    help='The target architecture for the library.')
-  options, argv = parser.parse_args(argv)
-  if not options.arch:
-    options.arch = cygprofile_utils.DetectArchitecture()
-  if len(argv) != 3:
-    parser.print_help()
-    return 1
-  orderfile_filename = argv[1]
-  binary_filename = argv[2]
-  symbol_extractor.SetArchitecture(options.arch)
+def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
+                             output_filename):
+  """Writes a patched orderfile.
+
+  Args:
+    unpatched_orderfile: (str) Path to the unpatched orderfile.
+    native_lib_filename: (str) Path to the native library.
+    output_filename: (str) Path to the patched orderfile.
+  """
   (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
-      binary_filename)
-  obj_dir = cygprofile_utils.GetObjDir(binary_filename)
+      native_lib_filename)
+  obj_dir = cygprofile_utils.GetObjDir(native_lib_filename)
   raw_symbol_map = cyglog_to_orderfile.GetSymbolToSectionsMapFromObjectFiles(
       obj_dir)
   suffixed = _SectionsWithSuffixes(raw_symbol_map)
@@ -389,31 +374,58 @@ def main(argv):
   section_to_symbols_map = cygprofile_utils.InvertMapping(
       symbol_to_sections_map)
   profiled_sections = _StripSuffixes(
-      GetSectionsFromOrderfile(orderfile_filename))
+      GetSectionsFromOrderfile(unpatched_orderfile))
   expanded_sections = _ExpandSections(
       profiled_sections, name_to_symbol_infos, offset_to_symbol_infos,
       section_to_symbols_map, symbol_to_sections_map, suffixed)
 
-  # Make sure the anchor functions are located in the right place, here and
-  # after everything else.
-  # See the comment in //tools/cygprofile/lightweight_cyrprofile.cc.
-  # The linker ignores sections it doesn't see, so this can stay for all builds.
-  for prefix in _PREFIXES:
-    print prefix + 'dummy_function_to_anchor_text'
+  with open(output_filename, 'w') as f:
+    # Make sure the anchor functions are located in the right place, here and
+    # after everything else.
+    # See the comment in //base/android/library_loader/anchor_functions.cc.
+    for prefix in _PREFIXES:
+      f.write(prefix + 'dummy_function_to_anchor_text\n')
 
-  for section in expanded_sections:
-    print section
-  # The following is needed otherwise Gold only applies a partial sort.
-  print '.text'  # gets methods not in a section, such as assembly
-  for prefix in _PREFIXES:
-    print prefix + '*'  # gets everything else
+    for section in expanded_sections:
+      f.write(section + '\n')
 
-  for prefix in _PREFIXES:
-    print prefix + 'dummy_function_at_the_end_of_text'
+    # The following is needed otherwise Gold only applies a partial sort.
+    f.write('.text\n')  # gets methods not in a section, such as assembly
+    f.write('.text.*\n')  # gets everything else
 
+    # Since wildcards are not supported by lld, the "end of text" anchor symbol
+    # is not emitted, a different mechanism is used instead. See comments in the
+    # file above.
+    for prefix in _PREFIXES:
+      if prefix:
+        f.write(prefix + 'dummy_function_at_the_end_of_text\n')
+
+
+def _CreateArgumentParser():
+  """Creates and returns the argument parser."""
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--target-arch', action='store',
+                      choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
+                      help='The target architecture for the library.')
+  parser.add_argument('--unpatched-orderfile', required=True,
+                      help='Path to the unpatched orderfile')
+  parser.add_argument('--native-library', required=True,
+                      help='Path to the native library')
+  parser.add_argument('--output-file', required=True, help='Output filename')
+  return parser
+
+
+def main():
+  parser = _CreateArgumentParser()
+  options = parser.parse_args()
+  if not options.target_arch:
+    options.arch = cygprofile_utils.DetectArchitecture()
+  symbol_extractor.SetArchitecture(options.target_arch)
+  GeneratePatchedOrderfile(options.unpatched_orderfile, options.native_library,
+                           options.output_file)
   return 0
 
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)
-  sys.exit(main(sys.argv))
+  sys.exit(main())
