@@ -36,6 +36,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
+namespace cc {
 namespace {
 // This must be > 1 as we multiply or divide by this to find a new raster
 // scale during pinch.
@@ -100,9 +101,38 @@ gfx::Size ApplyDsfAdjustment(gfx::Size device_pixels_size, float dsf) {
   return content_size_in_dps;
 }
 
-}  // namespace
+// For GPU rasterization, we pick an ideal tile size using the viewport so we
+// don't need any settings. The current approach uses 4 tiles to cover the
+// viewport vertically.
+gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
+                               const gfx::Size& content_bounds) {
+  int tile_width = base_tile_size.width();
 
-namespace cc {
+  // Increase the height proportionally as the width decreases, and pad by our
+  // border texels to make the tiles exactly match the viewport.
+  int divisor = 4;
+  if (content_bounds.width() <= base_tile_size.width() / 2)
+    divisor = 2;
+  if (content_bounds.width() <= base_tile_size.width() / 4)
+    divisor = 1;
+  int tile_height =
+      MathUtil::UncheckedRoundUp(base_tile_size.height(), divisor) / divisor;
+
+  // Grow default sizes to account for overlapping border texels.
+  tile_width += 2 * PictureLayerTiling::kBorderTexels;
+  tile_height += 2 * PictureLayerTiling::kBorderTexels;
+
+  // Round GPU default tile sizes to a multiple of kGpuDefaultTileAlignment.
+  // This helps prevent rounding errors in our CA path. https://crbug.com/632274
+  tile_width = MathUtil::UncheckedRoundUp(tile_width, kGpuDefaultTileRoundUp);
+  tile_height = MathUtil::UncheckedRoundUp(tile_height, kGpuDefaultTileRoundUp);
+
+  tile_height = std::max(tile_height, kMinHeightForGpuRasteredTile);
+
+  return gfx::Size(tile_width, tile_height);
+}
+
+}  // namespace
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
                                    int id,
@@ -904,48 +934,26 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int default_tile_width = 0;
   int default_tile_height = 0;
   if (layer_tree_impl()->use_gpu_rasterization()) {
-    // For GPU rasterization, we pick an ideal tile size using the viewport
-    // so we don't need any settings. The current approach uses 4 tiles
-    // to cover the viewport vertically.
-
-    // Calculate the viewport based on |gpu_raster_max_texture_size_|, adjusting
-    // for ceil operations that may occur due to DSF.
-    gfx::Size viewport_size = ApplyDsfAdjustment(
+    // Calculate |base_tile_size based| on |gpu_raster_max_texture_size_|,
+    // adjusting for ceil operations that may occur due to DSF.
+    gfx::Size base_tile_size = ApplyDsfAdjustment(
         gpu_raster_max_texture_size_, layer_tree_impl()->device_scale_factor());
-    int viewport_width = viewport_size.width();
-    int viewport_height = viewport_size.height();
-    default_tile_width = viewport_width;
 
-    // Also, increase the height proportionally as the width decreases, and
-    // pad by our border texels to make the tiles exactly match the viewport.
-    int divisor = 4;
-    if (content_bounds.width() <= viewport_width / 2)
-      divisor = 2;
-    if (content_bounds.width() <= viewport_width / 4)
-      divisor = 1;
-    default_tile_height =
-        MathUtil::UncheckedRoundUp(viewport_height, divisor) / divisor;
+    // Set our initial size assuming a |base_tile_size| equal to our
+    // |viewport_size|.
+    gfx::Size default_tile_size =
+        CalculateGpuTileSize(base_tile_size, content_bounds);
 
-    // Use half-width GPU tiles when the content width is
-    // larger than the viewport width.
-    if (content_bounds.width() > viewport_width) {
-      // Divide by 2 and round up.
-      default_tile_width = (default_tile_width + 1) / 2;
+    // Use half-width GPU tiles when the content_width is greater than our
+    // calculated tile size.
+    if (content_bounds.width() > default_tile_size.width()) {
+      // Divide width by 2 and round up.
+      base_tile_size.set_width((base_tile_size.width() + 1) / 2);
+      default_tile_size = CalculateGpuTileSize(base_tile_size, content_bounds);
     }
 
-    // Grow default sizes to account for overlapping border texels.
-    default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
-    default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
-
-    // Round GPU default tile sizes to a multiple of kGpuDefaultTileAlignment.
-    // This helps prevent rounding errors in our CA path. crbug.com/632274
-    default_tile_width =
-        MathUtil::UncheckedRoundUp(default_tile_width, kGpuDefaultTileRoundUp);
-    default_tile_height =
-        MathUtil::UncheckedRoundUp(default_tile_height, kGpuDefaultTileRoundUp);
-
-    default_tile_height =
-        std::max(default_tile_height, kMinHeightForGpuRasteredTile);
+    default_tile_width = default_tile_size.width();
+    default_tile_height = default_tile_size.height();
   } else {
     // For CPU rasterization we use tile-size settings.
     const LayerTreeSettings& settings = layer_tree_impl()->settings();
