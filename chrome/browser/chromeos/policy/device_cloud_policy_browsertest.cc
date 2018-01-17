@@ -11,7 +11,6 @@
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -71,7 +70,7 @@ namespace {
 class DeviceCloudPolicyBrowserTest : public InProcessBrowserTest {
  protected:
   DeviceCloudPolicyBrowserTest()
-      : mock_client_(base::MakeUnique<MockCloudPolicyClient>()) {}
+      : mock_client_(std::make_unique<MockCloudPolicyClient>()) {}
 
   std::unique_ptr<MockCloudPolicyClient> mock_client_;
 
@@ -181,7 +180,7 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
     // The run loop will be terminated by TestPolicyChangedCallback() once the
     // policy value becomes equal to the awaited value.
     DCHECK(!policy_change_waiting_run_loop_);
-    policy_change_waiting_run_loop_ = base::MakeUnique<base::RunLoop>();
+    policy_change_waiting_run_loop_ = std::make_unique<base::RunLoop>();
     policy_change_waiting_run_loop_->Run();
   }
 
@@ -204,7 +203,7 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
   }
 
   void StartObservingTestPolicy() {
-    policy_change_registrar_ = base::MakeUnique<PolicyChangeRegistrar>(
+    policy_change_registrar_ = std::make_unique<PolicyChangeRegistrar>(
         g_browser_process->platform_part()
             ->browser_policy_connector_chromeos()
             ->GetPolicyService(),

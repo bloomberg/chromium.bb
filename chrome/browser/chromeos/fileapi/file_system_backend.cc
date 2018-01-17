@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -334,7 +333,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     // MTP file operations run on MediaTaskRunner.
     return storage::FileSystemOperation::Create(
         url, context,
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             context, MediaFileSystemBackend::MediaTaskRunner().get()));
   }
 
@@ -346,7 +345,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
          url.type() == storage::kFileSystemTypeArcDocumentsProvider);
   return storage::FileSystemOperation::Create(
       url, context,
-      base::MakeUnique<storage::FileSystemOperationContext>(context));
+      std::make_unique<storage::FileSystemOperationContext>(context));
 }
 
 bool FileSystemBackend::SupportsStreaming(

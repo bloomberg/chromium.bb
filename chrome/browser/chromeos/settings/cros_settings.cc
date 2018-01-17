@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
@@ -70,13 +69,13 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
                  base::Unretained(this)));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStubCrosSettings)) {
-    AddSettingsProvider(base::MakeUnique<StubCrosSettingsProvider>(notify_cb));
+    AddSettingsProvider(std::make_unique<StubCrosSettingsProvider>(notify_cb));
   } else {
-    AddSettingsProvider(base::MakeUnique<DeviceSettingsProvider>(
+    AddSettingsProvider(std::make_unique<DeviceSettingsProvider>(
         notify_cb, device_settings_service));
   }
   // System settings are not mocked currently.
-  AddSettingsProvider(base::MakeUnique<SystemSettingsProvider>(notify_cb));
+  AddSettingsProvider(std::make_unique<SystemSettingsProvider>(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {
@@ -328,7 +327,7 @@ CrosSettings::AddSettingsObserver(const std::string& path,
   auto observer_iterator = settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end()) {
     settings_observers_[path] =
-        base::MakeUnique<base::CallbackList<void(void)>>();
+        std::make_unique<base::CallbackList<void(void)>>();
     registry = settings_observers_[path].get();
   } else {
     registry = observer_iterator->second.get();

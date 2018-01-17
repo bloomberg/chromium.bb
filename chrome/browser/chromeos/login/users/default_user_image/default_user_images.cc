@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -373,9 +372,9 @@ std::unique_ptr<base::ListValue> GetAsDictionary(bool all) {
   if (all)
     first = 0;
 
-  auto image_urls = base::MakeUnique<base::ListValue>();
+  auto image_urls = std::make_unique<base::ListValue>();
   for (int i = first; i <= last; ++i) {
-    auto image_data = base::MakeUnique<base::DictionaryValue>();
+    auto image_data = std::make_unique<base::DictionaryValue>();
     image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
     image_data->SetInteger("index", i);
     if (i < kDefaultImageAuthorMaxID) {

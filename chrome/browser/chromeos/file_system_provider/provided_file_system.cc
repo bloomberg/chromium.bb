@@ -519,7 +519,7 @@ void ProvidedFileSystem::Notify(
   watcher_queue_.Enqueue(
       token, base::Bind(&ProvidedFileSystem::NotifyInQueue,
                         base::Unretained(this),  // Outlived by the queue.
-                        base::Passed(base::MakeUnique<NotifyInQueueArgs>(
+                        base::Passed(std::make_unique<NotifyInQueueArgs>(
                             token, entry_path, recursive, change_type,
                             std::move(changes), tag, callback))));
 }
@@ -559,7 +559,7 @@ void ProvidedFileSystem::OnAbortCompleted(int operation_request_id,
     return;
   }
   request_manager_->RejectRequest(operation_request_id,
-                                  base::MakeUnique<RequestValue>(),
+                                  std::make_unique<RequestValue>(),
                                   base::File::FILE_ERROR_ABORT);
 }
 

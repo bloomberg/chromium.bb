@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
@@ -40,11 +39,11 @@ class RecentModelTest : public testing::Test {
 
  protected:
   std::vector<std::unique_ptr<RecentSource>> BuildDefaultSources() {
-    auto source1 = base::MakeUnique<FakeRecentSource>();
+    auto source1 = std::make_unique<FakeRecentSource>();
     source1->AddFile(MakeRecentFile("aaa.jpg", base::Time::FromJavaTime(1000)));
     source1->AddFile(MakeRecentFile("ccc.jpg", base::Time::FromJavaTime(3000)));
 
-    auto source2 = base::MakeUnique<FakeRecentSource>();
+    auto source2 = std::make_unique<FakeRecentSource>();
     source2->AddFile(MakeRecentFile("bbb.jpg", base::Time::FromJavaTime(2000)));
     source2->AddFile(MakeRecentFile("ddd.jpg", base::Time::FromJavaTime(4000)));
 

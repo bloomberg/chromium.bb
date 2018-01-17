@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -445,9 +444,9 @@ TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
               CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, _))
       .Times(0);
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            base::MakeUnique<base::Value>(true));
+                            std::make_unique<base::Value>(true));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            base::MakeUnique<base::Value>(8));
+                            std::make_unique<base::Value>(8));
 
   // Note that device state will be retrieved every time, regardless of any
   // cached information. This is intentional, the idea is that device state on
@@ -466,9 +465,9 @@ TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
 
 TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            base::MakeUnique<base::Value>(false));
+                            std::make_unique<base::Value>(false));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            base::MakeUnique<base::Value>(8));
+                            std::make_unique<base::Value>(8));
   CreateClient(kStateKey, 5, 10);
   ServerWillReply(-1, true, true);
   ServerWillSendState(

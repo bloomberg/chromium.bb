@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_initializer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
@@ -23,7 +24,7 @@ FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
           nullptr,  // device_store
           nullptr,  // manager
           nullptr,  // async_caller
-          base::MakeUnique<chromeos::attestation::MockAttestationFlow>(),
+          std::make_unique<chromeos::attestation::MockAttestationFlow>(),
           nullptr),  // statistics_provider
       was_start_enrollment_called_(false),
       enrollment_status_(

@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
@@ -146,7 +145,7 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 
   event_router_->DispatchEventToExtension(
       extension_id,
-      base::MakeUnique<extensions::Event>(
+      std::make_unique<extensions::Event>(
           extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
           event_name, std::move(internal_args)));
   return true;
@@ -196,7 +195,7 @@ bool CertificateProviderServiceFactory::ServiceIsNULLWhileTesting() const {
 KeyedService* CertificateProviderServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   CertificateProviderService* const service = new CertificateProviderService();
-  service->SetDelegate(base::MakeUnique<DefaultDelegate>(
+  service->SetDelegate(std::make_unique<DefaultDelegate>(
       service,
       extensions::ExtensionRegistryFactory::GetForBrowserContext(context),
       extensions::EventRouterFactory::GetForBrowserContext(context)));

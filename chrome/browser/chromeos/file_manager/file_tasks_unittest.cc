@@ -181,8 +181,8 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   foo_app->set_name("Foo");
   foo_app->set_object_type("foo_object_type");
   std::vector<std::unique_ptr<std::string>> foo_mime_types;
-  foo_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
-  foo_mime_types.push_back(base::MakeUnique<std::string>("text/html"));
+  foo_mime_types.push_back(std::make_unique<std::string>("text/plain"));
+  foo_mime_types.push_back(std::make_unique<std::string>("text/html"));
   foo_app->set_primary_mimetypes(std::move(foo_mime_types));
 
   // Bar.app can only handle "text/plain".
@@ -193,7 +193,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   bar_app->set_name("Bar");
   bar_app->set_object_type("bar_object_type");
   std::vector<std::unique_ptr<std::string>> bar_mime_types;
-  bar_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
+  bar_mime_types.push_back(std::make_unique<std::string>("text/plain"));
   bar_app->set_primary_mimetypes(std::move(bar_mime_types));
 
   // Prepare DriveAppRegistry from Foo.app and Bar.app.
@@ -756,7 +756,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   baz_app->set_name("Baz");
   baz_app->set_object_type("baz_object_type");
   std::vector<std::unique_ptr<std::string>> baz_mime_types;
-  baz_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
+  baz_mime_types.push_back(std::make_unique<std::string>("text/plain"));
   baz_app->set_primary_mimetypes(std::move(baz_mime_types));
   // Set up DriveAppRegistry.
   std::vector<std::unique_ptr<google_apis::AppResource>> app_resources;
@@ -806,7 +806,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   foo_app->set_object_type("foo_object_type");
   std::vector<std::unique_ptr<std::string>> foo_extensions;
   foo_extensions.push_back(
-      base::MakeUnique<std::string>("gdoc"));  // Not ".gdoc"
+      std::make_unique<std::string>("gdoc"));  // Not ".gdoc"
   foo_app->set_primary_file_extensions(std::move(foo_extensions));
 
   // Prepare DriveAppRegistry from Foo.app.

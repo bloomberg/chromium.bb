@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -137,7 +136,7 @@ void InstallExtensionCopy(
   base::FilePath target_dir = target_install_dir.Append(extension->id());
   base::FilePath install_temp_dir =
       extensions::file_util::GetInstallTempDir(target_dir);
-  auto extension_temp_dir = base::MakeUnique<base::ScopedTempDir>();
+  auto extension_temp_dir = std::make_unique<base::ScopedTempDir>();
   if (install_temp_dir.empty() ||
       !extension_temp_dir->CreateUniqueTempDirUnderPath(install_temp_dir)) {
     callback.Run(nullptr);
@@ -276,12 +275,12 @@ bool AppManagerImpl::LaunchNoteTaking() {
   }
 
   auto action_data =
-      base::MakeUnique<extensions::api::app_runtime::ActionData>();
+      std::make_unique<extensions::api::app_runtime::ActionData>();
   action_data->action_type =
       extensions::api::app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
-  action_data->is_lock_screen_action = base::MakeUnique<bool>(true);
+  action_data->is_lock_screen_action = std::make_unique<bool>(true);
   action_data->restore_last_action_state =
-      base::MakeUnique<bool>(primary_profile_->GetPrefs()->GetBoolean(
+      std::make_unique<bool>(primary_profile_->GetPrefs()->GetBoolean(
           prefs::kRestoreLastLockScreenNote));
   apps::LaunchPlatformAppWithAction(lock_screen_profile_, app,
                                     std::move(action_data), base::FilePath());

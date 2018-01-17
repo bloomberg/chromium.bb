@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "base/time/tick_clock.h"
@@ -29,8 +28,8 @@ namespace policy {
 namespace off_hours {
 
 DeviceOffHoursController::DeviceOffHoursController()
-    : timer_(base::MakeUnique<base::OneShotTimer>()),
-      clock_(base::MakeUnique<base::DefaultClock>()) {
+    : timer_(std::make_unique<base::OneShotTimer>()),
+      clock_(std::make_unique<base::DefaultClock>()) {
   // IsInitialized() check is used for testing. Otherwise it has to be already
   // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
@@ -69,7 +68,7 @@ void DeviceOffHoursController::SetClockForTesting(
     std::unique_ptr<base::Clock> clock,
     base::TickClock* timer_clock) {
   clock_ = std::move(clock);
-  timer_ = base::MakeUnique<base::OneShotTimer>(timer_clock);
+  timer_ = std::make_unique<base::OneShotTimer>(timer_clock);
 }
 
 bool DeviceOffHoursController::IsCurrentSessionAllowedOnlyForOffHours() const {

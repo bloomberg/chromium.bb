@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -82,7 +81,7 @@ class CallbackLogger {
 
   void OnGetMetadata(std::unique_ptr<EntryMetadata> metadata,
                      base::File::Error result) {
-    events_.push_back(base::MakeUnique<Event>(std::move(metadata), result));
+    events_.push_back(std::make_unique<Event>(std::move(metadata), result));
   }
 
   const std::vector<std::unique_ptr<Event>>& events() const { return events_; }

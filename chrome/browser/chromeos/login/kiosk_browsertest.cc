@@ -2313,8 +2313,8 @@ class KioskVirtualKeyboardTest : public KioskTest {
 IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   // Mock existence of audio input.
   // We cannot do this in SetUp because it's overriden in RunTestOnMainThread.
-  mock_audio_manager_ = base::MakeUnique<media::MockAudioManager>(
-      base::MakeUnique<media::TestAudioThread>());
+  mock_audio_manager_ = std::make_unique<media::MockAudioManager>(
+      std::make_unique<media::TestAudioThread>());
   mock_audio_manager_->SetHasInputDevices(true);
 
   set_test_app_id(kTestVirtualKeyboardKioskApp);

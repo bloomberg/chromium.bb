@@ -216,14 +216,14 @@ class DeviceCloudPolicyManagerChromeOSTest
         CreateAttestationFlow());
     manager_->Initialize(&local_state_);
     manager_->AddDeviceCloudPolicyManagerObserver(this);
-    initializer_ = base::MakeUnique<DeviceCloudPolicyInitializer>(
+    initializer_ = std::make_unique<DeviceCloudPolicyInitializer>(
         &local_state_, &device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
         &state_keys_broker_, store_, manager_.get(),
         cryptohome::AsyncMethodCaller::GetInstance(), std::move(unique_flow),
         &fake_statistics_provider_);
     initializer_->SetSigningServiceForTesting(
-        base::MakeUnique<FakeSigningService>());
+        std::make_unique<FakeSigningService>());
     initializer_->Init();
   }
 
@@ -232,7 +232,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .Set(key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(false), nullptr);
+             std::make_unique<base::Value>(false), nullptr);
     EXPECT_TRUE(manager_->policies().Equals(bundle));
   }
 
@@ -631,7 +631,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   bool ShouldRegisterWithCert() const override { return GetParam(); }
 
   const std::unique_ptr<em::DeviceRegisterRequest> GetDeviceRegisterRequest() {
-    auto req = base::MakeUnique<em::DeviceRegisterRequest>();
+    auto req = std::make_unique<em::DeviceRegisterRequest>();
     if (ShouldRegisterWithCert()) {
       em::CertificateBasedDeviceRegistrationData data;
       const em::SignedData& signed_request =

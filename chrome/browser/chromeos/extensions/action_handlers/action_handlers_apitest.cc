@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "apps/launcher.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(ActionHandlersBrowserTest, LaunchAppWithNewNote) {
 
   // Fire a "new_note" action type, assert that app has received it.
   ExtensionTestMessageListener new_note("hasNewNote = true", false);
-  auto action_data = base::MakeUnique<app_runtime::ActionData>();
+  auto action_data = std::make_unique<app_runtime::ActionData>();
   action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
   apps::LaunchPlatformAppWithAction(profile(), app, std::move(action_data),
                                     base::FilePath());

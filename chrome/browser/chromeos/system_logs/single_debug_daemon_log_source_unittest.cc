@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -32,7 +31,7 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
     // Since no debug daemon will be available during a unit test, use
     // FakeDebugDaemonClient to provide dummy DebugDaemonClient functionality.
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
-        base::MakeUnique<chromeos::FakeDebugDaemonClient>());
+        std::make_unique<chromeos::FakeDebugDaemonClient>());
   }
 
   void TearDown() override {

@@ -66,7 +66,7 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   // Does nothing if |store_| hasn't yet initialized.
   PublishPolicy();
 
-  scheduler_ = base::MakeUnique<PolicyScheduler>(
+  scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&ActiveDirectoryPolicyManager::DoPolicyFetch,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ActiveDirectoryPolicyManager::OnPolicyFetched,
@@ -151,7 +151,7 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   if (!store_->is_initialized()) {
     return;
   }
-  std::unique_ptr<PolicyBundle> bundle = base::MakeUnique<PolicyBundle>();
+  std::unique_ptr<PolicyBundle> bundle = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map =
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   policy_map.CopyFrom(store_->policy_map());

@@ -381,7 +381,7 @@ std::unique_ptr<CertificateProvider>
 CertificateProviderService::CreateCertificateProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return base::MakeUnique<CertificateProviderImpl>(
+  return std::make_unique<CertificateProviderImpl>(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 }
 
@@ -441,7 +441,7 @@ void CertificateProviderService::UpdateCertificatesAndRun(
   net::ClientCertIdentityList all_certs;
   for (const auto& entry : extension_to_certificates) {
     for (const CertificateInfo& cert_info : entry.second)
-      all_certs.push_back(base::MakeUnique<ClientCertIdentity>(
+      all_certs.push_back(std::make_unique<ClientCertIdentity>(
           cert_info.certificate, base::ThreadTaskRunnerHandle::Get(),
           weak_factory_.GetWeakPtr()));
   }

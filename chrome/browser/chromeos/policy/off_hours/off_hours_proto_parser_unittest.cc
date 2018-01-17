@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
 #include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
@@ -109,11 +108,11 @@ TEST_F(ConvertOffHoursProtoToValueTest, Test) {
 
   base::DictionaryValue off_hours_expected;
   off_hours_expected.SetString("timezone", kUtcTimezone);
-  auto intervals_value = base::MakeUnique<base::ListValue>();
+  auto intervals_value = std::make_unique<base::ListValue>();
   for (const auto& interval : intervals)
     intervals_value->Append(interval.ToValue());
   off_hours_expected.SetList("intervals", std::move(intervals_value));
-  auto ignored_policies_value = base::MakeUnique<base::ListValue>();
+  auto ignored_policies_value = std::make_unique<base::ListValue>();
   for (const auto& policy : kDefaultIgnoredPolicies)
     ignored_policies_value->GetList().emplace_back(policy);
   off_hours_expected.SetList("ignored_policy_proto_tags",

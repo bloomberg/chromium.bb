@@ -39,9 +39,9 @@ constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(10);
 std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
     Profile* profile) {
   std::vector<std::unique_ptr<RecentSource>> sources;
-  sources.emplace_back(base::MakeUnique<RecentArcMediaSource>(profile));
-  sources.emplace_back(base::MakeUnique<RecentDownloadSource>(profile));
-  sources.emplace_back(base::MakeUnique<RecentDriveSource>(profile));
+  sources.emplace_back(std::make_unique<RecentArcMediaSource>(profile));
+  sources.emplace_back(std::make_unique<RecentDownloadSource>(profile));
+  sources.emplace_back(std::make_unique<RecentDriveSource>(profile));
   return sources;
 }
 

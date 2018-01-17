@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
@@ -249,7 +250,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
-    return base::MakeUnique<base::Value>(hwid);
+    return std::make_unique<base::Value>(hwid);
   }
 
   if (property_name == kPropertyCustomizationID) {
@@ -258,7 +259,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
                                   &customization_id);
-    return base::MakeUnique<base::Value>(customization_id);
+    return std::make_unique<base::Value>(customization_id);
   }
 
   if (property_name == kPropertyHomeProvider) {
@@ -275,65 +276,65 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
         home_provider_id = cellular_device->operator_name();
       }
     }
-    return base::MakeUnique<base::Value>(home_provider_id);
+    return std::make_unique<base::Value>(home_provider_id);
   }
 
   if (property_name == kPropertyInitialLocale) {
-    return base::MakeUnique<base::Value>(
+    return std::make_unique<base::Value>(
         chromeos::StartupUtils::GetInitialLocale());
   }
 
   if (property_name == kPropertyBoard) {
-    return base::MakeUnique<base::Value>(base::SysInfo::GetLsbReleaseBoard());
+    return std::make_unique<base::Value>(base::SysInfo::GetLsbReleaseBoard());
   }
 
   if (property_name == kPropertyOwner) {
-    return base::MakeUnique<base::Value>(
+    return std::make_unique<base::Value>(
         user_manager::UserManager::Get()->IsCurrentUserOwner());
   }
 
   if (property_name == kPropertySessionType) {
     if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
-      return base::MakeUnique<base::Value>(kSessionTypeKiosk);
+      return std::make_unique<base::Value>(kSessionTypeKiosk);
     if (ExtensionsBrowserClient::Get()->IsLoggedInAsPublicAccount())
-      return base::MakeUnique<base::Value>(kSessionTypePublicSession);
-    return base::MakeUnique<base::Value>(kSessionTypeNormal);
+      return std::make_unique<base::Value>(kSessionTypePublicSession);
+    return std::make_unique<base::Value>(kSessionTypeNormal);
   }
 
   if (property_name == kPropertyPlayStoreStatus) {
     if (arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context_)))
-      return base::MakeUnique<base::Value>(kPlayStoreStatusEnabled);
+      return std::make_unique<base::Value>(kPlayStoreStatusEnabled);
     if (arc::IsArcAvailable())
-      return base::MakeUnique<base::Value>(kPlayStoreStatusAvailable);
-    return base::MakeUnique<base::Value>(kPlayStoreStatusNotAvailable);
+      return std::make_unique<base::Value>(kPlayStoreStatusAvailable);
+    return std::make_unique<base::Value>(kPlayStoreStatusNotAvailable);
   }
 
   if (property_name == kPropertyManagedDeviceStatus) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     if (connector->IsEnterpriseManaged()) {
-      return base::MakeUnique<base::Value>(kManagedDeviceStatusManaged);
+      return std::make_unique<base::Value>(kManagedDeviceStatusManaged);
     }
-    return base::MakeUnique<base::Value>(kManagedDeviceStatusNotManaged);
+    return std::make_unique<base::Value>(kManagedDeviceStatusNotManaged);
   }
 
   if (property_name == kPropertyDeviceType) {
     switch (chromeos::GetDeviceType()) {
       case chromeos::DeviceType::kChromebox:
-        return base::MakeUnique<base::Value>(kDeviceTypeChromebox);
+        return std::make_unique<base::Value>(kDeviceTypeChromebox);
       case chromeos::DeviceType::kChromebase:
-        return base::MakeUnique<base::Value>(kDeviceTypeChromebase);
+        return std::make_unique<base::Value>(kDeviceTypeChromebase);
       case chromeos::DeviceType::kChromebit:
-        return base::MakeUnique<base::Value>(kDeviceTypeChromebit);
+        return std::make_unique<base::Value>(kDeviceTypeChromebit);
       case chromeos::DeviceType::kChromebook:
-        return base::MakeUnique<base::Value>(kDeviceTypeChromebook);
+        return std::make_unique<base::Value>(kDeviceTypeChromebook);
       default:
-        return base::MakeUnique<base::Value>(kDeviceTypeChromedevice);
+        return std::make_unique<base::Value>(kDeviceTypeChromedevice);
     }
   }
 
   if (property_name == kPropertyClientId) {
-    return base::MakeUnique<base::Value>(GetClientId());
+    return std::make_unique<base::Value>(GetClientId());
   }
 
   if (property_name == kPropertyTimezone) {
@@ -341,7 +342,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
       const PrefService::Preference* timezone =
           Profile::FromBrowserContext(context_)->GetPrefs()->FindPreference(
               prefs::kUserTimezone);
-      return base::MakeUnique<base::Value>(timezone->GetValue()->Clone());
+      return std::make_unique<base::Value>(timezone->GetValue()->Clone());
     }
     // TODO(crbug.com/697817): Convert CrosSettings::Get to take a unique_ptr.
     return base::WrapUnique<base::Value>(
@@ -356,7 +357,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
 
   const char* pref_name = GetBoolPrefNameForApiProperty(property_name.c_str());
   if (pref_name) {
-    return base::MakeUnique<base::Value>(
+    return std::make_unique<base::Value>(
         Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
             pref_name));
   }

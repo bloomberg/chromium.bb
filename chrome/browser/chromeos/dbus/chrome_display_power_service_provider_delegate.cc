@@ -6,7 +6,6 @@
 
 #include "ash/shell.h"
 #include "ash/wm/screen_dimmer.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
@@ -37,7 +36,7 @@ void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
 void ChromeDisplayPowerServiceProviderDelegate::SetDimming(bool dimmed) {
   if (!screen_dimmer_) {
     screen_dimmer_ =
-        base::MakeUnique<ash::ScreenDimmer>(ash::ScreenDimmer::Container::ROOT);
+        std::make_unique<ash::ScreenDimmer>(ash::ScreenDimmer::Container::ROOT);
   }
   screen_dimmer_->SetDimming(dimmed);
 }

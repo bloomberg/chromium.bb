@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -254,7 +253,7 @@ void ArcKioskAppManager::UpdateApps() {
       std::string name = app_info.package_name();
       if (!app_info.display_name().empty())
         name = app_info.display_name();
-      apps_.push_back(base::MakeUnique<ArcKioskAppData>(
+      apps_.push_back(std::make_unique<ArcKioskAppData>(
           app_id, app_info.package_name(), app_info.class_name(),
           app_info.action(), account_id, name));
       apps_.back()->LoadFromCache();

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -52,7 +51,7 @@ class InstallAttributesTest : public testing::Test {
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
     DBusThreadManager::Initialize();
-    install_attributes_ = base::MakeUnique<InstallAttributes>(
+    install_attributes_ = std::make_unique<InstallAttributes>(
         DBusThreadManager::Get()->GetCryptohomeClient());
   }
 

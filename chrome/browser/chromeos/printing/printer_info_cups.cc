@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
@@ -83,7 +82,7 @@ std::unique_ptr<::printing::PrinterInfo> QueryPrinterImpl(
     const int port,
     const std::string& path,
     bool encrypted) {
-  auto info = base::MakeUnique<::printing::PrinterInfo>();
+  auto info = std::make_unique<::printing::PrinterInfo>();
   if (!::printing::GetPrinterInfo(host, port, path, encrypted, info.get())) {
     LOG(ERROR) << "Could not retrieve printer info";
     return nullptr;

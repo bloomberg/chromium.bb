@@ -66,9 +66,9 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
     PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
                           user_policy_keys_dir());
 
-    auto cloud_policy_client = base::MakeUnique<MockCloudPolicyClient>();
+    auto cloud_policy_client = std::make_unique<MockCloudPolicyClient>();
     cloud_policy_client_ = cloud_policy_client.get();
-    pre_signin_policy_fetcher_ = base::MakeUnique<PreSigninPolicyFetcher>(
+    pre_signin_policy_fetcher_ = std::make_unique<PreSigninPolicyFetcher>(
         cryptohome_client_, &session_manager_client_,
         std::move(cloud_policy_client), IsActiveDirectoryManaged(),
         GetAccountId(), cryptohome_key_);

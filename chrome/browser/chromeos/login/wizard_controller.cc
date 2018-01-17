@@ -266,7 +266,7 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
-  screen_manager_ = base::MakeUnique<ScreenManager>(this);
+  screen_manager_ = std::make_unique<ScreenManager>(this);
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
       session_manager::SessionManager::Get()->IsSessionStarted();
@@ -1780,7 +1780,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
 
 AutoEnrollmentController* WizardController::GetAutoEnrollmentController() {
   if (!auto_enrollment_controller_)
-    auto_enrollment_controller_ = base::MakeUnique<AutoEnrollmentController>();
+    auto_enrollment_controller_ = std::make_unique<AutoEnrollmentController>();
   return auto_enrollment_controller_.get();
 }
 

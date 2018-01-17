@@ -437,7 +437,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     device_disabled_screen_view_.reset(new MockDeviceDisabledScreenView);
     wizard_controller->screen_manager()
         ->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
-        base::MakeUnique<DeviceDisabledScreen>(
+        std::make_unique<DeviceDisabledScreen>(
             wizard_controller, device_disabled_screen_view_.get());
     EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
 

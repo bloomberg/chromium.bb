@@ -4,6 +4,8 @@
 
 #include <chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h>
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -144,7 +146,7 @@ void ArcKioskAppService::RequestNameAndIconUpdate() {
   // Request only once when app_icon_ is not initialized.
   if (!app_info_ || !app_info_->ready || app_icon_)
     return;
-  app_icon_ = base::MakeUnique<ArcAppIcon>(profile_, app_id_,
+  app_icon_ = std::make_unique<ArcAppIcon>(profile_, app_id_,
                                            app_list::kGridIconDimension, this);
   app_icon_->image_skia().GetRepresentation(ui::GetSupportedScaleFactor(
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor()));
@@ -176,7 +178,7 @@ void ArcKioskAppService::PreconditionsChanged() {
           arc::prefs::kArcPolicyComplianceReported)) {
     if (!app_launcher_) {
       VLOG(2) << "Starting kiosk app";
-      app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(
+      app_launcher_ = std::make_unique<ArcKioskAppLauncher>(
           profile_, ArcAppListPrefs::Get(profile_), app_id_, this);
     }
   } else if (task_id_ != -1) {

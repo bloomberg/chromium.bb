@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 
+#include <memory>
+
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/common/pref_names.h"
@@ -30,7 +32,7 @@ base::TimeDelta GetExpirationTime(PrefService* pref_service) {
 
 class QuickUnlockStorageUnitTest : public testing::Test {
  protected:
-  QuickUnlockStorageUnitTest() : profile_(base::MakeUnique<TestingProfile>()) {}
+  QuickUnlockStorageUnitTest() : profile_(std::make_unique<TestingProfile>()) {}
   ~QuickUnlockStorageUnitTest() override {}
 
   // testing::Test:

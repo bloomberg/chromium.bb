@@ -66,7 +66,7 @@ class FakeNightLightClient : public NightLightClient,
  public:
   FakeNightLightClient() : NightLightClient(nullptr /* url_context_getter */) {
     SetTimerForTesting(
-        base::MakeUnique<base::OneShotTimer>(this /* tick_clock */));
+        std::make_unique<base::OneShotTimer>(this /* tick_clock */));
     SetClockForTesting(this);
   }
   ~FakeNightLightClient() override = default;

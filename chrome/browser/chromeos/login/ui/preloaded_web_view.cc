@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,7 +26,7 @@ PreloadedWebView::PreloadedWebView(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   memory_pressure_listener_ =
-      base::MakeUnique<base::MemoryPressureListener>(base::Bind(
+      std::make_unique<base::MemoryPressureListener>(base::Bind(
           &PreloadedWebView::OnMemoryPressure, weak_factory_.GetWeakPtr()));
 }
 
@@ -35,7 +34,7 @@ PreloadedWebView::~PreloadedWebView() {}
 
 void PreloadedWebView::PreloadOnIdle(PreloadCallback preload) {
   preload_function_ = std::move(preload);
-  idle_detector_ = base::MakeUnique<chromeos::IdleDetector>(
+  idle_detector_ = std::make_unique<chromeos::IdleDetector>(
       base::Bind(&PreloadedWebView::RunPreloader, weak_factory_.GetWeakPtr()));
   idle_detector_->Start(
       base::TimeDelta::FromSeconds(kIdleSecondsBeforePreloadingLockScreen));

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -114,7 +113,7 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
       policy_connector->IsManaged(), profile->GetPrefs(),
       policy_connector->policy_service(), context, store);
 
-  service->SetSelectDelegate(base::MakeUnique<DefaultSelectDelegate>());
+  service->SetSelectDelegate(std::make_unique<DefaultSelectDelegate>());
   return service;
 }
 

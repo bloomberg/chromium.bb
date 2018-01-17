@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
@@ -211,7 +211,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
             ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN
             : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
-    auto user_dict = base::MakeUnique<base::DictionaryValue>();
+    auto user_dict = std::make_unique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, true,               /* is_owner */
         false,                   /* is_signin_to_add */

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -104,7 +103,7 @@ KioskSessionPluginHandler::KioskSessionPluginHandler(
 KioskSessionPluginHandler::~KioskSessionPluginHandler() {}
 
 void KioskSessionPluginHandler::Observe(content::WebContents* contents) {
-  watchers_.push_back(base::MakeUnique<Observer>(contents, this));
+  watchers_.push_back(std::make_unique<Observer>(contents, this));
 }
 
 void KioskSessionPluginHandler::OnPluginCrashed(

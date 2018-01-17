@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -60,7 +62,7 @@ class DMTokenStorageTest : public testing::Test {
 
   void CreateDMStorage() {
     dm_token_storage_ =
-        base::MakeUnique<DMTokenStorage>(scoped_testing_local_state_.Get());
+        std::make_unique<DMTokenStorage>(scoped_testing_local_state_.Get());
   }
 
   void StoreDMToken() {

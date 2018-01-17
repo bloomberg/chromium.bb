@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
@@ -114,7 +113,7 @@ class UserImageChangeWaiter : public user_manager::UserManager::Observer {
 
   void Wait() {
     user_manager::UserManager::Get()->AddObserver(this);
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     user_manager::UserManager::Get()->RemoveObserver(this);
   }
@@ -599,7 +598,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
 
     // Set up fake install attributes.
     std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        base::MakeUnique<chromeos::StubInstallAttributes>();
+        std::make_unique<chromeos::StubInstallAttributes>();
     attributes->SetCloudManaged("fake-domain", "fake-id");
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
         attributes.release());

@@ -11,7 +11,6 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -217,7 +216,7 @@ void UpdateDefaultTask(PrefService* pref_service,
     for (std::set<std::string>::const_iterator iter = mime_types.begin();
         iter != mime_types.end(); ++iter) {
       mime_type_pref->SetWithoutPathExpansion(
-          *iter, base::MakeUnique<base::Value>(task_id));
+          *iter, std::make_unique<base::Value>(task_id));
     }
   }
 
@@ -229,7 +228,7 @@ void UpdateDefaultTask(PrefService* pref_service,
       // Suffixes are case insensitive.
       std::string lower_suffix = base::ToLowerASCII(*iter);
       mime_type_pref->SetWithoutPathExpansion(
-          lower_suffix, base::MakeUnique<base::Value>(task_id));
+          lower_suffix, std::make_unique<base::Value>(task_id));
     }
   }
 }

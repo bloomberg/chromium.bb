@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -182,7 +183,7 @@ class DisplayPrefsTest : public ash::AshTestBase {
                                        const std::string& key,
                                        bool value) {
     StoreDisplayPropertyForList(list, key,
-                                base::MakeUnique<base::Value>(value));
+                                std::make_unique<base::Value>(value));
   }
 
   void StoreDisplayLayoutPrefForList(const display::DisplayIdList& list,
@@ -196,7 +197,7 @@ class DisplayPrefsTest : public ash::AshTestBase {
     const std::string name = base::Int64ToString(id);
 
     base::DictionaryValue* pref_data = update.Get();
-    auto insets_value = base::MakeUnique<base::DictionaryValue>();
+    auto insets_value = std::make_unique<base::DictionaryValue>();
     insets_value->SetInteger("insets_top", insets.top());
     insets_value->SetInteger("insets_left", insets.left());
     insets_value->SetInteger("insets_bottom", insets.bottom());
@@ -1083,7 +1084,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",
-      base::MakeUnique<base::Value>(base::Int64ToString(first_display_id)));
+      std::make_unique<base::Value>(base::Int64ToString(first_display_id)));
   display_prefs()->LoadDisplayPreferences(false);
 
   // Should not restore to unified unless unified desktop is enabled.

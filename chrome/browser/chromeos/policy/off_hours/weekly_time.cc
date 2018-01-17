@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 
 namespace policy {
@@ -27,7 +26,7 @@ WeeklyTime::WeeklyTime(int day_of_week, int milliseconds)
 }
 
 std::unique_ptr<base::DictionaryValue> WeeklyTime::ToValue() const {
-  auto weekly_time = base::MakeUnique<base::DictionaryValue>();
+  auto weekly_time = std::make_unique<base::DictionaryValue>();
   weekly_time->SetInteger("day_of_week", day_of_week_);
   weekly_time->SetInteger("time", milliseconds_);
   return weekly_time;

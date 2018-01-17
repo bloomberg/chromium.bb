@@ -51,7 +51,7 @@ std::unique_ptr<KeyedService> BuildProfileInvalidationProvider(
       new invalidation::FakeInvalidationService);
   invalidation_service->SetInvalidatorState(
       syncer::TRANSIENT_INVALIDATION_ERROR);
-  return base::MakeUnique<invalidation::ProfileInvalidationProvider>(
+  return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::move(invalidation_service));
 }
 

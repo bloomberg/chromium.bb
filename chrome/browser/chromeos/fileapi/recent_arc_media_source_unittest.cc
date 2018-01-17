@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -61,8 +60,8 @@ class RecentArcMediaSourceTest : public testing::Test {
   RecentArcMediaSourceTest() = default;
 
   void SetUp() override {
-    arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>();
-    profile_ = base::MakeUnique<TestingProfile>();
+    arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
+    profile_ = std::make_unique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
     runner_ = static_cast<arc::ArcFileSystemOperationRunner*>(
         arc::ArcFileSystemOperationRunner::GetFactory()
@@ -76,7 +75,7 @@ class RecentArcMediaSourceTest : public testing::Test {
     // until EnableFakeFileSystemInstance() is called.
     AddDocumentsToFakeFileSystemInstance();
 
-    source_ = base::MakeUnique<RecentArcMediaSource>(profile_.get());
+    source_ = std::make_unique<RecentArcMediaSource>(profile_.get());
   }
 
   void TearDown() override {

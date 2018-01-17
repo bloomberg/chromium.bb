@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -263,9 +262,9 @@ class CupsPrintersManagerTest : public testing::Test,
         ppd_provider_(new FakePpdProvider) {
     // Zeroconf and usb detector ownerships are taken by the manager, so we have
     // to keep raw pointers to them.
-    auto zeroconf_detector = base::MakeUnique<FakePrinterDetector>();
+    auto zeroconf_detector = std::make_unique<FakePrinterDetector>();
     zeroconf_detector_ = zeroconf_detector.get();
-    auto usb_detector = base::MakeUnique<FakePrinterDetector>();
+    auto usb_detector = std::make_unique<FakePrinterDetector>();
     usb_detector_ = usb_detector.get();
     manager_ = CupsPrintersManager::Create(
         &synced_printers_manager_, std::move(usb_detector),

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
@@ -47,7 +46,7 @@ class DeviceCloudPolicyInitializerTest
             nullptr,
             nullptr,
             nullptr,
-            base::MakeUnique<chromeos::attestation::MockAttestationFlow>(),
+            std::make_unique<chromeos::attestation::MockAttestationFlow>(),
             &statistics_provider_) {
     RegisterLocalState(local_state_.registry());
     statistics_provider_.SetMachineStatistic(

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -32,7 +31,7 @@ UserCloudExternalDataManager::UserCloudExternalDataManager(
                                    io_task_runner),
       resource_cache_(new ResourceCache(cache_path, backend_task_runner)) {
   SetPolicyStore(policy_store);
-  SetExternalDataStore(base::MakeUnique<CloudExternalDataStore>(
+  SetExternalDataStore(std::make_unique<CloudExternalDataStore>(
       kCacheKey, backend_task_runner, resource_cache_));
 }
 

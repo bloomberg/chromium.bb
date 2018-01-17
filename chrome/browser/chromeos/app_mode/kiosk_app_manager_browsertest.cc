@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -278,7 +277,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   // Locks device for enterprise.
   InstallAttributes::LockResult LockDeviceForEnterprise() {
     std::unique_ptr<InstallAttributes::LockResult> lock_result =
-        base::MakeUnique<InstallAttributes::LockResult>(
+        std::make_unique<InstallAttributes::LockResult>(
             InstallAttributes::LOCK_NOT_READY);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;

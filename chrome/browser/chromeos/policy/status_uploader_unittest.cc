@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -63,7 +62,7 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
   // handle returning non-moveable types like scoped_ptr.
   std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
       override {
-    return base::MakeUnique<policy::DeviceLocalAccount>(
+    return std::make_unique<policy::DeviceLocalAccount>(
         policy::DeviceLocalAccount::TYPE_KIOSK_APP, "account_id", "app_id",
         "update_url");
   }
@@ -126,9 +125,9 @@ class StatusUploaderTest : public testing::Test {
     // Send some "valid" (read: non-nullptr) device/session data to the
     // callback in order to simulate valid status data.
     std::unique_ptr<em::DeviceStatusReportRequest> device_status =
-        base::MakeUnique<em::DeviceStatusReportRequest>();
+        std::make_unique<em::DeviceStatusReportRequest>();
     std::unique_ptr<em::SessionStatusReportRequest> session_status =
-        base::MakeUnique<em::SessionStatusReportRequest>();
+        std::make_unique<em::SessionStatusReportRequest>();
     status_callback.Run(std::move(device_status), std::move(session_status));
 
     testing::Mock::VerifyAndClearExpectations(&device_management_service_);
@@ -274,9 +273,9 @@ TEST_F(StatusUploaderTest, ResetTimerAfterUnregisteredClient) {
   // StatusUploader should not try to upload using an unregistered client
   EXPECT_CALL(client_, UploadDeviceStatus(_, _, _)).Times(0);
   std::unique_ptr<em::DeviceStatusReportRequest> device_status =
-      base::MakeUnique<em::DeviceStatusReportRequest>();
+      std::make_unique<em::DeviceStatusReportRequest>();
   std::unique_ptr<em::SessionStatusReportRequest> session_status =
-      base::MakeUnique<em::SessionStatusReportRequest>();
+      std::make_unique<em::SessionStatusReportRequest>();
   status_callback.Run(std::move(device_status), std::move(session_status));
 
   // A task to try again should be queued.

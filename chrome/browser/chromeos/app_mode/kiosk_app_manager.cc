@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -869,7 +868,7 @@ void KioskAppManager::UpdateAppData() {
       std::string version;
       GetCachedCrx(it->kiosk_app_id, &cached_crx, &version);
 
-      apps_.push_back(base::MakeUnique<KioskAppData>(
+      apps_.push_back(std::make_unique<KioskAppData>(
           this, it->kiosk_app_id, account_id, GURL(it->kiosk_app_update_url),
           cached_crx));
       apps_.back()->Load();

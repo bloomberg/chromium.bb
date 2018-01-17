@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -201,7 +200,7 @@ class BlockingLoginTest
   // next response used.
   // Returns a reference to that response, so that it can be further customized.
   net::test_server::BasicHttpResponse& PushResponse(net::HttpStatusCode code) {
-    auto response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     net::test_server::BasicHttpResponse* response_ptr = response.get();
     response->set_code(code);
     responses_.push_back(std::move(response));

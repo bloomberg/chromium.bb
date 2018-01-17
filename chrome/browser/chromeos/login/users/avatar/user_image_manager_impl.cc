@@ -437,7 +437,7 @@ void UserImageManagerImpl::Job::UpdateUser(
     user->SetImage(std::move(user_image), image_index_);
   } else {
     user->SetStubImage(
-        base::MakeUnique<user_manager::UserImage>(
+        std::make_unique<user_manager::UserImage>(
             *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 IDR_LOGIN_DEFAULT_USER)),
         image_index_, false);
@@ -537,11 +537,11 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
 
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->Set(kImagePathNodeName,
-             base::MakeUnique<base::Value>(image_path_.value()));
-  entry->Set(kImageIndexNodeName, base::MakeUnique<base::Value>(image_index_));
+             std::make_unique<base::Value>(image_path_.value()));
+  entry->Set(kImageIndexNodeName, std::make_unique<base::Value>(image_index_));
   if (!image_url_.is_empty())
     entry->Set(kImageURLNodeName,
-               base::MakeUnique<base::Value>(image_url_.spec()));
+               std::make_unique<base::Value>(image_url_.spec()));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               kUserImageProperties);
   update->SetWithoutPathExpansion(user_id(), std::move(entry));
@@ -594,7 +594,7 @@ void UserImageManagerImpl::LoadUserImage() {
   int image_index = user_manager::User::USER_IMAGE_INVALID;
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
   if (default_user_image::IsValidIndex(image_index)) {
-    user->SetImage(base::MakeUnique<user_manager::UserImage>(
+    user->SetImage(std::make_unique<user_manager::UserImage>(
                        default_user_image::GetDefaultImage(image_index)),
                    image_index);
     return;
@@ -614,7 +614,7 @@ void UserImageManagerImpl::LoadUserImage() {
 
   user->SetImageURL(image_url);
   user->SetStubImage(
-      base::MakeUnique<user_manager::UserImage>(
+      std::make_unique<user_manager::UserImage>(
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       image_index, true);

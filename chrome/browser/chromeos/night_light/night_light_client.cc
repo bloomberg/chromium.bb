@@ -36,7 +36,7 @@ NightLightClient::NightLightClient(
           chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL()),
       binding_(this),
       backoff_delay_(kMinimumDelayAfterFailure),
-      timer_(base::MakeUnique<base::OneShotTimer>()) {}
+      timer_(std::make_unique<base::OneShotTimer>()) {}
 
 NightLightClient::~NightLightClient() {}
 

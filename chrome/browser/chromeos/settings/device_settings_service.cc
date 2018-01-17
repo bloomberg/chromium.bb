@@ -68,7 +68,7 @@ DeviceSettingsService* DeviceSettingsService::Get() {
 
 DeviceSettingsService::DeviceSettingsService() {
   device_off_hours_controller_ =
-      base::MakeUnique<policy::off_hours::DeviceOffHoursController>();
+      std::make_unique<policy::off_hours::DeviceOffHoursController>();
 }
 
 DeviceSettingsService::~DeviceSettingsService() {

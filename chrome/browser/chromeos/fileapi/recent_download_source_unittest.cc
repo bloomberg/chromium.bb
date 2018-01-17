@@ -10,7 +10,6 @@
 
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -36,7 +35,7 @@ class RecentDownloadSourceTest : public testing::Test {
   RecentDownloadSourceTest() : origin_("https://example.com/") {}
 
   void SetUp() override {
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -45,7 +44,7 @@ class RecentDownloadSourceTest : public testing::Test {
 
     RegisterFakeDownloadsFileSystem();
 
-    source_ = base::MakeUnique<RecentDownloadSource>(profile_.get());
+    source_ = std::make_unique<RecentDownloadSource>(profile_.get());
   }
 
  protected:
