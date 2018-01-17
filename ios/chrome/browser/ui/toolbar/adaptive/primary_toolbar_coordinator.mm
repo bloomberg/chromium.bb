@@ -101,11 +101,14 @@
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
-  // TODO(crbug.com/799438): Implement that.
+  [self.locationBarCoordinator.locationBarView.textField becomeFirstResponder];
 }
 
 - (void)cancelOmniboxEdit {
-  // TODO(crbug.com/799438): Implement that.
+  _locationBar->HideKeyboardAndEndEditing();
+  _locationBar->SetShouldShowHintText(
+      [self.delegate toolbarModelIOS]->ShouldDisplayHintText());
+  _locationBar->OnToolbarUpdated();
 }
 
 - (void)focusFakebox {
