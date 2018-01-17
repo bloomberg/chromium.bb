@@ -5088,6 +5088,14 @@ TEST_F(HalfWidthTileTest, TileSizes) {
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
   EXPECT_EQ(result.width(), 288);
   EXPECT_EQ(result.height(), 256);
+
+  // If content would fit in a single tile after rounding, we shouldn't halve
+  // the tile width.
+  host_impl()->SetViewportSize(gfx::Size(511, 1000));
+  layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
+  result = layer->CalculateTileSize(gfx::Size(530, 10000));
+  EXPECT_EQ(result.width(), 544);
+  EXPECT_EQ(result.height(), 256);
 }
 
 TEST_F(NoLowResPictureLayerImplTest, LowResWasHighResCollision) {
