@@ -329,6 +329,9 @@ bool RenderViewHostImpl::CreateRenderView(
   params->max_size = GetWidget()->max_size_for_auto_resize();
   params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
   params->devtools_main_frame_token = devtools_frame_token;
+  // GuestViews in the same StoragePartition need to find each other's frames.
+  params->renderer_wide_named_frame_lookup =
+      GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
 
   GetWidget()->GetResizeParams(&params->initial_size);
   GetWidget()->SetInitialRenderSizeParams(params->initial_size);

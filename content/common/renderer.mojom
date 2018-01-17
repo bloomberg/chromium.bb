@@ -89,6 +89,11 @@ struct CreateViewParams {
 
   // The page zoom level.
   double page_zoom_level;
+
+  // Whether lookup of frames in the created RenderView (e.g. lookup via
+  // window.open or via <a target=...>) should be renderer-wide (i.e. going
+  // beyond the usual opener-relationship-based BrowsingInstance boundaries).
+  bool renderer_wide_named_frame_lookup;
 };
 
 struct CreateFrameWidgetParams {

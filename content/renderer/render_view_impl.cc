@@ -526,6 +526,7 @@ RenderViewImpl::RenderViewImpl(
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
+      renderer_wide_named_frame_lookup_(false),
       weak_ptr_factory_(this) {
   GetWidget()->set_owner_delegate(this);
 }
@@ -539,11 +540,17 @@ void RenderViewImpl::Initialize(
   // HandleNavigation codepath.
   was_created_by_renderer_ = was_created_by_renderer;
 #endif
+  renderer_wide_named_frame_lookup_ = params->renderer_wide_named_frame_lookup;
   display_mode_ = params->initial_size.display_mode;
 
-  webview_ = WebView::Create(
-      this, is_hidden() ? blink::mojom::PageVisibilityState::kHidden
-                        : blink::mojom::PageVisibilityState::kVisible);
+  WebFrame* opener_frame =
+      RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
+
+  webview_ =
+      WebView::Create(this,
+                      is_hidden() ? blink::mojom::PageVisibilityState::kHidden
+                                  : blink::mojom::PageVisibilityState::kVisible,
+                      opener_frame ? opener_frame->View() : nullptr);
   RenderWidget::Init(show_callback, webview_->GetWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -593,9 +600,6 @@ void RenderViewImpl::Initialize(
   }
 
   ApplyBlinkSettings(command_line, webview()->GetSettings());
-
-  WebFrame* opener_frame =
-      RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
     CHECK(params->main_frame_interface_provider.is_valid());

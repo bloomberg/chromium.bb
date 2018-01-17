@@ -209,9 +209,6 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
   virtual void VerifyProcessExpectations(
       content::WebContents* main_contents,
       content::WebContents* new_contents) = 0;
-  virtual void VerifyBrowsingInstanceExpectations(
-      content::WebContents* main_contents,
-      content::WebContents* new_contents) = 0;
 
   // Simulates ctrl-clicking an anchor with the given id in |main_contents|.
   // Verifies that the new contents are in the correct process and separate
@@ -296,6 +293,21 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
         new_contents2->GetSiteInstance()));
     VerifyProcessExpectations(new_contents1, new_contents2);
   }
+
+ private:
+  void VerifyBrowsingInstanceExpectations(content::WebContents* main_contents,
+                                          content::WebContents* new_contents) {
+    // Verify that the new contents cannot find the old contents via
+    // window.open. (i.e. window.open should open a new window, rather than
+    // returning a reference to main_contents / old window).
+    std::string location_of_opened_window;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        new_contents,
+        "w = window.open('', 'main_contents');"
+        "window.domAutomationController.send(w.location.href);",
+        &location_of_opened_window));
+    EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
+  }
 };
 
 // Tests that verify that ctrl-click results 1) open up in a new renderer
@@ -313,21 +325,6 @@ class CtrlClickShouldEndUpInNewProcessTest : public CtrlClickProcessTest {
               new_contents->GetMainFrame()->GetSiteInstance());
     EXPECT_FALSE(main_contents->GetSiteInstance()->IsRelatedSiteInstance(
         new_contents->GetSiteInstance()));
-  }
-
-  void VerifyBrowsingInstanceExpectations(
-      content::WebContents* main_contents,
-      content::WebContents* new_contents) override {
-    // Verify that the new contents cannot find the old contents via
-    // window.open. (i.e. window.open should open a new window, rather than
-    // returning a reference to main_contents / old window).
-    std::string location_of_opened_window;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_contents,
-        "w = window.open('', 'main_contents');"
-        "window.domAutomationController.send(w.location.href);",
-        &location_of_opened_window));
-    EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
   }
 };
 
@@ -370,22 +367,6 @@ class CtrlClickShouldEndUpInSameProcessTest : public CtrlClickProcessTest {
               contents2->GetMainFrame()->GetSiteInstance()->GetSiteURL());
     EXPECT_FALSE(contents1->GetSiteInstance()->IsRelatedSiteInstance(
         contents2->GetSiteInstance()));
-  }
-
-  void VerifyBrowsingInstanceExpectations(
-      content::WebContents* main_contents,
-      content::WebContents* new_contents) override {
-    // Since the two WebContents are in the same process, they can find each
-    // other through window.open() using the window.name. See
-    // https://crbug.com/718489.
-    std::string location_of_opened_window;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_contents,
-        "w = window.open('', 'main_contents');"
-        "window.domAutomationController.send(w.location.href);",
-        &location_of_opened_window));
-    EXPECT_EQ(main_contents->GetLastCommittedURL(),
-              GURL(location_of_opened_window));
   }
 };
 

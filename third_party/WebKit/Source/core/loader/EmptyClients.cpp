@@ -202,6 +202,10 @@ void EmptyLocalFrameClient::SetTextCheckerClientForTesting(
   text_check_client_ = client;
 }
 
+Frame* EmptyLocalFrameClient::FindFrame(const AtomicString& name) const {
+  return nullptr;
+}
+
 std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {
   return nullptr;

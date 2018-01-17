@@ -223,6 +223,8 @@ class ChromeContentRendererClient
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
+  blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
+                             const std::string& name) override;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.

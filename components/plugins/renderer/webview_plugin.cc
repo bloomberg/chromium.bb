@@ -256,8 +256,9 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                                             const WebPreferences& preferences)
     : plugin_(plugin) {
-  web_view_ =
-      WebView::Create(this, blink::mojom::PageVisibilityState::kVisible);
+  web_view_ = WebView::Create(/* client = */ this,
+                              blink::mojom::PageVisibilityState::kVisible,
+                              /* opener = */ nullptr);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
