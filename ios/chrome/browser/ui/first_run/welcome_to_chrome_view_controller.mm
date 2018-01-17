@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -48,13 +50,23 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 const BOOL kDefaultStatsCheckboxValue = YES;
 }
 
-@interface WelcomeToChromeViewController ()<WelcomeToChromeViewDelegate> {
+@interface WelcomeToChromeViewController ()<WelcomeToChromeViewDelegate,
+                                            UINavigationControllerDelegate> {
   ios::ChromeBrowserState* browserState_;  // weak
   __weak TabModel* tabModel_;
 }
 
 // The animation which occurs at launch has run.
 @property(nonatomic, assign) BOOL ranLaunchAnimation;
+
+// The TOS link was tapped.
+@property(nonatomic, assign) BOOL didTapTOSLink;
+
+// The privacy link was tapped.
+@property(nonatomic, assign) BOOL didTapPrivacyLink;
+
+// The status of the privacy link load.
+@property(nonatomic, assign) MobileFreLinkTappedStatus privacyLinkStatus;
 
 // Presenter for showing sync-related UI.
 @property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
@@ -65,9 +77,12 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 @implementation WelcomeToChromeViewController
 
+@synthesize didTapPrivacyLink = _didTapPrivacyLink;
+@synthesize didTapTOSLink = _didTapTOSLink;
 @synthesize ranLaunchAnimation = _ranLaunchAnimation;
 @synthesize presenter = _presenter;
 @synthesize dispatcher = _dispatcher;
+@synthesize privacyLinkStatus = _privacyLinkStatus;
 
 + (BOOL)defaultStatsCheckboxValue {
   // Record metrics reporting as opt-in/opt-out only once.
@@ -160,21 +175,34 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 #pragma mark - WelcomeToChromeViewDelegate
 
 - (void)welcomeToChromeViewDidTapTOSLink {
+  self.didTapTOSLink = YES;
   NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_TERMS_TITLE);
   NSURL* tosUrl = [self newTermsOfServiceUrl];
   [self openStaticFileWithURL:tosUrl title:title];
 }
 
 - (void)welcomeToChromeViewDidTapPrivacyLink {
+  self.didTapPrivacyLink = YES;
   NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_PRIVACY_TITLE);
   NSURL* privacyUrl = net::NSURLWithGURL(
       GURL("https://www.google.com/chrome/browser/privacy/"));
   [self openStaticFileWithURL:privacyUrl title:title];
+  [self.navigationController setDelegate:self];
 }
 
 - (void)welcomeToChromeViewDidTapOKButton:(WelcomeToChromeView*)view {
   GetApplicationContext()->GetLocalState()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, view.checkBoxSelected);
+
+  if (view.checkBoxSelected) {
+    if (self.didTapPrivacyLink) {
+      UMA_HISTOGRAM_ENUMERATION("MobileFre.PrivacyLinkTappedStatus",
+                                self.privacyLinkStatus,
+                                NUM_MOBILE_FRE_LINK_TAPPED_STATUS);
+    }
+    if (self.didTapTOSLink)
+      base::RecordAction(base::UserMetricsAction("MobileFreTOSLinkTapped"));
+  }
 
   FirstRunConfiguration* firstRunConfig = [[FirstRunConfiguration alloc] init];
   bool hasSSOAccounts = ios::GetChromeBrowserProvider()
@@ -198,4 +226,21 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   [self.navigationController pushViewController:signInController animated:NO];
 }
 
+#pragma mark - UINavigationControllerDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)
+           navigationController:(UINavigationController*)navigationController
+animationControllerForOperation:(UINavigationControllerOperation)operation
+             fromViewController:(UIViewController*)fromVC
+               toViewController:(UIViewController*)toVC {
+  if ([fromVC isKindOfClass:[StaticFileViewController class]]) {
+    StaticFileViewController* staticViewController =
+        static_cast<StaticFileViewController*>(fromVC);
+    self.privacyLinkStatus = staticViewController.loadStatus;
+  } else {
+    NOTREACHED();
+  }
+  [self.navigationController setDelegate:nil];
+  return nil;
+}
 @end

@@ -11576,6 +11576,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileFreTOSLinkTapped">
+  <owner>justincohen@chromium.org</owner>
+  <description>
+    User tapped on the TOS link on the first run welcome view.  This metric is
+    only recorded if and after the TOS are accepted. This metric is specific to
+    iOS.
+  </description>
+</action>
+
 <action name="MobileGoToBackground">
   <owner>tedchoc@chromium.org</owner>
   <description>
