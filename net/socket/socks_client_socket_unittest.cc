@@ -36,9 +36,6 @@ namespace net {
 
 class NetLog;
 
-const char kSOCKSOkRequest[] = { 0x04, 0x01, 0x00, 0x50, 127, 0, 0, 1, 0 };
-const char kSOCKSOkReply[] = { 0x00, 0x5A, 0x00, 0x00, 0, 0, 0, 0 };
-
 class SOCKSClientSocketTest : public PlatformTest {
  public:
   SOCKSClientSocketTest();
@@ -182,11 +179,12 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   const std::string payload_read = "moar random data";
 
   MockWrite data_writes[] = {
-      MockWrite(ASYNC, kSOCKSOkRequest, arraysize(kSOCKSOkRequest)),
-      MockWrite(ASYNC, payload_write.data(), payload_write.size()) };
+      MockWrite(ASYNC, kSOCKS4OkRequestLocalHostPort80,
+                kSOCKS4OkRequestLocalHostPort80Length),
+      MockWrite(ASYNC, payload_write.data(), payload_write.size())};
   MockRead data_reads[] = {
-      MockRead(ASYNC, kSOCKSOkReply, arraysize(kSOCKSOkReply)),
-      MockRead(ASYNC, payload_read.data(), payload_read.size()) };
+      MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength),
+      MockRead(ASYNC, payload_read.data(), payload_read.size())};
   TestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
@@ -258,7 +256,8 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     MockWrite data_writes[] = {
-        MockWrite(SYNCHRONOUS, kSOCKSOkRequest, arraysize(kSOCKSOkRequest)) };
+        MockWrite(SYNCHRONOUS, kSOCKS4OkRequestLocalHostPort80,
+                  kSOCKS4OkRequestLocalHostPort80Length)};
     MockRead data_reads[] = {
         MockRead(SYNCHRONOUS, tests[i].fail_reply,
                  arraysize(tests[i].fail_reply)) };
@@ -294,8 +293,8 @@ TEST_F(SOCKSClientSocketTest, PartialServerReads) {
   const char kSOCKSPartialReply1[] = { 0x00 };
   const char kSOCKSPartialReply2[] = { 0x5A, 0x00, 0x00, 0, 0, 0, 0 };
 
-  MockWrite data_writes[] = {
-      MockWrite(ASYNC, kSOCKSOkRequest, arraysize(kSOCKSOkRequest)) };
+  MockWrite data_writes[] = {MockWrite(ASYNC, kSOCKS4OkRequestLocalHostPort80,
+                                       kSOCKS4OkRequestLocalHostPort80Length)};
   MockRead data_reads[] = {
       MockRead(ASYNC, kSOCKSPartialReply1, arraysize(kSOCKSPartialReply1)),
       MockRead(ASYNC, kSOCKSPartialReply2, arraysize(kSOCKSPartialReply2)) };
@@ -335,7 +334,7 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
       MockWrite(ASYNC, kSOCKSPartialRequest2, arraysize(kSOCKSPartialRequest2)),
   };
   MockRead data_reads[] = {
-      MockRead(ASYNC, kSOCKSOkReply, arraysize(kSOCKSOkReply)) };
+      MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength)};
   TestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
@@ -361,12 +360,12 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
 // Tests the case when the server sends a smaller sized handshake data
 // and closes the connection.
 TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
-  MockWrite data_writes[] = {
-      MockWrite(ASYNC, kSOCKSOkRequest, arraysize(kSOCKSOkRequest)) };
+  MockWrite data_writes[] = {MockWrite(ASYNC, kSOCKS4OkRequestLocalHostPort80,
+                                       kSOCKS4OkRequestLocalHostPort80Length)};
   MockRead data_reads[] = {
-      MockRead(ASYNC, kSOCKSOkReply, arraysize(kSOCKSOkReply) - 2),
+      MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength - 2),
       // close connection unexpectedly
-      MockRead(SYNCHRONOUS, 0) };
+      MockRead(SYNCHRONOUS, 0)};
   TestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),

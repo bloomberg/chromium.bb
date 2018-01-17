@@ -154,6 +154,14 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                                   non_ssl_combine_connect_and_write_policy));
 
     if (proxy_info.is_http() || proxy_info.is_https()) {
+      // TODO(mmenke):  Would it be better to split these into two different
+      //     socket pools?  And maybe socks4/socks5 as well?
+      if (proxy_info.is_http()) {
+        connection_group = "http_proxy/" + connection_group;
+      } else {
+        connection_group = "https_proxy/" + connection_group;
+      }
+
       std::string user_agent;
       request_extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
                                       &user_agent);
