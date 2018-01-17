@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"
@@ -76,6 +77,7 @@ class ClientControlledStateTest : public AshTestBase {
     params.bounds = kInitialBounds;
     widget_->Init(params);
     wm::WindowState* window_state = wm::GetWindowState(window());
+    window_state->set_allow_set_bounds_direct(true);
     auto delegate = std::make_unique<TestClientControlledStateDelegate>();
     delegate_ = delegate.get();
     auto state = std::make_unique<ClientControlledState>(std::move(delegate));
@@ -386,6 +388,24 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
   window_state()->OnWMEvent(&trusted_pin_event);
   EXPECT_FALSE(window_state()->IsTrustedPinned());
   EXPECT_TRUE(window_state_2->IsTrustedPinned());
+}
+
+TEST_F(ClientControlledStateTest, MoveWindowToDisplay) {
+  UpdateDisplay("500x500, 500x500");
+
+  display::Screen* screen = display::Screen::GetScreen();
+
+  const int64_t first_display_id = screen->GetAllDisplays()[0].id();
+  const int64_t second_display_id = screen->GetAllDisplays()[1].id();
+  EXPECT_EQ(first_display_id, screen->GetDisplayNearestWindow(window()).id());
+
+  MoveWindowToDisplay(window(), second_display_id);
+
+  // Make sure that the window is moved to the destination root
+  // window and also send bounds change request in the root window's
+  // coordinates.
+  EXPECT_EQ(second_display_id, screen->GetDisplayNearestWindow(window()).id());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), delegate()->requested_bounds());
 }
 
 }  // namespace wm

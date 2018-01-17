@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/widget_finder.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -30,6 +31,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
@@ -126,6 +129,20 @@ void SetAutoHideShelf(aura::Window* window, bool autohide) {
 
 bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
+  WindowState* window_state = GetWindowState(window);
+  if (window_state->allow_set_bounds_direct()) {
+    aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
+    if (root) {
+      gfx::Rect bounds = window->bounds();
+      MoveWindowToRoot(window, root);
+      // Client controlled won't update the bounds upon the root window
+      // Change. Explicitly update the bounds so that the client can
+      // make decision.
+      window->SetBounds(bounds);
+      return true;
+    }
+    return false;
+  }
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
   return root && MoveWindowToRoot(window, root);
 }
