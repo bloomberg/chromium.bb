@@ -34,8 +34,10 @@ class Simple2dStillPage(VrSamplePage):
     # Browsing Mode. Wait times are flaky.
     action_runner.Wait(2)
 
-    with action_runner.CreateInteraction('Still'):
-      action_runner.Wait(5)
+    # MeasureMemory() waits for 10 seconds before measuring memory, which is
+    # long enough for us to collect our other data, so no additional sleeps
+    # necessary.
+    action_runner.MeasureMemory(True)
 
 
 class VrBrowsingModePageSet(story.StorySet):
