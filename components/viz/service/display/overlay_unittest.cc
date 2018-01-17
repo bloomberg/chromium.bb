@@ -15,6 +15,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/resource_provider_test_utils.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -64,11 +65,6 @@ const gfx::Transform kBothMirrorTransform =
     gfx::Transform(-0.9f, 0, 0, -0.8f, 1.0f, 1.0f);  // x,y -> 1-x,1-y.
 const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
-
-void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
-
-void CollectResources(std::vector<ReturnedResource>* array,
-                      const std::vector<ReturnedResource>& returned) {}
 
 class FullscreenOverlayValidator : public OverlayCandidateValidator {
  public:
@@ -260,23 +256,32 @@ std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
   return pass;
 }
 
-ResourceId CreateResource(
-    cc::DisplayResourceProvider* parent_resource_provider,
+static ResourceId CreateResourceInLayerTree(
     cc::LayerTreeResourceProvider* child_resource_provider,
     const gfx::Size& size,
     bool is_overlay_candidate) {
   auto resource = TransferableResource::MakeGLOverlay(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, is_overlay_candidate);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
+  auto release_callback = SingleReleaseCallback::Create(
+      base::BindRepeating([](const gpu::SyncToken&, bool) {}));
 
   ResourceId resource_id = child_resource_provider->ImportResource(
       resource, std::move(release_callback));
 
-  std::vector<ReturnedResource> returned_to_child;
+  return resource_id;
+}
+
+ResourceId CreateResource(
+    cc::DisplayResourceProvider* parent_resource_provider,
+    cc::LayerTreeResourceProvider* child_resource_provider,
+    const gfx::Size& size,
+    bool is_overlay_candidate) {
+  ResourceId resource_id = CreateResourceInLayerTree(
+      child_resource_provider, size, is_overlay_candidate);
+
   int child_id = parent_resource_provider->CreateChild(
-      base::Bind(&CollectResources, &returned_to_child));
+      base::BindRepeating([](const std::vector<ReturnedResource>&) {}));
 
   // Transfer resource to the parent.
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2633,15 +2638,22 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceId resource1 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
-  ResourceId resource2 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
-  ResourceId resource3 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
+  ResourceId resource1 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource2 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource3 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+
+  // Return the resource map.
+  cc::ResourceProvider::ResourceIdMap resource_map =
+      SendResourceAndGetChildToParentMap({resource1, resource2, resource3},
+                                         resource_provider_.get(),
+                                         child_resource_provider_.get());
+
+  ResourceId mapped_resource1 = resource_map[resource1];
+  ResourceId mapped_resource2 = resource_map[resource2];
+  ResourceId mapped_resource3 = resource_map[resource3];
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   RenderPassList pass_list;
@@ -2652,7 +2664,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   frame1.overlay_list.resize(2);
   frame1.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay1 = frame1.overlay_list.back();
-  overlay1.resource_id = resource1;
+  overlay1.resource_id = mapped_resource1;
   overlay1.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame2;
@@ -2660,7 +2672,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   frame2.overlay_list.resize(2);
   frame2.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay2 = frame2.overlay_list.back();
-  overlay2.resource_id = resource2;
+  overlay2.resource_id = mapped_resource2;
   overlay2.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame3;
@@ -2668,57 +2680,66 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   frame3.overlay_list.resize(2);
   frame3.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay3 = frame3.overlay_list.back();
-  overlay3.resource_id = resource3;
+  overlay3.resource_id = mapped_resource3;
   overlay3.plane_z_order = 1;
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(resource3));
+
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
   Mock::VerifyAndClearExpectations(&scheduler_);
 
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
+
   SwapBuffersComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame2);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame3);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   // No overlays, release the resource.
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   DirectRenderer::DrawingFrame frame_no_overlays;
@@ -2727,19 +2748,19 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->SetCurrentFrame(frame_no_overlays);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
   // Use the same buffer twice.
   renderer_->set_expect_overlays(true);
@@ -2747,56 +2768,56 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->set_expect_overlays(false);
   renderer_->SetCurrentFrame(frame_no_overlays);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
@@ -2806,15 +2827,21 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceId resource1 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
-  ResourceId resource2 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
-  ResourceId resource3 =
-      CreateResource(resource_provider_.get(), child_resource_provider_.get(),
-                     gfx::Size(32, 32), true);
+  ResourceId resource1 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource2 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+  ResourceId resource3 = CreateResourceInLayerTree(
+      child_resource_provider_.get(), gfx::Size(32, 32), true);
+
+  // Return the resource map.
+  cc::ResourceProvider::ResourceIdMap resource_map =
+      SendResourceAndGetChildToParentMap({resource1, resource2, resource3},
+                                         resource_provider_.get(),
+                                         child_resource_provider_.get());
+  ResourceId mapped_resource1 = resource_map[resource1];
+  ResourceId mapped_resource2 = resource_map[resource2];
+  ResourceId mapped_resource3 = resource_map[resource3];
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   RenderPassList pass_list;
@@ -2825,7 +2852,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   frame1.overlay_list.resize(2);
   frame1.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay1 = frame1.overlay_list.back();
-  overlay1.resource_id = resource1;
+  overlay1.resource_id = mapped_resource1;
   overlay1.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame2;
@@ -2833,7 +2860,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   frame2.overlay_list.resize(2);
   frame2.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay2 = frame2.overlay_list.back();
-  overlay2.resource_id = resource2;
+  overlay2.resource_id = mapped_resource2;
   overlay2.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame3;
@@ -2841,7 +2868,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   frame3.overlay_list.resize(2);
   frame3.overlay_list.front().use_output_surface_for_resource = true;
   cc::OverlayCandidate& overlay3 = frame3.overlay_list.back();
-  overlay3.resource_id = resource3;
+  overlay3.resource_id = mapped_resource3;
   overlay3.plane_z_order = 1;
 
   // First frame, with no swap completion.
@@ -2849,9 +2876,9 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   // Second frame, with no swap completion.
@@ -2859,11 +2886,11 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   renderer_->SetCurrentFrame(frame2);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   // Third frame, still with no swap completion (where the resources would
@@ -2872,40 +2899,40 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   renderer_->SetCurrentFrame(frame3);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   SwapBuffersWithoutComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   // This completion corresponds to the first frame.
   SwapBuffersComplete();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
 
   // This completion corresponds to the second frame. The first resource is no
   // longer in use.
-  ReturnResourceInUseQuery(resource1);
+  ReturnResourceInUseQuery(mapped_resource1);
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
 
   // This completion corresponds to the third frame.
   SwapBuffersComplete();
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
 
-  ReturnResourceInUseQuery(resource2);
-  ReturnResourceInUseQuery(resource3);
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+  ReturnResourceInUseQuery(mapped_resource2);
+  ReturnResourceInUseQuery(mapped_resource3);
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource1));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
+  EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 }
 
 class CALayerOverlayRPDQTest : public CALayerOverlayTest {
