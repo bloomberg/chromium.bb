@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/server/web_socket_encoder.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 using content::BrowserThread;
 using net::WebSocket;
@@ -25,6 +26,29 @@ namespace {
 const int kBufferSize = 16 * 1024;
 const char kCloseResponse[] = "\x88\x80\x2D\x0E\x1E\xFA";
 
+net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("android_web_socket", R"(
+        semantics {
+          sender: "Android Web Socket"
+          description:
+            "Remote debugging is supported over existing ADB (Android Debug "
+            "Bridge) connection, in addition to raw USB connection. This "
+            "socket talks to the local ADB daemon which routes debugging "
+            "traffic to a remote device."
+          trigger:
+            "A user connects to an Android device using remote debugging."
+          data: "Any data required for remote debugging."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "To use adb with a device connected over USB, you must enable USB "
+            "debugging in the device system settings, under Developer options."
+          policy_exception_justification:
+            "This is not a network request and is only used for remote "
+            "debugging."
+        })");
 }  // namespace
 
 class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
@@ -135,7 +159,8 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
         new net::StringIOBuffer(request_buffer_);
     result = socket_->Write(buffer.get(), buffer->size(),
                             base::Bind(&WebSocketImpl::SendPendingRequests,
-                                       weak_factory_.GetWeakPtr()));
+                                       weak_factory_.GetWeakPtr()),
+                            kTrafficAnnotation);
     if (result != net::ERR_IO_PENDING)
       SendPendingRequests(result);
   }

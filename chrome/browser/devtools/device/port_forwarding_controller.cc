@@ -29,6 +29,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/WebKit/public/public_features.h"
 
 using content::BrowserThread;
@@ -43,6 +44,36 @@ enum {
   kStatusConnecting = -1,
   kStatusOK = 0,
 };
+
+net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("port_forwarding_controller_socket",
+                                        R"(
+        semantics {
+          sender: "Port Forwarding Controller"
+          description:
+            "For remote debugging local Android device, one might need to "
+            "enable reverse tethering for forwarding local ports from the "
+            "device to some ports on the host. This socket pumps the traffic "
+            "between the two."
+          trigger:
+            "A user connects to an Android device using remote debugging and "
+            "enables port forwarding on chrome://inspect."
+          data: "Any data requested from the local port on Android device."
+          destination: OTHER
+          destination_other:
+            "Data is sent to the target that user selects in chrome://inspect."
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "This request cannot be disabled in settings, however it would be "
+            "sent only if user enables port fowarding in chrome://inspect and "
+            "USB debugging in the Android device system settings."
+          policy_exception_justification:
+            "Not implemented, policies defined on Android device will apply "
+            "here."
+        })");
 
 namespace tethering = ::chrome::devtools::Tethering;
 
@@ -128,13 +159,10 @@ class SocketTunnel {
         new net::DrainableIOBuffer(buffer.get(), total);
 
     ++pending_writes_;
-    result = to->Write(drainable.get(),
-                       total,
+    result = to->Write(drainable.get(), total,
                        base::Bind(&SocketTunnel::OnWritten,
-                                  base::Unretained(this),
-                                  drainable,
-                                  from,
-                                  to));
+                                  base::Unretained(this), drainable, from, to),
+                       kTrafficAnnotation);
     if (result != net::ERR_IO_PENDING)
       OnWritten(drainable, from, to, result);
   }
@@ -152,13 +180,11 @@ class SocketTunnel {
     drainable->DidConsume(result);
     if (drainable->BytesRemaining() > 0) {
       ++pending_writes_;
-      result = to->Write(drainable.get(),
-                         drainable->BytesRemaining(),
-                         base::Bind(&SocketTunnel::OnWritten,
-                                    base::Unretained(this),
-                                    drainable,
-                                    from,
-                                    to));
+      result =
+          to->Write(drainable.get(), drainable->BytesRemaining(),
+                    base::Bind(&SocketTunnel::OnWritten, base::Unretained(this),
+                               drainable, from, to),
+                    kTrafficAnnotation);
       if (result != net::ERR_IO_PENDING)
         OnWritten(drainable, from, to, result);
       return;
