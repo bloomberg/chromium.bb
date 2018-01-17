@@ -315,7 +315,7 @@
   locationBarContainer.backgroundColor =
       [self.buttonFactory.toolbarConfiguration omniboxBackgroundColor];
   locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
-  locationBarContainer.layer.cornerRadius = kLocationBarShadowHeight;
+  locationBarContainer.layer.cornerRadius = kLocationBarCornerRadius;
   locationBarContainer.layer.borderColor =
       [self.buttonFactory.toolbarConfiguration omniboxBorderColor].CGColor;
 
