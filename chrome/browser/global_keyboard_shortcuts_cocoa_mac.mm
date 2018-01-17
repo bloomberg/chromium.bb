@@ -77,8 +77,6 @@ const std::vector<KeyboardShortcutData>& GetBrowserKeyboardShortcutTable() {
     //---   -----  -----  ------ --------        ---- -------
     {true,  false, false, false, kVK_LeftArrow,  0,   IDC_BACK},
     {true,  false, false, false, kVK_RightArrow, 0,   IDC_FORWARD},
-    {false, false, false, false, kVK_Delete,     0,   IDC_BACKSPACE_BACK},
-    {false, true,  false, false, kVK_Delete,     0,   IDC_BACKSPACE_FORWARD},
     {true,  true,  false, false, 0,              'c', IDC_DEV_TOOLS_INSPECT},
   }));
   // clang-format on

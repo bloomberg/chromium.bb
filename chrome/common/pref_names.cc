@@ -1049,9 +1049,6 @@ const char kShowUpdatePromotionInfoBar[] =
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 #endif
 
-const char kBackShortcutBubbleShownCount[] =
-    "browser.back_shortcut_bubble_shown_count";
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Which plugins have been whitelisted manually by the user.
 const char kContentSettingsPluginWhitelist[] =

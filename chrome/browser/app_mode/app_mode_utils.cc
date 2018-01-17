@@ -20,8 +20,6 @@ bool IsCommandAllowedInAppMode(int command_id) {
   const int kAllowed[] = {
       IDC_BACK,
       IDC_FORWARD,
-      IDC_BACKSPACE_BACK,
-      IDC_BACKSPACE_FORWARD,
       IDC_RELOAD,
       IDC_STOP,
       IDC_RELOAD_BYPASSING_CACHE,
