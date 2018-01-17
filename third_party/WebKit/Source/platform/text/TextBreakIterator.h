@@ -359,6 +359,9 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
 // counted as 1 grapheme cluster.
 PLATFORM_EXPORT unsigned NumGraphemeClusters(const String&);
 
+// Returns the number of code units that the next grapheme cluster is made of.
+PLATFORM_EXPORT unsigned LengthOfGraphemeCluster(const String&, unsigned = 0);
+
 }  // namespace blink
 
 #endif
