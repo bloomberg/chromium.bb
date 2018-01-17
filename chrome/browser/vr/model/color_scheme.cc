@@ -114,16 +114,17 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_icon = 0xA6000000;
   normal_scheme.omnibox_text = 0xFF595959;
   normal_scheme.omnibox_hint = 0xFF999999;
-  normal_scheme.omnibox_suggestion_content = 0xFF595959;
-  normal_scheme.omnibox_suggestion_description = 0xFF5595FE;
+  normal_scheme.suggestion_text = 0xFF595959;
+  normal_scheme.suggestion_dim_text = 0xFF999999;
+  normal_scheme.suggestion_url_text = 0xFF9999FF;
   normal_scheme.suggestion_button_colors.foreground =
-      normal_scheme.omnibox_suggestion_content;
+      normal_scheme.suggestion_text;
   normal_scheme.suggestion_button_colors.background =
       normal_scheme.omnibox_background;
   normal_scheme.suggestion_button_colors.background_hover = 0xFFE0E0E0;
   normal_scheme.suggestion_button_colors.background_down = 0xFFE0E0E0;
   normal_scheme.omnibox_voice_search_button_colors.foreground =
-      normal_scheme.omnibox_suggestion_content;
+      normal_scheme.suggestion_text;
   normal_scheme.omnibox_voice_search_button_colors.background =
       normal_scheme.omnibox_background;
   normal_scheme.omnibox_voice_search_button_colors.background_hover =
@@ -231,10 +232,11 @@ void InitializeColorSchemes() {
   incognito_scheme.omnibox_icon = 0xCCFFFFFF;
   incognito_scheme.omnibox_text = 0xCCFFFFFF;
   incognito_scheme.omnibox_hint = 0x80FFFFFF;
-  incognito_scheme.omnibox_suggestion_content = 0xCCFFFFFF;
-  incognito_scheme.omnibox_suggestion_description = 0xCCFFFFFF;
+  incognito_scheme.suggestion_text = 0xCCFFFFFF;
+  incognito_scheme.suggestion_dim_text = 0x88FFFFFF;
+  incognito_scheme.suggestion_url_text = 0xFF9999FF;
   incognito_scheme.suggestion_button_colors.foreground =
-      incognito_scheme.omnibox_suggestion_content;
+      incognito_scheme.suggestion_text;
   incognito_scheme.suggestion_button_colors.background =
       incognito_scheme.omnibox_background;
   incognito_scheme.suggestion_button_colors.background_hover = 0xFF656565;
