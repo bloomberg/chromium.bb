@@ -363,13 +363,16 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
   for (const auto& test : tests) {
     document->InsecureNavigationsToUpgrade()->clear();
 
-    // We always upgrade for FrameTypeNone and FrameTypeNested.
+    // We always upgrade for FrameTypeNone.
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
                   network::mojom::RequestContextFrameType::kNone,
                   test.upgraded);
+
+    // We never upgrade for FrameTypeNested. This is done on the browser
+    // process.
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
                   network::mojom::RequestContextFrameType::kNested,
-                  test.upgraded);
+                  test.original);
 
     // We do not upgrade for FrameTypeTopLevel or FrameTypeAuxiliary...
     ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,

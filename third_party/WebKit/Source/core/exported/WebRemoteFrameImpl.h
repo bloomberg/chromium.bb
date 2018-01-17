@@ -70,6 +70,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
       WebContentSecurityPolicySource) override;
   void ResetReplicatedContentSecurityPolicy() override;
   void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
+  void SetReplicatedInsecureNavigationsSet(
+      const std::vector<unsigned>&) override;
   void DispatchLoadEventOnFrameOwner() override;
   void DidStartLoading() override;
   void DidStopLoading() override;

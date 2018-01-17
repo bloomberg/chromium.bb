@@ -2301,6 +2301,11 @@ void RenderFrameHostImpl::EnforceInsecureRequestPolicy(
   frame_tree_node()->SetInsecureRequestPolicy(policy);
 }
 
+void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
+    const std::vector<uint32_t>& set) {
+  frame_tree_node()->SetInsecureNavigationsSet(set);
+}
+
 FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
     int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {

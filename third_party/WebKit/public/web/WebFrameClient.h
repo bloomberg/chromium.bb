@@ -260,6 +260,9 @@ class BLINK_EXPORT WebFrameClient {
   // This frame has set an insecure request policy.
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
+  // This frame has set an upgrade insecure navigations set.
+  virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
+
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
   virtual void DidChangeFramePolicy(

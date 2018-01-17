@@ -53,6 +53,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   virtual void Trace(blink::Visitor*);
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
+  static std::vector<unsigned> SerializeInsecureNavigationSet(
+      const InsecureNavigationsSet&);
 
   const SecurityOrigin* GetSecurityOrigin() const {
     return security_origin_.get();
@@ -80,6 +82,11 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void SetRequireTrustedTypes() { require_safe_types_ = true; }
   bool RequireTrustedTypes() const { return require_safe_types_; }
 
+  void SetInsecureNavigationsSet(const std::vector<unsigned>& set) {
+    insecure_navigations_to_upgrade_.clear();
+    for (unsigned hash : set)
+      insecure_navigations_to_upgrade_.insert(hash);
+  }
   void AddInsecureNavigationUpgrade(unsigned hashed_host) {
     insecure_navigations_to_upgrade_.insert(hashed_host);
   }

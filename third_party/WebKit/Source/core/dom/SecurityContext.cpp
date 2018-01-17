@@ -34,6 +34,20 @@
 
 namespace blink {
 
+// static
+std::vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
+    const InsecureNavigationsSet& set) {
+  // The set is serialized as a sorted array. Sorting it makes it easy to know
+  // if two serialized sets are equal.
+  std::vector<unsigned> serialized;
+  serialized.reserve(set.size());
+  for (unsigned host : set)
+    serialized.push_back(host);
+  std::sort(serialized.begin(), serialized.end());
+
+  return serialized;
+}
+
 SecurityContext::SecurityContext()
     : sandbox_flags_(kSandboxNone),
       address_space_(mojom::IPAddressSpace::kPublic),

@@ -264,6 +264,12 @@ void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
   GetFrame()->GetSecurityContext()->SetInsecureRequestPolicy(policy);
 }
 
+void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
+    const std::vector<unsigned>& set) {
+  DCHECK(GetFrame());
+  GetFrame()->GetSecurityContext()->SetInsecureNavigationsSet(set);
+}
+
 void WebRemoteFrameImpl::DispatchLoadEventOnFrameOwner() {
   DCHECK(GetFrame()->Owner()->IsLocal());
   GetFrame()->Owner()->DispatchLoad();

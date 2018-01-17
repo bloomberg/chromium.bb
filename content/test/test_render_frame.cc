@@ -90,6 +90,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void EnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override {}
+  void EnforceInsecureNavigationsSet(
+      const std::vector<uint32_t>& set) override {}
 
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,

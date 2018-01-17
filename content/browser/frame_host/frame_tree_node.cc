@@ -156,6 +156,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
           name,
           unique_name,
           false /* should enforce strict mixed content checking */,
+          std::vector<uint32_t>()
+          /* hashes of hosts for insecure request upgrades */,
           false /* is a potentially trustworthy unique origin */,
           false /* has received a user gesture */,
           false /* has received a user gesture before nav */),
@@ -387,6 +389,16 @@ void FrameTreeNode::SetInsecureRequestPolicy(
     return;
   render_manager_.OnEnforceInsecureRequestPolicy(policy);
   replication_state_.insecure_request_policy = policy;
+}
+
+void FrameTreeNode::SetInsecureNavigationsSet(
+    const std::vector<uint32_t>& insecure_navigations_set) {
+  DCHECK(std::is_sorted(insecure_navigations_set.begin(),
+                        insecure_navigations_set.end()));
+  if (insecure_navigations_set == replication_state_.insecure_navigations_set)
+    return;
+  render_manager_.OnEnforceInsecureNavigationsSet(insecure_navigations_set);
+  replication_state_.insecure_navigations_set = insecure_navigations_set;
 }
 
 void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {

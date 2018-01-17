@@ -291,6 +291,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 
   web_frame_->SetReplicatedName(blink::WebString::FromUTF8(state.name));
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
+  web_frame_->SetReplicatedInsecureNavigationsSet(
+      state.insecure_navigations_set);
   web_frame_->SetReplicatedFeaturePolicyHeader(state.feature_policy_header);
   if (state.has_received_user_gesture)
     web_frame_->SetHasReceivedUserGesture();
@@ -383,6 +385,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnResetContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
+    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureNavigationsSet,
+                        OnEnforceInsecureNavigationsSet)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
@@ -474,6 +478,11 @@ void RenderFrameProxy::OnResetContentSecurityPolicy() {
 void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
     blink::WebInsecureRequestPolicy policy) {
   web_frame_->SetReplicatedInsecureRequestPolicy(policy);
+}
+
+void RenderFrameProxy::OnEnforceInsecureNavigationsSet(
+    const std::vector<uint32_t>& set) {
+  web_frame_->SetReplicatedInsecureNavigationsSet(set);
 }
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(

@@ -203,6 +203,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // update.
   void SetInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
+  // Sets the current set of insecure urls to upgrade, and notifies proxies
+  // about the update.
+  void SetInsecureNavigationsSet(
+      const std::vector<uint32_t>& insecure_navigations_set);
+
   // Returns the latest frame policy (sandbox flags and container policy) for
   // this frame. This includes flags inherited from parent frames and the latest
   // flags from the <iframe> element hosting this frame. The returned policies

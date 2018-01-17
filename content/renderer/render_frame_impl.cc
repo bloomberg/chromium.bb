@@ -3849,6 +3849,11 @@ void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
   GetFrameHost()->EnforceInsecureRequestPolicy(policy);
 }
 
+void RenderFrameImpl::DidEnforceInsecureNavigationsSet(
+    const std::vector<uint32_t>& set) {
+  GetFrameHost()->EnforceInsecureNavigationsSet(set);
+}
+
 void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebFrame* child_frame,
     blink::WebSandboxFlags flags,
@@ -5396,6 +5401,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   params->origin = frame_origin;
 
   params->insecure_request_policy = frame_->GetInsecureRequestPolicy();
+  params->insecure_navigations_set = frame_->GetInsecureRequestToUpgrade();
 
   params->has_potentially_trustworthy_unique_origin =
       frame_origin.IsUnique() && frame_origin.IsPotentiallyTrustworthy();
