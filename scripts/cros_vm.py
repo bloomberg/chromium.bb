@@ -62,7 +62,8 @@ class VM(object):
     self.stop = opts.stop
     self.cmd = opts.args[1:] if opts.cmd else None
 
-    self.vm_dir = os.path.join(osutils.GetGlobalTempDir(), 'cros_vm')
+    self.vm_dir = os.path.join(osutils.GetGlobalTempDir(),
+                               'cros_vm_%d' % self.ssh_port)
     if os.path.exists(self.vm_dir):
       # For security, ensure that vm_dir is not a symlink, and is owned by us or
       # by root.
