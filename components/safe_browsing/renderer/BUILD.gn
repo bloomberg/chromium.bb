@@ -55,6 +55,7 @@ source_set("websocket_sb_handshake_throttle_unittest") {
     "//base:base",
     "//base/test:test_support",
     "//components/safe_browsing/common:interfaces",
+    "//content/public/common",
     "//ipc",
     "//testing/gmock",
     "//testing/gtest",

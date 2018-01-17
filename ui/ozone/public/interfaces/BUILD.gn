@@ -44,6 +44,7 @@ source_set("struct_trait_unit_test") {
 
   deps = [
     ":interfaces",
+    ":struct_traits",
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]

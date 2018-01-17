@@ -213,6 +213,7 @@ group("blink_platform_public_deps") {
     "//services/network/public/interfaces",
     "//services/network/public/interfaces:interfaces_blink",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/resource_coordinator/public/interfaces:interfaces_blink",
     "//services/service_manager/public/interfaces:interfaces_blink",
     "//skia",
     "//third_party:jpeg",

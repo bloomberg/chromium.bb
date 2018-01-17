@@ -36,6 +36,7 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/nacl/common",
+    "//components/nacl/common:nacl_error_code",
     "//components/nacl/renderer/plugin:nacl_trusted_plugin",
     "//content/public/common",
     "//content/public/renderer",

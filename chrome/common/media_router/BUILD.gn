@@ -4,7 +4,6 @@
 
 static_library("router") {
   public_deps = [
-    "mojo:media_controller",
     "//base:base",
     "//base:i18n",
     "//net:net",
@@ -35,8 +34,4 @@ static_library("router") {
     "route_request_result.cc",
     "route_request_result.h",
   ]
-
-  if (!is_android) {
-    public_deps += [ "mojo:media_router" ]
-  }
 }
