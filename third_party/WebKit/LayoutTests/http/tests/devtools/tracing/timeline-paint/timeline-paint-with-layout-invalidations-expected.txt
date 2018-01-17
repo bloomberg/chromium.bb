@@ -14,6 +14,28 @@ paint invalidations[
         selectorPart : undefined
         type : "StyleRecalcInvalidationTracking"
     }
+    {
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:18}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ""
+        nodeName : "DIV id='testElement'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Style changed, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:19}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElement'"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
 ]
 
 Running: testSubframe

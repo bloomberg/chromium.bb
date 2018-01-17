@@ -48,9 +48,17 @@
       var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
       TestRunner.assertEquals(firstInvalidations, null);
 
-      // The second paint corresponds to the subframe and should have our layout/style invalidations.
-      PerformanceTestRunner.dumpInvalidations(
-          TimelineModel.TimelineModel.RecordType.Paint, 1, 'second paint invalidations');
+      if (internals.runtimeFlags.slimmingPaintV175Enabled) {
+        // SlimmingPaintV175 doesn't invalidate paint of deleted elements which doesn't affect other elements.
+        // We may need to track raster invalidations in dev tools.
+        var secondPaintEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        var secondInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(secondPaintEvent);
+        TestRunner.assertEquals(secondInvalidations, null);
+      } else {
+        // The second paint corresponds to the subframe and should have our layout/style invalidations.
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Paint, 1, 'second paint invalidations');
+      }
 
       next();
     }

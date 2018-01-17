@@ -243,8 +243,7 @@ Data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 }
 
 namespace InspectorPaintInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> Data(const LayoutObject*,
-                                  const LayoutObject& paint_container);
+std::unique_ptr<TracedValue> Data(const LayoutObject&);
 }
 
 namespace InspectorScrollInvalidationTrackingEvent {
