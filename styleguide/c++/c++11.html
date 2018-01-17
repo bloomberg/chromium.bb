@@ -377,6 +377,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Number literal separators</td>
+<td><code>float f = 1'000'000.000'1;</code></td>
+<td><code>'</code>s anywhere in int or float literals are ignored</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/exS1aGs1wes/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Relaxed constant expressions</td>
 <td><code>constexpr int Factorial(int n) {<br>&nbsp;&nbsp;int result = 1;<br>&nbsp;&nbsp;while (n > 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;result *= n--;<br>&nbsp;&nbsp;return result;<br>}</code></td>
 <td>Allows use of more declarations, conditional statements and loops inside <code>constexpr</code> functions.</td>
@@ -991,16 +999,6 @@ for printing or reading in this format. Still seems useful in minor ways.</td>
 <td>Allows lambda captures to be explicitly initialized with expressions.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/lambda#Lambda_capture">Lambda capture</a></td>
 <td>Particularly useful to capture move-only types in a lambda when a reference would go out of scope. Less useful without allowing lambdas to outlive the scope.</td>
-</tr>
-
-<tr>
-<td>Number literal separators</td>
-<td><code>float f = 1'000'000.000'1;</code></td>
-<td><code>'</code>s anywhere in int or float literals are ignored</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
-<td>Might confuse syntax highlighting in editors. No standard library support
-for printing or reading in this format. Seems less useful and harder on editors
-than binary literals.</td>
 </tr>
 
 <tr>
