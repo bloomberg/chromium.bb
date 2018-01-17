@@ -39,19 +39,58 @@ def ExtractCellIds(language_districts):
     """Convert <language code>: [<cell_ids>...] into
        a list of cell_id : language_code pairs."""
     cell_language_code_pairs = []
+    language_code_enum = {}
     for language_code, cell_ids in language_districts:
         cell_ids = cell_ids.split(";")
         for cell_id in cell_ids:
-            cell_language_code_pairs.append((cell_id, language_code))
-    return cell_language_code_pairs
+            # We only store a coarser cell_ids (represent using uint32_t)
+            # to reduce binary size.
+            coarse_cell_id = cell_id[:-8]
+            # Change language code to language_enum to save some space.
+            if not language_code_enum.has_key(language_code):
+                language_code_enum[language_code] = len(language_code_enum)
+            language_enum = language_code_enum[language_code]
+            cell_language_code_pairs.append((coarse_cell_id, language_enum))
+    return cell_language_code_pairs, language_code_enum
 
 
-def GenerateCpp(output_path, template_path, cell_language_code_pairs):
+def ExtractLanguageCodeCounts(cell_language_code_pairs):
+    """Convert a list of cell_id : language_code pairs to cell_ids and counts"""
+    language_code_cell_id = {}
+    for cell_lang in cell_language_code_pairs:
+        if not language_code_cell_id.has_key(cell_lang[1]):
+            language_code_cell_id[cell_lang[1]] = []
+        language_code_cell_id[cell_lang[1]].append(cell_lang[0])
+    language_counts = []
+    cell_ids = []
+    for i in range(len(language_code_cell_id)):
+        language_counts.append(len(language_code_cell_id[i]))
+        cell_ids.extend(language_code_cell_id[i])
+    return cell_ids, language_counts
+
+
+def ExtractLanguageCodeEnum(language_code_enum):
+    """Convert language code enum dictionary to array."""
+    language_codes = []
+    inverted_lanugage_code_enum = dict(
+        [[v, k] for k, v in language_code_enum.items()])
+    for i in range(len(inverted_lanugage_code_enum)):
+        language_codes.append(inverted_lanugage_code_enum[i])
+    return language_codes
+
+
+def GenerateCpp(output_path,
+                template_path,
+                cell_ids,
+                language_counts,
+                language_codes):
     """Render the template to generate cpp code for LanguageCodeLocator."""
     with open(template_path, "r") as f:
         template = jinja2.Template(f.read())
         context = {
-            "cell_lang_pairs" : cell_language_code_pairs
+            "cell_ids" : cell_ids,
+            "language_counts" : language_counts,
+            "language_codes" : language_codes
         }
         generated_code = template.render(context)
 
@@ -77,9 +116,17 @@ def Main():
     template_file_path = args.template
     data_file_path = args.inputs
 
-    cell_language_code_pairs = ExtractCellIds(ParseInputCsv(data_file_path))
+    cell_language_code_pairs, language_code_enum = ExtractCellIds(
+        ParseInputCsv(data_file_path))
 
-    GenerateCpp(output_path, template_file_path, cell_language_code_pairs)
+    cell_ids, language_counts = ExtractLanguageCodeCounts(
+        cell_language_code_pairs)
+    language_codes = ExtractLanguageCodeEnum(language_code_enum)
+    GenerateCpp(output_path,
+                template_file_path,
+                cell_ids,
+                language_counts,
+                language_codes)
 
 if __name__ == "__main__":
     Main()
