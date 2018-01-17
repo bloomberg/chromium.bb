@@ -15,39 +15,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.media.MediaCodecUtil.CodecCreationInfo;
 import org.chromium.media.MediaCodecUtil.MimeTypes;
 
-import java.nio.ByteBuffer;
-
 @JNINamespace("media")
 class MediaCodecBridgeBuilder {
     private static final String TAG = "cr_MediaCodecBridge";
-
-    private static MediaFormat createVideoDecoderFormat(String mime, int width, int height) {
-        return MediaFormat.createVideoFormat(mime, width, height);
-    }
-
-    private static void setCodecSpecificData(MediaFormat format, int index, byte[] bytes) {
-        // Codec Specific Data is set in the MediaFormat as ByteBuffer entries with keys csd-0,
-        // csd-1, and so on. See:
-        // http://developer.android.com/reference/android/media/MediaCodec.html for details.
-        String name;
-        switch (index) {
-            case 0:
-                name = "csd-0";
-                break;
-            case 1:
-                name = "csd-1";
-                break;
-            case 2:
-                name = "csd-2";
-                break;
-            default:
-                name = null;
-                return;
-        }
-        if (name != null && bytes.length > 0) {
-            format.setByteBuffer(name, ByteBuffer.wrap(bytes));
-        }
-    }
 
     @CalledByNative
     static MediaCodecBridge createVideoDecoder(String mime, @CodecType int codecType,
@@ -65,43 +35,17 @@ class MediaCodecBridgeBuilder {
         if (info.mediaCodec == null) return null;
 
         MediaCodecBridge bridge = new MediaCodecBridge(info.mediaCodec, info.bitrateAdjuster);
+        byte[][] csds = {csd0, csd1};
+        MediaFormat format = MediaFormatBuilder.createVideoDecoderFormat(mime, width, height, csds,
+                hdrMetadata, info.supportsAdaptivePlayback && allowAdaptivePlayback);
 
-        MediaFormat format = createVideoDecoderFormat(mime, width, height);
-        if (format == null) return null;
-
-        if (csd0.length > 0) {
-            setCodecSpecificData(format, 0, csd0);
-        }
-
-        if (csd1.length > 0) {
-            setCodecSpecificData(format, 1, csd1);
-        }
-
-        if (hdrMetadata != null) {
-            hdrMetadata.addMetadataToFormat(format);
-        }
-
-        if (!bridge.configureVideo(format, surface, mediaCrypto, 0,
-                    info.supportsAdaptivePlayback && allowAdaptivePlayback)) {
-            return null;
-        }
+        if (!bridge.configureVideo(format, surface, mediaCrypto, 0)) return null;
 
         if (!bridge.start()) {
             bridge.release();
             return null;
         }
         return bridge;
-    }
-
-    private static MediaFormat createVideoEncoderFormat(String mime, int width, int height,
-            int bitRate, int frameRate, int iFrameInterval, int colorFormat) {
-        MediaFormat format = MediaFormat.createVideoFormat(mime, width, height);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval);
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
-        Log.d(TAG, "video encoder format: " + format);
-        return format;
     }
 
     @CalledByNative
@@ -122,13 +66,11 @@ class MediaCodecBridgeBuilder {
         MediaCodecBridge bridge = mime.equals(MimeTypes.VIDEO_H264)
                 ? new MediaCodecEncoder(info.mediaCodec, info.bitrateAdjuster)
                 : new MediaCodecBridge(info.mediaCodec, info.bitrateAdjuster);
+        MediaFormat format = MediaFormatBuilder.createVideoEncoderFormat(mime, width, height,
+                bitRate, info.bitrateAdjuster.getInitialFrameRate(frameRate), iFrameInterval,
+                colorFormat, info.supportsAdaptivePlayback);
 
-        frameRate = info.bitrateAdjuster.getInitialFrameRate(frameRate);
-        MediaFormat format = createVideoEncoderFormat(
-                mime, width, height, bitRate, frameRate, iFrameInterval, colorFormat);
-
-        if (!bridge.configureVideo(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE,
-                    info.supportsAdaptivePlayback)) {
+        if (!bridge.configureVideo(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)) {
             return null;
         }
 
@@ -137,10 +79,6 @@ class MediaCodecBridgeBuilder {
             return null;
         }
         return bridge;
-    }
-
-    private static MediaFormat createAudioFormat(String mime, int sampleRate, int channelCount) {
-        return MediaFormat.createAudioFormat(mime, sampleRate, channelCount);
     }
 
     @CalledByNative
@@ -157,24 +95,9 @@ class MediaCodecBridgeBuilder {
         if (info.mediaCodec == null) return null;
 
         MediaCodecBridge bridge = new MediaCodecBridge(info.mediaCodec, info.bitrateAdjuster);
-
-        MediaFormat format = createAudioFormat(mime, sampleRate, channelCount);
-
-        if (csd0.length > 0) {
-            setCodecSpecificData(format, 0, csd0);
-        }
-
-        if (csd1.length > 0) {
-            setCodecSpecificData(format, 1, csd1);
-        }
-
-        if (csd2.length > 0) {
-            setCodecSpecificData(format, 2, csd2);
-        }
-
-        if (frameHasAdtsHeader) {
-            format.setInteger(MediaFormat.KEY_IS_ADTS, 1);
-        }
+        byte[][] csds = {csd0, csd1, csd2};
+        MediaFormat format = MediaFormatBuilder.createAudioFormat(
+                mime, sampleRate, channelCount, csds, frameHasAdtsHeader);
 
         if (!bridge.configureAudio(format, mediaCrypto, 0)) return null;
 
