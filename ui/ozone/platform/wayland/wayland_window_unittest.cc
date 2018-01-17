@@ -13,9 +13,9 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
-#include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
+#include "ui/ozone/test/mock_platform_window_delegate.h"
 
 using ::testing::Eq;
 using ::testing::Mock;

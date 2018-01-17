@@ -9,9 +9,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_features.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
-#include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
+#include "ui/ozone/test/mock_platform_window_delegate.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"

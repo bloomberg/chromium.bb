@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_MOCK_PLATFORM_WINDOW_DELEGATE_H_
-#define UI_OZONE_PLATFORM_WAYLAND_MOCK_PLATFORM_WINDOW_DELEGATE_H_
+#ifndef UI_OZONE_TEST_MOCK_PLATFORM_WINDOW_DELEGATE_H_
+#define UI_OZONE_TEST_MOCK_PLATFORM_WINDOW_DELEGATE_H_
 
-#include "ui/platform_window/platform_window_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
@@ -34,4 +34,4 @@ class MockPlatformWindowDelegate : public PlatformWindowDelegate {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_MOCK_PLATFORM_WINDOW_DELEGATE_H_
+#endif  // UI_OZONE_TEST_MOCK_PLATFORM_WINDOW_DELEGATE_H_
