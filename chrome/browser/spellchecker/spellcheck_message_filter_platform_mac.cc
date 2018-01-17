@@ -103,9 +103,8 @@ void SpellingRequest::RequestCheck(const base::string16& text,
 
   // Send the remote query out. The barrier owns |this|, ensuring it is deleted
   // after completion.
-  completion_barrier_ =
-      BarrierClosure(2, base::BindRepeating(&SpellingRequest::OnCheckCompleted,
-                                            base::Owned(this)));
+  completion_barrier_ = BarrierClosure(
+      2, base::BindOnce(&SpellingRequest::OnCheckCompleted, base::Owned(this)));
   RequestRemoteCheck();
   RequestLocalCheck();
 }
