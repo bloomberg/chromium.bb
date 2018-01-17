@@ -270,7 +270,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return curr;
   }
 
-  LayoutPoint Location() const;
+  LayoutPoint Location() const {
+#if DCHECK_IS_ON()
+    DCHECK(!needs_position_update_);
+#endif
+    return LocationInternal();
+  }
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
@@ -286,7 +291,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // For LayoutTreeAsText
   LayoutRect RectIgnoringNeedsPositionUpdate() const {
-    return LayoutRect(Location(), size_);
+    return LayoutRect(LocationInternal(), size_);
   }
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
@@ -1171,6 +1176,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       CalculateBoundsOptions) const;
 
   FloatRect FilterReferenceBox(const FilterOperations&, float zoom) const;
+
+  LayoutPoint LocationInternal() const;
 
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
