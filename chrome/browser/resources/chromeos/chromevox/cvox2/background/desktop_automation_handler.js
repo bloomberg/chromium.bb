@@ -238,7 +238,10 @@ DesktopAutomationHandler.prototype = {
     var node = evt.target;
     var range = cursors.Range.fromNode(node);
 
-    new Output().withSpeechAndBraille(range, null, evt.type).go();
+    new Output()
+        .withSpeechCategory(cvox.TtsCategory.LIVE)
+        .withSpeechAndBraille(range, null, evt.type)
+        .go();
   },
 
   onBlur: function(evt) {
