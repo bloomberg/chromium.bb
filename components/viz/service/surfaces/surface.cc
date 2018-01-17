@@ -175,6 +175,11 @@ bool Surface::QueueFrame(
                   aggregated_damage_callback, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
+    base::Optional<uint32_t> deadline_in_frames =
+        GetPendingFrame().metadata.deadline_in_frames;
+    if (deadline_in_frames)
+      deadline_.Set(*deadline_in_frames);
+
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
     surface_manager_->RequestSurfaceResolution(this);
@@ -243,10 +248,8 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
 }
 
 void Surface::ActivatePendingFrameForDeadline() {
-  if (!pending_frame_data_ ||
-      !pending_frame_data_->frame.metadata.can_activate_before_dependencies) {
+  if (!pending_frame_data_)
     return;
-  }
 
   // If a frame is being activated because of a deadline, then clear its set
   // of blockers.

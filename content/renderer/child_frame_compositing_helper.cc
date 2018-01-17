@@ -268,7 +268,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   surface_layer_->SetMasksToBounds(true);
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  surface_layer_->SetPrimarySurfaceId(surface_id);
+  surface_layer_->SetPrimarySurfaceId(surface_id, base::nullopt);
   surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);
 
   std::unique_ptr<cc_blink::WebLayerImpl> layer(

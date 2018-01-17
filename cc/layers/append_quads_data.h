@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/optional.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/surfaces/surface_id.h"
 
@@ -30,6 +31,11 @@ class CC_EXPORT AppendQuadsData {
   int64_t checkerboarded_no_recording_content_area = 0;
   // This is the area within interest rect.
   int64_t checkerboarded_needs_raster_content_area = 0;
+
+  // The non-default number of BeginFrames to wait before forcibly activating
+  // this CompositorFrame.
+  base::Optional<uint32_t> deadline_in_frames;
+
   // This is the set of surface IDs that must have corresponding
   // active CompositorFrames so that this CompositorFrame can
   // activate.

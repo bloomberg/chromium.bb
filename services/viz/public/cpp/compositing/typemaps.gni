@@ -8,6 +8,7 @@ typemaps = [
   "//services/viz/public/cpp/compositing/compositor_frame_metadata.typemap",
   "//services/viz/public/cpp/compositing/filter_operation.typemap",
   "//services/viz/public/cpp/compositing/filter_operations.typemap",
+  "//services/viz/public/cpp/compositing/frame_deadline.typemap",
   "//services/viz/public/cpp/compositing/copy_output_request.typemap",
   "//services/viz/public/cpp/compositing/copy_output_result.typemap",
   "//services/viz/public/cpp/compositing/frame_sink_id.typemap",

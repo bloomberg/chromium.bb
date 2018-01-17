@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
+import "services/viz/public/interfaces/compositing/frame_deadline.mojom";
 import "services/viz/public/interfaces/compositing/selection.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "ui/latency/mojo/latency_info.mojom";
@@ -31,8 +32,8 @@ struct CompositorFrameMetadata {
   Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
   array<SurfaceId> referenced_surfaces;
+  FrameDeadline? deadline_in_frames;
   array<SurfaceId> activation_dependencies;
-  bool can_activate_before_dependencies;
   uint32 content_source_id;
   BeginFrameAck begin_frame_ack;
   uint32 frame_token;

@@ -124,10 +124,6 @@ void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
   const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
   // Determine an activation deadline for the pending CompositorFrame.
-  bool needs_deadline = pending_frame.metadata.can_activate_before_dependencies;
-  if (!needs_deadline)
-    return;
-
   bool deadline_changed = false;
 
   // Inherit the deadline from the first parent blocked on this surface.
