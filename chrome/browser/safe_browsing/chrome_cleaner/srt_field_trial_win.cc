@@ -28,10 +28,10 @@ const char kDownloadRootPath[] =
 // The download links of the Software Removal Tool.
 const char kMainSRTDownloadURL[] =
     "https://dl.google.com/dl"
-    "/softwareremovaltool/win/chrome_cleanup_tool.exe?chrome-prompt=1";
+    "/softwareremovaltool/win/chrome_cleanup_tool.exe";
 const char kCanarySRTDownloadURL[] =
     "https://dl.google.com/dl"
-    "/softwareremovaltool/win/c/chrome_cleanup_tool.exe?chrome-prompt=1";
+    "/softwareremovaltool/win/c/chrome_cleanup_tool.exe";
 
 }  // namespace
 
@@ -89,7 +89,7 @@ GURL GetSRTDownloadURL() {
   // https://dl.google.com/.../win/{arch}/{group}/chrome_cleanup_tool.exe
   std::string download_url_str = std::string(kDownloadRootPath) + architecture +
                                  "/" + download_group +
-                                 "/chrome_cleanup_tool.exe?chrome-prompt=1";
+                                 "/chrome_cleanup_tool.exe";
   GURL download_url(download_url_str);
 
   // Ensure URL construction didn't change origin.
