@@ -49,7 +49,7 @@ class EmbeddedAshService : public service_manager::Service {
 
 std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  return base::MakeUnique<EmbeddedAshService>(task_runner);
+  return std::make_unique<EmbeddedAshService>(task_runner);
 }
 
 bool ShouldOpenAshOnStartup() {

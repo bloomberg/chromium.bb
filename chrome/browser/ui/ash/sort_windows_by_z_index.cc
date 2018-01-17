@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/sort_windows_by_z_index.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/shell.h"
@@ -11,7 +12,6 @@
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/aura/window.h"
@@ -55,7 +55,7 @@ void DoSortWindowsByZIndex(std::unique_ptr<aura::WindowTracker> window_tracker,
 
 void SortWindowsByZIndex(const std::vector<aura::Window*>& windows,
                          SortWindowsByZIndexCallback callback) {
-  auto window_tracker = base::MakeUnique<aura::WindowTracker>();
+  auto window_tracker = std::make_unique<aura::WindowTracker>();
   for (aura::Window* window : windows)
     window_tracker->Add(window);
   base::SequencedTaskRunnerHandle::Get()->PostTask(

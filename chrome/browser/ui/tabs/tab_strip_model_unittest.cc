@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -198,7 +197,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   // Sets the id of the specified contents.
   void SetID(WebContents* contents, int id) {
     contents->SetUserData(&kTabStripModelTestIDUserDataKey,
-                          base::MakeUnique<TabStripModelTestIDUserData>(id));
+                          std::make_unique<TabStripModelTestIDUserData>(id));
   }
 
   // Returns the id of the specified contents.

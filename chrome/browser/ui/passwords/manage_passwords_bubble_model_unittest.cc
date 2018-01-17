@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +101,7 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
-  return base::MakeUnique<TestSyncService>(static_cast<Profile*>(context));
+  return std::make_unique<TestSyncService>(static_cast<Profile*>(context));
 }
 
 }  // namespace

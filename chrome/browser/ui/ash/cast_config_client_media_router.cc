@@ -10,7 +10,6 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -166,7 +165,7 @@ CastDeviceCache* CastConfigClientMediaRouter::devices() {
   // The CastDeviceCache instance is lazily allocated because the MediaRouter
   // component is not ready when the constructor is invoked.
   if (!devices_ && GetMediaRouter()) {
-    devices_ = base::MakeUnique<CastDeviceCache>(this);
+    devices_ = std::make_unique<CastDeviceCache>(this);
     devices_->Init();
   }
 

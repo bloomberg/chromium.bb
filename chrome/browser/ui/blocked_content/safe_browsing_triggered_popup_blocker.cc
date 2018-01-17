@@ -102,7 +102,7 @@ SafeBrowsingTriggeredPopupBlocker::SafeBrowsingTriggeredPopupBlocker(
     subresource_filter::SubresourceFilterObserverManager* observer_manager)
     : content::WebContentsObserver(web_contents),
       scoped_observer_(this),
-      current_page_data_(base::MakeUnique<PageData>()),
+      current_page_data_(std::make_unique<PageData>()),
       ignore_sublists_(
           base::GetFieldTrialParamByFeatureAsBool(kAbusiveExperienceEnforce,
                                                   kIgnoreSublistsParam,
@@ -126,7 +126,7 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
   }
 
   DCHECK(current_page_data_);
-  current_page_data_ = base::MakeUnique<PageData>();
+  current_page_data_ = std::make_unique<PageData>();
   if (navigation_handle->IsErrorPage())
     return;
 

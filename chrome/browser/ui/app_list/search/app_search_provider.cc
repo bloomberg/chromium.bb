@@ -111,7 +111,7 @@ class AppSearchProvider::App {
     // construction of every App, but rather, only when needed (i.e. when the
     // query is not empty and cache the result.
     if (!tokenized_indexed_name_)
-      tokenized_indexed_name_ = base::MakeUnique<TokenizedString>(name_);
+      tokenized_indexed_name_ = std::make_unique<TokenizedString>(name_);
     return tokenized_indexed_name_.get();
   }
 
@@ -186,7 +186,7 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
-    return base::MakeUnique<ExtensionAppResult>(
+    return std::make_unique<ExtensionAppResult>(
         profile(), app_id, list_controller, is_recommended);
   }
 
@@ -220,7 +220,7 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
         continue;
       }
 
-      apps->emplace_back(base::MakeUnique<AppSearchProvider::App>(
+      apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, extension->id(), extension->short_name(),
           prefs->GetLastLaunchTime(extension->id()),
           prefs->GetInstallTime(extension->id())));
@@ -263,7 +263,7 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       if (!app_info->launchable || !app_info->showInLauncher)
         continue;
 
-      apps->emplace_back(base::MakeUnique<AppSearchProvider::App>(
+      apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, app_info->name, app_info->last_launch_time,
           app_info->install_time));
     }
@@ -273,7 +273,7 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
-    return base::MakeUnique<ArcAppResult>(profile(), app_id, list_controller,
+    return std::make_unique<ArcAppResult>(profile(), app_id, list_controller,
                                           is_recommended);
   }
 
@@ -307,9 +307,9 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       clock_(std::move(clock)),
       update_results_factory_(this) {
   data_sources_.emplace_back(
-      base::MakeUnique<ExtensionDataSource>(profile, this));
+      std::make_unique<ExtensionDataSource>(profile, this));
   if (arc::IsArcAllowedForProfile(profile))
-    data_sources_.emplace_back(base::MakeUnique<ArcDataSource>(profile, this));
+    data_sources_.emplace_back(std::make_unique<ArcDataSource>(profile, this));
 }
 
 AppSearchProvider::~AppSearchProvider() {}

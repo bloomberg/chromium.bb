@@ -12,7 +12,6 @@
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -1018,7 +1017,7 @@ AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
     sync_pb::AppListSpecifics::AppListItemType item_type) {
   DCHECK(!base::ContainsKey(sync_items_, item_id));
-  sync_items_[item_id] = base::MakeUnique<SyncItem>(item_id, item_type);
+  sync_items_[item_id] = std::make_unique<SyncItem>(item_id, item_type);
   return sync_items_[item_id].get();
 }
 

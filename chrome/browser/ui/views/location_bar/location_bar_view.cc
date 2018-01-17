@@ -6,10 +6,10 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -189,7 +189,7 @@ void LocationBarView::Init() {
 
   // Initialize the Omnibox view.
   omnibox_view_ = new OmniboxViewViews(
-      this, base::MakeUnique<ChromeOmniboxClient>(this, profile()),
+      this, std::make_unique<ChromeOmniboxClient>(this, profile()),
       command_updater(), is_popup_mode_, this, font_list);
   omnibox_view_->Init();
   AddChildView(omnibox_view_);
@@ -618,7 +618,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   } else {
     // This border color will be blended on top of the toolbar (which may use an
     // image in the case of themes).
-    SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
+    SetBackground(std::make_unique<BackgroundWith1PxBorder>(
         GetColor(BACKGROUND), GetBorderColor()));
   }
   SchedulePaint();

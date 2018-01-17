@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -164,7 +163,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // Mark as adopted.
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
-                            base::MakeUnique<base::SupportsUserData::Data>());
+                            std::make_unique<base::SupportsUserData::Data>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Set the view type.
@@ -238,7 +237,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // ChromeSubresourceFilterClient being available in its constructor.
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PopupOpenerTabHelper::CreateForWebContents(
-      web_contents, base::MakeUnique<base::DefaultTickClock>());
+      web_contents, std::make_unique<base::DefaultTickClock>());
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   PreviewsInfoBarTabHelper::CreateForWebContents(web_contents);

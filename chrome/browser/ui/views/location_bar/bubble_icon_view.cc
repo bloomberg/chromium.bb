@@ -173,7 +173,7 @@ SkColor BubbleIconView::GetInkDropBaseColor() const {
 
 std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
     const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       gfx::Size(kDefaultInkDropSize, kDefaultInkDropSize),
       GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());

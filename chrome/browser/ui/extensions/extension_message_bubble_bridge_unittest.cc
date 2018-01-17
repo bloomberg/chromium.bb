@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,12 +39,12 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildOverrideRegistrar(
     content::BrowserContext* context) {
-  return base::MakeUnique<extensions::ExtensionWebUIOverrideRegistrar>(context);
+  return std::make_unique<extensions::ExtensionWebUIOverrideRegistrar>(context);
 }
 
 std::unique_ptr<KeyedService> BuildToolbarModel(
     content::BrowserContext* context) {
-  return base::MakeUnique<ToolbarActionsModel>(
+  return std::make_unique<ToolbarActionsModel>(
       Profile::FromBrowserContext(context),
       extensions::ExtensionPrefs::Get(context));
 }
@@ -174,7 +173,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest, SuspiciousExtensionBubble) {
   // extension. (Note: The bubble logic itself is tested more thoroughly in
   // extension_message_bubble_controller_unittest.cc.)
   auto suspicious_bubble_controller =
-      base::MakeUnique<extensions::ExtensionMessageBubbleController>(
+      std::make_unique<extensions::ExtensionMessageBubbleController>(
           new extensions::SuspiciousExtensionBubbleDelegate(profile()),
           browser());
   EXPECT_TRUE(suspicious_bubble_controller->ShouldShow());
@@ -184,7 +183,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest, SuspiciousExtensionBubble) {
   // Create a new bridge and poke at a few of the methods to verify they are
   // correct and that nothing crashes.
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> bridge =
-      base::MakeUnique<ExtensionMessageBubbleBridge>(
+      std::make_unique<ExtensionMessageBubbleBridge>(
           std::move(suspicious_bubble_controller));
   EXPECT_TRUE(bridge->ShouldShow());
   EXPECT_FALSE(bridge->ShouldCloseOnDeactivate());

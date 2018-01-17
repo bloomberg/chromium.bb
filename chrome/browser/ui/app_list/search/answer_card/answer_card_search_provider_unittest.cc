@@ -70,7 +70,7 @@ class MockAnswerCardContents : public AnswerCardContents {
 
 std::unique_ptr<KeyedService> CreateTemplateURLService(
     content::BrowserContext* context) {
-  return base::MakeUnique<TemplateURLService>(nullptr, 0);
+  return std::make_unique<TemplateURLService>(nullptr, 0);
 }
 
 }  // namespace
@@ -137,7 +137,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
     model_updater_->SetSearchEngineIsGoogle(true);
 
-    controller_ = base::MakeUnique<::test::TestAppListControllerDelegate>();
+    controller_ = std::make_unique<::test::TestAppListControllerDelegate>();
 
     // Set up card server URL.
     std::map<std::string, std::string> params;
@@ -147,7 +147,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     scoped_refptr<base::FieldTrial> trial =
         base::FieldTrialList::CreateFieldTrial("TestTrial", "TestGroup");
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         features::kEnableAnswerCard.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());

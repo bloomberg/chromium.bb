@@ -24,7 +24,7 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
     // Replace the actions factory with a mock one.
     toolbar_model_ = ToolbarActionsModel::Get(browser()->profile());
     toolbar_model_->SetMockActionsFactoryForTest(
-        base::MakeUnique<MockComponentToolbarActionsFactory>(
+        std::make_unique<MockComponentToolbarActionsFactory>(
             browser()->profile()));
   }
 

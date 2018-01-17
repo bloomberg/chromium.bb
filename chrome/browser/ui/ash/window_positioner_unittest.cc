@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_positioner.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/test/ash_test_base.h"
@@ -77,7 +78,7 @@ void WindowPositionerTest::SetUp() {
   // as they need it.
   window()->Hide();
   popup()->Hide();
-  window_positioner_ = base::MakeUnique<WindowPositioner>();
+  window_positioner_ = std::make_unique<WindowPositioner>();
 }
 
 void WindowPositionerTest::TearDown() {

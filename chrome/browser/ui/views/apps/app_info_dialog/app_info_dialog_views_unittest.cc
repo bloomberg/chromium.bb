@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -289,7 +288,7 @@ TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
   // Re-show App Info but for non-primary profile.
   CloseAppInfo();
   std::unique_ptr<TestingProfile> other_profile =
-      base::MakeUnique<TestingProfile>();
+      std::make_unique<TestingProfile>();
   extension_environment_.CreateExtensionServiceForProfile(other_profile.get());
   scoped_refptr<const extensions::Extension> other_app =
       extension_environment_.MakePackagedApp(extension_misc::kChromeAppId,

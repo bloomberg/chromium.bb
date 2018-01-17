@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/extensions/bookmark_app_confirmation_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -63,7 +63,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   views::ImageView* icon_image_view = new views::ImageView();
   gfx::Size image_size(icon_size, icon_size);
   gfx::ImageSkia image(
-      base::MakeUnique<WebAppInfoImageSource>(icon_size, web_app_info_.icons),
+      std::make_unique<WebAppInfoImageSource>(icon_size, web_app_info_.icons),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/payments/payment_handler_web_flow_view_controller.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
@@ -33,7 +35,7 @@ base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
 
 void PaymentHandlerWebFlowViewController::FillContentView(
     views::View* content_view) {
-  content_view->SetLayoutManager(base::MakeUnique<views::FillLayout>());
+  content_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   std::unique_ptr<views::WebView> web_view =
       std::make_unique<views::WebView>(profile_);
 

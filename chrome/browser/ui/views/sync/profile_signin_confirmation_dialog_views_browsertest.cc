@@ -58,7 +58,7 @@ class ProfileSigninConfirmationDialogTest : public DialogBrowserTest {
     TabDialogs::FromWebContents(web_contents)
         ->ShowProfileSigninConfirmation(
             browser(), profile, "username@example.com",
-            base::MakeUnique<TestSigninDialogDelegate>());
+            std::make_unique<TestSigninDialogDelegate>());
   }
 
  private:

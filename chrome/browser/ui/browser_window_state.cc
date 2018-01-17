@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,7 +59,7 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
     base::DictionaryValue* all_apps_dict = DictionaryPrefUpdate::Get();
     base::DictionaryValue* this_app_dict_weak = NULL;
     if (!all_apps_dict->GetDictionary(window_name_, &this_app_dict_weak)) {
-      auto this_app_dict = base::MakeUnique<base::DictionaryValue>();
+      auto this_app_dict = std::make_unique<base::DictionaryValue>();
       this_app_dict_weak = this_app_dict.get();
       all_apps_dict->Set(window_name_, std::move(this_app_dict));
     }
@@ -89,7 +88,7 @@ std::unique_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(
   DCHECK(!window_name.empty());
   // A normal DictionaryPrefUpdate will suffice for non-app windows.
   if (prefs->FindPreference(window_name)) {
-    return base::MakeUnique<DictionaryPrefUpdate>(prefs, window_name);
+    return std::make_unique<DictionaryPrefUpdate>(prefs, window_name);
   }
   return std::unique_ptr<DictionaryPrefUpdate>(
       new WindowPlacementPrefUpdate(prefs, window_name));

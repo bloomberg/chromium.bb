@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/certificate_selector.h"
 
+#include <memory>
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +25,7 @@ class TestCertificateSelector : public chrome::CertificateSelector {
                           content::WebContents* web_contents)
       : chrome::CertificateSelector(std::move(identities), web_contents) {
     std::unique_ptr<views::Label> label =
-        base::MakeUnique<views::Label>(l10n_util::GetStringFUTF16(
+        std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
             IDS_CLIENT_CERT_DIALOG_TEXT, base::ASCIIToUTF16("example.com")));
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

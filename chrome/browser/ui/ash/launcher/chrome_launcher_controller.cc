@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -259,7 +258,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   }
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
   app_window_controllers_.push_back(
-      base::MakeUnique<ArcAppWindowLauncherController>(this));
+      std::make_unique<ArcAppWindowLauncherController>(this));
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -714,7 +713,7 @@ ChromeLauncherController::ScopedPinSyncDisabler
 ChromeLauncherController::GetScopedPinSyncDisabler() {
   // Only one temporary disabler should not exist at a time.
   DCHECK(should_sync_pin_changes_);
-  return base::MakeUnique<base::AutoReset<bool>>(&should_sync_pin_changes_,
+  return std::make_unique<base::AutoReset<bool>>(&should_sync_pin_changes_,
                                                  false);
 }
 
@@ -1107,7 +1106,7 @@ void ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
   browser_shortcut.title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   std::unique_ptr<BrowserShortcutLauncherItemController> item_delegate =
-      base::MakeUnique<BrowserShortcutLauncherItemController>(model_);
+      std::make_unique<BrowserShortcutLauncherItemController>(model_);
   BrowserShortcutLauncherItemController* item_controller = item_delegate.get();
   // Set the delegate first to avoid constructing another one in ShelfItemAdded.
   model_->SetShelfItemDelegate(browser_shortcut.id, std::move(item_delegate));
@@ -1165,7 +1164,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // one for some functions of LauncherControllerHelper or create a new one.
   if (!launcher_controller_helper_.get()) {
     launcher_controller_helper_ =
-        base::MakeUnique<LauncherControllerHelper>(profile_);
+        std::make_unique<LauncherControllerHelper>(profile_);
   } else {
     launcher_controller_helper_->set_profile(profile_);
   }
@@ -1176,13 +1175,13 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.
   std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
-      base::MakeUnique<extensions::ChromeAppIconLoader>(
+      std::make_unique<extensions::ChromeAppIconLoader>(
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
 
   if (arc::IsArcAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader =
-        base::MakeUnique<ArcAppIconLoader>(
+        std::make_unique<ArcAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_SMALL, this);
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
@@ -1322,7 +1321,7 @@ void ChromeLauncherController::OnShelfItemDelegateChanged(
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
   if (delegate.is_bound()) {
     model_->SetShelfItemDelegate(id,
-                                 base::MakeUnique<ash::RemoteShelfItemDelegate>(
+                                 std::make_unique<ash::RemoteShelfItemDelegate>(
                                      id, std::move(delegate)));
   } else {
     model_->SetShelfItemDelegate(id, nullptr);

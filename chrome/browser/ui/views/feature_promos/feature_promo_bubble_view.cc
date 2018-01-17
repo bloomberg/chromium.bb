@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,7 +60,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
 
-  auto box_layout = base::MakeUnique<views::BoxLayout>(
+  auto box_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);

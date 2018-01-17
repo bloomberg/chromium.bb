@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
@@ -35,7 +37,7 @@ ash::ShelfAction SelectShelfItem(const ash::ShelfID& id,
         std::make_unique<ui::MouseEvent>(event_type, gfx::Point(), gfx::Point(),
                                          ui::EventTimeForNow(), ui::EF_NONE, 0);
   } else if (event_type == ui::ET_KEY_RELEASED) {
-    event = base::MakeUnique<ui::KeyEvent>(event_type, ui::VKEY_UNKNOWN,
+    event = std::make_unique<ui::KeyEvent>(event_type, ui::VKEY_UNKNOWN,
                                            ui::EF_NONE);
   }
 

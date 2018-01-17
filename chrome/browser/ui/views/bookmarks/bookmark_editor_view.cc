@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -471,7 +470,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
     EditorNode* parent) {
   return tree_model_->Add(
       parent,
-      base::MakeUnique<EditorNode>(
+      std::make_unique<EditorNode>(
           l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME), 0),
       parent->child_count());
 }
@@ -502,7 +501,7 @@ void BookmarkEditorView::ExpandAndSelect() {
 std::unique_ptr<BookmarkEditorView::EditorNode>
 BookmarkEditorView::CreateRootNode() {
   std::unique_ptr<EditorNode> root_node =
-      base::MakeUnique<EditorNode>(base::string16(), 0);
+      std::make_unique<EditorNode>(base::string16(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node.get());
   DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 4);
@@ -520,7 +519,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
     if (child_bb_node->IsVisible() && child_bb_node->is_folder() &&
         bb_model_->client()->CanBeEditedByUser(child_bb_node)) {
       EditorNode* new_b_node =
-          b_node->Add(base::MakeUnique<EditorNode>(child_bb_node->GetTitle(),
+          b_node->Add(std::make_unique<EditorNode>(child_bb_node->GetTitle(),
                                                    child_bb_node->id()),
                       b_node->child_count());
       CreateNodes(child_bb_node, new_b_node);

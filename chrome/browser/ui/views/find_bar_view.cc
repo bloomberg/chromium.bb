@@ -8,7 +8,6 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -151,7 +150,7 @@ FindBarView::FindBarView(FindBarHost* host)
   EnableCanvasFlippingForRTLUI(true);
 
   match_count_text_->SetEventTargeter(
-      base::MakeUnique<views::ViewTargeter>(this));
+      std::make_unique<views::ViewTargeter>(this));
   AddChildViewAt(match_count_text_, 1);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
@@ -443,10 +442,9 @@ const char* FindBarView::GetClassName() const {
 void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SkColor bg_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-  auto border = base::MakeUnique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      bg_color);
-  SetBackground(base::MakeUnique<views::BubbleBackground>(border.get()));
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW, bg_color);
+  SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 
   match_count_text_->SetBackgroundColor(bg_color);

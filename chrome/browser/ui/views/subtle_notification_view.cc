@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -145,7 +144,7 @@ SubtleNotificationView::SubtleNotificationView(
   std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
       views::BubbleBorder::NONE, views::BubbleBorder::NO_ASSETS,
       kBackgroundColor));
-  SetBackground(base::MakeUnique<views::BubbleBackground>(bubble_border.get()));
+  SetBackground(std::make_unique<views::BubbleBackground>(bubble_border.get()));
   SetBorder(std::move(bubble_border));
 
   instruction_view_ =

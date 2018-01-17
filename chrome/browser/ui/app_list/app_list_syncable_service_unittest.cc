@@ -277,8 +277,8 @@ TEST_F(AppListSyncableServiceTest, InitialMerge) {
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
-      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId1));
@@ -301,8 +301,8 @@ TEST_F(AppListSyncableServiceTest, InitialMerge_BadData) {
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
-      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
   // Invalid item_ordinal and item_pin_ordinal.
@@ -356,8 +356,8 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate) {
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
-      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId1));
@@ -401,8 +401,8 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
-      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId));
@@ -434,8 +434,8 @@ TEST_F(AppListSyncableServiceTest, InitialMerge_NoDriveAppData) {
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
-      base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
   ASSERT_FALSE(GetSyncItem(kDriveAppItemId));

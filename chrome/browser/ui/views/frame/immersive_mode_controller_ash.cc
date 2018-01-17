@@ -8,7 +8,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -230,7 +229,7 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
     return;
 
   DCHECK(!mash_reveal_widget_);
-  mash_reveal_widget_ = base::MakeUnique<views::Widget>();
+  mash_reveal_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_POPUP);
   init_params.mus_properties
       [ui::mojom::WindowManager::kRenderParentTitleArea_Property] =

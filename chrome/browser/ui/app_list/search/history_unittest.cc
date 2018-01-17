@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -109,7 +108,7 @@ class SearchHistoryTest : public testing::Test {
     const base::FilePath data_file =
         temp_dir_.GetPath().AppendASCII(kStoreDataFileName);
     history_.reset();
-    history_ = base::MakeUnique<History>(base::MakeRefCounted<HistoryDataStore>(
+    history_ = std::make_unique<History>(base::MakeRefCounted<HistoryDataStore>(
         base::MakeRefCounted<DictionaryDataStore>(data_file)));
 
     // Replace |data_| with test params.

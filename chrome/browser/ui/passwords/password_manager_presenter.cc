@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -265,7 +264,7 @@ PasswordManagerPresenter::GetAllPasswords() {
   std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
 
   for (const auto& form : password_list_) {
-    ret_val.push_back(base::MakeUnique<autofill::PasswordForm>(*form));
+    ret_val.push_back(std::make_unique<autofill::PasswordForm>(*form));
   }
 
   return ret_val;

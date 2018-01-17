@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/overlay/overlay_surface_embedder.h"
 
+#include <memory>
+
 #include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "ui/compositor/layer.h"
 
 OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
     : window_(window) {
-  surface_layer_ = base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED);
+  surface_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
   surface_layer_->SetMasksToBounds(true);
 
   // The frame provided by the parent window's layer needs to show through

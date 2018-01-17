@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/status_icons/status_tray_mac.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/cocoa/status_icons/status_icon_mac.h"
 
 StatusTray* StatusTray::Create() {
@@ -20,7 +20,7 @@ std::unique_ptr<StatusIcon> StatusTrayMac::CreatePlatformStatusIcon(
     StatusIconType type,
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
-  auto icon = base::MakeUnique<StatusIconMac>();
+  auto icon = std::make_unique<StatusIconMac>();
   icon->SetImage(image);
   icon->SetToolTip(tool_tip);
   return std::move(icon);

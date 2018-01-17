@@ -31,7 +31,7 @@ class ArcPlayStoreSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
     arc_test_.SetUp(profile());
-    controller_ = base::MakeUnique<test::TestAppListControllerDelegate>();
+    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
   }
 
   void TearDown() override {
@@ -42,7 +42,7 @@ class ArcPlayStoreSearchProviderTest : public AppListTestBase {
 
  protected:
   std::unique_ptr<ArcPlayStoreSearchProvider> CreateSearch(int max_results) {
-    return base::MakeUnique<ArcPlayStoreSearchProvider>(
+    return std::make_unique<ArcPlayStoreSearchProvider>(
         max_results, profile_.get(), controller_.get());
   }
 

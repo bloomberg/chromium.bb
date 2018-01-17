@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -117,20 +116,20 @@ class AppMenuControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    local_device_ = base::MakeUnique<syncer::LocalDeviceInfoProviderMock>(
+    local_device_ = std::make_unique<syncer::LocalDeviceInfoProviderMock>(
         "AppMenuControllerTest", "Test Machine", "Chromium 10k", "Chrome 10k",
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
 
     controller_.reset([[AppMenuController alloc] initWithBrowser:browser()]);
 
-    fake_model_ = base::MakeUnique<MockAppMenuModel>();
+    fake_model_ = std::make_unique<MockAppMenuModel>();
 
-    sync_prefs_ = base::MakeUnique<syncer::SyncPrefs>(profile()->GetPrefs());
+    sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile()->GetPrefs());
 
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
 
-    manager_ = base::MakeUnique<sync_sessions::SessionsSyncManager>(
+    manager_ = std::make_unique<sync_sessions::SessionsSyncManager>(
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
             ->GetSyncSessionsClient(),

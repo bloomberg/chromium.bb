@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/tab_dialogs_views.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
@@ -20,7 +21,7 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
   if (!FromWebContents(contents)) {
     contents->SetUserData(UserDataKey(),
-                          base::MakeUnique<TabDialogsViews>(contents));
+                          std::make_unique<TabDialogsViews>(contents));
   }
 }
 

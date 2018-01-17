@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
@@ -122,7 +124,7 @@ class AutofillPopupViewNativeViewsTest : public views::ViewsTestBase {
 
   void CreateAndShowView(const std::vector<int>& ids) {
     autofill_popup_controller_.set_suggestions(ids);
-    view_ = base::MakeUnique<autofill::AutofillPopupViewNativeViews>(
+    view_ = std::make_unique<autofill::AutofillPopupViewNativeViews>(
         &autofill_popup_controller_, &widget_);
     widget_.SetContentsView(view_.get());
 

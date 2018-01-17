@@ -128,9 +128,9 @@ void SSLClientCertificateSelectorCocoaTest::SetUpInProcessBrowserTestFixture() {
 net::ClientCertIdentityList
 SSLClientCertificateSelectorCocoaTest::GetTestCertificateList() {
   net::ClientCertIdentityList client_cert_list;
-  client_cert_list.push_back(base::MakeUnique<net::ClientCertIdentityMac>(
+  client_cert_list.push_back(std::make_unique<net::ClientCertIdentityMac>(
       client_cert1_, base::ScopedCFTypeRef<SecIdentityRef>(sec_identity1_)));
-  client_cert_list.push_back(base::MakeUnique<net::ClientCertIdentityMac>(
+  client_cert_list.push_back(std::make_unique<net::ClientCertIdentityMac>(
       client_cert2_, base::ScopedCFTypeRef<SecIdentityRef>(sec_identity2_)));
   return client_cert_list;
 }

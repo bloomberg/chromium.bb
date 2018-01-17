@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #import "base/mac/mac_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -115,7 +114,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
     content_setting_decorations_.push_back(
-        base::MakeUnique<ContentSettingDecoration>(std::move(model), this,
+        std::make_unique<ContentSettingDecoration>(std::move(model), this,
                                                    profile));
   }
 

@@ -88,7 +88,7 @@ ShippingOptionViewController::ShippingOptionViewController(
       shipping_option_list_(dialog) {
   spec->AddObserver(this);
   for (const auto& option : spec->GetShippingOptions()) {
-    shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(
+    shipping_option_list_.AddItem(std::make_unique<ShippingOptionItem>(
         option.get(), spec, state, &shipping_option_list_, dialog,
         option.get() == spec->selected_shipping_option()));
   }

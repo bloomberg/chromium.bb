@@ -11,7 +11,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -205,7 +204,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   // since the old contents and the new contents will be the same...
   WebContents* active_contents = GetActiveWebContents();
   std::unique_ptr<WebContentsData> data =
-      base::MakeUnique<WebContentsData>(this, contents);
+      std::make_unique<WebContentsData>(this, contents);
   data->set_pinned(pin);
   if ((add_types & ADD_INHERIT_GROUP) && active_contents) {
     if (active) {

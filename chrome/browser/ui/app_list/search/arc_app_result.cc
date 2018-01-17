@@ -60,7 +60,7 @@ void ArcAppResult::Open(int event_flags) {
 
 std::unique_ptr<SearchResult> ArcAppResult::Duplicate() const {
   std::unique_ptr<SearchResult> copy =
-      base::MakeUnique<ArcAppResult>(profile(), app_id(), controller(),
+      std::make_unique<ArcAppResult>(profile(), app_id(), controller(),
                                      display_type() == DISPLAY_RECOMMENDATION);
   copy->set_title(title());
   copy->set_title_tags(title_tags());

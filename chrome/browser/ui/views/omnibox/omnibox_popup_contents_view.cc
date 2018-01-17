@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -238,14 +239,14 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   if (narrow_popup) {
     SkColor background_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ResultsTableNormalBackground);
-    auto border = base::MakeUnique<views::BubbleBorder>(
+    auto border = std::make_unique<views::BubbleBorder>(
         views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
         background_color);
 
     // Outdent the popup to factor in the shadow size.
     new_target_bounds.Inset(-border->GetInsets());
 
-    SetBackground(base::MakeUnique<views::BubbleBackground>(border.get()));
+    SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
     SetBorder(std::move(border));
   }
 

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -24,7 +24,7 @@
 
 std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  return base::MakeUnique<ConfirmInfoBar>(std::move(delegate));
+  return std::make_unique<ConfirmInfoBar>(std::move(delegate));
 }
 
 

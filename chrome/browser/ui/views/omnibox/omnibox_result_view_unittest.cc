@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
@@ -49,10 +50,10 @@ class OmniboxResultViewTest : public views::ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    edit_model_ = base::MakeUnique<OmniboxEditModel>(
-        nullptr, nullptr, base::MakeUnique<TestOmniboxClient>());
+    edit_model_ = std::make_unique<OmniboxEditModel>(
+        nullptr, nullptr, std::make_unique<TestOmniboxClient>());
     popup_view_ =
-        base::MakeUnique<TestOmniboxPopupContentsView>(edit_model_.get());
+        std::make_unique<TestOmniboxPopupContentsView>(edit_model_.get());
     result_view_ = new OmniboxResultView(popup_view_.get(),
                                          kTestResultViewIndex, gfx::FontList());
 

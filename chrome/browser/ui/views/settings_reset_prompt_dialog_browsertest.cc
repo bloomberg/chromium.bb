@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -12,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -66,8 +66,8 @@ class MockSettingsResetPromptModel
                                         const ModelParams& params)
       : SettingsResetPromptModel(
             profile,
-            base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>(),
-            base::MakeUnique<NiceMock<MockProfileResetter>>(profile)) {
+            std::make_unique<NiceMock<MockSettingsResetPromptConfig>>(),
+            std::make_unique<NiceMock<MockProfileResetter>>(profile)) {
     EXPECT_LE(params.startup_pages, arraysize(kStartupUrls));
 
     // Set up startup URLs to be returned by member functions based on the
@@ -143,13 +143,13 @@ class SettingsResetPromptDialogTest : public DialogBrowserTest {
     };
 
     ASSERT_NE(name_to_model_params.find(name), name_to_model_params.end());
-    auto model = base::MakeUnique<NiceMock<MockSettingsResetPromptModel>>(
+    auto model = std::make_unique<NiceMock<MockSettingsResetPromptModel>>(
         browser()->profile(), name_to_model_params.find(name)->second);
 
     chrome::ShowSettingsResetPrompt(
         browser(),
         new safe_browsing::SettingsResetPromptController(
-            std::move(model), base::MakeUnique<BrandcodedDefaultSettings>()));
+            std::move(model), std::make_unique<BrandcodedDefaultSettings>()));
   }
 };
 

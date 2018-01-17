@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
@@ -42,7 +41,7 @@ void AnswerCardResult::OnContentsDestroying() {
 }
 
 std::unique_ptr<SearchResult> AnswerCardResult::Duplicate() const {
-  return base::MakeUnique<AnswerCardResult>(
+  return std::make_unique<AnswerCardResult>(
       profile_, list_controller_, id(), comparable_id(), title(), contents_);
 }
 

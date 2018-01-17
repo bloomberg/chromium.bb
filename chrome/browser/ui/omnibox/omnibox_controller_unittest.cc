@@ -4,8 +4,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -50,7 +51,7 @@ OmniboxControllerTest::~OmniboxControllerTest() {
 void OmniboxControllerTest::CreateController() {
   DCHECK(omnibox_client_);
   omnibox_controller_ =
-      base::MakeUnique<OmniboxController>(nullptr, omnibox_client_.get());
+      std::make_unique<OmniboxController>(nullptr, omnibox_client_.get());
 }
 
 // Checks that the list of autocomplete providers used by the OmniboxController
@@ -73,7 +74,7 @@ void OmniboxControllerTest::AssertProviders(int expected_providers) {
 }
 
 void OmniboxControllerTest::SetUp() {
-  omnibox_client_ = base::MakeUnique<TestOmniboxClient>();
+  omnibox_client_ = std::make_unique<TestOmniboxClient>();
 }
 
 void OmniboxControllerTest::TearDown() {

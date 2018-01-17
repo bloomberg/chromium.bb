@@ -98,7 +98,7 @@ void WebstoreProvider::Start(const base::string16& query) {
 
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
-  Add(base::MakeUnique<SearchWebstoreResult>(profile_, controller_, query_));
+  Add(std::make_unique<SearchWebstoreResult>(profile_, controller_, query_));
 }
 
 void WebstoreProvider::StartQuery() {
@@ -188,7 +188,7 @@ std::unique_ptr<SearchResult> WebstoreProvider::CreateResult(
   if (!match.Calculate(query, title))
     return std::unique_ptr<SearchResult>();
 
-  std::unique_ptr<SearchResult> result = base::MakeUnique<WebstoreResult>(
+  std::unique_ptr<SearchResult> result = std::make_unique<WebstoreResult>(
       profile_, app_id, icon_url, is_paid, item_type, controller_);
   result->UpdateFromMatch(title, match);
   return result;

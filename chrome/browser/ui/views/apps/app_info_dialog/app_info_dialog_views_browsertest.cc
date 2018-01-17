@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 
+#include <memory>
 #include <string>
 
 #include "build/build_config.h"
@@ -25,7 +26,7 @@ class AppInfoDialogBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     extension_environment_ =
-        base::MakeUnique<extensions::TestExtensionEnvironment>(nullptr);
+        std::make_unique<extensions::TestExtensionEnvironment>(nullptr);
     constexpr char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     extension_ =
         extension_environment_->MakePackagedApp(kTestExtensionId, true);

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   test_form()->icon_url = embedded_test_server()->GetURL("/icon.png");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.push_back(
-      base::MakeUnique<autofill::PasswordForm>(*test_form()));
+      std::make_unique<autofill::PasswordForm>(*test_form()));
 
   // Prepare to capture the network request.
   EXPECT_CALL(*this, OnIconRequestDone());
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.push_back(
-      base::MakeUnique<autofill::PasswordForm>(*test_form()));
+      std::make_unique<autofill::PasswordForm>(*test_form()));
 
   // Open another window with focus.
   Browser* focused_window = CreateBrowser(browser()->profile());

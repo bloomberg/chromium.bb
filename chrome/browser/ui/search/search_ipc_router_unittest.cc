@@ -121,7 +121,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
 
     TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+        template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
@@ -144,7 +144,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         mock_delegate());
     search_tab_helper->ipc_router_for_testing().set_policy_for_testing(
         base::WrapUnique(new MockSearchIPCRouterPolicy));
-    auto factory = base::MakeUnique<MockEmbeddedSearchClientFactory>();
+    auto factory = std::make_unique<MockEmbeddedSearchClientFactory>();
     ON_CALL(*factory, GetEmbeddedSearchClient())
         .WillByDefault(Return(&mock_embedded_search_client_));
     GetSearchIPCRouter().set_embedded_search_client_factory_for_testing(

@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
-#include "base/memory/ptr_util.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
@@ -242,7 +241,7 @@ class GtkButtonPainter : public views::Painter {
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
     gfx::ImageSkia image(
-        base::MakeUnique<GtkButtonImageSource>(idr_.c_str(), size), 1);
+        std::make_unique<GtkButtonImageSource>(idr_.c_str(), size), 1);
     canvas->DrawImageInt(image, 0, 0);
   }
 
@@ -734,7 +733,7 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
     gtk_border->SetPainter(
         paintstate[i].focus, paintstate[i].state,
         border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
-            ? base::MakeUnique<GtkButtonPainter>(idr)
+            ? std::make_unique<GtkButtonPainter>(idr)
             : nullptr);
   }
 
@@ -834,7 +833,7 @@ bool GtkUi::PreferDarkTheme() const {
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
   if (GtkVersionCheck(3, 14))
-    return base::MakeUnique<libgtkui::NavButtonProviderGtk3>();
+    return std::make_unique<libgtkui::NavButtonProviderGtk3>();
   return nullptr;
 }
 #endif

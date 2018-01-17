@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,7 +37,7 @@ class TestCertificateSelector : public chrome::CertificateSelector {
   }
 
   void Init() {
-    InitWithText(base::MakeUnique<views::Label>(
+    InitWithText(std::make_unique<views::Label>(
         base::ASCIIToUTF16("some arbitrary text")));
   }
 

@@ -242,7 +242,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
 ChromeShellDelegate::ChromeShellDelegate()
     : networking_config_delegate_(
-          base::MakeUnique<chromeos::NetworkingConfigDelegateChromeos>()) {
+          std::make_unique<chromeos::NetworkingConfigDelegateChromeos>()) {
   PlatformInit();
 }
 
@@ -345,7 +345,7 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
 }
 
 std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {
-  return base::MakeUnique<ChromeKeyboardUI>(
+  return std::make_unique<ChromeKeyboardUI>(
       ProfileManager::GetActiveUserProfile());
 }
 

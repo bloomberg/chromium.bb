@@ -81,7 +81,7 @@ WebShareTargetPickerView::WebShareTargetPickerView(
     std::vector<WebShareTarget> targets,
     chrome::WebShareTargetPickerCallback close_callback)
     : targets_(std::move(targets)),
-      table_model_(base::MakeUnique<TargetPickerTableModel>(targets_)),
+      table_model_(std::make_unique<TargetPickerTableModel>(targets_)),
       close_callback_(std::move(close_callback)) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   views::BoxLayout* layout =

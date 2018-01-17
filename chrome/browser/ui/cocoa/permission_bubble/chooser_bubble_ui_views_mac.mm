@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/permission_bubble/chooser_bubble_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,10 +18,10 @@
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    return base::MakeUnique<ChooserBubbleUiCocoa>(
+    return std::make_unique<ChooserBubbleUiCocoa>(
         browser_, std::move(chooser_controller_));
   }
-  return base::MakeUnique<ChooserBubbleUi>(browser_,
+  return std::make_unique<ChooserBubbleUi>(browser_,
                                            std::move(chooser_controller_));
 }
 

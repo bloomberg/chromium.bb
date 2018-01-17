@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -187,7 +186,7 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   // NOTE: GetStateForTabSwitch() may affect GetSelectedRange(), so order is
   // important.
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
-  tab->SetUserData(OmniboxState::kKey, base::MakeUnique<OmniboxState>(
+  tab->SetUserData(OmniboxState::kKey, std::make_unique<OmniboxState>(
                                            state, GetSelectedRange(),
                                            saved_selection_for_focus_change_));
 }

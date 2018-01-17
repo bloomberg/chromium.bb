@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -118,7 +119,7 @@ ChromeOmniboxClient::~ChromeOmniboxClient() {
 
 std::unique_ptr<AutocompleteProviderClient>
 ChromeOmniboxClient::CreateAutocompleteProviderClient() {
-  return base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
+  return std::make_unique<ChromeAutocompleteProviderClient>(profile_);
 }
 
 std::unique_ptr<OmniboxNavigationObserver>
@@ -126,7 +127,7 @@ ChromeOmniboxClient::CreateOmniboxNavigationObserver(
     const base::string16& text,
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternate_nav_match) {
-  return base::MakeUnique<ChromeOmniboxNavigationObserver>(
+  return std::make_unique<ChromeOmniboxNavigationObserver>(
       profile_, text, match, alternate_nav_match);
 }
 

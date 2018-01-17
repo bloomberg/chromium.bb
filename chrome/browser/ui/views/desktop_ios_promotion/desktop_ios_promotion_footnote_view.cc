@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
@@ -24,7 +26,7 @@ DesktopIOSPromotionFootnoteView::DesktopIOSPromotionFootnoteView(
     Profile* profile,
     DesktopIOSPromotionFootnoteDelegate* delegate)
     : StyledLabel(base::string16(), this),
-      promotion_controller_(base::MakeUnique<DesktopIOSPromotionController>(
+      promotion_controller_(std::make_unique<DesktopIOSPromotionController>(
           profile,
           desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_FOOTNOTE)),
       delegate_(delegate) {

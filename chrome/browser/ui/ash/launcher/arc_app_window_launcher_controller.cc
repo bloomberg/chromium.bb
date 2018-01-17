@@ -11,7 +11,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -315,7 +314,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   DCHECK(widget);
   DCHECK(!info->app_window());
-  info->set_app_window(base::MakeUnique<ArcAppWindow>(
+  info->set_app_window(std::make_unique<ArcAppWindow>(
       task_id, info->app_shelf_id(), widget, this));
   info->app_window()->SetDescription(info->title(), info->icon_data_png());
   RegisterApp(info);
@@ -367,7 +366,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   const arc::ArcAppShelfId arc_app_shelf_id =
       arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
   task_id_to_app_window_info_[task_id] =
-      base::MakeUnique<AppWindowInfo>(arc_app_shelf_id, intent);
+      std::make_unique<AppWindowInfo>(arc_app_shelf_id, intent);
   // Don't create shelf icon for non-primary user.
   if (observed_profile_ != owner()->profile())
     return;
@@ -586,7 +585,7 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   }
 
   std::unique_ptr<ArcAppWindowLauncherItemController> controller =
-      base::MakeUnique<ArcAppWindowLauncherItemController>(
+      std::make_unique<ArcAppWindowLauncherItemController>(
           app_shelf_id.ToString());
   ArcAppWindowLauncherItemController* item_controller = controller.get();
   const ash::ShelfID shelf_id(app_shelf_id.ToString());

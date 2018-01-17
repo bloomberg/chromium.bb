@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -39,8 +38,8 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial()
-             ? base::MakeUnique<HarmonyLayoutProvider>()
-             : base::MakeUnique<ChromeLayoutProvider>();
+             ? std::make_unique<HarmonyLayoutProvider>()
+             : std::make_unique<ChromeLayoutProvider>();
 }
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {

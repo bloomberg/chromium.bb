@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -125,7 +127,7 @@ void AccountChooserDialogView::AddedToWidget() {
   std::pair<base::string16, gfx::Range> title_content =
       controller_->GetAccoutChooserTitle();
   std::unique_ptr<views::StyledLabel> title_label =
-      base::MakeUnique<views::StyledLabel>(title_content.first, this);
+      std::make_unique<views::StyledLabel>(title_content.first, this);
   title_label->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   if (!title_content.second.is_empty())
     title_label->AddStyleRange(title_content.second, GetLinkStyle());

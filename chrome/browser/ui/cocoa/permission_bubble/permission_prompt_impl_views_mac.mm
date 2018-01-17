@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -28,7 +29,7 @@ std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
     Delegate* delegate) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  auto prompt = base::MakeUnique<PermissionPromptImpl>(browser, delegate);
+  auto prompt = std::make_unique<PermissionPromptImpl>(browser, delegate);
   // Note the PermissionPromptImpl constructor always shows the bubble, which
   // is necessary to call TrackBubbleState().
   // Also note it's important to use BrowserWindow::GetNativeWindow() and not

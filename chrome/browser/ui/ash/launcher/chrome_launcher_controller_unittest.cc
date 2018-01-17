@@ -2190,7 +2190,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   // Scenario 1: Create OptIn, Play Store. Destroy OptIn, Play Store.
   {
     std::unique_ptr<V2App> play_store_optin =
-        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+        std::make_unique<V2App>(profile(), arc_support_host_.get(),
                                 extensions::AppWindow::WINDOW_TYPE_DEFAULT);
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 
@@ -2210,7 +2210,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   // Scenario 2: Create OptIn, Play Store. Destroy Play Store, OptIn.
   {
     std::unique_ptr<V2App> play_store_optin =
-        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+        std::make_unique<V2App>(profile(), arc_support_host_.get(),
                                 extensions::AppWindow::WINDOW_TYPE_DEFAULT);
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 
@@ -2235,7 +2235,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 
     std::unique_ptr<V2App> play_store_optin =
-        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+        std::make_unique<V2App>(profile(), arc_support_host_.get(),
                                 extensions::AppWindow::WINDOW_TYPE_DEFAULT);
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 
@@ -2255,7 +2255,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 
     std::unique_ptr<V2App> play_store_optin =
-        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+        std::make_unique<V2App>(profile(), arc_support_host_.get(),
                                 extensions::AppWindow::WINDOW_TYPE_DEFAULT);
     EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
 

@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -64,7 +65,7 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
       aura::CreateInitParamsForTopLevel(
           views::MusClient::Get()->window_tree_client(), std::move(properties));
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
-      base::MakeUnique<views::DesktopWindowTreeHostMus>(
+      std::make_unique<views::DesktopWindowTreeHostMus>(
           std::move(window_tree_host_init_params), browser_frame_, this);
   // BrowserNonClientFrameViewMus::OnBoundsChanged() takes care of updating
   // the insets.

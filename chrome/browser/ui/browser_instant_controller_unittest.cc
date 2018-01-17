@@ -118,7 +118,7 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
         << test.description;
 
     // Setup an observer to verify reload or absence thereof.
-    observers.push_back(base::MakeUnique<FakeWebContentsObserver>(contents));
+    observers.push_back(std::make_unique<FakeWebContentsObserver>(contents));
   }
 
   SetUserSelectedDefaultSearchProvider("https://bar.com/");
@@ -165,7 +165,7 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
         << test.description;
 
     // Setup an observer to verify reload or absence thereof.
-    observers.push_back(base::MakeUnique<FakeWebContentsObserver>(contents));
+    observers.push_back(std::make_unique<FakeWebContentsObserver>(contents));
   }
 
   NotifyGoogleBaseURLUpdate("https://www.google.es/");

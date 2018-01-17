@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -134,7 +135,7 @@ class AppListDialogContainer : public BaseDialogContainer,
   AppListDialogContainer(views::View* dialog_body,
                          const base::Closure& close_callback)
       : BaseDialogContainer(dialog_body, close_callback) {
-    SetBackground(base::MakeUnique<AppListOverlayBackground>());
+    SetBackground(std::make_unique<AppListOverlayBackground>());
     close_button_ = views::BubbleFrameView::CreateCloseButton(this);
     AddChildView(close_button_);
   }

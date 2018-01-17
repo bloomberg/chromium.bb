@@ -244,12 +244,12 @@ void OmniboxViewViewsTest::SetUp() {
 #endif
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
-  omnibox_view_ = base::MakeUnique<TestingOmniboxView>(
+  omnibox_view_ = std::make_unique<TestingOmniboxView>(
       &omnibox_edit_controller_,
-      base::MakeUnique<ChromeOmniboxClient>(&omnibox_edit_controller_,
+      std::make_unique<ChromeOmniboxClient>(&omnibox_edit_controller_,
                                             &profile_),
       &command_updater_);
-  test_api_ = base::MakeUnique<views::TextfieldTestApi>(omnibox_view_.get());
+  test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view_.get());
   omnibox_view_->Init();
 }
 

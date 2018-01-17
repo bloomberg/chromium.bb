@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +13,7 @@
 class ScopedVisibilityTrackerTest : public testing::Test {};
 
 TEST_F(ScopedVisibilityTrackerTest, NeverVisible) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   ScopedVisibilityTracker tracker(tick_clock.get(), false /* is_shown */);
 
   tick_clock->Advance(base::TimeDelta::FromMinutes(10));
@@ -22,7 +21,7 @@ TEST_F(ScopedVisibilityTrackerTest, NeverVisible) {
 }
 
 TEST_F(ScopedVisibilityTrackerTest, SimpleVisibility) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   ScopedVisibilityTracker tracker(tick_clock.get(), true /* is_shown */);
 
   tick_clock->Advance(base::TimeDelta::FromMinutes(10));
@@ -30,7 +29,7 @@ TEST_F(ScopedVisibilityTrackerTest, SimpleVisibility) {
 }
 
 TEST_F(ScopedVisibilityTrackerTest, HiddenThenShown) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   ScopedVisibilityTracker tracker(tick_clock.get(), true /* is_shown */);
 
   tick_clock->Advance(base::TimeDelta::FromMinutes(1));
@@ -46,7 +45,7 @@ TEST_F(ScopedVisibilityTrackerTest, HiddenThenShown) {
 }
 
 TEST_F(ScopedVisibilityTrackerTest, InitiallyHidden) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   ScopedVisibilityTracker tracker(tick_clock.get(), false /* is_shown */);
 
   tick_clock->Advance(base::TimeDelta::FromMinutes(1));
@@ -59,7 +58,7 @@ TEST_F(ScopedVisibilityTrackerTest, InitiallyHidden) {
 
 // The object should be robust to double hidden and shown notification
 TEST_F(ScopedVisibilityTrackerTest, DoubleNotifications) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   ScopedVisibilityTracker tracker(tick_clock.get(), false /* is_shown */);
 
   tick_clock->Advance(base::TimeDelta::FromMinutes(1));

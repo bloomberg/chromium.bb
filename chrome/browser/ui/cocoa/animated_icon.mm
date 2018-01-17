@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/animated_icon.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -13,7 +12,7 @@ AnimatedIcon::AnimatedIcon(const gfx::VectorIcon& icon, NSView* host_view)
     : icon_(icon),
       host_view_(host_view),
       duration_(gfx::GetDurationOfAnimation(icon)),
-      animation_(base::MakeUnique<gfx::LinearAnimation>(this)) {
+      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   animation_->SetDuration(duration_);
 }
 

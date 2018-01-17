@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -187,31 +186,31 @@ void ChromeOmniboxNavigationObserverTest::SetUp() {
   TemplateURLData auto_gen_turl;
   auto_gen_turl.SetKeyword(auto_generated_search_keyword());
   auto_gen_turl.safe_for_autoreplace = true;
-  factory_util.model()->Add(base::MakeUnique<TemplateURL>(auto_gen_turl));
+  factory_util.model()->Add(std::make_unique<TemplateURL>(auto_gen_turl));
 
   TemplateURLData non_auto_gen_turl;
   non_auto_gen_turl.SetKeyword(non_auto_generated_search_keyword());
-  factory_util.model()->Add(base::MakeUnique<TemplateURL>(non_auto_gen_turl));
+  factory_util.model()->Add(std::make_unique<TemplateURL>(non_auto_gen_turl));
 
   TemplateURLData default_turl;
   default_turl.SetKeyword(default_search_keyword());
   factory_util.model()->SetUserSelectedDefaultSearchProvider(
-      factory_util.model()->Add(base::MakeUnique<TemplateURL>(default_turl)));
+      factory_util.model()->Add(std::make_unique<TemplateURL>(default_turl)));
 
   TemplateURLData prepopulated_turl;
   prepopulated_turl.SetKeyword(prepopulated_search_keyword());
   prepopulated_turl.prepopulate_id = 1;
-  factory_util.model()->Add(base::MakeUnique<TemplateURL>(prepopulated_turl));
+  factory_util.model()->Add(std::make_unique<TemplateURL>(prepopulated_turl));
 
   TemplateURLData policy_turl;
   policy_turl.SetKeyword(policy_search_keyword());
   policy_turl.created_by_policy = true;
-  factory_util.model()->Add(base::MakeUnique<TemplateURL>(policy_turl));
+  factory_util.model()->Add(std::make_unique<TemplateURL>(policy_turl));
 }
 
 TEST_F(ChromeOmniboxNavigationObserverTest, LoadStateAfterPendingNavigation) {
   std::unique_ptr<ChromeOmniboxNavigationObserver> observer =
-      base::MakeUnique<ChromeOmniboxNavigationObserver>(
+      std::make_unique<ChromeOmniboxNavigationObserver>(
           profile(), base::ASCIIToUTF16("test text"), AutocompleteMatch(),
           AutocompleteMatch());
   EXPECT_EQ(ChromeOmniboxNavigationObserver::LOAD_NOT_SEEN,
