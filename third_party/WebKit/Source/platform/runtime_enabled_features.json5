@@ -316,6 +316,9 @@
       status: "test",
     },
     {
+      name: "CustomUserTiming",
+    },
+    {
       name: "Database",
       status: "stable",
     },

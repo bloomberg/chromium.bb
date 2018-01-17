@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "bindings/core/v8/double_or_performance_mark_options.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/events/Event.h"
@@ -442,11 +443,45 @@ void PerformanceBase::AddLongTaskTiming(
   NotifyObserversOfEntry(*entry);
 }
 
-void PerformanceBase::mark(const String& mark_name,
+void PerformanceBase::mark(ScriptState* script_state,
+                           const String& mark_name,
                            ExceptionState& exception_state) {
+  DoubleOrPerformanceMarkOptions startOrOptions;
+  this->mark(script_state, mark_name, startOrOptions, exception_state);
+}
+
+void PerformanceBase::mark(
+    ScriptState* script_state,
+    const String& mark_name,
+    DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+    ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
+    DCHECK(start_time_or_mark_options.IsNull());
+  }
+
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
-  if (PerformanceEntry* entry = user_timing_->Mark(mark_name, exception_state))
+
+  DOMHighResTimeStamp start = 0.0;
+  if (start_time_or_mark_options.IsDouble()) {
+    start = start_time_or_mark_options.GetAsDouble();
+  } else if (start_time_or_mark_options.IsPerformanceMarkOptions() &&
+             start_time_or_mark_options.GetAsPerformanceMarkOptions()
+                 .hasStartTime()) {
+    start =
+        start_time_or_mark_options.GetAsPerformanceMarkOptions().startTime();
+  } else {
+    start = now();
+  }
+
+  ScriptValue detail = ScriptValue::CreateNull(script_state);
+  if (start_time_or_mark_options.IsPerformanceMarkOptions()) {
+    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions().detail();
+  }
+
+  // Pass in a null ScriptValue if the mark's detail doesn't exist.
+  if (PerformanceEntry* entry = user_timing_->Mark(
+          script_state, mark_name, start, detail, exception_state))
     NotifyObserversOfEntry(*entry);
 }
 
