@@ -31,6 +31,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/common/loader_util.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
@@ -823,10 +824,13 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       request_info->common_params.referrer.policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
+  new_request->headers.SetHeader(kAcceptHeader, kFrameAcceptHeader);
 
   new_request->resource_type = request_info->is_main_frame
                                    ? RESOURCE_TYPE_MAIN_FRAME
                                    : RESOURCE_TYPE_SUB_FRAME;
+  if (request_info->is_main_frame)
+    new_request->update_first_party_url_on_redirect = true;
 
   int load_flags = request_info->begin_params->load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;

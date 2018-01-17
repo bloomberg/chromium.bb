@@ -6,7 +6,6 @@ module content.mojom;
 
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
-import "resource_type.mojom";
 import "url_loader.mojom";
 import "url_loader_factory.mojom";
 import "url/mojo/url.mojom";
@@ -166,7 +165,7 @@ interface NetworkServiceClient {
   // Called when an SSL certificate is encountered.
   // The callback argument is a net::ERROR value. If it's net::OK, then the
   // request is resumed. Otherwise it's cancelled with the given error.
-  OnSSLCertificateError(ResourceType resource_type,
+  OnSSLCertificateError(int32 resource_type,
                         url.mojom.Url url,
                         uint32 process_id,
                         uint32 routing_id,

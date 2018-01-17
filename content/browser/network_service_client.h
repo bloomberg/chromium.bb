@@ -18,7 +18,7 @@ class NetworkServiceClient : public mojom::NetworkServiceClient {
   ~NetworkServiceClient() override;
 
   // mojom::NetworkServiceClient implementation:
-  void OnSSLCertificateError(ResourceType resource_type,
+  void OnSSLCertificateError(int32_t resource_type,
                              const GURL& url,
                              uint32_t process_id,
                              uint32_t routing_id,

@@ -41,6 +41,11 @@ struct ResourceRequest {
   // done if there really is no way to determine the correct value.
   GURL site_for_cookies;
 
+  // First-party URL redirect policy: During server redirects, the first-party
+  // URL for cookies normally doesn't change. However, if this is true, the
+  // the first-party URL should be updated to the URL on every redirect.
+  bool update_first_party_url_on_redirect = false;
+
   // The origin of the context which initiated the request, which will be used
   // for cookie checks like 'First-Party-Only'.
   base::Optional<url::Origin> request_initiator;

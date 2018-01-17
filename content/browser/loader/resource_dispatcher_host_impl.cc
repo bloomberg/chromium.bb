@@ -1032,7 +1032,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   }
   int child_id = requester_info->child_id();
   storage::BlobStorageContext* blob_context = nullptr;
-  bool allow_download = false;
   bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
   int load_flags = BuildLoadFlagsForRequest(request_data);
@@ -1095,13 +1094,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                                std::make_unique<URLRequestServiceWorkerData>());
     }
 
-    // If the request is a MAIN_FRAME request, the first-party URL gets updated
-    // on redirects.
-    if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
-      new_request->set_first_party_url_policy(
-          net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
-    }
-
     // For PlzNavigate, this request has already been made and the referrer was
     // checked previously. So don't set the referrer for this stream request, or
     // else it will fail for SSL redirects since net/ will think the blob:https
@@ -1124,9 +1116,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
               .get()));
     }
 
-    allow_download = request_data.allow_download &&
-                     IsResourceTypeFrame(
-                         static_cast<ResourceType>(request_data.resource_type));
     do_not_prompt_for_login = request_data.do_not_prompt_for_login;
 
     // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
@@ -1189,15 +1178,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   new_request->SetLoadFlags(load_flags);
 
-  // Update the previews state, but only if this is not using PlzNavigate.
-  PreviewsState previews_state = request_data.previews_state;
-  if (!IsBrowserSideNavigationEnabled()) {
-    previews_state = DetermineEnabledPreviews(
-        request_data.previews_state, delegate_, new_request.get(),
-        resource_context,
-        request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
-  }
-
   // Make extra info and read footer (contains request ID).
   ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
       requester_info, route_id,
@@ -1209,13 +1189,14 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       request_data.should_replace_current_entry,
       false,  // is download
       false,  // is stream
-      allow_download, request_data.has_user_gesture,
-      request_data.enable_load_timing, request_data.enable_upload_progress,
-      do_not_prompt_for_login, request_data.keepalive,
+      false,  // allow_download,
+      request_data.has_user_gesture, request_data.enable_load_timing,
+      request_data.enable_upload_progress, do_not_prompt_for_login,
+      request_data.keepalive,
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           request_data.referrer_policy),
       request_data.is_prerendering, resource_context, report_raw_headers,
-      !is_sync_load, previews_state, request_data.request_body,
+      !is_sync_load, request_data.previews_state, request_data.request_body,
       request_data.initiated_in_secure_context,
       base::nullopt);  // suggested_filename
   extra_info->SetBlobHandles(std::move(blob_handles));
@@ -1884,6 +1865,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(info.begin_params->headers);
+  headers.SetHeader(kAcceptHeader, kFrameAcceptHeader);
   new_request->SetExtraRequestHeaders(headers);
 
   new_request->SetLoadFlags(load_flags);

@@ -366,6 +366,7 @@
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
+-ChromeAcceptHeaderTest.Check
 -ChromeFindRequestManagerTest.FindInPDF
 -ChromeNavigationBrowserTest.CrossSiteRedirectionToPDF
 -ChromeSitePerProcessPDFTest.EmbeddedPDFInsideCrossOriginFrame
