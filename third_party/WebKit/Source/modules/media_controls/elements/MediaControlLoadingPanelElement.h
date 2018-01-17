@@ -63,6 +63,10 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   // background elements.
   void SetAnimationIterationCount(const String&);
 
+  // Sets the background color of the spinner to black if there is no poster
+  // image or video frame available.
+  void SetSpinnerClassIfNecessary();
+
   // The loading panel is only used once and has a lot of DOM elements so these
   // two functions will populate the shadow DOM or clean it if the panel is
   // hidden.
@@ -81,6 +85,7 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   bool controls_hidden_ = false;
 
   Member<MediaControlAnimationEventListener> event_listener_;
+  Member<HTMLDivElement> spinner_;
   Member<HTMLDivElement> mask1_background_;
   Member<HTMLDivElement> mask2_background_;
 };
