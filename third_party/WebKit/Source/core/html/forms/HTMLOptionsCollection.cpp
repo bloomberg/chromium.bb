@@ -25,9 +25,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/html_element_or_long.h"
 #include "bindings/core/v8/html_option_element_or_html_opt_group_element.h"
-#include "bindings/core/v8/node_list_or_element.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 
@@ -95,27 +92,6 @@ void HTMLOptionsCollection::setSelectedIndex(int index) {
 void HTMLOptionsCollection::setLength(unsigned length,
                                       ExceptionState& exception_state) {
   ToHTMLSelectElement(ownerNode()).setLength(length, exception_state);
-}
-
-void HTMLOptionsCollection::namedGetter(const AtomicString& name,
-                                        NodeListOrElement& return_value) {
-  HeapVector<Member<Element>> named_items;
-  NamedItems(name, named_items);
-
-  if (!named_items.size())
-    return;
-
-  if (named_items.size() == 1) {
-    return_value.SetElement(named_items.at(0));
-    return;
-  }
-
-  // FIXME: The spec and Firefox do not return a NodeList. They always return
-  // the first matching Element.
-  UseCounter::Count(
-      GetDocument(),
-      WebFeature::kHTMLOptionsCollectionNamedGetterReturnsNodeList);
-  return_value.SetNodeList(StaticElementList::Adopt(named_items));
 }
 
 bool HTMLOptionsCollection::AnonymousIndexedSetter(
