@@ -14,8 +14,10 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.app.Activity;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.uiautomator.UiDevice;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -152,6 +154,35 @@ public class WebVrTransitionTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that the requestPresent promise is rejected if the DON flow is canceled.
+     */
+    @Test
+    @MediumTest
+    @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile(
+                        "test_presentation_promise_rejected_if_don_canceled"),
+                PAGE_LOAD_TIMEOUT_S);
+        final UiDevice uiDevice =
+                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        VrTransitionUtils.enterPresentation(mVrTestFramework.getFirstTabCvc());
+        // Wait until the DON flow appears to be triggered
+        // TODO(bsheedy): Make this less hacky if there's ever an explicit way to check if the
+        // DON flow is currently active https://crbug.com/758296
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return uiDevice.getCurrentPackageName().equals("com.google.vr.vrcore");
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        uiDevice.pressBack();
+        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
