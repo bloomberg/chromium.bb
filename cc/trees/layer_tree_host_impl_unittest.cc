@@ -8986,6 +8986,20 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+
+  // Cause damage so we would draw something if possible.
+  host_impl_->SetFullViewportDamage();
+
+  // Verify no quads are drawn when semi-transparent background is set.
+  host_impl_->active_tree()->set_background_color(SkColorSetARGB(5, 255, 0, 0));
+  host_impl_->SetFullViewportDamage();
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  {
+    const auto& root_pass = frame.render_passes.back();
+    ASSERT_EQ(0u, root_pass->quad_list.size());
+  }
+  host_impl_->DrawLayers(&frame);
+  host_impl_->DidDrawAllLayers(frame);
 }
 
 class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {

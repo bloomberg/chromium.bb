@@ -1073,7 +1073,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());
 #endif
   bool has_transparent_background =
-      active_tree_->background_color() == SK_ColorTRANSPARENT;
+      SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
   if (!has_transparent_background) {
     frame->render_passes.back()->has_transparent_background = false;
     AppendQuadsToFillScreen(
