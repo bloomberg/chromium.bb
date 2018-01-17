@@ -432,6 +432,12 @@ class PLATFORM_EXPORT TaskQueueManager
     return any_thread_;
   }
 
+  // A check to bail out early during memory corruption.
+  // crbug.com/757940
+  bool Validate();
+
+  int32_t memory_corruption_sentinel_;
+
   // TODO(scheduler-dev): Review if we really need non-nestable tasks at all.
   struct NonNestableTask {
     internal::TaskQueueImpl::Task task;
