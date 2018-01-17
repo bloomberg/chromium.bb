@@ -128,6 +128,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   void OnTouchDragTimer(const gfx::Point& tap_down_location,
                         const gfx::Point& tap_down_root_location);
 
+  // Records the context menu user journey time.
+  void OnContextMenuClosed(const base::TimeTicks& open_time);
+
   // views::ContextMenuController overrides:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -190,6 +193,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   base::OneShotTimer mouse_drag_timer_;
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
+
+  base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

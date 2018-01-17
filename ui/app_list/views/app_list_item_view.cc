@@ -8,6 +8,7 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -67,7 +68,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new views::Label),
-      progress_bar_(new views::ProgressBar) {
+      progress_bar_(new views::ProgressBar),
+      weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   icon_->set_can_process_events_within_subtree(false);
@@ -265,6 +267,11 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
   progress_bar_->SetValue(percent_downloaded / 100.0);
 }
 
+void AppListItemView::OnContextMenuClosed(const base::TimeTicks& open_time) {
+  UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.AppGrid",
+                      base::TimeTicks::Now() - open_time);
+}
+
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
@@ -275,11 +282,17 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
   if (!menu_model)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.AppGrid", source_type,
+                            ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
   int run_types = views::MenuRunner::HAS_MNEMONICS |
                   views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
-  context_menu_runner_.reset(new views::MenuRunner(menu_model, run_types));
+  context_menu_runner_.reset(new views::MenuRunner(
+      menu_model, run_types,
+      base::Bind(&AppListItemView::OnContextMenuClosed,
+                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now())));
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);

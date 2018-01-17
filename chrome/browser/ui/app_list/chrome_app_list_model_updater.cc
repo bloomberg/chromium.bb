@@ -219,7 +219,8 @@ ChromeAppListModelUpdater::ResolveOemFolderPosition(
 ui::MenuModel* ChromeAppListModelUpdater::GetContextMenuModel(
     const std::string& id) {
   app_list::AppListItem* item = model_->FindItem(id);
-  // TODO(stevenjb/jennyz): Implement this for folder items
+  // TODO(stevenjb/jennyz): Implement this for folder items.
+  // TODO(newcomer): Add histograms for folder items.
   if (!item || item->is_folder())
     return nullptr;
   return static_cast<ChromeAppListItem*>(item)->GetContextMenuModel();

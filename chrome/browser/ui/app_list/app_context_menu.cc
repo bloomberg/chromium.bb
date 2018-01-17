@@ -30,6 +30,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
 
   menu_model_.reset(new ui::SimpleMenuModel(this));
   BuildMenu(menu_model_.get());
+  menu_model_->set_histogram_name("Apps.ContextMenuExecuteCommand.FromApp");
   return menu_model_.get();
 }
 
