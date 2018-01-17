@@ -35,6 +35,10 @@ double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
 }
 
+// Magic value to protect against memory corruption and bail out
+// early when detected.
+constexpr int kMemoryCorruptionSentinelValue = 0xdeadbeef;
+
 void SweepCanceledDelayedTasksInQueue(
     internal::TaskQueueImpl* queue,
     std::map<TimeDomain*, base::TimeTicks>* time_domain_now) {
@@ -53,6 +57,7 @@ TaskQueueManager::TaskQueueManager(
       controller_(std::move(controller)),
       random_generator_(base::RandUint64()),
       uniform_distribution_(0.0, 1.0),
+      memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
       weak_factory_(this) {
   // TODO(altimin): Create a sequence checker here.
   DCHECK(controller_->RunsTasksInCurrentSequence());
@@ -293,6 +298,8 @@ void TaskQueueManager::CancelDelayedWork(TimeDomain* requesting_time_domain,
 }
 
 void TaskQueueManager::DoWork(WorkType work_type) {
+  CHECK(Validate());
+
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   TRACE_EVENT1("renderer.scheduler", "TaskQueueManager::DoWork", "delayed",
                work_type == WorkType::kDelayed);
@@ -341,6 +348,8 @@ void TaskQueueManager::DoWork(WorkType work_type) {
       case ProcessTaskResult::kTaskQueueManagerDeleted:
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
+
+    CHECK(Validate());
 
     lazy_now = time_after_task.is_null() ? real_time_domain()->CreateLazyNow()
                                          : LazyNow(time_after_task);
@@ -841,6 +850,10 @@ bool TaskQueueManager::ShouldRecordCPUTimeForTask() {
 
 void TaskQueueManager::SetRandomSeed(uint64_t value) {
   random_generator_.seed(value);
+}
+
+bool TaskQueueManager::Validate() {
+  return memory_corruption_sentinel_ == kMemoryCorruptionSentinelValue;
 }
 
 }  // namespace scheduler
