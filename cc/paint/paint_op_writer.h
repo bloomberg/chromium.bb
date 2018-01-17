@@ -27,7 +27,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   PaintOpWriter(void* memory,
                 size_t size,
                 TransferCacheSerializeHelper* transfer_cache,
-                ImageProvider* image_provider);
+                ImageProvider* image_provider,
+                bool enable_security_constraints = false);
   ~PaintOpWriter();
 
   static size_t constexpr HeaderBytes() { return 4u; }
@@ -55,6 +56,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const DrawImage& image);
   void Write(const sk_sp<SkData>& data);
   void Write(const PaintShader* shader);
+  void Write(const PaintFilter* filter);
   void Write(const scoped_refptr<PaintTextBlob>& blob);
   void Write(SkColorType color_type);
 
@@ -91,7 +93,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   void WriteFlattenable(const SkFlattenable* val);
   void Write(const sk_sp<SkTextBlob>& blob);
-  void Write(const PaintFilter* filter);
 
   // The main entry point is Write(const PaintFilter* filter) which casts the
   // filter and calls one of the following functions.
@@ -101,7 +102,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const MagnifierPaintFilter& filter);
   void Write(const ComposePaintFilter& filter);
   void Write(const AlphaThresholdPaintFilter& filter);
-  void Write(const ImageFilterPaintFilter& filter);
   void Write(const XfermodePaintFilter& filter);
   void Write(const ArithmeticPaintFilter& filter);
   void Write(const MatrixConvolutionPaintFilter& filter);
@@ -128,6 +128,14 @@ class CC_PAINT_EXPORT PaintOpWriter {
   bool valid_ = true;
   TransferCacheSerializeHelper* transfer_cache_;
   ImageProvider* image_provider_;
+
+  // Indicates that the following security constraints must be applied during
+  // serialization:
+  // 1) PaintRecords and SkDrawLoopers must be ignored.
+  // 2) Codec backed images must be decoded and only the bitmap should be
+  // serialized.
+
+  const bool enable_security_constraints_;
 };
 
 }  // namespace cc

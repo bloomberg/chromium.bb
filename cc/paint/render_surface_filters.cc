@@ -269,15 +269,6 @@ sk_sp<PaintFilter> RenderSurfaceFilters::BuildImageFilter(
               static_cast<ColorFilterPaintFilter*>(op.image_filter().get());
           cf = color_paint_filter->color_filter();
           has_input = !!color_paint_filter->input();
-        } else if (op.image_filter()->type() ==
-                   PaintFilter::Type::kSkImageFilter) {
-          auto* sk_filter =
-              static_cast<ImageFilterPaintFilter*>(op.image_filter().get())
-                  ->sk_filter();
-          SkColorFilter* colorfilter_rawptr = nullptr;
-          sk_filter->asColorFilter(&colorfilter_rawptr);
-          cf.reset(colorfilter_rawptr);
-          has_input = sk_filter->countInputs() > 0 && sk_filter->getInput(0);
         }
 
         if (cf && cf->asColorMatrix(matrix) && !has_input) {

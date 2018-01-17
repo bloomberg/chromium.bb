@@ -12,6 +12,10 @@
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "cc/paint/filter_operations.h"
+#include "cc/paint/paint_filter.h"
+#include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_op_reader.h"
+#include "cc/paint/paint_op_writer.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -22,12 +26,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "skia/ext/skia_utils_base.h"
-#include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
@@ -68,7 +66,7 @@ void ParamTraits<cc::FilterOperation>::Write(base::Pickle* m,
       WriteParam(m, p.zoom_inset());
       break;
     case cc::FilterOperation::REFERENCE:
-      WriteParam(m, p.image_filter()->cached_sk_filter());
+      WriteParam(m, p.image_filter());
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
       WriteParam(m, p.amount());
@@ -151,13 +149,12 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
       }
       break;
     case cc::FilterOperation::REFERENCE: {
-      sk_sp<SkImageFilter> sk_filter;
-      if (!ReadParam(m, iter, &sk_filter)) {
+      sk_sp<cc::PaintFilter> filter;
+      if (!ReadParam(m, iter, &filter)) {
         success = false;
         break;
       }
-      auto* paint_filter = new cc::ImageFilterPaintFilter(std::move(sk_filter));
-      r->set_image_filter(sk_sp<cc::ImageFilterPaintFilter>(paint_filter));
+      r->set_image_filter(std::move(filter));
       success = true;
       break;
     }
@@ -218,7 +215,7 @@ void ParamTraits<cc::FilterOperation>::Log(const param_type& p,
       LogParam(p.zoom_inset(), l);
       break;
     case cc::FilterOperation::REFERENCE:
-      LogParam(p.image_filter()->cached_sk_filter(), l);
+      LogParam(p.image_filter(), l);
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
       LogParam(p.amount(), l);
@@ -270,25 +267,26 @@ void ParamTraits<cc::FilterOperations>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
-                                              const param_type& p) {
+void ParamTraits<sk_sp<cc::PaintFilter>>::Write(base::Pickle* m,
+                                                const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-               "ParamTraits::SkImageFilter::Write");
-  SkImageFilter* filter = p.get();
-  if (filter) {
-    sk_sp<SkData> data(skia::ValidatingSerializeFlattenable(filter));
-    m->WriteData(static_cast<const char*>(data->data()),
-                 base::checked_cast<int>(data->size()));
-  } else {
+               "ParamTraits::PaintFilter::Write");
+  static const size_t kBufferSize = 8 * 1024;
+  std::vector<char> memory(kBufferSize);
+  cc::PaintOpWriter writer(memory.data(), kBufferSize, nullptr, nullptr,
+                           true /* enable_security_constraints */);
+  writer.Write(p.get());
+  if (writer.size() == 0u)
     m->WriteData(nullptr, 0);
-  }
+  else
+    m->WriteData(static_cast<const char*>(memory.data()), writer.size());
 }
 
-bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
-                                             base::PickleIterator* iter,
-                                             param_type* r) {
+bool ParamTraits<sk_sp<cc::PaintFilter>>::Read(const base::Pickle* m,
+                                               base::PickleIterator* iter,
+                                               param_type* r) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-               "ParamTraits::SkImageFilter::Read");
+               "ParamTraits::PaintFilter::Read");
   const char* data = nullptr;
   int length = 0;
   if (!iter->ReadData(&data, &length))
@@ -299,19 +297,22 @@ bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
     return true;
   }
 
-  SkFlattenable* flattenable = skia::ValidatingDeserializeFlattenable(
-      data, length, SkImageFilter::GetFlattenableType());
-  if (!flattenable)
+  cc::PaintOpReader reader(data, length, nullptr,
+                           true /* enable_security_constraints */);
+  sk_sp<cc::PaintFilter> filter;
+  reader.Read(&filter);
+  if (!filter)
     return false;
 
-  *r = sk_sp<SkImageFilter>(static_cast<SkImageFilter*>(flattenable));
+  *r = std::move(filter);
   return true;
 }
 
-void ParamTraits<sk_sp<SkImageFilter>>::Log(const param_type& p,
-                                            std::string* l) {
+void ParamTraits<sk_sp<cc::PaintFilter>>::Log(const param_type& p,
+                                              std::string* l) {
   l->append("(");
-  LogParam(p.get() ? p->countInputs() : 0, l);
+  auto type = p ? p->type() : cc::PaintFilter::Type::kNullFilter;
+  LogParam(cc::PaintFilter::TypeToString(type), l);
   l->append(")");
 }
 
