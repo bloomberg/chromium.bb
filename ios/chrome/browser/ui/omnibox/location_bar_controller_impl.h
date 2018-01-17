@@ -26,6 +26,7 @@ class WebState;
 
 @protocol BrowserCommands;
 @protocol LocationBarDelegate;
+@protocol LocationBarURLLoader;
 @class PageInfoBridge;
 class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
@@ -44,6 +45,10 @@ class LocationBarControllerImpl : public LocationBarController,
                             id<LocationBarDelegate> delegate,
                             id<BrowserCommands> dispatcher);
   ~LocationBarControllerImpl() override;
+
+  void SetURLLoader(id<LocationBarURLLoader> URLLoader) {
+    URLLoader_ = URLLoader;
+  };
 
   // Creates a popup coordinator and wires it to |edit_view_|.
   OmniboxPopupCoordinator* CreatePopupCoordinator(
@@ -101,6 +106,7 @@ class LocationBarControllerImpl : public LocationBarController,
   __strong PageInfoBridge* page_info_bridge_;
   LocationBarView* location_bar_view_;
   __weak id<LocationBarDelegate> delegate_;
+  __weak id<LocationBarURLLoader> URLLoader_;
   // Dispatcher to send commands from the location bar.
   __weak id<BrowserCommands> dispatcher_;
   // The BrowserState passed on construction.

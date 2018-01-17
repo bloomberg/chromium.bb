@@ -71,6 +71,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/location_bar",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar:test_support",

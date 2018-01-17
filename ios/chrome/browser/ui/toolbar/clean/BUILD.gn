@@ -54,6 +54,8 @@ source_set("toolbar") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
   ]
+
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/location_bar" ]
 }
 
 source_set("toolbar_ui") {
