@@ -4,13 +4,13 @@
 
 #include "components/previews/core/previews_logger.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
@@ -44,7 +44,7 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
   // PreviewsLoggerObserver:
   void OnNewMessageLogAdded(
       const PreviewsLogger::MessageLog& message) override {
-    message_ = base::MakeUnique<PreviewsLogger::MessageLog>(message);
+    message_ = std::make_unique<PreviewsLogger::MessageLog>(message);
     messages_.push_back(*message_);
   }
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
@@ -117,7 +117,7 @@ class PreviewsLoggerTest : public testing::Test {
 
   ~PreviewsLoggerTest() override {}
 
-  void SetUp() override { logger_ = base::MakeUnique<PreviewsLogger>(); }
+  void SetUp() override { logger_ = std::make_unique<PreviewsLogger>(); }
 
   std::string LogPreviewDecisionAndGetReasonDescription(
       PreviewsEligibilityReason reason,
