@@ -104,9 +104,6 @@ class VariationsService
   // to |StartRepeatedVariationsSeedFetch|.
   void SetRestrictMode(const std::string& restrict_mode);
 
-  // Exposed for testing.
-  void SetCreateTrialsFromSeedCalledForTesting(bool called);
-
   // Returns the variations server URL, which can vary if a command-line flag is
   // set and/or the variations restrict pref is set in |local_prefs|. Declared
   // static for test purposes. |http_options| determines whether to use the http
@@ -249,8 +246,7 @@ class VariationsService
   bool DoFetchFromURL(const GURL& url);
 
   // Calls FetchVariationsSeed once and repeats this periodically. See
-  // implementation for details on the period. Must be called after
-  // |CreateTrialsFromSeed|.
+  // implementation for details on the period.
   void StartRepeatedVariationsSeedFetch();
 
   // Checks if prerequisites for fetching the Variations seed are met, and if
@@ -280,7 +276,8 @@ class VariationsService
 
   // Encrypts a string using the encrypted_messages component, input is passed
   // in as |plaintext|, outputs a serialized EncryptedMessage protobuf as
-  // |encrypted|. Returns true on success, false on failure.
+  // |encrypted|. Returns true on success, false on failure. The encryption can
+  // be done in-place.
   bool EncryptString(const std::string& plaintext, std::string* encrypted);
 
   // Loads the country code to use for filtering permanent consistency studies,

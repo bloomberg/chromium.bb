@@ -620,6 +620,66 @@ TEST(VariationsSeedStoreTest, ApplyDeltaPatch) {
   EXPECT_EQ(after_seed_data, output);
 }
 
+TEST(VariationsSeedStoreTest, GetLatestSerialNumber_LoadsInitialValue) {
+  // Store good seed data to test if loading from prefs works.
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string base64_seed = SerializeSeedBase64(seed);
+  const std::string base64_seed_signature = "a completely ignored signature";
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  prefs.SetString(prefs::kVariationsCompressedSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
+
+  TestVariationsSeedStore seed_store(&prefs);
+  EXPECT_EQ("123", seed_store.GetLatestSerialNumber());
+}
+
+TEST(VariationsSeedStoreTest, GetLatestSerialNumber_EmptyWhenNoSeedIsSaved) {
+  // Start with empty prefs.
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+
+  TestVariationsSeedStore seed_store(&prefs);
+  EXPECT_EQ(std::string(), seed_store.GetLatestSerialNumber());
+}
+
+// Verifies that the cached serial number is correctly updated when a new seed
+// is saved.
+TEST(VariationsSeedStoreTest, GetLatestSerialNumber_UpdatedWithNewStoredSeed) {
+  // Store good seed data initially.
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string base64_seed = SerializeSeedBase64(seed);
+  const std::string base64_seed_signature = "a completely ignored signature";
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  prefs.SetString(prefs::kVariationsCompressedSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
+
+  // Call GetLatestSerialNumber() once to prime the cached value.
+  TestVariationsSeedStore seed_store(&prefs);
+  EXPECT_EQ("123", seed_store.GetLatestSerialNumber());
+
+  VariationsSeed new_seed = CreateTestSeed();
+  new_seed.set_serial_number("456");
+  seed_store.StoreSeedForTesting(SerializeSeed(new_seed));
+  EXPECT_EQ("456", seed_store.GetLatestSerialNumber());
+}
+
+TEST(VariationsSeedStoreTest, GetLatestSerialNumber_ClearsPrefsOnFailure) {
+  // Store corrupted seed data to test that prefs are cleared when loading
+  // fails.
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  prefs.SetString(prefs::kVariationsCompressedSeed, "complete garbage");
+  prefs.SetString(prefs::kVariationsSeedSignature, "an unused signature");
+
+  TestVariationsSeedStore seed_store(&prefs);
+  EXPECT_EQ(std::string(), seed_store.GetLatestSerialNumber());
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+}
+
 #if defined(OS_ANDROID)
 TEST(VariationsSeedStoreTest, ImportFirstRunJavaSeed) {
   const std::string test_seed_data = "raw_seed_data_test";

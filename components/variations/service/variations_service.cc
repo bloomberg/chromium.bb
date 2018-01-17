@@ -322,11 +322,6 @@ void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
   restrict_mode_ = restrict_mode;
 }
 
-void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  field_trial_creator_.SetCreateTrialsFromSeedCalledForTesting(called);
-}
-
 GURL VariationsService::GetVariationsServerURL(
     PrefService* policy_pref_service,
     const std::string& restrict_mode_override,
@@ -500,29 +495,23 @@ bool VariationsService::DoFetchFromURL(const GURL& url) {
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());
   bool enable_deltas = false;
-  if (!field_trial_creator_.seed_store()->variations_serial_number().empty() &&
-      !disable_deltas_for_next_request_) {
+  std::string serial_number =
+      field_trial_creator_.seed_store()->GetLatestSerialNumber();
+  if (!serial_number.empty() && !disable_deltas_for_next_request_) {
     // Tell the server that delta-compressed seeds are supported.
     enable_deltas = true;
     // Get the seed only if its serial number doesn't match what we have.
     // If the fetch is being done over HTTP, encrypt the If-None-Match header.
-    const std::string& original_sn =
-        field_trial_creator_.seed_store()->variations_serial_number();
     if (!url.SchemeIs(url::kHttpsScheme) &&
         base::FeatureList::IsEnabled(kHttpRetryFeature)) {
-      std::string encrypted_sn;
-      std::string encoded_sn;
-      if (!EncryptString(original_sn, &encrypted_sn)) {
+      if (!EncryptString(serial_number, &serial_number)) {
         pending_seed_request_.reset();
         return false;
       }
-      base::Base64Encode(encrypted_sn, &encoded_sn);
-      pending_seed_request_->AddExtraRequestHeader("If-None-Match:" +
-                                                   encoded_sn);
-    } else {
-      pending_seed_request_->AddExtraRequestHeader("If-None-Match:" +
-                                                   original_sn);
+      base::Base64Encode(serial_number, &serial_number);
     }
+    pending_seed_request_->AddExtraRequestHeader("If-None-Match:" +
+                                                 serial_number);
   }
   // Tell the server that delta-compressed and gzipped seeds are supported.
   const char* supported_im = enable_deltas ? "A-IM:x-bm,gzip" : "A-IM:gzip";
@@ -557,10 +546,6 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
     insecure_variations_server_url_ =
         GetVariationsServerURL(policy_pref_service_, restrict_mode_, USE_HTTP);
   }
-
-  // Check that |CreateTrialsFromSeed| was called, which is necessary to
-  // retrieve the serial number that will be sent to the server.
-  DCHECK(field_trial_creator_.create_trials_from_seed_called());
 
   DCHECK(!request_scheduler_.get());
   request_scheduler_.reset(VariationsRequestScheduler::Create(
@@ -666,7 +651,10 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
       RecordSuccessfulFetch();
 
       // Update the seed date value in local state (used for expiry check on
-      // next start up), since 304 is a successful response.
+      // next start up), since 304 is a successful response. Note that the
+      // serial number included in the request is always that of the latest
+      // seed, even when running in safe mode, so it's appropriate to always
+      // modify the latest seed's date.
       field_trial_creator_.seed_store()->UpdateSeedDateAndLogDayChange(
           response_date);
     }
