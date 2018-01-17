@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
+#include "ui/ozone/test/mock_platform_window_delegate.h"
 
 namespace ui {
 

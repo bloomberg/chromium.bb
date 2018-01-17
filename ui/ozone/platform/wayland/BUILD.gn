@@ -84,8 +84,6 @@ source_set("wayland_unittests") {
   sources = [
     "fake_server.cc",
     "fake_server.h",
-    "mock_platform_window_delegate.cc",
-    "mock_platform_window_delegate.h",
     "wayland_connection_unittest.cc",
     "wayland_keyboard_unittest.cc",
     "wayland_pointer_unittest.cc",
@@ -103,8 +101,8 @@ source_set("wayland_unittests") {
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/base:ui_features",
     "//ui/events/ozone:events_ozone_layout",
-    "//ui/gfx:test_support",
     "//ui/ozone:platform",
+    "//ui/ozone:test_support",
   ]
 
   import("//ui/base/ui_features.gni")
