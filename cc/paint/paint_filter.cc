@@ -56,8 +56,6 @@ std::string PaintFilter::TypeToString(Type type) {
       return "kCompose";
     case Type::kAlphaThreshold:
       return "kAlphaThreshold";
-    case Type::kSkImageFilter:
-      return "kSkImageFilter";
     case Type::kXfermode:
       return "kXfermode";
     case Type::kArithmetic:
@@ -129,9 +127,6 @@ bool PaintFilter::operator==(const PaintFilter& other) const {
     case Type::kAlphaThreshold:
       return *static_cast<const AlphaThresholdPaintFilter*>(this) ==
              static_cast<const AlphaThresholdPaintFilter&>(other);
-    case Type::kSkImageFilter:
-      return *static_cast<const ImageFilterPaintFilter*>(this) ==
-             static_cast<const ImageFilterPaintFilter&>(other);
     case Type::kXfermode:
       return *static_cast<const XfermodePaintFilter*>(this) ==
              static_cast<const XfermodePaintFilter&>(other);
@@ -320,18 +315,6 @@ bool AlphaThresholdPaintFilter::operator==(
          PaintOp::AreEqualEvenIfNaN(inner_min_, other.inner_min_) &&
          PaintOp::AreEqualEvenIfNaN(outer_max_, other.outer_max_) &&
          AreFiltersEqual(input_.get(), other.input_.get());
-}
-
-ImageFilterPaintFilter::ImageFilterPaintFilter(sk_sp<SkImageFilter> sk_filter)
-    : PaintFilter(kType, nullptr), sk_filter_(std::move(sk_filter)) {
-  cached_sk_filter_ = sk_filter_;
-}
-
-ImageFilterPaintFilter::~ImageFilterPaintFilter() = default;
-
-bool ImageFilterPaintFilter::operator==(
-    const ImageFilterPaintFilter& other) const {
-  return !!sk_filter_ == !!other.sk_filter_;
 }
 
 XfermodePaintFilter::XfermodePaintFilter(SkBlendMode blend_mode,

@@ -150,6 +150,14 @@ class CC_PAINT_EXPORT PaintOp {
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
   };
 
+  // Indicates how PaintImages are serialized.
+  enum class SerializedImageType : uint8_t {
+    kNoImage,
+    kImageData,
+    kTransferCacheEntry,
+    kLastType = kTransferCacheEntry
+  };
+
   // Subclasses should provide a static Serialize() method called from here.
   // If the op can be serialized to |memory| in no more than |size| bytes,
   // then return the number of bytes written.  If it won't fit, return 0.

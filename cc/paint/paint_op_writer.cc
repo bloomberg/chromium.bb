@@ -26,12 +26,14 @@ void TypefaceCataloger(SkTypeface* typeface, void* ctx) {
 PaintOpWriter::PaintOpWriter(void* memory,
                              size_t size,
                              TransferCacheSerializeHelper* transfer_cache,
-                             ImageProvider* image_provider)
+                             ImageProvider* image_provider,
+                             bool enable_security_constraints)
     : memory_(static_cast<char*>(memory) + HeaderBytes()),
       size_(size),
       remaining_bytes_(size - HeaderBytes()),
       transfer_cache_(transfer_cache),
-      image_provider_(image_provider) {
+      image_provider_(image_provider),
+      enable_security_constraints_(enable_security_constraints) {
   // Leave space for header of type/skip.
   DCHECK_GE(size, HeaderBytes());
 }
@@ -136,14 +138,39 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   WriteFlattenable(flags.mask_filter_.get());
   AlignMemory(4);
   WriteFlattenable(flags.color_filter_.get());
+
   AlignMemory(4);
-  WriteFlattenable(flags.draw_looper_.get());
+  if (enable_security_constraints_)
+    WriteSize(static_cast<size_t>(0u));
+  else
+    WriteFlattenable(flags.draw_looper_.get());
 
   Write(flags.image_filter_.get());
   Write(flags.shader_.get());
 }
 
 void PaintOpWriter::Write(const DrawImage& image) {
+  if (enable_security_constraints_) {
+    SkBitmap bm;
+    if (!image.paint_image().GetSkImage()->asLegacyBitmap(
+            &bm, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {
+      Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
+      return;
+    }
+
+    Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kImageData));
+    const auto& pixmap = bm.pixmap();
+    Write(pixmap.colorType());
+    Write(pixmap.width());
+    Write(pixmap.height());
+    size_t pixmap_size = pixmap.computeByteSize();
+    WriteSize(pixmap_size);
+    WriteData(pixmap_size, pixmap.addr());
+    return;
+  }
+
+  Write(
+      static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   auto decoded_image = image_provider_->GetDecodedDrawImage(image);
   base::Optional<uint32_t> id =
       decoded_image.decoded_image().transfer_cache_entry_id();
@@ -313,9 +340,6 @@ void PaintOpWriter::Write(const PaintFilter* filter) {
     case PaintFilter::Type::kAlphaThreshold:
       Write(static_cast<const AlphaThresholdPaintFilter&>(*filter));
       break;
-    case PaintFilter::Type::kSkImageFilter:
-      Write(static_cast<const ImageFilterPaintFilter&>(*filter));
-      break;
     case PaintFilter::Type::kXfermode:
       Write(static_cast<const XfermodePaintFilter&>(*filter));
       break;
@@ -410,10 +434,6 @@ void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
   WriteSimple(filter.inner_min());
   WriteSimple(filter.outer_max());
   Write(filter.input().get());
-}
-
-void PaintOpWriter::Write(const ImageFilterPaintFilter& filter) {
-  // TODO(vmpstr): Implement this? (See comment in ImageFilterPaintFilter.)
 }
 
 void PaintOpWriter::Write(const XfermodePaintFilter& filter) {
@@ -565,6 +585,12 @@ void PaintOpWriter::Write(const PaintRecord* record) {
   if (!valid_)
     return;
 
+  if (enable_security_constraints_) {
+    // We don't serialize PaintRecords when security constraints are enabled.
+    reinterpret_cast<size_t*>(size_memory)[0] = 0u;
+    return;
+  }
+
   SimpleBufferSerializer serializer(memory_, remaining_bytes_, image_provider_,
                                     transfer_cache_);
   serializer.Serialize(record);
@@ -590,6 +616,8 @@ void PaintOpWriter::Write(const PaintRecord* record) {
 
 void PaintOpWriter::Write(const PaintImage& image) {
   if (!image) {
+    Write(static_cast<uint8_t>(
+        PaintOp::SerializedImageType::kTransferCacheEntry));
     Write(kInvalidImageTransferCacheEntryId);
     return;
   }

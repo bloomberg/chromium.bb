@@ -20,28 +20,12 @@
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMatrixConvolutionImageFilter.h"
 
-namespace mojo {
-template <class M, class T>
-struct StructTraits;
-}  // namespace mojo
-
-namespace IPC {
-template <class P>
-struct ParamTraits;
-}  // namespace IPC
-
 namespace viz {
-namespace mojom {
-class FilterOperationDataView;
-}  // namespace mojom
-
 class GLRenderer;
 class SoftwareRenderer;
 }  // namespace viz
 
 namespace cc {
-class FilterOperation;
-class FilterOperations;
 
 class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
  public:
@@ -55,10 +39,6 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     kMagnifier,
     kCompose,
     kAlphaThreshold,
-    // This is currently required to support serialization for
-    // FilterOperation. It will be removed once PaintFilters can be
-    // serialized directly. See crbug.com/777636.
-    kSkImageFilter,
     kXfermode,
     kArithmetic,
     kMatrixConvolution,
@@ -137,12 +117,6 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
   friend class PaintFlags;
   friend class viz::GLRenderer;
   friend class viz::SoftwareRenderer;
-
-  // For cross-process transport of FilterOperations. To be removed once
-  // PaintFilters can be serialized directly. See crbug.com/777636.
-  friend struct IPC::ParamTraits<FilterOperation>;
-  friend struct mojo::StructTraits<viz::mojom::FilterOperationDataView,
-                                   FilterOperation>;
 
   const Type type_;
   base::Optional<CropRect> crop_rect_;
@@ -287,26 +261,6 @@ class CC_PAINT_EXPORT AlphaThresholdPaintFilter final : public PaintFilter {
   SkScalar inner_min_;
   SkScalar outer_max_;
   sk_sp<PaintFilter> input_;
-};
-
-class CC_PAINT_EXPORT ImageFilterPaintFilter final : public PaintFilter {
- public:
-  static constexpr Type kType = Type::kSkImageFilter;
-  const SkImageFilter* sk_filter() const { return sk_filter_.get(); }
-
-  bool operator==(const ImageFilterPaintFilter& other) const;
-
- private:
-  // For cross-process transport of FilterOperations. To be removed once
-  // PaintFilters can be serialized directly. See crbug.com/777636.
-  friend struct IPC::ParamTraits<FilterOperation>;
-  friend struct mojo::StructTraits<viz::mojom::FilterOperationDataView,
-                                   FilterOperation>;
-
-  explicit ImageFilterPaintFilter(sk_sp<SkImageFilter> sk_filter);
-  ~ImageFilterPaintFilter() override;
-
-  sk_sp<SkImageFilter> sk_filter_;
 };
 
 class CC_PAINT_EXPORT XfermodePaintFilter final : public PaintFilter {
