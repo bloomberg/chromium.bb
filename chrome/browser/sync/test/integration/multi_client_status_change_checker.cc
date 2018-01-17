@@ -20,3 +20,9 @@ MultiClientStatusChangeChecker::~MultiClientStatusChangeChecker() {}
 void MultiClientStatusChangeChecker::OnStateChanged(syncer::SyncService* sync) {
   CheckExitCondition();
 }
+
+base::TimeDelta MultiClientStatusChangeChecker::GetTimeoutDuration() {
+  // TODO(crbug.com/802025): This increased timeout seems to have become
+  // necessary with kSyncUSSTypedURL. We should figure out why.
+  return base::TimeDelta::FromSeconds(90);
+}
