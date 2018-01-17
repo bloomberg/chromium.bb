@@ -272,7 +272,7 @@
     {
       name: "CSSPaintAPI",
       depends_on: ["Worklet"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPaintAPIArguments",
@@ -1199,7 +1199,7 @@
     },
     {
       name: "Worklet",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WorkStealingInScriptRunner",
