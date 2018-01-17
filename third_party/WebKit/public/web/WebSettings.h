@@ -31,11 +31,13 @@
 #ifndef WebSettings_h
 #define WebSettings_h
 
+#include <unicode/uscript.h>
+
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebViewportStyle.h"
-#include <unicode/uscript.h>
 
 namespace blink {
 
@@ -298,6 +300,7 @@ class WebSettings {
   virtual void SetMediaControlsEnabled(bool) = 0;
   virtual void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) = 0;
   virtual void SetMediaDownloadInProductHelpEnabled(bool) = 0;
+  virtual void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) = 0;
 
  protected:
   ~WebSettings() = default;

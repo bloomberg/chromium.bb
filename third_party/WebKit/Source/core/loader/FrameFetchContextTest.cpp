@@ -881,6 +881,55 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
   }
 }
 
+TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
+  Settings* settings = document->GetSettings();
+  FrameFetchContext* childFetchContext = CreateChildFrame();
+  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
+      WebEffectiveConnectionType::kType3G, 1 /* transport_rtt_msec */,
+      10000 /* downlink_throughput_mbps */);
+
+  // Experiment is not enabled, expect default values.
+  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
+            fetch_context->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  EXPECT_EQ(ResourceLoadPriority::kMedium,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kMedium));
+
+  // Low priority iframes enabled but network is not slow enough. Expect default
+  // values.
+  settings->SetLowPriorityIframesThreshold(WebEffectiveConnectionType::kType2G);
+  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
+            fetch_context->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  EXPECT_EQ(ResourceLoadPriority::kMedium,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kMedium));
+
+  // Low priority iframes enabled and network is slow, main frame request's
+  // priorities should not change.
+  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
+      WebEffectiveConnectionType::kType2G, 1 /* transport_rtt_msec */,
+      10000 /* downlink_throughput_mbps */);
+  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
+            fetch_context->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  // Low priority iframes enabled, everything in child frame should be low
+  // priority.
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kVeryHigh));
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
+            childFetchContext->ModifyPriorityForExperiments(
+                ResourceLoadPriority::kMedium));
+}
+
 // Tests if "Save-Data" header is correctly added on the first load and reload.
 TEST_F(FrameFetchContextTest, EnableDataSaver) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);

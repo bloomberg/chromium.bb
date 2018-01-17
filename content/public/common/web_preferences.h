@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "net/nqe/effective_connection_type.h"
 #include "ui/base/touch/touch_device.h"
 #include "url/gurl.h"
 
@@ -296,6 +297,10 @@ struct CONTENT_EXPORT WebPreferences {
 
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
+
+  // Network quality threshold below which resources from iframes are assigned
+  // lowest priority.
+  net::EffectiveConnectionType low_priority_iframes_threshold;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

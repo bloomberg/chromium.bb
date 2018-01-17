@@ -20,6 +20,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -2699,6 +2700,22 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       base::FeatureList::IsEnabled(
           feature_engagement::kIPHMediaDownloadFeature);
 #endif  // defined(OS_ANDROID)
+
+  if (base::FeatureList::IsEnabled(features::kLowPriorityIframes)) {
+    // Obtain the maximum effective connection type at which the feature is
+    // enabled.
+    std::string effective_connection_type_param =
+        base::GetFieldTrialParamValueByFeature(
+            features::kLowPriorityIframes,
+            "max_effective_connection_type_threshold");
+
+    base::Optional<net::EffectiveConnectionType> effective_connection_type =
+        net::GetEffectiveConnectionTypeForName(effective_connection_type_param);
+    if (effective_connection_type) {
+      web_prefs->low_priority_iframes_threshold =
+          effective_connection_type.value();
+    }
+  }
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);

@@ -217,7 +217,8 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   // well as to ensure that there isn't priority churn if images move in and out
   // of the viewport, or are displayed more than once, both in and out of the
   // viewport.
-  return std::max(priority, resource_request.Priority());
+  return std::max(Context().ModifyPriorityForExperiments(priority),
+                  resource_request.Priority());
 }
 
 static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {

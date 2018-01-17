@@ -232,7 +232,8 @@ WebPreferences::WebPreferences()
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
-      autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired) {
+      autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
+      low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

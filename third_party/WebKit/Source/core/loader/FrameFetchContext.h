@@ -171,6 +171,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void Trace(blink::Visitor*) override;
 
+  ResourceLoadPriority ModifyPriorityForExperiments(
+      ResourceLoadPriority) const override;
+
  private:
   struct FrozenState;
 
