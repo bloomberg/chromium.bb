@@ -57,33 +57,6 @@ const char kGpuSecondaryDeviceIDs[] = "gpu-secondary-device-ids";
 const char kGpuTestingNoCompleteInfoCollection[] =
     "gpu-no-complete-info-collection";
 
-// Override os version from GpuControlList::MakeDecision.
-const char kGpuTestingOsVersion[] = "gpu-testing-os-version";
-
-// Override gpu vendor id from the GpuInfoCollector.
-const char kGpuTestingVendorId[] = "gpu-testing-vendor-id";
-
-// Override gpu device id from the GpuInfoCollector.
-const char kGpuTestingDeviceId[] = "gpu-testing-device-id";
-
-// Override secondary gpu vendor ids from the GpuInfoCollector.
-const char kGpuTestingSecondaryVendorIDs[] = "gpu-testing-secondary-vendor-ids";
-
-// Override secondary gpu device ids from the GpuInfoCollector.
-const char kGpuTestingSecondaryDeviceIDs[] = "gpu-testing-secondary-device-ids";
-
-// Override gpu driver date from the GpuInfoCollector.
-const char kGpuTestingDriverDate[] = "gpu-testing-driver-date";
-
-// Override gl vendor from the GpuInfoCollector.
-const char kGpuTestingGLVendor[] = "gpu-testing-gl-vendor";
-
-// Override gl renderer from the GpuInfoCollector.
-const char kGpuTestingGLRenderer[] = "gpu-testing-gl-renderer";
-
-// Override gl version from the GpuInfoCollector.
-const char kGpuTestingGLVersion[] = "gpu-testing-gl-version";
-
 // Passes gpu vendor_id from browser process to GPU process.
 const char kGpuVendorID[] = "gpu-vendor-id";
 

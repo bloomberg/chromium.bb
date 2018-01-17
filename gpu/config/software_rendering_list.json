@@ -1572,6 +1572,14 @@
           "accelerated_webgl"
         ]}
       ]
+    },
+    {
+      "id": 153,
+      "description": "Test entry where WebGL is blacklisted",
+      "test_group": 2,
+      "features": [
+        "accelerated_webgl"
+      ]
     }
   ]
 }

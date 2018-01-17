@@ -16,9 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -535,25 +532,6 @@ void GpuDataManagerImplPrivate::Initialize() {
                    "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
       gpu::CollectBasicGraphicsInfo(&gpu_info);
     }
-
-    if (command_line->HasSwitch(switches::kGpuTestingVendorId) &&
-        command_line->HasSwitch(switches::kGpuTestingDeviceId)) {
-      base::HexStringToUInt(
-          command_line->GetSwitchValueASCII(switches::kGpuTestingVendorId),
-          &gpu_info.gpu.vendor_id);
-      base::HexStringToUInt(
-          command_line->GetSwitchValueASCII(switches::kGpuTestingDeviceId),
-          &gpu_info.gpu.device_id);
-      gpu_info.gpu.active = true;
-      gpu_info.secondary_gpus.clear();
-    }
-
-    gpu::ParseSecondaryGpuDevicesFromCommandLine(*command_line, &gpu_info);
-
-    if (command_line->HasSwitch(switches::kGpuTestingDriverDate)) {
-      gpu_info.driver_date =
-          command_line->GetSwitchValueASCII(switches::kGpuTestingDriverDate);
-    }
   }
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id) {
@@ -850,16 +828,6 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
                                                 uint32_t device_id) {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-
-  // For tests, only the gpu process is allowed to detect the active gpu device
-  // using information on the actual loaded GL driver.
-  if (command_line->HasSwitch(switches::kGpuTestingVendorId) &&
-      command_line->HasSwitch(switches::kGpuTestingDeviceId)) {
-    return false;
-  }
-
   if (gpu_info_.gpu.vendor_id == vendor_id &&
       gpu_info_.gpu.device_id == device_id) {
     // The primary GPU is active.
@@ -942,6 +910,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   DCHECK(owner_);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableSoftwareRasterizer))
+    DisableSwiftShader();
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
 

@@ -41,11 +41,7 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  // Driver vendor and version are always expected to be extracted from the
-  // testing gl version.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGpuTestingGLVersion) &&
-      !gpu_info->driver_vendor.empty() && !gpu_info->driver_version.empty()) {
+  if (!gpu_info->driver_vendor.empty() && !gpu_info->driver_version.empty()) {
     return kCollectInfoSuccess;
   }
 

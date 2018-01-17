@@ -388,7 +388,7 @@ TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
   }
 }
 
-TEST(MultiGPUsTest, IdentifyActiveGPU) {
+TEST(MultiGPUsTest, IdentifyActiveGPU0) {
   GPUInfo::GPUDevice nvidia_gpu;
   nvidia_gpu.vendor_id = 0x10de;
   nvidia_gpu.device_id = 0x0df8;
@@ -420,6 +420,107 @@ TEST(MultiGPUsTest, IdentifyActiveGPU) {
   EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
 }
 
+TEST(MultiGPUsTest, IdentifyActiveGPU1) {
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0de1;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x040a;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = intel_gpu;
+  gpu_info.secondary_gpus.push_back(nvidia_gpu);
+
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  gpu_info.gl_vendor = "nouveau";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_TRUE(gpu_info.secondary_gpus[0].active);
+}
+
+TEST(MultiGPUsTest, IdentifyActiveGPU2) {
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0de1;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x040a;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = intel_gpu;
+  gpu_info.secondary_gpus.push_back(nvidia_gpu);
+
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+
+  gpu_info.gl_vendor = "Intel";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_TRUE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+}
+
+TEST(MultiGPUsTest, IdentifyActiveGPU3) {
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0de1;
+  GPUInfo::GPUDevice intel_gpu;
+  intel_gpu.vendor_id = 0x8086;
+  intel_gpu.device_id = 0x040a;
+  GPUInfo::GPUDevice amd_gpu;
+  amd_gpu.vendor_id = 0x1002;
+  amd_gpu.device_id = 0x6779;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = intel_gpu;
+  gpu_info.secondary_gpus.push_back(nvidia_gpu);
+  gpu_info.secondary_gpus.push_back(amd_gpu);
+
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[1].active);
+
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[1].active);
+
+  gpu_info.gl_vendor = "X.Org";
+  gpu_info.gl_renderer = "AMD R600";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_FALSE(gpu_info.gpu.active);
+  EXPECT_FALSE(gpu_info.secondary_gpus[0].active);
+  EXPECT_TRUE(gpu_info.secondary_gpus[1].active);
+}
+
+TEST(MultiGPUsTest, IdentifyActiveGPU4) {
+  GPUInfo::GPUDevice nvidia_gpu;
+  nvidia_gpu.vendor_id = 0x10de;
+  nvidia_gpu.device_id = 0x0de1;
+
+  GPUInfo gpu_info;
+  gpu_info.gpu = nvidia_gpu;
+
+  EXPECT_FALSE(gpu_info.gpu.active);
+
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_TRUE(gpu_info.gpu.active);
+
+  gpu_info.gl_vendor = "nouveau";
+  IdentifyActiveGPU(&gpu_info);
+  EXPECT_TRUE(gpu_info.gpu.active);
+}
+
 TEST(MultiGPUsTest, IdentifyActiveGPUAvoidFalseMatch) {
   // Verify that "Corporation" won't be matched with "ati".
   GPUInfo::GPUDevice amd_gpu;
@@ -441,4 +542,3 @@ TEST(MultiGPUsTest, IdentifyActiveGPUAvoidFalseMatch) {
 }
 
 }  // namespace gpu
-

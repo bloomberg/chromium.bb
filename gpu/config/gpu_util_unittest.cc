@@ -81,46 +81,6 @@ TEST(GpuUtilTest, ParseSecondaryGpuDevicesFromCommandLine_Generated) {
   }
 }
 
-TEST(GpuUtilTest, ParseSecondaryGpuDevicesFromCommandLine_Testing) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-
-  command_line.AppendSwitchASCII(switches::kGpuSecondaryVendorIDs, "0x10de");
-  command_line.AppendSwitchASCII(switches::kGpuSecondaryDeviceIDs, "0x0de1");
-
-  command_line.AppendSwitchASCII(switches::kGpuTestingSecondaryVendorIDs,
-                                 "0x10de;0x1002");
-  command_line.AppendSwitchASCII(switches::kGpuTestingSecondaryDeviceIDs,
-                                 "0x0de1;0x6779");
-
-  GPUInfo gpu_info;
-  ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
-
-  EXPECT_EQ(gpu_info.secondary_gpus.size(), 2ul);
-  EXPECT_EQ(gpu_info.secondary_gpus[0].vendor_id, 0x10deul);
-  EXPECT_EQ(gpu_info.secondary_gpus[0].device_id, 0x0de1ul);
-  EXPECT_EQ(gpu_info.secondary_gpus[1].vendor_id, 0x1002ul);
-  EXPECT_EQ(gpu_info.secondary_gpus[1].device_id, 0x6779ul);
-}
-
-TEST(GpuUtilTest, ParseSecondaryGpuDevicesFromCommandLine_TestingClear) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-
-  command_line.AppendSwitchASCII(switches::kGpuSecondaryVendorIDs,
-                                 "0x1002;0x10de");
-  command_line.AppendSwitchASCII(switches::kGpuSecondaryDeviceIDs,
-                                 "0x6779;0x0de1");
-
-  GPUInfo gpu_info;
-  ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
-  EXPECT_EQ(gpu_info.secondary_gpus.size(), 2ul);
-
-  command_line.AppendSwitchASCII(switches::kGpuTestingSecondaryVendorIDs, "");
-  command_line.AppendSwitchASCII(switches::kGpuTestingSecondaryDeviceIDs, "");
-
-  ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
-  EXPECT_EQ(gpu_info.secondary_gpus.size(), 0ul);
-}
-
 TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);

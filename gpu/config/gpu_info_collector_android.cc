@@ -233,20 +233,6 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
 
   std::string egl_extensions = eglQueryStringFn(temp_display, EGL_EXTENSIONS);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
-    gpu_info->gl_vendor =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVendor);
-  }
-  if (command_line->HasSwitch(switches::kGpuTestingGLRenderer)) {
-    gpu_info->gl_renderer =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLRenderer);
-  }
-  if (command_line->HasSwitch(switches::kGpuTestingGLVersion)) {
-    gpu_info->gl_version =
-        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVersion);
-  }
-
   GLint max_samples = 0;
   glGetIntegervFn(GL_MAX_SAMPLES, &max_samples);
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
