@@ -154,7 +154,9 @@ public class BottomSheetContentController
 
             if (ChromeFeatureList.isInitialized()
                     && ChromeFeatureList.isEnabled(
-                               ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)) {
+                               ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)
+                    && !ChromeFeatureList.isEnabled(
+                               ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ABOVE_ARTICLES)) {
                 // TODO(bauerb): Implement support for destroying the home sheet after a delay.
                 mSelectedItemId = NO_CONTENT_ID;
                 mBottomSheet.showContent(null);

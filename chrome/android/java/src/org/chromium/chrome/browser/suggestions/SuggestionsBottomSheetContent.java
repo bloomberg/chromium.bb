@@ -216,8 +216,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ABOVE_ARTICLES)) {
-            mContextualSuggestions = new ContextualSuggestionsSection(
-                    mSuggestionsUiDelegate, offlinePageBridge, mActivity);
+            mContextualSuggestions = new ContextualSuggestionsSection(mSuggestionsUiDelegate,
+                    offlinePageBridge, mActivity, mActivity.getTabModelSelector());
         }
 
         // Inflate the logo in a container so its layout attributes are applied, then take it out.
@@ -373,6 +373,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             mSuggestionsUiDelegate.onDestroy();
             mTileGroupDelegate.destroy();
             TemplateUrlService.getInstance().removeObserver(this);
+
+            if (mContextualSuggestions != null) mContextualSuggestions.destroy();
         }
     }
 
@@ -443,7 +445,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                     ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ABOVE_ARTICLES);
             if (!mSheet.isShowingNewTab()) {
                 mContextualSuggestions.setSectionVisiblity(true);
-                mContextualSuggestions.refresh(mSheet.getContext(), currentUrl);
+                mContextualSuggestions.refresh(currentUrl);
             } else {
                 mContextualSuggestions.setSectionVisiblity(false);
             }
