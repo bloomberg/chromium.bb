@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/network/upload_progress_tracker.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -95,7 +94,7 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
 
   NetworkContext* context_;
   int32_t options_;
-  ResourceType resource_type_;
+  int resource_type_;
   bool is_load_timing_enabled_;
   uint32_t process_id_;
   uint32_t render_frame_id_;

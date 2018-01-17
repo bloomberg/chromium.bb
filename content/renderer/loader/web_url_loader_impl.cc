@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/common/loader_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -93,6 +94,9 @@ namespace content {
 // Utilities ------------------------------------------------------------------
 
 namespace {
+
+constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
+constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
 
@@ -648,14 +652,26 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(request.GetReferrerPolicy());
+  resource_request->resource_type = WebURLRequestToResourceType(request);
 
   resource_request->headers = GetWebURLRequestHeaders(request);
+  if (resource_request->resource_type == RESOURCE_TYPE_STYLESHEET) {
+    resource_request->headers.SetHeader(kAcceptHeader, kStylesheetAcceptHeader);
+  } else if (resource_request->resource_type == RESOURCE_TYPE_FAVICON ||
+             resource_request->resource_type == RESOURCE_TYPE_IMAGE) {
+    resource_request->headers.SetHeader(kAcceptHeader, kImageAcceptHeader);
+  } else {
+    // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
+    // manually set an accept header on an XHR.
+    resource_request->headers.SetHeaderIfMissing(kAcceptHeader,
+                                                 kDefaultAcceptHeader);
+  }
+
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even
   // for requests from in-process plugins.
   resource_request->plugin_child_id = request.GetPluginChildID();
-  resource_request->resource_type = WebURLRequestToResourceType(request);
   resource_request->priority =
       ConvertWebKitPriorityToNetPriority(request.GetPriority());
   resource_request->appcache_host_id = request.AppCacheHostID();

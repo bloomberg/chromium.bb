@@ -130,7 +130,6 @@ void MimeSniffingResourceHandler::OnWillStart(
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
 
-  AttachAcceptHeader(GetRequestInfo()->GetResourceType(), request());
   next_handler_->OnWillStart(url, std::move(controller));
 }
 

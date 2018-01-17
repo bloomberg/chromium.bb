@@ -41,7 +41,7 @@ NetworkServiceClient::NetworkServiceClient(
 NetworkServiceClient::~NetworkServiceClient() = default;
 
 void NetworkServiceClient::OnSSLCertificateError(
-    ResourceType resource_type,
+    int32_t resource_type,
     const GURL& url,
     uint32_t process_id,
     uint32_t routing_id,
@@ -53,8 +53,9 @@ void NetworkServiceClient::OnSSLCertificateError(
       process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
                               process_id, routing_id)
                  : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
-  SSLManager::OnSSLCertificateError(delegate->GetWeakPtr(), resource_type, url,
-                                    web_contents_getter, ssl_info, fatal);
+  SSLManager::OnSSLCertificateError(delegate->GetWeakPtr(),
+                                    static_cast<ResourceType>(resource_type),
+                                    url, web_contents_getter, ssl_info, fatal);
 }
 
 }  // namespace content

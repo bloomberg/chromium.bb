@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/network/url_loader.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
@@ -56,7 +55,6 @@ namespace content {
 namespace {
 
 static network::ResourceRequest CreateResourceRequest(const char* method,
-                                                      ResourceType type,
                                                       const GURL& url) {
   network::ResourceRequest request;
   request.method = std::string(method);
@@ -64,13 +62,6 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
-  request.load_flags = 0;
-  request.plugin_child_id = -1;
-  request.resource_type = type;
-  request.request_context = 0;
-  request.appcache_host_id = kAppCacheNoHostId;
-  request.download_to_file = false;
-  request.should_reset_appcache = false;
   request.is_main_frame = true;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
@@ -320,15 +311,13 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     mojom::URLLoaderPtr loader;
 
-    network::ResourceRequest request = CreateResourceRequest(
-        !request_body_ ? "GET" : "POST", resource_type_, url);
+    network::ResourceRequest request =
+        CreateResourceRequest(!request_body_ ? "GET" : "POST", url);
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_with_response_)
       options |= mojom::kURLLoadOptionSendSSLInfoWithResponse;
     if (sniff_)
       options |= mojom::kURLLoadOptionSniffMimeType;
-    if (add_custom_accept_header_)
-      request.headers.SetHeader("accept", "custom/*");
     if (send_ssl_for_cert_error_)
       options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
@@ -467,17 +456,9 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     send_ssl_for_cert_error_ = true;
   }
-  void set_add_custom_accept_header() {
-    DCHECK(!ran_);
-    add_custom_accept_header_ = true;
-  }
   void set_expect_redirect() {
     DCHECK(!ran_);
     expect_redirect_ = true;
-  }
-  void set_resource_type(ResourceType type) {
-    DCHECK(!ran_);
-    resource_type_ = type;
   }
   void set_request_body(
       scoped_refptr<network::ResourceRequestBody> request_body) {
@@ -573,9 +554,7 @@ class URLLoaderTest : public testing::Test {
   bool sniff_ = false;
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
-  bool add_custom_accept_header_ = false;
   bool expect_redirect_ = false;
-  ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
   scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // Used to ensure that methods are called either before or after a request is
@@ -685,8 +664,7 @@ TEST_F(URLLoaderTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
 
 TEST_F(URLLoaderTest, DestroyContextWithLiveRequest) {
   GURL url = test_server()->GetURL("/hung-after-headers");
-  network::ResourceRequest request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
+  network::ResourceRequest request = CreateResourceRequest("GET", url);
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext, so
@@ -844,8 +822,8 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       }));
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL("/hello.html"));
+  network::ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL("/hello.html"));
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
@@ -885,8 +863,8 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+  network::ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
@@ -942,8 +920,8 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+  network::ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
@@ -988,8 +966,8 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+  network::ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
@@ -1028,8 +1006,8 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   ControllableHttpResponse response_controller(&server, kPath);
   ASSERT_TRUE(server.Start());
 
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+  network::ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL(kPath));
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
@@ -1070,52 +1048,6 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
                 std::string(kBodyContentsSecondHalf),
             ReadBody());
-}
-
-TEST_F(URLLoaderTest, AttachAcceptHeaderForStyleSheet) {
-  set_resource_type(RESOURCE_TYPE_STYLESHEET);
-  EXPECT_EQ(net::OK,
-            Load(test_server()->GetURL("/content-sniffer-test0.html")));
-
-  auto it = sent_request().headers.find("accept");
-  ASSERT_NE(it, sent_request().headers.end());
-  EXPECT_EQ(it->second, "text/css,*/*;q=0.1");
-}
-
-TEST_F(URLLoaderTest, AttachAcceptHeaderForXHR) {
-  set_resource_type(RESOURCE_TYPE_XHR);
-  EXPECT_EQ(net::OK,
-            Load(test_server()->GetURL("/content-sniffer-test0.html")));
-
-  auto it = sent_request().headers.find("accept");
-  ASSERT_NE(it, sent_request().headers.end());
-  EXPECT_EQ(it->second, "*/*");
-}
-
-TEST_F(URLLoaderTest, DoNotOverrideAcceptHeader) {
-  set_resource_type(RESOURCE_TYPE_XHR);
-  set_add_custom_accept_header();
-  EXPECT_EQ(net::OK,
-            Load(test_server()->GetURL("/content-sniffer-test0.html")));
-
-  auto it = sent_request().headers.find("accept");
-  ASSERT_NE(it, sent_request().headers.end());
-  EXPECT_EQ(it->second, "custom/*");
-}
-
-// Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
-TEST_F(URLLoaderTest, SetPrefetchFlag) {
-  set_resource_type(RESOURCE_TYPE_PREFETCH);
-  GURL url = test_server()->GetURL("/simple_page.html");
-  int load_flags = 0;
-  AddRequestObserver(url, base::Bind(
-                              [](int* load_flags, net::URLRequest* request) {
-                                *load_flags = request->load_flags();
-                              },
-                              &load_flags));
-  EXPECT_EQ(net::OK, Load(url));
-
-  EXPECT_TRUE(load_flags & net::LOAD_PREFETCH);
 }
 
 TEST_F(URLLoaderTest, UploadBytes) {

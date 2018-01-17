@@ -624,46 +624,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   content::RunAllPendingInMessageLoop();
 }
 
-// Test that the proper Accept: header is set based on the ResourceType
-TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
-  EXPECT_EQ(
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8",
-      TestAcceptHeaderSetting(RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_EQ(
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8",
-      TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_FRAME));
-  EXPECT_EQ("text/css,*/*;q=0.1",
-            TestAcceptHeaderSetting(RESOURCE_TYPE_STYLESHEET));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SCRIPT));
-  EXPECT_EQ("image/webp,image/apng,image/*,*/*;q=0.8",
-            TestAcceptHeaderSetting(RESOURCE_TYPE_IMAGE));
-  EXPECT_EQ("image/webp,image/apng,image/*,*/*;q=0.8",
-            TestAcceptHeaderSetting(RESOURCE_TYPE_FAVICON));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_FONT_RESOURCE));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SUB_RESOURCE));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_OBJECT));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_MEDIA));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_WORKER));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SHARED_WORKER));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PREFETCH));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_XHR));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PING));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_SERVICE_WORKER));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_CSP_REPORT));
-  EXPECT_EQ("*/*", TestAcceptHeaderSetting(RESOURCE_TYPE_PLUGIN_RESOURCE));
-
-  // Ensure that if an Accept header is already set, it is not overwritten.
-  net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->SetExtraRequestHeaderByName("Accept", "*", true);
-  EXPECT_EQ("*", TestAcceptHeaderSettingWithURLRequest(RESOURCE_TYPE_XHR,
-                                                       request.get()));
-}
-
 // Test that stream requests are correctly intercepted under the right
 // circumstances. Test is not relevent when plugins are disabled.
 #if BUILDFLAG(ENABLE_PLUGINS)
