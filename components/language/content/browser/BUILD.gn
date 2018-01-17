@@ -10,10 +10,10 @@ action("make_s2_language_locator") {
     "adminregionsdata.csv",
   ]
   inputs = [
-    "template/language_code_locator_helper.cc.tmpl",
+    "template/language_code_locator_helper.h.tmpl",
   ]
   outputs = [
-    "$target_gen_dir/language_code_locator_helper.cc",
+    "$target_gen_dir/language_code_locator_helper.h",
   ]
 
   args = [
