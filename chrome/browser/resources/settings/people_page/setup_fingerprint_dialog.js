@@ -261,7 +261,7 @@ Polymer({
     if (step == settings.FingerprintSetupStep.READY)
       return this.i18n('configureFingerprintDoneButton');
 
-    return this.i18n('configureFingerprintCancelButton');
+    return this.i18n('cancel');
   },
 
   /**

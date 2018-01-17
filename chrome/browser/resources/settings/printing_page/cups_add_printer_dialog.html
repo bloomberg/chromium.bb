@@ -58,7 +58,7 @@
         <div>  <!-- Right group -->
           <paper-button class="cancel-button secondary-button"
               on-tap="onCancelTap_">
-            $i18n{cancelButtonText}
+            $i18n{cancel}
           </paper-button>
           <paper-button class="action-button" id="addPrinterButton"
               disabled="[[!canAddPrinter_(selectedPrinter)]]"
@@ -181,7 +181,7 @@
         <div>  <!-- Right group -->
           <paper-button class="cancel-button secondary-button"
               on-tap="onCancelTap_">
-            $i18n{cancelButtonText}
+            $i18n{cancel}
           </paper-button>
           <paper-button id="addPrinterButton" class="action-button"
               on-tap="addPressed_"
@@ -249,7 +249,7 @@
       <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
             on-tap="onCancelTap_">
-          $i18n{cancelButtonText}
+          $i18n{cancel}
         </paper-button>
         <paper-button class="action-button" id="addPrinterButton"
             disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
@@ -280,7 +280,7 @@
       <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
             on-tap="onCancelConfiguringTap_">
-          $i18n{cancelButtonText}
+          $i18n{cancel}
         </paper-button>
       </div>
     </add-printer-dialog>

@@ -148,9 +148,6 @@
   <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_COULD_NOT_LOAD_MANIFEST" desc="The text to indicate that an extension's manifest could not be loaded.">
     Could not load manifest.
   </message>
-  <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_CANCEL" desc="The text on the button to close the dialog when an unpacked extension failed to load.">
-    Cancel
-  </message>
   <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY" desc="The text on the button to retry loading an unpacked extension after a failed load.">
     Retry
   </message>
@@ -183,9 +180,6 @@
   </message>
   <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON" desc="The label of the button to confirm the action to pack an extension.">
     Pack extension
-  </message>
-  <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_CANCEL_BUTTON" desc="The label of the button to cancel the pack extension dialog.">
-    Cancel
   </message>
   <message name="IDS_MD_EXTENSIONS_TOOLBAR_TITLE" desc="The text displayed in the toolbar of the chrome://extensions page.">
     Extensions
