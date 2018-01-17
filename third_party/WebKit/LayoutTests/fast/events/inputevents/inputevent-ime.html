@@ -56,7 +56,10 @@
     input.focus();
     textInputController.setMarkedTextFromExistingText(0, 5);
 
-    assert_array_equals(eventLog, []);
+    assert_array_equals(eventLog, [
+      'compositionstart',
+      'compositionupdate: data="hello"',
+    ]);
   }, 'setMarkedTextFromExistingText');
 
   test(() => {
