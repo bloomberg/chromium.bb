@@ -61,7 +61,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
   NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
-  NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool use_first_line_sytle);
+  NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool use_first_line_style);
 
   NGConstraintSpaceBuilder& SetUnpositionedFloats(
       Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats);
@@ -111,7 +111,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned separate_leading_fragmentainer_margins_ : 1;
   unsigned is_new_fc_ : 1;
   unsigned is_anonymous_ : 1;
-  unsigned use_first_line_sytle_ : 1;
+  unsigned use_first_line_style_ : 1;
   unsigned text_direction_ : 1;
 
   NGMarginStrut margin_strut_;
