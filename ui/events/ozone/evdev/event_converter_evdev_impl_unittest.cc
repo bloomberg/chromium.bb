@@ -23,6 +23,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 
 namespace ui {
 
@@ -109,12 +110,15 @@ class EventConverterEvdevImplTest : public testing::Test {
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
     device_.reset(new ui::MockEventConverterEvdevImpl(
         std::move(events_in), cursor_.get(), dispatcher_.get()));
+
+    test_clock_.reset(new ui::test::ScopedEventTestTickClock());
   }
 
   void TearDown() override {
     device_.reset();
     cursor_.reset();
     events_out_.reset();
+    test_clock_.reset();
   }
 
   ui::MockCursorEvdev* cursor() { return cursor_.get(); }
@@ -144,6 +148,10 @@ class EventConverterEvdevImplTest : public testing::Test {
     return event_factory_->input_controller();
   }
 
+  void SetTestNowSeconds(int64_t seconds) {
+    test_clock_->SetNowSeconds(seconds);
+  }
+
  private:
   void DispatchEventForTest(ui::Event* event) {
     std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
@@ -157,6 +165,7 @@ class EventConverterEvdevImplTest : public testing::Test {
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
   std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
   std::unique_ptr<ui::MockEventConverterEvdevImpl> device_;
+  std::unique_ptr<ui::test::ScopedEventTestTickClock> test_clock_;
 
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
@@ -689,6 +698,7 @@ TEST_F(EventConverterEvdevImplTest, ShouldSwapMouseButtonsFromUserPreference) {
       {{1510019414, 171863}, EV_SYN, SYN_REPORT, 0},
   };
 
+  SetTestNowSeconds(1510019415);
   ClearDispatchedEvents();
   GetInputController()->SetPrimaryButtonRight(false);
   dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
@@ -727,6 +737,7 @@ TEST_F(EventConverterEvdevImplTest, ShouldSwapMouseButtonsFromUserPreference) {
       {{1510019416, 555892}, EV_KEY, BTN_RIGHT, 0},
       {{1510019416, 555892}, EV_SYN, SYN_REPORT, 0},
   };
+  SetTestNowSeconds(1510019417);
 
   ClearDispatchedEvents();
   GetInputController()->SetPrimaryButtonRight(true);

@@ -62,21 +62,26 @@ int RegisterCustomEventType() {
 }
 
 void ValidateEventTimeClock(base::TimeTicks* timestamp) {
+#if defined(USE_X11) || DCHECK_IS_ON()
   if (base::debug::BeingDebugged())
     return;
 
   base::TimeTicks now = EventTimeForNow();
   int64_t delta = (now - *timestamp).InMilliseconds();
   bool has_valid_timebase = delta >= 0 && delta <= 60 * 1000;
-  UMA_HISTOGRAM_BOOLEAN("Event.TimestampHasValidTimebase.Browser",
-                        has_valid_timebase);
 
 #if defined(USE_X11)
   // Restrict this correction to X11 which is known to provide bogus timestamps
   // that require correction (crbug.com/611950).
   if (!has_valid_timebase)
     *timestamp = now;
+#else
+  DCHECK(has_valid_timebase)
+      << "Event timestamp (" << *timestamp << ") is not consistent with "
+      << "current time (" << now << ").";
 #endif
+
+#endif  // defined(USE_X11) || DCHECK_IS_ON()
 }
 
 bool ShouldDefaultToNaturalScroll() {

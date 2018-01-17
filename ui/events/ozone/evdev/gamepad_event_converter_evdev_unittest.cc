@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
@@ -36,6 +37,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 
 namespace {
 
@@ -151,6 +153,10 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadEvents) {
       {{1493076832, 750860}, EV_KEY, 307, 1},
       {{1493076832, 750860}, EV_SYN, SYN_REPORT}};
 
+  // Advance test tick clock so the above events are strictly in the past.
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowSeconds(1493076833);
+
   struct ExpectedEvent expected_events[] = {
       {GamepadEventType::AXIS, 0, 0.583062}, {GamepadEventType::FRAME, 0, 0},
       {GamepadEventType::AXIS, 0, 0.547234}, {GamepadEventType::FRAME, 0, 0},
@@ -226,6 +232,10 @@ TEST_F(GamepadEventConverterEvdevTest, iBuffaloGamepadEvents) {
       {{1493141047, 920727}, EV_KEY, 293, 1},
       {{1493141047, 920727}, EV_SYN, SYN_REPORT},
   };
+
+  // Advance test tick clock so the above events are strictly in the past.
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowSeconds(1493141048);
 
   struct ExpectedEvent expected_events[] = {
       {GamepadEventType::BUTTON, 1, 1},  {GamepadEventType::FRAME, 0, 0},

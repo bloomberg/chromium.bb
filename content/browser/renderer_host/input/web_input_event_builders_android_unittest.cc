@@ -16,6 +16,7 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -197,6 +198,13 @@ TEST(WebInputEventBuilderAndroidTest, CutCopyPasteKey) {
 }
 
 TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
+  const int event_time_ms = 5;
+  base::TimeTicks event_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms);
+
+  ui::test::ScopedEventTestTickClock clock;
+  clock.SetNowTicks(event_time);
+
   ui::MotionEventAndroid::Pointer p0(1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f,
                                      ui::MotionEvent::TOOL_TYPE_MOUSE);
   const float raw_offset_x = 11.f;
@@ -204,7 +212,7 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
   const float kPixToDip = 0.5f;
 
   ui::MotionEventAndroid motion_event(
-      AttachCurrentThread(), nullptr, kPixToDip, 0.f, 0.f, 0.f, 0,
+      AttachCurrentThread(), nullptr, kPixToDip, 0.f, 0.f, 0.f, event_time_ms,
       AMOTION_EVENT_ACTION_DOWN, 1, 0, -1, 0, 1, AMETA_ALT_ON, raw_offset_x,
       raw_offset_y, false, &p0, nullptr);
 
@@ -218,6 +226,7 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
   EXPECT_EQ(web_event.PositionInScreen().y,
             (p0.pos_y_pixels + raw_offset_y) * kPixToDip);
   EXPECT_EQ(web_event.button, blink::WebPointerProperties::Button::kLeft);
+  EXPECT_EQ(web_event.TimeStampSeconds(), event_time_ms * 0.001);
 }
 
 // TODO(crbug.com/781404): Add more tests for WebMouseEventBuilder

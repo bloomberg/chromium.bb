@@ -10,6 +10,7 @@
 #include "ui/android/view_client.h"
 #include "ui/android/window_android.h"
 #include "ui/events/android/motion_event_android.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 
 namespace ui {
 
@@ -64,6 +65,7 @@ class ViewAndroidBoundsTest : public testing::Test {
     client2_.Reset();
     client3_.Reset();
     clientm_.Reset();
+    test_clock_.SetNowTicks(base::TimeTicks());
   }
 
   void GenerateTouchEventAt(float x, float y) {
@@ -95,6 +97,7 @@ class ViewAndroidBoundsTest : public testing::Test {
   TestViewClient client2_;
   TestViewClient client3_;
   TestViewClient clientm_;
+  ui::test::ScopedEventTestTickClock test_clock_;
 };
 
 TEST_F(ViewAndroidBoundsTest, MatchesViewInFront) {
