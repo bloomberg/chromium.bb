@@ -70,14 +70,7 @@ void AutocompleteController::OnResultChanged(bool default_match_changed) {
   auto suggestions = std::make_unique<vr::OmniboxSuggestions>();
   for (const auto& match : autocomplete_controller_->result()) {
     suggestions->suggestions.emplace_back(vr::OmniboxSuggestion(
-        match.contents, match.description, match.contents_class,
-        match.description_class, match.type, match.destination_url));
-    if (match.swap_contents_and_description) {
-      auto& suggestion = suggestions->suggestions.back();
-      swap(suggestion.contents, suggestion.description);
-      swap(suggestion.contents_classifications,
-           suggestion.description_classifications);
-    }
+        match.contents, match.description, match.type, match.destination_url));
     if (suggestions->suggestions.size() >= kMaxNumberOfSuggestions)
       break;
   }

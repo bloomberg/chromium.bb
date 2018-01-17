@@ -29,13 +29,8 @@ void RenderTextWrapper::ApplyStyle(gfx::TextStyle style,
   render_text_->ApplyStyle(style, value, range);
 }
 
-void RenderTextWrapper::ApplyWeight(gfx::Font::Weight weight,
-                                    const gfx::Range& range) {
-  render_text_->ApplyWeight(weight, range);
-}
-
-void RenderTextWrapper::SetDirectionalityMode(gfx::DirectionalityMode mode) {
-  render_text_->SetDirectionalityMode(mode);
+void RenderTextWrapper::SetStrikeThicknessFactor(SkScalar factor) {
+  render_text_->set_strike_thickness_factor(factor);
 }
 
 }  // namespace vr

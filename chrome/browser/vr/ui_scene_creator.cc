@@ -27,7 +27,6 @@
 #include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
-#include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/reticle.h"
@@ -152,6 +151,8 @@ void OnSuggestionModelAdded(UiScene* scene,
   content_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   content_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  VR_BIND_COLOR(model, content_text.get(),
+                &ColorScheme::omnibox_suggestion_content, &Text::SetColor);
   Text* p_content_text = content_text.get();
 
   auto description_text =
@@ -162,6 +163,8 @@ void OnSuggestionModelAdded(UiScene* scene,
   description_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   description_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  VR_BIND_COLOR(model, description_text.get(),
+                &ColorScheme::omnibox_suggestion_description, &Text::SetColor);
   Text* p_description_text = description_text.get();
 
   auto text_layout = std::make_unique<LinearLayout>(LinearLayout::kDown);
@@ -204,22 +207,7 @@ void OnSuggestionModelAdded(UiScene* scene,
 
   element_binding->bindings().push_back(
       VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
-                   model->model()->contents, Text, p_content_text, SetText));
-  element_binding->bindings().push_back(
-      std::make_unique<Binding<TextFormatting>>(
-          VR_BIND_LAMBDA(
-              [](SuggestionBinding* suggestion, Model* model) {
-                return ConvertClassification(
-                    suggestion->model()->contents_classifications,
-                    suggestion->model()->contents.size(),
-                    model->color_scheme());
-              },
-              base::Unretained(element_binding), base::Unretained(model)),
-          VR_BIND_LAMBDA(
-              [](Text* v, const TextFormatting& formatting) {
-                v->SetFormatting(formatting);
-              },
-              base::Unretained(p_content_text))));
+                   model->model()->content, Text, p_content_text, SetText));
   element_binding->bindings().push_back(
       std::make_unique<Binding<base::string16>>(
           VR_BIND_LAMBDA(
@@ -232,21 +220,6 @@ void OnSuggestionModelAdded(UiScene* scene,
                 if (!text.empty()) {
                   v->SetText(text);
                 }
-              },
-              base::Unretained(p_description_text))));
-  element_binding->bindings().push_back(
-      std::make_unique<Binding<TextFormatting>>(
-          VR_BIND_LAMBDA(
-              [](SuggestionBinding* suggestion, Model* model) {
-                return ConvertClassification(
-                    suggestion->model()->description_classifications,
-                    suggestion->model()->description.size(),
-                    model->color_scheme());
-              },
-              base::Unretained(element_binding), base::Unretained(model)),
-          VR_BIND_LAMBDA(
-              [](Text* v, const TextFormatting& formatting) {
-                v->SetFormatting(formatting);
               },
               base::Unretained(p_description_text))));
   element_binding->bindings().push_back(
