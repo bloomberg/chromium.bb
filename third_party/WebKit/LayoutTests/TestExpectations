@@ -3459,6 +3459,8 @@ crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/dou
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
 
+crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
+
 # Sheriff faulures 2017-12-12
 crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
 
