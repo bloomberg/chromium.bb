@@ -1824,17 +1824,54 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
       !frame_->GetDocument()->IsSVGDocument())
     return;
 
+  UseCounter::Count(&GetFrame(), WebFeature::kScrollToFragmentRequested);
   // Try the raw fragment for HTML documents, but skip it for `svgView()`:
   String fragment_identifier = url.FragmentIdentifier();
   if (!frame_->GetDocument()->IsSVGDocument() &&
       ProcessUrlFragmentHelper(fragment_identifier, behavior)) {
+    UseCounter::Count(&GetFrame(), WebFeature::kScrollToFragmentSucceedWithRaw);
     return;
   }
 
   // Try again after decoding the fragment.
   if (frame_->GetDocument()->Encoding().IsValid()) {
-    ProcessUrlFragmentHelper(DecodeURLEscapeSequences(fragment_identifier),
-                             behavior);
+    DecodeURLResult decode_result;
+    if (ProcessUrlFragmentHelper(
+            DecodeURLEscapeSequences(fragment_identifier, &decode_result),
+            behavior)) {
+      switch (decode_result) {
+        case DecodeURLResult::kAsciiOnly:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentSucceedWithASCII);
+        case DecodeURLResult::kUTF8:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentSucceedWithUTF8);
+        case DecodeURLResult::kIsomorphic:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentSucceedWithIsomorphic);
+        case DecodeURLResult::kMixed:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentSucceedWithMixed);
+      }
+    } else {
+      switch (decode_result) {
+        case DecodeURLResult::kAsciiOnly:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentFailWithASCII);
+        case DecodeURLResult::kUTF8:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentFailWithUTF8);
+        case DecodeURLResult::kIsomorphic:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentFailWithIsomorphic);
+        case DecodeURLResult::kMixed:
+          UseCounter::Count(&GetFrame(),
+                            WebFeature::kScrollToFragmentFailWithMixed);
+      }
+    }
+  } else {
+    UseCounter::Count(&GetFrame(),
+                      WebFeature::kScrollToFragmentFailWithInvalidEncoding);
   }
 }
 

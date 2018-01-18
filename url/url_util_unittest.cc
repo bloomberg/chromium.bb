@@ -187,32 +187,37 @@ TEST(URLUtilTest, DecodeURLEscapeSequences) {
   struct DecodeCase {
     const char* input;
     const char* output;
+    DecodeURLResult result;
   } decode_cases[] = {
-    {"hello, world", "hello, world"},
-    {"%01%02%03%04%05%06%07%08%09%0a%0B%0C%0D%0e%0f/",
-     "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0B\x0C\x0D\x0e\x0f/"},
-    {"%10%11%12%13%14%15%16%17%18%19%1a%1B%1C%1D%1e%1f/",
-     "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1B\x1C\x1D\x1e\x1f/"},
-    {"%20%21%22%23%24%25%26%27%28%29%2a%2B%2C%2D%2e%2f/",
-     " !\"#$%&'()*+,-.//"},
-    {"%30%31%32%33%34%35%36%37%38%39%3a%3B%3C%3D%3e%3f/",
-     "0123456789:;<=>?/"},
-    {"%40%41%42%43%44%45%46%47%48%49%4a%4B%4C%4D%4e%4f/",
-     "@ABCDEFGHIJKLMNO/"},
-    {"%50%51%52%53%54%55%56%57%58%59%5a%5B%5C%5D%5e%5f/",
-     "PQRSTUVWXYZ[\\]^_/"},
-    {"%60%61%62%63%64%65%66%67%68%69%6a%6B%6C%6D%6e%6f/",
-     "`abcdefghijklmno/"},
-    {"%70%71%72%73%74%75%76%77%78%79%7a%7B%7C%7D%7e%7f/",
-     "pqrstuvwxyz{|}~\x7f/"},
-    // Test un-UTF-8-ization.
-    {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
+      {"hello, world", "hello, world", DecodeURLResult::kAsciiOnly},
+      {"%01%02%03%04%05%06%07%08%09%0a%0B%0C%0D%0e%0f/",
+       "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0B\x0C\x0D\x0e\x0f/",
+       DecodeURLResult::kAsciiOnly},
+      {"%10%11%12%13%14%15%16%17%18%19%1a%1B%1C%1D%1e%1f/",
+       "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1B\x1C\x1D\x1e\x1f/",
+       DecodeURLResult::kAsciiOnly},
+      {"%20%21%22%23%24%25%26%27%28%29%2a%2B%2C%2D%2e%2f/",
+       " !\"#$%&'()*+,-.//", DecodeURLResult::kAsciiOnly},
+      {"%30%31%32%33%34%35%36%37%38%39%3a%3B%3C%3D%3e%3f/", "0123456789:;<=>?/",
+       DecodeURLResult::kAsciiOnly},
+      {"%40%41%42%43%44%45%46%47%48%49%4a%4B%4C%4D%4e%4f/", "@ABCDEFGHIJKLMNO/",
+       DecodeURLResult::kAsciiOnly},
+      {"%50%51%52%53%54%55%56%57%58%59%5a%5B%5C%5D%5e%5f/",
+       "PQRSTUVWXYZ[\\]^_/", DecodeURLResult::kAsciiOnly},
+      {"%60%61%62%63%64%65%66%67%68%69%6a%6B%6C%6D%6e%6f/", "`abcdefghijklmno/",
+       DecodeURLResult::kAsciiOnly},
+      {"%70%71%72%73%74%75%76%77%78%79%7a%7B%7C%7D%7e%7f/",
+       "pqrstuvwxyz{|}~\x7f/", DecodeURLResult::kAsciiOnly},
+      // Test un-UTF-8-ization.
+      {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd",
+       DecodeURLResult::kUTF8},
   };
 
   for (size_t i = 0; i < arraysize(decode_cases); i++) {
     const char* input = decode_cases[i].input;
     RawCanonOutputT<base::char16> output;
-    DecodeURLEscapeSequences(input, strlen(input), &output);
+    EXPECT_EQ(decode_cases[i].result,
+              DecodeURLEscapeSequences(input, strlen(input), &output));
     EXPECT_EQ(decode_cases[i].output,
               base::UTF16ToUTF8(base::string16(output.data(),
                                                output.length())));
@@ -226,13 +231,27 @@ TEST(URLUtilTest, DecodeURLEscapeSequences) {
       base::string16(zero_output.data(), zero_output.length())));
 
   // Test the error behavior for invalid UTF-8.
-  const char invalid_input[] = "%e4%a0%e5%a5%bd";
-  const base::char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
-  RawCanonOutputT<base::char16> invalid_output;
-  DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
-                           &invalid_output);
-  EXPECT_EQ(base::string16(invalid_expected),
-            base::string16(invalid_output.data(), invalid_output.length()));
+  {
+    const char invalid_input[] = "%e4%a0%e5%a5%bd";
+    const base::char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
+    RawCanonOutputT<base::char16> invalid_output;
+    EXPECT_EQ(DecodeURLResult::kMixed,
+              DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
+                                       &invalid_output));
+    EXPECT_EQ(base::string16(invalid_expected),
+              base::string16(invalid_output.data(), invalid_output.length()));
+  }
+  {
+    const char invalid_input[] = "%e4%a0%e5%bd";
+    const base::char16 invalid_expected[5] = {0x00e4, 0x00a0, 0x00e5, 0x00bd,
+                                              0};
+    RawCanonOutputT<base::char16> invalid_output;
+    EXPECT_EQ(DecodeURLResult::kIsomorphic,
+              DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
+                                       &invalid_output));
+    EXPECT_EQ(base::string16(invalid_expected),
+              base::string16(invalid_output.data(), invalid_output.length()));
+  }
 }
 
 TEST(URLUtilTest, TestEncodeURIComponent) {

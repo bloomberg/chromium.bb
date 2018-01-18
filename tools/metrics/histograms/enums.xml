@@ -17641,6 +17641,17 @@ Called by update_net_error_codes.py.-->
   <int value="2332" label="ColorInputTypeChooserByTrustedClick"/>
   <int value="2333" label="ColorInputTypeChooserByUntrustedClick"/>
   <int value="2334" label="CSSTypedOMStylePropertyMap"/>
+  <int value="2335" label="ScrollToFragmentRequested"/>
+  <int value="2336" label="ScrollToFragmentSucceedWithRaw"/>
+  <int value="2337" label="ScrollToFragmentSucceedWithASCII"/>
+  <int value="2338" label="ScrollToFragmentSucceedWithUTF8"/>
+  <int value="2339" label="ScrollToFragmentSucceedWithIsomorphic"/>
+  <int value="2340" label="ScrollToFragmentSucceedWithMixed"/>
+  <int value="2341" label="ScrollToFragmentFailWithASCII"/>
+  <int value="2342" label="ScrollToFragmentFailWithUTF8"/>
+  <int value="2343" label="ScrollToFragmentFailWithIsomorphic"/>
+  <int value="2344" label="ScrollToFragmentFailWithMixed"/>
+  <int value="2345" label="ScrollToFragmentFailWithInvalidEncoding"/>
 </enum>
 
 <enum name="FeedbackSource">
