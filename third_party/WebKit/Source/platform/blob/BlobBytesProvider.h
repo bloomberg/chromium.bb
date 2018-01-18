@@ -19,10 +19,16 @@ namespace blink {
 // thread that is allowed to do File IO.
 class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
  public:
+  // All consecutive items that are accumulate to < this number will have the
+  // data appended to the same item.
+  static constexpr size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
+
+  BlobBytesProvider();
   explicit BlobBytesProvider(scoped_refptr<RawData>);
   ~BlobBytesProvider() override;
 
   void AppendData(scoped_refptr<RawData>);
+  void AppendData(base::span<const char>);
 
   // BytesProvider implementation:
   void RequestAsReply(RequestAsReplyCallback) override;
@@ -34,6 +40,8 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
                      RequestAsFileCallback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BlobBytesProviderTest, Consolidation);
+
   Vector<scoped_refptr<RawData>> data_;
 };
 

@@ -69,10 +69,6 @@ using mojom::blink::DataElementFilesystemURL;
 
 namespace {
 
-// All consecutive items that are accumulate to < this number will have the
-// data appended to the same item.
-static const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
-
 // http://dev.w3.org/2006/webapi/FileAPI/#constructorBlob
 bool IsValidBlobType(const String& type) {
   for (unsigned i = 0; i < type.length(); ++i) {
@@ -108,14 +104,9 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
 
 }  // namespace
 
-const long long BlobDataItem::kToEndOfFile = -1;
+constexpr long long BlobData::kToEndOfFile;
 
 RawData::RawData() = default;
-
-void BlobDataItem::DetachFromCurrentThread() {
-  path = path.IsolatedCopy();
-  file_system_url = file_system_url.Copy();
-}
 
 std::unique_ptr<BlobData> BlobData::Create() {
   return WTF::WrapUnique(
@@ -126,7 +117,8 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path) {
   std::unique_ptr<BlobData> data = WTF::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->items_.push_back(BlobDataItem(path));
+  data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
+      WebStringToFilePath(path), 0, BlobData::kToEndOfFile, WTF::Time())));
   return data;
 }
 
@@ -135,8 +127,9 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     double expected_modification_time) {
   std::unique_ptr<BlobData> data = WTF::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->items_.push_back(BlobDataItem(path, 0, BlobDataItem::kToEndOfFile,
-                                      expected_modification_time));
+  data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
+      WebStringToFilePath(path), 0, BlobData::kToEndOfFile,
+      WTF::Time::FromDoubleT(expected_modification_time))));
   return data;
 }
 
@@ -145,16 +138,21 @@ std::unique_ptr<BlobData> BlobData::CreateForFileSystemURLWithUnknownSize(
     double expected_modification_time) {
   std::unique_ptr<BlobData> data = WTF::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->items_.push_back(BlobDataItem(file_system_url, 0,
-                                      BlobDataItem::kToEndOfFile,
-                                      expected_modification_time));
+  data->elements_.push_back(
+      DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
+          file_system_url, 0, BlobData::kToEndOfFile,
+          WTF::Time::FromDoubleT(expected_modification_time))));
   return data;
 }
 
 void BlobData::DetachFromCurrentThread() {
   content_type_ = content_type_.IsolatedCopy();
-  for (size_t i = 0; i < items_.size(); ++i)
-    items_.at(i).DetachFromCurrentThread();
+  for (auto& element : elements_) {
+    if (element->is_file_filesystem()) {
+      auto& file_element = element->get_file_filesystem();
+      file_element->url = file_element->url.Copy();
+    }
+  }
 }
 
 void BlobData::SetContentType(const String& content_type) {
@@ -165,9 +163,7 @@ void BlobData::SetContentType(const String& content_type) {
 }
 
 void BlobData::AppendData(scoped_refptr<RawData> data) {
-  DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
-      << "Blobs with a unknown-size file cannot have other items.";
-  items_.push_back(BlobDataItem(std::move(data)));
+  AppendDataInternal(base::make_span(data->data(), data->length()), data);
 }
 
 void BlobData::AppendFile(const String& path,
@@ -176,13 +172,17 @@ void BlobData::AppendFile(const String& path,
                           double expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  DCHECK_NE(length, BlobDataItem::kToEndOfFile)
+  DCHECK_NE(length, BlobData::kToEndOfFile)
       << "It is illegal to append file items that have an unknown size. To "
          "create a blob with a single file with unknown size, use "
          "BlobData::createForFileWithUnknownSize. Otherwise please provide the "
          "file size.";
-  items_.push_back(
-      BlobDataItem(path, offset, length, expected_modification_time));
+  // Skip zero-byte items, as they don't matter for the contents of the blob.
+  if (length == 0)
+    return;
+  elements_.push_back(DataElement::NewFile(DataElementFile::New(
+      WebStringToFilePath(path), offset, length,
+      WTF::Time::FromDoubleT(expected_modification_time))));
 }
 
 void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
@@ -192,7 +192,11 @@ void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
       << "Blobs with a unknown-size file cannot have other items.";
   DCHECK(!data_handle->IsSingleUnknownSizeFile())
       << "It is illegal to append an unknown size file blob.";
-  items_.push_back(BlobDataItem(std::move(data_handle), offset, length));
+  // Skip zero-byte items, as they don't matter for the contents of the blob.
+  if (length == 0)
+    return;
+  elements_.push_back(DataElement::NewBlob(DataElementBlob::New(
+      data_handle->CloneBlobPtr().PassInterface(), offset, length)));
 }
 
 void BlobData::AppendFileSystemURL(const KURL& url,
@@ -201,8 +205,13 @@ void BlobData::AppendFileSystemURL(const KURL& url,
                                    double expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  items_.push_back(
-      BlobDataItem(url, offset, length, expected_modification_time));
+  // Skip zero-byte items, as they don't matter for the contents of the blob.
+  if (length == 0)
+    return;
+  elements_.push_back(
+      DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
+          url, offset, length,
+          WTF::Time::FromDoubleT(expected_modification_time))));
 }
 
 void BlobData::AppendText(const String& text,
@@ -211,73 +220,102 @@ void BlobData::AppendText(const String& text,
       << "Blobs with a unknown-size file cannot have other items.";
   CString utf8_text =
       UTF8Encoding().Encode(text, WTF::kEntitiesForUnencodables);
-  scoped_refptr<RawData> data = nullptr;
-  Vector<char>* buffer;
-  if (CanConsolidateData(text.length())) {
-    buffer = items_.back().data->MutableData();
-  } else {
-    data = RawData::Create();
-    buffer = data->MutableData();
-  }
 
   if (do_normalize_line_endings_to_native) {
-    NormalizeLineEndingsToNative(utf8_text, *buffer);
+    if (utf8_text.length() >
+        BlobBytesProvider::kMaxConsolidatedItemSizeInBytes) {
+      auto raw_data = RawData::Create();
+      NormalizeLineEndingsToNative(utf8_text, *raw_data->MutableData());
+      AppendDataInternal(base::make_span(raw_data->data(), raw_data->length()),
+                         raw_data);
+    } else {
+      Vector<char> buffer;
+      NormalizeLineEndingsToNative(utf8_text, buffer);
+      AppendDataInternal(base::make_span(buffer));
+    }
   } else {
-    buffer->Append(utf8_text.data(), utf8_text.length());
+    AppendDataInternal(base::make_span(utf8_text.data(), utf8_text.length()));
   }
-
-  if (data)
-    items_.push_back(BlobDataItem(std::move(data)));
 }
 
 void BlobData::AppendBytes(const void* bytes, size_t length) {
-  DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
-      << "Blobs with a unknown-size file cannot have other items.";
-  if (CanConsolidateData(length)) {
-    items_.back().data->MutableData()->Append(static_cast<const char*>(bytes),
-                                              length);
-    return;
-  }
-  scoped_refptr<RawData> data = RawData::Create();
-  Vector<char>* buffer = data->MutableData();
-  buffer->Append(static_cast<const char*>(bytes), length);
-  items_.push_back(BlobDataItem(std::move(data)));
+  AppendDataInternal(
+      base::make_span(reinterpret_cast<const char*>(bytes), length));
 }
 
-long long BlobData::length() const {
-  long long length = 0;
+uint64_t BlobData::length() const {
+  uint64_t length = 0;
 
-  for (Vector<BlobDataItem>::const_iterator it = items_.begin();
-       it != items_.end(); ++it) {
-    const BlobDataItem& item = *it;
-    if (item.length != BlobDataItem::kToEndOfFile) {
-      DCHECK_GE(item.length, 0);
-      length += item.length;
-      continue;
-    }
-
-    switch (item.type) {
-      case BlobDataItem::kData:
-        length += item.data->length();
+  for (const auto& element : elements_) {
+    switch (element->which()) {
+      case DataElement::Tag::BYTES:
+        length += element->get_bytes()->length;
         break;
-      case BlobDataItem::kFile:
-      case BlobDataItem::kBlob:
-      case BlobDataItem::kFileSystemURL:
-        return BlobDataItem::kToEndOfFile;
+      case DataElement::Tag::FILE:
+        length += element->get_file()->length;
+        break;
+      case DataElement::Tag::FILE_FILESYSTEM:
+        length += element->get_file_filesystem()->length;
+        break;
+      case DataElement::Tag::BLOB:
+        length += element->get_blob()->length;
+        break;
     }
   }
   return length;
 }
 
-bool BlobData::CanConsolidateData(size_t length) {
-  if (items_.IsEmpty())
-    return false;
-  BlobDataItem& last_item = items_.back();
-  if (last_item.type != BlobDataItem::kData)
-    return false;
-  if (last_item.data->length() + length > kMaxConsolidatedItemSizeInBytes)
-    return false;
-  return true;
+void BlobData::AppendDataInternal(base::span<const char> data,
+                                  scoped_refptr<RawData> raw_data) {
+  DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+      << "Blobs with a unknown-size file cannot have other items.";
+  // Skip zero-byte items, as they don't matter for the contents of the blob.
+  if (data.length() == 0)
+    return;
+  bool should_embed_bytes = current_memory_population_ + data.length() <=
+                            DataElementBytes::kMaximumEmbeddedDataSize;
+  if (!elements_.IsEmpty() && elements_.back()->is_bytes()) {
+    // Append bytes to previous element.
+    DCHECK(last_bytes_provider_);
+    const auto& bytes_element = elements_.back()->get_bytes();
+    bytes_element->length += data.length();
+    if (should_embed_bytes && bytes_element->embedded_data) {
+      bytes_element->embedded_data->Append(data.data(), data.length());
+      current_memory_population_ += data.length();
+    } else if (bytes_element->embedded_data) {
+      current_memory_population_ -= bytes_element->embedded_data->size();
+      bytes_element->embedded_data = WTF::nullopt;
+    }
+  } else {
+    BytesProviderPtrInfo bytes_provider_info;
+    auto provider = std::make_unique<BlobBytesProvider>();
+    last_bytes_provider_ = provider.get();
+
+    scoped_refptr<WebTaskRunner> file_runner =
+        Platform::Current()->FileTaskRunner();
+    if (file_runner) {
+      // TODO(mek): Considering binding BytesProvider on the IO thread
+      // instead, only using the File thread for actual file operations.
+      PostCrossThreadTask(
+          *file_runner, FROM_HERE,
+          CrossThreadBind(&BindBytesProvider, WTF::Passed(std::move(provider)),
+                          WTF::Passed(MakeRequest(&bytes_provider_info))));
+    } else {
+      BindBytesProvider(std::move(provider), MakeRequest(&bytes_provider_info));
+    }
+    auto bytes_element = DataElementBytes::New(data.length(), WTF::nullopt,
+                                               std::move(bytes_provider_info));
+    if (should_embed_bytes) {
+      bytes_element->embedded_data = Vector<uint8_t>();
+      bytes_element->embedded_data->Append(data.data(), data.length());
+      current_memory_population_ += data.length();
+    }
+    elements_.push_back(DataElement::NewBytes(std::move(bytes_element)));
+  }
+  if (raw_data)
+    last_bytes_provider_->AppendData(std::move(raw_data));
+  else
+    last_bytes_provider_->AppendData(std::move(data));
 }
 
 BlobDataHandle::BlobDataHandle()
@@ -294,105 +332,10 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
   TRACE_EVENT0("Blob", "Registry::RegisterBlob");
-
-  size_t current_memory_population = 0;
-  Vector<DataElementPtr> elements;
-  const DataElementPtr null_element = nullptr;
-  BlobBytesProvider* last_bytes_provider = nullptr;
-  scoped_refptr<WebTaskRunner> file_runner =
-      Platform::Current()->FileTaskRunner();
-
-  // TODO(mek): When the mojo code path is the default BlobData should
-  // directly create mojom::DataElements rather than BlobDataItems,
-  // eliminating the need for this loop.
-  for (const auto& item : data->Items()) {
-    // Skip zero-byte elements, as they don't matter for the contents of
-    // the blob.
-    if (item.length == 0)
-      continue;
-    switch (item.type) {
-      case BlobDataItem::kData: {
-        // kData elements don't set item.length, so separately check for zero
-        // byte kData elements.
-        if (item.data->length() == 0)
-          continue;
-        // Since blobs are often constructed with arrays with single bytes,
-        // consolidate all adjacent memory blob items into one. This should
-        // massively reduce the overhead of describing all these byte
-        // elements.
-        const DataElementPtr& last_element =
-            elements.IsEmpty() ? null_element : elements.back();
-        bool should_embed_bytes =
-            current_memory_population + item.data->length() <=
-            DataElementBytes::kMaximumEmbeddedDataSize;
-        bool last_element_is_bytes = last_element && last_element->is_bytes();
-        if (last_element_is_bytes) {
-          // Append bytes to previous element.
-          DCHECK(last_bytes_provider);
-          const auto& bytes_element = last_element->get_bytes();
-          bytes_element->length += item.data->length();
-          if (should_embed_bytes && bytes_element->embedded_data) {
-            bytes_element->embedded_data->Append(item.data->data(),
-                                                 item.data->length());
-            current_memory_population += item.data->length();
-          } else if (bytes_element->embedded_data) {
-            current_memory_population -= bytes_element->embedded_data->size();
-            bytes_element->embedded_data = WTF::nullopt;
-          }
-          last_bytes_provider->AppendData(item.data);
-        } else {
-          BytesProviderPtrInfo bytes_provider_info;
-          auto provider = std::make_unique<BlobBytesProvider>(item.data);
-          last_bytes_provider = provider.get();
-          if (file_runner) {
-            // TODO(mek): Considering binding BytesProvider on the IO thread
-            // instead, only using the File thread for actual file operations.
-            PostCrossThreadTask(
-                *file_runner, FROM_HERE,
-                CrossThreadBind(
-                    &BindBytesProvider, WTF::Passed(std::move(provider)),
-                    WTF::Passed(MakeRequest(&bytes_provider_info))));
-          } else {
-            BindBytesProvider(std::move(provider),
-                              MakeRequest(&bytes_provider_info));
-          }
-          DataElementBytesPtr bytes_element =
-              DataElementBytes::New(item.data->length(), WTF::nullopt,
-                                    std::move(bytes_provider_info));
-          if (should_embed_bytes) {
-            bytes_element->embedded_data = Vector<uint8_t>();
-            bytes_element->embedded_data->Append(item.data->data(),
-                                                 item.data->length());
-            current_memory_population += item.data->length();
-          }
-          elements.push_back(DataElement::NewBytes(std::move(bytes_element)));
-        }
-        break;
-      }
-      case BlobDataItem::kFile:
-        elements.push_back(DataElement::NewFile(DataElementFile::New(
-            WebStringToFilePath(item.path), item.offset, item.length,
-            WTF::Time::FromDoubleT(item.expected_modification_time))));
-        break;
-      case BlobDataItem::kFileSystemURL:
-        elements.push_back(
-            DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
-                item.file_system_url, item.offset, item.length,
-                WTF::Time::FromDoubleT(item.expected_modification_time))));
-        break;
-      case BlobDataItem::kBlob: {
-        elements.push_back(DataElement::NewBlob(DataElementBlob::New(
-            item.blob_data_handle->CloneBlobPtr().PassInterface(), item.offset,
-            item.length)));
-        break;
-      }
-    }
-  }
-
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE("Storage.Blob.RegisterBlobTime");
   GetThreadSpecificRegistry()->Register(MakeRequest(&blob_info_), uuid_,
                                         type_.IsNull() ? "" : type_, "",
-                                        std::move(elements));
+                                        data->ReleaseElements());
 }
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
