@@ -636,4 +636,8 @@ bool ContentBrowserClient::ShowPaymentHandlerWindow(
   return false;
 }
 
+bool ContentBrowserClient::ShouldCreateTaskScheduler() {
+  return true;
+}
+
 }  // namespace content

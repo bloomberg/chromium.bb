@@ -161,6 +161,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool is_redirect,
                                 bool is_main_frame,
                                 ui::PageTransition transition) override;
+  bool ShouldCreateTaskScheduler() override;
+
+  static void DisableCreatingTaskScheduler();
 
  private:
   safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();

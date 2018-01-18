@@ -99,8 +99,11 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
       new base::MessageLoop(base::MessageLoop::Type::TYPE_JAVA);
   static_cast<base::MessageLoopForUI*>(g_init_message_loop)->Start();
   DCHECK(!g_network_change_notifier);
-  net::NetworkChangeNotifier::SetFactory(
-      new net::NetworkChangeNotifierFactoryAndroid());
+
+  if (!net::NetworkChangeNotifier::GetFactory()) {
+    net::NetworkChangeNotifier::SetFactory(
+        new net::NetworkChangeNotifierFactoryAndroid());
+  }
   g_network_change_notifier = net::NetworkChangeNotifier::Create();
 }
 
