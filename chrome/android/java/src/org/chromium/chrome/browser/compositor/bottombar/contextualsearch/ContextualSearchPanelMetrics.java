@@ -58,6 +58,8 @@ public class ContextualSearchPanelMetrics {
     // The current set of heuristics to be logged through ranker with results seen when the panel
     // closes.
     private ContextualSearchRankerLogger mRankerLogger;
+    // Whether Ranker Outcomes are valid, because we showed the panel.
+    private boolean mAreOutcomesValid;
 
     /**
      * Log information when the panel's state has changed.
@@ -160,6 +162,7 @@ public class ContextualSearchPanelMetrics {
             } else {
                 mWasAnyHeuristicSatisfiedOnPanelShow = false;
             }
+            mAreOutcomesValid = true;
         }
 
         // Log state changes. We only log the first transition to a state within a contextual
@@ -323,15 +326,14 @@ public class ContextualSearchPanelMetrics {
      */
     public void setRankerLogger(ContextualSearchRankerLogger rankerLogger) {
         mRankerLogger = rankerLogger;
+        mAreOutcomesValid = false;
     }
 
     /**
      * Writes all the outcome features to the Ranker Logger and resets the logger.
-     * @param rankerLogger The {@link ContextualSearchRankerLogger} currently being used to measure
-     *                     or suppress the UI by Ranker.
      */
     public void writeRankerLoggerOutcomesAndReset() {
-        if (mRankerLogger != null && mWasActivatedByTap) {
+        if (mRankerLogger != null && mWasActivatedByTap && mAreOutcomesValid) {
             // Tell Ranker about the primary outcome.
             mRankerLogger.logOutcome(ContextualSearchRankerLogger.Feature.OUTCOME_WAS_PANEL_OPENED,
                     mWasSearchContentViewSeen);

@@ -423,6 +423,16 @@ be describing additional metrics about the same event.
       word, rather than in the middle 50% of the word.
     </summary>
   </metric>
+  <metric name="OutcomeRankerDidPredict">
+    <summary>
+      Emits a 1 or 0 to indicate whether Ranker was able to make a prediction.
+    </summary>
+  </metric>
+  <metric name="OutcomeRankerPrediction">
+    <summary>
+      Emits a 1 or 0 to indicate what Ranker's prediction was for this record.
+    </summary>
+  </metric>
   <metric name="OutcomeWasCardsDataShown">
     <summary>
       Emits a 1 or 0 to indicate whether any Contextual Cards data was shown in
@@ -479,7 +489,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="TapDurationMs">
     <summary>
-      The duration of the tap gesture expressed in milliseconds.
+      The duration of the tap gesture expressed as an integer in milliseconds.
     </summary>
   </metric>
   <metric name="WasScreenBottom">

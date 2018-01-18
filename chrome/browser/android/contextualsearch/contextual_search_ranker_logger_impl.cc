@@ -28,6 +28,8 @@ namespace {
 
 const char kContextualSearchRankerDidPredict[] = "OutcomeRankerDidPredict";
 const char kContextualSearchRankerPrediction[] = "OutcomeRankerPrediction";
+const char kContextualSearchImportantFeature[] = "DidOptIn";
+const char kContextualSearchImportantOutcome[] = "OutcomeWasPanelOpened";
 
 }  // namespace
 
@@ -125,9 +127,21 @@ void ContextualSearchRankerLoggerImpl::WriteLogAndReset(JNIEnv* env,
   if (predictor_ && ranker_example_ && source_id_ != ukm::kInvalidSourceId) {
     predictor_->LogExampleToUkm(*ranker_example_.get(), source_id_);
     source_id_ = ukm::kInvalidSourceId;
+    logImportantFeaturePresent(kContextualSearchImportantFeature, false);
+    logImportantFeaturePresent(kContextualSearchImportantOutcome, true);
   }
   has_predicted_decision_ = false;
   ranker_example_ = std::make_unique<assist_ranker::RankerExample>();
+}
+
+void ContextualSearchRankerLoggerImpl::logImportantFeaturePresent(
+    const std::string& feature,
+    bool is_outcome) const {
+  if (ranker_example_->features().count(feature) > 0) {
+    DCHECK(ranker_example_->features().count(feature) < 2);
+    base::UmaHistogramBoolean("Search.ContextualSearch.Ranker.RecordedNative",
+                              is_outcome);
+  }
 }
 
 bool ContextualSearchRankerLoggerImpl::IsQueryEnabled(JNIEnv* env,
