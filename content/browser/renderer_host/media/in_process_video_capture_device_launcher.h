@@ -38,8 +38,8 @@ class InProcessVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
   void AbortLaunch() override;
 
  private:
-  using ReceiveDeviceCallback =
-      base::Callback<void(std::unique_ptr<media::VideoCaptureDevice> device)>;
+  using ReceiveDeviceCallback = base::OnceCallback<void(
+      std::unique_ptr<media::VideoCaptureDevice> device)>;
 
   enum class State {
     READY_TO_LAUNCH,

@@ -22,8 +22,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
-#include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,27 +30,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
-#include "media/capture/video/video_capture_buffer_pool_impl.h"
-#include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_capture_device_factory.h"
-
-#if defined(ENABLE_SCREEN_CAPTURE)
-
-#if BUILDFLAG(ENABLE_WEBRTC) && !defined(OS_ANDROID)
-#include "content/browser/media/capture/desktop_capture_device.h"
-#endif
-
-#if defined(USE_AURA)
-#include "content/browser/media/capture/desktop_capture_device_aura.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "content/browser/media/capture/screen_capture_device_android.h"
-#endif
-
-#endif  // defined(ENABLE_SCREEN_CAPTURE)
 
 namespace {
 

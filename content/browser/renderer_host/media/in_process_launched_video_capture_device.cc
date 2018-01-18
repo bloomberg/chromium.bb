@@ -9,13 +9,6 @@
 
 #if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
 #include "content/browser/media/capture/desktop_capture_device.h"
-#if defined(USE_AURA)
-#include "content/browser/media/capture/desktop_capture_device_aura.h"
-#endif
-#endif
-
-#if defined(ENABLE_SCREEN_CAPTURE) && defined(OS_ANDROID)
-#include "content/browser/media/capture/screen_capture_device_android.h"
 #endif
 
 namespace {
