@@ -148,6 +148,7 @@
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/public/common/zygote_handle.h"
+#include "media/base/media_switches.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -264,6 +265,24 @@ namespace {
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
                          base::ScopedFD* control_fd) {
+  // Append any switches from the browser process that need to be forwarded on
+  // to the zygote/renderers.
+  static const char* const kForwardSwitches[] = {
+      switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
+      switches::kEnableHeapProfiling,
+      switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
+      // Need to tell the zygote that it is headless so that we don't try to use
+      // the wrong type of main delegate.
+      switches::kHeadless,
+      // Zygote process needs to know what resources to have loaded when it
+      // becomes a renderer process.
+      switches::kForceDeviceScaleFactor, switches::kLoggingLevel,
+      switches::kPpapiInProcess, switches::kRegisterPepperPlugins, switches::kV,
+      switches::kVModule,
+  };
+  cmd_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                             kForwardSwitches, arraysize(kForwardSwitches));
+
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(cmd_line, -1);
   return ZygoteHostImpl::GetInstance()->LaunchZygote(cmd_line, control_fd);
 }

@@ -19,12 +19,9 @@
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "media/base/media_switches.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-#include "ui/display/display_switches.h"
-#include "ui/gfx/switches.h"
 
 namespace content {
 
@@ -241,24 +238,13 @@ void ZygoteCommunication::Init(
     cmd_line.PrependWrapper(
         browser_command_line.GetSwitchValueNative(switches::kZygoteCmdPrefix));
   }
-  // Append any switches from the browser process that need to be forwarded on
+  // Append any switches from the service manager that need to be forwarded on
   // to the zygote/renderers.
-  // Should this list be obtained from browser_render_process_host.cc?
   static const char* const kForwardSwitches[] = {
       service_manager::switches::kAllowSandboxDebugging,
       service_manager::switches::kDisableInProcessStackTraces,
       service_manager::switches::kDisableSeccompFilterSandbox,
-      switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
-      switches::kEnableHeapProfiling,
-      switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
-      // Need to tell the zygote that it is headless so that we don't try to use
-      // the wrong type of main delegate.
-      switches::kHeadless,
-      // Zygote process needs to know what resources to have loaded when it
-      // becomes a renderer process.
-      switches::kForceDeviceScaleFactor, switches::kLoggingLevel,
-      switches::kNoSandbox, switches::kPpapiInProcess,
-      switches::kRegisterPepperPlugins, switches::kV, switches::kVModule,
+      service_manager::switches::kNoSandbox,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
