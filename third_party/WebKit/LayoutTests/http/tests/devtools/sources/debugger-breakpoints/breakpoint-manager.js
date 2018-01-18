@@ -42,54 +42,6 @@
   }
 
   TestRunner.runTestSuite([
-    function testNavigation(next) {
-      var breakpointManager = createBreakpointManager(serializedBreakpoints);
-      var uiSourceCodeA = addUISourceCode(breakpointManager, 'a.js');
-      window.setBreakpointCallback = step2.bind(this);
-
-      function step2() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        TestRunner.addResult('\n  Navigating to B.');
-        resetWorkspace(breakpointManager);
-        var uiSourceCodeB = addUISourceCode(breakpointManager, 'b.js');
-        window.setBreakpointCallback = step3.bind(this);
-      }
-
-      function step3() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        TestRunner.addResult('\n  Navigating back to A.');
-        resetWorkspace(breakpointManager);
-        TestRunner.addResult('  Resolving provisional breakpoint.');
-        SourcesTestRunner.addScript(mockTarget, breakpointManager, 'a.js');
-        mockTarget.debuggerModel._breakpointResolved(
-            'a.js:10', new SDK.DebuggerModel.Location(mockTarget.debuggerModel, 'a.js', 10, 0));
-        addUISourceCode(breakpointManager, 'a.js', false, true);
-        SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-      }
-    },
-
-    function testProvisionalBreakpointsResolve(next) {
-      var serializedBreakpoints = [];
-      serializedBreakpoints.push(createBreakpoint('a.js', 10, 'foo == bar', true));
-
-      var breakpointManager = createBreakpointManager(serializedBreakpoints);
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      window.setBreakpointCallback = step2.bind(this);
-
-      function step2() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        resetWorkspace(breakpointManager);
-        TestRunner.addResult('  Resolving provisional breakpoint.');
-        SourcesTestRunner.addScript(mockTarget, breakpointManager, 'a.js');
-        mockTarget.debuggerModel._breakpointResolved(
-            'a.js:10', new SDK.DebuggerModel.Location(mockTarget.debuggerModel, 'a.js', 11, 0));
-        var breakpoints = breakpointManager._allBreakpoints();
-        TestRunner.assertEquals(
-            1, breakpoints.length, 'Exactly one provisional breakpoint should be registered in breakpoint manager.');
-        SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-      }
-    },
-
     function testBreakpointInCollectedReload(next) {
       var breakpointManager = createBreakpointManager();
       TestRunner.addResult('\n  Adding file without script:');
