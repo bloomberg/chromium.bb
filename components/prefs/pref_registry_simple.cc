@@ -83,6 +83,12 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
       NO_REGISTRATION_FLAGS);
 }
 
+void PrefRegistrySimple::RegisterTimePref(const std::string& path,
+                                          base::Time default_value) {
+  RegisterInt64Pref(path,
+                    default_value.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value,
                                              uint32_t flags) {
@@ -153,4 +159,11 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
   RegisterPreference(
       path, std::make_unique<base::Value>(base::NumberToString(default_value)),
       flags);
+}
+
+void PrefRegistrySimple::RegisterTimePref(const std::string& path,
+                                          base::Time default_value,
+                                          uint32_t flags) {
+  RegisterInt64Pref(
+      path, default_value.ToDeltaSinceWindowsEpoch().InMicroseconds(), flags);
 }

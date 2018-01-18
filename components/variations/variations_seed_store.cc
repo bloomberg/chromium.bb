@@ -247,9 +247,8 @@ bool VariationsSeedStore::StoreSafeSeed(
   local_state_->SetString(prefs::kVariationsSafeSeedSignature,
                           base64_seed_signature);
 
-  local_state_->SetInt64(
-      prefs::kVariationsSafeSeedDate,
-      client_state.reference_date.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  local_state_->SetTime(prefs::kVariationsSafeSeedDate,
+                        client_state.reference_date);
   local_state_->SetString(prefs::kVariationsSafeSeedLocale,
                           client_state.locale);
   local_state_->SetString(prefs::kVariationsSafeSeedPermanentConsistencyCountry,
@@ -264,19 +263,15 @@ void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
   UpdateSeedDateResult result = UpdateSeedDateResult::NO_OLD_DATE;
 
   if (local_state_->HasPrefPath(prefs::kVariationsSeedDate)) {
-    const int64_t stored_date_value =
-        local_state_->GetInt64(prefs::kVariationsSeedDate);
     const base::Time stored_date =
-        base::Time::FromInternalValue(stored_date_value);
-
+        local_state_->GetTime(prefs::kVariationsSeedDate);
     result = GetSeedDateChangeState(server_date_fetched, stored_date);
   }
 
   UMA_HISTOGRAM_ENUMERATION("Variations.SeedDateChange", result,
                             UpdateSeedDateResult::ENUM_SIZE);
 
-  local_state_->SetInt64(prefs::kVariationsSeedDate,
-                         server_date_fetched.ToInternalValue());
+  local_state_->SetTime(prefs::kVariationsSeedDate, server_date_fetched);
 }
 
 const std::string& VariationsSeedStore::GetLatestSerialNumber() {
@@ -301,16 +296,13 @@ const std::string& VariationsSeedStore::GetLatestSerialNumber() {
 void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
   registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
-  registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                              base::Time().ToInternalValue());
+  registry->RegisterTimePref(prefs::kVariationsSeedDate, base::Time());
   registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
 
   // Safe seed prefs:
   registry->RegisterStringPref(prefs::kVariationsSafeCompressedSeed,
                                std::string());
-  registry->RegisterInt64Pref(
-      prefs::kVariationsSafeSeedDate,
-      base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  registry->RegisterTimePref(prefs::kVariationsSafeSeedDate, base::Time());
   registry->RegisterStringPref(prefs::kVariationsSafeSeedLocale, std::string());
   registry->RegisterStringPref(
       prefs::kVariationsSafeSeedPermanentConsistencyCountry, std::string());

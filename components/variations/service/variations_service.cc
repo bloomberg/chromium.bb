@@ -377,7 +377,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   SafeSeedManager::RegisterPrefs(registry);
   VariationsSeedStore::RegisterPrefs(registry);
 
-  registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
+  registry->RegisterTimePref(prefs::kVariationsLastFetchTime, base::Time());
   // This preference will only be written by the policy service, which will fill
   // it according to a value stored in the User Policy.
   registry->RegisterStringPref(prefs::kVariationsRestrictParameter,

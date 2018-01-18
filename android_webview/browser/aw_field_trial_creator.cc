@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -58,9 +59,10 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
       base::MakeRefCounted<PrefRegistrySimple>();
 
   // Register the variations prefs with default values that must be overridden.
-  pref_registry->RegisterInt64Pref(variations::prefs::kVariationsSeedDate, 0);
-  pref_registry->RegisterInt64Pref(variations::prefs::kVariationsLastFetchTime,
-                                   0);
+  pref_registry->RegisterTimePref(variations::prefs::kVariationsSeedDate,
+                                  base::Time());
+  pref_registry->RegisterTimePref(variations::prefs::kVariationsLastFetchTime,
+                                  base::Time());
   pref_registry->RegisterStringPref(variations::prefs::kVariationsCountry,
                                     std::string());
   pref_registry->RegisterStringPref(
