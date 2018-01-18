@@ -4,10 +4,12 @@
 
 #include "components/flags_ui/flags_state.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -41,6 +43,25 @@ base::CommandLine::StringType GetSwitchString(const std::string& flag) {
   return cmd_line.argv()[1];
 }
 
+// Return the span between the first occurrence of |begin_sentinel_switch| and
+// the last occurrence of |end_sentinel_switch|.
+base::span<const base::CommandLine::StringType> GetSwitchesBetweenSentinels(
+    const base::CommandLine::StringVector& switches,
+    const base::CommandLine::StringType& begin_sentinel_switch,
+    const base::CommandLine::StringType& end_sentinel_switch) {
+  const auto first =
+      std::find(switches.begin(), switches.end(), begin_sentinel_switch);
+  if (first == switches.end())
+    return {};
+  // Go backwards in order to find the last occurrence (as opposed to
+  // std::find() which would return the first one).
+  for (auto last = --switches.end(); last != first; --last) {
+    if (*last == end_sentinel_switch)
+      return base::make_span(&first[1], last - first - 1);
+  }
+  return {};
+}
+
 // Scoops flags from a command line.
 // Only switches between --flag-switches-begin and --flag-switches-end are
 // compared. The embedder may use |extra_flag_sentinel_begin_flag_name| and
@@ -53,24 +74,18 @@ std::set<base::CommandLine::StringType> ExtractFlagsFromCommandLine(
             !!extra_flag_sentinel_end_flag_name);
   std::set<base::CommandLine::StringType> flags;
   // First do the ones between --flag-switches-begin and --flag-switches-end.
-  base::CommandLine::StringVector::const_iterator first =
-      std::find(cmdline.argv().begin(), cmdline.argv().end(),
-                GetSwitchString(switches::kFlagSwitchesBegin));
-  base::CommandLine::StringVector::const_iterator last =
-      std::find(cmdline.argv().begin(), cmdline.argv().end(),
-                GetSwitchString(switches::kFlagSwitchesEnd));
-  if (first != cmdline.argv().end() && last != cmdline.argv().end())
-    flags.insert(first + 1, last);
+  const auto flags_span = GetSwitchesBetweenSentinels(
+      cmdline.argv(), GetSwitchString(switches::kFlagSwitchesBegin),
+      GetSwitchString(switches::kFlagSwitchesEnd));
+  flags.insert(flags_span.begin(), flags_span.end());
 
   // Then add those between the extra sentinels.
   if (extra_flag_sentinel_begin_flag_name &&
       extra_flag_sentinel_end_flag_name) {
-    first = std::find(cmdline.argv().begin(), cmdline.argv().end(),
-                      GetSwitchString(extra_flag_sentinel_begin_flag_name));
-    last = std::find(cmdline.argv().begin(), cmdline.argv().end(),
-                     GetSwitchString(extra_flag_sentinel_end_flag_name));
-    if (first != cmdline.argv().end() && last != cmdline.argv().end())
-      flags.insert(first + 1, last);
+    const auto extra_flags_span = GetSwitchesBetweenSentinels(
+        cmdline.argv(), GetSwitchString(extra_flag_sentinel_begin_flag_name),
+        GetSwitchString(extra_flag_sentinel_end_flag_name));
+    flags.insert(extra_flags_span.begin(), extra_flags_span.end());
   }
   return flags;
 }

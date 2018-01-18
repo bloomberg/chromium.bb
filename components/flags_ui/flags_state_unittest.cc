@@ -63,6 +63,9 @@ const char kEnableDisableValue2[] = "value2";
 const char kEnableFeatures[] = "dummy-enable-features";
 const char kDisableFeatures[] = "dummy-disable-features";
 
+const char kDummySentinelBeginSwitch[] = "dummy-begin";
+const char kDummySentinelEndSwitch[] = "dummy-end";
+
 const char kTestTrial[] = "TestTrial";
 const char kTestParam1[] = "param1";
 const char kTestParam2[] = "param2";
@@ -382,6 +385,9 @@ base::CommandLine::StringType CreateSwitch(const std::string& value) {
 }
 
 TEST_F(FlagsStateTest, CompareSwitchesToCurrentCommandLine) {
+  // Start with the active command line containing no flags, and the new command
+  // line having the |kFlags1| flag.
+
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, true);
 
   const std::string kDoubleDash("--");
@@ -404,6 +410,8 @@ TEST_F(FlagsStateTest, CompareSwitchesToCurrentCommandLine) {
     EXPECT_EQ(1U, difference.count(CreateSwitch(kDoubleDash + kSwitch1)));
   }
 
+  // Now both command lines have the |kFlags1| flag.
+
   flags_state_->ConvertFlagsToSwitches(&flags_storage_, &command_line,
                                        kAddSentinels, kEnableFeatures,
                                        kDisableFeatures);
@@ -417,7 +425,9 @@ TEST_F(FlagsStateTest, CompareSwitchesToCurrentCommandLine) {
     EXPECT_TRUE(difference.empty());
   }
 
-  // Now both have flags but different.
+  // Now the active command line has the |kFlags2| flag, and the new command
+  // line has the |kFlags1| flag.
+
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
 
@@ -437,6 +447,59 @@ TEST_F(FlagsStateTest, CompareSwitchesToCurrentCommandLine) {
     EXPECT_EQ(1U, difference.count(CreateSwitch(kDoubleDash + kSwitch2 + "=" +
                                                 kValueForSwitch2)));
   }
+
+  // Now both command lines have both flags |kFlags1| and |kFlags2|, but each
+  // flag is surrounded by dummy sentinels in one of the command lines.
+
+  new_command_line.AppendSwitch(kDummySentinelBeginSwitch);
+  flags_state_->ConvertFlagsToSwitches(&flags_storage_, &new_command_line,
+                                       kNoSentinels, kEnableFeatures,
+                                       kDisableFeatures);
+  new_command_line.AppendSwitch(kDummySentinelEndSwitch);
+
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, true);
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
+
+  another_command_line.AppendSwitch(kDummySentinelBeginSwitch);
+  flags_state_->ConvertFlagsToSwitches(&flags_storage_, &another_command_line,
+                                       kNoSentinels, kEnableFeatures,
+                                       kDisableFeatures);
+  another_command_line.AppendSwitch(kDummySentinelEndSwitch);
+
+  EXPECT_FALSE(FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, nullptr, nullptr, nullptr));
+  EXPECT_TRUE(FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, nullptr,
+      kDummySentinelBeginSwitch, kDummySentinelEndSwitch));
+
+  // Now the new command line additionally contains |kFlags3|, which is
+  // followed by another dummy end sentinel.
+
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags3, true);
+
+  flags_state_->ConvertFlagsToSwitches(&flags_storage_, &new_command_line,
+                                       kNoSentinels, kEnableFeatures,
+                                       kDisableFeatures);
+  new_command_line.AppendSwitch(kDummySentinelEndSwitch);
+
+  EXPECT_FALSE(FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, nullptr,
+      kDummySentinelBeginSwitch, kDummySentinelEndSwitch));
+
+  // Now both command lines contain the |kFlags3| flag followed by the second
+  // dummy end sentinel.
+
+  flags_state_->ConvertFlagsToSwitches(&flags_storage_, &another_command_line,
+                                       kNoSentinels, kEnableFeatures,
+                                       kDisableFeatures);
+  another_command_line.AppendSwitch(kDummySentinelEndSwitch);
+
+  EXPECT_FALSE(FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, nullptr, nullptr, nullptr));
+  EXPECT_TRUE(FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, nullptr,
+      kDummySentinelBeginSwitch, kDummySentinelEndSwitch));
 }
 
 TEST_F(FlagsStateTest, RemoveFlagSwitches) {
