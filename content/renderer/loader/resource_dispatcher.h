@@ -112,11 +112,14 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
-  bool RemovePendingRequest(int request_id);
+  bool RemovePendingRequest(
+      int request_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Cancels a request in the |pending_requests_| list.  The request will be
   // removed from the dispatcher as well.
-  virtual void Cancel(int request_id);
+  virtual void Cancel(int request_id,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Toggles the is_deferred attribute for the specified request.
   virtual void SetDefersLoading(int request_id, bool value);
@@ -200,9 +203,11 @@ class CONTENT_EXPORT ResourceDispatcher {
   void OnReceivedResponse(int request_id, const network::ResourceResponseHead&);
   void OnReceivedCachedMetadata(int request_id,
                                 const std::vector<uint8_t>& data);
-  void OnReceivedRedirect(int request_id,
-                          const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseHead& response_head);
+  void OnReceivedRedirect(
+      int request_id,
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);

@@ -49,7 +49,8 @@ class SyncLoadContext : public RequestPeer {
       network::ResourceRequest* request,
       std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory,
       SyncLoadResponse* response,
-      base::WaitableEvent* event);
+      base::WaitableEvent* event,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~SyncLoadContext() override;
 
  private:
@@ -76,6 +77,8 @@ class SyncLoadContext : public RequestPeer {
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   int request_id_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncLoadContext);
 };
