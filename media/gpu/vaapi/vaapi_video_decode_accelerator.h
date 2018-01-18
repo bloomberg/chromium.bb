@@ -72,6 +72,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 #if defined(USE_OZONE)
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
+      VideoPixelFormat pixel_format,
       const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
 #endif
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
@@ -305,7 +306,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // format.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
-  gfx::BufferFormat output_format_;
   VideoCodecProfile profile_;
 
   // Callback to make GL context current.
