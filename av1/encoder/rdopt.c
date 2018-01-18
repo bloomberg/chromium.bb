@@ -1855,11 +1855,20 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 
 #if !CONFIG_TXK_SEL
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
+  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  int rate_cost = 0;
+
   // full forward transform and quantization
   if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
     av1_xform_quant(
         cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
         USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
+
+    rate_cost = av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                                scan_order, a, l, args->use_fast_coef_costing);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
@@ -1894,7 +1903,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
         RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, CONFIG_LV_MAP);
+                     tx_size, a, l, CONFIG_LV_MAP, &rate_cost);
+
+      const int eob = x->plane[plane].eobs[block];
+      if (!eob)
+        rate_cost =
+            av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                            scan_order, a, l, args->use_fast_coef_costing);
     } else {
       args->exit_early = 1;
       return;
@@ -1917,14 +1932,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     args->exit_early = 1;
     return;
   }
-  const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
 
-  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
-  this_rd_stats.rate =
-      av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
-                      scan_order, a, l, args->use_fast_coef_costing);
+  this_rd_stats.rate = rate_cost;
 #else   // !CONFIG_TXK_SEL
   av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, a, l, args->use_fast_coef_costing,
@@ -3539,6 +3548,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int16_t *diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   int txb_coeff_cost;
+  int rate_cost = 0;
 
   assert(tx_size < TX_SIZES_ALL);
 
@@ -3603,6 +3613,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
         cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
         USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
 
+    rate_cost = av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                                scan_order, a, l, 0);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
@@ -3645,7 +3657,18 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #endif
         RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, fast);
+                     tx_size, a, l, fast, &rate_cost);
+
+      const int eob = x->plane[plane].eobs[block];
+      if (eob) {
+#if CONFIG_TXK_SEL
+        rate_cost += av1_tx_type_cost(cm, x, xd, xd->mi[0]->mbmi.sb_type, plane,
+                                      tx_size, tx_type);
+#endif
+      } else {
+        rate_cost = av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block,
+                                    tx_size, scan_order, a, l, 0);
+      }
     } else {
       rd_stats->rate += rd_stats->zero_rate;
       rd_stats->dist += tmp << 4;
@@ -3687,8 +3710,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                      blk_row, blk_col, plane_bsize, txm_bsize);
   }
   cur_dist = tmp * 16;
-  txb_coeff_cost = av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block,
-                                   tx_size, scan_order, a, l, 0);
+  txb_coeff_cost = rate_cost;
   cur_rate = txb_coeff_cost;
   cur_skip = (eob == 0);
 

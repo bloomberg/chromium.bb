@@ -443,7 +443,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
                    int blk_row, int blk_col, int block, BLOCK_SIZE plane_bsize,
                    TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
-                   const ENTROPY_CONTEXT *l, int fast_mode) {
+                   const ENTROPY_CONTEXT *l, int fast_mode, int *rate_cost) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   const int eob = p->eobs[block];
@@ -462,7 +462,7 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   return av1_optimize_txb(cpi, mb, plane, blk_row, blk_col, block, tx_size,
-                          &txb_ctx, fast_mode);
+                          &txb_ctx, fast_mode, rate_cost);
 #endif  // !CONFIG_LV_MAP
 }
 
@@ -587,6 +587,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
+  int dummy_rate_cost = 0;
 
   int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   dst = &pd->dst
@@ -603,7 +604,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
       av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, CONFIG_LV_MAP);
+                     tx_size, a, l, CONFIG_LV_MAP, &dummy_rate_cost);
     } else {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -884,6 +885,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  int dummy_rate_cost = 0;
 
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
@@ -914,7 +916,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
     av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                   tx_size, a, l, CONFIG_LV_MAP);
+                   tx_size, a, l, CONFIG_LV_MAP, &dummy_rate_cost);
 
 #if CONFIG_TXK_SEL
     if (plane == 0 && p->eobs[block] == 0) {
