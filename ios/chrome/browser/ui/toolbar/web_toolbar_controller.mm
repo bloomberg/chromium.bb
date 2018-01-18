@@ -734,7 +734,7 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
 }
 
 - (void)currentPageLoadStarted {
-  [self startProgressBar];
+  [self updateToolbarState];
 }
 
 - (CGRect)visibleOmniboxFrame {
