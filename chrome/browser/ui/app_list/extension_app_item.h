@@ -38,6 +38,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   static const char kItemType[];
 
   ExtensionAppItem(Profile* profile,
+                   AppListModelUpdater* model_updater,
                    const app_list::AppListSyncableService::SyncItem* sync_item,
                    const std::string& extension_id,
                    const std::string& extension_name,
