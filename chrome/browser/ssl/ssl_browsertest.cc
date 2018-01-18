@@ -990,11 +990,75 @@ class SSLUITest : public SSLUITestBase,
   void SendInterstitialCommand(
       WebContents* tab,
       security_interstitials::SecurityInterstitialCommand command) override {
-    // TODO(crbug.com/785077): Execute script inside the interstitial.
     if (IsCommittedInterstitialTest()) {
-      SSLErrorTabHelper* helper = SSLErrorTabHelper::FromWebContents(tab);
-      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-          ->CommandReceived(base::IntToString(command));
+      std::string javascript;
+      switch (command) {
+        case security_interstitials::CMD_DONT_PROCEED: {
+          javascript = "window.certificateErrorPageController.dontProceed();";
+          break;
+        }
+        case security_interstitials::CMD_PROCEED: {
+          javascript = "window.certificateErrorPageController.proceed();";
+          break;
+        }
+        case security_interstitials::CMD_SHOW_MORE_SECTION: {
+          javascript =
+              "window.certificateErrorPageController.showMoreSection();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_HELP_CENTER: {
+          javascript =
+              "window.certificateErrorPageController.openHelpCenter();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_DIAGNOSTIC: {
+          javascript =
+              "window.certificateErrorPageController.openDiagnostic();";
+          break;
+        }
+        case security_interstitials::CMD_RELOAD: {
+          javascript = "window.certificateErrorPageController.reload();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_DATE_SETTINGS: {
+          javascript =
+              "window.certificateErrorPageController.openDateSettings();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_LOGIN: {
+          javascript = "window.certificateErrorPageController.openLogin();";
+          break;
+        }
+        case security_interstitials::CMD_DO_REPORT: {
+          javascript = "window.certificateErrorPageController.doReport();";
+          break;
+        }
+        case security_interstitials::CMD_DONT_REPORT: {
+          javascript = "window.certificateErrorPageController.dontReport();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_REPORTING_PRIVACY: {
+          javascript =
+              "window.certificateErrorPageController.openReportingPrivacy();";
+          break;
+        }
+        case security_interstitials::CMD_OPEN_WHITEPAPER: {
+          javascript =
+              "window.certificateErrorPageController.openWhitepaper();";
+          break;
+        }
+        case security_interstitials::CMD_REPORT_PHISHING_ERROR: {
+          javascript =
+              "window.certificateErrorPageController.reportPhishingError();";
+          break;
+        }
+        default: {
+          // Other values in the enum are not used by these tests, and don't
+          // have a Javascript equivalent that can be called here.
+          NOTREACHED();
+        }
+      }
+      ASSERT_TRUE(content::ExecuteScript(tab, javascript));
       return;
     }
     SSLUITestBase::SendInterstitialCommand(tab, command);
@@ -3910,9 +3974,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITestIgnoreCertErrorsBySPKIHTTPS,
 #endif  // !defined(OS_CHROMEOS)
 
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.
-// http://crbug.com/322948
-// TODO(estark): fix for committed interstitials. https://crbug.com/792135
-IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestInterstitialJavaScriptProceeds) {
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestInterstitialJavaScriptProceeds) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
@@ -3930,14 +3992,20 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestInterstitialJavaScriptProceeds) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&tab->GetController()));
-  int result = security_interstitials::CMD_ERROR;
-  const std::string javascript =
-      base::StringPrintf("window.domAutomationController.send(%d);",
-                         security_interstitials::CMD_PROCEED);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      tab->GetInterstitialPage()->GetMainFrame(), javascript, &result));
-  // The above will hang without the fix.
-  EXPECT_EQ(1, result);
+  if (AreCommittedInterstitialsEnabled()) {
+    const std::string javascript =
+        "window.certificateErrorPageController.proceed();";
+    EXPECT_TRUE(content::ExecuteScript(tab, javascript));
+  } else {
+    int result = security_interstitials::CMD_ERROR;
+    const std::string javascript =
+        base::StringPrintf("window.domAutomationController.send(%d);",
+                           security_interstitials::CMD_PROCEED);
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        tab->GetInterstitialPage()->GetMainFrame(), javascript, &result));
+    // The above will hang without the fix.
+    EXPECT_EQ(1, result);
+  }
   observer.Wait();
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::NONE);
@@ -3945,8 +4013,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestInterstitialJavaScriptProceeds) {
 
 // Verifies that the interstitial can go back, even if JavaScript is disabled.
 // http://crbug.com/322948
-// TODO(estark): fix for committed interstitials. https://crbug.com/792135
-IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestInterstitialJavaScriptGoesBack) {
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
@@ -3959,16 +4026,25 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestInterstitialJavaScriptGoesBack) {
                                  AuthState::SHOWING_INTERSTITIAL);
   WaitForInterstitial(tab);
   ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
-
-  int result = security_interstitials::CMD_ERROR;
-  const std::string javascript =
-      base::StringPrintf("window.domAutomationController.send(%d);",
-                         security_interstitials::CMD_DONT_PROCEED);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      tab->GetInterstitialPage()->GetMainFrame(), javascript, &result));
-  // The above will hang without the fix.
-  EXPECT_EQ(0, result);
-  WaitForInterstitialDetach(tab);
+  if (AreCommittedInterstitialsEnabled()) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(&tab->GetController()));
+    const std::string javascript =
+        "window.certificateErrorPageController.dontProceed();";
+    EXPECT_TRUE(content::ExecuteScript(tab, javascript));
+    observer.Wait();
+  } else {
+    int result = security_interstitials::CMD_ERROR;
+    const std::string javascript =
+        base::StringPrintf("window.domAutomationController.send(%d);",
+                           security_interstitials::CMD_DONT_PROCEED);
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        tab->GetInterstitialPage()->GetMainFrame(), javascript, &result));
+    // The above will hang without the fix.
+    EXPECT_EQ(0, result);
+    WaitForInterstitialDetach(tab);
+  }
   EXPECT_EQ("about:blank", tab->GetVisibleURL().spec());
 }
 

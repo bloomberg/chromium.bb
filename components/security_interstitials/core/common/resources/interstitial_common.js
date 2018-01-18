@@ -34,6 +34,50 @@ var HIDDEN_CLASS = 'hidden';
  * @param {string} cmd  The command to send.
  */
 function sendCommand(cmd) {
+  if (window.certificateErrorPageController) {
+    switch (cmd) {
+      case SecurityInterstitialCommandId.CMD_DONT_PROCEED:
+        certificateErrorPageController.dontProceed();
+        break;
+      case SecurityInterstitialCommandId.CMD_PROCEED:
+        certificateErrorPageController.proceed();
+        break;
+      case SecurityInterstitialCommandId.CMD_SHOW_MORE_SECTION:
+        certificateErrorPageController.showMoreSection();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_HELP_CENTER:
+        certificateErrorPageController.openHelpCenter();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_DIAGNOSTIC:
+        certificateErrorPageController.openDiagnostic();
+        break;
+      case SecurityInterstitialCommandId.CMD_RELOAD:
+        certificateErrorPageController.reload();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_DATE_SETTINGS:
+        certificateErrorPageController.openDateSettings();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_LOGIN:
+        certificateErrorPageController.openLogin();
+        break;
+      case SecurityInterstitialCommandId.CMD_DO_REPORT:
+        certificateErrorPageController.doReport();
+        break;
+      case SecurityInterstitialCommandId.CMD_DONT_REPORT:
+        certificateErrorPageController.dontReport();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_REPORTING_PRIVACY:
+        certificateErrorPageController.openReportingPrivacy();
+        break;
+      case SecurityInterstitialCommandId.CMD_OPEN_WHITEPAPER:
+        certificateErrorPageController.openWhitepaper();
+        break;
+      case SecurityInterstitialCommandId.CMD_REPORT_PHISHING_ERROR:
+        certificateErrorPageController.reportPhishingError();
+        break;
+    }
+    return;
+  }
 // <if expr="not is_ios">
   window.domAutomationController.send(cmd);
 // </if>
