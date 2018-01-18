@@ -310,7 +310,7 @@ std::unique_ptr<TemplateURL> TemplateURLServiceSyncTest::CreateTestTemplateURL(
   data.prepopulate_id = prepopulate_id;
   if (!guid.empty())
     data.sync_guid = guid;
-  return base::MakeUnique<TemplateURL>(data);
+  return std::make_unique<TemplateURL>(data);
 }
 
 void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
@@ -388,7 +388,7 @@ std::unique_ptr<TemplateURL> TemplateURLServiceSyncTest::CopyTemplateURL(
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.sync_guid = guid;
-  return base::MakeUnique<TemplateURL>(data);
+  return std::make_unique<TemplateURL>(data);
 }
 
 syncer::SyncMergeResult TemplateURLServiceSyncTest::MergeAndExpectNotify(
@@ -490,7 +490,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithSearchOverrideExtension) {
   // Change default search provider to an extension one.
   std::unique_ptr<TemplateURLData> extension =
       GenerateDummyTemplateURLData("extension");
-  auto ext_dse = base::MakeUnique<TemplateURL>(
+  auto ext_dse = std::make_unique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext", Time(),
       true);
   test_util_a_->AddExtensionControlledTURL(std::move(ext_dse));
@@ -1752,7 +1752,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithExtensionDefaultSearch) {
   // Change the default search provider to an extension one.
   std::unique_ptr<TemplateURLData> extension =
       GenerateDummyTemplateURLData("extensiondefault");
-  auto ext_dse = base::MakeUnique<TemplateURL>(
+  auto ext_dse = std::make_unique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext", Time(),
       true);
   test_util_a_->AddExtensionControlledTURL(std::move(ext_dse));
@@ -1803,7 +1803,7 @@ TEST_F(TemplateURLServiceSyncTest, ExtensionAndNormalEngineConflict) {
   // Change the default search provider to an extension one.
   std::unique_ptr<TemplateURLData> extension =
       GenerateDummyTemplateURLData("common_keyword");
-  auto ext_dse = base::MakeUnique<TemplateURL>(
+  auto ext_dse = std::make_unique<TemplateURL>(
       *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext", Time(),
       true);
   const TemplateURL* extension_turl =
@@ -2000,7 +2000,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   data_copy.SetKeyword(ASCIIToUTF16(kNewKeyword));
   // Set safe_for_autoreplace to false so our keyword survives.
   data_copy.safe_for_autoreplace = false;
-  model()->Add(base::MakeUnique<TemplateURL>(data_copy));
+  model()->Add(std::make_unique<TemplateURL>(data_copy));
 
   // Merge the prepopulate search engines.
   base::Time pre_merge_time = base::Time::Now();
@@ -2294,7 +2294,7 @@ TEST_F(TemplateURLServiceSyncTest, UpdatePrepopulatedEngine) {
   TemplateURLData data = *default_turl;
   data.SetURL("http://old.wrong.url.com?q={searchTerms}");
   data.sync_guid = "default";
-  model()->Add(base::MakeUnique<TemplateURL>(data));
+  model()->Add(std::make_unique<TemplateURL>(data));
 
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
                                     syncer::SyncDataList(), PassProcessor(),
@@ -2330,7 +2330,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(base::MakeUnique<TemplateURL>(data));
+  model()->Add(std::make_unique<TemplateURL>(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
@@ -2359,7 +2359,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
   data.last_modified = Time::FromTimeT(50);
   data.prepopulate_id = 1;
   data.sync_guid = "default";
-  model()->Add(base::MakeUnique<TemplateURL>(data));
+  model()->Add(std::make_unique<TemplateURL>(data));
 
   TemplateURLData new_data(*default_turl);
   new_data.SetKeyword(ASCIIToUTF16("new_kw"));
@@ -2374,7 +2374,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
   // Test that a remote TemplateURL can override a local TemplateURL not yet
   // known to sync.
   std::unique_ptr<TemplateURL> sync_turl =
-      base::MakeUnique<TemplateURL>(new_data);
+      std::make_unique<TemplateURL>(new_data);
   syncer::SyncDataList list;
   list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
   MergeAndExpectNotify(list, 1);
@@ -2419,7 +2419,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(base::MakeUnique<TemplateURL>(data));
+  model()->Add(std::make_unique<TemplateURL>(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
