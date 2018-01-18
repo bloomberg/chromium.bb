@@ -33,13 +33,15 @@ namespace app_list {
 
 namespace {
 
-void DoCloseAnimation(base::TimeDelta animation_duration, ui::Layer* layer) {
+void DoAnimation(base::TimeDelta animation_duration,
+                 ui::Layer* layer,
+                 float target_opacity) {
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(animation_duration);
   animation.SetTweenType(gfx::Tween::EASE_OUT);
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  layer->SetOpacity(0.0f);
+  layer->SetOpacity(target_opacity);
 }
 
 }  // namespace
@@ -473,8 +475,15 @@ int ContentsView::GetDisplayHeight() const {
 
 void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
   DCHECK(is_fullscreen_app_list_enabled_);
-  DoCloseAnimation(animation_duration, this->layer());
-  DoCloseAnimation(animation_duration, GetSearchBoxView()->layer());
+  DoAnimation(animation_duration, layer(), 0.0f);
+  DoAnimation(animation_duration, GetSearchBoxView()->layer(), 0.0f);
+}
+
+void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
+  GetSearchBoxView()->layer()->SetOpacity(0.0f);
+  layer()->SetOpacity(0.0f);
+  DoAnimation(animation_duration, layer(), 1.0f);
+  DoAnimation(animation_duration, GetSearchBoxView()->layer(), 1.0f);
 }
 
 views::View* ContentsView::GetSelectedView() const {
