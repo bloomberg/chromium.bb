@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/prefs_export.h"
 
@@ -41,6 +42,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
       std::unique_ptr<base::DictionaryValue> default_value);
   void RegisterInt64Pref(const std::string& path, int64_t default_value);
   void RegisterUint64Pref(const std::string&, uint64_t default_value);
+  void RegisterTimePref(const std::string& path, base::Time default_value);
 
   // Versions of registration functions that accept PrefRegistrationFlags.
   // |flags| is a bitmask of PrefRegistrationFlags.
@@ -74,6 +76,9 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
   void RegisterUint64Pref(const std::string&,
                           uint64_t default_value,
                           uint32_t flags);
+  void RegisterTimePref(const std::string&,
+                        base::Time default_value,
+                        uint32_t flags);
 
  protected:
   ~PrefRegistrySimple() override;

@@ -23,8 +23,8 @@ const char kVariationsCrashStreak[] = "variations_crash_streak";
 const char kVariationsFailedToFetchSeedStreak[] =
     "variations_failed_to_fetch_seed_streak";
 
-// 64-bit integer serialization of the base::Time from the last successful seed
-// fetch (i.e. when the Variations server responds with 200 or 304).
+// The serialized base::Time from the last successful seed fetch (i.e. when the
+// Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 
 // Pair of <Chrome version string, country code string> representing the country
@@ -49,9 +49,9 @@ const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 // https://docs.google.com/document/d/17UN2pLSa5JZqk8f3LeYZIftXewxqcITotgalTrJvGSY
 const char kVariationsSafeCompressedSeed[] = "variations_safe_compressed_seed";
 
-// The 64-bit integer serialization of the base::Time at which the last known
-// "safe" seed was received. An empty/default-constructed base::Time time if
-// there is no known "safe" seed.
+// The serialized base::Time at which the last known "safe" seed was received.
+// An empty/default-constructed base::Time time if there is no known "safe"
+// seed.
 const char kVariationsSafeSeedDate[] = "variations_safe_seed_date";
 
 // The active client locale that was successfully used in association with the
@@ -74,7 +74,7 @@ const char kVariationsSafeSeedSessionConsistencyCountry[] =
 // base64-encoded. Empty if there is no known "safe" seed.
 const char kVariationsSafeSeedSignature[] = "variations_safe_seed_signature";
 
-// 64-bit integer serialization of the base::Time from the last seed received.
+// The serialized base::Time from the last seed received.
 const char kVariationsSeedDate[] = "variations_seed_date";
 
 // Digital signature of the binary variations seed data, base64-encoded.

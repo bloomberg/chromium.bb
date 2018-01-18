@@ -469,6 +469,15 @@ uint64_t PrefService::GetUint64(const std::string& path) const {
   return val;
 }
 
+void PrefService::SetTime(const std::string& path, base::Time value) {
+  SetInt64(path, value.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
+base::Time PrefService::GetTime(const std::string& path) const {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(GetInt64(path)));
+}
+
 base::Value* PrefService::GetMutableUserPref(const std::string& path,
                                              base::Value::Type type) {
   CHECK(type == base::Value::Type::DICTIONARY ||

@@ -24,6 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/prefs_export.h"
@@ -242,6 +243,13 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // As above, but for unsigned values.
   void SetUint64(const std::string& path, uint64_t value);
   uint64_t GetUint64(const std::string& path) const;
+
+  // Time helper methods that actually store the given value as a string, which
+  // represents the number of microseconds elapsed since the Windows epoch. Note
+  // that if obtaining the named value via GetDictionary or GetList, the Value
+  // type will be Type::STRING.
+  void SetTime(const std::string& path, base::Time value);
+  base::Time GetTime(const std::string& path) const;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.

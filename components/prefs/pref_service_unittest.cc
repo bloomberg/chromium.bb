@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/mock_pref_change_callback.h"
@@ -229,6 +230,33 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kRecommendedValue, actual_int_value);
+}
+
+TEST(PrefServiceTest, SetTimeValue_RegularTime) {
+  TestingPrefServiceSimple prefs;
+
+  // Register a null time as the default.
+  prefs.registry()->RegisterTimePref(kPrefName, base::Time());
+  EXPECT_TRUE(prefs.GetTime(kPrefName).is_null());
+
+  // Set a time and make sure that we can read it without any loss of precision.
+  const base::Time time = base::Time::Now();
+  prefs.SetTime(kPrefName, time);
+  EXPECT_EQ(time, prefs.GetTime(kPrefName));
+}
+
+TEST(PrefServiceTest, SetTimeValue_NullTime) {
+  TestingPrefServiceSimple prefs;
+
+  // Register a non-null time as the default.
+  const base::Time default_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(12345));
+  prefs.registry()->RegisterTimePref(kPrefName, default_time);
+  EXPECT_FALSE(prefs.GetTime(kPrefName).is_null());
+
+  // Set a null time and make sure that it remains null upon deserialization.
+  prefs.SetTime(kPrefName, base::Time());
+  EXPECT_TRUE(prefs.GetTime(kPrefName).is_null());
 }
 
 // A PrefStore which just stores the last write flags that were used to write

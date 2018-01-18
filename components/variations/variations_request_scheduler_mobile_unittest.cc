@@ -25,8 +25,8 @@ void Increment(int *n) {
 TEST(VariationsRequestSchedulerMobileTest, StartNoRun) {
   TestingPrefServiceSimple prefs;
   // Initialize to as if it was just fetched. This means it should not run.
-  prefs.registry()->RegisterInt64Pref(prefs::kVariationsLastFetchTime,
-                                      base::Time::Now().ToInternalValue());
+  prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime,
+                                     base::Time::Now());
   int executed = 0;
   const base::Closure task = base::Bind(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
@@ -39,8 +39,7 @@ TEST(VariationsRequestSchedulerMobileTest, StartRun) {
   TestingPrefServiceSimple prefs;
   // Verify it doesn't take more than a day.
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
-  prefs.registry()->RegisterInt64Pref(prefs::kVariationsLastFetchTime,
-                                      old.ToInternalValue());
+  prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
   const base::Closure task = base::Bind(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
@@ -55,8 +54,8 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
   TestingPrefServiceSimple prefs;
 
   // Initialize to as if it was just fetched. This means it should not run.
-  prefs.registry()->RegisterInt64Pref(prefs::kVariationsLastFetchTime,
-                                      base::Time::Now().ToInternalValue());
+  prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime,
+                                     base::Time::Now());
   int executed = 0;
   const base::Closure task = base::Bind(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
@@ -82,8 +81,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
   TestingPrefServiceSimple prefs;
 
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
-  prefs.registry()->RegisterInt64Pref(prefs::kVariationsLastFetchTime,
-                                      old.ToInternalValue());
+  prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
   const base::Closure task = base::Bind(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
@@ -109,8 +107,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
   TestingPrefServiceSimple prefs;
 
   base::Time old = base::Time::Now() - base::TimeDelta::FromHours(24);
-  prefs.registry()->RegisterInt64Pref(prefs::kVariationsLastFetchTime,
-                                      old.ToInternalValue());
+  prefs.registry()->RegisterTimePref(prefs::kVariationsLastFetchTime, old);
   int executed = 0;
   const base::Closure task = base::Bind(&Increment, &executed);
   VariationsRequestSchedulerMobile scheduler(task, &prefs);
@@ -128,11 +125,11 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
   EXPECT_EQ(1, executed);
 
   // Simulate letting time pass.
-  const base::Time last_fetch_time = base::Time::FromInternalValue(
-      prefs.GetInt64(prefs::kVariationsLastFetchTime));
-  prefs.SetInt64(
-      prefs::kVariationsLastFetchTime,
-      (last_fetch_time - base::TimeDelta::FromHours(24)).ToInternalValue());
+  const base::Time last_fetch_time =
+      prefs.GetTime(prefs::kVariationsLastFetchTime);
+  const base::Time one_day_earlier =
+      last_fetch_time - base::TimeDelta::FromHours(24);
+  prefs.SetTime(prefs::kVariationsLastFetchTime, one_day_earlier);
   scheduler.last_request_time_ -= base::TimeDelta::FromHours(24);
 
   scheduler.OnAppEnterForeground();
