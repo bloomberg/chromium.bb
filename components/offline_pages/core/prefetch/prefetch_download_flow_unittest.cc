@@ -14,7 +14,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_download_client.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,14 +30,14 @@ namespace offline_pages {
 // Tests the interaction between prefetch service and download service to
 // validate the whole prefetch download flow regardless which service is up
 // first.
-class PrefetchDownloadFlowTest : public TaskTestBase {
+class PrefetchDownloadFlowTest : public PrefetchTaskTestBase {
  public:
   PrefetchDownloadFlowTest() {
     feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
   }
 
   void SetUp() override {
-    TaskTestBase::SetUp();
+    PrefetchTaskTestBase::SetUp();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
     auto downloader = std::make_unique<PrefetchDownloaderImpl>(
@@ -53,7 +53,7 @@ class PrefetchDownloadFlowTest : public TaskTestBase {
 
   void TearDown() override {
     prefetch_service_taco_.reset();
-    TaskTestBase::TearDown();
+    PrefetchTaskTestBase::TearDown();
   }
 
   void SetDownloadServiceReady() {

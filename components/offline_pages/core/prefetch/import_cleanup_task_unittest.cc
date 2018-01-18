@@ -6,9 +6,9 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -38,7 +38,7 @@ class TestPrefetchImporter : public PrefetchImporter {
 
 }  // namespace
 
-class ImportCleanupTaskTest : public TaskTestBase {
+class ImportCleanupTaskTest : public PrefetchTaskTestBase {
  public:
   ImportCleanupTaskTest() = default;
   ~ImportCleanupTaskTest() override = default;

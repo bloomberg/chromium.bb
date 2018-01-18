@@ -6,8 +6,8 @@
 
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 #include "components/offline_pages/core/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,7 +28,7 @@ const char kOperationShouldNotBeRequested[] = "Operation Not Found";
 // All tests cases here only validate the request data and check for general
 // http response. The tests for the Operation proto data returned in the http
 // response are covered in PrefetchRequestOperationResponseTest.
-class GetOperationTaskTest : public TaskTestBase {
+class GetOperationTaskTest : public PrefetchTaskTestBase {
  public:
   GetOperationTaskTest() = default;
   ~GetOperationTaskTest() override = default;

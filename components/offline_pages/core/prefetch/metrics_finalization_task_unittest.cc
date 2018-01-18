@@ -10,14 +10,14 @@
 #include "base/test/histogram_tester.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
-class MetricsFinalizationTaskTest : public TaskTestBase {
+class MetricsFinalizationTaskTest : public PrefetchTaskTestBase {
  public:
   MetricsFinalizationTaskTest() = default;
   ~MetricsFinalizationTaskTest() override = default;
@@ -30,14 +30,14 @@ class MetricsFinalizationTaskTest : public TaskTestBase {
 };
 
 void MetricsFinalizationTaskTest::SetUp() {
-  TaskTestBase::SetUp();
+  PrefetchTaskTestBase::SetUp();
   metrics_finalization_task_ =
       std::make_unique<MetricsFinalizationTask>(store());
 }
 
 void MetricsFinalizationTaskTest::TearDown() {
   metrics_finalization_task_.reset();
-  TaskTestBase::TearDown();
+  PrefetchTaskTestBase::TearDown();
 }
 
 TEST_F(MetricsFinalizationTaskTest, StoreFailure) {

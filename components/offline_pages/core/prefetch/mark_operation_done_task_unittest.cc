@@ -5,11 +5,11 @@
 #include "components/offline_pages/core/prefetch/mark_operation_done_task.h"
 
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 #include "components/offline_pages/core/task.h"
@@ -24,12 +24,12 @@ const char kOtherOperationName[] = "other_operation";
 // All tests cases here only validate the request data and check for general
 // http response. The tests for the Operation proto data returned in the http
 // response are covered in PrefetchRequestOperationResponseTest.
-class MarkOperationDoneTaskTest : public TaskTestBase {
+class MarkOperationDoneTaskTest : public PrefetchTaskTestBase {
  public:
   MarkOperationDoneTaskTest() = default;
   ~MarkOperationDoneTaskTest() override = default;
 
-  void SetUp() override { TaskTestBase::SetUp(); }
+  void SetUp() override { PrefetchTaskTestBase::SetUp(); }
 
   int64_t InsertAwaitingGCMOperation(std::string name) {
     return InsertPrefetchItemInStateWithOperation(

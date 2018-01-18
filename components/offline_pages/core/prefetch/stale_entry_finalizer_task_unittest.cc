@@ -14,9 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +34,7 @@ std::set<PrefetchItem> Filter(const std::set<PrefetchItem>& items,
   return result;
 }
 
-class StaleEntryFinalizerTaskTest : public TaskTestBase {
+class StaleEntryFinalizerTaskTest : public PrefetchTaskTestBase {
  public:
   StaleEntryFinalizerTaskTest() = default;
   ~StaleEntryFinalizerTaskTest() override = default;
@@ -54,7 +54,7 @@ class StaleEntryFinalizerTaskTest : public TaskTestBase {
 };
 
 void StaleEntryFinalizerTaskTest::SetUp() {
-  TaskTestBase::SetUp();
+  PrefetchTaskTestBase::SetUp();
   stale_finalizer_task_ =
       std::make_unique<StaleEntryFinalizerTask>(dispatcher(), store());
   fake_now_ = base::Time() + base::TimeDelta::FromDays(100);
@@ -64,7 +64,7 @@ void StaleEntryFinalizerTaskTest::SetUp() {
 
 void StaleEntryFinalizerTaskTest::TearDown() {
   stale_finalizer_task_.reset();
-  TaskTestBase::TearDown();
+  PrefetchTaskTestBase::TearDown();
 }
 
 PrefetchItem StaleEntryFinalizerTaskTest::CreateAndInsertItem(

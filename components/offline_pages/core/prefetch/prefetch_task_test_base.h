@@ -10,16 +10,12 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/test/mock_callback.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/core/task_test_base.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 
 namespace offline_pages {
 struct PrefetchItem;
@@ -27,19 +23,16 @@ class PrefetchStore;
 class Task;
 
 // Base class for testing prefetch requests with simulated responses.
-class TaskTestBase : public testing::Test {
+class PrefetchTaskTestBase : public TaskTestBase {
  public:
   static std::vector<PrefetchItemState> GetAllStatesExcept(
       PrefetchItemState state_to_exclude);
 
-  TaskTestBase();
-  ~TaskTestBase() override;
+  PrefetchTaskTestBase();
+  ~PrefetchTaskTestBase() override;
 
   void SetUp() override;
   void TearDown() override;
-
-  void RunUntilIdle();
-  void ExpectTaskCompletes(Task* task);
 
   TestPrefetchNetworkRequestFactory* prefetch_request_factory() {
     return &prefetch_request_factory_;
@@ -62,8 +55,6 @@ class TaskTestBase : public testing::Test {
                                        PrefetchItemState state) const;
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestPrefetchNetworkRequestFactory prefetch_request_factory_;
   PrefetchStoreTestUtil store_test_util_;
