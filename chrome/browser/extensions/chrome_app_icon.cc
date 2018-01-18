@@ -109,7 +109,8 @@ void ChromeAppIcon::UpdateIcon() {
 
   image_skia_ = icon_->image_skia();
 #if defined(OS_CHROMEOS)
-  util::MaybeApplyChromeBadge(browser_context_, app_id_, &image_skia_);
+  icon_is_badged_ =
+      util::MaybeApplyChromeBadge(browser_context_, app_id_, &image_skia_);
 #endif
 
   if (!util::IsAppLaunchable(app_id_, browser_context_)) {

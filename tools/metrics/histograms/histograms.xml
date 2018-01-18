@@ -2045,6 +2045,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListBadgedAppsCount" units="apps">
+  <owner>vadimt@chromium.org</owner>
+  <summary>
+    Number of apps (including ones in folders) with Chrome badge, across all
+    Launcher pages. This is gathered per open-launcher event.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListCreationTime" units="ms">
   <owner>calamity@chromium.org</owner>
   <summary>
