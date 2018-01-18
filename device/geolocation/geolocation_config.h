@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider_impl.h"
-#include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/geolocation_config.mojom.h"
 
 namespace device {
 
