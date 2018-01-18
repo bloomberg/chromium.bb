@@ -618,23 +618,17 @@ bool ZygoteMain(
   EnterLayerOneSandbox(linux_sandbox, using_layer1_sandbox,
                        &post_fork_parent_callback);
 
-  // Extra children and file descriptors created that the Zygote must have
-  // knowledge of.
-  std::vector<pid_t> extra_children;
-  std::vector<int> extra_fds;
-
   const int sandbox_flags = linux_sandbox->GetStatus();
 
   const bool setuid_sandbox_engaged =
-      sandbox_flags & service_manager::SandboxLinux::kSUID;
+      !!(sandbox_flags & service_manager::SandboxLinux::kSUID);
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);
 
   const bool namespace_sandbox_engaged =
-      sandbox_flags & service_manager::SandboxLinux::kUserNS;
+      !!(sandbox_flags & service_manager::SandboxLinux::kUserNS);
   CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
-  Zygote zygote(sandbox_flags, std::move(fork_delegates), extra_children,
-                extra_fds,
+  Zygote zygote(sandbox_flags, std::move(fork_delegates),
                 base::GlobalDescriptors::Descriptor(
                     static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
