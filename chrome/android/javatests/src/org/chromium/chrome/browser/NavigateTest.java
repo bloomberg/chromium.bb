@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -332,11 +333,14 @@ public class NavigateTest {
                 mTestServer.getURL("/chrome/test/data/android/redirect/about.html");
         final String redirectUrl = "intent://non_existent/#Intent;scheme=non_existent;"
                 + "S.browser_fallback_url=" + fallbackUrl + ";end";
-        final String initialUrl = mTestServer.getURL(
-                "/chrome/test/data/android/redirect/js_redirect.html"
-                + "?replace_text="
-                + Base64.encodeToString("PARAM_URL".getBytes("utf-8"), Base64.URL_SAFE) + ":"
-                + Base64.encodeToString(redirectUrl.getBytes("utf-8"), Base64.URL_SAFE));
+        final String initialUrl =
+                mTestServer.getURL("/chrome/test/data/android/redirect/js_redirect.html"
+                        + "?replace_text="
+                        + Base64.encodeToString(
+                                  ApiCompatibilityUtils.getBytesUtf8("PARAM_URL"), Base64.URL_SAFE)
+                        + ":"
+                        + Base64.encodeToString(ApiCompatibilityUtils.getBytesUtf8(redirectUrl),
+                                  Base64.URL_SAFE));
         final String targetUrl =
                 mTestServer.getURL("/chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl, null);

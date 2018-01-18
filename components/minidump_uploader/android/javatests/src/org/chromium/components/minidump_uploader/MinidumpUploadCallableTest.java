@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
@@ -76,7 +77,7 @@ public class MinidumpUploadCallableTest {
 
         @Override
         public InputStream getInputStream() {
-            return new ByteArrayInputStream(CRASH_ID.getBytes());
+            return new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(CRASH_ID));
         }
 
         @Override

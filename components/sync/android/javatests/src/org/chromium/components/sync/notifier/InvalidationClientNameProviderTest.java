@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
@@ -67,7 +68,7 @@ public class InvalidationClientNameProviderTest {
         provider.setPreferredClientNameGenerator(new InvalidationClientNameGenerator() {
             @Override
             public byte[] generateInvalidatorClientName() {
-                return "Testable ID".getBytes();
+                return ApiCompatibilityUtils.getBytesUtf8("Testable ID");
             }
         });
     }

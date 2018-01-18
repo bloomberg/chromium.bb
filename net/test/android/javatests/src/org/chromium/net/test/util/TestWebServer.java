@@ -9,6 +9,8 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -258,8 +260,8 @@ public class TestWebServer {
      */
     public String setResponseWithNotFoundStatus(
             String requestPath, List<Pair<String, String>> responseHeaders) {
-        return setResponseInternal(
-                requestPath, "".getBytes(), responseHeaders, null, RESPONSE_STATUS_NOT_FOUND);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(""),
+                responseHeaders, null, RESPONSE_STATUS_NOT_FOUND);
     }
 
     /**
@@ -270,8 +272,8 @@ public class TestWebServer {
      *         response.
      */
     public String setResponseWithNoContentStatus(String requestPath) {
-        return setResponseInternal(
-                requestPath, "".getBytes(), null, null, RESPONSE_STATUS_NO_CONTENT);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(""), null, null,
+                RESPONSE_STATUS_NO_CONTENT);
     }
 
     /**
@@ -282,8 +284,8 @@ public class TestWebServer {
      *         response.
      */
     public String setEmptyResponse(String requestPath) {
-        return setResponseInternal(
-                requestPath, "".getBytes(), null, null, RESPONSE_STATUS_EMPTY_RESPONSE);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(""), null, null,
+                RESPONSE_STATUS_EMPTY_RESPONSE);
     }
 
     /**
@@ -300,8 +302,8 @@ public class TestWebServer {
     public String setResponse(
             String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
-        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders, null,
-                RESPONSE_STATUS_NORMAL);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(responseString),
+                responseHeaders, null, RESPONSE_STATUS_NORMAL);
     }
 
     /**
@@ -322,9 +324,8 @@ public class TestWebServer {
     public String setResponseWithRunnableAction(
             String requestPath, String responseString, List<Pair<String, String>> responseHeaders,
             Runnable responseAction) {
-        return setResponseInternal(
-                requestPath, responseString.getBytes(), responseHeaders, responseAction,
-                RESPONSE_STATUS_NORMAL);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(responseString),
+                responseHeaders, responseAction, RESPONSE_STATUS_NORMAL);
     }
 
     /**
@@ -340,8 +341,8 @@ public class TestWebServer {
         List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
         responseHeaders.add(Pair.create("Location", targetPath));
 
-        return setResponseInternal(requestPath, targetPath.getBytes(), responseHeaders, null,
-                RESPONSE_STATUS_MOVED_TEMPORARILY);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(targetPath),
+                responseHeaders, null, RESPONSE_STATUS_MOVED_TEMPORARILY);
     }
 
     /**
@@ -382,8 +383,8 @@ public class TestWebServer {
         }
         responseHeaders.add(Pair.create("Connection", "Upgrade"));
         responseHeaders.add(Pair.create("Upgrade", "websocket"));
-        return setResponseInternal(
-                requestPath, "".getBytes(), responseHeaders, null, RESPONSE_STATUS_FOR_WEBSOCKET);
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(""),
+                responseHeaders, null, RESPONSE_STATUS_FOR_WEBSOCKET);
     }
 
     /**

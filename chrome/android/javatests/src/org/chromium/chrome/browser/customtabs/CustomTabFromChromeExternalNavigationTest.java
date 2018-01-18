@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -125,11 +126,14 @@ public class CustomTabFromChromeExternalNavigationTest {
     @LargeTest
     public void testIntentWithRedirectToApp() throws Exception {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
-        final String initialUrl = mTestServer.getURL(
-                "/chrome/test/data/android/redirect/js_redirect.html"
-                + "?replace_text="
-                + Base64.encodeToString("PARAM_URL".getBytes("utf-8"), Base64.URL_SAFE) + ":"
-                + Base64.encodeToString(redirectUrl.getBytes("utf-8"), Base64.URL_SAFE));
+        final String initialUrl =
+                mTestServer.getURL("/chrome/test/data/android/redirect/js_redirect.html"
+                        + "?replace_text="
+                        + Base64.encodeToString(
+                                  ApiCompatibilityUtils.getBytesUtf8("PARAM_URL"), Base64.URL_SAFE)
+                        + ":"
+                        + Base64.encodeToString(ApiCompatibilityUtils.getBytesUtf8(redirectUrl),
+                                  Base64.URL_SAFE));
 
         startActivityCompletely(getCustomTabFromChromeIntent(initialUrl, true));
         mCustomTabActivityTestRule.waitForActivityNativeInitializationComplete();

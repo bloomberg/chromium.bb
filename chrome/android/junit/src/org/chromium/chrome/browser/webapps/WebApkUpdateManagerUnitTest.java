@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBitmap;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -330,8 +331,7 @@ public class WebApkUpdateManagerUnitTest {
         File file = new File(path);
         new File(file.getParent()).mkdirs();
         try (FileOutputStream out = new FileOutputStream(file)) {
-            String text = "something";
-            out.write(text.getBytes());
+            out.write(ApiCompatibilityUtils.getBytesUtf8("something"));
         } catch (Exception e) {
         }
     }

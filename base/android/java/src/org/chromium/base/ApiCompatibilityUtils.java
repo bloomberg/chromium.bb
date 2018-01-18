@@ -41,6 +41,7 @@ import android.view.textclassifier.TextClassifier;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -64,6 +65,18 @@ public class ApiCompatibilityUtils {
      */
     public static int compareBoolean(boolean lhs, boolean rhs) {
         return lhs == rhs ? 0 : lhs ? 1 : -1;
+    }
+
+    /**
+     * {@link String#getBytes()} but specifying UTF-8 as the encoding and capturing the resulting
+     * UnsupportedEncodingException.
+     */
+    public static byte[] getBytesUtf8(String str) {
+        try {
+            return str.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 encoding not available.", e);
+        }
     }
 
     /**
