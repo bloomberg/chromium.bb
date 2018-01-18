@@ -230,7 +230,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
   } else if (device_state_restore_mode ==
              kDeviceStateRestoreModeReEnrollmentZeroTouch) {
     config.mode = EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED;
-    config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
+    config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
     config.management_domain = device_state_management_domain;
   } else if (pref_enrollment_auto_start_present &&
              pref_enrollment_auto_start &&
