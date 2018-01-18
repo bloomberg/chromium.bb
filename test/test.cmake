@@ -444,17 +444,6 @@ function (setup_aom_test_targets)
                                     "AOM_UNIT_TEST_COMMON_INTRIN_NEON")
   endif ()
 
-  if (NOT ENABLE_IDE_TEST_HOSTING)
-    if (MSVC OR XCODE)
-      # Skip creation of test data download and test run targets when generating
-      # for Visual Studio and Xcode unless the user explicitly requests IDE test
-      # hosting. This is done to make build cycles in the IDE tolerable when the
-      # IDE command for build project is used to build AOM. Default behavior in
-      # IDEs is to build all targets, and the test run takes hours.
-      return ()
-    endif ()
-  endif ()
-
   make_test_data_lists("${AOM_UNIT_TEST_DATA_LIST_FILE}"
                        test_files test_file_checksums)
   list(LENGTH test_files num_test_files)
@@ -477,6 +466,17 @@ function (setup_aom_test_targets)
   # Create a custom build target for running each test data download target.
   add_custom_target(testdata)
   add_dependencies(testdata ${testdata_targets})
+
+   if (NOT ENABLE_IDE_TEST_HOSTING)
+    if (MSVC OR XCODE)
+      # Skip creation of test run targets when generating for Visual Studio and
+      # Xcode unless the user explicitly requests IDE test hosting. This is done
+      # to make build cycles in the IDE tolerable when the IDE command for build
+      # project is used to build AOM. Default behavior in
+      # IDEs is to build all targets, and the test run takes hours.
+      return ()
+    endif ()
+  endif ()
 
   # Pick a reasonable number of targets (this controls parallelization).
   ProcessorCount(num_test_targets)
