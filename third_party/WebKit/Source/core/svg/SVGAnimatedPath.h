@@ -51,7 +51,7 @@ class SVGAnimatedPath final : public GarbageCollectedFinalized<SVGAnimatedPath>,
                                css_property_id);
   }
 
-  const CSSValue* CssValue() const;
+  const CSSValue& CssValue() const;
 
  protected:
   SVGAnimatedPath(SVGElement*,

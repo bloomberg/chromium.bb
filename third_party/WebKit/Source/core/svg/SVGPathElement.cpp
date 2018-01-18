@@ -114,7 +114,7 @@ void SVGPathElement::CollectStyleForPresentationAttribute(
     if (const SVGElement* element = CorrespondingElement())
       path = ToSVGPathElement(element)->GetPath();
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
-                                            path->CssValue());
+                                            &path->CssValue());
     return;
   }
   SVGGeometryElement::CollectStyleForPresentationAttribute(name, value, style);
