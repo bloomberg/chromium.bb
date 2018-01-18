@@ -70,7 +70,7 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void TerminateWorkerContext() = 0;
 
   virtual void PauseWorkerContextOnStart() = 0;
-  virtual void GetDevToolsAgent(
+  virtual void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
 };
 

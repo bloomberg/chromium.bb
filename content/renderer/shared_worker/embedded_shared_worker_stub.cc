@@ -321,9 +321,9 @@ void EmbeddedSharedWorkerStub::Terminate() {
   impl_->TerminateWorkerContext();
 }
 
-void EmbeddedSharedWorkerStub::GetDevToolsAgent(
+void EmbeddedSharedWorkerStub::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
-  impl_->GetDevToolsAgent(request.PassHandle());
+  impl_->BindDevToolsAgent(request.PassHandle());
 }
 
 }  // namespace content

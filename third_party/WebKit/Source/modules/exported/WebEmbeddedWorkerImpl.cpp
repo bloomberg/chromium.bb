@@ -224,9 +224,9 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
                              message.column_number, nullptr)));
 }
 
-void WebEmbeddedWorkerImpl::GetDevToolsAgent(
+void WebEmbeddedWorkerImpl::BindDevToolsAgent(
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->GetDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
+  shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
       std::move(devtools_agent_request)));
 }
 

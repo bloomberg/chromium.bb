@@ -162,7 +162,7 @@ class MockSharedWorker : public mojom::SharedWorker {
     // Allow duplicate events.
     terminate_received_ = true;
   }
-  void GetDevToolsAgent(
+  void BindDevToolsAgent(
       blink::mojom::DevToolsAgentAssociatedRequest request) override {
     NOTREACHED();
   }

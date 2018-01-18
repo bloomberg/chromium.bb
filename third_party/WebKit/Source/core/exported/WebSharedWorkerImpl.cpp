@@ -350,9 +350,9 @@ void WebSharedWorkerImpl::PauseWorkerContextOnStart() {
   pause_worker_context_on_start_ = true;
 }
 
-void WebSharedWorkerImpl::GetDevToolsAgent(
+void WebSharedWorkerImpl::BindDevToolsAgent(
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->GetDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
+  shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
       std::move(devtools_agent_request)));
 }
 

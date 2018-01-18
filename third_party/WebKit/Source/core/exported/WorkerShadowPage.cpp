@@ -112,7 +112,7 @@ void WorkerShadowPage::AdvanceState(State new_state) {
   }
 }
 
-void WorkerShadowPage::GetDevToolsAgent(
+void WorkerShadowPage::BindDevToolsAgent(
     mojom::blink::DevToolsAgentAssociatedRequest request) {
   main_frame_->DevToolsAgentImpl()->BindRequest(std::move(request));
 }
