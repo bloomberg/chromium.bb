@@ -285,6 +285,12 @@ CursorRendererUndoer::CursorRendererUndoer() = default;
 
 CursorRendererUndoer::~CursorRendererUndoer() = default;
 
+CursorRendererUndoer::CursorRendererUndoer(CursorRendererUndoer&& other) =
+    default;
+
+CursorRendererUndoer& CursorRendererUndoer::operator=(
+    CursorRendererUndoer&& other) = default;
+
 namespace {
 
 // Returns the rect of pixels in a Chroma plane affected by the given |rect| in

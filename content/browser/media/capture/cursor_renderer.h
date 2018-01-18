@@ -185,6 +185,9 @@ class CONTENT_EXPORT CursorRendererUndoer {
   CursorRendererUndoer();
   ~CursorRendererUndoer();
 
+  CursorRendererUndoer(CursorRendererUndoer&& other);
+  CursorRendererUndoer& operator=(CursorRendererUndoer&& other);
+
   void TakeSnapshot(const media::VideoFrame& frame, const gfx::Rect& rect);
 
   // Restores the frame content to the point where TakeSnapshot() was last
