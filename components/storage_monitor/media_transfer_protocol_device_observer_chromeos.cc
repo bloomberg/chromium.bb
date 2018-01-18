@@ -170,39 +170,40 @@ void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
     const std::string& storage_name) {
   DCHECK(!storage_name.empty());
 
-  // New storage is attached.
-  if (is_attached) {
-    const device::mojom::MtpStorageInfo* mtp_storage_info =
-        get_mtp_storage_info_cb_.Run(storage_name);
-
-    if (!mtp_storage_info)
-      return;
-
-    std::string device_id = GetDeviceIdFromStorageInfo(*mtp_storage_info);
-    base::string16 storage_label =
-        GetDeviceLabelFromStorageInfo(*mtp_storage_info);
-    std::string location = GetDeviceLocationFromStorageName(storage_name);
-    base::string16 vendor_name = base::UTF8ToUTF16(mtp_storage_info->vendor);
-    base::string16 product_name = base::UTF8ToUTF16(mtp_storage_info->product);
-
-    if (device_id.empty() || storage_label.empty())
-      return;
-
-    DCHECK(!base::ContainsKey(storage_map_, location));
-
-    StorageInfo storage_info(device_id, location, storage_label, vendor_name,
-                             product_name, 0);
-    storage_map_[location] = storage_info;
-    notifications_->ProcessAttach(storage_info);
-  } else {
-    // Existing storage is detached.
+  // Existing storage is detached.
+  if (!is_attached) {
     StorageLocationToInfoMap::iterator it =
         storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
     if (it == storage_map_.end())
       return;
     notifications_->ProcessDetach(it->second.device_id());
     storage_map_.erase(it);
+    return;
   }
+
+  // New storage is attached.
+  const device::mojom::MtpStorageInfo* mtp_storage_info =
+    get_mtp_storage_info_cb_.Run(storage_name);
+
+  if (!mtp_storage_info)
+    return;
+
+  std::string device_id = GetDeviceIdFromStorageInfo(*mtp_storage_info);
+  base::string16 storage_label =
+    GetDeviceLabelFromStorageInfo(*mtp_storage_info);
+  std::string location = GetDeviceLocationFromStorageName(storage_name);
+  base::string16 vendor_name = base::UTF8ToUTF16(mtp_storage_info->vendor);
+  base::string16 product_name = base::UTF8ToUTF16(mtp_storage_info->product);
+
+  if (device_id.empty() || storage_label.empty())
+    return;
+
+  DCHECK(!base::ContainsKey(storage_map_, location));
+
+  StorageInfo storage_info(device_id, location, storage_label, vendor_name,
+      product_name, 0);
+  storage_map_[location] = storage_info;
+  notifications_->ProcessAttach(storage_info);
 }
 
 void MediaTransferProtocolDeviceObserverChromeOS::EnumerateStorages() {
