@@ -1000,7 +1000,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebGestureEvent& gesture_event,
-    const ui::LatencyInfo& latency) {
+    const ui::LatencyInfo& latency,
+    const base::Optional<gfx::PointF>& target_location) {
   if (gesture_event.GetType() == blink::WebInputEvent::kGesturePinchBegin) {
     in_touchscreen_gesture_pinch_ = true;
     // If the root view wasn't already receiving the gesture stream, then we
@@ -1058,6 +1059,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // RenderWidgetTargeter. These gesture events should always have a
     // unique_touch_event_id of 0.
     touchscreen_gesture_target_.target = target;
+    DCHECK(target_location.has_value());
+    touchscreen_gesture_target_.delta =
+        target_location.value() - gfx::PointF(gesture_event.x, gesture_event.y);
   } else if (no_matching_id && is_gesture_start) {
     // A long-standing Windows issues where occasionally a GestureStart is
     // encountered with no targets in the event queue. We never had a repro for
@@ -1080,6 +1084,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_.target = result.view;
+    touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
@@ -1101,19 +1106,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     return;
   }
 
+  // TODO(wjmaclean): Add SetPositionInWidget() to WebGestureEvent.
   blink::WebGestureEvent event(gesture_event);
-  gfx::PointF transformed_point;
-  if (root_view->TransformPointToCoordSpaceForView(
-          gesture_event.PositionInWidget(), touchscreen_gesture_target_.target,
-          &transformed_point)) {
-    // TODO(wjmaclean): Add SetPositionInWidget() to WebGestureEvent.
-    event.x = transformed_point.x();
-    event.y = transformed_point.y();
-  } else {
-    // TODO(wjmaclean): we can get here in Android tests. We should figure out
-    // why, then make this a NOTREACHED().
-    LOG(ERROR) << "Unable to convert event coordinates.";
-  }
+  event.x += touchscreen_gesture_target_.delta.x();
+  event.y += touchscreen_gesture_target_.delta.y();
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 }
 
@@ -1152,9 +1148,18 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebGestureEvent& touchpad_gesture_event,
-    const ui::LatencyInfo& latency) {
+    const ui::LatencyInfo& latency,
+    const base::Optional<gfx::PointF>& target_location) {
   if (target) {
     touchpad_gesture_target_.target = target;
+    // TODO(mohsen): Instead of just computing a delta, we should extract the
+    // complete transform. We assume it doesn't change for the duration of the
+    // touchpad gesture sequence, though this could be wrong; a better approach
+    // might be to always transform each point to the
+    // |touchpad_gesture_target_.target| for the duration of the sequence.
+    DCHECK(target_location.has_value());
+    touchpad_gesture_target_.delta =
+        target_location.value() - touchpad_gesture_event.PositionInWidget();
 
     // Abort any scroll bubbling in progress to avoid double entry.
     if (touchpad_gesture_target_.target &&
@@ -1173,19 +1178,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
     return;
   }
 
-  gfx::PointF point_in_target;
-  if (!root_view->TransformPointToCoordSpaceForView(
-          touchpad_gesture_event.PositionInWidget(),
-          touchpad_gesture_target_.target, &point_in_target)) {
-    root_view->GestureEventAck(touchpad_gesture_event,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    return;
-  }
-
   blink::WebGestureEvent gesture_event = touchpad_gesture_event;
   // TODO(mohsen): Add tests to check event location.
-  gesture_event.x = point_in_target.x();
-  gesture_event.y = point_in_target.y();
+  gesture_event.x += touchpad_gesture_target_.delta.x();
+  gesture_event.y += touchpad_gesture_target_.delta.y();
   touchpad_gesture_target_.target->ProcessGestureEvent(gesture_event, latency);
 }
 
@@ -1262,13 +1258,14 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
     if (gesture_event.source_device ==
         blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
-      DispatchTouchscreenGestureEvent(root_view, target, gesture_event,
-                                      latency);
+      DispatchTouchscreenGestureEvent(root_view, target, gesture_event, latency,
+                                      target_location);
       return;
     }
     if (gesture_event.source_device ==
         blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
-      DispatchTouchpadGestureEvent(root_view, target, gesture_event, latency);
+      DispatchTouchpadGestureEvent(root_view, target, gesture_event, latency,
+                                   target_location);
       return;
     }
   }

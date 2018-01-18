@@ -158,7 +158,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
       const blink::WebGestureEvent& touchpad_gesture_event,
-      const ui::LatencyInfo& latency);
+      const ui::LatencyInfo& latency,
+      const base::Optional<gfx::PointF>& target_location);
 
   // MouseMove/Enter/Leave events might need to be processed by multiple frames
   // in different processes for MouseEnter and MouseLeave event handlers to
@@ -216,7 +217,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
       const blink::WebGestureEvent& gesture_event,
-      const ui::LatencyInfo& latency);
+      const ui::LatencyInfo& latency,
+      const base::Optional<gfx::PointF>& target_location);
 
   // RenderWidgetTargeter::Delegate:
   RenderWidgetTargetResult FindTargetSynchronously(
