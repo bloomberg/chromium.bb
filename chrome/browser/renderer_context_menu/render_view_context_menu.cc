@@ -1807,7 +1807,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
   switch (id) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
-      ExecOpenLinkNewTab();
+      OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
+                              WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                              ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
+                              true /* started_from_context_menu */);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
@@ -2261,13 +2264,6 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(GetPrefs(browser_context_));
   return incognito_avail != IncognitoModePrefs::DISABLED;
-}
-
-void RenderViewContextMenu::ExecOpenLinkNewTab() {
-  OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
-                          WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                          ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
-                          true /* started_from_context_menu */);
 }
 
 void RenderViewContextMenu::ExecOpenBookmarkApp() {

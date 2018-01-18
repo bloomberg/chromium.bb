@@ -4069,6 +4069,16 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     document_loader->SetSourceLocation(source_location);
   }
 
+  // Mark the loader as user activated if started from a context menu and the
+  // URLs are matching the user activation persistence rules.
+  if (navigation_state->common_params().started_from_context_menu &&
+      WebDocumentLoader::ShouldPersistUserActivation(
+          url::Origin::Create(navigation_state->common_params().url),
+          url::Origin::Create(
+              navigation_state->common_params().referrer.url))) {
+    document_loader->SetUserActivated();
+  }
+
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
