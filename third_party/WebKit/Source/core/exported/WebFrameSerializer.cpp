@@ -357,7 +357,6 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
 
   String shadow_mode;
   switch (shadow_root.GetType()) {
-    case ShadowRootType::kLegacyUserAgentV0:
     case ShadowRootType::kUserAgentV1:
       // No need to serialize.
       return std::pair<Node*, Element*>();

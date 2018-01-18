@@ -66,8 +66,7 @@ ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
     for (ShadowRoot* root = &YoungestShadowRoot(); root;
          root = root->OlderShadowRoot())
       root->LazyReattachIfAttached();
-  } else if (type == ShadowRootType::V0 ||
-             type == ShadowRootType::kLegacyUserAgentV0) {
+  } else if (type == ShadowRootType::V0) {
     DCHECK(!element_shadow_v0_);
     element_shadow_v0_ = ElementShadowV0::Create(*this);
   }
