@@ -337,8 +337,11 @@ TEST_F(ClearSiteDataThrottleTest, LoadDoNotSaveCookies) {
   throttle.WillProcessResponse(&defer);
   EXPECT_TRUE(defer);
   EXPECT_EQ(1u, console_delegate->messages().size());
-  EXPECT_EQ("Cleared data types: \"cookies\".",
-            console_delegate->messages().front().text);
+  EXPECT_EQ(
+      "Cleared data types: \"cookies\". "
+      "Clearing channel IDs and HTTP authentication cache is currently "
+      "not supported, as it breaks active network connections.",
+      console_delegate->messages().front().text);
   EXPECT_EQ(console_delegate->messages().front().level,
             CONSOLE_MESSAGE_LEVEL_INFO);
   testing::Mock::VerifyAndClearExpectations(&throttle);
@@ -546,10 +549,13 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
     const char* url;
     const char* output;
   } kTestCases[] = {
-      // Successful deletion outputs one line.
+      // Successful deletion outputs one line, and in case of cookies, also
+      // a disclaimer about omitted data (crbug.com/798760).
       {"\"cookies\"", "https://origin1.com/foo",
        "Clear-Site-Data header on 'https://origin1.com/foo': "
-       "Cleared data types: \"cookies\".\n"},
+       "Cleared data types: \"cookies\". "
+       "Clearing channel IDs and HTTP authentication cache is currently "
+       "not supported, as it breaks active network connections.\n"},
 
       // Another successful deletion.
       {"\"storage\"", "https://origin2.com/foo",

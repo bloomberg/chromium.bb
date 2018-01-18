@@ -149,7 +149,8 @@ class UIThreadSiteDataClearer : public BrowsingDataRemover::Observer {
       remover_->RemoveWithFilterAndReply(
           base::Time(), base::Time::Max(),
           BrowsingDataRemover::DATA_TYPE_COOKIES |
-              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
+              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+              BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
           BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
               BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
           std::move(domain_filter_builder), this);
@@ -500,10 +501,15 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
   }
 
   // Pretty-print which types are to be cleared.
-  delegate->AddMessage(
-      current_url,
-      base::StringPrintf(kConsoleMessageCleared, output_types.c_str()),
-      CONSOLE_MESSAGE_LEVEL_INFO);
+  // TODO(crbug.com/798760): Remove the disclaimer about cookies.
+  std::string console_output =
+      base::StringPrintf(kConsoleMessageCleared, output_types.c_str());
+  if (*clear_cookies) {
+    console_output +=
+        " Clearing channel IDs and HTTP authentication cache is currently not"
+        " supported, as it breaks active network connections.";
+  }
+  delegate->AddMessage(current_url, console_output, CONSOLE_MESSAGE_LEVEL_INFO);
 
   return true;
 }

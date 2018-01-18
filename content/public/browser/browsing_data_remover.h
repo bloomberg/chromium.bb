@@ -96,8 +96,14 @@ class BrowsingDataRemover {
     // prohibited from deleting history or downloads.
     DATA_TYPE_NO_CHECKS = 1 << 13,
 
+    // AVOID_CLOSING_CONNECTIONS is a pseudo-datatype indicating that when
+    // deleting COOKIES and CHANNEL IDs, BrowsingDataRemover should skip
+    // storage backends whose deletion would cause closing network connections.
+    // TODO(crbug.com/798760): Remove when fixed.
+    DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 14,
+
     // Embedders can add more datatypes beyond this point.
-    DATA_TYPE_CONTENT_END = DATA_TYPE_NO_CHECKS,
+    DATA_TYPE_CONTENT_END = DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
   };
 
   enum OriginType {

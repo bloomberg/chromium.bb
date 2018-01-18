@@ -335,6 +335,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Channel IDs are not separated for protected and unprotected web
   // origins. We check the origin_type_mask_ to prevent unintended deletion.
   if (remove_mask & DATA_TYPE_CHANNEL_IDS &&
+      !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS) &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
@@ -465,7 +466,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // Auth cache.
-  if (remove_mask & DATA_TYPE_COOKIES) {
+  if ((remove_mask & DATA_TYPE_COOKIES) &&
+      !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS)) {
     scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();

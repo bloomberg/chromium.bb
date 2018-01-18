@@ -406,7 +406,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     const BrowsingDataFilterBuilder& filter_builder,
     int origin_type_mask,
     base::OnceClosure callback) {
-  DCHECK(((remove_mask & ~FILTERABLE_DATA_TYPES) == 0) ||
+  DCHECK(((remove_mask &
+           ~content::BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS &
+           ~FILTERABLE_DATA_TYPES) == 0) ||
          filter_builder.IsEmptyBlacklist());
 
   // Embedder-defined DOM-accessible storage currently contains only
