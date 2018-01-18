@@ -796,11 +796,6 @@ bool FrameFetchContext::IsLoadComplete() const {
   return document_ && document_->LoadEventFinished();
 }
 
-bool FrameFetchContext::PageDismissalEventBeingDispatched() const {
-  return document_ && document_->PageDismissalEventBeingDispatched() !=
-                          Document::kNoDismissal;
-}
-
 bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
     ResourceTimingInfo* info) {
   if (IsDetached())
@@ -819,12 +814,6 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
     return false;
   info->SetInitiatorType(GetFrame()->DeprecatedLocalOwner()->localName());
   return true;
-}
-
-void FrameFetchContext::SendImagePing(const KURL& url) {
-  if (IsDetached())
-    return;
-  PingLoader::LoadImage(GetFrame(), url);
 }
 
 const SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
