@@ -69,12 +69,16 @@
         <div id="source">
           <div class="more-code before" hidden="[[!truncatedBefore_]]">
             [[getLinesNotShownLabel_(
-                truncatedBefore_,'$i18nPolymer{errorLinesNotShown}')]]
+                truncatedBefore_,
+                '$i18nPolymer{errorLinesNotShownSingular}',
+                '$i18nPolymer{errorLinesNotShownPlural}')]]
           </div>
           <span>[[codeText_]]</span>
           <div class="more-code after" hidden="[[!truncatedAfter_]]">
             [[getLinesNotShownLabel_(
-                truncatedAfter_, '$i18nPolymer{errorLinesNotShown}')]]
+                truncatedAfter_,
+                '$i18nPolymer{errorLinesNotShownSingular}',
+                '$i18nPolymer{errorLinesNotShownPlural}')]]
           </div>
         </div>
       </div>
