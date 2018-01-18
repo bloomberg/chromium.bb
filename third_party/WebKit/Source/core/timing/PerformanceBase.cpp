@@ -320,58 +320,84 @@ bool PerformanceBase::AllowsTimingRedirect(
   return true;
 }
 
-void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
+void PerformanceBase::GenerateAndAddResourceTiming(
+    const ResourceTimingInfo& info,
+    const AtomicString& initiator_type) {
   if (IsResourceTimingBufferFull() &&
       !HasObserverFor(PerformanceEntry::kResource))
     return;
+
   ExecutionContext* context = GetExecutionContext();
   const SecurityOrigin* security_origin = GetSecurityOrigin(context);
   if (!security_origin)
     return;
+  AddResourceTiming(
+      GenerateResourceTiming(*security_origin, info, *context),
+      !initiator_type.IsNull() ? initiator_type : info.InitiatorType());
+}
 
+WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
+    const SecurityOrigin& destination_origin,
+    const ResourceTimingInfo& info,
+    ExecutionContext& context_for_use_counter) {
+  // TODO(dcheng): It would be nicer if the performance entries simply held this
+  // data internally, rather than requiring it be marshalled back and forth.
   const ResourceResponse& final_response = info.FinalResponse();
-  bool allow_timing_details =
-      PassesTimingAllowCheck(final_response, *security_origin,
-                             info.OriginalTimingAllowOrigin(), context);
-  double start_time = info.InitialTime();
+  WebResourceTimingInfo result;
+  result.name = info.InitialURL().GetString();
+  result.start_time = info.InitialTime();
+  result.alpn_negotiated_protocol = final_response.AlpnNegotiatedProtocol();
+  result.connection_info = final_response.ConnectionInfoString();
+  result.timing = final_response.GetResourceLoadTiming();
+  result.finish_time = info.LoadFinishTime();
 
-  PerformanceServerTimingVector serverTiming =
-      PerformanceServerTiming::ParseServerTiming(
-          info, allow_timing_details
-                    ? PerformanceServerTiming::ShouldAllowTimingDetails::Yes
-                    : PerformanceServerTiming::ShouldAllowTimingDetails::No);
-  if (serverTiming.size()) {
-    UseCounter::Count(context, WebFeature::kPerformanceServerTiming);
-  }
-
-  if (info.RedirectChain().IsEmpty()) {
-    PerformanceEntry* entry = PerformanceResourceTiming::Create(
-        info, GetTimeOrigin(), start_time, allow_timing_details, serverTiming);
-    NotifyObserversOfEntry(*entry);
-    if (!IsResourceTimingBufferFull())
-      AddResourceTimingBuffer(*entry);
-    return;
-  }
+  result.allow_timing_details = PassesTimingAllowCheck(
+      final_response, destination_origin, info.OriginalTimingAllowOrigin(),
+      &context_for_use_counter);
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
-  bool allow_redirect_details = AllowsTimingRedirect(
-      redirect_chain, final_response, *security_origin, context);
+  if (!redirect_chain.IsEmpty()) {
+    result.allow_redirect_details =
+        AllowsTimingRedirect(redirect_chain, final_response, destination_origin,
+                             &context_for_use_counter);
 
-  if (!allow_redirect_details) {
-    ResourceLoadTiming* final_timing = final_response.GetResourceLoadTiming();
-    DCHECK(final_timing);
-    if (final_timing)
-      start_time = final_timing->RequestTime();
+    result.last_redirect_end_time =
+        redirect_chain.back().GetResourceLoadTiming()->ReceiveHeadersEnd();
+
+    if (!result.allow_redirect_details) {
+      result.start_time = final_response.GetResourceLoadTiming()->RequestTime();
+    }
+  } else {
+    result.allow_redirect_details = false;
+    result.last_redirect_end_time = 0.0;
   }
 
-  ResourceLoadTiming* last_redirect_timing =
-      redirect_chain.back().GetResourceLoadTiming();
-  CHECK(last_redirect_timing);
-  double last_redirect_end_time = last_redirect_timing->ReceiveHeadersEnd();
+  result.transfer_size = info.TransferSize();
+  result.encoded_body_size = final_response.EncodedBodyLength();
+  result.decoded_body_size = final_response.DecodedBodyLength();
+  result.did_reuse_connection = final_response.ConnectionReused();
+  result.allow_negative_values = info.NegativeAllowed();
 
-  PerformanceEntry* entry = PerformanceResourceTiming::Create(
-      info, GetTimeOrigin(), start_time, last_redirect_end_time,
-      allow_timing_details, allow_redirect_details, serverTiming);
+  result.server_timing = PerformanceServerTiming::ParseServerTiming(
+      info, result.allow_timing_details
+                ? PerformanceServerTiming::ShouldAllowTimingDetails::Yes
+                : PerformanceServerTiming::ShouldAllowTimingDetails::No);
+  if (!result.server_timing.empty()) {
+    UseCounter::Count(&context_for_use_counter,
+                      WebFeature::kPerformanceServerTiming);
+  }
+
+  return result;
+}
+
+void PerformanceBase::AddResourceTiming(const WebResourceTimingInfo& info,
+                                        const AtomicString& initiator_type) {
+  if (IsResourceTimingBufferFull() &&
+      !HasObserverFor(PerformanceEntry::kResource))
+    return;
+
+  PerformanceEntry* entry =
+      PerformanceResourceTiming::Create(info, GetTimeOrigin(), initiator_type);
   NotifyObserversOfEntry(*entry);
   if (!IsResourceTimingBufferFull())
     AddResourceTimingBuffer(*entry);

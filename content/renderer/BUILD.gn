@@ -403,6 +403,8 @@ target(link_target_type, "renderer") {
     "renderer_webcookiejar_impl.h",
     "resizing_mode_selector.cc",
     "resizing_mode_selector.h",
+    "resource_timing_info_conversions.cc",
+    "resource_timing_info_conversions.h",
     "sad_plugin.cc",
     "sad_plugin.h",
     "savable_resources.cc",

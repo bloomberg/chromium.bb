@@ -65,7 +65,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
   double InitialTime() const { return initial_time_; }
   bool IsMainResource() const { return is_main_resource_; }
 
-  void SetInitiatorType(const AtomicString& type) { type_ = type; }
   const AtomicString& InitiatorType() const { return type_; }
 
   void SetOriginalTimingAllowOrigin(

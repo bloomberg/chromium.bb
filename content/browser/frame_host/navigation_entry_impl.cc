@@ -709,7 +709,6 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     const std::string& original_method,
     bool is_history_navigation_in_new_child,
     const std::map<std::string, bool>& subframe_unique_names,
-    bool has_committed_real_load,
     bool intended_as_new_entry,
     int pending_history_list_offset,
     int current_history_list_offset,
@@ -737,9 +736,8 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
       GetIsOverridingUserAgent(), redirects, original_url, original_method,
       GetCanLoadLocalResources(), frame_entry.page_state(), GetUniqueID(),
       is_history_navigation_in_new_child, subframe_unique_names,
-      has_committed_real_load, intended_as_new_entry, pending_offset_to_send,
-      current_offset_to_send, current_length_to_send, IsViewSourceMode(),
-      should_clear_history_list());
+      intended_as_new_entry, pending_offset_to_send, current_offset_to_send,
+      current_length_to_send, IsViewSourceMode(), should_clear_history_list());
 #if defined(OS_ANDROID)
   if (GetDataURLAsString() &&
       GetDataURLAsString()->size() <= kMaxLengthOfDataURLString) {

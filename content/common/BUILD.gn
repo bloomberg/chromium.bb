@@ -262,6 +262,8 @@ source_set("common") {
     "resize_params.cc",
     "resize_params.h",
     "resource_messages.h",
+    "resource_timing_info.cc",
+    "resource_timing_info.h",
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",

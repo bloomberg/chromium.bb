@@ -204,7 +204,8 @@ class CONTENT_EXPORT RenderFrameImpl
       CompositorDependencies* compositor_deps,
       blink::WebFrame* opener,
       const base::UnguessableToken& devtools_frame_token,
-      const FrameReplicationState& replicated_state);
+      const FrameReplicationState& replicated_state,
+      bool has_committed_real_load);
 
   // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into
@@ -236,7 +237,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const FrameReplicationState& replicated_state,
       CompositorDependencies* compositor_deps,
       const mojom::CreateFrameWidgetParams& params,
-      const FrameOwnerProperties& frame_owner_properties);
+      const FrameOwnerProperties& frame_owner_properties,
+      bool has_committed_real_load);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);
@@ -647,6 +649,8 @@ class CONTENT_EXPORT RenderFrameImpl
                              bool content_initiated) override;
   void DidUpdateCurrentHistoryItem() override;
   void DidChangeThemeColor() override;
+  void ForwardResourceTimingToParent(
+      const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
   void SetEffectiveConnectionTypeForTesting(

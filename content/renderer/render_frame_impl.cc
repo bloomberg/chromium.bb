@@ -135,6 +135,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
+#include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
@@ -1076,7 +1077,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     CompositorDependencies* compositor_deps,
     blink::WebFrame* opener,
     const base::UnguessableToken& devtools_frame_token,
-    const FrameReplicationState& replicated_state) {
+    const FrameReplicationState& replicated_state,
+    bool has_committed_real_load) {
   // A main frame RenderFrame must have a RenderWidget.
   DCHECK_NE(MSG_ROUTING_NONE, widget_routing_id);
 
@@ -1091,6 +1093,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       // WebString...
       WebString::FromUTF8(replicated_state.name),
       replicated_state.frame_policy.sandbox_flags);
+  if (has_committed_real_load)
+    web_frame->SetCommittedFirstRealLoad();
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
       widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
   // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
@@ -1113,7 +1117,8 @@ void RenderFrameImpl::CreateFrame(
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
     const mojom::CreateFrameWidgetParams& widget_params,
-    const FrameOwnerProperties& frame_owner_properties) {
+    const FrameOwnerProperties& frame_owner_properties,
+    bool has_committed_real_load) {
   blink::WebLocalFrame* web_frame;
   RenderFrameImpl* render_frame;
   if (proxy_routing_id == MSG_ROUTING_NONE) {
@@ -1185,6 +1190,9 @@ void RenderFrameImpl::CreateFrame(
         widget_params.routing_id, widget_params.hidden,
         render_frame->render_view_->screen_info(), compositor_deps, web_frame);
   }
+
+  if (has_committed_real_load)
+    web_frame->SetCommittedFirstRealLoad();
 
   render_frame->Initialize();
 }
@@ -3114,13 +3122,6 @@ void RenderFrameImpl::CommitNavigation(
   GetContentClient()->SetActiveURL(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  // If this frame is navigating cross-process, it may naively assume that this
-  // is the first navigation in the frame, but this may not actually be the
-  // case. Inform the frame's state machine if this frame has already committed
-  // other loads.
-  if (request_params.has_committed_real_load)
-    frame_->SetCommittedFirstRealLoad();
-
   // TODO(clamy): This may not be needed now that PlzNavigate has shipped.
   if (is_reload && current_history_item_.IsNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
@@ -3329,13 +3330,6 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   if (subresource_loader_factories)
     subresource_loader_factories_ = std::move(subresource_loader_factories);
-
-  // If this frame is navigating cross-process, it may naively assume that this
-  // is the first navigation in the frame, but this may not actually be the
-  // case. Inform the frame's state machine if this frame has already committed
-  // other loads.
-  if (request_params.has_committed_real_load)
-    frame_->SetCommittedFirstRealLoad();
 
   pending_navigation_params_.reset(
       new NavigationParams(common_params, request_params));
@@ -4579,6 +4573,12 @@ void RenderFrameImpl::DidChangeThemeColor() {
 
   Send(new FrameHostMsg_DidChangeThemeColor(
       routing_id_, frame_->GetDocument().ThemeColor()));
+}
+
+void RenderFrameImpl::ForwardResourceTimingToParent(
+    const blink::WebResourceTimingInfo& info) {
+  Send(new FrameHostMsg_ForwardResourceTimingToParent(
+      routing_id_, WebResourceTimingInfoToResourceTimingInfo(info)));
 }
 
 void RenderFrameImpl::DispatchLoad() {

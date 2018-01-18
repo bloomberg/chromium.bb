@@ -192,7 +192,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const std::string& original_method,
       bool is_history_navigation_in_new_child,
       const std::map<std::string, bool>& subframe_unique_names,
-      bool has_committed_real_load,
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,

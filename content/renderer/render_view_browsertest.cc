@@ -798,7 +798,7 @@ TEST_F(RenderViewImplScaleFactorTest, UpdateDSFAfterSwapIn) {
       routing_id, std::move(stub_interface_provider), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
-      widget_params, FrameOwnerProperties());
+      widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);
@@ -848,7 +848,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       routing_id, std::move(stub_interface_provider), kProxyRoutingId,
       MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
-      widget_params, FrameOwnerProperties());
+      widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));

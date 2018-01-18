@@ -295,6 +295,13 @@ bool RenderViewHostImpl::CreateRenderView(
     base::debug::DumpWithoutCrashing();
   }
 
+  RenderFrameHostImpl* main_rfh = nullptr;
+  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
+    main_rfh = RenderFrameHostImpl::FromID(GetProcess()->GetID(),
+                                           main_frame_routing_id_);
+    DCHECK(main_rfh);
+  }
+
   GetWidget()->set_renderer_initialized(true);
 
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
@@ -304,10 +311,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
   params->main_frame_routing_id = main_frame_routing_id_;
-  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* main_rfh = RenderFrameHostImpl::FromID(
-        GetProcess()->GetID(), main_frame_routing_id_);
-    DCHECK(main_rfh);
+  if (main_rfh) {
     main_rfh->BindInterfaceProviderRequest(
         mojo::MakeRequest(&params->main_frame_interface_provider));
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
@@ -324,6 +328,10 @@ bool RenderViewHostImpl::CreateRenderView(
                               : GetWidget()->delegate()->IsHidden();
   params->never_visible = delegate_->IsNeverVisible();
   params->window_was_created_with_opener = window_was_created_with_opener;
+  if (main_rfh) {
+    params->has_committed_real_load =
+        main_rfh->frame_tree_node()->has_committed_real_load();
+  }
   params->enable_auto_resize = GetWidget()->auto_resize_enabled();
   params->min_size = GetWidget()->min_size_for_auto_resize();
   params->max_size = GetWidget()->max_size_for_auto_resize();
@@ -343,10 +351,8 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // Since this method can create the main RenderFrame in the renderer process,
   // set the proper state on its corresponding RenderFrameHost.
-  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_routing_id_)
-        ->SetRenderFrameCreated(true);
-  }
+  if (main_rfh)
+    main_rfh->SetRenderFrameCreated(true);
   GetWidget()->delegate()->SendScreenRects();
   PostRenderViewReady();
 

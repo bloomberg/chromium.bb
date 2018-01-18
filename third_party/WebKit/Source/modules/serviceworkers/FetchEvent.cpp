@@ -197,7 +197,7 @@ void FetchEvent::OnNavigationPreloadComplete(
   info->SetFinalResponse(resource_response);
   info->AddFinalTransferSize(encoded_data_length);
   WorkerGlobalScopePerformance::performance(*worker_global_scope)
-      ->AddResourceTiming(*info);
+      ->GenerateAndAddResourceTiming(*info);
 }
 
 void FetchEvent::Trace(blink::Visitor* visitor) {

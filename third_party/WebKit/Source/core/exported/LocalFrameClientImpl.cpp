@@ -629,6 +629,11 @@ void LocalFrameClientImpl::DidStopLoading() {
     web_frame_->Client()->DidStopLoading();
 }
 
+void LocalFrameClientImpl::ForwardResourceTimingToParent(
+    const WebResourceTimingInfo& info) {
+  web_frame_->Client()->ForwardResourceTimingToParent(info);
+}
+
 void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request,
                                        const String& suggested_name) {
   if (!web_frame_->Client())

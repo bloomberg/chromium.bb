@@ -184,7 +184,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int nav_entry_id,
                           bool is_history_navigation_in_new_child,
                           std::map<std::string, bool> subframe_unique_names,
-                          bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
                           int current_history_list_offset,
@@ -243,12 +242,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // TODO(creis): Expand this to a data structure including corresponding
   // same-process PageStates for the whole subtree in https://crbug.com/639842.
   std::map<std::string, bool> subframe_unique_names;
-
-  // Whether the frame being navigated has already committed a real page, which
-  // affects how new navigations are classified in the renderer process.
-  // This currently is only ever set to true in --site-per-process mode.
-  // TODO(creis): Create FrameNavigationEntries by default so this always works.
-  bool has_committed_real_load;
 
   // For browser-initiated navigations, this is true if this is a new entry
   // being navigated to. This is false otherwise. TODO(avi): Remove this when

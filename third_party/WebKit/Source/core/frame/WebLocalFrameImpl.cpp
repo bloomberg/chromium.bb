@@ -1971,16 +1971,6 @@ HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
   return result;
 }
 
-static void EnsureFrameLoaderHasCommitted(FrameLoader& frame_loader) {
-  // Internally, Blink uses CommittedMultipleRealLoads to track whether the
-  // next commit should create a new history item or not. Ensure we have
-  // reached that state.
-  if (frame_loader.StateMachine()->CommittedMultipleRealLoads())
-    return;
-  frame_loader.StateMachine()->AdvanceTo(
-      FrameLoaderStateMachine::kCommittedMultipleRealLoads);
-}
-
 void WebLocalFrameImpl::SetAutofillClient(WebAutofillClient* autofill_client) {
   autofill_client_ = autofill_client;
 }
@@ -2186,7 +2176,9 @@ bool WebLocalFrameImpl::IsNavigationScheduledWithin(
 
 void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
   DCHECK(GetFrame());
-  EnsureFrameLoaderHasCommitted(GetFrame()->Loader());
+  GetFrame()->Loader().StateMachine()->AdvanceTo(
+      FrameLoaderStateMachine::kCommittedMultipleRealLoads);
+  GetFrame()->DidSendResourceTimingInfoToParent();
 }
 
 void WebLocalFrameImpl::SetHasReceivedUserGesture() {

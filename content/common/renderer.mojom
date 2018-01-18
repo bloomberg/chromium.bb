@@ -75,6 +75,9 @@ struct CreateViewParams {
   // Whether the window associated with this view was created with an opener.
   bool window_was_created_with_opener;
 
+  // Whether or not the frame has previously committed a real load.
+  bool has_committed_real_load;
+
   // The initial renderer size.
   ResizeParams initial_size;
 
@@ -155,6 +158,9 @@ struct CreateFrameParams {
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
   CreateFrameWidgetParams widget_params;
+
+  // Whether or not the frame has previously committed a real load.
+  bool has_committed_real_load;
 };
 
 struct UpdateScrollbarThemeParams {

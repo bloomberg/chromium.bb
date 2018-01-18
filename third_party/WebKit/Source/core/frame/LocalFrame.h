@@ -115,7 +115,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
                 UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&) override;
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
-  void AddResourceTiming(const ResourceTimingInfo&) override;
   void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
@@ -297,6 +296,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void ForceSynchronousDocumentInstall(const AtomicString& mime_type,
                                        scoped_refptr<SharedBuffer> data);
 
+  bool should_send_resource_timing_info_to_parent() const {
+    return should_send_resource_timing_info_to_parent_;
+  }
+  void DidSendResourceTimingInfoToParent() {
+    should_send_resource_timing_info_to_parent_ = false;
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -338,6 +344,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const Member<TextSuggestionController> text_suggestion_controller_;
 
   int navigation_disable_count_;
+  // TODO(dcheng): In theory, this could be replaced by checking the
+  // FrameLoaderStateMachine if a real load has committed. Unfortunately, the
+  // internal state tracked there is incorrect today. See
+  // https://crbug.com/778318.
+  bool should_send_resource_timing_info_to_parent_ = true;
 
   float page_zoom_factor_;
   float text_zoom_factor_;
