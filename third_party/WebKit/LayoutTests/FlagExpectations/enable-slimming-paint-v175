@@ -115,7 +115,6 @@ crbug.com/771643 virtual/exotic-color-space/images/cross-fade-invalidation.html 
 crbug.com/771643 virtual/exotic-color-space/images/drag-image-transformed-parent.html [ Failure ]
 crbug.com/771643 virtual/gpu-rasterization/images/cross-fade-invalidation.html [ Failure ]
 crbug.com/771643 virtual/gpu-rasterization/images/drag-image-transformed-parent.html [ Failure ]
-crbug.com/771643 virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Timeout ]
 crbug.com/771643 virtual/rootlayerscrolls/scrollbars/border-box-rect-clips-scrollbars.html [ Failure ]
 crbug.com/771643 virtual/rootlayerscrolls/scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
 crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
