@@ -167,6 +167,14 @@ constexpr char kVirtualFileRequestServiceHandleReadRequestMethod[] =
 constexpr char kVirtualFileRequestServiceHandleIdReleasedMethod[] =
     "HandleIdReleased";
 
+const char kChromeFeaturesServiceName[] = "org.chromium.ChromeFeaturesService";
+const char kChromeFeaturesServicePath[] = "/org/chromium/ChromeFeaturesService";
+const char kChromeFeaturesServiceInterface[] =
+    "org.chromium.ChromeFeaturesServiceInterface";
+// Methods
+const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
+    "IsCrostiniEnabled";
+
 }  // namespace chromeos
 
 namespace cromo {
