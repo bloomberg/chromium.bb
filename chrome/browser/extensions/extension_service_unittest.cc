@@ -4423,6 +4423,60 @@ TEST_F(ExtensionServiceTest, ExternalExtensionIsNotDisabledOnUpdate) {
             prefs->GetDisableReasons(good_crx));
 }
 
+// Test that if an external extension warning is ignored three times, the
+// extension no longer prompts
+TEST_F(ExtensionServiceTest, ExternalExtensionRemainsDisabledIfIgnored) {
+  FeatureSwitch::ScopedOverride prompt_override(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  InitializeEmptyExtensionService();
+
+  // Register and install an external extension.
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_PREF);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir().AppendASCII("good.crx"));
+
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_EXTERNAL_EXTENSION,
+            prefs->GetDisableReasons(good_crx));
+
+  extensions::ExternalInstallManager* external_install_manager =
+      service()->external_install_manager();
+
+  for (int i = 0; i < 3; ++i) {
+    std::vector<ExternalInstallError*> errors =
+        external_install_manager->GetErrorsForTesting();
+    ASSERT_EQ(1u, errors.size());
+    errors[0]->OnInstallPromptDone(ExtensionInstallPrompt::Result::ABORTED);
+    base::RunLoop().RunUntilIdle();
+    // Note: Calling OnInstallPromptDone() can result in the removal of the
+    // error by the manager (which owns the object), so the contents |errors|
+    // are invalidated now!
+    EXPECT_TRUE(external_install_manager->GetErrorsForTesting().empty());
+    external_install_manager->ClearShownIdsForTesting();
+    external_install_manager->UpdateExternalExtensionAlert();
+  }
+
+  // We should have stopped prompting, since the user was shown the warning
+  // three times.
+  EXPECT_TRUE(external_install_manager->GetErrorsForTesting().empty());
+  EXPECT_TRUE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_EXTERNAL_EXTENSION,
+            prefs->GetDisableReasons(good_crx));
+
+  // The extension should remain disabled.
+  service()->ReloadExtensionsForTest();
+  EXPECT_TRUE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_EXTERNAL_EXTENSION,
+            prefs->GetDisableReasons(good_crx));
+}
+
 #if !defined(OS_CHROMEOS)
 // This tests if default apps are installed correctly.
 TEST_F(ExtensionServiceTest, DefaultAppsInstall) {

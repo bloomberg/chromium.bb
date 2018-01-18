@@ -122,7 +122,8 @@ void ExternalInstallManager::RemoveExternalInstallError(
     if (iter->second.get() == currently_visible_install_alert_)
       currently_visible_install_alert_ = nullptr;
     errors_.erase(iter);
-    unacknowledged_ids_.erase(extension_id_copy);
+    // No need to erase the ID from |unacknowledged_ids_|; it's already in
+    // |shown_ids_|.
     UpdateExternalExtensionAlert();
   }
 }
@@ -192,6 +193,10 @@ ExternalInstallManager::GetErrorsForTesting() {
   for (auto const& error : errors_)
     errors.push_back(error.second.get());
   return errors;
+}
+
+void ExternalInstallManager::ClearShownIdsForTesting() {
+  shown_ids_.clear();
 }
 
 void ExternalInstallManager::OnExtensionLoaded(

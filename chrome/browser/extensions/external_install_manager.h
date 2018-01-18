@@ -64,6 +64,9 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   // Returns a mutable copy of the list of global errors for testing purposes.
   std::vector<ExternalInstallError*> GetErrorsForTesting();
 
+  // Clears the record of shown IDs for testing.
+  void ClearShownIdsForTesting();
+
  private:
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
