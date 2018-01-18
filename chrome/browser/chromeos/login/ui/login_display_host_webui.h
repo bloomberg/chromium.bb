@@ -31,7 +31,6 @@
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
-class AccountId;
 class ScopedKeepAlive;
 
 namespace ash {
@@ -40,7 +39,6 @@ class FocusRingController;
 
 namespace chromeos {
 
-class ArcKioskController;
 class LoginDisplayWebUI;
 class WebUILoginView;
 
@@ -74,7 +72,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   void OnStartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
-  void StartArcKiosk(const AccountId& account_id) override;
+  void OnStartArcKiosk() override;
   bool IsVoiceInteractionOobe() override;
   void StartVoiceInteractionOobe() override;
 
@@ -195,9 +193,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   std::unique_ptr<WizardController> wizard_controller_;
 
   std::unique_ptr<SignInScreenController> signin_screen_controller_;
-
-  // ARC kiosk controller.
-  std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;

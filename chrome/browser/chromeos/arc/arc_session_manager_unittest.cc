@@ -127,7 +127,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
       const chromeos::LoginScreenContext& context) override {}
   void OnPreferencesChanged() override {}
   void OnStartAppLaunch() override {}
-  void StartArcKiosk(const AccountId& account_id) override {}
+  void OnStartArcKiosk() override {}
   void StartVoiceInteractionOobe() override {
     is_voice_interaction_oobe_ = true;
   }

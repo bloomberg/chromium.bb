@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
 
+#include <string>
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -102,7 +105,7 @@ void LoginDisplayHostViews::OnStartAppLaunch() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::StartArcKiosk(const AccountId& account_id) {
+void LoginDisplayHostViews::OnStartArcKiosk() {
   NOTIMPLEMENTED();
 }
 

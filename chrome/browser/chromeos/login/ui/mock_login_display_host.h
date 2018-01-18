@@ -47,7 +47,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(PrewarmAuthentication, void(void));
   MOCK_METHOD0(OnStartAppLaunch, void());
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
-  MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
+  MOCK_METHOD0(OnStartArcKiosk, void());
   MOCK_METHOD0(StartVoiceInteractionOobe, void(void));
   MOCK_METHOD0(IsVoiceInteractionOobe, bool(void));
 
