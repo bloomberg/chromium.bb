@@ -55,7 +55,7 @@ void DataUseAscriber::OnNetworkBytesReceived(net::URLRequest* request,
     observer.OnNetworkBytesUpdate(*request, &recorder->data_use());
 }
 
-void DataUseAscriber::OnUrlRequestCompleted(const net::URLRequest& request,
+void DataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
                                             bool started) {}
 
 void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {

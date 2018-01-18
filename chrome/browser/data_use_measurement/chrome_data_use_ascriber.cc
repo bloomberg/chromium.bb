@@ -189,40 +189,48 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   return entry;
 }
 
-void ChromeDataUseAscriber::OnUrlRequestCompleted(
-    const net::URLRequest& request,
-    bool started) {
+void ChromeDataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
+                                                  bool started) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  ChromeDataUseRecorder* recorder = GetDataUseRecorder(request);
-
-  if (!recorder)
-    return;
-
-  for (auto& observer : observers_)
-    observer.OnPageResourceLoad(request, &recorder->data_use());
-
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(&request);
-  if (!request_info ||
-      request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME) {
-    return;
-  }
-
-  // If mainframe request was not successful, then NavigationHandle in
-  // DidFinishMainFrameNavigation will not have GlobalRequestID. So we erase the
-  // DataUseRecorderEntry here.
-  if (!request.status().is_success())
-    pending_navigation_data_use_map_.erase(recorder->main_frame_request_id());
-}
-
-void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(request);
 
   const DataUseRecorderEntry entry = GetDataUseRecorderEntry(request);
 
   if (entry == data_use_recorders_.end())
     return;
+
+  for (auto& observer : observers_)
+    observer.OnPageResourceLoad(*request, &entry->data_use());
+
+  OnUrlRequestCompletedOrDestroyed(request);
+}
+
+void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
+  OnUrlRequestCompletedOrDestroyed(request);
+}
+
+void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
+    net::URLRequest* request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(request);
+
+  const DataUseRecorderEntry entry = GetDataUseRecorderEntry(request);
+
+  if (entry == data_use_recorders_.end())
+    return;
+
+  {
+    const content::ResourceRequestInfo* request_info =
+        content::ResourceRequestInfo::ForRequest(request);
+    if (request_info &&
+        request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
+        !request->status().is_success()) {
+      // If mainframe request was not successful, then NavigationHandle in
+      // DidFinishMainFrameNavigation will not have GlobalRequestID. So we erase
+      // the DataUseRecorderEntry here.
+      pending_navigation_data_use_map_.erase(entry->main_frame_request_id());
+    }
+  }
 
   const auto main_frame_it =
       main_render_frame_entry_map_.find(entry->main_frame_id());
@@ -432,9 +440,6 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
     // subresource requests started and get asribed to |old_frame_entry|. Move
     // these requests that started after |time| but ascribed to the previous
     // page load to page load |entry|.
-    // TODO(rajendrant): This does not move completed requests. It is possible
-    // that requests could complete (more likely for cached requests) before
-    // this code is executed. crbug.com/738522
     std::vector<net::URLRequest*> pending_url_requests;
     old_frame_entry->GetPendingURLRequests(&pending_url_requests);
     for (net::URLRequest* request : pending_url_requests) {
