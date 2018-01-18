@@ -59,6 +59,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // account.
   AccountInfo GetPrimaryAccountInfo();
 
+  // Returns whether the primary account is available, according to the latest
+  // cached information. Simple convenience wrapper over checking whether the
+  // primary account info has a valid account ID.
+  bool HasPrimaryAccount();
+
   // Creates a PrimaryAccountAccessTokenFetcher given the passed-in information.
   std::unique_ptr<PrimaryAccountAccessTokenFetcher>
   CreateAccessTokenFetcherForPrimaryAccount(
