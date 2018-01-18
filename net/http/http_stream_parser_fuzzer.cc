@@ -25,6 +25,7 @@
 #include "net/log/test_net_log.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/fuzzed_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "url/gurl.h"
 
 // Fuzzer for HttpStreamParser.
@@ -52,9 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                bound_test_net_log.bound());
 
   net::HttpResponseInfo response_info;
-  int result =
-      parser.SendRequest("GET / HTTP/1.1\r\n", net::HttpRequestHeaders(),
-                         &response_info, callback.callback());
+  int result = parser.SendRequest(
+      "GET / HTTP/1.1\r\n", net::HttpRequestHeaders(),
+      TRAFFIC_ANNOTATION_FOR_TESTS, &response_info, callback.callback());
   result = callback.GetResult(result);
   if (net::OK != result)
     return 0;

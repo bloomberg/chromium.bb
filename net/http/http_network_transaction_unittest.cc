@@ -97,6 +97,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/net_test_suite.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15982,7 +15983,8 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
                   HttpResponseInfo* response,
                   const CompletionCallback& callback) override {
     return parser()->SendRequest(state_.GenerateRequestLine(), request_headers,
-                                 response, callback);
+                                 TRAFFIC_ANNOTATION_FOR_TESTS, response,
+                                 callback);
   }
 
   int ReadResponseHeaders(const CompletionCallback& callback) override {

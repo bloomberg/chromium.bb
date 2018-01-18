@@ -21,6 +21,7 @@
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/token_binding.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -61,6 +62,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // some additional functionality
   int SendRequest(const std::string& request_line,
                   const HttpRequestHeaders& headers,
+                  const NetworkTrafficAnnotationTag& traffic_annotation,
                   HttpResponseInfo* response,
                   const CompletionCallback& callback);
 
@@ -283,6 +285,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   // Error received when uploading the body, if any.
   int upload_error_;
+
+  MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<HttpStreamParser> weak_ptr_factory_;
 
