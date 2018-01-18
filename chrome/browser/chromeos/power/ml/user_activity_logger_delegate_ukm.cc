@@ -28,6 +28,22 @@ int UserActivityLoggerDelegateUkm::BucketEveryFivePercents(int original_value) {
   return 5 * (original_value / 5);
 }
 
+int UserActivityLoggerDelegateUkm::ExponentiallyBucketTimestamp(
+    int timestamp_sec) {
+  DCHECK_GE(timestamp_sec, 0);
+  if (timestamp_sec < 60)
+    return timestamp_sec;
+
+  if (timestamp_sec < 300) {
+    return 10 * (timestamp_sec / 10);
+  }
+
+  if (timestamp_sec < 600) {
+    return 20 * (timestamp_sec / 20);
+  }
+  return 600;
+}
+
 UserActivityLoggerDelegateUkm::UserActivityLoggerDelegateUkm()
     : ukm_recorder_(ukm::UkmRecorder::Get()) {}
 
@@ -93,6 +109,8 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   ukm::builders::UserActivity user_activity(source_id);
   user_activity.SetEventType(event.event().type())
       .SetEventReason(event.event().reason())
+      .SetEventLogDuration(
+          ExponentiallyBucketTimestamp(event.event().log_duration_sec()))
       .SetLastActivityTime(
           std::floor(event.features().last_activity_time_sec() / 3600))
       .SetLastActivityDay(event.features().last_activity_day())

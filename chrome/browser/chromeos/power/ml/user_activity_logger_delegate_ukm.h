@@ -24,6 +24,14 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
   // |original_value| should be in the range of [0, 100].
   static int BucketEveryFivePercents(int original_value);
 
+  // Bucket |timestamp_sec| such that
+  // 1. if |timestamp_sec| < 60sec, return original value.
+  // 2. if |timestamp_sec| < 5min, bucket to nearest 10sec.
+  // 3. if |timestamp_sec| < 10min, bucket to nearest 20sec.
+  // 4. if |timestamp_sec| >= 10min, cap it at 10min.
+  // In all cases, the returned value is in seconds.
+  static int ExponentiallyBucketTimestamp(int timestamp_sec);
+
   UserActivityLoggerDelegateUkm();
   ~UserActivityLoggerDelegateUkm() override;
 
