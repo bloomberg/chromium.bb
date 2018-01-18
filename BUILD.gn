@@ -725,7 +725,7 @@ group("gn_all") {
       "//chrome/browser/vr:vr_common_unittests",
       "//chrome/browser/vr:vr_pixeltests",
     ]
-    if (is_linux && use_ozone) {
+    if (is_desktop_linux && use_ozone) {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
     }
     if (is_android) {
