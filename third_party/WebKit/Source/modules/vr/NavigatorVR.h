@@ -82,6 +82,10 @@ class MODULES_EXPORT NavigatorVR final
   // Whether this page is listening for vrdisplayactivate event.
   bool listening_for_activate_ = false;
   bool focused_ = false;
+
+  // Metrics data - indicates whether we've already measured this data so we
+  // don't do it every frame.
+  bool did_log_getVRDisplays_ = false;
 };
 
 }  // namespace blink

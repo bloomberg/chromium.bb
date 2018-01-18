@@ -2500,4 +2500,35 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="XR.WebXR" singular="True">
+  <owner>billorr@chromium.org</owner>
+  <metric name="DidRequestAvailableDevices">
+    <summary>
+      Boolean value that indicates that the API to enumerate devices was called.
+    </summary>
+  </metric>
+  <metric name="DidRequestPose">
+    <summary>
+      Boolean value that indicates that poses were requested.
+    </summary>
+  </metric>
+  <metric name="DidRequestPresentation">
+    <summary>
+      Boolean value that indicates that presentation was requested.
+    </summary>
+  </metric>
+  <metric name="ReturnedDevice">
+    <summary>
+      Boolean value that indicates that a device was returned by the API to
+      enumerate devices.
+    </summary>
+  </metric>
+  <metric name="ReturnedPresentationCapableDevice">
+    <summary>
+      Boolean value that indicates that a device was returned by the API to
+      enumerate devices, and that the device supports presentation.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

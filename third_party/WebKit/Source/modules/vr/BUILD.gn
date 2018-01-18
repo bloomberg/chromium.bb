@@ -30,5 +30,6 @@ blink_modules_sources("vr") {
 
   deps = [
     "//device/vr:mojo_bindings_blink",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }

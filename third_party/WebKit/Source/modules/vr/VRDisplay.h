@@ -214,6 +214,11 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool display_blurred_ = false;
   bool pending_present_request_ = false;
 
+  // Metrics data - indicates whether we've already measured this data so we
+  // don't do it every frame.
+  bool did_log_getFrameData_ = false;
+  bool did_log_requestPresent_ = false;
+
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
 
