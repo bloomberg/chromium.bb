@@ -3053,4 +3053,92 @@ TEST_F(
   EXPECT_EQ(1u, input->selectionEnd());
 }
 
+TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
+  Vector<std::pair<String, int>> element_and_expected_flags_pairs = {
+      {"<input type='text'>", kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='text' autocapitalize='none'>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='text' autocapitalize='characters'>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<input type='text' autocapitalize='sentences'>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='text' autocapitalize='words'>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<input type='search'>", kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='search' autocapitalize='none'>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='search' autocapitalize='characters'>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<input type='search' autocapitalize='sentences'>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='search' autocapitalize='words'>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<input type='email'>", kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='email' autocapitalize='none'>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='email' autocapitalize='characters'>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<input type='email' autocapitalize='sentences'>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='email' autocapitalize='words'>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<input type='url'>", kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='url' autocapitalize='none'>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='url' autocapitalize='characters'>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<input type='url' autocapitalize='sentences'>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='url' autocapitalize='words'>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<input type='password'>", kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='password' autocapitalize='none'>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<input type='password' autocapitalize='characters'>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<input type='password' autocapitalize='sentences'>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<input type='password' autocapitalize='words'>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<textarea></textarea>", kWebTextInputFlagAutocapitalizeSentences},
+      {"<textarea autocapitalize='none'></textarea>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<textarea autocapitalize='characters'></textarea>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<textarea autocapitalize='sentences'></textarea>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<textarea autocapitalize='words'></textarea>",
+       kWebTextInputFlagAutocapitalizeWords},
+
+      {"<div contenteditable></div>", 0},
+      {"<div contenteditable autocapitalize='none'></div>", 0},
+      {"<div contenteditable autocapitalize='characters'></div>", 0},
+      {"<div contenteditable autocapitalize='sentences'></div>", 0},
+      {"<div contenteditable autocapitalize='words'></div>", 0},
+  };
+
+  const int autocapitalize_mask = kWebTextInputFlagAutocapitalizeNone |
+                                  kWebTextInputFlagAutocapitalizeCharacters |
+                                  kWebTextInputFlagAutocapitalizeWords |
+                                  kWebTextInputFlagAutocapitalizeSentences;
+
+  for (const std::pair<String, int>& element_and_expected_flags_pair :
+       element_and_expected_flags_pairs) {
+    const String& element = element_and_expected_flags_pair.first;
+    const int expected_flags = element_and_expected_flags_pair.second;
+
+    GetDocument().write(element);
+    GetDocument().UpdateStyleAndLayout();
+    ToElement(GetDocument().body()->lastChild())->focus();
+
+    EXPECT_EQ(expected_flags,
+              Controller().TextInputInfo().flags & autocapitalize_mask);
+  }
+}
+
 }  // namespace blink
