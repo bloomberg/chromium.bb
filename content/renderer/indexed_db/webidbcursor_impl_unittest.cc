@@ -128,6 +128,7 @@ class WebIDBCursorImplTest : public testing::Test {
         mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
     cursor_ = std::make_unique<WebIDBCursorImpl>(
         ptr.PassInterface(), 1,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 

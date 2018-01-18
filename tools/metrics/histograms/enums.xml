@@ -36984,6 +36984,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="Unthrottled"/>
   <int value="26" label="InternalTest"/>
   <int value="27" label="InternalWebCrypto"/>
+  <int value="28" label="InternalIndexedDB"/>
 </enum>
 
 <enum name="RendererSchedulerThreadType">

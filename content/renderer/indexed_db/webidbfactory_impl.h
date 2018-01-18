@@ -30,18 +30,23 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
-  void GetDatabaseNames(blink::WebIDBCallbacks* callbacks,
-                        const blink::WebSecurityOrigin& origin) override;
+  void GetDatabaseNames(
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebSecurityOrigin& origin,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void Open(const blink::WebString& name,
             long long version,
             long long transaction_id,
             blink::WebIDBCallbacks* callbacks,
             blink::WebIDBDatabaseCallbacks* databaseCallbacks,
-            const blink::WebSecurityOrigin& origin) override;
-  void DeleteDatabase(const blink::WebString& name,
-                      blink::WebIDBCallbacks* callbacks,
-                      const blink::WebSecurityOrigin& origin,
-                      bool force_close) override;
+            const blink::WebSecurityOrigin& origin,
+            scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  void DeleteDatabase(
+      const blink::WebString& name,
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebSecurityOrigin& origin,
+      bool force_close,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   class IOThreadHelper;

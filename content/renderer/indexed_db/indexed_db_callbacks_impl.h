@@ -32,7 +32,8 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
     InternalState(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
                   int64_t transaction_id,
                   const base::WeakPtr<WebIDBCursorImpl>& cursor,
-                  scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+                  scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+                  scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
     ~InternalState();
 
     void Error(int32_t code, const base::string16& message);
@@ -66,6 +67,7 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
     int64_t transaction_id_;
     base::WeakPtr<WebIDBCursorImpl> cursor_;
     scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
@@ -73,10 +75,12 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   static blink::WebIDBValue ConvertValue(
       const indexed_db::mojom::ValuePtr& value);
 
-  IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
-                         int64_t transaction_id,
-                         const base::WeakPtr<WebIDBCursorImpl>& cursor,
-                         scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+  IndexedDBCallbacksImpl(
+      std::unique_ptr<blink::WebIDBCallbacks> callbacks,
+      int64_t transaction_id,
+      const base::WeakPtr<WebIDBCursorImpl>& cursor,
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   ~IndexedDBCallbacksImpl() override;
 
   // indexed_db::mojom::Callbacks implementation:

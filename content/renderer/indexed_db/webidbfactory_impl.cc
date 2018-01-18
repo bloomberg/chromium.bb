@@ -65,11 +65,13 @@ WebIDBFactoryImpl::~WebIDBFactoryImpl() {
   io_runner_->DeleteSoon(FROM_HERE, io_helper_);
 }
 
-void WebIDBFactoryImpl::GetDatabaseNames(WebIDBCallbacks* callbacks,
-                                         const WebSecurityOrigin& origin) {
+void WebIDBFactoryImpl::GetDatabaseNames(
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr, io_runner_);
+      nullptr, io_runner_, std::move(task_runner));
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadHelper::GetDatabaseNames,
@@ -77,17 +79,20 @@ void WebIDBFactoryImpl::GetDatabaseNames(WebIDBCallbacks* callbacks,
                      base::Passed(&callbacks_impl), url::Origin(origin)));
 }
 
-void WebIDBFactoryImpl::Open(const WebString& name,
-                             long long version,
-                             long long transaction_id,
-                             WebIDBCallbacks* callbacks,
-                             WebIDBDatabaseCallbacks* database_callbacks,
-                             const WebSecurityOrigin& origin) {
+void WebIDBFactoryImpl::Open(
+    const WebString& name,
+    long long version,
+    long long transaction_id,
+    WebIDBCallbacks* callbacks,
+    WebIDBDatabaseCallbacks* database_callbacks,
+    const WebSecurityOrigin& origin,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_,
+      task_runner);
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
-          base::WrapUnique(database_callbacks));
+          base::WrapUnique(database_callbacks), std::move(task_runner));
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -96,13 +101,15 @@ void WebIDBFactoryImpl::Open(const WebString& name,
           base::Passed(&database_callbacks_impl), url::Origin(origin)));
 }
 
-void WebIDBFactoryImpl::DeleteDatabase(const WebString& name,
-                                       WebIDBCallbacks* callbacks,
-                                       const WebSecurityOrigin& origin,
-                                       bool force_close) {
+void WebIDBFactoryImpl::DeleteDatabase(
+    const WebString& name,
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    bool force_close,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      nullptr, io_runner_);
+      nullptr, io_runner_, std::move(task_runner));
   io_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IOThreadHelper::DeleteDatabase,
                                 base::Unretained(io_helper_), name.Utf16(),

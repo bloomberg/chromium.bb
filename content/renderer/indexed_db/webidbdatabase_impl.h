@@ -28,8 +28,10 @@ namespace content {
 
 class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(indexed_db::mojom::DatabaseAssociatedPtrInfo database,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+  WebIDBDatabaseImpl(
+      indexed_db::mojom::DatabaseAssociatedPtrInfo database,
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   ~WebIDBDatabaseImpl() override;
 
   // blink::WebIDBDatabase
@@ -148,6 +150,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   IOThreadHelper* helper_;
   std::set<int32_t> observer_ids_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
 };
 
 }  // namespace content

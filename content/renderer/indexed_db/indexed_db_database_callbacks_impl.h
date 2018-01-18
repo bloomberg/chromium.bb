@@ -17,7 +17,8 @@ class IndexedDBDatabaseCallbacksImpl
     : public indexed_db::mojom::DatabaseCallbacks {
  public:
   explicit IndexedDBDatabaseCallbacksImpl(
-      std::unique_ptr<blink::WebIDBDatabaseCallbacks> callbacks);
+      std::unique_ptr<blink::WebIDBDatabaseCallbacks> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   ~IndexedDBDatabaseCallbacksImpl() override;
 
   // indexed_db::mojom::DatabaseCallbacks implementation

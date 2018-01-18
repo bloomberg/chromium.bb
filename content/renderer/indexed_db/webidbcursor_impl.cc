@@ -55,10 +55,12 @@ class WebIDBCursorImpl::IOThreadHelper {
 WebIDBCursorImpl::WebIDBCursorImpl(
     indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     int64_t transaction_id,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
     : transaction_id_(transaction_id),
       helper_(new IOThreadHelper()),
       io_runner_(std::move(io_runner)),
+      callback_runner_(std::move(callback_runner)),
       continue_count_(0),
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
@@ -94,7 +96,7 @@ void WebIDBCursorImpl::Advance(unsigned long count,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-      io_runner_);
+      io_runner_, callback_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadHelper::Advance, base::Unretained(helper_), count,
@@ -123,7 +125,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
 
       auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
           std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-          io_runner_);
+          io_runner_, callback_runner_);
       io_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&IOThreadHelper::Prefetch, base::Unretained(helper_),
@@ -147,7 +149,7 @@ void WebIDBCursorImpl::Continue(WebIDBKeyView key,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
-      io_runner_);
+      io_runner_, callback_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IOThreadHelper::Continue, base::Unretained(helper_),
