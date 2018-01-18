@@ -1063,7 +1063,6 @@
         '--override-use-software-gl-for-tests',
       ],
       'swarming': {
-        'hard_timeout': 1500,
         'shards': 10,
       },
       'test': 'browser_tests',
