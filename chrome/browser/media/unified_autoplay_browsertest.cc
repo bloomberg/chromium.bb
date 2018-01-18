@@ -1,0 +1,148 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
+
+namespace {
+
+static constexpr char const kTestPagePath[] = "/media/unified_autoplay.html";
+
+}  // anonymous namespace
+
+// Integration tests for the unified autoplay policy that require the //chrome
+// layer.
+// These tests are called "UnifiedAutoplayBrowserTest" in order to avoid name
+// conflict with "AutoplayBrowserTest" in extensions code.
+class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
+ public:
+  ~UnifiedAutoplayBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeature(media::kUnifiedAutoplay);
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  content::WebContents* OpenNewTab(const GURL& url, bool from_context_menu) {
+    return OpenInternal(url, from_context_menu,
+                        WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  }
+
+  content::WebContents* OpenNewWindow(const GURL& url, bool from_context_menu) {
+    return OpenInternal(url, from_context_menu,
+                        WindowOpenDisposition::NEW_WINDOW);
+  }
+
+  bool AttemptPlay(content::WebContents* web_contents) {
+    bool played = false;
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+        web_contents, "attemptPlay();", &played));
+    return played;
+  }
+
+ private:
+  content::WebContents* OpenInternal(const GURL& url,
+                                     bool from_context_menu,
+                                     WindowOpenDisposition disposition) {
+    content::WebContents* active_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    content::Referrer referrer(
+        active_contents->GetLastCommittedURL(),
+        blink::WebReferrerPolicy::kWebReferrerPolicyAlways);
+
+    content::OpenURLParams open_url_params(url, referrer, disposition,
+                                           ui::PAGE_TRANSITION_LINK, false,
+                                           from_context_menu);
+
+    open_url_params.source_render_process_id =
+        active_contents->GetMainFrame()->GetProcess()->GetID();
+    open_url_params.source_render_frame_id =
+        active_contents->GetMainFrame()->GetRoutingID();
+
+    return active_contents->OpenURL(open_url_params);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenSameOriginOutsideMenu) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  content::WebContents* new_contents = OpenNewTab(kTestPageUrl, false);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_FALSE(AttemptPlay(new_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenSameOriginFromMenu) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  content::WebContents* new_contents = OpenNewTab(kTestPageUrl, true);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_TRUE(AttemptPlay(new_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenCrossOriginFromMenu) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("foo.example.com", kTestPagePath));
+
+  content::WebContents* new_contents = OpenNewTab(
+      embedded_test_server()->GetURL("bar.example.com", kTestPagePath), true);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_TRUE(AttemptPlay(new_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenCrossDomainFromMenu) {
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kTestPagePath));
+
+  content::WebContents* new_contents = OpenNewTab(
+      embedded_test_server()->GetURL("example.com", kTestPagePath), true);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_FALSE(AttemptPlay(new_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenWindowFromContextMenu) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  content::WebContents* new_contents = OpenNewTab(kTestPageUrl, true);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_TRUE(AttemptPlay(new_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenWindowNotContextMenu) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  content::WebContents* new_contents = OpenNewTab(kTestPageUrl, false);
+  content::WaitForLoadStop(new_contents);
+
+  EXPECT_FALSE(AttemptPlay(new_contents));
+}

@@ -222,6 +222,8 @@ class CORE_EXPORT DocumentLoader
 
   void LoadFailed(const ResourceError&);
 
+  void SetUserActivated();
+
   void Trace(blink::Visitor*) override;
 
   // For automation driver-initiated navigations over the devtools protocol,
@@ -364,11 +366,6 @@ class CORE_EXPORT DocumentLoader
 
   bool was_blocked_after_csp_;
 
-  static bool ShouldPersistUserGestureValue(
-      const SecurityOrigin* previous_security_origin,
-      const SecurityOrigin* new_security_origin);
-  static bool CheckOriginIsHttpOrHttps(const SecurityOrigin*);
-
   // PlzNavigate: set when committing a navigation. The data has originally been
   // captured when the navigation was sent to the browser process, and it is
   // sent back at commit time.
@@ -381,6 +378,9 @@ class CORE_EXPORT DocumentLoader
   bool in_data_received_;
   scoped_refptr<SharedBuffer> data_buffer_;
   base::UnguessableToken devtools_navigation_token_;
+
+  // Whether this load request comes from a user activation.
+  bool user_activated_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

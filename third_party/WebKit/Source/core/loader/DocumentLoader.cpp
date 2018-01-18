@@ -81,7 +81,6 @@
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/NetworkUtils.h"
 #include "platform/network/http_names.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
@@ -92,6 +91,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "public/web/WebDocumentLoader.h"
 #include "public/web/WebHistoryCommitType.h"
 
 namespace blink {
@@ -126,7 +126,8 @@ DocumentLoader::DocumentLoader(
       state_(kNotStarted),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
-      devtools_navigation_token_(devtools_navigation_token) {
+      devtools_navigation_token_(devtools_navigation_token),
+      user_activated_(false) {
   DCHECK(frame_);
 
   // The document URL needs to be added to the head of the list as that is
@@ -437,6 +438,10 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       break;
   }
   DCHECK_EQ(kSentDidFinishLoad, state_);
+}
+
+void DocumentLoader::SetUserActivated() {
+  user_activated_ = true;
 }
 
 void DocumentLoader::FinishedLoading(double finish_time) {
@@ -1018,32 +1023,6 @@ bool DocumentLoader::ShouldClearWindowName(
       previous_security_origin);
 }
 
-// static
-bool DocumentLoader::CheckOriginIsHttpOrHttps(const SecurityOrigin* origin) {
-  return origin &&
-         (origin->Protocol() == "http" || origin->Protocol() == "https");
-}
-
-// static
-bool DocumentLoader::ShouldPersistUserGestureValue(
-    const SecurityOrigin* previous_security_origin,
-    const SecurityOrigin* new_security_origin) {
-  if (!CheckOriginIsHttpOrHttps(previous_security_origin) ||
-      !CheckOriginIsHttpOrHttps(new_security_origin))
-    return false;
-
-  if (previous_security_origin->Host() == new_security_origin->Host())
-    return true;
-
-  String previous_domain = NetworkUtils::GetDomainAndRegistry(
-      previous_security_origin->Host(),
-      NetworkUtils::kIncludePrivateRegistries);
-  String new_domain = NetworkUtils::GetDomainAndRegistry(
-      new_security_origin->Host(), NetworkUtils::kIncludePrivateRegistries);
-
-  return !previous_domain.IsEmpty() && previous_domain == new_domain;
-}
-
 void DocumentLoader::InstallNewDocument(
     const KURL& url,
     Document* owner_document,
@@ -1093,14 +1072,20 @@ void DocumentLoader::InstallNewDocument(
   // Persist the user gesture state between frames.
   bool user_gesture_before_value = false;
   if (user_gesture_bit_set) {
-    user_gesture_before_value = ShouldPersistUserGestureValue(
-        previous_security_origin, document->GetSecurityOrigin());
+    user_gesture_before_value = WebDocumentLoader::ShouldPersistUserActivation(
+        WebSecurityOrigin(previous_security_origin),
+        WebSecurityOrigin(document->GetSecurityOrigin()));
 
     // Clear the user gesture bit that is not persisted.
     // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
     if (frame_->IsMainFrame())
       frame_->ClearActivation();
   }
+
+  // If the load request was user activated, pretend that there was a gesture
+  // to carry over.
+  if (user_activated_)
+    user_gesture_before_value = true;
 
   // If the user gesture before navigation bit has changed then update it on the
   // frame.
