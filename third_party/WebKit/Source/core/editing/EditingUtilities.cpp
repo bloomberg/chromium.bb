@@ -1669,9 +1669,9 @@ static Position PreviousCharacterPosition(const Position& position,
 }
 
 // This assumes that it starts in editable content.
-Position LeadingWhitespacePosition(const Position& position,
-                                   TextAffinity affinity,
-                                   WhitespacePositionOption option) {
+Position LeadingCollapsibleWhitespacePosition(const Position& position,
+                                              TextAffinity affinity,
+                                              WhitespacePositionOption option) {
   DCHECK(!NeedsLayoutTreeUpdate(position));
   DCHECK(IsEditablePosition(position)) << position;
   if (position.IsNull())
