@@ -30,7 +30,7 @@ aggregate_vector_icons("components_vector_icons") {
     "media_router_error.icon",
     "media_router_idle.icon",
     "media_router_warning.icon",
-    "microphone.icon",
+    "mic.icon",
     "midi.icon",
     "notifications.icon",
     "protocol_handler.icon",

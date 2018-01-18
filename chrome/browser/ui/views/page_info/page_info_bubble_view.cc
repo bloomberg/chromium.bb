@@ -89,6 +89,12 @@ bool UseHarmonyStyle() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
+SkColor GetRelatedTextColor() {
+  views::Label label;
+  return views::style::GetColor(label, views::style::CONTEXT_LABEL,
+                                views::style::STYLE_PRIMARY);
+}
+
 // Adds a ColumnSet on |layout| with a single View column and padding columns
 // on either side of it with |margin| width.
 void AddColumnWithSideMargin(GridLayout* layout, int margin, int id) {
@@ -204,7 +210,7 @@ std::unique_ptr<views::View> CreateSiteSettingsLink(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_TOOLTIP);
   if (UseHarmonyStyle()) {
     return CreateMoreInfoButton(
-        listener, PageInfoUI::GetSiteSettingsIcon(),
+        listener, PageInfoUI::GetSiteSettingsIcon(GetRelatedTextColor()),
         IDS_PAGE_INFO_SITE_SETTINGS_LINK, base::string16(),
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
         tooltip);
@@ -713,7 +719,7 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->IsOffTheRecord();
     const gfx::ImageSkia icon =
-        PageInfoUI::GetPermissionIcon(info).AsImageSkia();
+        PageInfoUI::GetPermissionIcon(info, GetRelatedTextColor());
 
     const base::string16& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
@@ -910,14 +916,15 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     }
 
     // Add the Certificate Section.
+    const gfx::ImageSkia icon =
+        PageInfoUI::GetCertificateIcon(GetRelatedTextColor());
     if (UseHarmonyStyle()) {
       const base::string16 secondary_text = l10n_util::GetStringUTF16(
           valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                          : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
       site_settings_view_->AddChildView(
           CreateMoreInfoButton(
-              this, PageInfoUI::GetCertificateIcon(),
-              IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
+              this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
               VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip)
               .release());
     } else {
@@ -926,9 +933,9 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
                          : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
       views::Link* certificate_viewer_link = nullptr;
       site_settings_view_->AddChildView(CreateMoreInfoLinkSection(
-          this, PageInfoUI::GetCertificateIcon(), IDS_PAGE_INFO_CERTIFICATE,
-          link_title, VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
-          tooltip, &certificate_viewer_link));
+          this, icon, IDS_PAGE_INFO_CERTIFICATE, link_title,
+          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip,
+          &certificate_viewer_link));
     }
   }
 

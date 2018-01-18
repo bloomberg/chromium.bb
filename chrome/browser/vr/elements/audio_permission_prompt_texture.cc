@@ -63,7 +63,7 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
 
   // Icon
   gfx::PointF icon_location(ToPixels(kPadding), ToPixels(kPadding));
-  VectorIcon::DrawVectorIcon(canvas, vector_icons::kMicrophoneIcon,
+  VectorIcon::DrawVectorIcon(canvas, vector_icons::kMicIcon,
                              ToPixels(kIconSize), icon_location, icon_color_);
 
   // Prompt description.

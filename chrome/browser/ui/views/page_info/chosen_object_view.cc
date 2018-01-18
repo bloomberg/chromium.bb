@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -48,16 +49,15 @@ ChosenObjectView::ChosenObjectView(
                         PageInfoBubbleView::kIconColumnWidth, 0);
 
   layout->StartRow(kStretchy, column_set_id);
-  // Create the chosen object icon.
+  // Create the chosen object icon and label.
   icon_ = new views::ImageView();
-  const gfx::Image& image = PageInfoUI::GetChosenObjectIcon(*info_, false);
-  icon_->SetImage(image.ToImageSkia());
   layout->AddView(icon_);
-  // Create the label that displays the chosen object name.
   views::Label* label = new views::Label(
       l10n_util::GetStringFUTF16(info_->ui_info.label_string_id,
                                  PageInfoUI::ChosenObjectToUIString(*info_)),
       CONTEXT_BODY_TEXT_LARGE);
+  icon_->SetImage(
+      PageInfoUI::GetChosenObjectIcon(*info_, false, label->enabled_color()));
   layout->AddView(label);
   // Create the delete button.
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
@@ -93,8 +93,10 @@ ChosenObjectView::~ChosenObjectView() {}
 void ChosenObjectView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   // Change the icon to reflect the selected setting.
-  const gfx::Image& image = PageInfoUI::GetChosenObjectIcon(*info_, true);
-  icon_->SetImage(image.ToImageSkia());
+  icon_->SetImage(PageInfoUI::GetChosenObjectIcon(
+      *info_, true,
+      views::style::GetColor(*this, views::style::CONTEXT_LABEL,
+                             views::style::STYLE_PRIMARY)));
 
   DCHECK(delete_button_->visible());
   delete_button_->SetVisible(false);

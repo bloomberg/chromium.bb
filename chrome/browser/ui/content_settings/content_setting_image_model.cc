@@ -87,6 +87,7 @@ class ContentSettingMIDISysExImageModel
   ContentSettingMIDISysExImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMIDISysExImageModel);
 };
@@ -145,7 +146,7 @@ struct ContentSettingsImageDetails {
 const ContentSettingsImageDetails kImageDetails[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, kCookieIcon, IDS_BLOCKED_COOKIES_MESSAGE, 0,
      IDS_ACCESSED_COOKIES_MESSAGE},
-    {CONTENT_SETTINGS_TYPE_IMAGES, kImageIcon, IDS_BLOCKED_IMAGES_MESSAGE, 0,
+    {CONTENT_SETTINGS_TYPE_IMAGES, kPhotoIcon, IDS_BLOCKED_IMAGES_MESSAGE, 0,
      0},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, kCodeIcon,
      IDS_BLOCKED_JAVASCRIPT_MESSAGE, 0, 0},
@@ -593,7 +594,7 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
     return;
   }
 
-  set_icon(kSubresourceFilterActiveIcon, kBlockedBadgeIcon);
+  set_icon(kAdsIcon, kBlockedBadgeIcon);
   set_explanatory_string_id(IDS_BLOCKED_ADS_PROMPT_TITLE);
   set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TOOLTIP));
   set_visible(true);

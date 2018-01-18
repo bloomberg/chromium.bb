@@ -74,7 +74,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return kExtensionIcon;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      return vector_icons::kMicrophoneIcon;
+      return vector_icons::kMicIcon;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return vector_icons::kVideocamIcon;
     case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
