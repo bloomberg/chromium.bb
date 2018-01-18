@@ -5,11 +5,11 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/media/base/slew_volume.h"
 #include "media/base/audio_bus.h"
 #include "media/base/vector_math.h"
@@ -84,7 +84,7 @@ class SlewVolumeBaseTest : public ::testing::Test {
   ~SlewVolumeBaseTest() override = default;
 
   void SetUp() override {
-    slew_volume_ = base::MakeUnique<SlewVolume>();
+    slew_volume_ = std::make_unique<SlewVolume>();
     slew_volume_->Interrupted();
     MakeData(kNumFrames);
   }
@@ -450,7 +450,7 @@ class SlewVolumeInterleavedTest : public SlewVolumeDynamicTest {
   ~SlewVolumeInterleavedTest() override = default;
 
   void SetUp() override {
-    slew_volume_ = base::MakeUnique<SlewVolume>();
+    slew_volume_ = std::make_unique<SlewVolume>();
     slew_volume_->Interrupted();
 
     channels_ = std::get<0>(GetParam());

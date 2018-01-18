@@ -5,7 +5,6 @@
 #include "chromecast/media/cma/backend/desktop/media_pipeline_backend_desktop.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/media/cma/backend/desktop/audio_decoder_desktop.h"
 #include "chromecast/media/cma/backend/desktop/video_decoder_desktop.h"
 #include "media/base/timestamp_constants.h"
@@ -22,7 +21,7 @@ MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendDesktop::CreateAudioDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!audio_decoder_);
-  audio_decoder_ = base::MakeUnique<AudioDecoderDesktop>();
+  audio_decoder_ = std::make_unique<AudioDecoderDesktop>();
   return audio_decoder_.get();
 }
 
@@ -30,7 +29,7 @@ MediaPipelineBackend::VideoDecoder*
 MediaPipelineBackendDesktop::CreateVideoDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!video_decoder_);
-  video_decoder_ = base::MakeUnique<VideoDecoderDesktop>();
+  video_decoder_ = std::make_unique<VideoDecoderDesktop>();
   return video_decoder_.get();
 }
 

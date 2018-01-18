@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -91,7 +90,7 @@ class MockCastAudioOutputStream : public CastAudioOutputStream {
 class MockCastAudioManager : public CastAudioManager {
  public:
   MockCastAudioManager()
-      : CastAudioManager(base::MakeUnique<::media::TestAudioThread>(),
+      : CastAudioManager(std::make_unique<::media::TestAudioThread>(),
                          nullptr,
                          nullptr,
                          nullptr,

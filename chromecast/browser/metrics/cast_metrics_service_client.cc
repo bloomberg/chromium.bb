@@ -8,7 +8,6 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -358,7 +357,7 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
             new ::metrics::ScreenInfoMetricsProvider));
   }
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<::metrics::NetworkMetricsProvider>());
+      std::make_unique<::metrics::NetworkMetricsProvider>());
   shell::CastBrowserProcess::GetInstance()->browser_client()->
       RegisterMetricsProviders(metrics_service_.get());
 

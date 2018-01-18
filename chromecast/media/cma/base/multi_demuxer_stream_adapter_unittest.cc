@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -93,7 +92,7 @@ void MultiDemuxerStreamAdaptersTest::Start() {
   frame_received_count_ = 0;
 
   for (const auto& stream : demuxer_streams_) {
-    coded_frame_providers_.push_back(base::MakeUnique<DemuxerStreamAdapter>(
+    coded_frame_providers_.push_back(std::make_unique<DemuxerStreamAdapter>(
         base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_,
         stream.get()));
   }
@@ -154,9 +153,9 @@ TEST_F(MultiDemuxerStreamAdaptersTest, EarlyEos) {
       frame_count_short +
       kMaxPtsDiffMs / DemuxerStreamForTest::kDemuxerStreamForTestFrameDuration +
       100;
-  demuxer_streams_.push_back(base::MakeUnique<DemuxerStreamForTest>(
+  demuxer_streams_.push_back(std::make_unique<DemuxerStreamForTest>(
       frame_count_short, 2, 0, config_idx_));
-  demuxer_streams_.push_back(base::MakeUnique<DemuxerStreamForTest>(
+  demuxer_streams_.push_back(std::make_unique<DemuxerStreamForTest>(
       frame_count_long, 10, 0, config_idx_));
 
   total_expected_frames_ = frame_count_short + frame_count_long;

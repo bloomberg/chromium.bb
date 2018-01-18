@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
 #include "net/log/file_net_log_observer.h"
@@ -27,7 +26,7 @@ std::unique_ptr<base::DictionaryValue> GetShellConstants() {
       net::GetNetConstants();
 
   // Add a dictionary with client information
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("name", "cast_shell");
   dict->SetString(

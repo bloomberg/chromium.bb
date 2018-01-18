@@ -16,7 +16,6 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -211,7 +210,7 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     net::URLRequestContextGetter* request_context_getter,
     media::VideoPlaneController* video_plane_controller,
     CastWindowManager* window_manager) {
-  return base::MakeUnique<CastServiceSimple>(browser_context, pref_service,
+  return std::make_unique<CastServiceSimple>(browser_context, pref_service,
                                              window_manager);
 }
 
@@ -261,15 +260,15 @@ CastContentBrowserClient::CreateAudioManager(
   // CastAudioManager.
   bool use_mixer = true;
 #if defined(USE_ALSA)
-  return base::MakeUnique<media::CastAudioManagerAlsa>(
-      base::MakeUnique<::media::AudioThreadImpl>(), audio_log_factory,
-      base::MakeUnique<media::MediaPipelineBackendFactoryImpl>(
+  return std::make_unique<media::CastAudioManagerAlsa>(
+      std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
+      std::make_unique<media::MediaPipelineBackendFactoryImpl>(
           media_pipeline_backend_manager()),
       GetMediaTaskRunner(), use_mixer);
 #else
-  return base::MakeUnique<media::CastAudioManager>(
-      base::MakeUnique<::media::AudioThreadImpl>(), audio_log_factory,
-      base::MakeUnique<media::MediaPipelineBackendFactoryImpl>(
+  return std::make_unique<media::CastAudioManager>(
+      std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
+      std::make_unique<media::MediaPipelineBackendFactoryImpl>(
           media_pipeline_backend_manager()),
       GetMediaTaskRunner(), use_mixer);
 #endif  // defined(USE_ALSA)
@@ -278,7 +277,7 @@ CastContentBrowserClient::CreateAudioManager(
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  return base::MakeUnique<media::CastCdmFactory>(GetMediaTaskRunner(),
+  return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
                                                  media_resource_tracker());
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return nullptr;

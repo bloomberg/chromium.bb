@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -67,7 +66,7 @@ AlarmManager::AlarmManager(
 }
 
 AlarmManager::AlarmManager()
-    : AlarmManager(base::MakeUnique<base::DefaultClock>(),
+    : AlarmManager(std::make_unique<base::DefaultClock>(),
                    base::ThreadTaskRunnerHandle::Get()) {}
 
 AlarmManager::~AlarmManager() {}
@@ -75,7 +74,7 @@ AlarmManager::~AlarmManager() {}
 std::unique_ptr<AlarmHandle> AlarmManager::PostAlarmTask(base::OnceClosure task,
                                                          base::Time time) {
   DCHECK(task);
-  std::unique_ptr<AlarmHandle> handle = base::MakeUnique<AlarmHandle>();
+  std::unique_ptr<AlarmHandle> handle = std::make_unique<AlarmHandle>();
   AddAlarm(base::BindOnce(&VerifyHandleCallback, std::move(task),
                           handle->AsWeakPtr()),
            time, base::ThreadTaskRunnerHandle::Get());
@@ -87,7 +86,7 @@ void AlarmManager::AddAlarm(
     base::Time time,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   MAKE_SURE_OWN_THREAD(AddAlarm, std::move(task), time, std::move(task_runner));
-  next_alarm_.push(base::MakeUnique<AlarmInfo>(std::move(task), time,
+  next_alarm_.push(std::make_unique<AlarmInfo>(std::move(task), time,
                                                std::move(task_runner)));
 }
 

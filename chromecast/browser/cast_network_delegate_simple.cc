@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "chromecast/browser/cast_network_delegate.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -34,7 +35,7 @@ class CastNetworkDelegateSimple : public CastNetworkDelegate {
 
 // static
 std::unique_ptr<CastNetworkDelegate> CastNetworkDelegate::Create() {
-  return base::MakeUnique<CastNetworkDelegateSimple>();
+  return std::make_unique<CastNetworkDelegateSimple>();
 }
 
 }  // namespace shell

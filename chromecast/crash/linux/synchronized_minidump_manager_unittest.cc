@@ -250,7 +250,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
   // Test that the manager tried to log the entry and failed.
   SynchronizedMinidumpManagerSimple manager;
-  manager.SetDumpInfoToWrite(base::MakeUnique<DumpInfo>(&val));
+  manager.SetDumpInfoToWrite(std::make_unique<DumpInfo>(&val));
   ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_FALSE(manager.add_entry_return_code());
 
@@ -270,7 +270,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   // Write the first entry.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
+      std::make_unique<DumpInfo>("dump1", "log1", now, params));
   ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_TRUE(manager.add_entry_return_code());
 
@@ -281,7 +281,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
   // Write the second entry.
   manager.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump2", "log2", now, params));
+      std::make_unique<DumpInfo>("dump2", "log2", now, params));
   ASSERT_TRUE(manager.DoWorkLocked());
   ASSERT_TRUE(manager.add_entry_return_code());
 
@@ -302,7 +302,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockFile_WaitsForOtherThread) {
   const int sleep_time_ms = 100;
   SleepySynchronizedMinidumpManagerSimple sleepy_manager(sleep_time_ms);
   sleepy_manager.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump", "log", now, params));
+      std::make_unique<DumpInfo>("dump", "log", now, params));
   base::Thread sleepy_thread("sleepy");
   sleepy_thread.Start();
   sleepy_thread.task_runner()->PostTask(
@@ -320,7 +320,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockFile_WaitsForOtherThread) {
   // the dump.
   SynchronizedMinidumpManagerSimple manager;
   manager.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump", "log", now, params));
+      std::make_unique<DumpInfo>("dump", "log", now, params));
 
   EXPECT_TRUE(manager.DoWorkLocked());
   EXPECT_TRUE(manager.add_entry_return_code());
@@ -393,7 +393,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
+      std::make_unique<DumpInfo>("dump1", "log1", now, params));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
   produce_dumps(&producer, max_dumps);
@@ -409,7 +409,7 @@ TEST_F(SynchronizedMinidumpManagerTest, Upload_FailsWhenTooManyRecentDumps) {
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
+      std::make_unique<DumpInfo>("dump1", "log1", now, params));
 
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
   produce_dumps(&producer, max_dumps + 1);
@@ -429,7 +429,7 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
   FakeSynchronizedMinidumpUploader uploader;
   SynchronizedMinidumpManagerSimple producer;
   producer.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
+      std::make_unique<DumpInfo>("dump1", "log1", now, params));
 
   const int iters = 3;
   const int max_dumps = SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
@@ -475,7 +475,7 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithDumps) {
   FakeSynchronizedMinidumpUploader uploader;
 
   producer.SetDumpInfoToWrite(
-      base::MakeUnique<DumpInfo>("dump1", "log1", now, params));
+      std::make_unique<DumpInfo>("dump1", "log1", now, params));
 
   const int kNumDumps = 3;
   for (int i = 0; i < kNumDumps; ++i) {

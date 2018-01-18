@@ -8,7 +8,6 @@
 #include <unordered_set>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -30,10 +29,10 @@ class CastDevToolsManagerDelegateTest
 
   void SetUp() override {
     gl::GLSurfaceTestSupport::InitializeOneOff();
-    initializer_ = base::MakeUnique<content::TestContentClientInitializer>();
+    initializer_ = std::make_unique<content::TestContentClientInitializer>();
     content::RenderViewHostTestHarness::SetUp();
     devtools_manager_delegate_ =
-        base::MakeUnique<CastDevToolsManagerDelegate>();
+        std::make_unique<CastDevToolsManagerDelegate>();
   }
 
   void TestDiscoveredTargets(const WebContentsSet& enabled_web_contents,

@@ -4,7 +4,8 @@
 
 #include "chromecast/media/service/cast_mojo_media_client.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -82,7 +83,7 @@ class CastRendererFactory : public ::media::RendererFactory {
       const gfx::ColorSpace& target_color_space) final {
     DCHECK(audio_renderer_sink);
     DCHECK(!video_renderer_sink);
-    return base::MakeUnique<CastRenderer>(
+    return std::make_unique<CastRenderer>(
         backend_factory_, media_task_runner,
         audio_renderer_sink->GetOutputDeviceInfo().device_id(),
         video_mode_switcher_, video_resolution_policy_,
@@ -129,7 +130,7 @@ CastMojoMediaClient::CreateAudioRendererSink(
 
 std::unique_ptr<::media::RendererFactory>
 CastMojoMediaClient::CreateRendererFactory(::media::MediaLog* /* media_log */) {
-  return base::MakeUnique<CastRendererFactory>(
+  return std::make_unique<CastRendererFactory>(
       backend_factory_, video_mode_switcher_, video_resolution_policy_,
       media_resource_tracker_);
 }

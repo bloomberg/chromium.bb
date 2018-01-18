@@ -4,7 +4,6 @@
 
 #include "chromecast/media/cma/backend/desktop/audio_decoder_desktop.h"
 
-#include "base/memory/ptr_util.h"
 #include "chromecast/media/cma/backend/desktop/media_sink_desktop.h"
 
 namespace chromecast {
@@ -16,7 +15,7 @@ AudioDecoderDesktop::~AudioDecoderDesktop() {}
 
 void AudioDecoderDesktop::Start(base::TimeDelta start_pts) {
   DCHECK(!sink_);
-  sink_ = base::MakeUnique<MediaSinkDesktop>(delegate_, start_pts);
+  sink_ = std::make_unique<MediaSinkDesktop>(delegate_, start_pts);
 }
 
 void AudioDecoderDesktop::Stop() {

@@ -128,7 +128,7 @@ class PipelineHelper {
         .WillByDefault(PushBuffer(&video_decoder_delegate_,
                                   &last_push_pts_[STREAM_VIDEO]));
 
-    media_pipeline_ = base::MakeUnique<MediaPipelineImpl>();
+    media_pipeline_ = std::make_unique<MediaPipelineImpl>();
     media_pipeline_->Initialize(kLoadTypeURL,
                                 base::WrapUnique(pipeline_backend_));
 

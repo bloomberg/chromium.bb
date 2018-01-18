@@ -4,10 +4,11 @@
 
 #include "chromecast/base/cast_sys_info_android.h"
 
+#include <memory>
+
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "chromecast/base/cast_sys_info_util.h"
@@ -22,7 +23,7 @@ const char kBuildTypeUser[] = "user";
 
 // static
 std::unique_ptr<CastSysInfo> CreateSysInfo() {
-  return base::MakeUnique<CastSysInfoAndroid>();
+  return std::make_unique<CastSysInfoAndroid>();
 }
 
 CastSysInfoAndroid::CastSysInfoAndroid()

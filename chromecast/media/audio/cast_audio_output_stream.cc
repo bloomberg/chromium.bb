@@ -279,7 +279,7 @@ bool CastAudioOutputStream::Open() {
 
   bool success = false;
   DCHECK(!backend_);
-  backend_ = base::MakeUnique<Backend>(audio_params_);
+  backend_ = std::make_unique<Backend>(audio_params_);
   {
     base::WaitableEvent completion_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,

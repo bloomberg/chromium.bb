@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/cma/backend/post_processors/governor.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
@@ -51,7 +50,7 @@ class GovernorTest : public ::testing::TestWithParam<float> {
     clamp_ = kDefaultClamp;
     onset_volume_ = GetParam();
     std::string config = MakeConfigString(onset_volume_, clamp_);
-    governor_ = base::MakeUnique<Governor>(config, kNumChannels);
+    governor_ = std::make_unique<Governor>(config, kNumChannels);
     governor_->SetSlewTimeMsForTest(0);
     governor_->SetSampleRate(kSampleRate);
 

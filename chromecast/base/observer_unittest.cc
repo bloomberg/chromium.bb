@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,7 +20,7 @@ namespace chromecast {
 
 class ObserverTest : public ::testing::Test {
  protected:
-  ObserverTest() : message_loop_(base::MakeUnique<base::MessageLoop>()) {}
+  ObserverTest() : message_loop_(std::make_unique<base::MessageLoop>()) {}
 
   const std::unique_ptr<base::MessageLoop> message_loop_;
 };
@@ -90,7 +89,7 @@ class ThreadedObserver {
  private:
   void ObserveOnThread(Observable<int>* observable) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-    observer_ = base::MakeUnique<Observer<int>>(observable->Observe());
+    observer_ = std::make_unique<Observer<int>>(observable->Observe());
     observing_.Signal();
   }
 
@@ -291,7 +290,7 @@ TEST_F(ObserverTest, SetCallbackTwice) {
 }
 
 TEST_F(ObserverTest, ObserverOutlivesObservable) {
-  auto original = base::MakeUnique<Observable<int>>(0);
+  auto original = std::make_unique<Observable<int>>(0);
   Observer<int> observer1 = original->Observe();
 
   EXPECT_EQ(0, observer1.GetValue());
@@ -308,7 +307,7 @@ TEST_F(ObserverTest, ObserverOutlivesObservable) {
 }
 
 TEST_F(ObserverTest, ObserverOnDifferentThread) {
-  auto original = base::MakeUnique<ThreadedObservable>();
+  auto original = std::make_unique<ThreadedObservable>();
   Observer<int> observer = original->Observe();
   EXPECT_EQ(0, observer.GetValue());
 
@@ -331,10 +330,10 @@ TEST_F(ObserverTest, ObserverOnDifferentThread) {
 }
 
 TEST_F(ObserverTest, ObserveOnManyThreads) {
-  auto original = base::MakeUnique<Observable<int>>(0);
+  auto original = std::make_unique<Observable<int>>(0);
   std::vector<std::unique_ptr<ThreadedObserver>> observers;
   for (int i = 0; i < 20; ++i) {
-    observers.push_back(base::MakeUnique<ThreadedObserver>());
+    observers.push_back(std::make_unique<ThreadedObserver>());
     observers.back()->Observe(original.get());
   }
 

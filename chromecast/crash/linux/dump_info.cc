@@ -8,7 +8,6 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 
@@ -54,7 +53,7 @@ DumpInfo::~DumpInfo() {
 
 std::unique_ptr<base::Value> DumpInfo::GetAsValue() const {
   std::unique_ptr<base::Value> result =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   base::DictionaryValue* entry;
   result->GetAsDictionary(&entry);
   entry->SetString(kNameKey, params_.process_name);

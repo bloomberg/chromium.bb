@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -54,10 +53,10 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
 
   void SetUp() override {
     gl::GLSurfaceTestSupport::InitializeOneOff();
-    initializer_ = base::MakeUnique<content::TestContentClientInitializer>();
+    initializer_ = std::make_unique<content::TestContentClientInitializer>();
     content::RenderViewHostTestHarness::SetUp();
-    media_session_ = base::MakeUnique<MockMediaSession>();
-    media_blocker_ = base::MakeUnique<CastMediaBlocker>(media_session_.get());
+    media_session_ = std::make_unique<MockMediaSession>();
+    media_blocker_ = std::make_unique<CastMediaBlocker>(media_session_.get());
   }
 
   void TearDown() override { content::RenderViewHostTestHarness::TearDown(); }

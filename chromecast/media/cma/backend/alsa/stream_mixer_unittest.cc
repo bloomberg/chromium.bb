@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
@@ -362,7 +363,7 @@ class MockPostProcessorFactory : public PostProcessingPipelineFactory {
       const std::string& name,
       const base::ListValue* filter_description_list,
       int channels) override {
-    return base::MakeUnique<testing::NiceMock<MockPostProcessor>>(
+    return std::make_unique<testing::NiceMock<MockPostProcessor>>(
         name, filter_description_list, channels);
   }
 };

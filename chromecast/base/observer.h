@@ -110,7 +110,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -310,7 +309,7 @@ class ObservableInternals
     PerSequenceInfo(scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const T& value)
         : task_runner_(std::move(task_runner)),
-          owned_info_(base::MakeUnique<SequenceOwnedInfo>(value)) {}
+          owned_info_(std::make_unique<SequenceOwnedInfo>(value)) {}
 
     PerSequenceInfo(PerSequenceInfo&& other) = default;
 
