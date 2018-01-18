@@ -74,6 +74,9 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     case EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED:
       return em::DeviceRegisterRequest::
           FLAVOR_ENROLLMENT_ATTESTATION_SERVER_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
