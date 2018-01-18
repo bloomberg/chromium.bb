@@ -711,7 +711,7 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
       const gfx::GpuMemoryBufferHandle& handle =
           texture_it->second->ExportGpuMemoryBufferHandle();
       LOG_ASSERT(!handle.is_null()) << "Failed producing GMB handle";
-      decoder_->ImportBufferForPicture(buffer.id(), handle);
+      decoder_->ImportBufferForPicture(buffer.id(), pixel_format, handle);
     }
   }
 }

@@ -36,17 +36,6 @@ struct Picture {
 };
 
 // Format specification of the picture buffer request.
-struct PictureBufferFormatDeprecated {
-  HalPixelFormat pixel_format;
-  uint32 buffer_size;
-
-  // minimal number of buffers required to process the video.
-  uint32 min_num_buffers;
-  uint32 coded_width;
-  uint32 coded_height;
-};
-
-// Format specification of the picture buffer request.
 struct PictureBufferFormat {
   // minimal number of buffers required to process the video.
   uint32 min_num_buffers;
@@ -59,10 +48,11 @@ struct VideoDecodeAcceleratorConfig {
 };
 
 // The interface to access the hardware video decoding accelerator. To use
-// the decoder, the client first calls Initialize() and waits for it to
-// complete. Once done, the client can feed the decoder with input bit streams
-// via Decode(). After decoder consumes the input buffer, the buffer will be
-// released by VideoDecodeClient::NotifyEndOfBitstreamBuffer().
+// the decoder, the client first calls Initialize() and must wait for a
+// callback with the result. Once done, the client can feed the decoder with
+// input bit streams via Decode(). The decoder will call
+// VideoDecodeClient::NotifyEndOfBitstreamBuffer() to notify the client that
+// it has finished consuming the contents of the buffer.
 //
 // The decoder will also call VideoDecodeClient::ProvidePictureBuffers to
 // ask for output buffers for decoding. The client must provide at least
@@ -78,11 +68,12 @@ struct VideoDecodeAcceleratorConfig {
 // For secure playback, the client only holds the dummy buffers for both output
 // and input. The protected buffers will be allocated in server side
 // and never shared to the client. For input buffers, the client must call
-// AllocateProtectedBuffer() to ask the server side to allocate buffers for
-// storing decrypted input bit streams. For output buffers, the server will
-// allocated the protected output buffers when ImportBufferForPicture() is
-// called; this will tell the server to import and use the protected buffer
-// instead of the dummy buffer.
+// AllocateProtectedBuffer() for each handle before passing it to Decode().
+// The protected buffers will be allocated at the server side for storing
+// decrypted input bit streams. For output buffers, the server will allocated
+// the protected output buffers when ImportBufferForPicture() is called;
+// this will tell the server to import and use the protected buffer instead of
+// the dummy buffer.
 //
 // Next MinVersion: 1
 // Next method ID: 9
@@ -121,17 +112,6 @@ interface VideoDecodeAccelerator {
 
   // Assigns a buffer to be used by the accelerator with specified
   // |picture_buffer_id|.
-  // In secure mode, if a new protected output buffer is allocated for the given
-  // |picture_buffer_id|. Any previously-allocated buffer with the same
-  // |picture_buffer_id| will be released.
-  // Call VDA::ImportBufferForPicture with gfx::GpuMemoryBufferHandle
-  // created from |handle_fd| and |planes|.
-  // This should be preceded by a call to AssignPictureBuffers().
-  ImportBufferForPictureDeprecated@3(int32 picture_buffer_id, handle handle_fd,
-                           array<VideoFramePlane> planes);
-
-  // Assigns a buffer to be used by the accelerator with specified
-  // |picture_buffer_id|.
   // In secure mode, a new protected output buffer will be allocated for the
   // given |picture_buffer_id|. The protected output buffer will then be
   // imported and used instead of the buffer pointed by |handle_fd|. If there
@@ -161,8 +141,6 @@ interface VideoDecodeAccelerator {
 // Next MinVersion: 2
 // Next method ID: 5
 interface VideoDecodeClient {
-  // Callback to tell client how many and what size of buffers to provide.
-  ProvidePictureBuffersDeprecated@0(PictureBufferFormatDeprecated format);
 
   // Callback to tell client how many and what size of buffers to provide.
   [MinVersion=1]

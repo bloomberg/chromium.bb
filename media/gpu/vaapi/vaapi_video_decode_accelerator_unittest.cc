@@ -349,25 +349,17 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
 #endif
 }
 
-// Verifies the expected buffer format for each output mode.
+// Verifies the expected buffer format.
 TEST_P(VaapiVideoDecodeAcceleratorTest, PictureBufferFormat) {
-  gfx::BufferFormat allocate_format =
-      mock_vaapi_picture_factory_->GetBufferFormatForAllocateMode();
-  gfx::BufferFormat import_format =
-      mock_vaapi_picture_factory_->GetBufferFormatForImportMode();
+  gfx::BufferFormat format = mock_vaapi_picture_factory_->GetBufferFormat();
 
 #if defined(USE_OZONE)
-  EXPECT_EQ(gfx::BufferFormat::BGRX_8888, allocate_format);
+  EXPECT_EQ(gfx::BufferFormat::BGRX_8888, format);
 #else
-  EXPECT_EQ(gfx::BufferFormat::RGBX_8888, allocate_format);
+  EXPECT_EQ(gfx::BufferFormat::RGBX_8888, format);
 #endif  // USE_OZONE
 
-  EXPECT_EQ(gfx::BufferFormat::YVU_420, import_format);
-
-  EXPECT_EQ(PIXEL_FORMAT_XRGB,
-            GfxBufferFormatToVideoPixelFormat(allocate_format));
-  EXPECT_EQ(PIXEL_FORMAT_YV12,
-            GfxBufferFormatToVideoPixelFormat(import_format));
+  EXPECT_EQ(PIXEL_FORMAT_XRGB, GfxBufferFormatToVideoPixelFormat(format));
 }
 
 INSTANTIATE_TEST_CASE_P(/* No prefix. */,

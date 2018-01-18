@@ -349,7 +349,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
-      output_format_(gfx::BufferFormat::BGRX_8888),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
@@ -370,20 +369,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
-  }
-
-  switch (config.output_mode) {
-    case Config::OutputMode::ALLOCATE:
-      output_format_ = vaapi_picture_factory_->GetBufferFormatForAllocateMode();
-      break;
-
-    case Config::OutputMode::IMPORT:
-      output_format_ = vaapi_picture_factory_->GetBufferFormatForImportMode();
-      break;
-
-    default:
-      NOTREACHED() << "Only ALLOCATE and IMPORT OutputModes are supported";
-      return false;
   }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
@@ -727,7 +712,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(output_format_);
+  VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
+      vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
                             requested_num_pics_, format, 1, requested_pic_size_,
@@ -813,7 +799,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       RETURN_AND_NOTIFY_ON_FAILURE(
-          picture->Allocate(output_format_),
+          picture->Allocate(vaapi_picture_factory_->GetBufferFormat()),
           "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
       output_buffers_.push(buffers[i].id());
     }
@@ -846,6 +832,7 @@ static void CloseGpuMemoryBufferHandle(
 
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
+    VideoPixelFormat pixel_format,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   VLOGF(2) << "Importing picture id: " << picture_buffer_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -870,8 +857,9 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  if (!picture->ImportGpuMemoryBufferHandle(output_format_,
-                                            gpu_memory_buffer_handle)) {
+  if (!picture->ImportGpuMemoryBufferHandle(
+          VideoPixelFormatToGfxBufferFormat(pixel_format),
+          gpu_memory_buffer_handle)) {
     // ImportGpuMemoryBufferHandle will close the handles even on failure, so
     // we don't need to do this ourselves.
     VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
