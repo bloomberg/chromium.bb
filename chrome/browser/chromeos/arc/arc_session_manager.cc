@@ -925,6 +925,9 @@ void ArcSessionManager::StartArc() {
   // ARC must be started only if no pending data removal request exists.
   DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 
+  for (auto& observer : observer_list_)
+    observer.OnArcStarted();
+
   arc_start_time_ = base::Time::Now();
   provisioning_reported_ = false;
   arc_session_runner_->RequestStart(ArcInstanceMode::FULL_INSTANCE);

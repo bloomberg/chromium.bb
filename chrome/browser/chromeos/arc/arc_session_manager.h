@@ -108,6 +108,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     // during the opt-in flow.
     virtual void OnArcOptInManagementCheckStarted() {}
 
+    // Called to notify that ARC begins to start.
+    virtual void OnArcStarted() {}
+
     // Called to notify that ARC has been initialized successfully.
     virtual void OnArcInitialStart() {}
 
