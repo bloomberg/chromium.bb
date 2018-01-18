@@ -39,3 +39,19 @@ source_set("tests") {
     "//testing/gtest",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "test/test_data_pipe_getter.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/network:network_service",
+    "//services/network/public/interfaces",
+    "//testing/gtest",
+  ]
+}

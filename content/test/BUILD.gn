@@ -323,6 +323,7 @@ static_library("test_support") {
     "//media/capture/mojo:image_capture",
     "//mojo/edk/system",
     "//net:test_support",
+    "//services/network:test_support",
     "//services/network/public/interfaces:interfaces",
     "//services/proxy_resolver:lib",
     "//services/service_manager/public/cpp",
