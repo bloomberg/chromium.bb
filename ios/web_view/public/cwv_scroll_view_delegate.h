@@ -9,6 +9,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVScrollView;
 
 // Delegete for CWVScrollView.
@@ -31,5 +33,7 @@ CWV_EXPORT
 // implementation.
 - (void)scrollViewWillBeginZooming:(CWVScrollView*)webViewScrollViewProxy;
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_SCROLL_VIEW_DELEGATE_H_

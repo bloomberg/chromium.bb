@@ -9,6 +9,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 // User Script to be injected into main frame of CWVWebView after
 // window.document is created, but before other content is loaded (i.e., at the
 // same timing as WKUserScriptInjectionTimeAtDocumentStart).
@@ -16,12 +18,14 @@ CWV_EXPORT
 @interface CWVUserScript : NSObject
 
 // JavaScript source code.
-@property(nonatomic, copy, readonly, nonnull) NSString* source;
+@property(nonatomic, copy, readonly) NSString* source;
 
-- (nonnull instancetype)init NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
-- (nonnull instancetype)initWithSource:(nonnull NSString*)source;
+- (instancetype)initWithSource:(NSString*)source;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_USER_SCRIPT_H_

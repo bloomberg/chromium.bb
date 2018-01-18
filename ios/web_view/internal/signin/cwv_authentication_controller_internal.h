@@ -7,6 +7,8 @@
 
 #import "ios/web_view/public/cwv_authentication_controller.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 namespace ios_web_view {
 class WebViewBrowserState;
 }  // namespace ios_web_view
@@ -18,5 +20,7 @@ class WebViewBrowserState;
     (ios_web_view::WebViewBrowserState*)browserState NS_DESIGNATED_INITIALIZER;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_SIGNIN_CWV_AUTHENTICATION_CONTROLLER_INTERNAL_H_

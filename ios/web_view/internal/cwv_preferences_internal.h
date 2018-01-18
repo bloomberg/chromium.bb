@@ -7,6 +7,8 @@
 
 #import "ios/web_view/public/cwv_preferences.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 class PrefService;
 
 @interface CWVPreferences ()
@@ -17,5 +19,7 @@ class PrefService;
     NS_DESIGNATED_INITIALIZER;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_CWV_PREFERENCES_INTERNAL_H_

@@ -9,6 +9,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVUserScript;
 
 // Allows injecting custom scripts into CWVWebView created with the
@@ -17,17 +19,18 @@ CWV_EXPORT
 @interface CWVUserContentController : NSObject
 
 // The user scripts associated with the configuration.
-@property(nonatomic, copy, readonly, nonnull)
-    NSArray<CWVUserScript*>* userScripts;
+@property(nonatomic, copy, readonly) NSArray<CWVUserScript*>* userScripts;
 
-- (nonnull instancetype)init NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Adds a user script.
-- (void)addUserScript:(nonnull CWVUserScript*)userScript;
+- (void)addUserScript:(CWVUserScript*)userScript;
 
 // Removes all associated user scripts.
 - (void)removeAllUserScripts;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_USER_CONTENT_CONTROLLER_H_

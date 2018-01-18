@@ -9,6 +9,8 @@
 
 #import "ios/web_view/public/cwv_scroll_view.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CRWWebViewScrollViewProxy;
 
 @interface CWVScrollView ()
@@ -17,5 +19,7 @@
 @property(nonatomic, weak, readwrite) CRWWebViewScrollViewProxy* proxy;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_CWV_SCROLL_VIEW_INTERNAL_H_

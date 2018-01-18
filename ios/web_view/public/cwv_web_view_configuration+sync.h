@@ -7,6 +7,8 @@
 
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVAuthenticationController;
 
 @interface CWVWebViewConfiguration (Sync)
@@ -17,5 +19,7 @@
     CWVAuthenticationController* authenticationController;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_SYNC_H_

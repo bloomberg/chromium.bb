@@ -7,6 +7,8 @@
 
 #import "ios/web_view/public/cwv_html_element.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CWVHTMLElement ()
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
@@ -17,5 +19,7 @@
     NS_DESIGNATED_INITIALIZER;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_CWV_HTML_ELEMENT_INTERNAL_H_

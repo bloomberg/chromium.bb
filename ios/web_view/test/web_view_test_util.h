@@ -9,6 +9,8 @@
 
 #include "base/compiler_specific.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVWebView;
 
 namespace ios_web_view {
@@ -44,3 +46,5 @@ bool WaitForWebViewLoadCompletionOrTimeout(CWVWebView* web_view)
 }  // namespace ios_web_view
 
 #endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_
+
+NS_ASSUME_NONNULL_END

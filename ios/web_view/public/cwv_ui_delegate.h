@@ -10,6 +10,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVHTMLElement;
 @class CWVPreviewElementInfo;
 @class CWVWebView;
@@ -74,7 +76,7 @@ CWV_EXPORT
 // Called when the user performs a peek action on a link with |linkURL| with
 // force touch. Returns a view controller shown as a pop-up. Uses Webkit's
 // default preview behavior when it returns nil.
-- (UIViewController*)webView:(CWVWebView*)webView
+- (nullable UIViewController*)webView:(CWVWebView*)webView
     previewingViewControllerForElement:(CWVPreviewElementInfo*)elementInfo;
 
 // Instructs the delegate to display |previewingViewController| inside the app,
@@ -83,5 +85,7 @@ CWV_EXPORT
     commitPreviewingViewController:(UIViewController*)previewingViewController;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_UI_DELEGATE_H_

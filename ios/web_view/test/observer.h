@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 // Observes a KVO compliant property. To use this Observer, create an instance
 // and call |setObservedObject:keyPath:|. Then test expected values against
 // |lastValue|.
@@ -28,9 +30,10 @@
 
 // Sets the |object| and |keyPath| to observe. The |keyPath| property of
 // |object| must exist and be KVO compliant.
-- (void)setObservedObject:(nonnull NSObject*)object
-                  keyPath:(nonnull NSString*)keyPath;
+- (void)setObservedObject:(NSObject*)object keyPath:(NSString*)keyPath;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_TEST_OBSERVER_H_

@@ -5,10 +5,13 @@
 #ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
 #define IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
 
+#import <Foundation/Foundation.h>
 #include <memory>
 #include <string>
 
 #include "testing/platform_test.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 namespace net {
 namespace test_server {
@@ -56,3 +59,5 @@ class WebViewIntTest : public PlatformTest {
 }  // namespace ios_web_view
 
 #endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
+
+NS_ASSUME_NONNULL_END
