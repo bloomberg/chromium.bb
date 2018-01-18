@@ -1252,6 +1252,7 @@ test("browser_tests") {
         "../browser/extensions/extension_unload_browsertest.cc",
         "../browser/extensions/extension_url_rewrite_browsertest.cc",
         "../browser/extensions/extension_view_host_factory_browsertest.cc",
+        "../browser/extensions/extension_web_ui_browsertest.cc",
         "../browser/extensions/extension_websocket_apitest.cc",
         "../browser/extensions/extension_webui_apitest.cc",
         "../browser/extensions/extension_with_management_policy_apitest.cc",
