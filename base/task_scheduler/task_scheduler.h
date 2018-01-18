@@ -172,9 +172,9 @@ class BASE_EXPORT TaskScheduler {
 
 #if !defined(OS_NACL)
   // Creates and starts a task scheduler using default params. |name| is used to
-  // label threads and histograms. It should identify the component that calls
-  // this. Start() is called by this method; it is invalid to call it again
-  // afterwards. CHECKs on failure. For tests, prefer
+  // label histograms, it must not be empty. It should identify the component
+  // that calls this. Start() is called by this method; it is invalid to call it
+  // again afterwards. CHECKs on failure. For tests, prefer
   // base::test::ScopedTaskEnvironment (ensures isolation).
   static void CreateAndStartWithDefaultParams(StringPiece name);
 
@@ -183,12 +183,12 @@ class BASE_EXPORT TaskScheduler {
   void StartWithDefaultParams();
 #endif  // !defined(OS_NACL)
 
-  // Creates a ready to start task scheduler. |name| is used to label threads
-  // and histograms. It should identify the component that creates the
-  // TaskScheduler. The task scheduler doesn't create threads until Start() is
-  // called. Tasks can be posted at any time but will not run until after
-  // Start() is called. For tests, prefer base::test::ScopedTaskEnvironment
-  // (ensures isolation).
+  // Creates a ready to start task scheduler. |name| is used to label
+  // histograms, it must not be empty. It should identify the component that
+  // creates the TaskScheduler. The task scheduler doesn't create threads until
+  // Start() is called. Tasks can be posted at any time but will not run until
+  // after Start() is called. For tests, prefer
+  // base::test::ScopedTaskEnvironment (ensures isolation).
   static void Create(StringPiece name);
 
   // Registers |task_scheduler| to handle tasks posted through the post_task.h

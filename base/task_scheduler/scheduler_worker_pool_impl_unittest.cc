@@ -85,7 +85,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
     service_thread_.Start();
     delayed_task_manager_.Start(service_thread_.task_runner());
     worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
-        "TestWorkerPool", ThreadPriority::NORMAL, &task_tracker_,
+        "TestWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker_,
         &delayed_task_manager_);
     ASSERT_TRUE(worker_pool_);
   }
@@ -785,7 +785,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
   auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "OnePolicyWorkerPool", ThreadPriority::NORMAL, &task_tracker,
+      "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker,
       &delayed_task_manager);
   worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()),
                      service_thread_task_runner,
@@ -806,7 +806,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
   auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "StandbyThreadWorkerPool", ThreadPriority::NORMAL, &task_tracker,
+      "StandbyThreadWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker,
       &delayed_task_manager);
   worker_pool->Start(
       SchedulerWorkerPoolParams(worker_capacity, kReclaimTimeForCleanupTests),
@@ -1327,7 +1327,7 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
   delayed_task_manager.Start(service_thread_task_runner);
-  SchedulerWorkerPoolImpl worker_pool("OverWorkerCapacityTestWorkerPool",
+  SchedulerWorkerPoolImpl worker_pool("OverWorkerCapacityTestWorkerPool", "A",
                                       ThreadPriority::NORMAL, &task_tracker,
                                       &delayed_task_manager);
   worker_pool.Start(

@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_runner.h"
@@ -58,17 +59,18 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Constructs a pool without workers.
   //
-  // |name| is used to label the pool's threads ("TaskScheduler" + |name| +
-  // index) and histograms ("TaskScheduler." + histogram name + "." + |name| +
-  // extra suffixes). |priority_hint| is the preferred thread priority; the
-  // actual thread priority depends on shutdown state and platform capabilities.
+  // |histogram_label| is used to label the pool's histograms ("TaskScheduler."
+  // + histogram_name + "." + |histogram_label| + extra suffixes), it must not
+  // be empty. |pool_label| is used to label the pool's threads, it must not be
+  // empty. |priority_hint| is the preferred thread priority; the actual thread
+  // priority depends on shutdown state and platform capabilities.
   // |task_tracker| keeps track of tasks. |delayed_task_manager| handles tasks
   // posted with a delay.
-  SchedulerWorkerPoolImpl(
-      const std::string& name,
-      ThreadPriority priority_hint,
-      TaskTracker* task_tracker,
-      DelayedTaskManager* delayed_task_manager);
+  SchedulerWorkerPoolImpl(StringPiece histogram_label,
+                          StringPiece pool_label,
+                          ThreadPriority priority_hint,
+                          TaskTracker* task_tracker,
+                          DelayedTaskManager* delayed_task_manager);
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. Uses |service_thread_task_runner| to monitor for
@@ -204,7 +206,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void DecrementWorkerCapacityLockRequired();
   void IncrementWorkerCapacityLockRequired();
 
-  const std::string name_;
+  const std::string pool_label_;
   const ThreadPriority priority_hint_;
 
   // PriorityQueue from which all threads of this worker pool get work.

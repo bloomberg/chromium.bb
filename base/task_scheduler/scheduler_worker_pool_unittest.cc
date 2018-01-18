@@ -111,7 +111,7 @@ class TaskSchedulerWorkerPoolTest
     switch (GetParam().pool_type) {
       case PoolType::GENERIC:
         worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
-            "TestWorkerPool", ThreadPriority::NORMAL, &task_tracker_,
+            "TestWorkerPool", "A", ThreadPriority::NORMAL, &task_tracker_,
             &delayed_task_manager_);
         break;
 #if defined(OS_WIN)

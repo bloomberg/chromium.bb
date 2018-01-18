@@ -419,21 +419,19 @@ void SchedulerSingleThreadTaskRunnerManager::Start() {
 
 scoped_refptr<SingleThreadTaskRunner>
 SchedulerSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
-    const std::string& name,
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<SchedulerWorkerDelegate>(name, traits,
+  return CreateTaskRunnerWithTraitsImpl<SchedulerWorkerDelegate>(traits,
                                                                  thread_mode);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
 SchedulerSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
-    const std::string& name,
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   return CreateTaskRunnerWithTraitsImpl<SchedulerWorkerCOMDelegate>(
-      name, traits, thread_mode);
+      traits, thread_mode);
 }
 #endif  // defined(OS_WIN)
 
@@ -441,7 +439,6 @@ template <typename DelegateType>
 scoped_refptr<
     SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner>
 SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
-    const std::string& name,
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   DCHECK(thread_mode != SingleThreadTaskRunnerThreadMode::SHARED ||
@@ -467,12 +464,12 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
     if (!worker) {
       const auto& environment_params =
           kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
-      std::string processed_name =
-          thread_mode == SingleThreadTaskRunnerThreadMode::DEDICATED
-              ? name + environment_params.name_suffix
-              : "Shared" + name + environment_params.name_suffix;
+      std::string worker_name;
+      if (thread_mode == SingleThreadTaskRunnerThreadMode::SHARED)
+        worker_name += "Shared";
+      worker_name += environment_params.name_suffix;
       worker = CreateAndRegisterSchedulerWorker<DelegateType>(
-          processed_name, environment_params.priority_hint);
+          worker_name, environment_params.priority_hint);
       new_worker = true;
     }
     started = started_;
