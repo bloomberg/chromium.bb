@@ -73,10 +73,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void OnShadowPageInitialized() override;
 
   // WebDevToolsAgentImpl::Client overrides.
-  bool SendProtocolMessage(int session_id,
-                           int call_id,
-                           const String&,
-                           const String&) override;
   void ResumeStartup() override;
   const WebString& GetDevToolsFrameToken() override;
 

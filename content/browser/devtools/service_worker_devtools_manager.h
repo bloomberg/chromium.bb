@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -67,7 +68,10 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
                      bool is_installed_version,
                      base::UnguessableToken* devtools_worker_token,
                      bool* pause_on_start);
-  void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
+  void WorkerReadyForInspection(
+      int worker_process_id,
+      int worker_route_id,
+      blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);

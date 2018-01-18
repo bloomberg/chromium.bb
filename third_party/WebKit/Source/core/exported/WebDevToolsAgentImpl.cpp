@@ -672,11 +672,6 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
   if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
     FlushProtocolNotifications();
 
-  if (worker_client_ && worker_client_->SendProtocolMessage(session_id, call_id,
-                                                            response, state)) {
-    return;
-  }
-
   auto it = hosts_.find(session_id);
   if (it == hosts_.end())
     return;

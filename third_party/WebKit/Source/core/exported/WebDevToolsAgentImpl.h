@@ -66,26 +66,11 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
  public:
-  // ------ Deprecated ------
-  // These public methods and client are temporary,
-  // until shared/service workers inspection migrates to Mojo.
   class WorkerClient {
    public:
     virtual ~WorkerClient() {}
-    virtual bool SendProtocolMessage(int session_id,
-                                     int call_id,
-                                     const String& response,
-                                     const String& state) = 0;
     virtual void ResumeStartup() = 0;
   };
-  void Attach(int session_id);
-  void Reattach(int session_id, const String& saved_state);
-  void Detach(int session_id);
-  void DispatchOnInspectorBackend(int session_id,
-                                  int call_id,
-                                  const String& method,
-                                  const String& message);
-  // ------ End deprecated ------
 
   static WebDevToolsAgentImpl* CreateForFrame(WebLocalFrameImpl*);
   static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*,
@@ -150,6 +135,15 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void DispatchMessageFromFrontend(int session_id,
                                    const String& method,
                                    const String& message);
+  // TODO(dgozman): we should get rid of session ids and
+  // simplify all these methods.
+  void Attach(int session_id);
+  void Reattach(int session_id, const String& saved_state);
+  void Detach(int session_id);
+  void DispatchOnInspectorBackend(int session_id,
+                                  int call_id,
+                                  const String& method,
+                                  const String& message);
 
   bool Attached() const { return !!sessions_.size(); }
   void InspectElementAt(int session_id, const WebPoint&);

@@ -197,38 +197,6 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
   StartWorkerThread();
 }
 
-void WebEmbeddedWorkerImpl::AttachDevTools(int session_id) {
-  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
-  if (devtools_agent)
-    devtools_agent->Attach(session_id);
-}
-
-void WebEmbeddedWorkerImpl::ReattachDevTools(int session_id,
-                                             const WebString& saved_state) {
-  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
-  if (devtools_agent)
-    devtools_agent->Reattach(session_id, saved_state);
-}
-
-void WebEmbeddedWorkerImpl::DetachDevTools(int session_id) {
-  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
-  if (devtools_agent)
-    devtools_agent->Detach(session_id);
-}
-
-void WebEmbeddedWorkerImpl::DispatchDevToolsMessage(int session_id,
-                                                    int call_id,
-                                                    const WebString& method,
-                                                    const WebString& message) {
-  if (asked_to_terminate_)
-    return;
-  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
-  if (devtools_agent) {
-    devtools_agent->DispatchOnInspectorBackend(session_id, call_id, method,
-                                               message);
-  }
-}
-
 void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
   MessageLevel web_core_message_level;
@@ -254,6 +222,12 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
       kOtherMessageSource, web_core_message_level, message.text,
       SourceLocation::Create(message.url, message.line_number,
                              message.column_number, nullptr)));
+}
+
+void WebEmbeddedWorkerImpl::GetDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
+  shadow_page_->GetDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
+      std::move(devtools_agent_request)));
 }
 
 void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
@@ -305,15 +279,6 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already
   // invoked and |this| might have been deleted at this point.
-}
-
-bool WebEmbeddedWorkerImpl::SendProtocolMessage(int session_id,
-                                                int call_id,
-                                                const String& message,
-                                                const String& state) {
-  worker_context_client_->SendDevToolsMessage(session_id, call_id, message,
-                                              state);
-  return true;
 }
 
 void WebEmbeddedWorkerImpl::ResumeStartup() {

@@ -151,12 +151,6 @@ class WebServiceWorkerContextClient {
                                     int line_number,
                                     const WebString& source_url) {}
 
-  // Inspector related messages.
-  virtual void SendDevToolsMessage(int session_id,
-                                   int call_id,
-                                   const WebString& message,
-                                   const WebString& state) {}
-
   // Called after an 'activate' event completed.
   virtual void DidHandleActivateEvent(int event_id,
                                       mojom::ServiceWorkerEventStatus,
