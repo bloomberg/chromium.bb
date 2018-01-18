@@ -17,6 +17,15 @@ namespace system {
 
 class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
  public:
+  class Observer {
+   public:
+    // This is always called when UpdateTimezoneResolver() is finished.
+    // As UpdateTimezoneResolver() is called once any of the relevant
+    // preferences are updated, it can be used to observe all time zone -related
+    // preference changes.
+    virtual void OnTimeZoneResolverUpdated() = 0;
+  };
+
   // This is stored as a prefs::kResolveTimezoneByGeolocationMethod
   // and prefs::kResolveDeviceTimezoneByGeolocationMethod preferences.
   enum class TimeZoneResolveMethod {
@@ -42,6 +51,9 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // Starts or stops TimezoneResolver according to currect settings.
   void UpdateTimezoneResolver();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Returns true if result of timezone resolve should be applied to
   // system timezone (preferences might have changed since request was started).
   bool ShouldApplyResolvedTimezone();
@@ -63,11 +75,17 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
       const PrefService* user_prefs,
       bool check_policy);
 
+  // Returns true if time zone resolution settings are policy controlled and
+  // thus cannot be changed by user.
+  static bool IsTimeZoneResolutionPolicyControlled();
+
  private:
   int GetTimezoneManagementSetting();
 
   // Local State initialization observer.
   void OnLocalStateInitialized(bool initialized);
+
+  base::ObserverList<Observer> observers_;
 
   // This is non-null only after user logs in.
   PrefService* primary_user_prefs_ = nullptr;

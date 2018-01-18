@@ -20,9 +20,9 @@ settings.TimeZoneAutoDetectPolicyRestriction = {
 };
 
 /**
- * Describes values of prefs.settings.resolve_timezone_by_geolocation_method.
- * Must be kept in sync with TimeZoneResolverManager::TimeZoneResolveMethod
- * enum.
+ * Describes values of
+ * prefs.generated.resolve_timezone_by_geolocation_method_short. Must be kept in
+ * sync with TimeZoneResolverManager::TimeZoneResolveMethod enum.
  * @enum {number}
  */
 settings.TimeZoneAutoDetectMethod = {
@@ -30,19 +30,4 @@ settings.TimeZoneAutoDetectMethod = {
   IP_ONLY: 1,
   SEND_WIFI_ACCESS_POINTS: 2,
   SEND_ALL_LOCATION_INFO: 3
-};
-
-/**
- * Describes values of prefs.settings.
- * resolve_device_timezone_by_geolocation_policy
- * Must be kept in sync with enterprise_management::SystemTimezoneProto
- * enum.
- * @enum {number}
- */
-settings.SystemTimezoneProto = {
-  USERS_DECIDE: 0,
-  DISABLED: 1,
-  IP_ONLY: 2,
-  SEND_WIFI_ACCESS_POINTS: 3,
-  SEND_ALL_LOCATION_INFO: 4,
 };

@@ -189,6 +189,19 @@ void TimeZoneResolverManager::UpdateTimezoneResolver() {
     resolver->Start();
   else
     resolver->Stop();
+
+  // Observers must be notified whenever UpdateTimezoneResolver() is called.
+  // This allows observers to listen for all relevant prefs updates.
+  for (Observer& observer : observers_)
+    observer.OnTimeZoneResolverUpdated();
+}
+
+void TimeZoneResolverManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TimeZoneResolverManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool TimeZoneResolverManager::ShouldApplyResolvedTimezone() {
@@ -293,6 +306,11 @@ TimeZoneResolverManager::GetEffectiveUserTimeZoneResolveMethod(
   return user_prefs->GetBoolean(prefs::kResolveTimezoneByGeolocation)
              ? TimeZoneResolveMethod::IP_ONLY
              : TimeZoneResolveMethod::DISABLED;
+}
+
+// static
+bool TimeZoneResolverManager::IsTimeZoneResolutionPolicyControlled() {
+  return GetServiceConfigurationFromPolicy() != UNSPECIFIED;
 }
 
 }  // namespace system
