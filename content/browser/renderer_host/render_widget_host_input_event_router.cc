@@ -25,24 +25,12 @@ namespace {
 
 // Transforms WebTouchEvent touch positions from the root view coordinate
 // space to the target view coordinate space.
-void TransformEventTouchPositions(
-    blink::WebTouchEvent* event,
-    content::RenderWidgetHostViewBase* root_view,
-    content::RenderWidgetHostViewBase* target_view) {
-  if (!target_view || target_view == root_view)
-    return;
-
+void TransformEventTouchPositions(blink::WebTouchEvent* event,
+                                  const gfx::Vector2dF& delta) {
   for (unsigned i = 0; i < event->touches_length; ++i) {
-    gfx::PointF transformed_point(event->touches[i].PositionInWidget());
-    // TODO(wjmaclean): For multiple touch points this might be inefficient;
-    // we should investigate whether it's better to transform arrays of
-    // points all at once.
-    if (root_view->TransformPointToCoordSpaceForView(
-            event->touches[i].PositionInWidget(), target_view,
-            &transformed_point)) {
-      event->touches[i].SetPositionInWidget(transformed_point.x(),
-                                            transformed_point.y());
-    }
+    event->touches[i].SetPositionInWidget(
+        event->touches[i].PositionInWidget().x + delta.x(),
+        event->touches[i].PositionInWidget().y + delta.y());
   }
 }
 
@@ -544,13 +532,22 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebTouchEvent& touch_event,
-    const ui::LatencyInfo& latency) {
+    const ui::LatencyInfo& latency,
+    const base::Optional<gfx::PointF>& target_location) {
   DCHECK(blink::WebInputEvent::IsTouchEventType(touch_event.GetType()) &&
          touch_event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
 
   bool is_sequence_start = !touch_target_.target && target;
   if (is_sequence_start) {
     touch_target_.target = target;
+    // TODO(wjmaclean): Instead of just computing a delta, we should extract
+    // the complete transform. We assume it doesn't change for the duration
+    // of the touch sequence, though this could be wrong; a better approach
+    // might be to always transform each point to the |touch_target_.target|
+    // for the duration of the sequence.
+    DCHECK(target_location.has_value());
+    touch_target_.delta =
+        target_location.value() - touch_event.touches[0].PositionInWidget();
 
     DCHECK(touchscreen_gesture_target_map_.find(
                touch_event.unique_touch_event_id) ==
@@ -588,7 +585,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
   }
 
   blink::WebTouchEvent event(touch_event);
-  TransformEventTouchPositions(&event, root_view, touch_target_.target);
+  TransformEventTouchPositions(&event, touch_target_.delta);
   touch_target_.target->ProcessTouchEvent(event, latency);
 
   if (!active_touches_)
@@ -1257,8 +1254,8 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
   }
   if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
     DispatchTouchEvent(root_view, target,
-                       static_cast<const blink::WebTouchEvent&>(event),
-                       latency);
+                       static_cast<const blink::WebTouchEvent&>(event), latency,
+                       target_location);
     return;
   }
   if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
