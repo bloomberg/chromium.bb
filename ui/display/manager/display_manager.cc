@@ -56,6 +56,14 @@ namespace {
 // in case that the offset value is too large.
 const int kMinimumOverlapForInvalidOffset = 100;
 
+// The UMA histogram that logs the types of mirror mode.
+const char kMirrorModeTypesHistogram[] = "DisplayManager.MirrorModeTypes";
+
+// The UMA histogram that logs the range in which the number of connected
+// displays in mirror mode can reside.
+const char kMirroringDisplayCountRangesHistogram[] =
+    "DisplayManager.MirroringDisplayCountRanges";
+
 struct DisplaySortFunctor {
   bool operator()(const Display& a, const Display& b) {
     return CompareDisplayIds(a.id(), b.id());
@@ -241,7 +249,7 @@ bool ValidateMatrixForDisplayInfoList(
 }
 
 // Defines the ranges in which the number of displays can reside as reported by
-// UMA in the case of Unified Desktop mode.
+// UMA in the case of Unified Desktop mode or mirror mode.
 //
 // WARNING: These values are persisted to logs. Entries should not be
 //          renumbered and numeric values should never be reused.
@@ -262,8 +270,9 @@ enum class DisplayCountRange {
 };
 
 // Returns the display count range bucket in which |display_count| resides.
-DisplayCountRange GetUnifiedDisplayCountRange(int display_count) {
-  // Note that Unified Mode cannot be enabled with a single display.
+DisplayCountRange GetDisplayCountRange(int display_count) {
+  // Note that Unified Mode and mirror mode cannot be enabled with a single
+  // display.
   DCHECK_GE(display_count, 2);
 
   if (display_count <= 2)
@@ -280,6 +289,21 @@ DisplayCountRange GetUnifiedDisplayCountRange(int display_count) {
 
   return DisplayCountRange::kGreaterThan8Displays;
 }
+
+// Defines the types of mirror mode in which the displays connected to the
+// device are in as reported by UMA.
+//
+// WARNING: These values are persisted to logs. Entries should not be renumbered
+//          and numeric values should never be reused.
+enum class MirrorModeTypes {
+  // Normal mirror mode.
+  kNormal = 0,
+  // Mixed mirror mode.
+  kMixed = 1,
+
+  // Always keep this the last item.
+  kCount,
+};
 
 }  // namespace
 
@@ -1091,6 +1115,18 @@ void DisplayManager::UpdateDisplaysWith(
   if (delegate_)
     delegate_->PostDisplayConfigurationChange();
 
+  if (mirror_mode) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kMirroringDisplayCountRangesHistogram,
+        GetDisplayCountRange(GetMirroringDestinationDisplayIdList().size() + 1),
+        DisplayCountRange::kCount);
+    UMA_HISTOGRAM_ENUMERATION(kMirrorModeTypesHistogram,
+                              mixed_mirror_mode_params_
+                                  ? MirrorModeTypes::kMixed
+                                  : MirrorModeTypes::kNormal,
+                              MirrorModeTypes::kCount);
+  }
+
   // Create the mirroring window asynchronously after all displays
   // are added so that it can mirror the display newly added. This can
   // happen when switching from dock mode to software mirror mode.
@@ -1880,7 +1916,7 @@ void DisplayManager::CreateUnifiedDesktopDisplayInfo(
 
   UMA_HISTOGRAM_ENUMERATION(
       "DisplayManager.UnifiedDesktopDisplayCountRange",
-      GetUnifiedDisplayCountRange(software_mirroring_display_list_.size()),
+      GetDisplayCountRange(software_mirroring_display_list_.size()),
       DisplayCountRange::kCount);
 }
 
