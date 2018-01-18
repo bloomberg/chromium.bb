@@ -44,13 +44,6 @@ struct ResourceLoaderOptions;
 
 namespace WebCORS {
 
-// Given a redirected-to URL, check if the location is allowed
-// according to CORS. That is:
-// - the URL has a CORS supported scheme and
-// - the URL does not contain the userinfo production.
-BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError>
-CheckRedirectLocation(const WebURL&);
-
 // Perform the required CORS checks on the response to a preflight request.
 // Returns |kPreflightSuccess| if preflight response was successful.
 BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflight(
