@@ -341,6 +341,7 @@ CompositedSelectionBound RenderedPosition::PositionInGraphicsLayerBacking(
   bound.edge_bottom_in_layer =
       LocalToInvalidationBackingPoint(edge_bottom_in_layer);
   bound.layer = GetGraphicsLayerBacking(*layout_object_);
+  bound.hidden = !IsVisible(selection_start);
   return bound;
 }
 
@@ -356,7 +357,7 @@ LayoutPoint RenderedPosition::GetSamplePointForVisibility(
   return sample_point;
 }
 
-bool RenderedPosition::IsVisible(bool selection_start) {
+bool RenderedPosition::IsVisible(bool selection_start) const {
   if (IsNull())
     return false;
 
