@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
+#include "base/debug/crash_logging.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -525,6 +526,10 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   base::ThreadTicks task_start_thread_time;
   if (should_record_thread_time)
     task_start_thread_time = base::ThreadTicks::Now();
+  base::debug::SetCrashKeyString(main_thread_only().file_name_crash_key,
+                                 pending_task.posted_from.file_name());
+  base::debug::SetCrashKeyString(main_thread_only().function_name_crash_key,
+                                 pending_task.posted_from.function_name());
 
   {
     TRACE_EVENT1("renderer.scheduler", "TaskQueueManager::RunTask", "queue",
@@ -854,6 +859,18 @@ void TaskQueueManager::SetRandomSeed(uint64_t value) {
 
 bool TaskQueueManager::Validate() {
   return memory_corruption_sentinel_ == kMemoryCorruptionSentinelValue;
+}
+
+void TaskQueueManager::EnableCrashKeys(
+    const char* file_name_crash_key_name,
+    const char* function_name_crash_key_name) {
+  DCHECK(!main_thread_only().file_name_crash_key);
+  DCHECK(!main_thread_only().function_name_crash_key);
+  main_thread_only().file_name_crash_key = base::debug::AllocateCrashKeyString(
+      file_name_crash_key_name, base::debug::CrashKeySize::Size64);
+  main_thread_only().function_name_crash_key =
+      base::debug::AllocateCrashKeyString(function_name_crash_key_name,
+                                          base::debug::CrashKeySize::Size64);
 }
 
 }  // namespace scheduler
