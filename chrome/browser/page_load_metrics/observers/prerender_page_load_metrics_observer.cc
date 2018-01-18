@@ -4,8 +4,9 @@
 
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "content/public/browser/web_contents.h"
@@ -24,7 +25,7 @@ PrerenderPageLoadMetricsObserver::CreateIfNeeded(
   if (manager->PageLoadMetricsObserverDisabledForTesting())
     return nullptr;
 
-  return base::MakeUnique<PrerenderPageLoadMetricsObserver>(manager,
+  return std::make_unique<PrerenderPageLoadMetricsObserver>(manager,
                                                             web_contents);
 }
 

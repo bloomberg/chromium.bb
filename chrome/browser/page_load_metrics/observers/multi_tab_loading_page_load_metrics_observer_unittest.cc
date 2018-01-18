@@ -4,7 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/optional.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -75,7 +76,7 @@ class MultiTabLoadingPageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<TestMultiTabLoadingPageLoadMetricsObserver>(
+        std::make_unique<TestMultiTabLoadingPageLoadMetricsObserver>(
             number_of_tabs_with_inflight_load_.value()));
   }
 

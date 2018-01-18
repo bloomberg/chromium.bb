@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
@@ -42,14 +41,14 @@ class LoadingPredictorPageLoadMetricsObserverTest
     predictors::LoadingPredictorConfig config;
     config.mode = predictors::LoadingPredictorConfig::LEARNING;
     predictor_ =
-        base::MakeUnique<testing::StrictMock<MockResourcePrefetchPredictor>>(
+        std::make_unique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());
     // The base class of MockResourcePrefetchPredictor constructs the
     // PredictorDatabase for the profile. The PredictorDatabase is initialized
     // asynchronously and we have to wait for the initialization completion.
     content::RunAllTasksUntilIdle();
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
-    collector_ = base::MakeUnique<LoadingDataCollector>(predictor_.get(),
+    collector_ = std::make_unique<LoadingDataCollector>(predictor_.get(),
                                                         nullptr, config);
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.paint_timing->first_paint = base::TimeDelta::FromSeconds(2);
@@ -62,7 +61,7 @@ class LoadingPredictorPageLoadMetricsObserverTest
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<LoadingPredictorPageLoadMetricsObserver>(
+        std::make_unique<LoadingPredictorPageLoadMetricsObserver>(
             predictor_.get(), collector_.get(), web_contents()));
   }
 

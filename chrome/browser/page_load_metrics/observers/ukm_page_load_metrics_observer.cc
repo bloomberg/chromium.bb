@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 
+#include <memory>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
@@ -63,7 +65,7 @@ UkmPageLoadMetricsObserver::CreateIfNeeded(content::WebContents* web_contents) {
   if (!ukm::UkmRecorder::Get()) {
     return nullptr;
   }
-  return base::MakeUnique<UkmPageLoadMetricsObserver>(
+  return std::make_unique<UkmPageLoadMetricsObserver>(
       GetNQEService(web_contents));
 }
 

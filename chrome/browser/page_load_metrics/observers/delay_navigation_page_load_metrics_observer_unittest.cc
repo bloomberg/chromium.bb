@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -42,7 +41,7 @@ class DelayNavigationPageLoadMetricsObserverTest
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<DelayNavigationPageLoadMetricsObserver>());
+        std::make_unique<DelayNavigationPageLoadMetricsObserver>());
   }
 
   void SetUp() override {
@@ -52,7 +51,7 @@ class DelayNavigationPageLoadMetricsObserverTest
     // Instantiates a DelayNavigationThrottle for each main frame navigation in
     // the web_contents().
     throttle_inserter_ =
-        base::MakeUnique<content::TestNavigationThrottleInserter>(
+        std::make_unique<content::TestNavigationThrottleInserter>(
             web_contents(),
             base::BindRepeating(
                 &DelayNavigationPageLoadMetricsObserverTest::CreateThrottle,
@@ -63,7 +62,7 @@ class DelayNavigationPageLoadMetricsObserverTest
       content::NavigationHandle* handle) {
     if (!handle->IsInMainFrame())
       return nullptr;
-    return base::MakeUnique<DelayNavigationThrottle>(
+    return std::make_unique<DelayNavigationThrottle>(
         handle, mock_time_task_runner_,
         base::TimeDelta::FromMilliseconds(kDelayMillis));
   }

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
@@ -139,14 +138,14 @@ class TestPageLoadMetricsEmbedderInterface
   bool IsNewTabPageUrl(const GURL& url) override { return is_ntp_; }
   void set_is_ntp(bool is_ntp) { is_ntp_ = is_ntp; }
   void RegisterObservers(PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
+    tracker->AddObserver(std::make_unique<TestPageLoadMetricsObserver>(
         &updated_timings_, &updated_subframe_timings_, &complete_timings_,
         &loaded_resources_, &observed_committed_urls_));
-    tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
+    tracker->AddObserver(std::make_unique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
   std::unique_ptr<base::Timer> CreateTimer() override {
-    auto timer = base::MakeUnique<test::WeakMockTimer>();
+    auto timer = std::make_unique<test::WeakMockTimer>();
     SetMockTimer(timer->AsWeakPtr());
     return std::move(timer);
   }
@@ -240,7 +239,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void AttachObserver() {
     auto embedder_interface =
-        base::MakeUnique<TestPageLoadMetricsEmbedderInterface>();
+        std::make_unique<TestPageLoadMetricsEmbedderInterface>();
     embedder_interface_ = embedder_interface.get();
     MetricsWebContentsObserver* observer =
         MetricsWebContentsObserver::CreateForWebContents(

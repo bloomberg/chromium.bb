@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -39,7 +38,7 @@ LoadingPredictorPageLoadMetricsObserver::CreateIfNeeded(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (!loading_predictor)
     return nullptr;
-  return base::MakeUnique<LoadingPredictorPageLoadMetricsObserver>(
+  return std::make_unique<LoadingPredictorPageLoadMetricsObserver>(
       loading_predictor->resource_prefetch_predictor(),
       loading_predictor->loading_data_collector(), web_contents);
 }
