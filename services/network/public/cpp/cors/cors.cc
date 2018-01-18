@@ -20,6 +20,7 @@ const char kAccessControlAllowSuborigin[] = "Access-Control-Allow-Suborigin";
 
 }  // namespace header_names
 
+// See https://fetch.spec.whatwg.org/#cors-check.
 base::Optional<mojom::CORSError> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
@@ -57,15 +58,36 @@ base::Optional<mojom::CORSError> CheckAccess(
       return mojom::CORSError::kWildcardOriginNotAllowed;
   } else if (!allow_origin_header) {
     return mojom::CORSError::kMissingAllowOriginHeader;
-  } else if (!origin.IsSameOriginWith(
-                 url::Origin::Create(GURL(*allow_origin_header)))) {
+  } else if (*allow_origin_header != origin.Serialize()) {
+    // We do not use url::Origin::IsSameOriginWith() here for two reasons below.
+    //  1. Allow "null" to match here. The latest spec does not have a clear
+    //     information about this (https://fetch.spec.whatwg.org/#cors-check),
+    //     but the old spec explicitly says that "null" works here
+    //     (https://www.w3.org/TR/cors/#resource-sharing-check-0).
+    //  2. We do not have a good way to construct url::Origin from the string,
+    //     *allow_origin_header, that may be broken. Unfortunately
+    //     url::Origin::Create(GURL(*allow_origin_header)) accepts malformed
+    //     URL and constructs a valid origin with unexpected fixes, which
+    //     results in unexpected behavior.
+
+    // We run some more value checks below to provide better information to
+    // developers.
+
     // Does not allow to have multiple origins in the allow origin header.
     // See https://fetch.spec.whatwg.org/#http-access-control-allow-origin.
     if (allow_origin_header->find_first_of(" ,") != std::string::npos)
       return mojom::CORSError::kMultipleAllowOriginValues;
+
+    // Check valid "null" first since GURL assumes it as invalid.
+    if (*allow_origin_header == "null")
+      return mojom::CORSError::kAllowOriginMismatch;
+
+    // As commented above, this validation is not strict as an origin
+    // validation, but should be ok for providing error details to developers.
     GURL header_origin(*allow_origin_header);
     if (!header_origin.is_valid())
       return mojom::CORSError::kInvalidAllowOriginValue;
+
     return mojom::CORSError::kAllowOriginMismatch;
   }
 

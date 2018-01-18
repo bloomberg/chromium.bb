@@ -49,6 +49,7 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceRequest.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
@@ -250,7 +251,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   DCHECK(async_ || request.HttpReferrer().IsEmpty());
 
   bool cors_enabled =
-      WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
+      CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
 
   // kPreventPreflight can be used only when the CORS is enabled.
   DCHECK(request.CORSPreflightPolicy() ==
@@ -350,7 +351,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     return;
   }
 
-  if (WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
+  if (CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
     // Save the request to fallback_request_for_service_worker to use when the
     // service worker doesn't handle (call respondWith()) a CORS enabled
     // request.
@@ -378,7 +379,7 @@ void DocumentThreadableLoader::DispatchInitialRequestBlinkCORS(
     return;
   }
 
-  DCHECK(WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
 
   MakeCrossOriginAccessRequest(request);
@@ -431,7 +432,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
 
 void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     const ResourceRequest& request) {
-  DCHECK(WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
   DCHECK(client_);
   DCHECK(!GetResource());
@@ -714,11 +715,10 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
   if (cors_flag_) {
     // The redirect response must pass the access control check if the CORS
     // flag is set.
-    WTF::Optional<network::mojom::CORSError> access_error =
-        WebCORS::CheckAccess(original_url, redirect_response.HttpStatusCode(),
-                             redirect_response.HttpHeaderFields(),
-                             new_request.GetFetchCredentialsMode(),
-                             WebSecurityOrigin(GetSecurityOrigin()));
+    WTF::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
+        original_url, redirect_response.HttpStatusCode(),
+        redirect_response.HttpHeaderFields(),
+        new_request.GetFetchCredentialsMode(), *GetSecurityOrigin());
     if (access_error) {
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
@@ -843,10 +843,9 @@ void DocumentThreadableLoader::ResponseReceived(
 
 void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
-  WTF::Optional<network::mojom::CORSError> cors_error = WebCORS::CheckAccess(
+  WTF::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
       response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
-      actual_request_.GetFetchCredentialsMode(),
-      WebSecurityOrigin(GetSecurityOrigin()));
+      actual_request_.GetFetchCredentialsMode(), *GetSecurityOrigin());
   if (cors_error) {
     StringBuilder builder;
     builder.Append(
@@ -998,11 +997,10 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
              fallback_request_for_service_worker_.Url()));
   fallback_request_for_service_worker_ = ResourceRequest();
 
-  if (WebCORS::IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
-    WTF::Optional<network::mojom::CORSError> access_error =
-        WebCORS::CheckAccess(response.Url(), response.HttpStatusCode(),
-                             response.HttpHeaderFields(), credentials_mode,
-                             WebSecurityOrigin(GetSecurityOrigin()));
+  if (CORS::IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
+    WTF::Optional<network::mojom::CORSError> access_error = CORS::CheckAccess(
+        response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
+        credentials_mode, *GetSecurityOrigin());
     if (access_error) {
       ReportResponseReceived(identifier, response);
       DispatchDidFailAccessControlCheck(

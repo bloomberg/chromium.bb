@@ -44,16 +44,6 @@ struct ResourceLoaderOptions;
 
 namespace WebCORS {
 
-// Perform a CORS access check on the response parameters.
-//
-// Use |GetErrorString()| to construct a user-friendly error message.
-BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckAccess(
-    const WebURL,
-    const int response_status_code,
-    const WebHTTPHeaderMap&,
-    network::mojom::FetchCredentialsMode,
-    const WebSecurityOrigin&);
-
 // Given a redirected-to URL, check if the location is allowed
 // according to CORS. That is:
 // - the URL has a CORS supported scheme and
@@ -112,9 +102,6 @@ ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
 
 BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
     const WebString&);
-
-BLINK_PLATFORM_EXPORT bool IsCORSEnabledRequestMode(
-    network::mojom::FetchRequestMode);
 
 // Checks whether request mode 'no-cors' is allowed for a certain context and
 // service-worker mode.
