@@ -103,7 +103,7 @@ class ResourcePrefetchPredictorTablesReopenTest
 
 ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      db_(base::MakeUnique<PredictorDatabase>(&profile_, task_runner_)),
+      db_(std::make_unique<PredictorDatabase>(&profile_, task_runner_)),
       tables_(db_->resource_prefetch_tables()) {
   content::RunAllTasksUntilIdle();
 }
@@ -684,7 +684,7 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
 }
 
 void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
-  db_ = base::MakeUnique<PredictorDatabase>(&profile_, task_runner_);
+  db_ = std::make_unique<PredictorDatabase>(&profile_, task_runner_);
   content::RunAllTasksUntilIdle();
   tables_ = db_->resource_prefetch_tables();
 }

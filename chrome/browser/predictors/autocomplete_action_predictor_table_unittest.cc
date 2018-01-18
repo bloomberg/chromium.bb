@@ -77,7 +77,7 @@ AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {
 }
 
 void AutocompleteActionPredictorTableTest::SetUp() {
-  db_ = base::MakeUnique<PredictorDatabase>(
+  db_ = std::make_unique<PredictorDatabase>(
       &profile_, base::SequencedTaskRunnerHandle::Get());
   content::RunAllTasksUntilIdle();
 

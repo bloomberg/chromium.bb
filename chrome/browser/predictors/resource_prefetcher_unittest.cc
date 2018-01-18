@@ -179,7 +179,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
                             GURL("http://yahoo.com/resource4.png"),
                             GURL("http://yahoo.com/resource5.png")};
 
-  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+  prefetcher_ = std::make_unique<TestResourcePrefetcher>(
       &prefetcher_delegate_, context_getter_, kMaxConcurrentRequests,
       kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
@@ -251,7 +251,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
                             GURL("http://yahoo.com/resource3.png"),
                             GURL("http://m.google.com/resource1.jpg")};
 
-  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+  prefetcher_ = std::make_unique<TestResourcePrefetcher>(
       &prefetcher_delegate_, context_getter_, kMaxConcurrentRequests,
       kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
@@ -298,7 +298,7 @@ TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
                             GURL("http://www.google.com/resource5.png"),
                             GURL("http://www.google.com/resource6.png")};
 
-  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+  prefetcher_ = std::make_unique<TestResourcePrefetcher>(
       &prefetcher_delegate_, context_getter_, kMaxConcurrentRequests,
       kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
@@ -348,7 +348,7 @@ TEST_F(ResourcePrefetcherTest, TestReferrer) {
 
   std::vector<GURL> urls = {GURL(https_resource), GURL(http_resource)};
 
-  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+  prefetcher_ = std::make_unique<TestResourcePrefetcher>(
       &prefetcher_delegate_, context_getter_, kMaxConcurrentRequests,
       kMaxConcurrentRequestsPerHost, GURL(url), urls);
 

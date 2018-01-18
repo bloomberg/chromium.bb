@@ -81,15 +81,15 @@ class LoadingPredictorTest : public testing::Test {
 };
 
 LoadingPredictorTest::LoadingPredictorTest()
-    : profile_(base::MakeUnique<TestingProfile>()) {}
+    : profile_(std::make_unique<TestingProfile>()) {}
 
 LoadingPredictorTest::~LoadingPredictorTest() = default;
 
 void LoadingPredictorTest::SetUp() {
   auto config = CreateConfig();
-  predictor_ = base::MakeUnique<LoadingPredictor>(config, profile_.get());
+  predictor_ = std::make_unique<LoadingPredictor>(config, profile_.get());
 
-  auto mock = base::MakeUnique<StrictMock<MockResourcePrefetchPredictor>>(
+  auto mock = std::make_unique<StrictMock<MockResourcePrefetchPredictor>>(
       config, profile_.get());
   EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl), _))
       .WillRepeatedly(Return(true));
@@ -133,7 +133,7 @@ class LoadingPredictorPreconnectTest : public LoadingPredictorTest {
 void LoadingPredictorPreconnectTest::SetUp() {
   LoadingPredictorTest::SetUp();
   auto mock_preconnect_manager =
-      base::MakeUnique<StrictMock<MockPreconnectManager>>(
+      std::make_unique<StrictMock<MockPreconnectManager>>(
           predictor_->GetWeakPtr(), profile_->GetRequestContext());
   mock_preconnect_manager_ = mock_preconnect_manager.get();
   predictor_->set_mock_preconnect_manager(std::move(mock_preconnect_manager));

@@ -65,7 +65,7 @@ ResourcePrefetcher::ResourcePrefetcher(
       prefetched_count_(0),
       prefetched_bytes_(0),
       request_queue_(urls.begin(), urls.end()),
-      stats_(base::MakeUnique<PrefetcherStats>(main_frame_url)) {
+      stats_(std::make_unique<PrefetcherStats>(main_frame_url)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

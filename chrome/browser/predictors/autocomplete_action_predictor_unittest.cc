@@ -92,9 +92,9 @@ namespace predictors {
 class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
-      : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {
+      : profile_(std::make_unique<TestingProfile>()), predictor_(nullptr) {
     CHECK(profile_->CreateHistoryService(true, false));
-    predictor_ = base::MakeUnique<AutocompleteActionPredictor>(profile_.get());
+    predictor_ = std::make_unique<AutocompleteActionPredictor>(profile_.get());
     predictor_->CreateLocalCachesFromDatabase();
     profile_->BlockUntilHistoryProcessesPendingRequests();
     content::RunAllTasksUntilIdle();

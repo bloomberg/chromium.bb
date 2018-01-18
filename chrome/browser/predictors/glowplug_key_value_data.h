@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/predictors/glowplug_key_value_table.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
@@ -91,7 +90,7 @@ GlowplugKeyValueData<T, Compare>::GlowplugKeyValueData(
 template <typename T, typename Compare>
 void GlowplugKeyValueData<T, Compare>::InitializeOnDBSequence() {
   DCHECK(tables_->GetTaskRunner()->RunsTasksInCurrentSequence());
-  auto data_map = base::MakeUnique<std::map<std::string, T>>();
+  auto data_map = std::make_unique<std::map<std::string, T>>();
   tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<T>::GetAllData,
                      base::Unretained(backend_table_), data_map.get()));
