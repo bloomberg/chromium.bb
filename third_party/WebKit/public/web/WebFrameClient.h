@@ -118,6 +118,7 @@ struct WebContextMenuData;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
+struct WebResourceTimingInfo;
 struct WebScrollIntoViewParams;
 struct WebURLError;
 
@@ -485,6 +486,10 @@ class BLINK_EXPORT WebFrameClient {
 
   // The frame's theme color has changed.
   virtual void DidChangeThemeColor() {}
+
+  // Called to report resource timing information for this frame to the parent.
+  // Only used when the parent frame is remote.
+  virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) {}
 
   // Called to dispatch a load event for this frame in the FrameOwner of an
   // out-of-process parent frame.

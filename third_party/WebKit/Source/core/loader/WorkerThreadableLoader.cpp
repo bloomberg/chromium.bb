@@ -415,7 +415,7 @@ void WorkerThreadableLoader::DidReceiveResourceTiming(
   scoped_refptr<ResourceTimingInfo> info(
       ResourceTimingInfo::Adopt(std::move(timing_data)));
   WorkerGlobalScopePerformance::performance(*worker_global_scope_)
-      ->AddResourceTiming(*info);
+      ->GenerateAndAddResourceTiming(*info);
   client_->DidReceiveResourceTiming(*info);
 }
 

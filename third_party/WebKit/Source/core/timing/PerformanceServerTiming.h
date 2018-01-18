@@ -8,14 +8,13 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebResourceTimingInfo.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 class ResourceTimingInfo;
 class PerformanceServerTiming;
-
-using PerformanceServerTimingVector =
-    HeapVector<Member<PerformanceServerTiming>>;
 
 class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,27 +25,28 @@ class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
     No,
   };
 
-  PerformanceServerTiming(const String& name,
-                          double duration,
-                          const String& description,
-                          ShouldAllowTimingDetails);
   ~PerformanceServerTiming();
 
-  String name() const;
-  double duration() const;
-  String description() const;
+  const String& name() const { return name_; }
+  double duration() const { return duration_; }
+  const String& description() const { return description_; }
 
-  static PerformanceServerTimingVector ParseServerTiming(
+  static WebVector<WebServerTimingInfo> ParseServerTiming(
       const ResourceTimingInfo&,
       ShouldAllowTimingDetails);
+  static HeapVector<Member<PerformanceServerTiming>> FromParsedServerTiming(
+      const WebVector<WebServerTimingInfo>&);
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
  private:
+  PerformanceServerTiming(const String& name,
+                          double duration,
+                          const String& description);
+
   const String name_;
   double duration_;
   const String description_;
-  ShouldAllowTimingDetails shouldAllowTimingDetails_;
 };
 
 }  // namespace blink

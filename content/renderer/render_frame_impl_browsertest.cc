@@ -96,7 +96,8 @@ class RenderFrameImplTest : public RenderViewTest {
         kSubframeRouteId, std::move(stub_interface_provider), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
         base::UnguessableToken::Create(), frame_replication_state,
-        &compositor_deps_, widget_params, FrameOwnerProperties());
+        &compositor_deps_, widget_params, FrameOwnerProperties(),
+        /*has_committed_real_load=*/true);
 
     frame_ = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(kSubframeRouteId));

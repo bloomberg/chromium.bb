@@ -64,6 +64,7 @@
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/Histogram.h"
@@ -717,17 +718,24 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // Normally, |document_| is cleared on Document shutdown. However, Documents
   // for HTML imports will also not have a LocalFrame set: in that case, also
   // early return, as there is nothing to report the resource timing to.
-  if (!document_ || !document_->GetFrame())
+  if (!document_)
+    return;
+  LocalFrame* frame = document_->GetFrame();
+  if (!frame)
     return;
 
-  Frame* initiator_frame = info.IsMainResource()
-                               ? document_->GetFrame()->Tree().Parent()
-                               : document_->GetFrame();
-
-  if (!initiator_frame)
+  if (info.IsMainResource()) {
+    DCHECK(frame->Owner());
+    // Main resource timing information is reported through the owner to be
+    // passed to the parent frame, if appropriate.
+    frame->Owner()->AddResourceTiming(info);
+    frame->DidSendResourceTimingInfoToParent();
     return;
+  }
 
-  initiator_frame->AddResourceTiming(info);
+  // All other resources are reported to the corresponding Document.
+  DOMWindowPerformance::performance(*document_->domWindow())
+      ->GenerateAndAddResourceTiming(info);
 }
 
 bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
@@ -803,16 +811,16 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
 
   // <iframe>s should report the initial navigation requested by the parent
   // document, but not subsequent navigations.
-  // FIXME: Resource timing is broken when the parent is a remote frame.
-  if (!GetFrame()->DeprecatedLocalOwner() ||
-      GetFrame()->DeprecatedLocalOwner()->LoadedNonEmptyDocument())
+  if (!GetFrame()->Owner())
     return false;
-  GetFrame()->DeprecatedLocalOwner()->DidLoadNonEmptyDocument();
+  // Note that this can be racy since this information is forwarded over IPC
+  // when crossing process boundaries.
+  if (!GetFrame()->should_send_resource_timing_info_to_parent())
+    return false;
   // Do not report iframe navigation that restored from history, since its
   // location may have been changed after initial navigation.
   if (MasterDocumentLoader()->LoadType() == kFrameLoadTypeInitialHistoryLoad)
     return false;
-  info->SetInitiatorType(GetFrame()->DeprecatedLocalOwner()->localName());
   return true;
 }
 

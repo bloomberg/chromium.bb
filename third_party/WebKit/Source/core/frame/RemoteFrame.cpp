@@ -85,11 +85,6 @@ void RemoteFrame::Reload(FrameLoadType frame_load_type,
   Client()->Reload(frame_load_type, client_redirect_policy);
 }
 
-void RemoteFrame::AddResourceTiming(const ResourceTimingInfo& info) {
-  DCHECK(info.IsMainResource());
-  // TODO(dcheng): Perform origin check, filter out fields, and forward via IPC.
-}
-
 void RemoteFrame::Detach(FrameDetachType type) {
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 

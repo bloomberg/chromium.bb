@@ -29,11 +29,13 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "content/renderer/resource_timing_info_conversions.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/platform/WebResourceTimingInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
@@ -376,6 +378,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DidSetActiveSandboxFlags,
                         OnDidSetActiveSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
+                        OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
@@ -448,8 +452,14 @@ void RenderFrameProxy::OnDidStopLoading() {
   web_frame_->DidStopLoading();
 }
 
+void RenderFrameProxy::OnForwardResourceTimingToParent(
+    const ResourceTimingInfo& info) {
+  web_frame_->ForwardResourceTimingToParent(
+      ResourceTimingInfoToWebResourceTimingInfo(info));
+}
+
 void RenderFrameProxy::OnDispatchLoad() {
-  web_frame_->DispatchLoadEventOnFrameOwner();
+  web_frame_->DispatchLoadEventForFrameOwner();
 }
 
 void RenderFrameProxy::OnCollapse(bool collapsed) {

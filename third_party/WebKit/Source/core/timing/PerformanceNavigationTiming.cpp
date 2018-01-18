@@ -20,13 +20,11 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
     double time_origin,
-    PerformanceServerTimingVector& serverTiming)
+    const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(info ? info->InitialURL().GetString() : "",
                                 "navigation",
                                 time_origin,
-                                0.0,
-                                0.0,
-                                serverTiming),
+                                server_timing),
       ContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);

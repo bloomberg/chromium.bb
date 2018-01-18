@@ -14,6 +14,7 @@
 namespace blink {
 
 class Frame;
+class ResourceTimingInfo;
 
 // Oilpan: all FrameOwner instances are GCed objects. FrameOwner additionally
 // derives from GarbageCollectedMixin so that Member<FrameOwner> references can
@@ -21,6 +22,7 @@ class Frame;
 class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
  public:
   virtual ~FrameOwner() = default;
+
   virtual void Trace(blink::Visitor* visitor) {}
 
   virtual bool IsLocal() const = 0;
@@ -31,6 +33,10 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual void ClearContentFrame() = 0;
 
   virtual SandboxFlags GetSandboxFlags() const = 0;
+  // Note: there is a subtle ordering dependency here: if a page load needs to
+  // report resource timing information, it *must* do so before calling
+  // DispatchLoad().
+  virtual void AddResourceTiming(const ResourceTimingInfo&) = 0;
   virtual void DispatchLoad() = 0;
 
   // On load failure, a frame can ask its owner to render fallback content
@@ -59,7 +65,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 // TODO(dcheng): This class is an internal implementation detail of provisional
 // frames. Move this into WebLocalFrameImpl.cpp and remove existing dependencies
 // on it.
-class CORE_EXPORT DummyFrameOwner
+class CORE_EXPORT DummyFrameOwner final
     : public GarbageCollectedFinalized<DummyFrameOwner>,
       public FrameOwner {
   USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
@@ -74,6 +80,7 @@ class CORE_EXPORT DummyFrameOwner
   void SetContentFrame(Frame&) override {}
   void ClearContentFrame() override {}
   SandboxFlags GetSandboxFlags() const override { return kSandboxNone; }
+  void AddResourceTiming(const ResourceTimingInfo&) override {}
   void DispatchLoad() override {}
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent() override {}

@@ -41,7 +41,7 @@
 namespace blink {
 
 class ResourceLoadTiming;
-class ResourceTimingInfo;
+struct WebResourceTimingInfo;
 
 class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
@@ -50,28 +50,12 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
  public:
   ~PerformanceResourceTiming() override;
   static PerformanceResourceTiming* Create(
-      const ResourceTimingInfo& info,
+      const WebResourceTimingInfo& info,
       double time_origin,
-      double start_time,
-      double last_redirect_end_time,
-      bool allow_timing_details,
-      bool allow_redirect_details,
-      PerformanceServerTimingVector& serverTiming) {
-    return new PerformanceResourceTiming(
-        info, time_origin, start_time, last_redirect_end_time,
-        allow_timing_details, allow_redirect_details, serverTiming);
+      const AtomicString& initiator_type = g_null_atom) {
+    return new PerformanceResourceTiming(info, time_origin, initiator_type);
   }
 
-  static PerformanceResourceTiming* Create(
-      const ResourceTimingInfo& info,
-      double time_origin,
-      double start_time,
-      bool allow_timing_details,
-      PerformanceServerTimingVector& serverTiming) {
-    return new PerformanceResourceTiming(info, time_origin, start_time, 0.0,
-                                         allow_timing_details, false,
-                                         serverTiming);
-  }
   // Related doc: https://goo.gl/uNecAj.
   virtual AtomicString initiatorType() const;
   AtomicString nextHopProtocol() const;
@@ -90,7 +74,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   unsigned long long transferSize() const;
   unsigned long long encodedBodySize() const;
   unsigned long long decodedBodySize() const;
-  PerformanceServerTimingVector serverTiming() const;
+  const HeapVector<Member<PerformanceServerTiming>>& serverTiming() const;
 
   virtual void Trace(blink::Visitor*);
 
@@ -102,9 +86,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   PerformanceResourceTiming(const String& name,
                             const String& entry_type,
                             double time_origin,
-                            double start_time,
-                            double duration,
-                            PerformanceServerTimingVector&);
+                            const WebVector<WebServerTimingInfo>&);
   virtual AtomicString AlpnNegotiatedProtocol() const;
   virtual AtomicString ConnectionInfo() const;
 
@@ -112,13 +94,9 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   double TimeOrigin() const { return time_origin_; }
 
  private:
-  PerformanceResourceTiming(const ResourceTimingInfo&,
+  PerformanceResourceTiming(const WebResourceTimingInfo&,
                             double time_origin,
-                            double start_time,
-                            double last_redirect_end_time,
-                            bool allow_timing_details,
-                            bool allow_redirect_details,
-                            PerformanceServerTimingVector&);
+                            const AtomicString& initiator_type);
 
   static AtomicString GetNextHopProtocol(
       const AtomicString& alpn_negotiated_protocol,
@@ -147,7 +125,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   bool allow_timing_details_;
   bool allow_redirect_details_;
   bool allow_negative_value_;
-  PerformanceServerTimingVector serverTiming_;
+  HeapVector<Member<PerformanceServerTiming>> server_timing_;
 };
 
 }  // namespace blink

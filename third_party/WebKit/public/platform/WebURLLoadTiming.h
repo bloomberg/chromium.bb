@@ -42,6 +42,9 @@ namespace blink {
 
 class ResourceLoadTiming;
 
+// The browser-side equivalent to this struct is content::ResourceLoadTiming.
+// TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
+// duplicated in //content and //third_party/WebKit.
 class WebURLLoadTiming {
  public:
   ~WebURLLoadTiming() { Reset(); }

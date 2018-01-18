@@ -10,32 +10,12 @@
 
 namespace blink {
 
-PerformanceServerTiming::PerformanceServerTiming(
-    const String& name,
-    double duration,
-    const String& description,
-    ShouldAllowTimingDetails shouldAllowTimingDetails)
-    : name_(name),
-      duration_(duration),
-      description_(description),
-      shouldAllowTimingDetails_(shouldAllowTimingDetails) {}
+PerformanceServerTiming::PerformanceServerTiming(const String& name,
+                                                 double duration,
+                                                 const String& description)
+    : name_(name), duration_(duration), description_(description) {}
 
 PerformanceServerTiming::~PerformanceServerTiming() = default;
-
-String PerformanceServerTiming::name() const {
-  return name_;
-}
-
-double PerformanceServerTiming::duration() const {
-  return shouldAllowTimingDetails_ == ShouldAllowTimingDetails::Yes ? duration_
-                                                                    : 0.0;
-}
-
-String PerformanceServerTiming::description() const {
-  return shouldAllowTimingDetails_ == ShouldAllowTimingDetails::Yes
-             ? description_
-             : "";
-}
 
 ScriptValue PerformanceServerTiming::toJSONForBinding(
     ScriptState* script_state) const {
@@ -46,21 +26,36 @@ ScriptValue PerformanceServerTiming::toJSONForBinding(
   return builder.GetScriptValue();
 }
 
-PerformanceServerTimingVector PerformanceServerTiming::ParseServerTiming(
+WebVector<WebServerTimingInfo> PerformanceServerTiming::ParseServerTiming(
     const ResourceTimingInfo& info,
-    ShouldAllowTimingDetails shouldAllowTimingDetails) {
-  PerformanceServerTimingVector entries;
+    ShouldAllowTimingDetails should_allow_timing_details) {
+  WebVector<WebServerTimingInfo> result;
   if (RuntimeEnabledFeatures::ServerTimingEnabled()) {
     const ResourceResponse& response = info.FinalResponse();
     std::unique_ptr<ServerTimingHeaderVector> headers = ParseServerTimingHeader(
         response.HttpHeaderField(HTTPNames::Server_Timing));
+    result.reserve(headers->size());
     for (const auto& header : *headers) {
-      entries.push_back(new PerformanceServerTiming(
-          header->Name(), header->Duration(), header->Description(),
-          shouldAllowTimingDetails));
+      if (should_allow_timing_details == ShouldAllowTimingDetails::Yes) {
+        result.emplace_back(header->Name(), header->Duration(),
+                            header->Description());
+      } else {
+        result.emplace_back(header->Name(), 0.0, String());
+      }
     }
   }
-  return entries;
+  return result;
+}
+
+HeapVector<Member<PerformanceServerTiming>>
+PerformanceServerTiming::FromParsedServerTiming(
+    const WebVector<WebServerTimingInfo>& entries) {
+  HeapVector<Member<PerformanceServerTiming>> result;
+  for (const auto& entry : entries) {
+    result.push_back(new PerformanceServerTiming(entry.name, entry.duration,
+                                                 entry.description));
+  }
+  return result;
 }
 
 }  // namespace blink

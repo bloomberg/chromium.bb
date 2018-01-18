@@ -610,7 +610,7 @@ void RenderViewImpl::Initialize(
         std::move(main_frame_interface_provider),
         params->main_frame_widget_routing_id, params->hidden, screen_info(),
         compositor_deps_, opener_frame, params->devtools_main_frame_token,
-        params->replicated_frame_state);
+        params->replicated_frame_state, params->has_committed_real_load);
   }
 
   // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See

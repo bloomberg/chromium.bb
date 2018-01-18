@@ -43,6 +43,7 @@ class RenderWidget;
 struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
+struct ResourceTimingInfo;
 
 #if defined(USE_AURA)
 class MusEmbeddedFrame;
@@ -214,6 +215,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnDidSetActiveSandboxFlags(blink::WebSandboxFlags active_sandbox_flags);
+  void OnForwardResourceTimingToParent(
+      const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();
   void OnCollapse(bool collapsed);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);

@@ -54,7 +54,6 @@ class LayoutEmbeddedContent;
 class LocalFrame;
 class KURL;
 class Page;
-class ResourceTimingInfo;
 class SecurityContext;
 class Settings;
 class WindowProxy;
@@ -86,8 +85,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // to be started on a timer. Use the method above in such cases.
   virtual void Navigate(const FrameLoadRequest&) = 0;
   virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
-
-  virtual void AddResourceTiming(const ResourceTimingInfo&) = 0;
 
   virtual void Detach(FrameDetachType);
   void DisconnectOwnerElement();

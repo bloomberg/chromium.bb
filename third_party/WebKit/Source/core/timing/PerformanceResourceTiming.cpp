@@ -36,54 +36,53 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "public/platform/WebResourceTimingInfo.h"
 
 namespace blink {
 
 PerformanceResourceTiming::PerformanceResourceTiming(
-    const ResourceTimingInfo& info,
+    const WebResourceTimingInfo& info,
     double time_origin,
-    double start_time,
-    double last_redirect_end_time,
-    bool allow_timing_details,
-    bool allow_redirect_details,
-    PerformanceServerTimingVector& serverTiming)
-    : PerformanceEntry(info.InitialURL().GetString(),
+    const AtomicString& initiator_type)
+    : PerformanceEntry(info.name,
                        "resource",
                        PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
-                           start_time,
-                           info.NegativeAllowed()),
+                           info.start_time,
+                           info.allow_negative_values),
                        PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
-                           info.LoadFinishTime(),
-                           info.NegativeAllowed())),
-      initiator_type_(info.InitiatorType()),
-      alpn_negotiated_protocol_(info.FinalResponse().AlpnNegotiatedProtocol()),
-      connection_info_(info.FinalResponse().ConnectionInfoString()),
+                           info.finish_time,
+                           info.allow_negative_values)),
+      initiator_type_(initiator_type),
+      alpn_negotiated_protocol_(
+          static_cast<String>(info.alpn_negotiated_protocol)),
+      connection_info_(static_cast<String>(info.connection_info)),
       time_origin_(time_origin),
-      timing_(info.FinalResponse().GetResourceLoadTiming()),
-      last_redirect_end_time_(last_redirect_end_time),
-      finish_time_(info.LoadFinishTime()),
-      transfer_size_(info.TransferSize()),
-      encoded_body_size_(info.FinalResponse().EncodedBodyLength()),
-      decoded_body_size_(info.FinalResponse().DecodedBodyLength()),
-      did_reuse_connection_(info.FinalResponse().ConnectionReused()),
-      allow_timing_details_(allow_timing_details),
-      allow_redirect_details_(allow_redirect_details),
-      allow_negative_value_(info.NegativeAllowed()),
-      serverTiming_(serverTiming) {}
+      timing_(info.timing),
+      last_redirect_end_time_(info.last_redirect_end_time),
+      finish_time_(info.finish_time),
+      transfer_size_(info.transfer_size),
+      encoded_body_size_(info.encoded_body_size),
+      decoded_body_size_(info.decoded_body_size),
+      did_reuse_connection_(info.did_reuse_connection),
+      allow_timing_details_(info.allow_timing_details),
+      allow_redirect_details_(info.allow_redirect_details),
+      allow_negative_value_(info.allow_negative_values),
+      server_timing_(
+          PerformanceServerTiming::FromParsedServerTiming(info.server_timing)) {
+}
 
 // This constructor is for PerformanceNavigationTiming.
 PerformanceResourceTiming::PerformanceResourceTiming(
     const String& name,
     const String& entry_type,
     double time_origin,
-    double start_time,
-    double duration,
-    PerformanceServerTimingVector& serverTiming)
-    : PerformanceEntry(name, entry_type, start_time, duration),
+    const WebVector<WebServerTimingInfo>& server_timing)
+    : PerformanceEntry(name, entry_type, 0.0, 0.0),
       time_origin_(time_origin),
-      serverTiming_(serverTiming) {}
+      server_timing_(
+          PerformanceServerTiming::FromParsedServerTiming(server_timing)) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;
 
@@ -314,8 +313,9 @@ unsigned long long PerformanceResourceTiming::decodedBodySize() const {
   return GetDecodedBodySize();
 }
 
-PerformanceServerTimingVector PerformanceResourceTiming::serverTiming() const {
-  return serverTiming_;
+const HeapVector<Member<PerformanceServerTiming>>&
+PerformanceResourceTiming::serverTiming() const {
+  return server_timing_;
 }
 
 void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
@@ -338,16 +338,17 @@ void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("encodedBodySize", encodedBodySize());
   builder.AddNumber("decodedBodySize", decodedBodySize());
 
-  Vector<ScriptValue> serverTiming;
-  for (unsigned i = 0; i < serverTiming_.size(); i++) {
-    serverTiming.push_back(
-        serverTiming_[i]->toJSONForBinding(builder.GetScriptState()));
+  Vector<ScriptValue> server_timing;
+  server_timing.ReserveCapacity(server_timing_.size());
+  for (unsigned i = 0; i < server_timing_.size(); i++) {
+    server_timing.push_back(
+        server_timing_[i]->toJSONForBinding(builder.GetScriptState()));
   }
-  builder.Add("serverTiming", serverTiming);
+  builder.Add("serverTiming", server_timing);
 }
 
 void PerformanceResourceTiming::Trace(blink::Visitor* visitor) {
-  visitor->Trace(serverTiming_);
+  visitor->Trace(server_timing_);
   PerformanceEntry::Trace(visitor);
 }
 
