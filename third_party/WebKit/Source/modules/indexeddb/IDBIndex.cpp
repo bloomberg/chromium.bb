@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -149,9 +150,8 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
                                  IDBKeyRange* key_range,
                                  WebIDBCursorDirection direction,
                                  IDBRequest::AsyncTraceState metrics) {
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   request->SetCursorDetails(IndexedDB::kCursorKeyAndValue, direction);
   BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
                           key_range, direction, false, kWebIDBTaskTypeNormal,
@@ -187,9 +187,8 @@ IDBRequest* IDBIndex::count(ScriptState* script_state,
     return nullptr;
   }
 
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->Count(transaction_->Id(), object_store_->Id(), Id(), key_range,
                      request->CreateWebCallbacks().release());
   return request;
@@ -224,9 +223,8 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
     return nullptr;
   }
 
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   request->SetCursorDetails(IndexedDB::kCursorKeyOnly, direction);
   BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
                           key_range, direction, true, kWebIDBTaskTypeNormal,
@@ -319,10 +317,8 @@ IDBRequest* IDBIndex::GetInternal(ScriptState* script_state,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return nullptr;
   }
-
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->Get(transaction_->Id(), object_store_->Id(), Id(), key_range,
                    key_only, request->CreateWebCallbacks().release());
   return request;
@@ -358,9 +354,8 @@ IDBRequest* IDBIndex::GetAllInternal(ScriptState* script_state,
     return nullptr;
   }
 
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->GetAll(transaction_->Id(), object_store_->Id(), Id(), key_range,
                       max_count, key_only,
                       request->CreateWebCallbacks().release());

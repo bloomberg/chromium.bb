@@ -132,7 +132,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
   ASSERT_TRUE(transaction_);
 
   IDBRequest* request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
 
   EXPECT_EQ(request->readyState(), "pending");
@@ -153,7 +153,7 @@ TEST_F(IDBRequestTest, EventsAfterDoneStop) {
   ASSERT_TRUE(transaction_);
 
   IDBRequest* request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(request->transaction());
@@ -174,7 +174,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   ASSERT_TRUE(transaction_);
 
   IDBRequest* request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   EXPECT_EQ(request->readyState(), "pending");
   ASSERT_TRUE(!scope.GetExceptionState().HadException());
@@ -198,10 +198,10 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   ASSERT_TRUE(transaction_);
 
   IDBRequest* request1 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   IDBRequest* request2 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   EXPECT_EQ(request1->readyState(), "pending");
   EXPECT_EQ(request2->readyState(), "pending");
@@ -223,8 +223,8 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort) {
   V8TestingScope scope;
   IDBTransaction* transaction = nullptr;
   IDBRequest* request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
-                         transaction, IDBRequest::AsyncTraceState());
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(), transaction,
+                         IDBRequest::AsyncTraceState());
   EXPECT_EQ(request->readyState(), "pending");
 
   // Simulate the IDBTransaction having received OnAbort from back end and

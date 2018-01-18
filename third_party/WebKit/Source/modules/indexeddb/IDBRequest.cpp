@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -88,12 +89,35 @@ size_t IDBRequest::AsyncTraceState::PopulateForNewEvent(
 
   static std::atomic<size_t> counter(0);
   id_ = counter.fetch_add(1, std::memory_order_relaxed);
-
   return id_;
 }
 
 IDBRequest* IDBRequest::Create(ScriptState* script_state,
-                               IDBAny* source,
+                               IDBIndex* source,
+                               IDBTransaction* transaction,
+                               IDBRequest::AsyncTraceState metrics) {
+  return IDBRequest::Create(script_state, Source::FromIDBIndex(source),
+                            transaction, std::move(metrics));
+}
+
+IDBRequest* IDBRequest::Create(ScriptState* script_state,
+                               IDBObjectStore* source,
+                               IDBTransaction* transaction,
+                               IDBRequest::AsyncTraceState metrics) {
+  return IDBRequest::Create(script_state, Source::FromIDBObjectStore(source),
+                            transaction, std::move(metrics));
+}
+
+IDBRequest* IDBRequest::Create(ScriptState* script_state,
+                               IDBCursor* source,
+                               IDBTransaction* transaction,
+                               IDBRequest::AsyncTraceState metrics) {
+  return IDBRequest::Create(script_state, Source::FromIDBCursor(source),
+                            transaction, std::move(metrics));
+}
+
+IDBRequest* IDBRequest::Create(ScriptState* script_state,
+                               const Source& source,
                                IDBTransaction* transaction,
                                IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request =
@@ -107,7 +131,7 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
 }
 
 IDBRequest::IDBRequest(ScriptState* script_state,
-                       IDBAny* source,
+                       const Source& source,
                        IDBTransaction* transaction,
                        AsyncTraceState metrics)
     : PausableObject(ExecutionContext::From(script_state)),
@@ -160,11 +184,12 @@ DOMException* IDBRequest::error(ExceptionState& exception_state) const {
   return error_;
 }
 
-ScriptValue IDBRequest::source(ScriptState* script_state) const {
-  if (!GetExecutionContext())
-    return ScriptValue();
-
-  return ScriptValue::From(script_state, source_);
+void IDBRequest::source(ScriptState* script_state,
+                        IDBObjectStoreOrIDBIndexOrIDBCursor& source) const {
+  if (!GetExecutionContext()) {
+    source = Source();
+  }
+  source = source_;
 }
 
 const String& IDBRequest::readyState() const {
@@ -430,16 +455,6 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   metrics_.RecordAndReset();
 }
 
-static IDBCursor::Source ToIDBCursorSource(IDBAny* any) {
-  if (any->GetType() == IDBAny::kIDBObjectStoreType)
-    return IDBCursor::Source::FromIDBObjectStore(any->IdbObjectStore());
-  if (any->GetType() == IDBAny::kIDBIndexType)
-    return IDBCursor::Source::FromIDBIndex(any->IdbIndex());
-
-  NOTREACHED();
-  return IDBCursor::Source();
-}
-
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
                                  std::unique_ptr<IDBKey> key,
                                  std::unique_ptr<IDBKey> primary_key,
@@ -453,16 +468,24 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
 
   DCHECK(!pending_cursor_);
   IDBCursor* cursor = nullptr;
+  IDBObjectStoreOrIDBIndex source;
+
+  if (source_.IsIDBObjectStore()) {
+    source =
+        IDBCursor::Source::FromIDBObjectStore(source_.GetAsIDBObjectStore());
+  } else if (source_.IsIDBIndex()) {
+    source = IDBCursor::Source::FromIDBIndex(source_.GetAsIDBIndex());
+  }
+  DCHECK(!source.IsNull());
+
   switch (cursor_type_) {
     case IndexedDB::kCursorKeyOnly:
       cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
-                                 ToIDBCursorSource(source_.Get()),
-                                 transaction_.Get());
+                                 source, transaction_.Get());
       break;
     case IndexedDB::kCursorKeyAndValue:
-      cursor = IDBCursorWithValue::Create(
-          std::move(backend), cursor_direction_, this,
-          ToIDBCursorSource(source_.Get()), transaction_.Get());
+      cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
+                                          this, source, transaction_.Get());
       break;
     default:
       NOTREACHED();
@@ -508,11 +531,11 @@ void IDBRequest::EnqueueResponse(Vector<std::unique_ptr<IDBValue>> values) {
 }
 
 #if DCHECK_IS_ON()
-static IDBObjectStore* EffectiveObjectStore(IDBAny* source) {
-  if (source->GetType() == IDBAny::kIDBObjectStoreType)
-    return source->IdbObjectStore();
-  if (source->GetType() == IDBAny::kIDBIndexType)
-    return source->IdbIndex()->objectStore();
+static IDBObjectStore* EffectiveObjectStore(const IDBRequest::Source& source) {
+  if (source.IsIDBObjectStore())
+    return source.GetAsIDBObjectStore();
+  if (source.IsIDBIndex())
+    return source.GetAsIDBIndex()->objectStore();
 
   NOTREACHED();
   return nullptr;
@@ -609,8 +632,8 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
   }
 
   enqueued_events_.clear();
-  if (source_)
-    source_->ContextWillBeDestroyed();
+  if (source_.IsIDBCursor())
+    source_.GetAsIDBCursor()->ContextWillBeDestroyed();
   if (result_)
     result_->ContextWillBeDestroyed();
   if (pending_cursor_)
