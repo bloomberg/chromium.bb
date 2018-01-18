@@ -1012,11 +1012,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient
   // implementation supports this operation (desktop Chrome) or false otherwise.
   // |callback| is invoked with true if the window opened successfully, false if
-  // the attempt failed.
+  // the attempt failed. Both the render process and frame IDs are also passed
+  // to |callback|.
   virtual bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
       const GURL& url,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(bool /* success */,
+                              int /* render_process_id */,
+                              int /* render_frame_id */)> callback);
 
   // Returns whether a base::TaskScheduler should be created when
   // BrowserMainLoop starts.

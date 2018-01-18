@@ -632,7 +632,7 @@ void ContentBrowserClient::CreateUsbChooserService(
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool, int, int)> callback) {
   return false;
 }
 

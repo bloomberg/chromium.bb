@@ -70,6 +70,16 @@ void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                 blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
                 const ClientsCallback& callback);
 
+// Finds the provider host for |origin| in |context| then uses
+// |render_process_id| and |render_process_host| to create a relevant
+// blink::mojom::ServiceWorkerClientInfo struct and calls |callback| with it.
+// Must be called on the IO thread.
+void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
+                 const GURL& origin,
+                 const NavigationCallback& callback,
+                 int render_process_id,
+                 int render_frame_id);
+
 }  // namespace service_worker_client_utils
 
 }  // namespace content
