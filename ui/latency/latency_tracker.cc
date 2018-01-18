@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/trace_event/trace_event.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/latency/latency_histogram_macros.h"
@@ -83,6 +84,8 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
         gpu_swap_end_component.event_time - tab_switch_component.event_time;
     for (size_t i = 0; i < tab_switch_component.event_count; i++) {
       UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration", delta);
+      TRACE_EVENT_ASYNC_END0("latency", "TabSwitching::Latency",
+                             latency.trace_id());
     }
   }
 

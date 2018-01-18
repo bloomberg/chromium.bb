@@ -630,6 +630,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   viz::FrameSinkId frame_sink_id_;
 
   std::unique_ptr<CursorManager> cursor_manager_;
+  int tab_show_sequence_ = 0;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
