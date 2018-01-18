@@ -18,6 +18,8 @@ class PrintCompositeClient
   explicit PrintCompositeClient(content::WebContents* web_contents);
   ~PrintCompositeClient() override;
 
+  // NOTE: |handle| must be a READ-ONLY base::SharedMemoryHandle, i.e. one
+  // acquired by base::SharedMemory::GetReadOnlyHandle().
   void DoComposite(base::SharedMemoryHandle handle,
                    uint32_t data_size,
                    mojom::PdfCompositor::CompositePdfCallback callback);

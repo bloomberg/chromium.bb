@@ -136,9 +136,8 @@ void MojoVideoEncodeAcceleratorService::UseOutputBitstreamBuffer(
 
   base::SharedMemoryHandle handle;
   size_t memory_size = 0;
-  bool read_only = false;
   auto result = mojo::UnwrapSharedMemoryHandle(std::move(buffer), &handle,
-                                               &memory_size, &read_only);
+                                               &memory_size, nullptr);
   if (result != MOJO_RESULT_OK || memory_size == 0u) {
     DLOG(ERROR) << __func__ << " mojo::UnwrapSharedMemoryHandle() failed";
     NotifyError(::media::VideoEncodeAccelerator::kPlatformFailureError);

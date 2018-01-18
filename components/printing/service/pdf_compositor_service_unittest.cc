@@ -144,7 +144,7 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
     base::SharedMemory shared_memory;
     if (shared_memory.Create(options) && shared_memory.Map(len)) {
       stream.copyTo(shared_memory.memory());
-      return base::SharedMemory::DuplicateHandle(shared_memory.handle());
+      return shared_memory.GetReadOnlyHandle();
     }
     return base::SharedMemoryHandle();
   }
@@ -152,8 +152,9 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
   void CallCompositorWithSuccess(mojom::PdfCompositorPtr ptr) {
     auto handle = CreateMSKPInSharedMemory();
     ASSERT_TRUE(handle.IsValid());
-    mojo::ScopedSharedBufferHandle buffer_handle =
-        mojo::WrapSharedMemoryHandle(handle, handle.GetSize(), true);
+    mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
+        handle, handle.GetSize(),
+        mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
     ASSERT_TRUE(buffer_handle->is_valid());
     EXPECT_CALL(*this, CallbackOnSuccess(testing::_)).Times(1);
     ptr->CompositePdf(std::move(buffer_handle),

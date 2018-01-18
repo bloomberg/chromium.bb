@@ -142,9 +142,13 @@ void MojoVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
 
   // WrapSharedMemoryHandle() takes ownership of the handle passed to it, but we
   // don't have ownership of frame->shared_memory_handle(), so Duplicate() it.
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::WrapSharedMemoryHandle(frame->shared_memory_handle().Duplicate(),
-                                   allocation_size, true /* read_only */);
+  //
+  // TODO(https://crbug.com/793446): This should be changed to wrap the frame
+  // buffer handle as read-only, but VideoFrame does not seem to guarantee that
+  // its shared_memory_handle() is in fact read-only.
+  mojo::ScopedSharedBufferHandle handle = mojo::WrapSharedMemoryHandle(
+      frame->shared_memory_handle().Duplicate(), allocation_size,
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
   const size_t y_offset = frame->shared_memory_offset();
   const size_t u_offset = y_offset + frame->data(VideoFrame::kUPlane) -
@@ -174,11 +178,13 @@ void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(
            << " buffer.size()= " << buffer.size() << "B";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // WrapSharedMemoryHandle() takes ownership of the handle passed to it, but we
-  // don't have ownership of the |buffer|s underlying handle, so Duplicate() it.
   DCHECK(buffer.handle().IsValid());
+
+  // TODO(https://crbug.com/793446): Only wrap read-only handles here and change
+  // the protection status to kReadOnly.
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      buffer.handle().Duplicate(), buffer.size(), true /* read_only */);
+      buffer.handle().Duplicate(), buffer.size(),
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
   vea_->UseOutputBitstreamBuffer(buffer.id(), std::move(buffer_handle));
 }

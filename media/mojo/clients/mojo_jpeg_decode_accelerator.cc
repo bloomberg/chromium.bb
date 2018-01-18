@@ -65,8 +65,9 @@ void MojoJpegDecodeAccelerator::Decode(
   size_t output_buffer_size = VideoFrame::AllocationSize(
       video_frame->format(), video_frame->coded_size());
   mojo::ScopedSharedBufferHandle output_frame_handle =
-      mojo::WrapSharedMemoryHandle(output_handle, output_buffer_size,
-                                   false /* read_only */);
+      mojo::WrapSharedMemoryHandle(
+          output_handle, output_buffer_size,
+          mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
   jpeg_decoder_->Decode(bitstream_buffer, video_frame->coded_size(),

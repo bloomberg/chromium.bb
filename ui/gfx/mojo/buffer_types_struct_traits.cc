@@ -58,8 +58,9 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       handle.type != gfx::DXGI_SHARED_HANDLE &&
       handle.type != gfx::ANDROID_HARDWARE_BUFFER)
     return mojo::ScopedSharedBufferHandle();
-  return mojo::WrapSharedMemoryHandle(handle.handle, handle.handle.GetSize(),
-                                      false);
+  return mojo::WrapSharedMemoryHandle(
+      handle.handle, handle.handle.GetSize(),
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 }
 
 const gfx::NativePixmapHandle&
