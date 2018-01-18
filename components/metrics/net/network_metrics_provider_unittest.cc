@@ -87,8 +87,7 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
 
   // Set RTT so that the effective connection type is computed as 2G.
   estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(1500));
-  estimator.set_start_time_null_http_rtt(
-      base::TimeDelta::FromMilliseconds(1500));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1500));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             network_metrics_provider.effective_connection_type_);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
@@ -112,8 +111,7 @@ TEST_F(NetworkMetricsProviderTest, EffectiveConnectionType) {
 
   // Set RTT so that the effective connection type is computed as SLOW_2G.
   estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(3000));
-  estimator.set_start_time_null_http_rtt(
-      base::TimeDelta::FromMilliseconds(3000));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(3000));
   // Running a request would cause the effective connection type to be computed
   // as SLOW_2G, and observers to be notified.
   estimator.RunOneRequest();
@@ -160,8 +158,7 @@ TEST_F(NetworkMetricsProviderTest, ECTAmbiguousOnConnectionTypeChange) {
 
   // Set RTT so that the effective connection type is computed as 2G.
   estimator.set_recent_http_rtt(base::TimeDelta::FromMilliseconds(1500));
-  estimator.set_start_time_null_http_rtt(
-      base::TimeDelta::FromMilliseconds(1500));
+  estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1500));
   // Running a request would cause the effective connection type to be computed
   // as 2G, and observers to be notified.
   estimator.RunOneRequest();
