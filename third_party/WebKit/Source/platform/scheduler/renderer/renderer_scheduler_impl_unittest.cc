@@ -26,6 +26,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 
 namespace blink {
 namespace scheduler {
@@ -288,6 +289,12 @@ class RendererSchedulerImplTest : public ::testing::Test {
 
   void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
     scheduler_ = std::move(scheduler);
+    if (kLaunchingProcessIsBackgrounded) {
+      scheduler_->SetRendererBackgrounded(false);
+      // Reset the policy count as foregrounding would force an initial update.
+      scheduler_->update_policy_count_ = 0;
+      scheduler_->use_cases_.clear();
+    }
     default_task_runner_ = scheduler_->DefaultTaskQueue();
     compositor_task_runner_ = scheduler_->CompositorTaskQueue();
     loading_task_runner_ = scheduler_->LoadingTaskQueue();

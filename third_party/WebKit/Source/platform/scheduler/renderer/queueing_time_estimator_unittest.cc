@@ -10,6 +10,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 
 #include <map>
 #include <string>
@@ -76,8 +77,14 @@ class QueueingTimeEstimatorForTest : public QueueingTimeEstimator {
  public:
   QueueingTimeEstimatorForTest(TestQueueingTimeEstimatorClient* client,
                                base::TimeDelta window_duration,
-                               int steps_per_window)
-      : QueueingTimeEstimator(client, window_duration, steps_per_window) {}
+                               int steps_per_window,
+                               base::TimeTicks time)
+      : QueueingTimeEstimator(client, window_duration, steps_per_window) {
+    // If initial state is not foregrounded, foreground.
+    if (kLaunchingProcessIsBackgrounded) {
+      this->OnRendererStateChanged(false, time);
+    }
+  }
 };
 
 struct BucketExpectation {
@@ -136,8 +143,8 @@ class QueueingTimeEstimatorTest : public ::testing::Test {
 // multiplied by the expected queueing time within a task (0.5 seconds). Thus we
 // expect a queueing time of 0.3 seconds.
 TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   for (int i = 0; i < 3; ++i) {
     estimator.OnTopLevelTaskStarted(time, nullptr);
     time += base::TimeDelta::FromMilliseconds(1000);
@@ -167,8 +174,8 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
 // Window 5: Probability of being within task = 3/5. Expected delay within task:
 // avg(3, 0). Total expected queueing time = 0.9s.
 TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -208,8 +215,8 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
 // In this example, the queueing time comes from the current, incomplete window.
 TEST_F(QueueingTimeEstimatorTest,
        EstimateQueueingTimeDuringSingleLongTaskIncompleteWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -235,8 +242,8 @@ TEST_F(QueueingTimeEstimatorTest,
 // fills the whole window. Expected delay within this task = avg(8, 3) = 5.5.
 TEST_F(QueueingTimeEstimatorTest,
        EstimateQueueingTimeDuringSingleLongTaskExceedingWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -271,8 +278,8 @@ TEST_F(QueueingTimeEstimatorTest,
 // So EQT = max(EQT(win1), EQT(win2)) = 3
 TEST_F(QueueingTimeEstimatorTest,
        SlidingWindowEstimateQueueingTimeFullWindowLargerThanPartial) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -313,8 +320,8 @@ TEST_F(QueueingTimeEstimatorTest,
 // So EQT = max(EQT(win1), EQT(win2)) = 0.025
 TEST_F(QueueingTimeEstimatorTest,
        SlidingWindowEstimateQueueingTimePartialWindowLargerThanFull) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -336,8 +343,8 @@ TEST_F(QueueingTimeEstimatorTest,
 // Tasks containing nested run loops may be extremely long without
 // negatively impacting user experience. Ignore such tasks.
 TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -375,8 +382,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
 // went to sleep during a task, resulting in an extremely long task. Ignore
 // these long tasks completely.
 TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Start with a 1 second task.
   estimator.OnTopLevelTaskStarted(time, nullptr);
@@ -425,8 +432,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
 // If we idle for too long, ignore idling time, even if the renderer is on the
 // foreground. Perhaps the user's machine went to sleep while we were idling.
 TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Start with a 1 second task.
   estimator.OnTopLevelTaskStarted(time, nullptr);
@@ -485,8 +492,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
 //       |---win---|
 //         |---win---|
 TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
 
   estimator.OnTopLevelTaskStarted(time, nullptr);
@@ -531,8 +538,8 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
 //       |---win---|
 //         |---win---|
 TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
 
   estimator.OnTopLevelTaskStarted(time, nullptr);
@@ -585,8 +592,8 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
 //         |---win---|
 TEST_F(QueueingTimeEstimatorTest,
        SlidingWindowOverTwoTasksSpanningSeveralWindows) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -634,8 +641,8 @@ TEST_F(QueueingTimeEstimatorTest,
 // backgrounded renderer. EQT(win1) = 0. EQT(win3) = (1500+500)/2 = 1000.
 // EQT(win4) = 1/2*500/2 = 250. EQT(win7) = 1/5*200/2 = 20.
 TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithSingleStepPerWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(1), 1);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(1), 1, time);
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -707,8 +714,8 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithSingleStepPerWindow) {
 // Win8: [12000-17000]. EQT of [16000-17000]: (1700+700)/2 = 1200. EQT(win8) =
 // (145+900+80+1680+1200)/5 = 801.
 TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithMutipleStepsPerWindow) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
@@ -781,8 +788,8 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithMutipleStepsPerWindow) {
 // other. Two 300 ms (each contributing 9) and one 200 ms tasks (contributes 4)
 // for the other bucket.
 TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Dummy task to initialize the estimator.
   estimator.OnTopLevelTaskStarted(time, nullptr);
@@ -992,8 +999,8 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 // other. Two 300 ms (each contributing 9) and one 800 ms tasks (contributes
 // 64) for the other bucket.
 TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
-  QueueingTimeEstimatorForTest estimator(&client,
-                                         base::TimeDelta::FromSeconds(5), 5);
+  QueueingTimeEstimatorForTest estimator(
+      &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Dummy task to initialize the estimator.
   estimator.OnTopLevelTaskStarted(time, nullptr);
