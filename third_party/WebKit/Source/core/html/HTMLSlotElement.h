@@ -48,9 +48,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& AssignedNodes() const;
   const HeapVector<Member<Node>>& GetDistributedNodes();
-  const HeapVector<Member<Node>> assignedNodesForBinding(
+  const HeapVector<Member<Node>> AssignedNodesForBinding(
       const AssignedNodesOptions&);
-  const HeapVector<Member<Element>> assignedElements(
+  const HeapVector<Member<Element>> AssignedElements();
+  const HeapVector<Member<Element>> AssignedElementsForBinding(
       const AssignedNodesOptions&);
 
   Node* FirstAssignedNode() const {
