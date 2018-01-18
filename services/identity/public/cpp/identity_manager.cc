@@ -42,6 +42,10 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
   return primary_account_info_;
 }
 
+bool IdentityManager::HasPrimaryAccount() {
+  return !primary_account_info_.account_id.empty();
+}
+
 std::unique_ptr<PrimaryAccountAccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
     const std::string& oauth_consumer_name,

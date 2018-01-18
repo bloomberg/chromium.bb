@@ -278,6 +278,20 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+TEST_F(IdentityManagerTest, HasPrimaryAccount) {
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+
+#if !defined(OS_CHROMEOS)
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_primary_account_cleared_callback(
+      run_loop.QuitClosure());
+
+  signin_manager()->ForceSignOut();
+  run_loop.Run();
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+#endif
+}
+
 TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::set<std::string> scopes{"scope"};
   std::string access_token = "access_token";
