@@ -628,10 +628,8 @@ CreateContextProviderOnWorkerThread(
 bool WebGLRenderingContextBase::SupportOwnOffscreenSurface(
     ExecutionContext* execution_context) {
   // Using an own offscreen surface disables virtualized contexts, and this
-  // doesn't currently work properly, see http://crbug.com/691102.
-  // The WebVRExperimentalRenderingEnabled flag which used to control this is
-  // now being repurposed for other render optimizations.
-  // TODO(crbug.com/791755): Remove this function and related code once
+  // doesn't currently work properly, see https://crbug.com/691102.
+  // TODO(https://crbug.com/791755): Remove this function and related code once
   // the replacement is ready.
   return false;
 }
