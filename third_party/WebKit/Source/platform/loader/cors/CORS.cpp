@@ -222,6 +222,17 @@ WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
   return network::cors::CheckRedirectLocation(url, run_blink_side_scheme_check);
 }
 
+WTF::Optional<network::mojom::CORSError> CheckPreflight(
+    const int preflight_response_status_code) {
+  return network::cors::CheckPreflight(preflight_response_status_code);
+}
+
+WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
+    const HTTPHeaderMap& response_header) {
+  return network::cors::CheckExternalPreflight(GetHeaderValue(
+      response_header, HTTPNames::Access_Control_Allow_External));
+}
+
 bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
   return network::cors::IsCORSEnabledRequestMode(request_mode);
 }

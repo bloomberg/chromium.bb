@@ -48,6 +48,12 @@ PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckAccess(
 PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
     const KURL&);
 
+PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckPreflight(
+    const int preflight_response_status_code);
+
+PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
+    const HTTPHeaderMap&);
+
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 
 }  // namespace CORS

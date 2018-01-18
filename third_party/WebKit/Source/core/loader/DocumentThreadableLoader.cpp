@@ -856,7 +856,7 @@ void DocumentThreadableLoader::HandlePreflightResponse(
   }
 
   WTF::Optional<network::mojom::CORSError> preflight_error =
-      WebCORS::CheckPreflight(response.HttpStatusCode());
+      CORS::CheckPreflight(response.HttpStatusCode());
   if (preflight_error) {
     HandlePreflightFailure(
         response.Url(),
@@ -869,7 +869,7 @@ void DocumentThreadableLoader::HandlePreflightResponse(
 
   if (actual_request_.IsExternalRequest()) {
     WTF::Optional<network::mojom::CORSError> external_preflight_status =
-        WebCORS::CheckExternalPreflight(response.HttpHeaderFields());
+        CORS::CheckExternalPreflight(response.HttpHeaderFields());
     if (external_preflight_status) {
       HandlePreflightFailure(
           response.Url(),

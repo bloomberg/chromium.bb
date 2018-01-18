@@ -216,28 +216,6 @@ base::Optional<CORSError> HandleRedirect(
   return base::nullopt;
 }
 
-base::Optional<CORSError> CheckPreflight(
-    const int preflight_response_status_code) {
-  // CORS preflight with 3XX is considered network error in
-  // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
-  // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
-  // https://crbug.com/452394
-  if (!FetchUtils::IsOkStatus(preflight_response_status_code))
-    return CORSError::kPreflightInvalidStatus;
-  return base::nullopt;
-}
-
-base::Optional<CORSError> CheckExternalPreflight(
-    const WebHTTPHeaderMap& response_header) {
-  WebString result =
-      response_header.Get(HTTPNames::Access_Control_Allow_External);
-  if (result.IsNull())
-    return CORSError::kPreflightMissingAllowExternal;
-  if (!EqualIgnoringASCIICase(result, "true"))
-    return CORSError::kPreflightInvalidAllowExternal;
-  return base::nullopt;
-}
-
 WebURLRequest CreateAccessControlPreflightRequest(
     const WebURLRequest& request) {
   const KURL& request_url = request.Url();

@@ -38,7 +38,7 @@ base::Optional<mojom::CORSError> CheckAccess(
     network::mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin);
 
-// Given a redirected-to URL, check if the location is allowed
+// Given a redirected-to URL, checks if the location is allowed
 // according to CORS. That is:
 // - the URL has a CORS supported scheme and
 // - the URL does not contain the userinfo production.
@@ -47,6 +47,16 @@ base::Optional<mojom::CORSError> CheckAccess(
 // See https://crbug.com/800669.
 base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
                                                        bool skip_scheme_check);
+
+// Performs the required CORS checks on the response to a preflight request.
+// Returns |kPreflightSuccess| if preflight response was successful.
+base::Optional<mojom::CORSError> CheckPreflight(const int status_code);
+
+// Checks errors for the currently experimental "Access-Control-Allow-External:"
+// header. Shares error conditions with standard preflight checking.
+// See https://crbug.com/590714.
+base::Optional<mojom::CORSError> CheckExternalPreflight(
+    const base::Optional<std::string>& allow_external);
 
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
 
