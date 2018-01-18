@@ -151,29 +151,21 @@ class FullscreenObserver : public WebContentsObserver {
   // windows or opening new tabs), so ensure that the flash be the theme
   // background color in those cases.
   const ThemeProvider* theme = [window themeProvider];
-  ThemedWindowStyle windowStyle = [window themedWindowStyle];
   if (!theme)
     return;
 
-  // This logic and hard-coded color value are duplicated from the function
-  // NTPResourceCache::CreateNewTabIncognitoCSS. This logic should exist in only
-  // one location.
-  // https://crbug.com/719236
   SkColor skBackgroundColor =
       theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-  bool incognito = windowStyle & THEMED_INCOGNITO;
-  if (incognito && !theme->HasCustomImage(IDR_THEME_NTP_BACKGROUND))
-    skBackgroundColor = SkColorSetRGB(0x32, 0x32, 0x32);
 
   // If the page is in fullscreen tab capture mode, change the background color
   // to be a dark tint of the new tab page's background color.
   if ([delegate_ contentsInFullscreenCaptureMode]) {
     const int kBackgroundDivisor = 5;
-    skBackgroundColor = skBackgroundColor = SkColorSetARGB(
-        SkColorGetA(skBackgroundColor),
-        SkColorGetR(skBackgroundColor) / kBackgroundDivisor,
-        SkColorGetG(skBackgroundColor) / kBackgroundDivisor,
-        SkColorGetB(skBackgroundColor) / kBackgroundDivisor);
+    skBackgroundColor =
+        SkColorSetARGB(SkColorGetA(skBackgroundColor),
+                       SkColorGetR(skBackgroundColor) / kBackgroundDivisor,
+                       SkColorGetG(skBackgroundColor) / kBackgroundDivisor,
+                       SkColorGetB(skBackgroundColor) / kBackgroundDivisor);
   }
 
   ScopedCAActionDisabler disabler;
