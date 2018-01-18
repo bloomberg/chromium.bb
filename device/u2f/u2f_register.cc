@@ -14,16 +14,16 @@
 namespace device {
 
 U2fRegister::U2fRegister(
+    std::string relying_party_id,
+    std::vector<U2fDiscovery*> discoveries,
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    std::string relying_party_id,
-    std::vector<U2fDiscovery*> discoveries,
     RegisterResponseCallback completion_callback)
     : U2fRequest(std::move(relying_party_id), std::move(discoveries)),
+      registered_keys_(registered_keys),
       challenge_hash_(challenge_hash),
       app_param_(app_param),
-      registered_keys_(registered_keys),
       completion_callback_(std::move(completion_callback)),
       weak_factory_(this) {}
 
@@ -31,15 +31,15 @@ U2fRegister::~U2fRegister() = default;
 
 // static
 std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
+    std::string relying_party_id,
+    std::vector<U2fDiscovery*> discoveries,
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    std::string relying_party_id,
-    std::vector<U2fDiscovery*> discoveries,
     RegisterResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
-      registered_keys, challenge_hash, app_param, std::move(relying_party_id),
-      std::move(discoveries), std::move(completion_callback));
+      std::move(relying_party_id), std::move(discoveries), registered_keys,
+      challenge_hash, app_param, std::move(completion_callback));
   request->Start();
   return request;
 }

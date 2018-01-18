@@ -15,6 +15,7 @@ namespace content {
 
 namespace client_data {
 const char kCreateType[] = "webauthn.create";
+const char kGetType[] = "webauthn.get";
 }  // namespace client_data
 
 namespace {
