@@ -200,7 +200,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   // committed_load_ or navigation_handle beyond the scope of the constructor.
   auto insertion_result = provisional_loads_.insert(std::make_pair(
       navigation_handle,
-      base::MakeUnique<PageLoadTracker>(
+      std::make_unique<PageLoadTracker>(
           in_foreground_, embedder_interface_.get(), currently_committed_url,
           navigation_handle, user_initiated_info, chain_size,
           chain_size_same_url)));

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -30,7 +31,7 @@ class CorePageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<CorePageLoadMetricsObserver>());
+    tracker->AddObserver(std::make_unique<CorePageLoadMetricsObserver>());
   }
 
   void SetUp() override {

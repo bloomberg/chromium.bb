@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -87,7 +86,7 @@ void FailAllNetworkTransactions(net::URLRequestContextGetter* getter) {
       getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
   DCHECK(cache);
   std::unique_ptr<net::FailingHttpTransactionFactory> factory =
-      base::MakeUnique<net::FailingHttpTransactionFactory>(cache->GetSession(),
+      std::make_unique<net::FailingHttpTransactionFactory>(cache->GetSession(),
                                                            net::ERR_FAILED);
   // Throw away old version; since this is a browser test, there is no
   // need to restore the old state.
@@ -149,7 +148,7 @@ class PageLoadMetricsWaiter
     if (expectations_satisfied())
       return;
 
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_ = nullptr;
 
@@ -304,7 +303,7 @@ class PageLoadMetricsWaiter
     // load.
     ASSERT_FALSE(did_add_observer_);
     tracker->AddObserver(
-        base::MakeUnique<WaiterMetricsObserver>(weak_factory_.GetWeakPtr()));
+        std::make_unique<WaiterMetricsObserver>(weak_factory_.GetWeakPtr()));
     did_add_observer_ = true;
   }
 
@@ -315,7 +314,7 @@ class PageLoadMetricsWaiter
     // load.
     ASSERT_FALSE(did_add_observer_);
     tracker->AddObserver(
-        base::MakeUnique<WaiterMetricsObserver>(weak_factory_.GetWeakPtr()));
+        std::make_unique<WaiterMetricsObserver>(weak_factory_.GetWeakPtr()));
     did_add_observer_ = true;
   }
 
@@ -354,7 +353,7 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
 
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   // Force navigation to a new page, so the currently tracked page load runs its
@@ -390,7 +389,7 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<PageLoadMetricsWaiter> CreatePageLoadMetricsWaiter() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    return base::MakeUnique<PageLoadMetricsWaiter>(web_contents);
+    return std::make_unique<PageLoadMetricsWaiter>(web_contents);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -463,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   Navigate(&params);
-  auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(params.target_contents);
+  auto waiter = std::make_unique<PageLoadMetricsWaiter>(params.target_contents);
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
   waiter->Wait();
 
@@ -1427,7 +1426,7 @@ class SessionRestorePaintWaiter : public SessionRestoreObserver {
   // SessionRestoreObserver implementation:
   void OnWillRestoreTab(content::WebContents* contents) override {
     chrome::InitializePageLoadMetricsForWebContents(contents);
-    auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(contents);
+    auto waiter = std::make_unique<PageLoadMetricsWaiter>(contents);
     waiter->AddPageExpectation(TimingField::FIRST_PAINT);
     waiter->AddPageExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
     waiter->AddPageExpectation(TimingField::FIRST_MEANINGFUL_PAINT);
@@ -1539,7 +1538,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
   Browser* new_browser = QuitBrowserAndRestore(browser());
 
-  auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(
+  auto waiter = std::make_unique<PageLoadMetricsWaiter>(
       new_browser->tab_strip_model()->GetActiveWebContents());
   waiter->AddPageExpectation(TimingField::FIRST_MEANINGFUL_PAINT);
   ui_test_utils::NavigateToURL(new_browser, GetTestURL());
@@ -1564,7 +1563,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   }
 
   // Load a new page after session restore.
-  auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(
+  auto waiter = std::make_unique<PageLoadMetricsWaiter>(
       new_browser->tab_strip_model()->GetActiveWebContents());
   waiter->AddPageExpectation(TimingField::FIRST_MEANINGFUL_PAINT);
   ui_test_utils::NavigateToURL(new_browser, GetTestURL());
@@ -1688,7 +1687,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   // Set up the restore data: one window with two tabs.
   std::vector<const sessions::SessionWindow*> session;
   sessions::SessionWindow window;
-  auto tab1 = base::MakeUnique<sessions::SessionTab>();
+  auto tab1 = std::make_unique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(0);
@@ -1699,7 +1698,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   }
   window.tabs.push_back(std::move(tab1));
 
-  auto tab2 = base::MakeUnique<sessions::SessionTab>();
+  auto tab2 = std::make_unique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(1);

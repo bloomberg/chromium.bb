@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -80,7 +79,7 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<LocalNetworkRequestsPageLoadMetricsObserver>());
+        std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
   }
 
   void SetUp() override {

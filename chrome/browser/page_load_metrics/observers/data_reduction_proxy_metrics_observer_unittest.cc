@@ -395,7 +395,7 @@ class DataReductionProxyMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<TestDataReductionProxyMetricsObserver>(
+        std::make_unique<TestDataReductionProxyMetricsObserver>(
             web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
             is_using_lofi_));
   }
@@ -482,7 +482,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
 
   ResetTest();
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
   data->set_lofi_received(true);
@@ -528,7 +528,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   RunTest(true, false, false);
 
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
 
@@ -611,7 +611,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   RunTest(true, false, false);
 
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
 
@@ -692,7 +692,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ProcessIdSentOnRendererCrash) {
   ResetTest();
   RunTest(true, false, false);
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
   SimulateRendererCrash();
@@ -702,7 +702,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ProcessIdSentOnRendererCrash) {
 
   ResetTest();
   RunTest(true, false, false);
-  data = base::MakeUnique<DataReductionProxyData>();
+  data = std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_request_url(GURL(kDefaultTestUrl));
   NavigateToUntrackedUrl();

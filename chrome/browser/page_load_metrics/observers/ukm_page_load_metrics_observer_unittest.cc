@@ -4,7 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -43,7 +44,7 @@ class UkmPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<UkmPageLoadMetricsObserver>(
+    tracker->AddObserver(std::make_unique<UkmPageLoadMetricsObserver>(
         &mock_network_quality_provider_));
   }
 

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -114,7 +116,7 @@ class LoFiPageLoadMetricsObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<LoFiPageLoadMetricsObserver>());
+    tracker->AddObserver(std::make_unique<LoFiPageLoadMetricsObserver>());
   }
 
   page_load_metrics::mojom::PageLoadTiming timing_;
@@ -128,7 +130,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, LoFiNotSeen) {
   RunTest();
 
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
 
   // Prepare 4 resources of varying size and configurations, none of which have
@@ -192,7 +194,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, ClientLoFiSeen) {
   RunTest();
 
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_client_lofi_requested(true);
 
   // Prepare 4 resources of varying size and configurations, 2 of which have
@@ -256,7 +258,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, ServerLoFiSeen) {
   RunTest();
 
   std::unique_ptr<DataReductionProxyData> data =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_lofi_received(true);
 
@@ -321,12 +323,12 @@ TEST_F(LoFiPageLoadMetricsObserverTest, BothLoFiSeen) {
   RunTest();
 
   std::unique_ptr<DataReductionProxyData> data1 =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data1->set_used_data_reduction_proxy(true);
   data1->set_lofi_received(true);
 
   std::unique_ptr<DataReductionProxyData> data2 =
-      base::MakeUnique<DataReductionProxyData>();
+      std::make_unique<DataReductionProxyData>();
   data2->set_used_data_reduction_proxy(true);
   data2->set_client_lofi_requested(true);
 

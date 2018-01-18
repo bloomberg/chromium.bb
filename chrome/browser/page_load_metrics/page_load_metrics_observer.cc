@@ -97,7 +97,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
       net_error(other.net_error),
       load_timing_info(other.load_timing_info == nullptr
                            ? nullptr
-                           : base::MakeUnique<net::LoadTimingInfo>(
+                           : std::make_unique<net::LoadTimingInfo>(
                                  *other.load_timing_info)) {}
 
 ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -71,7 +70,7 @@ class ResourceLoadingCancellingThrottle
  public:
   static std::unique_ptr<content::NavigationThrottle> Create(
       content::NavigationHandle* handle) {
-    return base::MakeUnique<ResourceLoadingCancellingThrottle>(handle);
+    return std::make_unique<ResourceLoadingCancellingThrottle>(handle);
   }
 
   explicit ResourceLoadingCancellingThrottle(
@@ -227,7 +226,7 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
   void SetUp() override {
     SubresourceFilterTestHarness::SetUp();
     tester_ =
-        base::MakeUnique<page_load_metrics::PageLoadMetricsObserverTester>(
+        std::make_unique<page_load_metrics::PageLoadMetricsObserverTester>(
             web_contents(),
             base::BindRepeating(
                 &AdsPageLoadMetricsObserverTest::RegisterObservers,
@@ -302,7 +301,7 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
 
  private:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) {
-    tracker->AddObserver(base::MakeUnique<AdsPageLoadMetricsObserver>());
+    tracker->AddObserver(std::make_unique<AdsPageLoadMetricsObserver>());
   }
 
   base::HistogramTester histogram_tester_;

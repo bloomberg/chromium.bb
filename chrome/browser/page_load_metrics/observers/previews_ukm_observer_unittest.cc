@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
@@ -132,7 +134,7 @@ class PreviewsUKMObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<TestPreviewsUKMObserver>(
+    tracker->AddObserver(std::make_unique<TestPreviewsUKMObserver>(
         web_contents(), data_reduction_proxy_used_, lite_page_received_,
         noscript_on_));
     // Data is only added to the first navigation after RunTest().
@@ -225,7 +227,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data->set_client_lofi_requested(true);
 
   // Prepare 3 resources of varying size and configurations, 2 of which have
@@ -260,7 +262,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data->set_client_lofi_requested(true);
 
   // Prepare 3 resources of varying size and configurations, 2 of which have
@@ -296,7 +298,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_lofi_received(true);
 
@@ -331,7 +333,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
   data->set_lofi_received(true);
 
@@ -368,12 +370,12 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data1->set_used_data_reduction_proxy(true);
   data1->set_lofi_received(true);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data2 =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data2->set_used_data_reduction_proxy(true);
   data2->set_client_lofi_requested(true);
 
@@ -408,12 +410,12 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
           false /* noscript_on */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data1->set_used_data_reduction_proxy(true);
   data1->set_lofi_received(true);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data2 =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyData>();
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
   data2->set_used_data_reduction_proxy(true);
   data2->set_client_lofi_requested(true);
 

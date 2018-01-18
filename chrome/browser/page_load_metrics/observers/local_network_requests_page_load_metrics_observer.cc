@@ -5,7 +5,6 @@
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -520,7 +519,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::ResolveResourceTypes() {
   }
 
   requested_resource_types_ =
-      base::MakeUnique<std::map<net::IPAddress, internal::ResourceType>>();
+      std::make_unique<std::map<net::IPAddress, internal::ResourceType>>();
   for (const auto& entry : resource_request_counts_) {
     requested_resource_types_->insert(
         {entry.first, DetermineResourceType(entry.first)});

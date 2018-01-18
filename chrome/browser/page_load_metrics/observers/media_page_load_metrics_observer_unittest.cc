@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -107,7 +106,7 @@ class MediaPageLoadMetricsObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<MediaPageLoadMetricsObserver>());
+    tracker->AddObserver(std::make_unique<MediaPageLoadMetricsObserver>());
   }
 
   // Simulated byte usage since the last time the test was reset.

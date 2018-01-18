@@ -127,7 +127,7 @@ class NoScriptPreviewPageLoadMetricsObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<NoScriptPreviewPageLoadMetricsObserver>());
+        std::make_unique<NoScriptPreviewPageLoadMetricsObserver>());
   }
 
   page_load_metrics::mojom::PageLoadTiming timing_;

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 
+#include <memory>
 #include <vector>
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -56,7 +56,7 @@ class UseCounterPageLoadMetricsObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<UseCounterPageLoadMetricsObserver>());
+    tracker->AddObserver(std::make_unique<UseCounterPageLoadMetricsObserver>());
   }
 
  private:

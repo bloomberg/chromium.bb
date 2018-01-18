@@ -44,7 +44,7 @@ class SessionRestorePageLoadMetricsObserverTest
  public:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
-        base::MakeUnique<SessionRestorePageLoadMetricsObserver>());
+        std::make_unique<SessionRestorePageLoadMetricsObserver>());
   }
 
  protected:
@@ -88,7 +88,7 @@ class SessionRestorePageLoadMetricsObserverTest
     tabs_.emplace_back(CreateTestWebContents());
     WebContents* contents = tabs_.back().get();
     auto tester =
-        base::MakeUnique<page_load_metrics::PageLoadMetricsObserverTester>(
+        std::make_unique<page_load_metrics::PageLoadMetricsObserverTester>(
             contents,
             base::BindRepeating(
                 &SessionRestorePageLoadMetricsObserverTest::RegisterObservers,
