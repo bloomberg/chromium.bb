@@ -94,7 +94,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='cdrom', gid=19, users={'cros-disks'}),
     GroupEntry(group='tape', gid=26, users={'root'}),
     GroupEntry(group='cdrw', gid=80, users={'cros-disks'}),
-    GroupEntry(group='usb', gid=85, users={'mtp', 'brltty', 'dlm'}),
+    GroupEntry(group='usb', gid=85, users={'mtp', 'brltty', 'dlm', 'modem'}),
     GroupEntry(group='users', gid=100),
     GroupEntry(group='portage', gid=250, users={'portage'}),
     GroupEntry(group='utmp', gid=406),
