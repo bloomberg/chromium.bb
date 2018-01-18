@@ -92,30 +92,6 @@ base::string16 GetDeviceLabelFromStorageInfo(
   return base::UTF8ToUTF16(device_label);
 }
 
-// Helper function to get the device storage details such as device id, label
-// and location. On success and fills in |id|, |label|, |location|,
-// |vendor_name|, and |product_name|.
-void GetStorageInfo(const std::string& storage_name,
-                    device::MediaTransferProtocolManager* mtp_manager,
-                    std::string* id,
-                    base::string16* label,
-                    std::string* location,
-                    base::string16* vendor_name,
-                    base::string16* product_name) {
-  DCHECK(!storage_name.empty());
-  const device::mojom::MtpStorageInfo* storage_info =
-      mtp_manager->GetStorageInfo(storage_name);
-
-  if (!storage_info)
-    return;
-
-  *id = GetDeviceIdFromStorageInfo(*storage_info);
-  *label = GetDeviceLabelFromStorageInfo(*storage_info);
-  *location = GetDeviceLocationFromStorageName(storage_name);
-  *vendor_name = base::UTF8ToUTF16(storage_info->vendor);
-  *product_name = base::UTF8ToUTF16(storage_info->product);
-}
-
 }  // namespace
 
 MediaTransferProtocolDeviceObserverChromeOS::
@@ -123,7 +99,9 @@ MediaTransferProtocolDeviceObserverChromeOS::
         StorageMonitor::Receiver* receiver,
         device::MediaTransferProtocolManager* mtp_manager)
     : mtp_manager_(mtp_manager),
-      get_storage_info_func_(&GetStorageInfo),
+      get_mtp_storage_info_cb_(base::BindRepeating(
+            &device::MediaTransferProtocolManager::GetStorageInfo,
+            base::Unretained(mtp_manager_))),
       notifications_(receiver),
       weak_ptr_factory_(this) {
   mtp_manager_->AddObserver(this);
@@ -135,9 +113,9 @@ MediaTransferProtocolDeviceObserverChromeOS::
     MediaTransferProtocolDeviceObserverChromeOS(
         StorageMonitor::Receiver* receiver,
         device::MediaTransferProtocolManager* mtp_manager,
-        GetStorageInfoFunc get_storage_info_func)
+        GetMtpStorageInfoCallback get_mtp_storage_info_cb)
     : mtp_manager_(mtp_manager),
-      get_storage_info_func_(get_storage_info_func),
+      get_mtp_storage_info_cb_(get_mtp_storage_info_cb),
       notifications_(receiver),
       weak_ptr_factory_(this) {}
 
@@ -194,14 +172,18 @@ void MediaTransferProtocolDeviceObserverChromeOS::StorageChanged(
 
   // New storage is attached.
   if (is_attached) {
-    std::string device_id;
-    base::string16 storage_label;
-    std::string location;
-    base::string16 vendor_name;
-    base::string16 product_name;
-    get_storage_info_func_(storage_name, mtp_manager_, &device_id,
-                           &storage_label, &location, &vendor_name,
-                           &product_name);
+    const device::mojom::MtpStorageInfo* mtp_storage_info =
+        get_mtp_storage_info_cb_.Run(storage_name);
+
+    if (!mtp_storage_info)
+      return;
+
+    std::string device_id = GetDeviceIdFromStorageInfo(*mtp_storage_info);
+    base::string16 storage_label =
+        GetDeviceLabelFromStorageInfo(*mtp_storage_info);
+    std::string location = GetDeviceLocationFromStorageName(storage_name);
+    base::string16 vendor_name = base::UTF8ToUTF16(mtp_storage_info->vendor);
+    base::string16 product_name = base::UTF8ToUTF16(mtp_storage_info->product);
 
     if (device_id.empty() || storage_label.empty())
       return;
