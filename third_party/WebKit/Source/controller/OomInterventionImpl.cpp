@@ -74,7 +74,6 @@ void OomInterventionImpl::Check(TimerBase*) {
       // mojo strong binding is disconnected.
       pauser_.reset(new ScopedPagePauser);
     }
-    return;
   }
 }
 
