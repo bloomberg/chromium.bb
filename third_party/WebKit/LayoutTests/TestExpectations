@@ -3510,4 +3510,9 @@ crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Pass Timeout ]
 crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Pass Timeout ]
 
+# Sheriff failures 2018-01-18
+# This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
+# WebKit Linux Trusty (dbg).
+crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-restored-breakpoint.js [ Pass Failure ]
+
 crbug.com/799929 external/wpt/performance-timeline/po-takeRecords.html [ Failure ]
