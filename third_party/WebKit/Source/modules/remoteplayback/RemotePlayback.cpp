@@ -298,7 +298,7 @@ int RemotePlayback::WatchAvailabilityInternal(
 }
 
 bool RemotePlayback::CancelWatchAvailabilityInternal(int id) {
-  if (id <= 0)  // HashMap doesn't support the case of key = 0.
+  if (id <= 0)  // HashMap doesn't support the cases of key = 0 or key = -1.
     return false;
   auto iter = availability_callbacks_.find(id);
   if (iter == availability_callbacks_.end())
