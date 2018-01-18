@@ -278,7 +278,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       request.method = method;
       request.headers = extra_headers;
 
-      mojom::URLLoaderPtr url_loader;
+      network::mojom::URLLoaderPtr url_loader;
       TestURLLoaderClient url_loader_client;
       scoped_refptr<BlobURLLoaderFactory> factory =
           BlobURLLoaderFactory::Create(
@@ -286,7 +286,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
                              base::Unretained(this)));
       base::RunLoop().RunUntilIdle();
       factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
-                                    mojom::kURLLoadOptionNone, request,
+                                    network::mojom::kURLLoadOptionNone, request,
                                     url_loader_client.CreateInterfacePtr(),
                                     net::MutableNetworkTrafficAnnotationTag(
                                         TRAFFIC_ANNOTATION_FOR_TESTS));

@@ -27,13 +27,12 @@ struct RedirectInfo;
 namespace network {
 struct ResourceRequest;
 struct ResourceResponseHead;
-}
-
-namespace content {
-
 namespace mojom {
 class URLLoaderFactory;
 }
+}  // namespace network
+
+namespace content {
 
 // Creates and wraps a URLLoader, and runs it to completion. It's recommended
 // that consumers use this class instead of URLLoader directly, due to the
@@ -114,7 +113,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // SimpleURLLoader before the callback is invoked will return in cancelling
   // the request, and the callback will not be called.
   virtual void DownloadToString(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback,
       size_t max_body_size) = 0;
 
@@ -124,7 +123,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // instead (DownloadToString if the body is expected to be of reasonable
   // length, or DownloadToFile otherwise).
   virtual void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback) = 0;
 
   // SimpleURLLoader will download the entire response to a file at the
@@ -141,7 +140,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // downloaded file will be deleted asynchronously and the callback will not be
   // invoked, regardless of other settings.
   virtual void DownloadToFile(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
@@ -149,7 +148,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // Same as DownloadToFile, but creates a temporary file instead of taking a
   // FilePath.
   virtual void DownloadToTempFile(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
 

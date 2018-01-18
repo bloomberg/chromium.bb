@@ -9,10 +9,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -21,8 +21,8 @@ namespace {
 GURL request_url = GURL("http://example.org");
 GURL redirect_url = GURL("http://example.com");
 
-class TestURLLoaderFactory : public mojom::URLLoaderFactory,
-                             public mojom::URLLoader {
+class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
+                             public network::mojom::URLLoader {
  public:
   TestURLLoaderFactory() : binding_(this), url_loader_binding_(this) {
     binding_.Bind(mojo::MakeRequest(&factory_ptr_));
@@ -32,9 +32,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
 
   ~TestURLLoaderFactory() override { shared_factory_->Detach(); }
 
-  mojom::URLLoaderFactoryPtr& factory_ptr() { return factory_ptr_; }
-  mojom::URLLoaderClientPtr& client_ptr() { return client_ptr_; }
-  mojo::Binding<mojom::URLLoader>& url_loader_binding() {
+  network::mojom::URLLoaderFactoryPtr& factory_ptr() { return factory_ptr_; }
+  network::mojom::URLLoaderClientPtr& client_ptr() { return client_ptr_; }
+  mojo::Binding<network::mojom::URLLoader>& url_loader_binding() {
     return url_loader_binding_;
   }
   scoped_refptr<SharedURLLoaderFactory> shared_factory() {
@@ -73,13 +73,13 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
   void CloseClientPipe() { client_ptr_.reset(); }
 
  private:
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     create_loader_and_start_called_++;
@@ -90,9 +90,11 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
     client_ptr_ = std::move(client);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
-  // mojom::URLLoader implementation.
+  // network::mojom::URLLoader implementation.
   void FollowRedirect() override {}
   void ProceedWithResponse() override {}
 
@@ -111,15 +113,15 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
   size_t pause_reading_body_from_net_called_ = 0;
   size_t resume_reading_body_from_net_called_ = 0;
 
-  mojo::Binding<mojom::URLLoaderFactory> binding_;
-  mojo::Binding<mojom::URLLoader> url_loader_binding_;
-  mojom::URLLoaderFactoryPtr factory_ptr_;
-  mojom::URLLoaderClientPtr client_ptr_;
+  mojo::Binding<network::mojom::URLLoaderFactory> binding_;
+  mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
+  network::mojom::URLLoaderFactoryPtr factory_ptr_;
+  network::mojom::URLLoaderClientPtr client_ptr_;
   scoped_refptr<WeakWrapperSharedURLLoaderFactory> shared_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
 
-class TestURLLoaderClient : public mojom::URLLoaderClient {
+class TestURLLoaderClient : public network::mojom::URLLoaderClient {
  public:
   TestURLLoaderClient() {}
 
@@ -143,11 +145,11 @@ class TestURLLoaderClient : public mojom::URLLoaderClient {
   }
 
  private:
-  // mojom::URLLoaderClient implementation:
+  // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     on_received_response_called_++;
     if (on_received_response_callback_)
       on_received_response_callback_.Run();
@@ -284,7 +286,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
   void CreateLoaderAndStart(bool sync = false) {
     uint32_t options = 0;
     if (sync)
-      options |= mojom::kURLLoadOptionSynchronous;
+      options |= network::mojom::kURLLoadOptionSynchronous;
     network::ResourceRequest request;
     request.url = request_url;
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(

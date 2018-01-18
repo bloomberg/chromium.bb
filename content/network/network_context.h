@@ -15,11 +15,11 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/network_service.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/network/url_request_context_owner.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace net {
 class CertVerifier;
@@ -82,10 +82,11 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   void DeregisterURLLoader(URLLoader* url_loader);
 
   // mojom::NetworkContext implementation:
-  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
+  void CreateURLLoaderFactory(network::mojom::URLLoaderFactoryRequest request,
                               uint32_t process_id) override;
-  void HandleViewCacheRequest(const GURL& url,
-                              mojom::URLLoaderClientPtr client) override;
+  void HandleViewCacheRequest(
+      const GURL& url,
+      network::mojom::URLLoaderClientPtr client) override;
   void GetCookieManager(network::mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRequest request,
@@ -138,7 +139,8 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   // Put it below |url_request_context_| so that it outlives all the
   // NetworkServiceURLLoaderFactory instances.
-  mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
+  mojo::StrongBindingSet<network::mojom::URLLoaderFactory>
+      loader_factory_bindings_;
 
   // URLLoaders register themselves with the NetworkContext so that they can
   // be cleaned up when the NetworkContext goes away. This is needed as

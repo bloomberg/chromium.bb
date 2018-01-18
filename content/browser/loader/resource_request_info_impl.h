@@ -21,9 +21,9 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "net/base/load_states.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 class DetachableResourceHandler;
@@ -37,7 +37,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 public base::SupportsUserData::Data {
  public:
   using TransferCallback =
-      base::Callback<void(mojom::URLLoaderRequest, mojom::URLLoaderClientPtr)>;
+      base::Callback<void(network::mojom::URLLoaderRequest,
+                          network::mojom::URLLoaderClientPtr)>;
 
   // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
@@ -126,8 +127,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                          int render_frame_id,
                          int request_id,
                          ResourceRequesterInfo* requester_info,
-                         mojom::URLLoaderRequest url_loader_request,
-                         mojom::URLLoaderClientPtr url_loader_client);
+                         network::mojom::URLLoaderRequest url_loader_request,
+                         network::mojom::URLLoaderClientPtr url_loader_client);
 
   // Whether this request is part of a navigation that should replace the
   // current session history entry. This state is shuffled up and down the stack

@@ -5,9 +5,9 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
-import "content/public/common/url_loader.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
+import "services/network/public/interfaces/url_loader.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_app.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_client.mojom";
@@ -39,8 +39,8 @@ enum BackgroundFetchState {
 };
 
 struct FetchEventPreloadHandle {
-  URLLoader url_loader;
-  URLLoaderClient& url_loader_client_request;
+  network.mojom.URLLoader url_loader;
+  network.mojom.URLLoaderClient& url_loader_client_request;
 };
 
 struct ExtendableMessageEvent {
@@ -106,7 +106,7 @@ interface ServiceWorkerEventDispatcher {
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   // S13nServiceWorker
-  DispatchFetchEvent(URLRequest request,
+  DispatchFetchEvent(network.mojom.URLRequest request,
                      FetchEventPreloadHandle? preload_handle,
                      ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,

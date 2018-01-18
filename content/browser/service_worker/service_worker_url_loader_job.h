@@ -18,9 +18,9 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom.h"
 
@@ -31,11 +31,12 @@ class ServiceWorkerVersion;
 
 // S13nServiceWorker:
 // ServiceWorkerURLLoaderJob works similar to ServiceWorkerURLRequestJob
-// but with mojom::URLLoader instead of URLRequest.
+// but with network::mojom::URLLoader instead of URLRequest.
 // This class is owned by the job wrapper until it is bound to a URLLoader
 // request. After it is bound |this| is kept alive until the Mojo connection
 // to this URLLoader is dropped.
-class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
+class CONTENT_EXPORT ServiceWorkerURLLoaderJob
+    : public network::mojom::URLLoader {
  public:
   using Delegate = ServiceWorkerURLJobWrapper::Delegate;
   using ResponseType = ServiceWorkerResponseType;
@@ -60,7 +61,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
   // 4. Otherwise if the SW returned a stream or blob as a response
   //    this job calls |loader_callback| with a bound method for
   //    StartResponse().
-  // 5. Then StartResponse() will be called with mojom::URLLoaderClientPtr
+  // 5. Then StartResponse() will be called with
+  // network::mojom::URLLoaderClientPtr
   //    that is connected to NavigationURLLoaderNetworkService (for resource
   //    loading for navigation). This forwards the blob/stream data pipe to the
   //    NavigationURLLoader if the response body was sent as a blob/stream.
@@ -112,13 +114,13 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
                      scoped_refptr<ServiceWorkerVersion> version,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                      blink::mojom::BlobPtr body_as_blob,
-                     mojom::URLLoaderRequest request,
-                     mojom::URLLoaderClientPtr client);
+                     network::mojom::URLLoaderRequest request,
+                     network::mojom::URLLoaderClientPtr client);
 
   // Used as the StartLoaderCallback passed to |loader_callback_| on error.
   // Returns a network error to |client|.
-  void StartErrorResponse(mojom::URLLoaderRequest request,
-                          mojom::URLLoaderClientPtr client);
+  void StartErrorResponse(network::mojom::URLLoaderRequest request,
+                          network::mojom::URLLoaderClientPtr client);
 
   // Calls url_loader_client_->OnReceiveResopnse() with |response_head_|.
   void CommitResponseHeaders();
@@ -130,7 +132,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
   // called once either StartResponse or StartErrorResponse is called.
   void ReturnNetworkError();
 
-  // mojom::URLLoader:
+  // network::mojom::URLLoader:
   void FollowRedirect() override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
@@ -158,8 +160,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
   base::Optional<net::SSLInfo> ssl_info_;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
-  mojom::URLLoaderClientPtr url_loader_client_;
-  mojo::Binding<mojom::URLLoader> binding_;
+  network::mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Binding<network::mojom::URLLoader> binding_;
 
   enum class Status {
     kNotStarted,

@@ -61,7 +61,7 @@ void AppCacheDispatcher::ContentBlocked(int32_t host_id,
 
 void AppCacheDispatcher::SetSubresourceFactory(
     int32_t host_id,
-    mojom::URLLoaderFactoryPtr url_loader_factory) {
+    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   frontend_->OnSetSubresourceFactory(host_id, std::move(url_loader_factory));
 }
 

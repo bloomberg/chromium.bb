@@ -24,11 +24,11 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/shared_url_loader_factory.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -42,6 +42,9 @@ struct ResourceResponseInfo;
 struct ResourceRequest;
 struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
+namespace mojom {
+class URLLoaderFactory;
+}
 }
 
 namespace content {
@@ -108,7 +111,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
@@ -223,7 +226,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   void ContinueForNavigation(
       int request_id,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // All pending requests issued to the host
   PendingRequestMap pending_requests_;

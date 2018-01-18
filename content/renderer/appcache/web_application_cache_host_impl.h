@@ -59,7 +59,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
 
   // Set the URLLoaderFactory instance to be used for subresource requests.
   virtual void SetSubresourceFactory(
-      mojom::URLLoaderFactoryPtr url_loader_factory) {}
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) {}
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };

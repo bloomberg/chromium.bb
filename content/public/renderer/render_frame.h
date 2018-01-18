@@ -15,10 +15,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/TaskType.h"
@@ -262,7 +262,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetAccessibilityModeForTest(ui::AXMode new_mode) = 0;
 
   // Returns the URLLoaderFactory for the given GURL
-  virtual mojom::URLLoaderFactory* GetURLLoaderFactory(
+  virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory(
       const GURL& request_url) = 0;
 
  protected:

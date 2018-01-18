@@ -92,8 +92,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // MaybeCreateLoaderForResponse always returns synchronously.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
-      mojom::URLLoaderPtr* loader,
-      mojom::URLLoaderClientRequest* client_request) override;
+      network::mojom::URLLoaderPtr* loader,
+      network::mojom::URLLoaderClientRequest* client_request) override;
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 

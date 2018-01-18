@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
@@ -55,12 +55,12 @@ class CONTENT_EXPORT SharedURLLoaderFactory
       std::unique_ptr<SharedURLLoaderFactoryInfo> info);
 
   virtual void CreateLoaderAndStart(
-      mojom::URLLoaderRequest loader,
+      network::mojom::URLLoaderRequest loader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       const Constraints& constaints = kDefaultConstraints) = 0;
 

@@ -2420,7 +2420,7 @@ int LoadBasicRequest(mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id,
                      int render_frame_id) {
-  mojom::URLLoaderFactoryPtr url_loader_factory;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory;
   network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory),
                                           process_id);
   // |url_loader_factory| will receive error notification asynchronously if

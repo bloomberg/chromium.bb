@@ -735,7 +735,7 @@ void NavigationRequest::OnRequestRedirected(
 
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
@@ -1195,7 +1195,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
         // |url_loader_client_endpoints_| is always valid, except in some tests
         // where the TestNavigationLoader is used.
         if (url_loader_client_endpoints_) {
-          mojom::URLLoaderPtr url_loader(
+          network::mojom::URLLoaderPtr url_loader(
               std::move(url_loader_client_endpoints_->url_loader));
           url_loader->ProceedWithResponse();
           url_loader_client_endpoints_->url_loader = url_loader.PassInterface();

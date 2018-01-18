@@ -16,9 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace network {
 struct URLLoaderCompletionStatus;

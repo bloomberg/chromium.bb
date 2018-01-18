@@ -48,9 +48,9 @@ namespace {
 
 // This class wraps a mojo::AssociatedInterfacePtr<URLLoader>. It also is a
 // URLLoader implementation and delegates URLLoader calls to the wrapped loader.
-class DelegatingURLLoader final : public mojom::URLLoader {
+class DelegatingURLLoader final : public network::mojom::URLLoader {
  public:
-  explicit DelegatingURLLoader(mojom::URLLoaderPtr loader)
+  explicit DelegatingURLLoader(network::mojom::URLLoaderPtr loader)
       : binding_(this), loader_(std::move(loader)) {}
   ~DelegatingURLLoader() override {}
 
@@ -69,8 +69,8 @@ class DelegatingURLLoader final : public mojom::URLLoader {
     loader_->ResumeReadingBodyFromNet();
   }
 
-  mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
-    mojom::URLLoaderPtr loader;
+  network::mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
+    network::mojom::URLLoaderPtr loader;
     binding_.Bind(mojo::MakeRequest(&loader));
     // This unretained pointer is safe, because |binding_| is owned by |this|
     // and the callback will never be called after |this| is destroyed.
@@ -80,14 +80,15 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   }
 
  private:
-  // Called when the mojom::URLLoaderPtr in the service worker is deleted.
+  // Called when the network::mojom::URLLoaderPtr in the service worker is
+  // deleted.
   void Cancel() {
     // Cancel loading as stated in url_loader.mojom.
     loader_ = nullptr;
   }
 
-  mojo::Binding<mojom::URLLoader> binding_;
-  mojom::URLLoaderPtr loader_;
+  mojo::Binding<network::mojom::URLLoader> binding_;
+  network::mojom::URLLoaderPtr loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoader);
 };
@@ -125,10 +126,10 @@ void NotifyNavigationPreloadCompletedOnUI(
 // network request. It watches as the response comes in, and pipes the response
 // back to the service worker while also doing extra processing like notifying
 // DevTools.
-class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
+class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
  public:
   using WorkerId = std::pair<int, int>;
-  explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client,
+  explicit DelegatingURLLoaderClient(network::mojom::URLLoaderClientPtr client,
                                      base::OnceClosure on_response,
                                      const network::ResourceRequest& request)
       : binding_(this),
@@ -173,7 +174,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     client_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
     DCHECK(on_response_);
     std::move(on_response_).Run();
@@ -206,7 +207,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, status));
   }
 
-  void Bind(mojom::URLLoaderClientPtr* ptr_info) {
+  void Bind(network::mojom::URLLoaderClientPtr* ptr_info) {
     binding_.Bind(mojo::MakeRequest(ptr_info));
   }
 
@@ -228,8 +229,8 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     MaybeRunDevToolsCallbacks();
   }
 
-  mojo::Binding<mojom::URLLoaderClient> binding_;
-  mojom::URLLoaderClientPtr client_;
+  mojo::Binding<network::mojom::URLLoaderClient> binding_;
+  network::mojom::URLLoaderClientPtr client_;
   base::OnceClosure on_response_;
   bool completed_ = false;
   const GURL url_;
@@ -430,8 +431,8 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
 class ServiceWorkerFetchDispatcher::URLLoaderAssets
     : public base::RefCounted<ServiceWorkerFetchDispatcher::URLLoaderAssets> {
  public:
-  URLLoaderAssets(mojom::URLLoaderFactoryPtr url_loader_factory,
-                  std::unique_ptr<mojom::URLLoader> url_loader,
+  URLLoaderAssets(network::mojom::URLLoaderFactoryPtr url_loader_factory,
+                  std::unique_ptr<network::mojom::URLLoader> url_loader,
                   std::unique_ptr<DelegatingURLLoaderClient> url_loader_client)
       : url_loader_factory_(std::move(url_loader_factory)),
         url_loader_(std::move(url_loader)),
@@ -446,8 +447,8 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
   friend class base::RefCounted<URLLoaderAssets>;
   virtual ~URLLoaderAssets() {}
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
-  std::unique_ptr<mojom::URLLoader> url_loader_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  std::unique_ptr<network::mojom::URLLoader> url_loader_;
   std::unique_ptr<DelegatingURLLoaderClient> url_loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderAssets);
@@ -685,7 +686,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   DCHECK(!url_loader_assets_);
 
-  mojom::URLLoaderFactoryPtr url_loader_factory;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory;
   URLLoaderFactoryImpl::Create(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
       mojo::MakeRequest(&url_loader_factory),
@@ -727,19 +728,20 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   DCHECK_LT(request_id, -1);
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
-  mojom::URLLoaderClientPtr url_loader_client_ptr;
+  network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr), std::move(on_response), request);
-  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
+  network::mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   url_loader_client->Bind(&url_loader_client_ptr_to_pass);
-  mojom::URLLoaderPtr url_loader_associated_ptr;
+  network::mojom::URLLoaderPtr url_loader_associated_ptr;
 
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr),
-      original_info->GetRouteID(), request_id, mojom::kURLLoadOptionNone,
-      request, std::move(url_loader_client_ptr_to_pass),
+      original_info->GetRouteID(), request_id,
+      network::mojom::kURLLoadOptionNone, request,
+      std::move(url_loader_client_ptr_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           original_request->traffic_annotation()));
 
@@ -790,7 +792,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
 
   // Create the DelegatingURLLoaderClient, which becomes the
   // URLLoaderClient for the navigation preload network request.
-  mojom::URLLoaderClientPtr url_loader_client_ptr;
+  network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
@@ -799,13 +801,13 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
 
   // Start the network request for the URL using the network loader.
   // TODO(falken): What to do about routing_id, request_id?
-  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
+  network::mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   url_loader_client->Bind(&url_loader_client_ptr_to_pass);
-  mojom::URLLoaderPtr url_loader_associated_ptr;
+  network::mojom::URLLoaderPtr url_loader_associated_ptr;
   url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr), -1 /* routing_id? */,
-      -1 /* request_id? */, mojom::kURLLoadOptionNone, resource_request,
-      std::move(url_loader_client_ptr_to_pass),
+      -1 /* request_id? */, network::mojom::kURLLoadOptionNone,
+      resource_request, std::move(url_loader_client_ptr_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           kNavigationPreloadTrafficAnnotation));
 
@@ -820,7 +822,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   // Unlike the non-S13N code path, we don't own the URLLoaderFactory being used
   // (it's the generic network factory), so we don't need to pass it to
   // URLLoaderAssets to keep it alive.
-  mojom::URLLoaderFactoryPtr null_factory;
+  network::mojom::URLLoaderFactoryPtr null_factory;
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
       std::move(null_factory), std::move(url_loader),
       std::move(url_loader_client));

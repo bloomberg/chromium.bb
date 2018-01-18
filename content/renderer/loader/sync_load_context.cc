@@ -35,7 +35,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       std::move(request), routing_id, std::move(loading_task_runner),
       frame_origin, traffic_annotation, true /* is_sync */,
       base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), mojom::URLLoaderClientEndpointsPtr());
+      std::move(throttles), network::mojom::URLLoaderClientEndpointsPtr());
 }
 
 SyncLoadContext::SyncLoadContext(

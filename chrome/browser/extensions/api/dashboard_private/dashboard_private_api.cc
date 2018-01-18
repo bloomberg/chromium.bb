@@ -74,7 +74,7 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
     }
   }
 
-  content::mojom::URLLoaderFactory* loader_factory = nullptr;
+  network::mojom::URLLoaderFactory* loader_factory = nullptr;
   if (!icon_url.is_empty()) {
     loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(browser_context())

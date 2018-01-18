@@ -22,6 +22,7 @@ include_rules = [
   "+services/catalog",
   "+services/device/public/cpp/generic_sensor",
   "+services/network/public/cpp",
+  "+services/network/public/interfaces",
   "+services/proxy_resolver",
   "+services/service_manager/public",
   "+ui/base/resource/data_pack.h",

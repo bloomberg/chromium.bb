@@ -599,19 +599,19 @@ void AppCacheRequestHandler::MaybeCreateLoader(
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
-    mojom::URLLoaderPtr* loader,
-    mojom::URLLoaderClientRequest* client_request) {
+    network::mojom::URLLoaderPtr* loader,
+    network::mojom::URLLoaderClientRequest* client_request) {
   // The sync interface of this method is inherited from the
   // URLLoaderRequestHandler class. The LoaderCallback created here is invoked
   // synchronously in fallback cases, and only when there really is a loader
   // to start.
   bool was_called = false;
   loader_callback_ = base::BindOnce(
-      [](mojom::URLLoaderPtr* loader,
-         mojom::URLLoaderClientRequest* client_request, bool* was_called,
-         StartLoaderCallback start_function) {
+      [](network::mojom::URLLoaderPtr* loader,
+         network::mojom::URLLoaderClientRequest* client_request,
+         bool* was_called, StartLoaderCallback start_function) {
         *was_called = true;
-        mojom::URLLoaderClientPtr client;
+        network::mojom::URLLoaderClientPtr client;
         *client_request = mojo::MakeRequest(&client);
         std::move(start_function)
             .Run(mojo::MakeRequest(loader), std::move(client));
@@ -633,7 +633,7 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
     return base::nullopt;
 
   // The factory is destroyed when the renderer drops the connection.
-  mojom::URLLoaderFactoryPtr factory_ptr;
+  network::mojom::URLLoaderFactoryPtr factory_ptr;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
       network_url_loader_factory_getter_.get(), appcache_host_, &factory_ptr);
 

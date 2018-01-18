@@ -23,8 +23,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -37,6 +35,8 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -173,7 +173,7 @@ class StringUploadDataPipeGetter : public network::mojom::DataPipeGetter {
 class BodyHandler;
 
 class SimpleURLLoaderImpl : public SimpleURLLoader,
-                            public mojom::URLLoaderClient {
+                            public network::mojom::URLLoaderClient {
  public:
   SimpleURLLoaderImpl(
       std::unique_ptr<network::ResourceRequest> resource_request,
@@ -181,19 +181,19 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   ~SimpleURLLoaderImpl() override;
 
   // SimpleURLLoader implementation.
-  void DownloadToString(mojom::URLLoaderFactory* url_loader_factory,
+  void DownloadToString(network::mojom::URLLoaderFactory* url_loader_factory,
                         BodyAsStringCallback body_as_string_callback,
                         size_t max_body_size) override;
   void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       BodyAsStringCallback body_as_string_callback) override;
   void DownloadToFile(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
       int64_t max_body_size) override;
   void DownloadToTempFile(
-      mojom::URLLoaderFactory* url_loader_factory,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size) override;
   void SetOnRedirectCallback(
@@ -251,19 +251,20 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   // Prepares internal state to start a request, and then calls StartRequest().
   // Only used for the initial request (Not retries).
-  void Start(mojom::URLLoaderFactory* url_loader_factory);
+  void Start(network::mojom::URLLoaderFactory* url_loader_factory);
 
   // Starts a request. Used for both the initial request and retries, if any.
-  void StartRequest(mojom::URLLoaderFactory* url_loader_factory);
+  void StartRequest(network::mojom::URLLoaderFactory* url_loader_factory);
 
   // Re-initializes state of |this| and |body_handler_| prior to retrying a
   // request.
   void Retry();
 
-  // mojom::URLLoaderClient implementation;
-  void OnReceiveResponse(const network::ResourceResponseHead& response_head,
-                         const base::Optional<net::SSLInfo>& ssl_info,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  // network::mojom::URLLoaderClient implementation;
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& response_head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override;
@@ -317,11 +318,11 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   const net::NetworkTrafficAnnotationTag annotation_tag_;
   // Cloned from the input URLLoaderFactory if it may be needed to follow
   // redirects.
-  content::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
   std::unique_ptr<BodyHandler> body_handler_;
 
-  mojo::Binding<mojom::URLLoaderClient> client_binding_;
-  mojom::URLLoaderPtr url_loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  network::mojom::URLLoaderPtr url_loader_;
 
   std::unique_ptr<StringUploadDataPipeGetter> string_upload_data_pipe_getter_;
 
@@ -904,7 +905,7 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
 SimpleURLLoaderImpl::~SimpleURLLoaderImpl() {}
 
 void SimpleURLLoaderImpl::DownloadToString(
-    mojom::URLLoaderFactory* url_loader_factory,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     BodyAsStringCallback body_as_string_callback,
     size_t max_body_size) {
   DCHECK_LE(max_body_size, kMaxBoundedStringDownloadSize);
@@ -914,7 +915,7 @@ void SimpleURLLoaderImpl::DownloadToString(
 }
 
 void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-    mojom::URLLoaderFactory* url_loader_factory,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     BodyAsStringCallback body_as_string_callback) {
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback),
@@ -925,7 +926,7 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
 }
 
 void SimpleURLLoaderImpl::DownloadToFile(
-    mojom::URLLoaderFactory* url_loader_factory,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     const base::FilePath& file_path,
     int64_t max_body_size) {
@@ -937,7 +938,7 @@ void SimpleURLLoaderImpl::DownloadToFile(
 }
 
 void SimpleURLLoaderImpl::DownloadToTempFile(
-    mojom::URLLoaderFactory* url_loader_factory,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     int64_t max_body_size) {
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
@@ -1083,7 +1084,8 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
   body_handler_->NotifyConsumerOfCompletion(destroy_results);
 }
 
-void SimpleURLLoaderImpl::Start(mojom::URLLoaderFactory* url_loader_factory) {
+void SimpleURLLoaderImpl::Start(
+    network::mojom::URLLoaderFactory* url_loader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(resource_request_);
   // It's illegal to use a single SimpleURLLoaderImpl to make multiple requests.
@@ -1103,11 +1105,11 @@ void SimpleURLLoaderImpl::Start(mojom::URLLoaderFactory* url_loader_factory) {
 }
 
 void SimpleURLLoaderImpl::StartRequest(
-    mojom::URLLoaderFactory* url_loader_factory) {
+    network::mojom::URLLoaderFactory* url_loader_factory) {
   DCHECK(resource_request_);
   DCHECK(url_loader_factory);
 
-  mojom::URLLoaderClientPtr client_ptr;
+  network::mojom::URLLoaderClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
   client_binding_.set_connection_error_handler(base::BindOnce(
       &SimpleURLLoaderImpl::OnConnectionError, base::Unretained(this)));
@@ -1151,7 +1153,7 @@ void SimpleURLLoaderImpl::Retry() {
 void SimpleURLLoaderImpl::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request_state_->response_info) {
     // The final headers have already been received, so the URLLoader is

@@ -27,14 +27,14 @@ namespace gfx {
 class Image;
 }
 
-namespace content {
+namespace net {
+class URLRequestContextGetter;
+}
+
+namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
-}  // namespace content
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace chromeos {
@@ -106,7 +106,7 @@ class KioskAppData : public KioskAppDataBase,
   net::URLRequestContextGetter* GetRequestContextGetter();
 
   // Returns URLLoaderFactory to use for fetching web store data.
-  content::mojom::URLLoaderFactory* GetURLLoaderFactory();
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
   // Loads the locally cached data. Return false if there is none.
   bool LoadFromCache();

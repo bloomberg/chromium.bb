@@ -8,7 +8,6 @@
 #include <string>
 
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

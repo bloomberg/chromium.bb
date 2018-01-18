@@ -54,7 +54,7 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
 
 @implementation AccountAvatarFetcherManager
 
-- (id)initWithLoaderFactory:(content::mojom::URLLoaderFactory*)loaderFactory {
+- (id)initWithLoaderFactory:(network::mojom::URLLoaderFactory*)loaderFactory {
   if ((self = [super init])) {
     loaderFactory_ = loaderFactory;
   }

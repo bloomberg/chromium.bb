@@ -71,7 +71,7 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
   return network_service_network_context_.get();
 }
 
-content::mojom::URLLoaderFactory*
+network::mojom::URLLoaderFactory*
 SystemNetworkContextManager::GetURLLoaderFactory() {
   if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
     GetContext()->CreateURLLoaderFactory(

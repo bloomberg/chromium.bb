@@ -95,22 +95,22 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
   // we need a URLLoaderFactory to create a PendingRequestInfo. We don't need
   // a true URLLoaderFactory, so here we define a no-op (other than keeping
   // clients to avoid connection error notifications) factory.
-  class NoopURLLoaderFactory final : public mojom::URLLoaderFactory {
+  class NoopURLLoaderFactory final : public network::mojom::URLLoaderFactory {
    public:
-    void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+    void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                               int32_t routing_id,
                               int32_t request_id,
                               uint32_t options,
                               const network::ResourceRequest& url_request,
-                              mojom::URLLoaderClientPtr client,
+                              network::mojom::URLLoaderClientPtr client,
                               const net::MutableNetworkTrafficAnnotationTag&
                                   traffic_annotation) override {
       clients_.push_back(std::move(client));
     }
 
-    void Clone(mojom::URLLoaderFactoryRequest request) override {}
+    void Clone(network::mojom::URLLoaderFactoryRequest request) override {}
 
-    std::vector<mojom::URLLoaderClientPtr> clients_;
+    std::vector<network::mojom::URLLoaderClientPtr> clients_;
   };
 
   URLResponseBodyConsumerTest()
@@ -157,7 +157,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr());
   }
 
   void Run(TestRequestPeer::Context* context) {

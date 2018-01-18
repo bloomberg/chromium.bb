@@ -22,10 +22,10 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   DCHECK(partition);
   partition_ = partition;
 
-  mojom::URLLoaderFactoryPtr network_factory;
+  network::mojom::URLLoaderFactoryPtr network_factory;
   HandleNetworkFactoryRequestOnUIThread(MakeRequest(&network_factory));
 
-  mojom::URLLoaderFactoryPtr blob_factory;
+  network::mojom::URLLoaderFactoryPtr blob_factory;
   partition_->GetBlobURLLoaderFactory()->HandleRequest(
       mojo::MakeRequest(&blob_factory));
 
@@ -41,7 +41,7 @@ void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
   partition_ = nullptr;
 }
 
-mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetNetworkFactory() {
+network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (g_get_network_factory_callback.Get() && !test_factory_)
     g_get_network_factory_callback.Get().Run(this);
@@ -59,13 +59,13 @@ mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetNetworkFactory() {
   return network_factory_.get();
 }
 
-mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetBlobFactory() {
+network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetBlobFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return blob_factory_.get();
 }
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
-    mojom::URLLoaderFactory* test_factory) {
+    network::mojom::URLLoaderFactory* test_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!test_factory_ || !test_factory);
   test_factory_ = test_factory;
@@ -100,14 +100,14 @@ void URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting() {
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::InitializeOnIOThread(
-    mojom::URLLoaderFactoryPtrInfo network_factory,
-    mojom::URLLoaderFactoryPtrInfo blob_factory) {
+    network::mojom::URLLoaderFactoryPtrInfo network_factory,
+    network::mojom::URLLoaderFactoryPtrInfo blob_factory) {
   network_factory_.Bind(std::move(network_factory));
   blob_factory_.Bind(std::move(blob_factory));
 }
 
 void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
-    mojom::URLLoaderFactoryRequest network_factory_request) {
+    network::mojom::URLLoaderFactoryRequest network_factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // |StoragePartitionImpl| may have went away while |URLLoaderFactoryGetter| is
   // still held by consumers.

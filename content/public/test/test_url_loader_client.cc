@@ -16,7 +16,7 @@ TestURLLoaderClient::~TestURLLoaderClient() {}
 void TestURLLoaderClient::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
@@ -108,7 +108,8 @@ void TestURLLoaderClient::OnComplete(
     quit_closure_for_on_complete_.Run();
 }
 
-mojom::DownloadedTempFilePtr TestURLLoaderClient::TakeDownloadedTempFile() {
+network::mojom::DownloadedTempFilePtr
+TestURLLoaderClient::TakeDownloadedTempFile() {
   return std::move(downloaded_file_);
 }
 
@@ -116,8 +117,8 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
   has_received_redirect_ = false;
 }
 
-mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
-  mojom::URLLoaderClientPtr client_ptr;
+network::mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
+  network::mojom::URLLoaderClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
   binding_.set_connection_error_handler(base::BindOnce(
       &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));

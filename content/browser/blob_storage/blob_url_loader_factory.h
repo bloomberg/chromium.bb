@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace storage {
 class BlobDataHandle;
@@ -25,7 +25,7 @@ namespace content {
 class BlobURLLoaderFactory
     : public base::RefCountedThreadSafe<BlobURLLoaderFactory,
                                         BrowserThread::DeleteOnIOThread>,
-      public mojom::URLLoaderFactory {
+      public network::mojom::URLLoaderFactory {
  public:
   using BlobContextGetter =
       base::OnceCallback<base::WeakPtr<storage::BlobStorageContext>()>;
@@ -35,28 +35,28 @@ class BlobURLLoaderFactory
 
   // Creates a URLLoaderFactory interface pointer for serving blob requests.
   // Called on the UI thread.
-  void HandleRequest(mojom::URLLoaderFactoryRequest request);
+  void HandleRequest(network::mojom::URLLoaderFactoryRequest request);
 
   // Creates a URLLoader for given Blob UUID. This method is supposed to
   // be called on the IO thread.
   // Note that given |request|'s URL is not referenced, but only method and
   // range headers are used.
   static void CreateLoaderAndStart(
-      mojom::URLLoaderRequest url_loader_request,
+      network::mojom::URLLoaderRequest url_loader_request,
       const network::ResourceRequest& request,
-      mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderClientPtr client,
       std::unique_ptr<storage::BlobDataHandle> blob_handle);
 
-  // mojom::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  // network::mojom::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
   friend class base::DeleteHelper<BlobURLLoaderFactory>;
@@ -68,12 +68,12 @@ class BlobURLLoaderFactory
   ~BlobURLLoaderFactory() override;
 
   void InitializeOnIO(BlobContextGetter blob_storage_context_getter);
-  void BindOnIO(mojom::URLLoaderFactoryRequest request);
+  void BindOnIO(network::mojom::URLLoaderFactoryRequest request);
 
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
 
   // Used on the IO thread.
-  mojo::BindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLLoaderFactory);
 };

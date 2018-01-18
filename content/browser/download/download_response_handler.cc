@@ -79,7 +79,7 @@ DownloadResponseHandler::~DownloadResponseHandler() = default;
 void DownloadResponseHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   create_info_ = CreateDownloadCreateInfo(head);
 
   if (ssl_info)

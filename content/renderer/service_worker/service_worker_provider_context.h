@@ -132,7 +132,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // For service worker clients. Returns URLLoaderFactory for loading
   // subresources with the controller ServiceWorker, or nullptr if
   // no controller is attached.
-  mojom::URLLoaderFactory* GetSubresourceLoaderFactory();
+  network::mojom::URLLoaderFactory* GetSubresourceLoaderFactory();
 
   // For service worker clients. Returns the feature usage of its controller.
   const std::set<blink::mojom::WebFeature>& used_features() const;

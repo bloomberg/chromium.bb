@@ -473,7 +473,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
 };
 
 class ServiceWorkerContextClient::NavigationPreloadRequest final
-    : public mojom::URLLoaderClient {
+    : public network::mojom::URLLoaderClient {
  public:
   NavigationPreloadRequest(int fetch_event_id,
                            const GURL& url,
@@ -488,7 +488,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
     DCHECK(!downloaded_file);
     response_ = std::make_unique<blink::WebURLResponse>();
@@ -617,8 +617,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   const int fetch_event_id_;
   const GURL url_;
-  mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<mojom::URLLoaderClient> binding_;
+  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> binding_;
 
   std::unique_ptr<blink::WebURLResponse> response_;
   mojo::ScopedDataPipeConsumerHandle body_;

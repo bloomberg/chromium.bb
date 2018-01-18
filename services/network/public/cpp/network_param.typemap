@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//content/public/common/url_loader.mojom"
+mojom = "//services/network/public/interfaces/url_loader.mojom"
 public_headers = [
   "//net/base/host_port_pair.h",
   "//net/cert/cert_verify_result.h",
@@ -11,15 +11,12 @@ public_headers = [
   "//net/ssl/ssl_info.h",
 ]
 traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
-deps = [
-  "//content:export",
+public_deps = [
   "//net",
-  "//services/network/public/cpp",
 ]
 type_mappings = [
-  "content.mojom.CertVerifyResult=net::CertVerifyResult",
-  "content.mojom.HostPortPair=net::HostPortPair",
-  "content.mojom.HttpRequestHeaders=net::HttpRequestHeaders",
-  "content.mojom.SSLInfo=net::SSLInfo",
-  "content.mojom.X509Certificate=scoped_refptr<net::X509Certificate>[nullable_is_same_type]",
+  "network.mojom.CertVerifyResult=net::CertVerifyResult",
+  "network.mojom.HostPortPair=net::HostPortPair",
+  "network.mojom.SSLInfo=net::SSLInfo",
+  "network.mojom.X509Certificate=scoped_refptr<net::X509Certificate>[nullable_is_same_type]",
 ]

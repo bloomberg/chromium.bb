@@ -17,9 +17,9 @@
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace network {
 class NetToMojoPendingBuffer;
@@ -30,16 +30,17 @@ namespace content {
 class AppCacheRequest;
 class AppCacheURLLoaderRequest;
 
-// AppCacheJob wrapper for a mojom::URLLoader implementation which returns
-// responses stored in the AppCache.
+// AppCacheJob wrapper for a network::mojom::URLLoader implementation which
+// returns responses stored in the AppCache.
 class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
                                             public AppCacheStorage::Delegate,
-                                            public mojom::URLLoader {
+                                            public network::mojom::URLLoader {
  public:
   ~AppCacheURLLoaderJob() override;
 
   // Sets up the bindings.
-  void Start(mojom::URLLoaderRequest request, mojom::URLLoaderClientPtr client);
+  void Start(network::mojom::URLLoaderRequest request,
+             network::mojom::URLLoaderClientPtr client);
 
   // AppCacheJob overrides.
   bool IsStarted() const override;
@@ -53,7 +54,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   base::WeakPtr<AppCacheJob> GetWeakPtr() override;
   base::WeakPtr<AppCacheURLLoaderJob> GetDerivedWeakPtr();
 
-  // mojom::URLLoader implementation:
+  // network::mojom::URLLoader implementation:
   void FollowRedirect() override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
@@ -106,11 +107,11 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   bool is_fallback_;
 
   // Binds the URLLoaderClient with us.
-  mojo::Binding<mojom::URLLoader> binding_;
+  mojo::Binding<network::mojom::URLLoader> binding_;
 
   // The URLLoaderClient pointer. We call this interface with notifications
   // about the URL load
-  mojom::URLLoaderClientPtr client_;
+  network::mojom::URLLoaderClientPtr client_;
 
   // The data pipe used to transfer AppCache data to the client.
   mojo::DataPipe data_pipe_;

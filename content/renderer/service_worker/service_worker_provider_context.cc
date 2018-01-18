@@ -16,7 +16,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
@@ -27,6 +26,7 @@
 #include "content/renderer/worker_thread_registry.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -50,7 +50,7 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // S13nServiceWorker:
   // Used to intercept requests from the controllee and dispatch them
   // as events to the controller ServiceWorker.
-  mojom::URLLoaderFactoryPtr subresource_loader_factory;
+  network::mojom::URLLoaderFactoryPtr subresource_loader_factory;
 
   // S13nServiceWorker:
   // Used when we create |subresource_loader_factory|.
@@ -207,7 +207,7 @@ int64_t ServiceWorkerProviderContext::GetControllerVersionId() {
   return state_for_client_->controller_version_id;
 }
 
-mojom::URLLoaderFactory*
+network::mojom::URLLoaderFactory*
 ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();

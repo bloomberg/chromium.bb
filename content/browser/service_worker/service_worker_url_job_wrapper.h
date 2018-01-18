@@ -18,9 +18,9 @@ class ServiceWorkerVersion;
 
 // This class is a helper to support having
 // ServiceWorkerControlleeRequestHandler work with both URLRequestJobs and
-// mojom::URLLoaders (that is, both with and without --enable-network-service).
-// It wraps either a ServiceWorkerURLRequestJob or a callback for
-// URLLoader and forwards to the underlying implementation.
+// network::mojom::URLLoaders (that is, both with and without
+// --enable-network-service). It wraps either a ServiceWorkerURLRequestJob or a
+// callback for URLLoader and forwards to the underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
   // A helper used by the ServiceWorkerURLLoaderJob or

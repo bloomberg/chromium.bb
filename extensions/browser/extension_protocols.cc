@@ -732,13 +732,13 @@ void LoadExtensionResourceFromFileOnBackgroundSequence(
     const std::string& extension_id,
     const base::FilePath& directory_path,
     const base::FilePath& relative_path,
-    content::mojom::URLLoaderRequest loader,
-    content::mojom::URLLoaderClientPtrInfo client_info,
+    network::mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderClientPtrInfo client_info,
     scoped_refptr<ContentVerifyJob> verify_job) {
   // NOTE: ExtensionResource::GetFilePath() must be called on a sequence which
   // tolerates blocking operations.
   ExtensionResource resource(extension_id, directory_path, relative_path);
-  content::mojom::URLLoaderClientPtr client;
+  network::mojom::URLLoaderClientPtr client;
   client.Bind(std::move(client_info));
 
   auto loader_observer =
@@ -755,8 +755,8 @@ void CreateVerifierAndLoadFile(
     const std::string& extension_id,
     const base::FilePath& directory_path,
     const base::FilePath& relative_path,
-    content::mojom::URLLoaderRequest loader,
-    content::mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderClientPtr client,
     scoped_refptr<extensions::InfoMap> extension_info_map) {
   scoped_refptr<ContentVerifyJob> verify_job;
   ContentVerifier* verifier = extension_info_map->content_verifier();
@@ -777,7 +777,7 @@ void CreateVerifierAndLoadFile(
                      std::move(verify_job)));
 }
 
-class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
+class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   // |frame_host| is the RenderFrameHost which is either being navigated or
   // loading a subresource. For navigation requests, |frame_url| is empty; for
@@ -790,13 +790,13 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
         extension_info_map_(nullptr) {}
   ~ExtensionURLLoaderFactory() override = default;
 
-  // content::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(content::mojom::URLLoaderRequest loader,
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& request,
-                            content::mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     content::RenderProcessHost* process_host = frame_host_->GetProcess();
@@ -921,7 +921,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
                        std::move(client), extension_info_map_));
   }
 
-  void Clone(content::mojom::URLLoaderFactoryRequest request) override {
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -930,7 +930,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
   const GURL frame_url_;
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 
-  mojo::BindingSet<content::mojom::URLLoaderFactory> bindings_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionURLLoaderFactory);
 };
@@ -986,13 +986,13 @@ void SetExtensionProtocolTestHandler(ExtensionProtocolTestHandler* handler) {
   g_test_handler = handler;
 }
 
-std::unique_ptr<content::mojom::URLLoaderFactory>
+std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionNavigationURLLoaderFactory(
     content::RenderFrameHost* frame_host) {
   return std::make_unique<ExtensionURLLoaderFactory>(frame_host, GURL());
 }
 
-std::unique_ptr<content::mojom::URLLoaderFactory>
+std::unique_ptr<network::mojom::URLLoaderFactory>
 MaybeCreateExtensionSubresourceURLLoaderFactory(
     content::RenderFrameHost* frame_host,
     const GURL& frame_url) {

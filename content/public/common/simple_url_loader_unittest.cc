@@ -28,7 +28,6 @@
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/network/network_service.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -46,6 +45,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -124,7 +124,7 @@ class SimpleLoaderTestHelper {
   // |max_body_size| of -1 means don't use a max body size (Use
   // DownloadToStringOfUnboundedSizeUntilCrashAndDie for string downloads, and
   // don't specify a size for other types of downloads).
-  void StartSimpleLoader(mojom::URLLoaderFactory* url_loader_factory,
+  void StartSimpleLoader(network::mojom::URLLoaderFactory* url_loader_factory,
                          int64_t max_body_size = -1) {
     EXPECT_FALSE(done_);
     switch (download_type_) {
@@ -175,8 +175,9 @@ class SimpleLoaderTestHelper {
   }
 
   // Starts the SimpleURLLoader waits for completion.
-  void StartSimpleLoaderAndWait(mojom::URLLoaderFactory* url_loader_factory,
-                                int64_t max_body_size = -1) {
+  void StartSimpleLoaderAndWait(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      int64_t max_body_size = -1) {
     StartSimpleLoader(url_loader_factory, max_body_size);
     Wait();
   }
@@ -430,7 +431,7 @@ class SimpleURLLoaderTestBase {
 
   std::unique_ptr<mojom::NetworkService> network_service_;
   mojom::NetworkContextPtr network_context_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;
 
@@ -1156,11 +1157,11 @@ enum class TestLoaderEvent {
 // control over event order over when a pipe is closed, and in ordering of
 // events where there are multiple pipes. It also allows sending events in
 // unexpected order, to test handling of events from less trusted processes.
-class MockURLLoader : public mojom::URLLoader {
+class MockURLLoader : public network::mojom::URLLoader {
  public:
   MockURLLoader(base::test::ScopedTaskEnvironment* scoped_task_environment,
-                mojom::URLLoaderRequest url_loader_request,
-                mojom::URLLoaderClientPtr client,
+                network::mojom::URLLoaderRequest url_loader_request,
+                network::mojom::URLLoaderClientPtr client,
                 std::vector<TestLoaderEvent> test_events,
                 scoped_refptr<network::ResourceRequestBody> request_body)
       : scoped_task_environment_(scoped_task_environment),
@@ -1363,7 +1364,7 @@ class MockURLLoader : public mojom::URLLoader {
   }
   ~MockURLLoader() override {}
 
-  // mojom::URLLoader implementation:
+  // network::mojom::URLLoader implementation:
   void FollowRedirect() override {}
   void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
@@ -1373,7 +1374,7 @@ class MockURLLoader : public mojom::URLLoader {
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
 
-  mojom::URLLoaderClient* client() const { return client_.get(); }
+  network::mojom::URLLoaderClient* client() const { return client_.get(); }
 
  private:
   // Counts the total number of bytes that will be sent over the course of
@@ -1397,8 +1398,8 @@ class MockURLLoader : public mojom::URLLoader {
   base::test::ScopedTaskEnvironment* scoped_task_environment_;
 
   std::unique_ptr<net::URLRequest> url_request_;
-  mojo::Binding<mojom::URLLoader> binding_;
-  mojom::URLLoaderClientPtr client_;
+  mojo::Binding<network::mojom::URLLoader> binding_;
+  network::mojom::URLLoaderClientPtr client_;
 
   std::vector<TestLoaderEvent> test_events_;
 
@@ -1414,21 +1415,21 @@ class MockURLLoader : public mojom::URLLoader {
   DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
 };
 
-class MockURLLoaderFactory : public mojom::URLLoaderFactory {
+class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   explicit MockURLLoaderFactory(
       base::test::ScopedTaskEnvironment* scoped_task_environment)
       : scoped_task_environment_(scoped_task_environment) {}
   ~MockURLLoaderFactory() override {}
 
-  // mojom::URLLoaderFactory implementation:
+  // network::mojom::URLLoaderFactory implementation:
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest url_loader_request,
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest url_loader_request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     ASSERT_FALSE(test_events_.empty());
@@ -1441,7 +1442,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
     url_loader_queue_.push_back(url_loaders_.back().get());
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override {
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     mojo::BindingId id = binding_set_.AddBinding(this, std::move(request));
     if (close_new_binding_on_clone_)
       binding_set_.RemoveBinding(id);
@@ -1465,7 +1466,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
   // Runs all events for all created URLLoaders, in order.
   void RunTest(SimpleLoaderTestHelper* test_helper,
                bool wait_for_completion = true) {
-    mojom::URLLoaderFactoryPtr factory;
+    network::mojom::URLLoaderFactoryPtr factory;
     binding_set_.AddBinding(this, mojo::MakeRequest(&factory));
 
     test_helper->StartSimpleLoader(factory.get());
@@ -1501,7 +1502,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
 
   std::list<GURL> requested_urls_;
 
-  mojo::BindingSet<mojom::URLLoaderFactory> binding_set_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> binding_set_;
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoaderFactory);
 };

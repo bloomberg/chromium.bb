@@ -15,7 +15,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
@@ -23,6 +22,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -39,11 +39,11 @@ constexpr size_t kDefaultAllocationSize = 512 * 1024;
 // method) when it has finished responding.
 // Note: some of this code is duplicated from storage::BlobURLRequestJob.
 class BlobURLLoader : public storage::MojoBlobReader::Delegate,
-                      public mojom::URLLoader {
+                      public network::mojom::URLLoader {
  public:
-  BlobURLLoader(mojom::URLLoaderRequest url_loader_request,
+  BlobURLLoader(network::mojom::URLLoaderRequest url_loader_request,
                 const network::ResourceRequest& request,
-                mojom::URLLoaderClientPtr client,
+                network::mojom::URLLoaderClientPtr client,
                 std::unique_ptr<storage::BlobDataHandle> blob_handle)
       : binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),
@@ -96,7 +96,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
                                     base::WrapUnique(this));
   }
 
-  // mojom::URLLoader implementation:
+  // network::mojom::URLLoader implementation:
   void FollowRedirect() override { NOTREACHED(); }
   void ProceedWithResponse() override { NOTREACHED(); }
 
@@ -194,8 +194,8 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
     client_->OnComplete(status);
   }
 
-  mojo::Binding<mojom::URLLoader> binding_;
-  mojom::URLLoaderClientPtr client_;
+  mojo::Binding<network::mojom::URLLoader> binding_;
+  network::mojom::URLLoaderClientPtr client_;
 
   bool byte_range_set_ = false;
   net::HttpByteRange byte_range_;
@@ -226,7 +226,7 @@ scoped_refptr<BlobURLLoaderFactory> BlobURLLoaderFactory::Create(
 }
 
 void BlobURLLoaderFactory::HandleRequest(
-    mojom::URLLoaderFactoryRequest request) {
+    network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&BlobURLLoaderFactory::BindOnIO, this,
@@ -242,7 +242,8 @@ void BlobURLLoaderFactory::InitializeOnIO(
   blob_storage_context_ = std::move(blob_storage_context_getter).Run();
 }
 
-void BlobURLLoaderFactory::BindOnIO(mojom::URLLoaderFactoryRequest request) {
+void BlobURLLoaderFactory::BindOnIO(
+    network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   loader_factory_bindings_.AddBinding(this, std::move(request));
@@ -250,21 +251,21 @@ void BlobURLLoaderFactory::BindOnIO(mojom::URLLoaderFactoryRequest request) {
 
 // static
 void BlobURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderRequest loader,
     const network::ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<storage::BlobDataHandle> blob_handle) {
   new BlobURLLoader(std::move(loader), request, std::move(client),
                     std::move(blob_handle));
 }
 
 void BlobURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderRequest loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<storage::BlobDataHandle> blob_handle;
@@ -275,7 +276,8 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
                        std::move(blob_handle));
 }
 
-void BlobURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
+void BlobURLLoaderFactory::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
   loader_factory_bindings_.AddBinding(this, std::move(request));
 }
 

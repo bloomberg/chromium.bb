@@ -45,7 +45,7 @@ std::unique_ptr<ResourceFetcher> ResourceFetcher::Create(const GURL& url) {
 // TODO(toyoshim): Internal implementation might be replaced with
 // SimpleURLLoader, and content::ResourceFetcher could be a thin-wrapper
 // class to use SimpleURLLoader with blink-friendly types.
-class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
+class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
  public:
   ClientImpl(ResourceFetcherImpl* parent,
              Callback callback,
@@ -65,19 +65,19 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
   }
 
   void Start(const network::ResourceRequest& request,
-             mojom::URLLoaderFactory* url_loader_factory,
+             network::mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     status_ = Status::kStarted;
     response_.SetURL(request.url);
 
-    mojom::URLLoaderClientPtr client;
+    network::mojom::URLLoaderClientPtr client;
     client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
 
     url_loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), kRoutingId,
-        ResourceDispatcher::MakeRequestID(), mojom::kURLLoadOptionNone, request,
-        std::move(client),
+        ResourceDispatcher::MakeRequestID(), network::mojom::kURLLoadOptionNone,
+        request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(annotation_tag));
   }
 
@@ -171,11 +171,11 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
     ReadDataPipe();
   }
 
-  // mojom::URLLoaderClient overrides:
+  // network::mojom::URLLoaderClient overrides:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK_EQ(Status::kStarted, status_);
     // Existing callers need URL and HTTP status code. URL is already set in
     // Start().
@@ -226,11 +226,12 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
 
  private:
   ResourceFetcherImpl* parent_;
-  mojom::URLLoaderPtr loader_;
-  mojo::Binding<mojom::URLLoaderClient> client_binding_;
+  network::mojom::URLLoaderPtr loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
   mojo::SimpleWatcher data_pipe_watcher_;
-  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> loader_factory_;
+  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
+      loader_factory_;
 
   Status status_;
 
@@ -288,7 +289,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 void ResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
-    mojom::URLLoaderFactory* url_loader_factory,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     Callback callback,
     size_t maximum_download_size) {

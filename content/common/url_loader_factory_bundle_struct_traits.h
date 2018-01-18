@@ -14,10 +14,10 @@ namespace mojo {
 template <>
 struct StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
                     content::URLLoaderFactoryBundle> {
-  static content::mojom::URLLoaderFactoryPtr default_factory(
+  static network::mojom::URLLoaderFactoryPtr default_factory(
       content::URLLoaderFactoryBundle& bundle);
 
-  static std::map<std::string, content::mojom::URLLoaderFactoryPtr> factories(
+  static std::map<std::string, network::mojom::URLLoaderFactoryPtr> factories(
       content::URLLoaderFactoryBundle& bundle);
 
   static bool Read(content::mojom::URLLoaderFactoryBundleDataView data,

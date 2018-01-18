@@ -16,9 +16,9 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -74,10 +74,10 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           ->GetProcess()
           ->GetID();
   GlobalRequestID global_id(child_id, ++request_id);
-  delegate_->OnResponseStarted(response, mojom::URLLoaderClientEndpointsPtr(),
-                               std::move(body), net::SSLInfo(),
-                               std::move(navigation_data), global_id, false,
-                               false, base::nullopt);
+  delegate_->OnResponseStarted(
+      response, network::mojom::URLLoaderClientEndpointsPtr(), std::move(body),
+      net::SSLInfo(), std::move(navigation_data), global_id, false, false,
+      base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

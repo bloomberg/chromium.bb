@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//services/network/public/interfaces/http_request_headers.mojom"
-public_headers = [ "//net/http/http_request_headers.h" ]
+public_headers = [
+  "//net/http/http_request_headers.h",
+  "//services/network/public/cpp/http_request_headers_struct_traits.h",
+]
 traits_headers =
     [ "//services/network/public/cpp/http_request_headers_struct_traits.h" ]
 sources = [

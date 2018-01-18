@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/shared_url_loader_factory.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -17,7 +17,7 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
     : public SharedURLLoaderFactory {
  public:
   explicit WeakWrapperSharedURLLoaderFactory(
-      mojom::URLLoaderFactory* factory_ptr);
+      network::mojom::URLLoaderFactory* factory_ptr);
 
   // Detaches from the raw mojom::URLLoaderFactory pointer. All subsequent calls
   // to CreateLoaderAndStart() will fail silently.
@@ -25,12 +25,12 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
 
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(
-      mojom::URLLoaderRequest loader,
+      network::mojom::URLLoaderRequest loader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       const Constraints& constraints) override;
 
@@ -40,7 +40,7 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
   ~WeakWrapperSharedURLLoaderFactory() override;
 
   // Not owned.
-  mojom::URLLoaderFactory* factory_ptr_ = nullptr;
+  network::mojom::URLLoaderFactory* factory_ptr_ = nullptr;
 };
 
 }  // namespace content

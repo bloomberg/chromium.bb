@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -19,8 +19,9 @@ URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
     URLLoaderFactoryBundleInfo&&) = default;
 
 URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
-    mojom::URLLoaderFactoryPtrInfo default_factory_info,
-    std::map<std::string, mojom::URLLoaderFactoryPtrInfo> factories_info)
+    network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+    std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
+        factories_info)
     : default_factory_info(std::move(default_factory_info)),
       factories_info(std::move(factories_info)) {}
 
@@ -44,19 +45,19 @@ URLLoaderFactoryBundle& URLLoaderFactoryBundle::operator=(
     URLLoaderFactoryBundle&&) = default;
 
 void URLLoaderFactoryBundle::SetDefaultFactory(
-    mojom::URLLoaderFactoryPtr factory) {
+    network::mojom::URLLoaderFactoryPtr factory) {
   default_factory_ = std::move(factory);
 }
 
 void URLLoaderFactoryBundle::RegisterFactory(
     const base::StringPiece& scheme,
-    mojom::URLLoaderFactoryPtr factory) {
+    network::mojom::URLLoaderFactoryPtr factory) {
   DCHECK(factory.is_bound());
   auto result = factories_.emplace(std::string(scheme), std::move(factory));
   DCHECK(result.second);
 }
 
-mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactoryForRequest(
+network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactoryForRequest(
     const GURL& url) {
   auto it = factories_.find(url.scheme());
   if (it == factories_.end()) {
@@ -67,7 +68,7 @@ mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactoryForRequest(
 }
 
 URLLoaderFactoryBundleInfo URLLoaderFactoryBundle::PassInfo() {
-  std::map<std::string, mojom::URLLoaderFactoryPtrInfo> factories_info;
+  std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo> factories_info;
   for (auto& factory : factories_)
     factories_info.emplace(factory.first, factory.second.PassInterface());
   DCHECK(default_factory_.is_bound());
@@ -77,13 +78,13 @@ URLLoaderFactoryBundleInfo URLLoaderFactoryBundle::PassInfo() {
 
 URLLoaderFactoryBundle URLLoaderFactoryBundle::Clone() {
   DCHECK(default_factory_.is_bound());
-  mojom::URLLoaderFactoryPtr cloned_default_factory;
+  network::mojom::URLLoaderFactoryPtr cloned_default_factory;
   default_factory_->Clone(mojo::MakeRequest(&cloned_default_factory));
 
   URLLoaderFactoryBundle new_bundle;
   new_bundle.SetDefaultFactory(std::move(cloned_default_factory));
   for (auto& factory : factories_) {
-    mojom::URLLoaderFactoryPtr cloned_factory;
+    network::mojom::URLLoaderFactoryPtr cloned_factory;
     factory.second->Clone(mojo::MakeRequest(&cloned_factory));
     new_bundle.RegisterFactory(factory.first, std::move(cloned_factory));
   }

@@ -263,8 +263,8 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
-    mojom::URLLoaderRequest request,
-    mojom::URLLoaderClientPtr client) {
+    network::mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderClientPtr client) {
   DCHECK(!binding_.is_bound());
   DCHECK(!url_loader_client_.is_bound());
   binding_.Bind(std::move(request));
@@ -332,8 +332,8 @@ void ServiceWorkerURLLoaderJob::StartResponse(
 }
 
 void ServiceWorkerURLLoaderJob::StartErrorResponse(
-    mojom::URLLoaderRequest request,
-    mojom::URLLoaderClientPtr client) {
+    network::mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderClientPtr client) {
   DCHECK_EQ(Status::kStarted, status_);
   DCHECK(!url_loader_client_.is_bound());
   url_loader_client_ = std::move(client);

@@ -14,14 +14,14 @@ namespace autofill {
 struct PasswordForm;
 }
 
-namespace content {
+namespace gfx {
+class ImageSkia;
+}
+
+namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
-}  // namespace content
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace views {
@@ -39,7 +39,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
                       const base::string16& lower_text,
                       SkColor hover_color,
                       const autofill::PasswordForm* form,
-                      content::mojom::URLLoaderFactory* loader_factory);
+                      network::mojom::URLLoaderFactory* loader_factory);
   ~CredentialsItemView() override;
 
   const autofill::PasswordForm* form() const { return form_; }

@@ -54,7 +54,7 @@ Profile* GetProfileFromWebContents(content::WebContents* web_contents) {
 views::ScrollView* CreateCredentialsView(
     const PasswordDialogController::FormsVector& forms,
     views::ButtonListener* button_listener,
-    content::mojom::URLLoaderFactory* loader_factory) {
+    network::mojom::URLLoaderFactory* loader_factory) {
   views::View* list_view = new views::View;
   list_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));

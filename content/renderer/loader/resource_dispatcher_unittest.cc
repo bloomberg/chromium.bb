@@ -55,7 +55,7 @@ static constexpr char kTestPageContents[] =
 
 // Sets up the message sender override for the unit test.
 class ResourceDispatcherTest : public testing::Test,
-                               public mojom::URLLoaderFactory {
+                               public network::mojom::URLLoaderFactory {
  public:
   ResourceDispatcherTest()
       : dispatcher_(new ResourceDispatcher(message_loop_.task_runner())) {}
@@ -66,19 +66,21 @@ class ResourceDispatcherTest : public testing::Test,
   }
 
   void CreateLoaderAndStart(
-      mojom::URLLoaderRequest request,
+      network::mojom::URLLoaderRequest request,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& annotation) override {
     loader_and_clients_.emplace_back(std::move(request), std::move(client));
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
-  void CallOnReceiveResponse(mojom::URLLoaderClient* client) {
+  void CallOnReceiveResponse(network::mojom::URLLoaderClient* client) {
     network::ResourceResponseHead head;
     std::string raw_headers(kTestPageHeaders);
     std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
@@ -120,13 +122,14 @@ class ResourceDispatcherTest : public testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr());
     peer_context->request_id = request_id;
     return request_id;
   }
 
  protected:
-  std::vector<std::pair<mojom::URLLoaderRequest, mojom::URLLoaderClientPtr>>
+  std::vector<std::pair<network::mojom::URLLoaderRequest,
+                        network::mojom::URLLoaderClientPtr>>
       loader_and_clients_;
   base::MessageLoop message_loop_;
   std::unique_ptr<ResourceDispatcher> dispatcher_;
@@ -214,7 +217,8 @@ TEST_F(ResourceDispatcherTest, DelegateTest) {
   StartAsync(std::move(request), nullptr, &peer_context);
 
   ASSERT_EQ(1u, loader_and_clients_.size());
-  mojom::URLLoaderClientPtr client = std::move(loader_and_clients_[0].second);
+  network::mojom::URLLoaderClientPtr client =
+      std::move(loader_and_clients_[0].second);
   loader_and_clients_.clear();
 
   // Set the delegate that inserts a new peer in OnReceivedResponse.
@@ -261,7 +265,8 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
   peer_context.cancel_on_receive_response = true;
 
   ASSERT_EQ(1u, loader_and_clients_.size());
-  mojom::URLLoaderClientPtr client = std::move(loader_and_clients_[0].second);
+  network::mojom::URLLoaderClientPtr client =
+      std::move(loader_and_clients_[0].second);
   loader_and_clients_.clear();
 
   // Set the delegate that inserts a new peer in OnReceivedResponse.

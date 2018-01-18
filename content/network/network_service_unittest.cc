@@ -144,19 +144,19 @@ class NetworkServiceTestWithService
   void StartLoadingURL(const network::ResourceRequest& request,
                        uint32_t process_id) {
     client_.reset(new TestURLLoaderClient());
-    mojom::URLLoaderFactoryPtr loader_factory;
+    network::mojom::URLLoaderFactoryPtr loader_factory;
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                              process_id);
 
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 1, 1, mojom::kURLLoadOptionNone, request,
-        client_->CreateInterfacePtr(),
+        mojo::MakeRequest(&loader_), 1, 1, network::mojom::kURLLoadOptionNone,
+        request, client_->CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   TestURLLoaderClient* client() { return client_.get(); }
-  mojom::URLLoader* loader() { return loader_.get(); }
+  network::mojom::URLLoader* loader() { return loader_.get(); }
   mojom::NetworkService* service() { return network_service_.get(); }
   mojom::NetworkContext* context() { return network_context_.get(); }
 
@@ -181,7 +181,7 @@ class NetworkServiceTestWithService
   std::unique_ptr<TestURLLoaderClient> client_;
   mojom::NetworkServicePtr network_service_;
   mojom::NetworkContextPtr network_context_;
-  mojom::URLLoaderPtr loader_;
+  network::mojom::URLLoaderPtr loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
 };

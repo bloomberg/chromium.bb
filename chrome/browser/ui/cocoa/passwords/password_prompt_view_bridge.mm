@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 PasswordPromptViewBridge::PasswordPromptViewBridge(
     PasswordDialogController* controller,
@@ -58,7 +58,7 @@ PasswordPromptViewBridge::GetDialogController() {
   return controller_;
 }
 
-content::mojom::URLLoaderFactory*
+network::mojom::URLLoaderFactory*
 PasswordPromptViewBridge::GetURLLoaderFactory() const {
   return content::BrowserContext::GetDefaultStoragePartition(
              Profile::FromBrowserContext(web_contents_->GetBrowserContext()))

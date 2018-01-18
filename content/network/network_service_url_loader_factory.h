@@ -6,32 +6,32 @@
 #define CONTENT_NETWORK_NETWORK_SERVICE_URL_LOADER_FACTORY_H_
 
 #include "base/macros.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
 class NetworkContext;
 
-// This class is an implementation of mojom::URLLoaderFactory that creates
-// a mojom::URLLoader.
-class NetworkServiceURLLoaderFactory : public mojom::URLLoaderFactory {
+// This class is an implementation of network::mojom::URLLoaderFactory that
+// creates a network::mojom::URLLoader.
+class NetworkServiceURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   // NOTE: |context| must outlive this instance.
   NetworkServiceURLLoaderFactory(NetworkContext* context, uint32_t process_id);
 
   ~NetworkServiceURLLoaderFactory() override;
 
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
   // Not owned.

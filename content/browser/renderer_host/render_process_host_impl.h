@@ -39,7 +39,6 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_features.h"
@@ -47,6 +46,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
@@ -448,7 +448,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
   // mojom::RendererHost
-  void GetBlobURLLoaderFactory(mojom::URLLoaderFactoryRequest request) override;
+  void GetBlobURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request) override;
   using BrowserHistogramCallback =
       mojom::RendererHost::GetBrowserHistogramCallback;
   void GetBrowserHistogram(const std::string& name,
@@ -468,7 +469,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateStoragePartitionService(
       mojom::StoragePartitionServiceRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
-  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request);
+  void CreateURLLoaderFactory(network::mojom::URLLoaderFactoryRequest request);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);

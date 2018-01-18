@@ -16,7 +16,6 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -31,8 +30,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
                           content::INPUT_EVENT_ACK_STATE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextType,
                           content::REQUEST_CONTEXT_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
-                          network::mojom::RequestContextFrameType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
                           content::RESOURCE_TYPE_LAST_TYPE - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(content::MhtmlSaveStatus,

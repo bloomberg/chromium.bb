@@ -12,7 +12,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -23,6 +22,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -65,18 +65,19 @@ class MockHTTPServer {
 // instead of making it a common test helper because we might want to customize
 // the mock factory to add more tests later. Merge this and that if we're
 // convinced it's better.
-class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
+class MockNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
  public:
   explicit MockNetworkURLLoaderFactory(MockHTTPServer* mock_server)
       : mock_server_(mock_server) {}
 
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     const MockHTTPServer::Response& response =
@@ -114,7 +115,9 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     client->OnComplete(status);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTREACHED();
+  }
 
  private:
   // This is owned by ServiceWorkerScriptURLLoaderTest.
@@ -147,7 +150,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
                           std::string("this body came from the network")));
 
     // Initialize URLLoaderFactory.
-    mojom::URLLoaderFactoryPtr test_loader_factory;
+    network::mojom::URLLoaderFactoryPtr test_loader_factory;
     mock_url_loader_factory_ =
         std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get());
     helper_->url_loader_factory_getter()->SetNetworkFactoryForTesting(

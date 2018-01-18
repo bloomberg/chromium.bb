@@ -79,7 +79,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   net::URLRequestContextGetter* GetURLRequestContext() override;
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
   mojom::NetworkContext* GetNetworkContext() override;
-  mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() override;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess()
+      override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
@@ -307,7 +308,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // See the method comment for
   // StoragePartition::GetURLLoaderFactoryForBrowserProcess() for
   // more details
-  mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
   ::network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
 
   // When the network service is disabled, a NetworkContext is created on the IO

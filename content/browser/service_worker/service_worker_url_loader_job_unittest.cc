@@ -62,7 +62,8 @@ void ReceiveStartLoaderCallback(StartLoaderCallback* out_callback,
 // 6. Like all FetchEvent responses, the response is sent to
 //    ServiceWorkerURLLoaderJob::DidDispatchFetchEvent, and the
 //    StartLoaderCallback is returned.
-class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
+class NavigationPreloadLoaderClient final
+    : public network::mojom::URLLoaderClient {
  public:
   NavigationPreloadLoaderClient(
       mojom::FetchEventPreloadHandlePtr preload_handle,
@@ -79,11 +80,11 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
   }
   ~NavigationPreloadLoaderClient() override = default;
 
-  // mojom::URLLoaderClient implementation
+  // network::mojom::URLLoaderClient implementation
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     response_head_ = response_head;
   }
   void OnStartLoadingResponseBody(
@@ -135,8 +136,8 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
   void OnConnectionError() { delete this; }
 
  private:
-  mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<mojom::URLLoaderClient> binding_;
+  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> binding_;
 
   network::ResourceResponseHead response_head_;
   mojo::ScopedDataPipeConsumerHandle body_;
@@ -154,17 +155,18 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
 // ServiceWorkerURLLoaderJobTest sets the network factory for
 // ServiceWorkerContextCore to MockNetworkURLLoaderFactory. So far, it's only
 // used for navigation preload in these tests.
-class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
+class MockNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
  public:
   MockNetworkURLLoaderFactory() = default;
 
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     std::string headers = "HTTP/1.1 200 OK\n\n";
@@ -188,7 +190,9 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     client->OnComplete(status);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTREACHED();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
@@ -609,7 +613,7 @@ class ServiceWorkerURLLoaderJobTest
   TestURLLoaderClient client_;
   bool was_main_resource_load_failed_called_ = false;
   std::unique_ptr<ServiceWorkerURLLoaderJob> job_;
-  mojom::URLLoaderPtr loader_;
+  network::mojom::URLLoaderPtr loader_;
   base::test::ScopedFeatureList feature_list_;
 };
 

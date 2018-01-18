@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +32,8 @@ namespace content {
 class ResourceDispatcher;
 class URLResponseBodyConsumer;
 
-class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
+class CONTENT_EXPORT URLLoaderClientImpl final
+    : public network::mojom::URLLoaderClient {
  public:
   URLLoaderClientImpl(int request_id,
                       ResourceDispatcher* resource_dispatcher,
@@ -55,12 +56,14 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   // is enabled. Otherwise (in regular subresource loading cases) |this| is not
   // bound to a client request, but used via ThrottlingURLLoader to get client
   // upcalls from the loader.
-  void Bind(mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+  void Bind(
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
-  // mojom::URLLoaderClient implementation
-  void OnReceiveResponse(const network::ResourceResponseHead& response_head,
-                         const base::Optional<net::SSLInfo>& ssl_info,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  // network::mojom::URLLoaderClient implementation
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& response_head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override;
@@ -88,7 +91,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void OnConnectionClosed();
 
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
-  mojom::DownloadedTempFilePtr downloaded_file_;
+  network::mojom::DownloadedTempFilePtr downloaded_file_;
   std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
   const int request_id_;
   bool has_received_response_ = false;
@@ -99,8 +102,8 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Used in NavigationMojoResponse and NetworkService.
-  mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<mojom::URLLoaderClient> url_loader_client_binding_;
+  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
 
   base::WeakPtrFactory<URLLoaderClientImpl> weak_factory_;
 };

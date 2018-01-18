@@ -30,12 +30,12 @@ ServiceWorkerScriptURLLoaderFactory::~ServiceWorkerScriptURLLoaderFactory() =
     default;
 
 void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!ShouldHandleScriptRequest(resource_request)) {
     // If the request should not be handled by ServiceWorkerScriptURLLoader,
@@ -57,7 +57,7 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void ServiceWorkerScriptURLLoaderFactory::Clone(
-    mojom::URLLoaderFactoryRequest request) {
+    network::mojom::URLLoaderFactoryRequest request) {
   // This method is required to support synchronous requests which are not
   // performed during installation.
   NOTREACHED();

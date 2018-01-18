@@ -11,9 +11,9 @@
 #include "content/public/browser/download_source.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
@@ -24,7 +24,7 @@ struct DownloadSaveInfo;
 // It passes the DataPipeConsumerHandle and completion status to the download
 // sink. The class is common to both navigation triggered downloads and
 // context menu downloads
-class DownloadResponseHandler : public mojom::URLLoaderClient {
+class DownloadResponseHandler : public network::mojom::URLLoaderClient {
  public:
   // Class for handling the stream once response starts.
   class Delegate {
@@ -45,10 +45,11 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
                           std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
 
-  // mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head,
-                         const base::Optional<net::SSLInfo>& ssl_info,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  // network::mojom::URLLoaderClient
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;

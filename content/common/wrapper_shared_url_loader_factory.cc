@@ -12,7 +12,7 @@ WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo() =
     default;
 
 WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo(
-    mojom::URLLoaderFactoryPtrInfo factory_ptr_info)
+    network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info)
     : factory_ptr_info_(std::move(factory_ptr_info)) {}
 
 WrapperSharedURLLoaderFactoryInfo::~WrapperSharedURLLoaderFactoryInfo() =
@@ -25,20 +25,20 @@ WrapperSharedURLLoaderFactoryInfo::CreateFactory() {
 }
 
 WrapperSharedURLLoaderFactory::WrapperSharedURLLoaderFactory(
-    mojom::URLLoaderFactoryPtr factory_ptr)
+    network::mojom::URLLoaderFactoryPtr factory_ptr)
     : factory_ptr_(std::move(factory_ptr)) {}
 
 WrapperSharedURLLoaderFactory::WrapperSharedURLLoaderFactory(
-    mojom::URLLoaderFactoryPtrInfo factory_ptr_info)
+    network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info)
     : factory_ptr_(std::move(factory_ptr_info)) {}
 
 void WrapperSharedURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderRequest loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     const Constraints& constraints) {
   if (!factory_ptr_)
@@ -50,7 +50,7 @@ void WrapperSharedURLLoaderFactory::CreateLoaderAndStart(
 
 std::unique_ptr<SharedURLLoaderFactoryInfo>
 WrapperSharedURLLoaderFactory::Clone() {
-  mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
   if (factory_ptr_)
     factory_ptr_->Clone(mojo::MakeRequest(&factory_ptr_info));
   return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(

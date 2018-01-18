@@ -10,12 +10,12 @@
 #include "base/run_loop.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "content/renderer/loader/cors_url_loader_factory.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using network::mojom::FetchRequestMode;
@@ -23,7 +23,7 @@ using network::mojom::FetchRequestMode;
 namespace content {
 namespace {
 
-class TestURLLoaderFactory : public mojom::URLLoaderFactory {
+class TestURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   TestURLLoaderFactory() = default;
   ~TestURLLoaderFactory() override = default;
@@ -49,22 +49,24 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   bool IsCreateLoaderAndStartCalled() { return !!client_ptr_; }
 
  private:
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK(client);
     client_ptr_ = std::move(client);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
-  mojom::URLLoaderClientPtr client_ptr_;
+  network::mojom::URLLoaderClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
@@ -78,10 +80,10 @@ class CORSURLLoaderTest : public testing::Test {
   void CreateLoaderAndStart(const GURL& origin,
                             const GURL& url,
                             FetchRequestMode fetch_request_mode) {
-    mojom::URLLoaderFactoryPtr network_factory_ptr;
+    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
     test_network_factory_binding_.Bind(mojo::MakeRequest(&network_factory_ptr));
 
-    mojom::URLLoaderFactoryPtr loader_factory_ptr;
+    network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
     CORSURLLoaderFactory::CreateAndBind(network_factory_ptr.PassInterface(),
                                         mojo::MakeRequest(&loader_factory_ptr));
 
@@ -95,7 +97,7 @@ class CORSURLLoaderTest : public testing::Test {
 
     loader_factory_ptr->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionNone, request,
+        network::mojom::kURLLoadOptionNone, request,
         test_cors_loader_client_.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -127,10 +129,10 @@ class CORSURLLoaderTest : public testing::Test {
 
   // TestURLLoaderFactory instance and mojo binding.
   TestURLLoaderFactory test_network_loader_factory_;
-  mojo::Binding<mojom::URLLoaderFactory> test_network_factory_binding_;
+  mojo::Binding<network::mojom::URLLoaderFactory> test_network_factory_binding_;
 
   // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
-  mojom::URLLoaderPtr url_loader_;
+  network::mojom::URLLoaderPtr url_loader_;
 
   // TestURLLoaderClient that records callback activities.
   TestURLLoaderClient test_cors_loader_client_;

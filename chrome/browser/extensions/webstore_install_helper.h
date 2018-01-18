@@ -20,11 +20,11 @@ class Value;
 
 class BitmapFetcher;
 
-namespace content {
+namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
-}  // namespace content
+}  // namespace network
 
 namespace safe_json {
 class SafeJsonParser;
@@ -70,7 +70,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
                         const std::string& id,
                         const std::string& manifest,
                         const GURL& icon_url);
-  void Start(content::mojom::URLLoaderFactory* loader_factory);
+  void Start(network::mojom::URLLoaderFactory* loader_factory);
 
  private:
   friend class base::RefCounted<WebstoreInstallHelper>;

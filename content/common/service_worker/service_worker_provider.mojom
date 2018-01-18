@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_container.mojom";
-import "content/public/common/url_loader_factory.mojom";
+import "services/network/public/interfaces/url_loader_factory.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom";
 import "third_party/WebKit/common/service_worker/service_worker_registration.mojom";
@@ -30,7 +30,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
   // For servicified service worker only.
   // The loader to use for loading the worker's main script and
   // importScripts().
-  associated URLLoaderFactory? script_loader_factory_ptr_info;
+  associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info;
 
   service_manager.mojom.InterfaceProvider interface_provider;
 };

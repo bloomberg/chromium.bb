@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/resource_fetcher.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 class GURL;
@@ -34,7 +34,7 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetHeader(const std::string& header, const std::string& value) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
-             mojom::URLLoaderFactory* url_loader_factory,
+             network::mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              Callback callback,
              size_t maximum_download_size) override;

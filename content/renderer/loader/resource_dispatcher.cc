@@ -415,7 +415,7 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   CheckSchemeForReferrerPolicy(*request);
 
   // Compute a unique request_id for this renderer process.
@@ -441,16 +441,16 @@ int ResourceDispatcher::StartAsync(
   std::unique_ptr<URLLoaderClientImpl> client(
       new URLLoaderClientImpl(request_id, this, loading_task_runner));
 
-  uint32_t options = mojom::kURLLoadOptionNone;
+  uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
   // MojoLoading is the only IPC code path.
   if (base::FeatureList::IsEnabled(features::kNetworkService) &&
       request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
     // MIME sniffing should be disabled for a request initiated by fetch().
-    options |= mojom::kURLLoadOptionSniffMimeType;
+    options |= network::mojom::kURLLoadOptionSniffMimeType;
   }
   if (is_sync) {
-    options |= mojom::kURLLoadOptionSynchronous;
+    options |= network::mojom::kURLLoadOptionSynchronous;
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
   }
 
@@ -522,7 +522,7 @@ base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
 
 void ResourceDispatcher::ContinueForNavigation(
     int request_id,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   DCHECK(url_loader_client_endpoints);
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -535,7 +535,7 @@ void ResourceDispatcher::ContinueForNavigation(
   // pull the StreamOverride's one in
   // WebURLLoaderImpl::Context::OnReceivedResponse.
   client_ptr->OnReceiveResponse(network::ResourceResponseHead(), base::nullopt,
-                                mojom::DownloadedTempFilePtr());
+                                network::mojom::DownloadedTempFilePtr());
   // TODO(clamy): Move the replaying of redirects from WebURLLoaderImpl here.
 
   // Abort if the request is cancelled.

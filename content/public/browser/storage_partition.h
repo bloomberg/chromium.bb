@@ -32,6 +32,7 @@ class URLRequestContextGetter;
 namespace network {
 namespace mojom {
 class CookieManager;
+class URLLoaderFactory;
 }
 }  // namespace network
 
@@ -63,7 +64,6 @@ class ZoomLevelDelegate;
 
 namespace mojom {
 class NetworkContext;
-class URLLoaderFactory;
 }
 
 // Defines what persistent state a child process can access.
@@ -82,7 +82,8 @@ class CONTENT_EXPORT StoragePartition {
   // storage partition.  Prefer to use this instead of creating a new
   // URLLoaderFactory when issuing requests from the Browser process, to
   // share resources and preserve ordering.
-  virtual mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() = 0;
+  virtual network::mojom::URLLoaderFactory*
+  GetURLLoaderFactoryForBrowserProcess() = 0;
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;
   virtual storage::QuotaManager* GetQuotaManager() = 0;

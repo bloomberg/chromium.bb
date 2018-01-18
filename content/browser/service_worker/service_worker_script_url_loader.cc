@@ -32,7 +32,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -94,7 +94,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
                                                      cache_resource_id);
   AdvanceState(State::kStarted);
 
-  mojom::URLLoaderClientPtr network_client;
+  network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
@@ -131,7 +131,7 @@ void ServiceWorkerScriptURLLoader::ResumeReadingBodyFromNet() {
 void ServiceWorkerScriptURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
