@@ -85,14 +85,14 @@ void TextInput::OnFocusChanged(bool focused) {
 }
 
 void TextInput::RequestFocus() {
-  if (!delegate_)
+  if (!delegate_ || focused_)
     return;
 
   delegate_->RequestFocus(id());
 }
 
 void TextInput::RequestUnfocus() {
-  if (!delegate_)
+  if (!delegate_ || !focused_)
     return;
 
   delegate_->RequestUnfocus(id());
