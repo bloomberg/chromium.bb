@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/net_errors.h"
@@ -107,6 +108,15 @@ void SecurityStateTabHelper::DidFinishNavigation(
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted()) {
     return;
+  }
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (entry) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Security.CertificateTransparency.MainFrameNavigationCompliance",
+        entry->GetSSL().ct_policy_compliance,
+        net::ct::CTPolicyCompliance::CT_POLICY_MAX);
   }
 
   logged_http_warning_on_current_navigation_ = false;

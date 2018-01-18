@@ -78618,6 +78618,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
+    name="Security.CertificateTransparency.MainFrameNavigationCompliance"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each main frame navigation's connection with the
+    Certificate Transparency policy. Recorded whenever a main-frame,
+    non-same-page navigation is committed. Connections can be compliant, or they
+    can be non-compliant for one of several reasons (not enough Signed
+    Certificate Timestamps [SCTs], not diverse enough SCTs, or the build was old
+    so CT compliance wasn't checked).
+  </summary>
+</histogram>
+
+<histogram
     name="Security.HTTPBad.NavigationStartedAfterUserWarnedAboutSensitiveInput"
     units="ms">
   <owner>estark@chromium.org</owner>
