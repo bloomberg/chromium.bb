@@ -12,7 +12,10 @@ loadTimeData.data = {
 // multiple mounts.
 var MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   providerId: 'mounted-single-provider-id',
-  extensionId: 'mounted-single-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://mounted-single-extension-id-16.jpg',
+    icon32x32Url: 'chrome://mounted-single-extension-id-32.jpg'
+  },
   name: 'mounted-single-extension-name',
   configurable: false,
   watchable: true,
@@ -24,7 +27,10 @@ var MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // support  multiple mounts.
 var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   providerId: 'not-mounted-single-provider-id',
-  extensionId: 'not-mounted-single-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://not-mounted-single-extension-id-16.jpg',
+    icon32x32Url: 'chrome://not-mounted-single-extension-id-32.jpg'
+  },
   name: 'not-mounted-single-extension-name',
   configurable: false,
   watchable: true,
@@ -35,7 +41,10 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // support  multiple mounts.
 var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   providerId: 'not-mounted-single-provider-id',
-  extensionId: 'not-mounted-single-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://not-mounted-single-extension-id-16.jpg',
+    icon32x32Url: 'chrome://not-mounted-single-extension-id-32.jpg'
+  },
   name: 'not-mounted-single-extension-name',
   configurable: false,
   watchable: true,
@@ -47,7 +56,10 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
 // more.
 var MOUNTED_MULTIPLE_PROVIDING_EXTENSION = {
   providerId: 'mounted-multiple-provider-id',
-  extensionId: 'mounted-multiple-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://mounted-multiple-extension-id-16.jpg',
+    icon32x32Url: 'chrome://mounted-multiple-extension-id-32.jpg'
+  },
   name: 'mounted-multiple-extension-name',
   configurable: true,
   watchable: false,
@@ -59,7 +71,10 @@ var MOUNTED_MULTIPLE_PROVIDING_EXTENSION = {
 // source. Such providers do mounting via file handlers.
 var NOT_MOUNTED_FILE_PROVIDING_EXTENSION = {
   providerId: 'file-provider-id',
-  extensionId: 'file-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://file-extension-id-16.jpg',
+    icon32x32Url: 'chrome://file-extension-id-32.jpg'
+  },
   name: 'file-extension-name',
   configurable: false,
   watchable: true,
@@ -72,7 +87,10 @@ var NOT_MOUNTED_FILE_PROVIDING_EXTENSION = {
 // when the device is attached.
 var NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION = {
   providerId: 'device-provider-id',
-  extensionId: 'device-extension-id',
+  iconSet: {
+    icon16x16Url: 'chrome://device-extension-id-16.jpg',
+    icon32x32Url: 'chrome://device-extension-id-32.jpg'
+  },
   name: 'device-extension-name',
   configurable: false,
   watchable: true,
@@ -96,7 +114,12 @@ function addProvidedVolume(volumeManager, providerId, volumeId) {
       {isCurrentProfile: true, displayName: ''},  // profile
       '',                                         // label
       providerId,                                 // providerId
-      false);                                     // hasMedia
+      false,                                      // hasMedia
+      false,                                      // configurable
+      false,                                      // watchable
+      'network',                                  // source
+      '',                                         // diskFileSystemType
+      {});                                        // iconSet
 
   volumeManager.volumeInfoList.push(volumeInfo);
 }
@@ -134,8 +157,7 @@ function testGetInstalledProviders(callback) {
             MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,
             providers[0].providerId);
         assertEquals(
-            MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
-            providers[0].extensionId);
+            MOUNTED_SINGLE_PROVIDING_EXTENSION.iconSet, providers[0].iconSet);
         assertEquals(
             MOUNTED_SINGLE_PROVIDING_EXTENSION.name, providers[0].name);
         assertEquals(
@@ -164,17 +186,15 @@ function testGetInstalledProviders(callback) {
             providers[4].providerId);
 
         assertEquals(
-            NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.extensionId,
-            providers[1].extensionId);
+            NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.iconSet,
+            providers[1].iconSet);
         assertEquals(
-            MOUNTED_MULTIPLE_PROVIDING_EXTENSION.extensionId,
-            providers[2].extensionId);
+            MOUNTED_MULTIPLE_PROVIDING_EXTENSION.iconSet, providers[2].iconSet);
         assertEquals(
-            NOT_MOUNTED_FILE_PROVIDING_EXTENSION.extensionId,
-            providers[3].extensionId);
+            NOT_MOUNTED_FILE_PROVIDING_EXTENSION.iconSet, providers[3].iconSet);
         assertEquals(
-            NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION.extensionId,
-            providers[4].extensionId);
+            NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION.iconSet,
+            providers[4].iconSet);
       }),
       callback);
 }

@@ -259,6 +259,7 @@ std::unique_ptr<Volume> Volume::CreateForProvidedFileSystem(
   volume->configurable_ = file_system_info.configurable();
   volume->watchable_ = file_system_info.watchable();
   volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->icon_set_ = file_system_info.icon_set();
   return volume;
 }
 

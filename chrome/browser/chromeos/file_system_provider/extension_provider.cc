@@ -84,6 +84,10 @@ const std::string& ExtensionProvider::GetName() const {
   return name_;
 }
 
+const IconSet& ExtensionProvider::GetIconSet() const {
+  return icon_set_;
+}
+
 ExtensionProvider::ExtensionProvider(
     const extensions::ExtensionId& extension_id,
     const ProvidingExtensionInfo& info)
@@ -93,7 +97,15 @@ ExtensionProvider::ExtensionProvider(
   capabilities_.multiple_mounts = info.capabilities.multiple_mounts();
   capabilities_.source = info.capabilities.source();
   name_ = info.name;
+  icon_set_.SetIcon(IconSet::IconSize::SIZE_16x16,
+                    GURL(std::string("chrome://extension-icon/") +
+                         provider_id_.GetExtensionId() + "/16/1"));
+  icon_set_.SetIcon(IconSet::IconSize::SIZE_32x32,
+                    GURL(std::string("chrome://extension-icon/") +
+                         provider_id_.GetExtensionId() + "/32/1"));
 }
+
+ExtensionProvider::~ExtensionProvider() = default;
 
 }  // namespace file_system_provider
 }  // namespace chromeos

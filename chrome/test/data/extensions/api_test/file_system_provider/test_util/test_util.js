@@ -62,7 +62,9 @@ test_util.openedFiles = {};
 test_util.getVolumeInfo = function(fileSystemId, callback) {
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
     for (var i = 0; i < volumeList.length; i++) {
-      if (volumeList[i].extensionId === chrome.runtime.id &&
+      // For extension backed providers, the provider id is equal to extension
+      // id.
+      if (volumeList[i].providerId === chrome.runtime.id &&
           volumeList[i].fileSystemId === fileSystemId) {
         callback(volumeList[i]);
         return;

@@ -27,19 +27,18 @@
  * @param {string} label Label of the volume.
  * @param {(string|undefined)} providerId Id of the provider for this volume.
  *     Undefined for non-FSP volumes.
- * @param {(string|undefined)} extensionId Id of the providing extension, if
- *     the provider for this volume is an extension. Otherwise undefined.
  * @param {boolean} hasMedia When true the volume has been identified
  *     as containing media such as photos or videos.
  * @param {boolean} configurable When true, then the volume can be configured.
  * @param {VolumeManagerCommon.Source} source Source of the volume's data.
  * @param {VolumeManagerCommon.FileSystemType} diskFileSystemType File system
  *     type indentifier.
+ * @param {!IconSet} iconSet Set of icons for this volume.
  */
 function VolumeInfoImpl(
     volumeType, volumeId, fileSystem, error, deviceType, devicePath, isReadOnly,
-    isReadOnlyRemovableDevice, profile, label, providerId, extensionId,
-    hasMedia, configurable, watchable, source, diskFileSystemType) {
+    isReadOnlyRemovableDevice, profile, label, providerId, hasMedia,
+    configurable, watchable, source, diskFileSystemType, iconSet) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -84,12 +83,12 @@ function VolumeInfoImpl(
   this.isReadOnlyRemovableDevice_ = isReadOnlyRemovableDevice;
   this.profile_ = Object.freeze(profile);
   this.providerId_ = providerId;
-  this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
   this.configurable_ = configurable;
   this.watchable_ = watchable;
   this.source_ = source;
   this.diskFileSystemType_ = diskFileSystemType;
+  this.iconSet_ = iconSet;
 }
 
 VolumeInfoImpl.prototype = /** @struct */ {
@@ -181,12 +180,6 @@ VolumeInfoImpl.prototype = /** @struct */ {
     return this.providerId_;
   },
   /**
-   * @return {(string|undefined)} Id of a providing extension for this volume.
-   */
-  get extensionId() {
-    return this.extensionId_;
-  },
-  /**
    * @return {boolean} True if the volume contains media.
    */
   get hasMedia() {
@@ -215,6 +208,12 @@ VolumeInfoImpl.prototype = /** @struct */ {
    */
   get diskFileSystemType() {
     return this.diskFileSystemType_;
+  },
+  /**
+   * @return {IconSet} Set of icons for this volume.
+   */
+  get iconSet() {
+    return this.iconSet_;
   }
 };
 

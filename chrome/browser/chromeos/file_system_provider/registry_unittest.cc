@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/pref_names.h"
@@ -161,7 +163,8 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 
   ProvidedFileSystemInfo file_system_info(
       kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE,
+      IconSet());
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
@@ -277,7 +280,8 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
 
   ProvidedFileSystemInfo file_system_info(
       kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE,
+      IconSet());
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =

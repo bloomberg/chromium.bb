@@ -632,12 +632,9 @@ VolumeItem.prototype.activate = function() {
  */
 VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
   icon.classList.add('item-icon');
-  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
-    var backgroundImage = '-webkit-image-set(' +
-        'url(chrome://extension-icon/' + volumeInfo.extensionId +
-            '/16/1) 1x, ' +
-        'url(chrome://extension-icon/' + volumeInfo.extensionId +
-            '/32/1) 2x);';
+  var backgroundImage =
+      util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
+  if (backgroundImage !== 'none') {
     // The icon div is not yet added to DOM, therefore it is impossible to
     // use style.backgroundImage.
     icon.setAttribute(
@@ -662,10 +659,12 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
 VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
   var ejectButton = cr.doc.createElement('button');
   // Block other mouse handlers.
-  ejectButton.addEventListener(
-      'mouseup', function(event) { event.stopPropagation() });
-  ejectButton.addEventListener(
-      'mousedown', function(event) { event.stopPropagation() });
+  ejectButton.addEventListener('mouseup', function(event) {
+    event.stopPropagation();
+  });
+  ejectButton.addEventListener('mousedown', function(event) {
+    event.stopPropagation();
+  });
   ejectButton.className = 'root-eject';
   ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
   ejectButton.setAttribute('tabindex', '0');

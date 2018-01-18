@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
@@ -178,7 +179,8 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
   const ProvidedFileSystemInfo file_system_info(
       kProviderId, MountOptions(kFileSystemId, kDisplayName),
       GetMountPath(profile_, kProviderId, kFileSystemId),
-      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE,
+      IconSet());
 
   const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/hello"));
   const storage::FileSystemURL url =

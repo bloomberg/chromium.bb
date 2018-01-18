@@ -16,6 +16,14 @@ var FileTask;
 
 /**
  * @typedef {{
+ *   icon16x16Url: (string|undefined),
+ *   icon32x32Url: (string|undefined)
+ * }}
+ */
+var IconSet;
+
+/**
+ * @typedef {{
  *   size: (number|undefined),
  *   modificationTime: (number|undefined),
  *   modificationByMeTime: (number|undefined),
@@ -60,7 +68,7 @@ var ProfileInfo;
  * @typedef {{
  *   volumeId: string,
  *   fileSystemId: (string|undefined),
- *   extensionId: (string|undefined),
+ *   iconSet: IconSet,
  *   source: string,
  *   volumeLabel: (string|undefined),
  *   profile: ProfileInfo,
@@ -204,7 +212,7 @@ var DeviceEvent;
 /**
  * @typedef {{
  *   providerId: string,
- *   extensionId: (string|undefined),
+ *   iconSet: IconSet,
  *   name: string,
  *   configurable: boolean,
  *   watchable: boolean,

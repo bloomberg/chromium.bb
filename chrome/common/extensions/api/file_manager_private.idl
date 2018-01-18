@@ -328,6 +328,12 @@ dictionary ProfileInfo {
   boolean isCurrentProfile;
 };
 
+// Represents an icon in multiple dimensions. All are optional.
+dictionary IconSet {
+  DOMString? icon16x16Url;
+  DOMString? icon32x32Url;
+};
+
 // Mounted disk volume metadata.
 dictionary VolumeMetadata {
   // ID of the disk volume.
@@ -338,9 +344,6 @@ dictionary VolumeMetadata {
 
   // ID of the provider, if the volume is backed by FSP.
   DOMString? providerId;
-
-  // Extension ID of the provider if it is an extension.
-  DOMString? extensionId;
 
   // Source of the volume's data.
   Source source;
@@ -394,6 +397,9 @@ dictionary VolumeMetadata {
 
   // File system type indentifier.
   DOMString? diskFileSystemType;
+
+  // Icons for the volume.
+  IconSet iconSet;
 };
 
 // Payload data for mount event.
@@ -571,9 +577,8 @@ dictionary Provider {
   // ID of the provider.
   DOMString providerId;
 
-  // ID of the providing extension, if the provider is an extension. Otherwise
-  // undefined.
-  DOMString? extensionId;
+  // Set of icons for the provider.
+  IconSet iconSet;
 
   // Name of the provider.
   DOMString name;

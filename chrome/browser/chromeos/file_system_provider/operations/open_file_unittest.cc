@@ -11,6 +11,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -76,7 +78,7 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
         base::FilePath(), false /* configurable */, true /* watchable */,
-        extensions::SOURCE_FILE);
+        extensions::SOURCE_FILE, IconSet());
   }
 
   ProvidedFileSystemInfo file_system_info_;
@@ -140,7 +142,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
   const ProvidedFileSystemInfo read_only_file_system_info(
       kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
       base::FilePath() /* mount_path */, false /* configurable */,
-      true /* watchable */, extensions::SOURCE_FILE);
+      true /* watchable */, extensions::SOURCE_FILE, IconSet());
 
   // Opening for read on a read-only file system is allowed.
   {

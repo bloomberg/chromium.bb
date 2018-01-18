@@ -61,22 +61,16 @@ ProvidersMenu.prototype.addMenuItem_ = function() {
 
 /**
  * @param {string} providerId ID of the provider.
- * @param {string} extensionId ID of the extension if the provider is an
- *     extension. Otherwise empty.
+ * @param {!IconSet} iconSet Set of icons for the provider.
  * @param {string} name Already localized name of the provider.
  * @private
  */
-ProvidersMenu.prototype.addProvider_ = function(providerId, extensionId, name) {
+ProvidersMenu.prototype.addProvider_ = function(providerId, iconSet, name) {
   var item = this.addMenuItem_();
   item.label = name;
 
-  // TODO(mtomasz): Add icon for native providers.
-  if (extensionId) {
-    var iconImage = '-webkit-image-set(' +
-        'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
-        'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
-    item.iconStartImage = iconImage;
-  }
+  var iconImage = util.iconSetToCSSBackgroundImageValue(iconSet);
+  item.iconStartImage = iconImage;
 
   item.addEventListener(
       'activate', this.onItemActivate_.bind(this, providerId));
@@ -93,8 +87,7 @@ ProvidersMenu.prototype.onUpdate_ = function(event) {
   this.model_.getMountableProviders().then(function(providers) {
     this.clearProviders_();
     providers.forEach(function(provider) {
-      this.addProvider_(
-          provider.providerId, provider.extensionId, provider.name);
+      this.addProvider_(provider.providerId, provider.iconSet, provider.name);
     }.bind(this));
 
     // Reposition the menu, so all items are always visible.

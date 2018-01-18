@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
@@ -313,15 +314,21 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
+  using chromeos::file_system_provider::IconSet;
   file_manager::test_util::WaitUntilDriveMountPointIsAdded(
       browser()->profile());
 
   // Add a provided file system, to test passing the |configurable| and
   // |source| flags properly down to Files app.
+  IconSet icon_set;
+  icon_set.SetIcon(IconSet::IconSize::SIZE_16x16,
+                   GURL("chrome://resources/testing-provider-id-16.jpg"));
+  icon_set.SetIcon(IconSet::IconSize::SIZE_32x32,
+                   GURL("chrome://resources/testing-provider-id-32.jpg"));
   chromeos::file_system_provider::ProvidedFileSystemInfo info(
-      "testing-extension-id", chromeos::file_system_provider::MountOptions(),
+      "testing-provider-id", chromeos::file_system_provider::MountOptions(),
       base::FilePath(), true /* configurable */, false /* watchable */,
-      extensions::SOURCE_NETWORK);
+      extensions::SOURCE_NETWORK, icon_set);
 
   file_manager::VolumeManager::Get(browser()->profile())
       ->AddVolumeForTesting(file_manager::Volume::CreateForProvidedFileSystem(

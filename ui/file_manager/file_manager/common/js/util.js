@@ -8,6 +8,28 @@
 var util = {};
 
 /**
+ * @param {!IconSet} iconSet Set of icons.
+ * @return {string} CSS value.
+ */
+util.iconSetToCSSBackgroundImageValue = function(iconSet) {
+  var lowDpiPart = null;
+  var highDpiPart = null;
+  if (iconSet.icon16x16Url)
+    lowDpiPart = 'url(' + iconSet.icon16x16Url + ') 1x';
+  if (iconSet.icon32x32Url)
+    highDpiPart = 'url(' + iconSet.icon32x32Url + ') 2x';
+
+  if (lowDpiPart && highDpiPart)
+    return '-webkit-image-set(' + lowDpiPart + ', ' + highDpiPart + ')';
+  else if (lowDpiPart)
+    return '-webkit-image-set(' + lowDpiPart + ')';
+  else if (highDpiPart)
+    return '-webkit-image-set(' + highDpiPart + ')';
+
+  return 'none';
+};
+
+/**
  * @param {string} name File error name.
  * @return {string} Translated file error string.
  */

@@ -509,6 +509,7 @@ FileManagerPrivateGetProvidersFunction::FileManagerPrivateGetProvidersFunction()
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetProvidersFunction::Run() {
   using chromeos::file_system_provider::Capabilities;
+  using chromeos::file_system_provider::IconSet;
   using chromeos::file_system_provider::ProviderId;
   using chromeos::file_system_provider::ProviderInterface;
   using chromeos::file_system_provider::Service;
@@ -522,9 +523,8 @@ FileManagerPrivateGetProvidersFunction::Run() {
 
     Provider result_item;
     result_item.provider_id = provider->GetId().ToString();
-    if (provider_id.GetType() == ProviderId::EXTENSION)
-      result_item.extension_id.reset(
-          new std::string(provider_id.GetExtensionId()));
+    const IconSet& icon_set = provider->GetIconSet();
+    file_manager::util::FillIconSet(&result_item.icon_set, icon_set);
     result_item.name = provider->GetName();
 
     const Capabilities capabilities = provider->GetCapabilities();

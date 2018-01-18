@@ -33,7 +33,9 @@ function runTests() {
       chrome.fileManagerPrivate.getProviders(
           chrome.test.callbackPass(function(providers) {
             chrome.test.assertEq(providers.length, 1);
-            chrome.test.assertEq(chrome.runtime.id, providers[0].extensionId);
+            // For extension based providers, provider id is the same as
+            // extension id.
+            chrome.test.assertEq(chrome.runtime.id, providers[0].providerId);
             chrome.test.assertEq(
                 chrome.runtime.getManifest().name, providers[0].name);
             chrome.test.assertTrue(providers[0].configurable);

@@ -18,7 +18,8 @@ var expectedVolume1 = {
   watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: 'exfat'
+  diskFileSystemType: 'exfat',
+  iconSet: {}
 };
 
 var expectedVolume2 = {
@@ -38,7 +39,8 @@ var expectedVolume2 = {
   watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: 'exfat'
+  diskFileSystemType: 'exfat',
+  iconSet: {}
 };
 
 var expectedVolume3 = {
@@ -56,7 +58,8 @@ var expectedVolume3 = {
   watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: 'exfat'
+  diskFileSystemType: 'exfat',
+  iconSet: {}
 };
 
 var expectedDownloadsVolume = {
@@ -70,7 +73,8 @@ var expectedDownloadsVolume = {
   watchable: true,
   source: 'system',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: ''
+  diskFileSystemType: '',
+  iconSet: {}
 };
 
 var expectedDriveVolume = {
@@ -85,7 +89,8 @@ var expectedDriveVolume = {
   watchable: true,
   source: 'network',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: ''
+  diskFileSystemType: '',
+  iconSet: {}
 };
 
 var expectedArchiveVolume = {
@@ -100,7 +105,8 @@ var expectedArchiveVolume = {
   watchable: true,
   source: 'file',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: ''
+  diskFileSystemType: '',
+  iconSet: {}
 };
 
 var expectedProvidedVolume = {
@@ -112,13 +118,16 @@ var expectedProvidedVolume = {
   hasMedia: false,
   configurable: true,
   watchable: false,
-  providerId: 'testing-extension-id',
-  extensionId: 'testing-extension-id',
+  providerId: 'testing-provider-id',
   source: 'network',
   mountContext: 'auto',
   fileSystemId: '',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
-  diskFileSystemType: ''
+  diskFileSystemType: '',
+  iconSet: {
+    icon16x16Url: 'chrome://resources/testing-provider-id-16.jpg',
+    icon32x32Url: 'chrome://resources/testing-provider-id-32.jpg'
+  }
 };
 
 // List of expected mount points.

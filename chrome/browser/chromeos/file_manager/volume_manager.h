@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -140,6 +141,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   bool configurable() const { return configurable_; }
   bool watchable() const { return watchable_; }
   const std::string& file_system_type() const { return file_system_type_; }
+  const chromeos::file_system_provider::IconSet& icon_set() const {
+    return icon_set_;
+  }
 
  private:
   Volume();
@@ -213,6 +217,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 
   // Identifier for the file system type
   std::string file_system_type_;
+
+  // Volume icon set.
+  chromeos::file_system_provider::IconSet icon_set_;
 
   DISALLOW_COPY_AND_ASSIGN(Volume);
 };
