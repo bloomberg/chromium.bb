@@ -28,6 +28,11 @@ mojom("data_pipe_interface") {
 }
 
 mojom("interfaces") {
+  # URLLoader & URLLoaderFactory are used in-process in the browser when
+  # navigation uses URLLoader (NavigationMojoResponse) and in the renderer
+  # when Service Worker uses direct communication (S13nServiceWorker).
+  support_lazy_serialization = true
+
   sources = [
     "cookie_manager.mojom",
     "cors.mojom",
