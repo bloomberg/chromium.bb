@@ -209,11 +209,13 @@ TEST_P(PerfTest, NSURLSessionReceivesImageLoop) {
       [task cancel];
     }
 
+    success = success && IsResponseSuccessful(task);
+
     NSTimeInterval elapsed = -[start timeIntervalSinceNow];
 
     // Do not tolerate failures on internal server.
     if (!kUseExternalUrl) {
-      CHECK(success && ![delegate_ errorPerTask][task]);
+      CHECK(success);
     }
 
     if (kUseExternalUrl && success && !first_log) {

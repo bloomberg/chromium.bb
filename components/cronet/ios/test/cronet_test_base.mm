@@ -31,6 +31,7 @@
 @synthesize totalBytesReceivedPerTask = _totalBytesReceivedPerTask;
 @synthesize expectedContentLengthPerTask = _expectedContentLengthPerTask;
 @synthesize taskMetrics = _taskMetrics;
+@synthesize responsePerTask = _responsePerTask;
 
 - (id)init {
   if (self = [super init]) {
@@ -45,6 +46,7 @@
   _totalBytesReceivedPerTask = [NSMutableDictionary dictionaryWithCapacity:0];
   _expectedContentLengthPerTask =
       [NSMutableDictionary dictionaryWithCapacity:0];
+  _responsePerTask = [NSMutableDictionary dictionaryWithCapacity:0];
   _taskMetrics = nil;
 }
 
@@ -162,6 +164,7 @@
                            completionHandler {
   _expectedContentLengthPerTask[dataTask] =
       [NSNumber numberWithInt:[response expectedContentLength]];
+  _responsePerTask[dataTask] = static_cast<NSHTTPURLResponse*>(response);
   completionHandler(NSURLSessionResponseAllow);
 }
 
@@ -217,22 +220,35 @@ bool CronetTestBase::StartDataTaskAndWaitForCompletion(
   return [delegate_ waitForDone:task withTimeout:deadline_ns];
 }
 
-::testing::AssertionResult CronetTestBase::IsResponseSuccessful() {
-  if ([delegate_ error]) {
+::testing::AssertionResult CronetTestBase::IsResponseSuccessful(
+    NSURLSessionDataTask* task) {
+  if ([delegate_ errorPerTask][task]) {
     return ::testing::AssertionFailure() << "error in response: " <<
            [[[delegate_ error] description]
                cStringUsingEncoding:NSUTF8StringEncoding];
   }
+
+  if (![delegate_ responsePerTask][task]) {
+    return ::testing::AssertionFailure() << " no response has been received";
+  }
+
+  NSInteger statusCode = [delegate_ responsePerTask][task].statusCode;
+  if (statusCode < 200 || statusCode > 299) {
+    return ::testing::AssertionFailure()
+           << " the response code was " << statusCode;
+  }
+
   return ::testing::AssertionSuccess() << "no errors in response";
 }
 
-::testing::AssertionResult CronetTestBase::IsResponseCanceled() {
-  if ([delegate_ error] && [[delegate_ error] code] == NSURLErrorCancelled)
+::testing::AssertionResult CronetTestBase::IsResponseCanceled(
+    NSURLSessionDataTask* task) {
+  NSError* error = [delegate_ errorPerTask][task];
+  if (error && [error code] == NSURLErrorCancelled)
     return ::testing::AssertionSuccess() << "the response is canceled";
   return ::testing::AssertionFailure() << "the response is not canceled."
                                        << " The response error is " <<
-         [[[delegate_ error] description]
-             cStringUsingEncoding:NSUTF8StringEncoding];
+         [[error description] cStringUsingEncoding:NSUTF8StringEncoding];
 }
 
 std::unique_ptr<net::MockCertVerifier> CronetTestBase::CreateMockCertVerifier(
