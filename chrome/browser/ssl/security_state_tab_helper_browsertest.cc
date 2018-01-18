@@ -1424,15 +1424,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::NONE, security_info.security_level);
 
-  // Verify an InsertText operation isn't treated as user-input.
-  EXPECT_TRUE(content::ExecuteScript(
-      contents, "document.execCommand('InsertText',false,'a');"));
-  InjectScript(contents);
-  base::RunLoop().RunUntilIdle();
-  helper->GetSecurityInfo(&security_info);
-  ASSERT_EQ(security_state::NONE, security_info.security_level);
-  ASSERT_FALSE(security_info.field_edit_downgraded_security_level);
-
   // Type one character into the focused input control and wait for a security
   // state change.
   SecurityStyleTestObserver observer(contents);
@@ -1483,6 +1474,46 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   EXPECT_EQ(security_state::NONE, security_info.security_level);
   EXPECT_FALSE(security_info.field_edit_downgraded_security_level);
   EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+}
+
+// Tests that the security level of a HTTP page is not downgraded when a form
+// field is modified by JavaScript.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       SecurityLevelNotDowngradedAfterScriptModification) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(),
+                                 "/textinput/focus_input_on_load.html"));
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+
+  // Verify a value set operation isn't treated as user-input.
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, "document.getElementById('text_id').value='v';"));
+  InjectScript(contents);
+  base::RunLoop().RunUntilIdle();
+  helper->GetSecurityInfo(&security_info);
+  ASSERT_EQ(security_state::NONE, security_info.security_level);
+  ASSERT_FALSE(security_info.field_edit_downgraded_security_level);
+
+  // Verify an InsertText operation isn't treated as user-input.
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, "document.execCommand('InsertText',false,'a');"));
+  InjectScript(contents);
+  base::RunLoop().RunUntilIdle();
+  helper->GetSecurityInfo(&security_info);
+  ASSERT_EQ(security_state::NONE, security_info.security_level);
+  ASSERT_FALSE(security_info.field_edit_downgraded_security_level);
 }
 
 // A Browser subclass that keeps track of messages that have been
