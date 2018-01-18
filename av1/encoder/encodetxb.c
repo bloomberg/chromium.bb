@@ -2346,11 +2346,6 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       continue;
     }
 
-    const int is_inter = is_inter_block(mbmi);
-    const TxSetType tx_set_type = get_ext_tx_set_type(
-        tx_size, mbmi->sb_type, is_inter, cm->reduced_tx_set_used);
-    if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
-
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
     if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
