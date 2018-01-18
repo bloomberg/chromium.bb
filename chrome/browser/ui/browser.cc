@@ -2103,7 +2103,21 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
            web_contents->GetURL().host_piece() == extension->id()) ||
           (extensions::TabHelper::FromWebContents(web_contents)
                ->extension_app() == extension)) {
-        tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
+        if (tab_strip_model_->count() > 1) {
+          tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
+        } else {
+          // If there is only 1 tab remaining, do not close it and instead
+          // navigate to the default NTP. Note that if there is an installed
+          // extension that overrides the NTP page, that extension's content
+          // will override the NTP contents.
+          GURL url(chrome::kChromeUINewTabURL);
+          web_contents->GetController().LoadURL(
+              url,
+              content::Referrer::SanitizeForRequest(
+                  url,
+                  content::Referrer(url, blink::kWebReferrerPolicyDefault)),
+              ui::PAGE_TRANSITION_RELOAD, std::string());
+        }
       } else {
         chrome::UnmuteIfMutedByExtension(web_contents, extension->id());
       }
