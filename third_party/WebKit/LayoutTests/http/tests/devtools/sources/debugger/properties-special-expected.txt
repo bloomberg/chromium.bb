@@ -1,22 +1,17 @@
-CONSOLE MESSAGE: line 16: true
-CONSOLE MESSAGE: line 17: function (a,b) { return a + b; }
-CONSOLE MESSAGE: line 18: function () { [native code] }
-CONSOLE MESSAGE: line 19: function* () { yield [1,2,3] }
 Tests how debugger presents special properties of closures, bound functions and object wrappers.
-
-properties-special.html:16 Boolean
+properties-special.js:11 Boolean
     __proto__: Boolean
     [[PrimitiveValue]]: true
-properties-special.html:17 ƒ anonymous(a,b)
+properties-special.js:12 ƒ anonymous(a,b)
     arguments: null
     caller: null
     length: 2
     name: ""
     prototype: {constructor: ƒ}
     __proto__: ƒ ()
-    [[FunctionLocation]]: properties-special.html:17
+    [[FunctionLocation]]: properties-special.js:12
     [[Scopes]]: Scopes[1]
-properties-special.html:18 ƒ bound ()
+properties-special.js:13 ƒ bound ()
     arguments: (...)
     caller: (...)
     length: 1
@@ -25,14 +20,14 @@ properties-special.html:18 ƒ bound ()
     [[TargetFunction]]: ƒ (a,b)
     [[BoundThis]]: Object
     [[BoundArgs]]: Array(1)
-properties-special.html:19 ƒ* anonymous()
+properties-special.js:14 ƒ* anonymous()
     arguments: (...)
     caller: (...)
     length: 0
     name: ""
     prototype: Generator {}
     __proto__: GeneratorFunction
-    [[FunctionLocation]]: properties-special.html:19
+    [[FunctionLocation]]: properties-special.js:14
     [[IsGenerator]]: true
     [[Scopes]]: Scopes[1]
 

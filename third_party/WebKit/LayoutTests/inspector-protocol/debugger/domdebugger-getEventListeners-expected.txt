@@ -53,10 +53,10 @@ Event listeners of div#listeners1
   type:load
   useCapture:false
   lineNumber:0
-  columnNumber:38
+  columnNumber:46
   handler.type:function
   handler.className:Function
-  handler.description:function onload(event) {  return 42;}
+  handler.description:function onload(event) {return 42;}
 
 
 Event listeners of div#listeners2

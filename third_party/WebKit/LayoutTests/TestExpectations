@@ -1207,7 +1207,6 @@ crbug.com/492664 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.x
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
 crbug.com/760367 http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
-crbug.com/760367 http/tests/devtools/runtime/runtime-callFunctionOn.js [ NeedsManualRebaseline Timeout ]
 
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-001.html [ Failure ]
@@ -2923,15 +2922,9 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
-crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-log-object-with-getter.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/runtime/runtime-getProperties.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
 
 crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
 

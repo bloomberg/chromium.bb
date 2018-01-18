@@ -46,13 +46,15 @@
   `);
 
   function performStandardTestCase(pageExpression, next) {
-    TestRunner.evaluateInPage(pageExpression, didEvaluate);
+    UI.context.flavor(SDK.ExecutionContext)
+        .evaluate({expression: pageExpression})
+        .then(didEvaluate);
 
-    function didEvaluate(remote) {
+    function didEvaluate({object}) {
       TestRunner.addResult(
-          pageExpression + ': type = ' + remote.type +
-          ', subtype = ' + remote.subtype);
-      remote.getOwnPropertiesPromise().then(dumpInternalProperties);
+          pageExpression + ': type = ' + object.type +
+          ', subtype = ' + object.subtype);
+      object.getOwnPropertiesPromise().then(dumpInternalProperties);
     }
 
     function dumpInternalProperties(properties) {
