@@ -188,7 +188,8 @@ Polymer({
     }
     this.$$('.user-value').classList.remove('invalid');
     this.setSettingValid('pages', true);
-    this.setSetting('pages', this.rangesToPrint_);
+    this.setSetting('pages', this.pagesToPrint_);
+    this.setSetting('ranges', this.rangesToPrint_);
   },
 
   /** @private */

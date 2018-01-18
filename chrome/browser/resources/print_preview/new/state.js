@@ -11,6 +11,7 @@ cr.exportPath('print_preview_new');
  *   cloudPrintError: string,
  *   privetExtensionError: string,
  *   invalidSettings: boolean,
+ *   initialized: boolean,
  *   cancelled: boolean,
  * }}
  */
