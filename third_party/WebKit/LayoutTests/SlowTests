@@ -446,6 +446,8 @@ crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-c
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.worker.html [ Slow ]
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.html [ Slow ]
 
+crbug.com/793771 virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Slow ]
+
 # These tests need to do many iterations and so can't be fast.
 crbug.com/748418 http/tests/streams/chromium/deep-recursion-getwriter.html [ Slow ]
 crbug.com/748418 http/tests/streams/chromium/simple-queue-empty-node-push.html [ Slow ]
