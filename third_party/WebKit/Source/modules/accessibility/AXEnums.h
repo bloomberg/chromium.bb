@@ -269,6 +269,59 @@ enum AXDescriptionFrom {
   kAXDescriptionFromRelatedElement,
 };
 
+enum AXObjectInclusion {
+  kIncludeObject,
+  kIgnoreObject,
+  kDefaultBehavior,
+};
+
+enum AccessibilityCheckedState {
+  kCheckedStateUndefined = 0,
+  kCheckedStateFalse,
+  kCheckedStateTrue,
+  kCheckedStateMixed
+};
+
+enum AccessibilityOptionalBool {
+  kOptionalBoolUndefined = 0,
+  kOptionalBoolTrue,
+  kOptionalBoolFalse
+};
+
+// The potential native HTML-based text (name, description or placeholder)
+// sources for an element.  See
+// http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+enum AXTextFromNativeHTML {
+  kAXTextFromNativeHTMLUninitialized = -1,
+  kAXTextFromNativeHTMLFigcaption,
+  kAXTextFromNativeHTMLLabel,
+  kAXTextFromNativeHTMLLabelFor,
+  kAXTextFromNativeHTMLLabelWrapped,
+  kAXTextFromNativeHTMLLegend,
+  kAXTextFromNativeHTMLTableCaption,
+  kAXTextFromNativeHTMLTitleElement,
+};
+
+enum AXIgnoredReason {
+  kAXActiveModalDialog,
+  kAXAncestorIsLeafNode,
+  kAXAriaHiddenElement,
+  kAXAriaHiddenSubtree,
+  kAXEmptyAlt,
+  kAXEmptyText,
+  kAXInertElement,
+  kAXInertSubtree,
+  kAXInheritsPresentation,
+  kAXLabelContainer,
+  kAXLabelFor,
+  kAXNotRendered,
+  kAXNotVisible,
+  kAXPresentationalRole,
+  kAXProbablyPresentational,
+  kAXStaticTextUsedAsNameFor,
+  kAXUninteresting
+};
+
 }  // namespace blink
 
 #endif  // AXEnums_h
