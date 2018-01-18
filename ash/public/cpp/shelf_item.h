@@ -38,6 +38,9 @@ struct ASH_PUBLIC_EXPORT ShelfItem {
 
   // Whether the item is pinned by a policy preference (ie. user cannot un-pin).
   bool pinned_by_policy = false;
+
+  // Whether the item has a notification.
+  bool has_notification = false;
 };
 
 typedef std::vector<ShelfItem> ShelfItems;

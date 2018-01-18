@@ -63,6 +63,14 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Resets the item at the specified index. The item's id should not change.
   void Set(int index, const ShelfItem& item);
 
+  // Adds a record of the notification with this app id and notifies observers.
+  void AddNotificationRecord(const std::string& app_id,
+                             const std::string& notification_id);
+
+  // Removes the record of the notification with matching ID and notifies
+  // observers.
+  void RemoveNotificationRecord(const std::string& notification_id);
+
   // Returns the index of the item with id |shelf_id|, or -1 if none exists.
   int ItemIndexByID(const ShelfID& shelf_id) const;
 
@@ -83,6 +91,10 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // items().end() if there is no item with the specified id.
   ShelfItems::const_iterator ItemByID(const ShelfID& shelf_id) const;
 
+  // Returns the index of the matching ShelfItem or -1 if the |app_id| doesn't
+  // match a ShelfItem.
+  int ItemIndexByAppID(const std::string& app_id) const;
+
   const ShelfItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
 
@@ -102,7 +114,17 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // returns the new value.
   int ValidateInsertionIndex(ShelfItemType type, int index) const;
 
+  // Finds the app corresponding to |app_id|, sets ShelfItem.has_notification,
+  // and notifies observers.
+  void UpdateItemNotificationsAndNotifyObservers(const std::string& app_id);
+
   ShelfItems items_;
+
+  // Maps one app id to a set of all matching notification ids.
+  std::map<std::string, std::set<std::string>> app_id_to_notification_id_;
+  // Maps one notification id to one app id.
+  std::map<std::string, std::string> notification_id_to_app_id_;
+
   base::ObserverList<ShelfModelObserver> observers_;
 
   std::map<ShelfID, std::unique_ptr<ShelfItemDelegate>>

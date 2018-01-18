@@ -48,10 +48,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/icu_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
@@ -277,6 +279,8 @@ class ShelfViewTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
+  std::string GetNextAppId() { return base::IntToString(id_); }
+
  protected:
   // Add shelf items of various types, and optionally wait for animations.
   ShelfID AddItem(ShelfItemType type, bool wait_for_animations) {
@@ -285,8 +289,7 @@ class ShelfViewTest : public AshTestBase {
     if (type == TYPE_APP || type == TYPE_APP_PANEL)
       item.status = STATUS_RUNNING;
 
-    static int id = 0;
-    item.id = ShelfID(base::IntToString(id++));
+    item.id = ShelfID(base::IntToString(id_++));
     model_->Add(item);
     // Set a delegate; some tests require one to select the item.
     model_->SetShelfItemDelegate(item.id,
@@ -655,6 +658,7 @@ class ShelfViewTest : public AshTestBase {
 
   ShelfModel* model_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
+  int id_ = 0;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
@@ -2131,6 +2135,93 @@ TEST_F(ShelfViewTest, MouseWheelScrollOnAppIconTransitionsAppList) {
   RunAllPendingInMessageLoop();
 
   ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
+}
+
+class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
+ public:
+  ShelfViewTouchableContextMenuTest() = default;
+  ~ShelfViewTouchableContextMenuTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableTouchableAppContextMenu);
+
+    ShelfViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewTouchableContextMenuTest);
+};
+
+// Tests that an item has a notification indicator when it recieves a
+// notification.
+TEST_F(ShelfViewTouchableContextMenuTest, AddedItemHasNotificationIndicator) {
+  const ShelfID id_0 = AddApp();
+  const std::string notification_id_0("notification_id_0");
+  const ShelfButton* button_0 = GetButtonByID(id_0);
+
+  EXPECT_FALSE(GetItemByID(id_0).has_notification);
+  EXPECT_FALSE(button_0->state() & ShelfButton::STATE_NOTIFICATION);
+
+  // Post a test notification after the item was added.
+  model_->AddNotificationRecord(id_0.app_id, notification_id_0);
+
+  EXPECT_TRUE(GetItemByID(id_0).has_notification);
+  EXPECT_TRUE(button_0->state() & ShelfButton::STATE_NOTIFICATION);
+
+  // Post another notification for a non existing item.
+  const std::string next_app_id(GetNextAppId());
+  const std::string notification_id_1("notification_id_1");
+  model_->AddNotificationRecord(next_app_id, notification_id_1);
+
+  // Add an item with matching app id.
+  const ShelfID id_1 = AddApp();
+
+  // Ensure that the app id assigned to |id_1| is the same as |next_app_id|.
+  EXPECT_EQ(next_app_id, id_1.app_id);
+  const ShelfButton* button_1 = GetButtonByID(id_1);
+  EXPECT_TRUE(GetItemByID(id_1).has_notification);
+  EXPECT_TRUE(button_1->state() & ShelfButton::STATE_NOTIFICATION);
+
+  // Remove all notifications.
+  model_->RemoveNotificationRecord(notification_id_0);
+  model_->RemoveNotificationRecord(notification_id_1);
+
+  EXPECT_FALSE(GetItemByID(id_0).has_notification);
+  EXPECT_FALSE(button_0->state() & ShelfButton::STATE_NOTIFICATION);
+  EXPECT_FALSE(GetItemByID(id_1).has_notification);
+  EXPECT_FALSE(button_1->state() & ShelfButton::STATE_NOTIFICATION);
+}
+
+// Tests that the notification indicator is active until all notifications have
+// been removed.
+TEST_F(ShelfViewTouchableContextMenuTest,
+       NotificationIndicatorStaysActiveUntilNotificationsAreGone) {
+  const ShelfID app = AddApp();
+  const ShelfButton* button = GetButtonByID(app);
+
+  // Add two notifications for the same app.
+  const std::string notification_id_0("notification_id_0");
+  model_->AddNotificationRecord(app.app_id, notification_id_0);
+  const std::string notification_id_1("notification_id_1");
+  model_->AddNotificationRecord(app.app_id, notification_id_1);
+
+  EXPECT_TRUE(GetItemByID(app).has_notification);
+  EXPECT_TRUE(button->state() & ShelfButton::STATE_NOTIFICATION);
+
+  // Remove one notification, indicator should stay active.
+  model_->RemoveNotificationRecord(notification_id_0);
+
+  EXPECT_TRUE(GetItemByID(app).has_notification);
+  EXPECT_TRUE(button->state() & ShelfButton::STATE_NOTIFICATION);
+
+  // Remove the last notification, indicator should not be active.
+  model_->RemoveNotificationRecord(notification_id_1);
+
+  EXPECT_FALSE(GetItemByID(app).has_notification);
+  EXPECT_FALSE(button->state() & ShelfButton::STATE_NOTIFICATION);
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
