@@ -23,6 +23,8 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
                            MainThreadTaskQueue::QueueType::kControl)
                            .SetShouldNotifyObservers(false))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_);
+  task_queue_manager_->EnableCrashKeys("blink_scheduler_task_file_name",
+                                       "blink_scheduler_task_function_name");
 }
 
 MainThreadSchedulerHelper::~MainThreadSchedulerHelper() {
