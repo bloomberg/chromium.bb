@@ -748,10 +748,9 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (contents) {
+    CGFloat intrinsicWidth =
+        static_cast<CGFloat>(contents->GetPreferredSize().width());
     // If the intrinsic width is bigger, then make it the zoomed width.
-    const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
-    CGFloat intrinsicWidth = static_cast<CGFloat>(
-        contents->GetPreferredSize().width() + kScrollbarWidth);
     zoomedWidth = std::max(zoomedWidth,
                            std::min(intrinsicWidth, NSWidth(frame)));
   }
