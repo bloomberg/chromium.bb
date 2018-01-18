@@ -715,6 +715,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
                                .SetShouldCloseTyping(true)
                                .SetShouldClearTypingStyle(true)
                                .SetShouldShowHandle(true)
+                               .SetIsDirectional(true)
                                .Build());
 
   // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
@@ -751,6 +752,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
                                .SetShouldCloseTyping(true)
                                .SetShouldClearTypingStyle(true)
                                .SetShouldShowHandle(true)
+                               .SetIsDirectional(true)
                                .Build());
 
   // Since, it is not obvious that |visiblePositionForContentsPoint()| returns

@@ -66,6 +66,9 @@ class SelectionModifier {
   bool ModifyWithPageGranularity(SelectionModifyAlteration,
                                  unsigned vertical_distance,
                                  SelectionModifyVerticalDirection);
+  void SetSelectionIsDirectional(bool selection_is_directional) {
+    selection_is_directional_ = selection_is_directional;
+  }
 
  private:
   const LocalFrame& GetFrame() const { return *frame_; }
@@ -113,6 +116,7 @@ class SelectionModifier {
   // |current_selection_| holds initial value and result of |Modify()|.
   SelectionInDOMTree current_selection_;
   LayoutUnit x_pos_for_vertical_arrow_navigation_;
+  bool selection_is_directional_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionModifier);
 };

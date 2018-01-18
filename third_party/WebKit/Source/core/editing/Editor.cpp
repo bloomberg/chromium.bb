@@ -952,7 +952,10 @@ void Editor::AppliedEditing(CompositeEditCommand* cmd) {
 
   // Don't clear the typing style with this selection change. We do those things
   // elsewhere if necessary.
-  ChangeSelectionAfterCommand(new_selection, SetSelectionOptions());
+  ChangeSelectionAfterCommand(
+      new_selection, SetSelectionOptions::Builder()
+                         .SetIsDirectional(cmd->SelectionIsDirectional())
+                         .Build());
 
   if (!cmd->PreservesTypingStyle())
     ClearTypingStyle();
@@ -968,6 +971,8 @@ void Editor::AppliedEditing(CompositeEditCommand* cmd) {
       undo_stack_->RegisterUndoStep(last_edit_command_->EnsureUndoStep());
     last_edit_command_->EnsureUndoStep()->SetEndingSelection(
         cmd->EnsureUndoStep()->EndingSelection());
+    last_edit_command_->GetUndoStep()->SetSelectionIsDirectional(
+        cmd->GetUndoStep()->SelectionIsDirectional());
     last_edit_command_->AppendCommandToUndoStep(cmd);
   } else {
     // Only register a new undo command if the command passed in is
@@ -991,11 +996,12 @@ void Editor::UnappliedEditing(UndoStep* cmd) {
 
   const SelectionInDOMTree& new_selection = CorrectedSelectionAfterCommand(
       cmd->StartingSelection(), GetFrame().GetDocument());
-  ChangeSelectionAfterCommand(new_selection,
-                              SetSelectionOptions::Builder()
-                                  .SetShouldCloseTyping(true)
-                                  .SetShouldClearTypingStyle(true)
-                                  .Build());
+  ChangeSelectionAfterCommand(
+      new_selection, SetSelectionOptions::Builder()
+                         .SetShouldCloseTyping(true)
+                         .SetShouldClearTypingStyle(true)
+                         .SetIsDirectional(cmd->SelectionIsDirectional())
+                         .Build());
 
   last_edit_command_ = nullptr;
   undo_stack_->RegisterRedoStep(cmd);
@@ -1014,11 +1020,12 @@ void Editor::ReappliedEditing(UndoStep* cmd) {
 
   const SelectionInDOMTree& new_selection = CorrectedSelectionAfterCommand(
       cmd->EndingSelection(), GetFrame().GetDocument());
-  ChangeSelectionAfterCommand(new_selection,
-                              SetSelectionOptions::Builder()
-                                  .SetShouldCloseTyping(true)
-                                  .SetShouldClearTypingStyle(true)
-                                  .Build());
+  ChangeSelectionAfterCommand(
+      new_selection, SetSelectionOptions::Builder()
+                         .SetShouldCloseTyping(true)
+                         .SetShouldClearTypingStyle(true)
+                         .SetIsDirectional(cmd->SelectionIsDirectional())
+                         .Build());
 
   last_edit_command_ = nullptr;
   undo_stack_->RegisterUndoStep(cmd);
@@ -1431,13 +1438,15 @@ void Editor::ChangeSelectionAfterCommand(
   // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain
   // Ranges for selections that are no longer valid
   bool selection_did_not_change_dom_position =
-      new_selection == GetFrameSelection().GetSelectionInDOMTree();
+      new_selection == GetFrameSelection().GetSelectionInDOMTree() &&
+      options.IsDirectional() == GetFrameSelection().IsDirectional();
   const bool handle_visible =
       GetFrameSelection().IsHandleVisible() && new_selection.IsRange();
-  GetFrameSelection().SetSelection(new_selection,
-                                   SetSelectionOptions::Builder(options)
-                                       .SetShouldShowHandle(handle_visible)
-                                       .Build());
+  GetFrameSelection().SetSelection(
+      new_selection, SetSelectionOptions::Builder(options)
+                         .SetShouldShowHandle(handle_visible)
+                         .SetIsDirectional(options.IsDirectional())
+                         .Build());
 
   // Some editing operations change the selection visually without affecting its
   // position within the DOM. For example when you press return in the following
@@ -1714,6 +1723,7 @@ FrameSelection& Editor::GetFrameSelection() const {
 
 void Editor::SetMark() {
   mark_ = GetFrameSelection().ComputeVisibleSelectionInDOMTree();
+  mark_is_directional_ = GetFrameSelection().IsDirectional();
 }
 
 void Editor::ToggleOverwriteModeEnabled() {

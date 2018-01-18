@@ -459,6 +459,7 @@ bool TextControlElement::SetSelectionRange(
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetDoNotSetFocus(true)
+          .SetIsDirectional(direction != kSelectionHasNoDirection)
           .Build());
   return did_change;
 }

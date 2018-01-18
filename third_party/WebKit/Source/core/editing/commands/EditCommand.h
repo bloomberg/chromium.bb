@@ -55,6 +55,10 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
   virtual String TextDataForInputEvent() const;
 
   virtual void Trace(blink::Visitor*);
+  bool SelectionIsDirectional() const { return selection_is_directional_; }
+  void SetSelectionIsDirectional(bool is_directional) {
+    selection_is_directional_ = is_directional;
+  }
 
  protected:
   explicit EditCommand(Document&);
@@ -67,6 +71,7 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
  private:
   Member<Document> document_;
   Member<CompositeEditCommand> parent_;
+  bool selection_is_directional_ = false;
 };
 
 enum ShouldAssumeContentIsAlwaysEditable {

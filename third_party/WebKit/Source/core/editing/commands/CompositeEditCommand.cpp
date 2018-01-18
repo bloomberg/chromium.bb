@@ -149,6 +149,11 @@ bool CompositeEditCommand::Apply() {
 
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(frame);
+  // directional is stored at the top level command, so that before and after
+  // executing command same directional will be there.
+  SetSelectionIsDirectional(frame->Selection().IsDirectional());
+  GetUndoStep()->SetSelectionIsDirectional(SelectionIsDirectional());
+
   EditingState editing_state;
   EventQueueScope event_queue_scope;
   DoApply(&editing_state);
@@ -199,6 +204,7 @@ void CompositeEditCommand::ApplyCommandToComposite(
     EditCommand* command,
     EditingState* editing_state) {
   command->SetParent(this);
+  command->SetSelectionIsDirectional(SelectionIsDirectional());
   command->DoApply(editing_state);
   if (editing_state->IsAborted()) {
     command->SetParent(nullptr);

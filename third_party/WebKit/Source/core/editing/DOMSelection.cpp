@@ -81,24 +81,23 @@ bool DOMSelection::IsAvailable() const {
   return GetFrame() && GetFrame()->Selection().IsAvailable();
 }
 
-void DOMSelection::UpdateFrameSelection(const SelectionInDOMTree& selection,
-                                        Range* new_cached_range) const {
+void DOMSelection::UpdateFrameSelection(
+    const SelectionInDOMTree& selection,
+    Range* new_cached_range,
+    const SetSelectionOptions& passed_options) const {
   DCHECK(GetFrame());
   FrameSelection& frame_selection = GetFrame()->Selection();
+  SetSelectionOptions::Builder builder(passed_options);
+  builder.SetShouldCloseTyping(true).SetShouldClearTypingStyle(true);
+  SetSelectionOptions options = builder.Build();
   // TODO(tkent): Specify FrameSelection::DoNotSetFocus. crbug.com/690272
-  const bool did_set = frame_selection.SetSelectionDeprecated(
-      selection, SetSelectionOptions::Builder()
-                     .SetShouldCloseTyping(true)
-                     .SetShouldClearTypingStyle(true)
-                     .Build());
+  const bool did_set =
+      frame_selection.SetSelectionDeprecated(selection, options);
   CacheRangeIfSelectionOfDocument(new_cached_range);
   if (!did_set)
     return;
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
-  frame_selection.DidSetSelectionDeprecated(SetSelectionOptions::Builder()
-                                                .SetShouldCloseTyping(true)
-                                                .SetShouldClearTypingStyle(true)
-                                                .Build());
+  frame_selection.DidSetSelectionDeprecated(options);
   if (GetFrame() && GetFrame()->GetDocument() &&
       focused_element != GetFrame()->GetDocument()->FocusedElement())
     UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
@@ -291,7 +290,10 @@ void DOMSelection::collapse(Node* node,
           .Collapse(Position(node, offset))
           .SetIsDirectional(GetFrame()->Selection().IsDirectional())
           .Build(),
-      new_range);
+      new_range,
+      SetSelectionOptions::Builder()
+          .SetIsDirectional(GetFrame()->Selection().IsDirectional())
+          .Build());
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapsetoend
@@ -316,14 +318,14 @@ void DOMSelection::collapseToEnd(ExceptionState& exception_state) {
     // and then set the context object's range to the newly-created range.
     SelectionInDOMTree::Builder builder;
     builder.Collapse(new_range->EndPosition());
-    UpdateFrameSelection(builder.Build(), new_range);
+    UpdateFrameSelection(builder.Build(), new_range, SetSelectionOptions());
   } else {
     // TODO(tkent): The Selection API doesn't define this behavior. We should
     // discuss this on https://github.com/w3c/selection-api/issues/83.
     SelectionInDOMTree::Builder builder;
     builder.Collapse(
         GetFrame()->Selection().GetSelectionInDOMTree().ComputeEndPosition());
-    UpdateFrameSelection(builder.Build(), nullptr);
+    UpdateFrameSelection(builder.Build(), nullptr, SetSelectionOptions());
   }
 }
 
@@ -349,14 +351,14 @@ void DOMSelection::collapseToStart(ExceptionState& exception_state) {
     // and then set the context object's range to the newly-created range.
     SelectionInDOMTree::Builder builder;
     builder.Collapse(new_range->StartPosition());
-    UpdateFrameSelection(builder.Build(), new_range);
+    UpdateFrameSelection(builder.Build(), new_range, SetSelectionOptions());
   } else {
     // TODO(tkent): The Selection API doesn't define this behavior. We should
     // discuss this on https://github.com/w3c/selection-api/issues/83.
     SelectionInDOMTree::Builder builder;
     builder.Collapse(
         GetFrame()->Selection().GetSelectionInDOMTree().ComputeStartPosition());
-    UpdateFrameSelection(builder.Build(), nullptr);
+    UpdateFrameSelection(builder.Build(), nullptr, SetSelectionOptions());
   }
 }
 
@@ -418,7 +420,7 @@ void DOMSelection::setBaseAndExtent(Node* base_node,
           .SetBaseAndExtentDeprecated(base_position, extent_position)
           .SetIsDirectional(true)
           .Build(),
-      new_range);
+      new_range, SetSelectionOptions::Builder().SetIsDirectional(true).Build());
 }
 
 void DOMSelection::modify(const String& alter_string,
@@ -545,7 +547,9 @@ void DOMSelection::extend(Node* node,
     builder.Collapse(new_focus);
   else
     builder.Collapse(old_anchor).Extend(new_focus);
-  UpdateFrameSelection(builder.SetIsDirectional(true).Build(), new_range);
+  UpdateFrameSelection(
+      builder.SetIsDirectional(true).Build(), new_range,
+      SetSelectionOptions::Builder().SetIsDirectional(true).Build());
 }
 
 Range* DOMSelection::getRangeAt(unsigned index,
@@ -658,7 +662,7 @@ void DOMSelection::addRange(Range* new_range) {
                              .Collapse(new_range->StartPosition())
                              .Extend(new_range->EndPosition())
                              .Build(),
-                         new_range);
+                         new_range, SetSelectionOptions());
     return;
   }
 
