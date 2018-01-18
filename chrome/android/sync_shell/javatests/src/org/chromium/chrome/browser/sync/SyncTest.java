@@ -83,12 +83,9 @@ public class SyncTest {
         SyncTestUtil.waitForSyncActive();
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"Sync"})
-     */
     @Test
-    @DisabledTest(message = "crbug.com/776251")
+    @LargeTest
+    @Feature({"Sync"})
     public void testStopAndClear() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
