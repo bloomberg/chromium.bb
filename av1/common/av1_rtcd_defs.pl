@@ -521,7 +521,7 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
 add_proto qw/void av1_convolve_2d/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_2d sse2 avx2/;
 add_proto qw/void av1_convolve_2d_sr/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";
-specialize qw/av1_convolve_2d_sr c/;
+specialize qw/av1_convolve_2d_sr c sse2/;
 add_proto qw/void av1_convolve_rounding/, "const int32_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, int bits";
 specialize qw/av1_convolve_rounding avx2/;
 
