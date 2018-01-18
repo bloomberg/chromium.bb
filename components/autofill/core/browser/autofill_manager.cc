@@ -336,8 +336,14 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   ParseForms(forms);
 }
 
-bool AutofillManager::OnWillSubmitFormImpl(const FormData& form,
-                                           const TimeTicks timestamp) {
+bool AutofillManager::OnFormSubmittedImpl(const FormData& form,
+                                          bool known_success,
+                                          SubmissionSource source,
+                                          base::TimeTicks timestamp) {
+  // TODO(crbug.com/801698): handle PROBABLY_FORM_SUBMITTED.
+  if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED)
+    return false;
+
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
@@ -360,20 +366,14 @@ bool AutofillManager::OnWillSubmitFormImpl(const FormData& form,
   if (IsCreditCardAutofillEnabled())
     credit_card_form_event_logger_->OnWillSubmitForm();
 
-  StartUploadProcess(std::move(submitted_form), timestamp, true);
+  bool ret = StartUploadProcess(std::move(submitted_form), timestamp, true);
 
-  return true;
-}
-
-bool AutofillManager::OnFormSubmitted(const FormData& form) {
-  if (!IsValidFormData(form))
+  // TODO(crbug.com/803334): Add FormStructure::Clone() method.
+  // Create another FormStructure instance.
+  submitted_form = ValidateSubmittedForm(form);
+  DCHECK(submitted_form);
+  if (!submitted_form)
     return false;
-
-  // We will always give Autocomplete a chance to save the data.
-  std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
-  if (!submitted_form) {
-    return false;
-  }
 
   CreditCard credit_card =
       form_data_importer_->ExtractCreditCardFromForm(*submitted_form);
@@ -393,17 +393,17 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
                                         IsCreditCardAutofillEnabled());
   }
 
-  return true;
+  return ret;
 }
 
-void AutofillManager::StartUploadProcess(
+bool AutofillManager::StartUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
     const TimeTicks& timestamp,
     bool observed_submission) {
   // It is possible for |personal_data_| to be null, such as when used in the
   // Android webview.
   if (!personal_data_)
-    return;
+    return false;
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
@@ -414,35 +414,35 @@ void AutofillManager::StartUploadProcess(
   }
   const std::vector<CreditCard*>& credit_cards =
       personal_data_->GetCreditCards();
-  if (!profiles.empty() || !credit_cards.empty()) {
-    // Copy the profile and credit card data, so that it can be accessed on a
-    // separate thread.
-    std::vector<AutofillProfile> copied_profiles;
-    copied_profiles.reserve(profiles.size());
-    for (const AutofillProfile* profile : profiles)
-      copied_profiles.push_back(*profile);
+  if (profiles.empty() && credit_cards.empty())
+    return false;
+  // Copy the profile and credit card data, so that it can be accessed on a
+  // separate thread.
+  std::vector<AutofillProfile> copied_profiles;
+  copied_profiles.reserve(profiles.size());
+  for (const AutofillProfile* profile : profiles)
+    copied_profiles.push_back(*profile);
 
-    std::vector<CreditCard> copied_credit_cards;
-    copied_credit_cards.reserve(credit_cards.size());
-    for (const CreditCard* card : credit_cards)
-      copied_credit_cards.push_back(*card);
+  std::vector<CreditCard> copied_credit_cards;
+  copied_credit_cards.reserve(credit_cards.size());
+  for (const CreditCard* card : credit_cards)
+    copied_credit_cards.push_back(*card);
 
-    // Note that ownership of |form_structure| is passed to the second task,
-    // using |base::Owned|.
-    FormStructure* raw_form = form_structure.get();
-    TimeTicks loaded_timestamp =
-        forms_loaded_timestamps_[raw_form->ToFormData()];
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
-                       copied_profiles, copied_credit_cards, app_locale_,
-                       raw_form),
-        base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Owned(form_structure.release()), loaded_timestamp,
-                       initial_interaction_timestamp_, timestamp,
-                       observed_submission));
-  }
+  // Note that ownership of |form_structure| is passed to the second task,
+  // using |base::Owned|.
+  FormStructure* raw_form = form_structure.get();
+  TimeTicks loaded_timestamp = forms_loaded_timestamps_[raw_form->ToFormData()];
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
+                     copied_profiles, copied_credit_cards, app_locale_,
+                     raw_form),
+      base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(form_structure.release()), loaded_timestamp,
+                     initial_interaction_timestamp_, timestamp,
+                     observed_submission));
+  return true;
 }
 
 void AutofillManager::UpdatePendingForm(const FormData& form) {

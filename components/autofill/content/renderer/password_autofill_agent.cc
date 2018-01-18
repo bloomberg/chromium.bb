@@ -570,15 +570,15 @@ bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
 }
 
 PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
-    FormTracker::Observer::SubmissionSource source) {
+    SubmissionSource source) {
   switch (source) {
-    case FormTracker::Observer::SubmissionSource::FRAME_DETACHED:
+    case SubmissionSource::FRAME_DETACHED:
       return PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
-    case FormTracker::Observer::SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+    case SubmissionSource::SAME_DOCUMENT_NAVIGATION:
       return PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
-    case FormTracker::Observer::SubmissionSource::XHR_SUCCEEDED:
+    case SubmissionSource::XHR_SUCCEEDED:
       return PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
-    case FormTracker::Observer::SubmissionSource::DOM_MUTATION_AFTER_XHR:
+    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
       return PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
     default:
       return PasswordForm::SubmissionIndicatorEvent::NONE;

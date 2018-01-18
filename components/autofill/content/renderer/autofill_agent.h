@@ -158,13 +158,13 @@ class AutofillAgent : public content::RenderFrameObserver,
   void FocusedNodeChanged(const blink::WebNode& node) override;
   void OnDestruct() override;
 
-  // Fires Mojo messages for a given form submission. Will always fire
-  // AutofillHostMsg_WillSubmitForm and AutofillHostMsg_FormSubmitted
-  // in sequence.
-  // TODO(crbug.com/785519): Combine those two events to one.
+  // Fires Mojo messages for a given form submission.
   void FireHostSubmitEvents(const blink::WebFormElement& form,
-                            bool known_success);
-  void FireHostSubmitEvents(const FormData& form_data, bool known_success);
+                            bool known_success,
+                            SubmissionSource source);
+  void FireHostSubmitEvents(const FormData& form_data,
+                            bool known_success,
+                            SubmissionSource source);
 
   // Shuts the AutofillAgent down on RenderFrame deletion. Safe to call multiple
   // times.
@@ -251,6 +251,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   void ResetLastInteractedElements();
   void UpdateLastInteractedForm(blink::WebFormElement form);
 
+  // Called when current form is no longer submittable, submitted_forms_ is
+  // cleared in this method.
+  void OnFormNoLongerSubmittable();
+
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
   FormCache form_cache_;
@@ -278,6 +282,14 @@ class AutofillAgent : public content::RenderFrameObserver,
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.
   std::unique_ptr<FormData> provisionally_saved_form_;
+
+  // Keeps track of the forms for which form submitted event has been sent to
+  // AutofillDriver. We use it to avoid fire duplicated submission event when
+  // WILL_SEND_SUBMIT_EVENT and form submitted are both fired for same form.
+  // The submitted_forms_ is cleared when we know no more submission could
+  // happen for that form.
+  // We use a simplified comparison function.
+  std::set<FormData, FormDataCompare> submitted_forms_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;

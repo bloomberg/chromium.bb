@@ -192,13 +192,11 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
   autofill_handler_->OnFormsSeen(forms, timestamp);
 }
 
-void ContentAutofillDriver::WillSubmitForm(const FormData& form,
-                                           base::TimeTicks timestamp) {
-  autofill_handler_->OnWillSubmitForm(form, timestamp);
-}
-
-void ContentAutofillDriver::FormSubmitted(const FormData& form) {
-  autofill_handler_->OnFormSubmitted(form);
+void ContentAutofillDriver::FormSubmitted(const FormData& form,
+                                          bool known_success,
+                                          SubmissionSource source,
+                                          base::TimeTicks timestamp) {
+  autofill_handler_->OnFormSubmitted(form, known_success, source, timestamp);
 }
 
 void ContentAutofillDriver::TextFieldDidChange(const FormData& form,

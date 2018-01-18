@@ -75,6 +75,16 @@ enum PasswordFormFieldPredictionType {
   PREDICTION_NOT_PASSWORD
 };
 
+// autofill::SubmissionSource
+enum SubmissionSource {
+  SAME_DOCUMENT_NAVIGATION,
+  XHR_SUCCEEDED,
+  FRAME_DETACHED,
+  DOM_MUTATION_AFTER_XHR,
+  PROBABLY_FORM_SUBMITTED,
+  FORM_SUBMISSION,
+};
+
 // autofill::FormFieldData
 struct FormFieldData {
   string label;

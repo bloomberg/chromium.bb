@@ -161,7 +161,8 @@ class AutofillManager : public AutofillHandler,
   // Will send an upload based on the |form_structure| data and the local
   // Autofill profile data. |observed_submission| is specified if the upload
   // follows an observed submission event.
-  virtual void StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
+  // return false if the upload couldn't start.
+  virtual bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
                                   const base::TimeTicks& timestamp,
                                   bool observed_submission);
 
@@ -179,7 +180,6 @@ class AutofillManager : public AutofillHandler,
   void OnDidPreviewAutofillFormData() override;
   void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks timestamp) override;
-  bool OnFormSubmitted(const FormData& form) override;
   void OnDidEndTextFieldEditing() override;
   void OnHidePopup() override;
   void OnSetDataList(const std::vector<base::string16>& values,
@@ -238,8 +238,10 @@ class AutofillManager : public AutofillHandler,
                        std::string* profile_backend_id) const;
 
   // AutofillHandler:
-  bool OnWillSubmitFormImpl(const FormData& form,
-                            const base::TimeTicks timestamp) override;
+  bool OnFormSubmittedImpl(const FormData& form,
+                           bool known_success,
+                           SubmissionSource source,
+                           base::TimeTicks timestamp) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box,

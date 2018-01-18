@@ -406,11 +406,11 @@ class AutofillManagerTest : public testing::Test {
 
   void FormSubmitted(const FormData& form) {
     autofill_manager_->ResetRunLoop();
-    if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()) &&
-        (!personal_data_.GetProfiles().empty() ||
-         !personal_data_.GetCreditCards().empty()))
+    if (autofill_manager_->OnFormSubmitted(form, false,
+                                           SubmissionSource::FORM_SUBMISSION,
+                                           base::TimeTicks::Now())) {
       autofill_manager_->WaitForAsyncUploadProcess();
-    autofill_manager_->OnFormSubmitted(form);
+    }
   }
 
   void FillAutofillFormData(int query_id,
@@ -3791,9 +3791,8 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
   EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
-// Test that we are not saving form data when only the WillSubmitForm event is
-// sent.
-TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
+// Test that we are saving form data when the FormSubmitted event is sent.
+TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -3810,13 +3809,12 @@ TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
 
-  // Simulate OnWillSubmitForm(). We should *not* be calling into the PDM at
-  // this point (since the form was not submitted). Does not call
-  // OnFormSubmitted.
   autofill_manager_->ResetRunLoop();
-  autofill_manager_->OnWillSubmitForm(response_data, base::TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(response_data, false,
+                                     SubmissionSource::FORM_SUBMISSION,
+                                     base::TimeTicks::Now());
   autofill_manager_->WaitForAsyncUploadProcess();
-  EXPECT_EQ(0, personal_data_.num_times_save_imported_profile_called());
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
 // Test that when Autocomplete is enabled and Autofill is disabled, form
@@ -5019,7 +5017,8 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
   full_card_unmask_delegate()->OnUnmaskResponse(response);
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
-  autofill_manager_->OnFormSubmitted(form);
+  autofill_manager_->OnFormSubmitted(
+      form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
 }
 
 TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
