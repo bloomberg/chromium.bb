@@ -159,13 +159,6 @@ TextDirection SelectionModifier::DirectionOfSelection() const {
 
 static bool IsBaseStart(const VisibleSelection& visible_selection,
                         SelectionModifyDirection direction) {
-  if (visible_selection.IsDirectional()) {
-    // Make base and extent match start and end so we extend the user-visible
-    // selection. This only matters for cases where base and extend point to
-    // different positions than start and end (e.g. after a double-click to
-    // select a word).
-    return visible_selection.IsBaseFirst();
-  }
   switch (direction) {
     case SelectionModifyDirection::kRight:
       return DirectionOf(visible_selection) == TextDirection::kLtr;
@@ -199,7 +192,14 @@ VisibleSelection SelectionModifier::PrepareToModifySelection(
   if (range.IsCollapsed())
     return visible_selection;
   SelectionInDOMTree::Builder builder;
-  if (IsBaseStart(visible_selection, direction))
+  // Make base and extent match start and end so we extend the user-visible
+  // selection. This only matters for cases where base and extend point to
+  // different positions than start and end (e.g. after a double-click to
+  // select a word).
+  const bool base_is_start = selection_is_directional_
+                                 ? visible_selection.IsBaseFirst()
+                                 : IsBaseStart(visible_selection, direction);
+  if (base_is_start)
     builder.SetAsForwardSelection(range);
   else
     builder.SetAsBackwardSelection(range);

@@ -207,6 +207,8 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   SelectionModifier selection_modifier(
       frame, frame.Selection().GetSelectionInDOMTree());
+  selection_modifier.SetSelectionIsDirectional(
+      frame.Selection().IsDirectional());
   if (selection_modifier.Selection().IsCaret())
     selection_modifier.Modify(SelectionModifyAlteration::kExtend, direction,
                               granularity);
@@ -1271,6 +1273,8 @@ bool ModifySelectionWithPageGranularity(
     SelectionModifyVerticalDirection direction) {
   SelectionModifier selection_modifier(
       frame, frame.Selection().GetSelectionInDOMTree());
+  selection_modifier.SetSelectionIsDirectional(
+      frame.Selection().IsDirectional());
   if (!selection_modifier.ModifyWithPageGranularity(alter, vertical_distance,
                                                     direction)) {
     return false;
@@ -1285,6 +1289,10 @@ bool ModifySelectionWithPageGranularity(
           .SetCursorAlignOnScroll(alter == SelectionModifyAlteration::kMove
                                       ? CursorAlignOnScroll::kAlways
                                       : CursorAlignOnScroll::kIfNeeded)
+          .SetIsDirectional(alter == SelectionModifyAlteration::kExtend ||
+                            frame.GetEditor()
+                                .Behavior()
+                                .ShouldConsiderSelectionAsDirectional())
           .Build());
   return true;
 }
@@ -1966,10 +1974,15 @@ static bool ExecuteSwapWithMark(LocalFrame& frame,
   const VisibleSelection mark(frame.GetEditor().Mark());
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  const bool mark_is_directional = frame.GetEditor().MarkIsDirectional();
   if (mark.IsNone() || selection.IsNone())
     return false;
+
   frame.GetEditor().SetMark();
-  frame.Selection().SetSelection(mark.AsSelection());
+  frame.Selection().SetSelection(mark.AsSelection(),
+                                 SetSelectionOptions::Builder()
+                                     .SetIsDirectional(mark_is_directional)
+                                     .Build());
   return true;
 }
 

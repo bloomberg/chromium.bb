@@ -272,6 +272,9 @@ class CORE_EXPORT FrameSelection final
 
   bool focused_ : 1;
   bool is_handle_visible_ = false;
+  // TODO(editing-dev): We should change is_directional_ type to enum.
+  // as directional can have three values forward, backward or directionless.
+  bool is_directional_;
   bool should_shrink_next_tap_ = false;
 
   // Controls text granularity used to adjust the selection's extent in

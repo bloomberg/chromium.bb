@@ -74,4 +74,9 @@ SetSelectionOptions::Builder::SetShouldShrinkNextTap(bool new_value) {
   return *this;
 }
 
+SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetIsDirectional(
+    bool new_value) {
+  data_.is_directional_ = new_value;
+  return *this;
+}
 }  // namespace blink
