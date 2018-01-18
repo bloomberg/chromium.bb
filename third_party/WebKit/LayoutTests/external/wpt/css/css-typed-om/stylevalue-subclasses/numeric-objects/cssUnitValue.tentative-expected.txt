@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 72 tests; 62 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Constructing CSSUnitValue with an empty string as the unit throws a TypeError
 PASS Constructing CSSUnitValue with an invalid unit as the unit throws a TypeError
 PASS Updating CSSUnitValue.unit with an empty string throws a TypeError
