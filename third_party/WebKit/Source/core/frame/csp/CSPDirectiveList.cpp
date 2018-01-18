@@ -530,33 +530,33 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
   DCHECK_NE(ContentSecurityPolicy::DirectiveType::kChildSrc, effective_type);
   DCHECK_NE(ContentSecurityPolicy::DirectiveType::kDefaultSrc, effective_type);
 
-  String prefix;
+  String prefix = "Refused to ";
   if (ContentSecurityPolicy::DirectiveType::kBaseURI == effective_type)
-    prefix = "Refused to set the document's base URI to '";
+    prefix = prefix + "set the document's base URI to '";
   else if (ContentSecurityPolicy::DirectiveType::kWorkerSrc == effective_type)
-    prefix = "Refused to create a worker from '";
+    prefix = prefix + "create a worker from '";
   else if (ContentSecurityPolicy::DirectiveType::kConnectSrc == effective_type)
-    prefix = "Refused to connect to '";
+    prefix = prefix + "connect to '";
   else if (ContentSecurityPolicy::DirectiveType::kFontSrc == effective_type)
-    prefix = "Refused to load the font '";
+    prefix = prefix + "load the font '";
   else if (ContentSecurityPolicy::DirectiveType::kFormAction == effective_type)
-    prefix = "Refused to send form data to '";
+    prefix = prefix + "send form data to '";
   else if (ContentSecurityPolicy::DirectiveType::kFrameSrc == effective_type)
-    prefix = "Refused to frame '";
+    prefix = prefix + "frame '";
   else if (ContentSecurityPolicy::DirectiveType::kImgSrc == effective_type)
-    prefix = "Refused to load the image '";
+    prefix = prefix + "load the image '";
   else if (ContentSecurityPolicy::DirectiveType::kMediaSrc == effective_type)
-    prefix = "Refused to load media from '";
+    prefix = prefix + "load media from '";
   else if (ContentSecurityPolicy::DirectiveType::kManifestSrc == effective_type)
-    prefix = "Refused to load manifest from '";
+    prefix = prefix + "load manifest from '";
   else if (ContentSecurityPolicy::DirectiveType::kObjectSrc == effective_type)
-    prefix = "Refused to load plugin data from '";
+    prefix = prefix + "load plugin data from '";
   else if (ContentSecurityPolicy::DirectiveType::kPrefetchSrc == effective_type)
-    prefix = "Refused to prefetch content from '";
+    prefix = prefix + "prefetch content from '";
   else if (ContentSecurityPolicy::DirectiveType::kScriptSrc == effective_type)
-    prefix = "Refused to load the script '";
+    prefix = prefix + "load the script '";
   else if (ContentSecurityPolicy::DirectiveType::kStyleSrc == effective_type)
-    prefix = "Refused to load the stylesheet '";
+    prefix = prefix + "load the stylesheet '";
 
   String suffix = String();
   if (CheckDynamic(directive))
