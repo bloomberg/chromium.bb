@@ -175,6 +175,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Called after the window is maximized or restored.
   virtual void OnMaximizedStateChanged();
 
+  // Called after the window is fullscreened or unfullscreened.
+  virtual void OnFullscreenStateChanged();
+
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
   // Initializes our X11 surface to draw on. This method performs all

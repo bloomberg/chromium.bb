@@ -39,6 +39,7 @@ class BrowserDesktopWindowTreeHostX11
             const views::Widget::InitParams& params) override;
   void CloseNow() override;
   void OnMaximizedStateChanged() override;
+  void OnFullscreenStateChanged() override;
 
   BrowserView* browser_view_;
 

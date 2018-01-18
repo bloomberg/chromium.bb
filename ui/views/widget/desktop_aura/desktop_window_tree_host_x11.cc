@@ -999,6 +999,7 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;
   is_fullscreen_ = fullscreen;
+  OnFullscreenStateChanged();
   if (is_fullscreen_)
     delayed_resize_task_.Cancel();
 
@@ -1326,6 +1327,8 @@ void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
 }
 
 void DesktopWindowTreeHostX11::OnMaximizedStateChanged() {}
+
+void DesktopWindowTreeHostX11::OnFullscreenStateChanged() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:

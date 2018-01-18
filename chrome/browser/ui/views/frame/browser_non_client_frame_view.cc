@@ -58,6 +58,8 @@ void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
 
 void BrowserNonClientFrameView::OnMaximizedStateChanged() {}
 
+void BrowserNonClientFrameView::OnFullscreenStateChanged() {}
+
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
