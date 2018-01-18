@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/metrics/metrics_service.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
-#import "ios/chrome/browser/crash_report/crash_report_background_uploader.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -86,7 +85,7 @@ bool MobileSessionShutdownMetricsProvider::HasCrashLogs() {
 
 bool MobileSessionShutdownMetricsProvider::
     HasUploadedCrashReportsInBackground() {
-  return [CrashReportBackgroundUploader hasUploadedCrashReportsInBackground];
+  return false;
 }
 
 bool MobileSessionShutdownMetricsProvider::

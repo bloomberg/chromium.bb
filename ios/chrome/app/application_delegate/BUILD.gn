@@ -22,7 +22,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "app_state_unittest.mm",
-    "background_activity_unittest.mm",
     "memory_warning_helper_unittest.mm",
     "metrics_mediator_unittest.mm",
     "url_opener_unittest.mm",
@@ -86,8 +85,6 @@ source_set("application_delegate_internal") {
     "app_navigation.h",
     "app_state.h",
     "app_state.mm",
-    "background_activity.h",
-    "background_activity.mm",
     "browser_launcher.h",
     "metrics_mediator.h",
     "metrics_mediator.mm",

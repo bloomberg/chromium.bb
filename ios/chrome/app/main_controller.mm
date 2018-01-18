@@ -39,7 +39,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/app/application_delegate/background_activity.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/application_mode.h"
@@ -72,7 +71,6 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/crash_loop_detection_util.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
-#import "ios/chrome/browser/crash_report/crash_report_background_uploader.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -659,14 +657,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // IOSChromeMain(), this call does additional work, checking for wifi-only
   // and setting up the required support structures.
   [_metricsMediator updateMetricsStateBasedOnPrefsUserTriggered:NO];
-
-  // Resets the number of crash reports that have been uploaded since the
-  // previous Foreground initialization.
-  [CrashReportBackgroundUploader resetReportsUploadedInBackgroundCount];
-
-  // Resets the interval stats between two background fetch as this value may be
-  // obsolete.
-  [BackgroundActivity foregroundStarted];
 
   // Crash the app during startup if requested but only after we have enabled
   // uploading crash reports.

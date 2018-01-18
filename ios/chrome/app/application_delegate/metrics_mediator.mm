@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
-#import "ios/chrome/browser/crash_report/crash_report_background_uploader.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
@@ -38,10 +37,6 @@
 #endif
 
 namespace {
-// The amount of time (in seconds) between two background fetch calls.
-// TODO(crbug.com/496172): Re-enable background fetch.
-const NSTimeInterval kBackgroundFetchIntervalDelay =
-    UIApplicationBackgroundFetchIntervalNever;
 // The amount of time (in seconds) to wait for the user to start a new task.
 const NSTimeInterval kFirstUserActionTimeout = 30.0;
 }  // namespace
@@ -209,8 +204,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   if (!metrics)
     return;
   if (enabled) {
-    [[UIApplication sharedApplication]
-        setMinimumBackgroundFetchInterval:kBackgroundFetchIntervalDelay];
     if (!metrics->recording_active())
       metrics->Start();
 
@@ -221,9 +214,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   } else {
     if (metrics->recording_active())
       metrics->Stop();
-    [[UIApplication sharedApplication]
-        setMinimumBackgroundFetchInterval:
-            UIApplicationBackgroundFetchIntervalNever];
   }
 }
 
@@ -263,11 +253,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 - (void)processCrashReportsPresentAtStartup {
   _hasProcessedCrashReportsPresentAtStartup = YES;
-
-  breakpad_helper::GetCrashReportCount(^(int crashReportCount) {
-    [[CrashReportBackgroundUploader sharedInstance]
-        setHasPendingCrashReportsToUploadAtStartup:(crashReportCount > 0)];
-  });
 }
 
 - (void)setBreakpadEnabled:(BOOL)enabled withUploading:(BOOL)allowUploading {
