@@ -11,24 +11,29 @@ namespace blink {
 
 class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  public:
-  explicit ScriptWrappableVisitorVerifier(v8::Isolate* isolate)
-      : ScriptWrappableVisitor(isolate) {}
+  // The verifier deque should contain all objects encountered during marking.
+  // For each object in the deque the verifier checks that all children of
+  // the object are marked.
+  ScriptWrappableVisitorVerifier(
+      v8::Isolate* isolate,
+      const WTF::Deque<WrapperMarkingData>* verifier_deque)
+      : ScriptWrappableVisitor(isolate), verifier_deque_(verifier_deque) {}
 
-  bool MarkWrapperHeader(HeapObjectHeader* header) const final {
-    if (!visited_headers_.Contains(header)) {
-      visited_headers_.insert(header);
-      return true;
-    }
-    return false;
-  }
   void MarkWrappersInAllWorlds(const ScriptWrappable*) const final {}
 
-  void PushToMarkingDeque(
-      TraceWrappersCallback trace_wrappers_callback,
-      HeapObjectHeaderCallback heap_object_header_callback,
-      MissedWriteBarrierCallback missed_write_barrier_callback,
-      const void* object) const final {
-    if (!heap_object_header_callback(object)->IsWrapperHeaderMarked()) {
+  void Verify() {
+    for (auto& marking_data : *verifier_deque_) {
+      // Check that all children of this object are marked.
+      marking_data.TraceWrappers(this);
+    }
+  }
+
+ protected:
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) const final {}
+  void Visit(const WrapperDescriptor& wrapper_descriptor) const override {
+    HeapObjectHeader* header = wrapper_descriptor.heap_object_header_callback(
+        wrapper_descriptor.traceable);
+    if (!header->IsWrapperHeaderMarked()) {
       // If this branch is hit, it means that a white (not discovered by
       // traceWrappers) object was assigned as a member to a black object
       // (already processed by traceWrappers). Black object will not be
@@ -39,17 +44,13 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
       // This means there is a write barrier missing somewhere. Check the
       // backtrace to see which types are causing this and review all the
       // places where white object is set to a black object.
-      missed_write_barrier_callback();
+      wrapper_descriptor.missed_write_barrier_callback();
       NOTREACHED();
     }
-    trace_wrappers_callback(this, object);
   }
 
- protected:
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) const final {}
-
  private:
-  mutable WTF::HashSet<HeapObjectHeader*> visited_headers_;
+  const WTF::Deque<WrapperMarkingData>* verifier_deque_;
 };
 }
 #endif
