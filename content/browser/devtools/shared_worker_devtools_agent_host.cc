@@ -73,7 +73,7 @@ void SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     session->AttachToAgent(EnsureAgent());
 }
 
-void SharedWorkerDevToolsAgentHost::DetachSession(int session_id) {
+void SharedWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
 }
 

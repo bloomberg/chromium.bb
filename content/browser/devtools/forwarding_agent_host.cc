@@ -48,18 +48,17 @@ ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
 void ForwardingAgentHost::AttachSession(DevToolsSession* session) {
-  session_proxies_[session->session_id()].reset(
-      new SessionProxy(this, session));
+  session_proxies_[session].reset(new SessionProxy(this, session));
 }
 
-void ForwardingAgentHost::DetachSession(int session_id) {
-  session_proxies_.erase(session_id);
+void ForwardingAgentHost::DetachSession(DevToolsSession* session) {
+  session_proxies_.erase(session);
 }
 
 bool ForwardingAgentHost::DispatchProtocolMessage(
     DevToolsSession* session,
     const std::string& message) {
-  auto it = session_proxies_.find(session->session_id());
+  auto it = session_proxies_.find(session);
   if (it != session_proxies_.end())
     delegate_->SendMessageToBackend(it->second.get(), message);
   return true;

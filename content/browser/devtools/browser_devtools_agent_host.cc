@@ -67,8 +67,7 @@ void BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
       GetIOContext())));
 }
 
-void BrowserDevToolsAgentHost::DetachSession(int session_id) {
-}
+void BrowserDevToolsAgentHost::DetachSession(DevToolsSession* session) {}
 
 std::string BrowserDevToolsAgentHost::GetType() {
   return kTypeBrowser;

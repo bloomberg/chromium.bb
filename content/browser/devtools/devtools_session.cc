@@ -29,12 +29,10 @@ bool ShouldSendOnIO(const std::string& method) {
 }  // namespace
 
 DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
-                                 DevToolsAgentHostClient* client,
-                                 int session_id)
+                                 DevToolsAgentHostClient* client)
     : binding_(this),
       agent_host_(agent_host),
       client_(client),
-      session_id_(session_id),
       process_(nullptr),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
@@ -113,10 +111,10 @@ protocol::Response::Status DevToolsSession::Dispatch(
     base::DictionaryValue* dict_value =
         static_cast<base::DictionaryValue*>(value.get());
 
-    if (delegate->HandleCommand(agent_host_, session_id_, dict_value))
+    if (delegate->HandleCommand(agent_host_, client_, dict_value))
       return protocol::Response::kSuccess;
 
-    if (delegate->HandleAsyncCommand(agent_host_, session_id_, dict_value,
+    if (delegate->HandleAsyncCommand(agent_host_, client_, dict_value,
                                      base::Bind(&DevToolsSession::SendResponse,
                                                 weak_factory_.GetWeakPtr()))) {
       return protocol::Response::kAsync;
@@ -146,9 +144,6 @@ void DevToolsSession::InspectElement(const gfx::Point& point) {
 }
 
 void DevToolsSession::ReceiveMessageChunk(const DevToolsMessageChunk& chunk) {
-  if (chunk.session_id != session_id_)
-    return;
-
   if (chunk.is_first) {
     if (response_message_buffer_size_ != 0)
       return;

@@ -99,7 +99,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // DevToolsAgentHostImpl overrides.
   void AttachSession(DevToolsSession* session) override;
-  void DetachSession(int session_id) override;
+  void DetachSession(DevToolsSession* session) override;
   void InspectElement(DevToolsSession* session, int x, int y) override;
   bool DispatchProtocolMessage(
       DevToolsSession* session,
@@ -155,7 +155,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     std::string method;
     std::string message;
   };
-  std::map<int, std::vector<Message>> suspended_messages_by_session_id_;
+  std::map<DevToolsSession*, std::vector<Message>>
+      suspended_messages_by_session_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

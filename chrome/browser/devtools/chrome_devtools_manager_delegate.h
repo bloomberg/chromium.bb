@@ -39,14 +39,14 @@ class ChromeDevToolsManagerDelegate :
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
   bool HandleCommand(content::DevToolsAgentHost* agent_host,
-                     int session_id,
+                     content::DevToolsAgentHostClient* client,
                      base::DictionaryValue* command_dict) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   std::string GetTargetTitle(content::WebContents* web_contents) override;
-  void SessionCreated(content::DevToolsAgentHost* agent_host,
-                      int session_id) override;
-  void SessionDestroyed(content::DevToolsAgentHost* agent_host,
-                        int session_id) override;
+  void ClientAttached(content::DevToolsAgentHost* agent_host,
+                      content::DevToolsAgentHostClient* client) override;
+  void ClientDetached(content::DevToolsAgentHost* agent_host,
+                      content::DevToolsAgentHostClient* client) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
@@ -69,7 +69,9 @@ class ChromeDevToolsManagerDelegate :
 
   std::map<content::DevToolsAgentHost*, std::unique_ptr<HostData>> host_data_;
 
-  std::map<int, std::unique_ptr<ChromeDevToolsSession>> sessions_;
+  std::map<content::DevToolsAgentHostClient*,
+           std::unique_ptr<ChromeDevToolsSession>>
+      sessions_;
 
   std::unique_ptr<AndroidDeviceManager> device_manager_;
   std::unique_ptr<DevToolsDeviceDiscovery> device_discovery_;
