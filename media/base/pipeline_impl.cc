@@ -48,6 +48,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
                                       public RendererClient {
  public:
   RendererWrapper(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+                  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                   MediaLog* media_log);
   ~RendererWrapper() final;
 
@@ -189,9 +190,10 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
 PipelineImpl::RendererWrapper::RendererWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     MediaLog* media_log)
     : media_task_runner_(std::move(media_task_runner)),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_task_runner_(std::move(main_task_runner)),
       media_log_(media_log),
       demuxer_(nullptr),
       playback_rate_(kDefaultPlaybackRate),
@@ -987,7 +989,8 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
 }
 
 PipelineImpl::PipelineImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     MediaLog* media_log)
     : media_task_runner_(media_task_runner),
       media_log_(media_log),
@@ -996,7 +999,8 @@ PipelineImpl::PipelineImpl(
       volume_(kDefaultVolume),
       weak_factory_(this) {
   DVLOG(2) << __func__;
-  renderer_wrapper_.reset(new RendererWrapper(media_task_runner_, media_log_));
+  renderer_wrapper_.reset(new RendererWrapper(
+      media_task_runner_, std::move(main_task_runner), media_log_));
 }
 
 PipelineImpl::~PipelineImpl() {
