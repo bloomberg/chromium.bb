@@ -499,24 +499,25 @@ const char kEnableOutOfProcessHeapProfilingName[] =
     "Out of process heap profiling.";
 const char kEnableOutOfProcessHeapProfilingDescription[] =
     "Creates a profiling service that records stacktraces for all live, "
-    "malloced objects.";
-const char kEnableOutOfProcessHeapProfilingModeMinimal[] =
-    "Profile only the browser and GPU processes.";
-const char kEnableOutOfProcessHeapProfilingModeAll[] = "Profile all processes.";
-const char kEnableOutOfProcessHeapProfilingModeAllRenderers[] =
-    "Profiles all renderers.";
-const char kEnableOutOfProcessHeapProfilingModeBrowser[] =
-    "Profile only the browser processes.";
-const char kEnableOutOfProcessHeapProfilingModeGpu[] =
-    "Profile only the GPU processes.";
+    "malloced objects. Heap dumps can be obtained at chrome://tracing "
+    "[category:memory-infra] and chrome://memory-internals. This setting "
+    "controls which processes are profiled. As long as this setting is not "
+    "disabled, users can start profiling any given process in "
+    "chrome://memory-internals.";
+const char kEnableOutOfProcessHeapProfilingModeMinimal[] = "Browser and GPU";
+const char kEnableOutOfProcessHeapProfilingModeAll[] = "All processes";
+const char kEnableOutOfProcessHeapProfilingModeAllRenderers[] = "All renderers";
+const char kEnableOutOfProcessHeapProfilingModeBrowser[] = "Only browser";
+const char kEnableOutOfProcessHeapProfilingModeGpu[] = "Only GPU.";
 const char kEnableOutOfProcessHeapProfilingModeManual[] =
-    "By default, no processes are profiled. User may choose to start-profiling "
-    "processes via chrome://memory-internals.";
+    "None by default. Visit chrome://memory-internals to choose which "
+    "processes to profile.";
 const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
     "Profile a random sampling of renderer processes, ensuring only one is "
     "ever profiled at a time.";
+
 const char kOutOfProcessHeapProfilingKeepSmallAllocations[] =
-    "Keep track of even the small allocations in memlog heap dumps.";
+    "Emit small allocations in memlog heap dumps.";
 const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
     "By default, small allocations are pruned from the heap dump. This reduces "
     "the size of the compressed trace by 100x. If pruning is disabled, the "
@@ -529,17 +530,14 @@ const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
 const char kOOPHPStackModeName[] =
     "The type of stack to record for memlog heap dumps";
 const char kOOPHPStackModeDescription[] =
-    "By default, memlog heap dumps record a native stack, which requires "
-    "symbolization. It's also possible to record a pseudo stack using trace "
-    "events as identifiers. It's also possible to do a mix of both.";
-const char kOOPHPStackModeMixed[] =
-    "Record a mix of pseudo and native stack frames";
-const char kOOPHPStackModeNative[] =
-    "Record instruction addresses from unwinding the stack. The result "
-    "requires symbolization. Does not produce valid results on Android on "
-    "official arm32 builds. Requires a custom build with frame pointers "
-    "enabled.";
-const char kOOPHPStackModePseudo[] = "Uses trace events as identifiers";
+    "By default, memlog heap dumps record native stacks, which requires a "
+    "post-processing step to symbolize. Requires a custom build with frame "
+    "pointers to work on Android. It's also possible to record a pseudo stack "
+    "using trace events as identifiers. It's also possible to do a mix of "
+    "both.";
+const char kOOPHPStackModeMixed[] = "Mixed";
+const char kOOPHPStackModeNative[] = "Native";
+const char kOOPHPStackModePseudo[] = "Trace events";
 
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
