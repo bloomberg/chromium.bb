@@ -402,6 +402,8 @@ void CustomFrameViewAsh::SizeConstraintsChanged() {
 void CustomFrameViewAsh::ActivationChanged(bool active) {
   // The icons differ between active and inactive.
   header_view_->SchedulePaint();
+
+  frame_->non_client_view()->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
