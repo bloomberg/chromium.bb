@@ -10429,6 +10429,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.CompositorFrame.Quads" units="quads">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The total number of quads in all render passes in a CompositorFrame. This is
+    logged as the CompositorFrame is submitted to its surface.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Browser.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
@@ -10653,6 +10661,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Display.Draw.Quads" units="quads">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The total number of quads in all render passes in the CompositorFrame that
+    is produced by surface aggregation. This is logged once per frame, when the
+    frame is drawn.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
@@ -10794,6 +10811,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     checkerboarded on the rasterized tiles until the decode is finished, as
     opposed to synchronous decodes where the tile rasterization is blocked on
     the image decode completing.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.CompositorFrame.Quads" units="quads">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The total number of quads in all render passes in a CompositorFrame. This is
+    logged as the CompositorFrame is submitted to its surface.
   </summary>
 </histogram>
 
