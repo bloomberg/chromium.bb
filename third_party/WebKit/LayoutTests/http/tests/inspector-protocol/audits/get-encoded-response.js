@@ -11,7 +11,8 @@
   async function logResponse(url, encoding, quality, sizeOnly) {
     testRunner.log(`\nResults for ${url} encoding=${encoding} q=${quality} sizeOnly=${sizeOnly}`);
 
-    session.evaluate(`fetch(${JSON.stringify(url)})`);
+    session.evaluate(`fetch(${JSON.stringify(url)})
+                        .then(response => response.arrayBuffer())`);
 
     const requestId = (await dp.Network.onceResponseReceived()).params.requestId;
     const result = (await dp.Audits.getEncodedResponse({requestId, encoding, quality, sizeOnly})).result;

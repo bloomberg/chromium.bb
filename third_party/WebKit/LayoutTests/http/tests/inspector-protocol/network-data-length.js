@@ -10,7 +10,9 @@
   var pendingRequests = 0;
 
   function sendRequest(url) {
-    dp.Runtime.evaluate({expression: `fetch('${url}')`});
+    dp.Runtime.evaluate({expression: `
+      fetch('${url}')
+        .then(response => response.arrayBuffer())`});
     pendingRequests++;
   }
 
