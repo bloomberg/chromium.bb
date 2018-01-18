@@ -95109,8 +95109,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Variations.SeedFreshness" units="minutes">
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    The time interval between when the variations seed was last downloaded and
-    when it was used.
+    The time interval between when the variations seed was downloaded and when
+    it was used. Not recorded for expired seeds.
   </summary>
 </histogram>
 

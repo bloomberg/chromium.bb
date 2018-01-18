@@ -145,9 +145,9 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
   }
 
  private:
-  bool LoadSeed(VariationsSeed* seed,
-                std::string* seed_data,
-                std::string* base64_signature) override {
+  bool LoadSeedFromStore(VariationsSeed* seed,
+                         std::string* seed_data,
+                         std::string* base64_signature) override {
     *seed = CreateTestSeed();
     *seed_data = kTestSeedData;
     *base64_signature = kTestSeedSignature;
