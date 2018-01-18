@@ -30,7 +30,7 @@
   }
 
   function step4() {
-    TestRunner.domModel.undo();
+    SDK.domModelUndoStack.undo();
     ElementsTestRunner.selectNodeAndWaitForStyles('other', step5);
   }
 
@@ -41,7 +41,7 @@
   }
 
   function step6() {
-    TestRunner.domModel.redo();
+    SDK.domModelUndoStack.redo();
     ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step7);
   }
 

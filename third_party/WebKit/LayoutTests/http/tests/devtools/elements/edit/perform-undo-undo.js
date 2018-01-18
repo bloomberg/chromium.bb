@@ -31,7 +31,7 @@
   }
 
   async function step3() {
-    await TestRunner.domModel.undo();
+    await SDK.domModelUndoStack.undo();
     TestRunner.addResult('===== Undo 1 =====');
     ElementsTestRunner.dumpElementsTree(containerNode);
 

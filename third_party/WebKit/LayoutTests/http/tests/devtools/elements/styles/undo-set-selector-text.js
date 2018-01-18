@@ -31,7 +31,7 @@
   function step2() {
     TestRunner.addResult('=== After selector modification ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
-    TestRunner.domModel.undo();
+    SDK.domModelUndoStack.undo();
     ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step3);
   }
 
@@ -39,7 +39,7 @@
     TestRunner.addResult('=== After undo ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
 
-    TestRunner.domModel.redo();
+    SDK.domModelUndoStack.redo();
     ElementsTestRunner.selectNodeAndWaitForStyles('other', step4);
   }
 

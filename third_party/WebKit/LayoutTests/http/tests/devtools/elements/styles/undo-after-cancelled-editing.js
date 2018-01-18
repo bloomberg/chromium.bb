@@ -52,7 +52,7 @@
 
     function undoStyles(next) {
       ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-      TestRunner.domModel.undo();
+      SDK.domModelUndoStack.undo();
       ElementsTestRunner.waitForStyles('inspected', next, true);
     },
 

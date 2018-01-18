@@ -37,7 +37,7 @@
   function step2() {
     TestRunner.addResult('=== After key modification ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
-    TestRunner.domModel.undo();
+    SDK.domModelUndoStack.undo();
     ElementsTestRunner.waitForStyles('element', step3, true);
   }
 
@@ -45,7 +45,7 @@
     TestRunner.addResult('=== After undo ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
 
-    TestRunner.domModel.redo();
+    SDK.domModelUndoStack.redo();
     ElementsTestRunner.waitForStyles('element', step4, true);
   }
 

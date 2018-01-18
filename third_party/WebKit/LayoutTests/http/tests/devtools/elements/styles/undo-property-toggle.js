@@ -27,7 +27,7 @@
     var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('font-weight');
     ElementsTestRunner.dumpStyleTreeItem(treeItem, '');
 
-    TestRunner.domModel.undo();
+    SDK.domModelUndoStack.undo();
     ElementsTestRunner.waitForStyles('container', step3);
   }
 
@@ -36,7 +36,7 @@
     var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('font-weight');
     ElementsTestRunner.dumpStyleTreeItem(treeItem, '');
 
-    TestRunner.domModel.redo();
+    SDK.domModelUndoStack.redo();
     ElementsTestRunner.waitForStyles('container', step4);
   }
 
