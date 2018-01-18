@@ -535,7 +535,14 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
         gl::GLImageIOSurface::FromGLImage(params.image);
     DCHECK(io_surface_image);
     io_surface = io_surface_image->io_surface();
-    cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
+    // Temporary investagtive fix for https://crbug.com/702369. It appears upon
+    // investigation that not using the original CVPixelBufferRef which came
+    // from the VTDecompressionSession prevents or minimizes flashing of
+    // incorrect content. Disable the CVPixelBufferRef path for the moment to
+    // determine if this fixes the bug for users.
+    // TODO(ccameron): If this indeed causes the bug to disappear, then
+    // extirpate the CVPixelBufferRef path.
+    // cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
   }
 
   content_layers.push_back(
