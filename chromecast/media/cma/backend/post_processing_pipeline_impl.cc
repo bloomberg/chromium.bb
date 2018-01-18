@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/scoped_native_library.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
@@ -36,7 +35,7 @@ PostProcessingPipelineFactoryImpl::CreatePipeline(
     const std::string& name,
     const base::ListValue* filter_description_list,
     int num_channels) {
-  return base::MakeUnique<PostProcessingPipelineImpl>(
+  return std::make_unique<PostProcessingPipelineImpl>(
       name, filter_description_list, num_channels);
 }
 

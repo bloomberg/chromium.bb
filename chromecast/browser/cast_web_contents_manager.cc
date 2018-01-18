@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -38,7 +37,7 @@ std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
     bool is_headless,
     bool enable_touch_input) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::MakeUnique<CastWebView>(
+  return std::make_unique<CastWebView>(
       delegate, this, browser_context_, site_instance, transparent,
       allow_media_access, is_headless, enable_touch_input);
 }

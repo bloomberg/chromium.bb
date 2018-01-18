@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -44,7 +45,7 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
     web_contents_ = NavigateToURL(gurl);
     WaitForLoadStop(web_contents_);
 
-    blocker_ = base::MakeUnique<CastMediaBlocker>(
+    blocker_ = std::make_unique<CastMediaBlocker>(
         content::MediaSession::Get(web_contents_));
   }
 

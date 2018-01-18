@@ -5,10 +5,10 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
@@ -43,7 +43,7 @@ CastAudioManager::CastAudioManager(
       backend_factory_(std::move(backend_factory)),
       backend_task_runner_(std::move(backend_task_runner)) {
   if (use_mixer)
-    mixer_ = base::MakeUnique<CastAudioMixer>(this);
+    mixer_ = std::make_unique<CastAudioMixer>(this);
 }
 
 CastAudioManager::~CastAudioManager() = default;

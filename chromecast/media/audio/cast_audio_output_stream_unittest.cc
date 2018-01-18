@@ -153,7 +153,7 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override {
     DCHECK(!audio_decoder_);
-    audio_decoder_ = base::MakeUnique<FakeAudioDecoder>(params_);
+    audio_decoder_ = std::make_unique<FakeAudioDecoder>(params_);
     return audio_decoder_.get();
   }
   VideoDecoder* CreateVideoDecoder() override {
@@ -211,14 +211,14 @@ class CastAudioOutputStreamTest : public ::testing::Test {
 
     CHECK(media_thread_.Start());
     auto backend_factory =
-        base::MakeUnique<NiceMock<MockMediaPipelineBackendFactory>>();
+        std::make_unique<NiceMock<MockMediaPipelineBackendFactory>>();
     ON_CALL(*backend_factory, CreateBackend(_))
         .WillByDefault(Invoke([this](const MediaPipelineDeviceParams& params) {
           media_pipeline_backend_ = new FakeMediaPipelineBackend(params);
           return base::WrapUnique(media_pipeline_backend_);
         }));
-    audio_manager_ = base::MakeUnique<CastAudioManager>(
-        base::MakeUnique<::media::TestAudioThread>(), nullptr,
+    audio_manager_ = std::make_unique<CastAudioManager>(
+        std::make_unique<::media::TestAudioThread>(), nullptr,
         std::move(backend_factory), media_thread_.task_runner(), false);
   }
 

@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
@@ -37,8 +36,8 @@ ThreadHealthChecker::Internal::~Internal() {}
 void ThreadHealthChecker::Internal::StartHealthCheck() {
   DCHECK(doctor_task_runner_->BelongsToCurrentThread());
   DETACH_FROM_THREAD(thread_checker_);
-  ok_timer_ = base::MakeUnique<base::OneShotTimer>();
-  failure_timer_ = base::MakeUnique<base::OneShotTimer>();
+  ok_timer_ = std::make_unique<base::OneShotTimer>();
+  failure_timer_ = std::make_unique<base::OneShotTimer>();
   ScheduleHealthCheck();
 }
 

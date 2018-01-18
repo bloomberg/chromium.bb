@@ -6,7 +6,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
@@ -53,8 +52,8 @@ TEST_F(CastFeaturesTest, EnableDisableMultipleBooleanFeatures) {
                                base::FEATURE_ENABLED_BY_DEFAULT};
 
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   features->SetBoolean(kTestBooleanFeatureName, false);
   features->SetBoolean(kTestBooleanFeatureName2, false);
   features->SetBoolean(kTestBooleanFeatureName3, true);
@@ -76,9 +75,9 @@ TEST_F(CastFeaturesTest, EnableSingleFeatureWithParams) {
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
   // Pass params via DCS.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("foo_key", "foo");
   params->SetString("bar_key", "bar");
   params->SetString("doub_key", "3.14159");
@@ -117,8 +116,8 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
                                base::FEATURE_ENABLED_BY_DEFAULT};
 
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   features->SetBoolean(kTestBooleanFeatureName, false);
   features->SetBoolean(kTestBooleanFeatureName2, false);
   features->SetBoolean(kTestBooleanFeatureName3, true);
@@ -127,7 +126,7 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
   // Also override a param feature with DCS config.
   base::Feature params_feature{kTestParamsFeatureName,
                                base::FEATURE_ENABLED_BY_DEFAULT};
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("foo_key", "foo");
   features->Set(kTestParamsFeatureName, std::move(params));
 
@@ -159,8 +158,8 @@ TEST_F(CastFeaturesTest, CommandLineOverridesDcsAndDefault) {
 
 TEST_F(CastFeaturesTest, SetEmptyExperiments) {
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
 
   InitializeFeatureList(*features, *experiments, "", "");
   ASSERT_EQ(0u, GetDCSExperimentIds().size());
@@ -168,8 +167,8 @@ TEST_F(CastFeaturesTest, SetEmptyExperiments) {
 
 TEST_F(CastFeaturesTest, SetGoodExperiments) {
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
 
   int32_t ids[] = {12345678, 123, 0, -1};
   std::unordered_set<int32_t> expected;
@@ -184,8 +183,8 @@ TEST_F(CastFeaturesTest, SetGoodExperiments) {
 
 TEST_F(CastFeaturesTest, SetSomeGoodExperiments) {
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   experiments->AppendInteger(1234);
   experiments->AppendString("foobar");
   experiments->AppendBoolean(true);
@@ -202,8 +201,8 @@ TEST_F(CastFeaturesTest, SetSomeGoodExperiments) {
 
 TEST_F(CastFeaturesTest, SetAllBadExperiments) {
   // Override those features with DCS configs.
-  auto experiments = base::MakeUnique<base::ListValue>();
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto experiments = std::make_unique<base::ListValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   experiments->AppendString("foobar");
   experiments->AppendBoolean(true);
   experiments->AppendDouble(1.23456);
@@ -215,11 +214,11 @@ TEST_F(CastFeaturesTest, SetAllBadExperiments) {
 }
 
 TEST_F(CastFeaturesTest, GetOverriddenFeaturesForStorage) {
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   features->SetBoolean("bool_key", false);
   features->SetBoolean("bool_key_2", true);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("foo_key", "foo");
   params->SetString("bar_key", "bar");
   params->SetDouble("doub_key", 3.14159);
@@ -258,13 +257,13 @@ TEST_F(CastFeaturesTest, GetOverriddenFeaturesForStorage) {
 }
 
 TEST_F(CastFeaturesTest, GetOverriddenFeaturesForStorage_BadParams) {
-  auto features = base::MakeUnique<base::DictionaryValue>();
+  auto features = std::make_unique<base::DictionaryValue>();
   features->SetBoolean("bool_key", false);
   features->SetString("str_key", "foobar");
   features->SetInteger("int_key", 12345);
   features->SetDouble("doub_key", 4.5678);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("foo_key", "foo");
   features->Set("params_key", std::move(params));
 

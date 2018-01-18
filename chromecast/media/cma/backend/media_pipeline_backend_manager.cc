@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/chromecast_features.h"
@@ -70,7 +69,7 @@ std::unique_ptr<MediaPipelineBackend>
 MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return base::MakeUnique<MediaPipelineBackendWrapper>(params, this);
+  return std::make_unique<MediaPipelineBackendWrapper>(params, this);
 }
 
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {

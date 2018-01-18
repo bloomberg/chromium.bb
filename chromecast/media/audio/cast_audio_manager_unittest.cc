@@ -4,6 +4,8 @@
 
 #include "chromecast/media/audio/cast_audio_manager.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/test/test_message_loop.h"
 #include "chromecast/media/cma/test/mock_media_pipeline_backend.h"
@@ -35,8 +37,8 @@ class CastAudioManagerTest : public testing::Test {
     CHECK(media_thread_.Start());
 
     backend_factory_ = new MockMediaPipelineBackendFactory();
-    audio_manager_ = base::MakeUnique<CastAudioManager>(
-        base::MakeUnique<::media::TestAudioThread>(), &audio_log_factory_,
+    audio_manager_ = std::make_unique<CastAudioManager>(
+        std::make_unique<::media::TestAudioThread>(), &audio_log_factory_,
         base::WrapUnique(backend_factory_), media_thread_.task_runner(), false);
   }
 
@@ -57,7 +59,7 @@ TEST_F(CastAudioManagerTest, MakeAudioOutputStreamProxy) {
   EXPECT_CALL(audio_decoder, SetDelegate(_)).Times(1);
   EXPECT_CALL(audio_decoder, SetConfig(_)).WillOnce(Return(true));
 
-  auto backend = base::MakeUnique<StrictMock<MockMediaPipelineBackend>>();
+  auto backend = std::make_unique<StrictMock<MockMediaPipelineBackend>>();
   EXPECT_CALL(*backend, CreateAudioDecoder()).WillOnce(Return(&audio_decoder));
   EXPECT_CALL(*backend, Initialize()).WillOnce(Return(true));
 

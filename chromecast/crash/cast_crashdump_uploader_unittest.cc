@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/cast_crashdump_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,7 +35,7 @@ using testing::_;
 using testing::Return;
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWhenInitFails) {
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
   EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(false));
 
   CastCrashdumpData data;
@@ -53,7 +52,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWhenInitFails) {
 }
 
 TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;
@@ -77,7 +76,7 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
 }
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidPathname) {
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
   EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
   EXPECT_CALL(*m, SendRequest(_, _, _, _, _)).Times(0);
 
@@ -111,7 +110,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
 
   // Test with empty product name.
   data.product = "";
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
   EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
   CastCrashdumpUploader uploader_no_product(data, std::move(m));
   ASSERT_FALSE(uploader_no_product.Upload(nullptr));
@@ -119,7 +118,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
 
   // Test with empty product version.
   data.version = "";
-  m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
   EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
   CastCrashdumpUploader uploader_no_version(data, std::move(m));
   ASSERT_FALSE(uploader_no_version.Upload(nullptr));
@@ -127,14 +126,14 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
 
   // Test with empty client GUID.
   data.guid = "";
-  m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
   EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
   CastCrashdumpUploader uploader_no_guid(data, std::move(m));
   ASSERT_FALSE(uploader_no_guid.Upload(nullptr));
 }
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;
@@ -158,7 +157,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
 }
 
 TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
-  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  auto m = std::make_unique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;

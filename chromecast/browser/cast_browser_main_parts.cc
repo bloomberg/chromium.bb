@@ -378,7 +378,7 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
   cast_browser_process_->SetMetricsHelper(
-      base::MakeUnique<metrics::CastMetricsHelper>(
+      std::make_unique<metrics::CastMetricsHelper>(
           base::ThreadTaskRunnerHandle::Get()));
 
 #if defined(OS_ANDROID)
@@ -413,7 +413,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   }
   breakpad::CrashDumpObserver::Create();
   breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-      base::MakeUnique<breakpad::ChildProcessCrashObserver>(
+      std::make_unique<breakpad::ChildProcessCrashObserver>(
           crash_dumps_dir, kAndroidMinidumpDescriptor));
 #else
   base::FilePath home_dir;
@@ -454,7 +454,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen()));
   DCHECK(!display::Screen::GetScreen());
   display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
-  display_configurator_ = base::MakeUnique<CastDisplayConfigurator>(
+  display_configurator_ = std::make_unique<CastDisplayConfigurator>(
       cast_browser_process_->cast_screen());
 #endif  // defined(USE_AURA)
 
@@ -484,15 +484,15 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // defined(OS_FUCHSIA)
 
   cast_browser_process_->SetBrowserContext(
-      base::MakeUnique<CastBrowserContext>(url_request_context_factory_));
+      std::make_unique<CastBrowserContext>(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
-      base::MakeUnique<metrics::CastMetricsServiceClient>(
+      std::make_unique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->pref_service(),
           content::BrowserContext::GetDefaultStoragePartition(
               cast_browser_process_->browser_context())
               ->GetURLRequestContext()));
   cast_browser_process_->SetRemoteDebuggingServer(
-      base::MakeUnique<RemoteDebuggingServer>(
+      std::make_unique<RemoteDebuggingServer>(
           cast_browser_process_->browser_client()
               ->EnableRemoteDebuggingImmediately()));
 

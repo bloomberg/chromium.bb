@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
@@ -122,7 +121,7 @@ class CastAudioMixer::MixerProxyStream
       return;
     source_callback_ = source_callback;
     proxy_ =
-        base::MakeUnique<ResamplerProxy>(this, input_params_, output_params_);
+        std::make_unique<ResamplerProxy>(this, input_params_, output_params_);
     audio_mixer_->AddInput(proxy_.get());
   }
 

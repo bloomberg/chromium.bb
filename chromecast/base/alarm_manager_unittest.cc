@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -51,11 +50,11 @@ TEST_F(AlarmManagerTest, AlarmNotFire) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
   std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
@@ -74,11 +73,11 @@ TEST_F(AlarmManagerTest, AlarmFire) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add an alarm.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
@@ -105,10 +104,10 @@ TEST_F(AlarmManagerTest, AlarmPast) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add an alarm in the past. Should fire right away.
   base::Time alarm_time = base::Time::Now() - base::TimeDelta::FromMinutes(10);
@@ -127,11 +126,11 @@ TEST_F(AlarmManagerTest, AlarmTimeJump) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add an alarm. The time jumps to the future.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
@@ -151,11 +150,11 @@ TEST_F(AlarmManagerTest, AlarmJumpFuture) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add an alarm. The time jumps far into the future.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
@@ -177,11 +176,11 @@ TEST_F(AlarmManagerTest, AlarmMultiple) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
@@ -223,11 +222,11 @@ TEST_F(AlarmManagerTest, AlarmMultipleReverseOrder) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
@@ -271,11 +270,11 @@ TEST_F(AlarmManagerTest, AlarmMultipleSameTime) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
@@ -315,11 +314,11 @@ TEST_F(AlarmManagerTest, AlarmMultipleShuffle) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(15);
@@ -364,11 +363,11 @@ TEST_F(AlarmManagerTest, AlarmTwice) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(15);
@@ -408,11 +407,11 @@ TEST_F(AlarmManagerTest, AlarmTwice) {
 
 TEST_F(AlarmManagerTest, AlarmCancel) {
   std::unique_ptr<WallClockDependantTask> task1 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   std::unique_ptr<WallClockDependantTask> task2 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   std::unique_ptr<WallClockDependantTask> task3 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   ASSERT_FALSE(task1->fired_);
   ASSERT_FALSE(task2->fired_);
   ASSERT_FALSE(task3->fired_);
@@ -420,11 +419,11 @@ TEST_F(AlarmManagerTest, AlarmCancel) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
@@ -457,11 +456,11 @@ TEST_F(AlarmManagerTest, AlarmCancel) {
 
 TEST_F(AlarmManagerTest, AlarmDeleteHandle) {
   std::unique_ptr<WallClockDependantTask> task1 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   std::unique_ptr<WallClockDependantTask> task2 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   std::unique_ptr<WallClockDependantTask> task3 =
-      base::MakeUnique<WallClockDependantTask>();
+      std::make_unique<WallClockDependantTask>();
   ASSERT_FALSE(task1->fired_);
   ASSERT_FALSE(task2->fired_);
   ASSERT_FALSE(task3->fired_);
@@ -469,11 +468,11 @@ TEST_F(AlarmManagerTest, AlarmDeleteHandle) {
   // Create the AlarmManager.
   base::Time now = base::Time::Now();
   std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+      std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(now);
   base::SimpleTestClock* clock = test_clock.get();
   std::unique_ptr<AlarmManager> manager =
-      base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
+      std::make_unique<AlarmManager>(std::move(test_clock), task_runner_);
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);

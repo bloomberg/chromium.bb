@@ -64,13 +64,13 @@ std::unique_ptr<DeviceCapabilities> DeviceCapabilities::Create() {
 std::unique_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
   DeviceCapabilities* capabilities = new DeviceCapabilitiesImpl;
   capabilities->SetCapability(kKeyBluetoothSupported,
-                              base::MakeUnique<base::Value>(false));
+                              std::make_unique<base::Value>(false));
   capabilities->SetCapability(kKeyDisplaySupported,
-                              base::MakeUnique<base::Value>(true));
+                              std::make_unique<base::Value>(true));
   capabilities->SetCapability(kKeyHiResAudioSupported,
-                              base::MakeUnique<base::Value>(false));
+                              std::make_unique<base::Value>(false));
   capabilities->SetCapability(kKeyAssistantSupported,
-                              base::MakeUnique<base::Value>(true));
+                              std::make_unique<base::Value>(true));
   return base::WrapUnique(capabilities);
 }
 
@@ -161,7 +161,7 @@ void DeviceCapabilitiesImpl::Register(const std::string& key,
   base::AutoLock auto_lock(validation_lock_);
   // Check that a validator has not already been registered for this key
   DCHECK_EQ(0u, validator_map_.count(key));
-  validator_map_[key] = base::MakeUnique<ValidatorInfo>(validator);
+  validator_map_[key] = std::make_unique<ValidatorInfo>(validator);
 }
 
 void DeviceCapabilitiesImpl::Unregister(const std::string& key,

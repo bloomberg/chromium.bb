@@ -5,6 +5,7 @@
 #include "chromecast/base/cast_features.h"
 
 #include <cstdint>
+#include <memory>
 #include <unordered_set>
 
 #include "base/feature_list.h"
@@ -195,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, PRE_TestParamsActivateOnBoot) {
 
   // Set the features to be used on next boot.
   base::DictionaryValue features;
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("bool_param", true);
   params->SetBoolean("bool_param_2", false);
   params->SetString("str_param", "foo");
@@ -253,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
 
   // ... and bad parameters.
   features.SetString("test_feat_22", "False");
-  features.Set("test_feat_23", base::MakeUnique<base::ListValue>());
+  features.Set("test_feat_23", std::make_unique<base::ListValue>());
 
   SetFeatures(features);
 }

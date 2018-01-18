@@ -277,7 +277,7 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
       switches::kEnableLocalFileAccesses)) {
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
-        base::MakeUnique<net::FileProtocolHandler>(
+        std::make_unique<net::FileProtocolHandler>(
             base::CreateTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BACKGROUND,
                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));

@@ -11,13 +11,13 @@
 #include <sys/file.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -274,7 +274,7 @@ bool SynchronizedMinidumpManager::ParseFiles() {
   std::vector<std::string> lines = base::SplitString(
       lockfile, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> dumps = std::make_unique<base::ListValue>();
 
   // Validate dumps
   for (const std::string& line : lines) {
@@ -317,14 +317,14 @@ bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
 
 bool SynchronizedMinidumpManager::InitializeFiles() {
   std::unique_ptr<base::DictionaryValue> metadata =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
 
-  auto ratelimit_fields = base::MakeUnique<base::DictionaryValue>();
+  auto ratelimit_fields = std::make_unique<base::DictionaryValue>();
   ratelimit_fields->SetDouble(kLockfileRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
   metadata->Set(kLockfileRatelimitKey, std::move(ratelimit_fields));
 
-  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> dumps = std::make_unique<base::ListValue>();
 
   return WriteFiles(dumps.get(), metadata.get());
 }

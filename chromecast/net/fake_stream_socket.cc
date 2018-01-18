@@ -10,7 +10,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/next_proto.h"
@@ -76,7 +75,7 @@ class SocketBuffer {
 
 FakeStreamSocket::FakeStreamSocket(const net::IPEndPoint& local_address)
     : local_address_(local_address),
-      buffer_(base::MakeUnique<SocketBuffer>()),
+      buffer_(std::make_unique<SocketBuffer>()),
       peer_(nullptr) {}
 
 FakeStreamSocket::~FakeStreamSocket() {

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -39,7 +38,7 @@ std::unique_ptr<base::ListValue> ParseLockFile(const std::string& path) {
   std::vector<std::string> lines = base::SplitString(
       lockfile_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> dumps = std::make_unique<base::ListValue>();
 
   // Validate dumps
   for (const std::string& line : lines) {
@@ -83,7 +82,7 @@ bool WriteMetadataFile(const std::string& path, const base::Value* metadata) {
 
 std::unique_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
   std::unique_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return base::MakeUnique<DumpInfo>(value.get());
+  return std::make_unique<DumpInfo>(value.get());
 }
 
 bool FetchDumps(const std::string& lockfile_path,
@@ -105,21 +104,21 @@ bool FetchDumps(const std::string& lockfile_path,
 
 bool ClearDumps(const std::string& lockfile_path) {
   std::unique_ptr<base::ListValue> dump_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   return WriteLockFile(lockfile_path, dump_list.get()) == 0;
 }
 
 bool CreateFiles(const std::string& lockfile_path,
                  const std::string& metadata_path) {
   std::unique_ptr<base::DictionaryValue> metadata =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
 
-  auto ratelimit_fields = base::MakeUnique<base::DictionaryValue>();
+  auto ratelimit_fields = std::make_unique<base::DictionaryValue>();
   ratelimit_fields->SetDouble(kRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
   metadata->Set(kRatelimitKey, std::move(ratelimit_fields));
 
-  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> dumps = std::make_unique<base::ListValue>();
 
   return WriteLockFile(lockfile_path, dumps.get()) == 0 &&
          WriteMetadataFile(metadata_path, metadata.get());

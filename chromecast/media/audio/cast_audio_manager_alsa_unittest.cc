@@ -4,6 +4,8 @@
 
 #include "chromecast/media/audio/cast_audio_manager_alsa.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/test/test_message_loop.h"
 #include "chromecast/media/cma/test/mock_media_pipeline_backend_factory.h"
@@ -38,8 +40,8 @@ class CastAudioManagerAlsaTest : public testing::Test {
     CHECK(media_thread_.Start());
 
     backend_factory_ = new MockMediaPipelineBackendFactory();
-    audio_manager_ = base::MakeUnique<CastAudioManagerAlsa>(
-        base::MakeUnique<::media::TestAudioThread>(), &audio_log_factory_,
+    audio_manager_ = std::make_unique<CastAudioManagerAlsa>(
+        std::make_unique<::media::TestAudioThread>(), &audio_log_factory_,
         base::WrapUnique(backend_factory_), media_thread_.task_runner(), false);
   }
 

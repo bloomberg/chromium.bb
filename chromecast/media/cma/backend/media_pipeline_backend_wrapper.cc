@@ -74,7 +74,7 @@ MediaPipelineBackendWrapper::CreateAudioDecoder() {
     delegate = backend_manager_->buffer_delegate();
   }
 
-  audio_decoder_ = base::MakeUnique<AudioDecoderWrapper>(
+  audio_decoder_ = std::make_unique<AudioDecoderWrapper>(
       backend_manager_, real_decoder, content_type_, delegate);
   return audio_decoder_.get();
 }
