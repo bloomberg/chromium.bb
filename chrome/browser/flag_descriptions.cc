@@ -1627,11 +1627,6 @@ const char kWebvrDescription[] =
     "will also allow WebVR content on insecure origins to access these "
     "powerful APIs, and may pose a security risk.";
 
-const char kWebVrExperimentalRenderingName[] =
-    "WebVR experimental rendering optimizations";
-const char kWebVrExperimentalRenderingDescription[] =
-    "Experimental rendering path optimizations for WebVR.";
-
 const char kWebXrName[] = "WebXR Device API";
 const char kWebXrDescription[] =
     "Allow web applications to access experimental APIs to interact with "
@@ -2182,6 +2177,14 @@ const char kThirdPartyDoodlesName[] =
 const char kThirdPartyDoodlesDescription[] =
     "Enables fetching and displaying Doodles on the NTP for third-party search "
     "engines.";
+
+const char kWebXrRenderPathName[] = "WebXR presentation render path";
+const char kWebXrRenderPathDescription[] =
+    "Render path to use for WebXR presentation (including WebVR)";
+const char kWebXrRenderPathChoiceClientWaitDescription[] =
+    "ClientWait (Baseline)";
+const char kWebXrRenderPathChoiceGpuFenceDescription[] =
+    "GpuFence (Android N+)";
 
 // Non-Android -----------------------------------------------------------------
 

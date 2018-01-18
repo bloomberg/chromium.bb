@@ -998,9 +998,6 @@ extern const char kWebrtcStunOriginDescription[];
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
 
-extern const char kWebVrExperimentalRenderingName[];
-extern const char kWebVrExperimentalRenderingDescription[];
-
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
 
@@ -1327,6 +1324,11 @@ extern const char kUpdateMenuItemDescription[];
 
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
+
+extern const char kWebXrRenderPathName[];
+extern const char kWebXrRenderPathDescription[];
+extern const char kWebXrRenderPathChoiceClientWaitDescription[];
+extern const char kWebXrRenderPathChoiceGpuFenceDescription[];
 
 // Non-Android ----------------------------------------------------------------
 

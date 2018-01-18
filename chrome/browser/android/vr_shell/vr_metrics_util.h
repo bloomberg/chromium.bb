@@ -16,9 +16,21 @@ namespace vr_shell {
 
 class VrMetricsUtil {
  public:
+  // Ensure that this stays in sync with XRRenderPath in enums.xml. Do
+  // not reuse or renumber entries.
+  enum class XRRenderPath : int {
+    kClientWait = 0,
+    kGpuFence = 1,
+
+    // This must be last.
+    kCount
+  };
+
   static void LogGvrVersionForVrViewerType(gvr::ViewerType viewer_type,
                                            const VrCoreInfo& vr_core_info);
   static void LogVrViewerType(gvr::ViewerType viewer_type);
+
+  static void LogXrRenderPathUsed(XRRenderPath);
 
  private:
   static device::VrViewerType GetVrViewerType(gvr::ViewerType viewer_type);
