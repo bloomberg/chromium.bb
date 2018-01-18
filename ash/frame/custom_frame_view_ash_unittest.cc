@@ -263,7 +263,7 @@ TEST_F(CustomFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
 // Verify that when in tablet mode with a non maximized window, the height of
 // the header is non zero.
 TEST_F(CustomFrameViewAshTest, FrameShownInTabletModeForNonMaximizedWindows) {
-  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  auto* delegate = new CustomFrameTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -288,12 +288,8 @@ TEST_F(CustomFrameViewAshTest,
 }
 
 TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
-  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  views::Widget* widget = new views::Widget();
-  views::Widget::InitParams params;
-  params.context = CurrentContext();
-  params.delegate = delegate;
-  widget->Init(params);
+  auto* delegate = new CustomFrameTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
   widget->Maximize();
 
@@ -320,13 +316,26 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
       delegate->GetCustomFrameViewTopBorderHeight());
 }
 
+// Verify windows that are minimized and then entered into tablet mode will have
+// no header when unminimized in tablet mode.
+TEST_F(CustomFrameViewAshTest, MinimizedWindowsInTabletMode) {
+  std::unique_ptr<views::Widget> widget(
+      CreateWidget(new CustomFrameTestWidgetDelegate));
+  widget->GetNativeWindow()->SetProperty(aura::client::kResizeBehaviorKey,
+                                         ui::mojom::kResizeBehaviorCanMaximize);
+  widget->Show();
+  widget->Maximize();
+  widget->Minimize();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  widget->Show();
+  EXPECT_EQ(widget->non_client_view()->bounds(),
+            widget->client_view()->bounds());
+}
+
 TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  auto* widget = new views::Widget();
-  views::Widget::InitParams params;
-  params.context = CurrentContext();
-  params.delegate = delegate;
-  widget->Init(params);
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
 
   // Verify the header is not painted in overview mode and painted when not in
@@ -339,26 +348,21 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
 }
 
 TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
-  auto set_up_widget = [this](CustomFrameTestWidgetDelegate* delegate,
-                              views::Widget* widget) {
-    views::Widget::InitParams params;
-    params.context = CurrentContext();
-    params.delegate = delegate;
-    widget->Init(params);
+  auto create_widget = [this](CustomFrameTestWidgetDelegate* delegate) {
+    std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
     widget->Show();
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
         ui::mojom::kResizeBehaviorCanMaximize |
             ui::mojom::kResizeBehaviorCanResize);
+    return widget;
   };
 
   auto* delegate1 = new CustomFrameTestWidgetDelegate();
-  auto* widget1 = new views::Widget();
+  auto widget1 = create_widget(delegate1);
   auto* delegate2 = new CustomFrameTestWidgetDelegate();
-  auto* widget2 = new views::Widget();
-  set_up_widget(delegate1, widget1);
-  set_up_widget(delegate2, widget2);
+  auto widget2 = create_widget(delegate2);
 
   // Verify that when one window is snapped, the header is drawn for the snapped
   // window, but not drawn for the window still in overview.
@@ -415,12 +419,8 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   ash::AcceleratorController* controller =
       ash::Shell::Get()->accelerator_controller();
 
-  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  views::Widget* widget = new views::Widget();
-  views::Widget::InitParams params;
-  params.context = CurrentContext();
-  params.delegate = delegate;
-  widget->Init(params);
+  auto* delegate = new CustomFrameTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
 
   ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
@@ -455,7 +455,8 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
 
   // Back button is now enabled, so clicking on it should generate
   // back key sequence.
-  generator.MoveMouseTo(header_view->GetBoundsInScreen().CenterPoint());
+  generator.MoveMouseTo(
+      header_view->back_button()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_EQ(1u, target_back_press.count());
   EXPECT_EQ(1u, target_back_release.count());
