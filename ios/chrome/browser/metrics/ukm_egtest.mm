@@ -156,6 +156,12 @@ void OpenNewIncognitoTab() {
   GREYAssert(IsIncognitoMode(), @"Failed to switch to incognito mode.");
 }
 
+void CloseCurrentIncognitoTab() {
+  NSUInteger incognito_tab_count = GetIncognitoTabCount();
+  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
+}
+
 void CloseAllIncognitoTabs() {
   GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
   [ChromeEarlGrey waitForIncognitoTabCount:0];
@@ -167,6 +173,12 @@ void CloseAllIncognitoTabs() {
         performAction:grey_tap()];
   }
   GREYAssert(!IsIncognitoMode(), @"Failed to switch to normal mode.");
+}
+
+void OpenNewRegularTab() {
+  NSUInteger tab_count = chrome_test_util::GetMainTabCount();
+  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
 }
 
 // Signs in to sync.
@@ -276,16 +288,25 @@ void SignOut() {
 }
 
 // Make sure that UKM is disabled while an incognito tab is open.
-- (void)testIncognito {
+- (void)testRegularPlusIncognito {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   OpenNewIncognitoTab();
+  AssertUKMEnabled(false);
 
+  // Opening another regular tab mustn't enable UKM.
+  OpenNewRegularTab();
+  AssertUKMEnabled(false);
+
+  // Opening and closing an incognito tab mustn't enable UKM.
+  OpenNewIncognitoTab();
+  AssertUKMEnabled(false);
+  CloseCurrentIncognitoTab();
   AssertUKMEnabled(false);
 
   CloseAllIncognitoTabs();
-
   AssertUKMEnabled(true);
+
   // Client ID should not have been reset.
   GREYAssert(original_client_id == metrics::UkmEGTestHelper::client_id(),
              @"Client ID was reset.");
