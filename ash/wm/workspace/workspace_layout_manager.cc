@@ -42,7 +42,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
       root_window_(window->GetRootWindow()),
       root_window_controller_(RootWindowController::ForWindow(root_window_)),
       work_area_in_parent_(
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_)),
+          screen_util::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr),
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
@@ -301,7 +301,7 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
   }
 
   const gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_));
   if (work_area != work_area_in_parent_) {
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
@@ -357,7 +357,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
          event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
-  work_area_in_parent_ = ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_);
+  work_area_in_parent_ = screen_util::GetDisplayWorkAreaBoundsInParent(window_);
 
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen

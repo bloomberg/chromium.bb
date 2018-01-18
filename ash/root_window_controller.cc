@@ -165,7 +165,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 
   const bool update_bounds = state->IsNormalOrSnapped() || state->IsMinimized();
   gfx::Rect work_area_in_new_parent =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(new_parent);
+      screen_util::GetDisplayWorkAreaBoundsInParent(new_parent);
 
   gfx::Rect local_bounds;
   if (update_bounds) {

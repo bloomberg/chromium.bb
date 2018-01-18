@@ -17,39 +17,35 @@
 
 namespace ash {
 
-// static
-gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
+namespace screen_util {
+
+gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window) {
   if (Shelf::ForWindow(window)->shelf_widget())
     return GetDisplayWorkAreaBoundsInParent(window);
   return GetDisplayBoundsInParent(window);
 }
 
-// static
-gfx::Rect ScreenUtil::GetDisplayBoundsInParent(aura::Window* window) {
+gfx::Rect GetDisplayBoundsInParent(aura::Window* window) {
   gfx::Rect result =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds();
   ::wm::ConvertRectFromScreen(window->parent(), &result);
   return result;
 }
 
-// static
-gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
+gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
   gfx::Rect result =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   ::wm::ConvertRectFromScreen(window->parent(), &result);
   return result;
 }
 
-// static
-gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParentForLockScreen(
-    aura::Window* window) {
+gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
   gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
   ::wm::ConvertRectFromScreen(window->parent(), &bounds);
   return bounds;
 }
 
-// static
-gfx::Rect ScreenUtil::GetDisplayBoundsWithShelf(aura::Window* window) {
+gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window) {
   if (!Shell::Get()->display_manager()->IsInUnifiedMode())
     return window->GetRootWindow()->bounds();
 
@@ -79,5 +75,7 @@ gfx::Rect ScreenUtil::GetDisplayBoundsWithShelf(aura::Window* window) {
   size.Scale(scale, scale);
   return gfx::Rect(gfx::ToCeiledSize(size));
 }
+
+}  // namespace screen_util
 
 }  // namespace ash

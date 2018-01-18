@@ -116,14 +116,14 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
   // Set window to maximized state.
   window_state->Maximize();
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(window),
+  EXPECT_EQ(screen_util::GetMaximizedWindowBoundsInParent(window),
             window->bounds());
   PerformMoveWindowAccel(DisplayMoveWindowDirection::kRight);
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
             screen->GetDisplayNearestWindow(window).id());
   // Check that window state is maximized and has updated maximized bounds.
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(window),
+  EXPECT_EQ(screen_util::GetMaximizedWindowBoundsInParent(window),
             window->bounds());
 
   // Set window to fullscreen state.

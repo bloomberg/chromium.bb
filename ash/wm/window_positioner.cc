@@ -131,7 +131,7 @@ void SetBoundsAnimated(aura::Window* window,
 // Move |window| into the center of the screen - or restore it to the previous
 // position.
 void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
-  gfx::Rect work_area = ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+  gfx::Rect work_area = screen_util::GetDisplayWorkAreaBoundsInParent(window);
   gfx::Rect bounds = window->bounds();
   const base::Optional<gfx::Rect> user_defined_area =
       wm::GetWindowState(window)->pre_auto_manage_window_bounds();
@@ -319,7 +319,7 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
     if (added_window_state->minimum_visibility()) {
       // Guarantee minimum visibility within the work area.
       gfx::Rect work_area =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(added_window);
+          screen_util::GetDisplayWorkAreaBoundsInParent(added_window);
       gfx::Rect bounds = added_window->bounds();
       gfx::Rect new_bounds = bounds;
       wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area, &new_bounds);
@@ -345,7 +345,7 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
 
   gfx::Rect other_bounds = other_shown_window->bounds();
   gfx::Rect work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(added_window);
+      screen_util::GetDisplayWorkAreaBoundsInParent(added_window);
   bool move_other_right =
       other_bounds.CenterPoint().x() > work_area.x() + work_area.width() / 2;
 

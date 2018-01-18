@@ -1482,7 +1482,7 @@ class RootWindowTestObserver : public aura::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override {
-    shelf_display_bounds_ = ScreenUtil::GetDisplayBoundsWithShelf(window);
+    shelf_display_bounds_ = screen_util::GetDisplayBoundsWithShelf(window);
   }
 
   const gfx::Rect& shelf_display_bounds() const {

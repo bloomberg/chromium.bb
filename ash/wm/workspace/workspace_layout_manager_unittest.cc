@@ -683,7 +683,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area, not the whole display.
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
@@ -776,16 +776,16 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
       CreateTestWindowInShellWithBounds(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   gfx::Rect initial_work_area_bounds =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get());
+      screen_util::GetMaximizedWindowBoundsInParent(window.get());
   EXPECT_EQ(initial_work_area_bounds.ToString(), window->bounds().ToString());
   // Enlarge the root window.  We should still match the work area size.
   UpdateDisplay("900x700");
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
   EXPECT_NE(
       initial_work_area_bounds.ToString(),
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString());
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()).ToString());
 }
 
 // Tests normal->fullscreen->normal.
@@ -994,10 +994,11 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));
+  window->SetBounds(
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()));
   gfx::Rect window_bounds = window->bounds();
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
 
   // The window size should not get touched while we are in lock screen.
@@ -1010,7 +1011,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   GetSessionControllerClient()->UnlockScreen();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
   EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
 }

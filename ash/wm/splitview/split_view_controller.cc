@@ -276,7 +276,7 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
 gfx::Rect SplitViewController::GetDisplayWorkAreaBoundsInParent(
     aura::Window* window) const {
   aura::Window* root_window = window->GetRootWindow();
-  return ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+  return screen_util::GetDisplayWorkAreaBoundsInParent(
       root_window->GetChildById(kShellWindowId_DefaultContainer));
 }
 

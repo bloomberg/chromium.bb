@@ -252,7 +252,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
   DCHECK(item_);
   gfx::Rect area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
 
   blink::WebScreenOrientationLockType screen_orientation =

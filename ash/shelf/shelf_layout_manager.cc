@@ -195,7 +195,7 @@ bool ShelfLayoutManager::IsVisible() const {
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  gfx::Rect rect(ScreenUtil::GetDisplayBoundsInParent(shelf_window));
+  gfx::Rect rect(screen_util::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
       gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
       gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
@@ -699,7 +699,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   gfx::Rect available_bounds =
-      ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
+      screen_util::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
@@ -783,7 +783,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = shelf_->IsHorizontalAlignment();
   aura::Window* window = shelf_widget_->GetNativeWindow();
-  gfx::Rect available_bounds = ScreenUtil::GetDisplayBoundsWithShelf(window);
+  gfx::Rect available_bounds = screen_util::GetDisplayBoundsWithShelf(window);
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&

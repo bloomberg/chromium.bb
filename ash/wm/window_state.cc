@@ -101,7 +101,7 @@ WMEventType WMEventTypeFromWindowPinType(ash::mojom::WindowPinType type) {
 
 float GetCurrentSnappedWidthRatio(aura::Window* window) {
   gfx::Rect maximized_bounds =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window);
+      screen_util::GetMaximizedWindowBoundsInParent(window);
   return static_cast<float>(window->bounds().width()) /
          static_cast<float>(maximized_bounds.width());
 }
@@ -502,7 +502,7 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   if (is_dragged() || !IsSnapped())
     return;
   gfx::Rect maximized_bounds =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window_);
+      screen_util::GetMaximizedWindowBoundsInParent(window_);
   if (snapped_width_ratio_) {
     bounds->set_width(
         static_cast<int>(*snapped_width_ratio_ * maximized_bounds.width()));
@@ -577,7 +577,7 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
 
 void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
   gfx::Rect work_area_in_parent =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_);
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_);
   gfx::Rect child_bounds(bounds);
   AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
   SetBoundsDirect(child_bounds);

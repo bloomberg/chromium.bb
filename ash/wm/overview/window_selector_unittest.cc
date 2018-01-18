@@ -2131,7 +2131,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   const int drag_offset_snap_region =
       OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(left_window.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(left_window.get()).width();
   const int edge_inset = GetEdgeInset(screen_width);
   // The selector item has a margin which does not accept events. Inset any
   // event aimed at the selector items edge so events will reach it.
@@ -2323,7 +2323,7 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibility) {
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get()).width();
   const int edge_inset = GetEdgeInset(screen_width);
 
   // Verify the phantom window is visible when |selector_item|'s x is in the
@@ -2363,7 +2363,7 @@ TEST_F(SplitViewWindowSelectorTest, PhantomWindowVisibilityUnsnappableWindow) {
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get()).width();
 
   const int grid_index = 0;
   WindowSelectorItem* selector_item =
@@ -2390,7 +2390,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
   const int edge_inset = GetEdgeInset(screen_width);
 
   // Verify that when are no snapped windows, the overlay is visible when a drag
@@ -2853,7 +2853,7 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowBoundsTest) {
   std::unique_ptr<aura::Window> window3(
       CreateWindowWithMinimumSize(bounds, size));
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
   ToggleOverview();
 
   // Drag |window1| selector item to snap to left.

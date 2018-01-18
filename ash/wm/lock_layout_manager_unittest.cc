@@ -119,7 +119,7 @@ TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
   EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get());
   window->SetBounds(work_area);
 
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
@@ -155,7 +155,7 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
             fullscreen_window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(maximized_window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(maximized_window.get());
   maximized_window->SetBounds(work_area);
 
   EXPECT_NE(work_area.ToString(),
@@ -164,7 +164,7 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
             maximized_window->GetBoundsInScreen().ToString());
 
   work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(fullscreen_window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(fullscreen_window.get());
   fullscreen_window->SetBounds(work_area);
   EXPECT_NE(work_area.ToString(),
             fullscreen_window->GetBoundsInScreen().ToString());
@@ -327,7 +327,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
   EXPECT_EQ("0,0 300x400", window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get());
   window->SetBounds(work_area);
   // Usually work_area takes Shelf into account but that doesn't affect
   // LockScreen container windows.

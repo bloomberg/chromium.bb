@@ -187,9 +187,9 @@ TEST_F(WorkspaceControllerTest, SingleMaximizeWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
   EXPECT_EQ(w1.get(), GetDesktop()->children()[0]);
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()).width(),
+  EXPECT_EQ(screen_util::GetMaximizedWindowBoundsInParent(w1.get()).width(),
             w1->bounds().width());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()).height(),
+  EXPECT_EQ(screen_util::GetMaximizedWindowBoundsInParent(w1.get()).height(),
             w1->bounds().height());
 
   // Restore the window.
@@ -218,7 +218,7 @@ TEST_F(WorkspaceControllerTest, FullscreenWithNormalWindow) {
   EXPECT_EQ(w1.get(), GetDesktop()->children()[0]);
   EXPECT_EQ(w2.get(), GetDesktop()->children()[1]);
 
-  gfx::Rect work_area(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()));
+  gfx::Rect work_area(screen_util::GetMaximizedWindowBoundsInParent(w1.get()));
   EXPECT_EQ(work_area.width(), w2->bounds().width());
   EXPECT_EQ(work_area.height(), w2->bounds().height());
 
@@ -448,7 +448,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
       w2->bounds().ToString());
 
   // Switch to w1.
@@ -456,7 +456,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
+      screen_util::GetMaximizedWindowBoundsInParent(w2->parent()).ToString(),
       w2->bounds().ToString());
 
   // Switch to w2.
@@ -464,7 +464,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
+  EXPECT_EQ(screen_util::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
 
   // Turn off auto-hide, switch back to w2 (maximized) and verify overlap.

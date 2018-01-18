@@ -262,7 +262,7 @@ void SplitViewOverviewOverlay::SetIndicatorType(
         Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
     widget_->SetContentsView(overlay_view_);
   }
-  gfx::Rect bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect bounds = screen_util::GetDisplayWorkAreaBoundsInParent(
       root_window->GetChildById(kShellWindowId_OverlayContainer));
   ::wm::ConvertRectToScreen(root_window, &bounds);
   widget_->SetBounds(bounds);

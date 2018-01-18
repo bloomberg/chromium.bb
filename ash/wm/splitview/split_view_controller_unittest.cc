@@ -469,7 +469,7 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
   EXPECT_NEAR(window1_width, window2_width, 1);
   EXPECT_EQ(screen_width,
             window1_width + divider_bounds.width() + window2_width);
