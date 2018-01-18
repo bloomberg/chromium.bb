@@ -144,6 +144,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
                     uint64_t* consumed_buffered_amount);
   void ProcessSendQueue();
   void FlowControlIfNecessary();
+  void InitialFlowControl();
   void FailAsError(const String& reason) {
     Fail(reason, kErrorMessageLevel, location_at_construction_->Clone());
   }

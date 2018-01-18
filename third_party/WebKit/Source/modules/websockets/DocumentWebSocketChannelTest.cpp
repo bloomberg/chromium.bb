@@ -219,8 +219,8 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
                 Connect(KURLEq("ws://localhost/"), _, _,
                         KURLEq("http://example.com/"), _, HandleClient(), _))
         .WillOnce(DoAll(SaveArg<1>(&protocols), SaveArg<2>(&origin)));
-    EXPECT_CALL(*Handle(), FlowControl(65536));
     EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*Handle(), FlowControl(65536));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
@@ -827,7 +827,6 @@ class DocumentWebSocketChannelHandshakeThrottleTest
   void NormalHandshakeExpectations() {
     EXPECT_CALL(*Handle(), DoInitialize(_));
     EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
-    EXPECT_CALL(*Handle(), FlowControl(_));
     EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
   }
 
@@ -837,7 +836,6 @@ class DocumentWebSocketChannelHandshakeThrottleTest
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), DoInitialize(_));
   EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
-  EXPECT_CALL(*Handle(), FlowControl(_));
   EXPECT_CALL(*handshake_throttle_,
               ThrottleHandshake(WebURL(url()), _, WebCallbacks()));
   EXPECT_CALL(*handshake_throttle_, Destructor());
@@ -852,6 +850,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handshake_throttle_, Destructor());
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*Handle(), FlowControl(_));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");
@@ -869,6 +868,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, HandshakeSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*Handle(), FlowControl(_));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");
