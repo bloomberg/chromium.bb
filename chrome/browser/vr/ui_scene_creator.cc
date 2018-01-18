@@ -1337,8 +1337,7 @@ void UiSceneCreator::CreateUrlBar() {
       Create<VectorIcon>(kUrlBarBackButtonIcon, kPhaseForeground, 128);
   back_icon->set_hit_testable(false);
   back_icon->SetIcon(vector_icons::kBackArrowIcon);
-  back_icon->SetSize(kUrlBarBackButtonIconSizeDMM,
-                     kUrlBarBackButtonIconSizeDMM);
+  back_icon->SetSize(kUrlBarIconSizeDMM, kUrlBarIconSizeDMM);
   back_icon->SetTranslate(kUrlBarBackButtonIconOffsetDMM, 0, 0);
   back_icon->AddBinding(VR_BIND_FUNC(
       SkColor, Model, model_,

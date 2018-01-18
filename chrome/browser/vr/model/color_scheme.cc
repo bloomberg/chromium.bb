@@ -116,7 +116,7 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_hint = 0xFF999999;
   normal_scheme.suggestion_text = 0xFF595959;
   normal_scheme.suggestion_dim_text = 0xFF999999;
-  normal_scheme.suggestion_url_text = 0xFF9999FF;
+  normal_scheme.suggestion_url_text = 0xFF5595FE;
   normal_scheme.suggestion_button_colors.foreground =
       normal_scheme.suggestion_text;
   normal_scheme.suggestion_button_colors.background =
@@ -234,7 +234,7 @@ void InitializeColorSchemes() {
   incognito_scheme.omnibox_hint = 0x80FFFFFF;
   incognito_scheme.suggestion_text = 0xCCFFFFFF;
   incognito_scheme.suggestion_dim_text = 0x88FFFFFF;
-  incognito_scheme.suggestion_url_text = 0xFF9999FF;
+  incognito_scheme.suggestion_url_text = 0xFF5595FE;
   incognito_scheme.suggestion_button_colors.foreground =
       incognito_scheme.suggestion_text;
   incognito_scheme.suggestion_button_colors.background =
