@@ -27,9 +27,9 @@
 
 namespace blink {
 
+class AtRuleCSSStyleDeclaration;
 class CSSStyleDeclaration;
 class StyleRuleFontFace;
-class StyleRuleCSSStyleDeclaration;
 
 class CSSFontFaceRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +57,7 @@ class CSSFontFaceRule final : public CSSRule {
   CSSRule::Type type() const override { return kFontFaceRule; }
 
   Member<StyleRuleFontFace> font_face_rule_;
-  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
+  mutable Member<AtRuleCSSStyleDeclaration> properties_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, kFontFaceRule);

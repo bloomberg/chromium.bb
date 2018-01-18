@@ -27,6 +27,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleNamespace.h"
+#include "core/css/parser/AtRuleDescriptorValueSet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"

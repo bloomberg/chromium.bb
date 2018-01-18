@@ -35,6 +35,7 @@ namespace blink {
 class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
+class Element;
 class ExceptionState;
 enum class SecureContextMode;
 
@@ -44,6 +45,7 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
  public:
   virtual ~CSSStyleDeclaration() = default;
 
+  virtual Element* ParentElement() const { return nullptr; }
   virtual CSSRule* parentRule() const = 0;
   String cssFloat() { return GetPropertyValueInternal(CSSPropertyFloat); }
   void setCSSFloat(const ExecutionContext* execution_context,

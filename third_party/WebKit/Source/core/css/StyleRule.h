@@ -31,6 +31,8 @@
 
 namespace blink {
 
+class AtRuleDescriptorValueSet;
+class CSSLazyPropertyParser;
 class CSSRule;
 class CSSStyleSheet;
 
@@ -150,24 +152,24 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
 class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
  public:
-  static StyleRuleFontFace* Create(CSSPropertyValueSet* properties) {
+  static StyleRuleFontFace* Create(AtRuleDescriptorValueSet* properties) {
     return new StyleRuleFontFace(properties);
   }
 
   ~StyleRuleFontFace();
 
-  const CSSPropertyValueSet& Properties() const { return *properties_; }
-  MutableCSSPropertyValueSet& MutableProperties();
+  const AtRuleDescriptorValueSet& Properties() const { return *properties_; }
+  AtRuleDescriptorValueSet& MutableProperties();
 
   StyleRuleFontFace* Copy() const { return new StyleRuleFontFace(*this); }
 
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleFontFace(CSSPropertyValueSet*);
+  StyleRuleFontFace(AtRuleDescriptorValueSet*);
   StyleRuleFontFace(const StyleRuleFontFace&);
 
-  Member<CSSPropertyValueSet> properties_;  // Cannot be null.
+  Member<AtRuleDescriptorValueSet> properties_;  // Cannot be null.
 };
 
 class StyleRulePage : public StyleRuleBase {

@@ -21,9 +21,10 @@
 
 #include "core/css/CSSFontFaceRule.h"
 
+#include "core/css/AtRuleCSSStyleDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleRule.h"
-#include "core/css/StyleRuleCSSStyleDeclaration.h"
+#include "core/css/parser/AtRuleDescriptorValueSet.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -35,10 +36,11 @@ CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* font_face_rule,
 CSSFontFaceRule::~CSSFontFaceRule() = default;
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const {
-  if (!properties_cssom_wrapper_)
-    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
-        font_face_rule_->MutableProperties(),
-        const_cast<CSSFontFaceRule*>(this));
+  if (!properties_cssom_wrapper_) {
+    properties_cssom_wrapper_ =
+        AtRuleCSSStyleDeclaration::Create(&font_face_rule_->MutableProperties(),
+                                          const_cast<CSSFontFaceRule*>(this));
+  }
   return properties_cssom_wrapper_.Get();
 }
 

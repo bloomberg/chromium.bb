@@ -33,6 +33,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
+#include "core/css/parser/AtRuleDescriptorValueSet.h"
 
 namespace blink {
 
@@ -293,7 +294,7 @@ void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) {
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
-StyleRuleFontFace::StyleRuleFontFace(CSSPropertyValueSet* properties)
+StyleRuleFontFace::StyleRuleFontFace(AtRuleDescriptorValueSet* properties)
     : StyleRuleBase(kFontFace), properties_(properties) {}
 
 StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& font_face_rule)
@@ -302,10 +303,10 @@ StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& font_face_rule)
 
 StyleRuleFontFace::~StyleRuleFontFace() = default;
 
-MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
+AtRuleDescriptorValueSet& StyleRuleFontFace::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_);
+  return *properties_;
 }
 
 void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) {
