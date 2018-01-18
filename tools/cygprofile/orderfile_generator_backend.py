@@ -743,8 +743,9 @@ def CreateArgumentParser():
   """Creates and returns the argument parser."""
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--lightweight-instrumentation', action='store_true', default=False,
-      help='Use the lightweight instrumentation path')
+      '--regular-instrumentation', action='store_false',
+      dest='lightweight_instrumentation',
+      help='Use the regular instrumentation path')
   parser.add_argument(
       '--buildbot', action='store_true',
       help='If true, the script expects to be run on a buildbot')
