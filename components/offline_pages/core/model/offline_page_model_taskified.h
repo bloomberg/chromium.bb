@@ -46,7 +46,6 @@ class OfflinePageMetadataStoreSQL;
 // executing various tasks, including database operation or other process that
 // needs to run on a background thread.
 class OfflinePageModelTaskified : public OfflinePageModel,
-                                  public KeyedService,
                                   public TaskQueue::Delegate {
  public:
   // Initial delay after which a list of items for upgrade will be generated.
