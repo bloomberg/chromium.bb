@@ -53,8 +53,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   enum Option {
     kSelectInsertedText = 1 << 0,
     kKillRing = 1 << 1,
-    kRetainAutocorrectionIndicator = 1 << 2,
-    kSmartDelete = 1 << 3
+    kSmartDelete = 1 << 2
   };
   typedef unsigned Options;
 
