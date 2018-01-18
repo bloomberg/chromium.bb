@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/system/power/convertible_power_button_controller.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -27,10 +27,10 @@ class Vector3dF;
 
 namespace ash {
 
-class ConvertiblePowerButtonControllerTestApi;
 class LockStateController;
 class LockStateControllerTestApi;
 class PowerButtonScreenshotController;
+class TabletPowerButtonControllerTestApi;
 enum class LoginStatus;
 
 // Base test fixture and utils for testing power button related functions.
@@ -43,15 +43,15 @@ class PowerButtonTestBase : public AshTestBase {
 
   // Vector pointing up (e.g. keyboard in clamshell).
   static constexpr gfx::Vector3dF kUpVector = {
-      0, 0, ConvertiblePowerButtonController::kGravity};
+      0, 0, TabletPowerButtonController::kGravity};
 
   // Vector pointing down (e.g. keyboard in tablet sitting on table).
   static constexpr gfx::Vector3dF kDownVector = {
-      0, 0, -ConvertiblePowerButtonController::kGravity};
+      0, 0, -TabletPowerButtonController::kGravity};
 
   // Vector pointing sideways (e.g. screen in 90-degree clamshell).
   static constexpr gfx::Vector3dF kSidewaysVector = {
-      0, ConvertiblePowerButtonController::kGravity, 0};
+      0, TabletPowerButtonController::kGravity, 0};
 
   // AshTestBase:
   void SetUp() override;
@@ -62,7 +62,7 @@ class PowerButtonTestBase : public AshTestBase {
 
   // Initializes |power_button_controller_| and other members that point at
   // objects owned by it. If |send_accelerometer_update| is true, an
-  // accelerometer update is sent to create ConvertiblePowerButtonController and
+  // accelerometer update is sent to create TabletPowerButtonController and
   // PowerButtonScreenshotController.
   void InitPowerButtonControllerMembers(bool send_accelerometer_update);
 
@@ -113,13 +113,11 @@ class PowerButtonTestBase : public AshTestBase {
 
   PowerButtonController* power_button_controller_ = nullptr;  // Not owned.
   LockStateController* lock_state_controller_ = nullptr;      // Not owned.
-  ConvertiblePowerButtonController* convertible_controller_ =
-      nullptr;  // Not owned.
+  TabletPowerButtonController* tablet_controller_ = nullptr;  // Not owned.
   PowerButtonScreenshotController* screenshot_controller_ =
       nullptr;  // Not owned.
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
-  std::unique_ptr<ConvertiblePowerButtonControllerTestApi>
-      convertible_test_api_;
+  std::unique_ptr<TabletPowerButtonControllerTestApi> tablet_test_api_;
   base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
 
   // Indicates whether switches::kAshEnableTabletMode is appended.
