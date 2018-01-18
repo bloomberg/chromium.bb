@@ -163,7 +163,7 @@ class OnDemandUpdater {
 #if defined(OS_CHROMEOS)
   friend class CrOSComponentManager;
 #endif  // defined(OS_CHROMEOS)
-  friend class VrAssetsComponentInstallerTraits;
+  friend class VrAssetsComponentInstallerPolicy;
 
   // Triggers an update check for a component. |id| is a value
   // returned by GetCrxComponentID(). If an update for this component is already
