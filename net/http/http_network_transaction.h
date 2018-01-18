@@ -339,6 +339,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // True if we've validated the headers that the stream parser has returned.
   bool headers_valid_;
 
+  // True if we can send the request over early data.
+  bool can_send_early_data_;
+
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
 

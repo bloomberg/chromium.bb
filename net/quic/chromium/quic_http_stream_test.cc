@@ -632,7 +632,7 @@ TEST_P(QuicHttpStreamTest, DisableConnectionMigrationForStream) {
   request_.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   Initialize();
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   QuicChromiumClientStream::Handle* client_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
@@ -659,7 +659,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -725,7 +725,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
   request_.url = GURL("https://www.example.org/");
   // Start first request.
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -735,7 +735,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
       session_->CreateHandle(HostPortPair("www.example.org", 443)));
   TestCompletionCallback callback2;
   EXPECT_EQ(OK,
-            stream2.InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream2.InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                      net_log_.bound(), callback2.callback()));
   EXPECT_EQ(OK,
             stream2.SendRequest(headers_, &response_, callback2.callback()));
@@ -806,7 +806,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   EXPECT_EQ(OK,
@@ -899,7 +899,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -949,7 +949,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   session_->connection()->CloseConnection(
@@ -971,7 +971,7 @@ TEST_P(QuicHttpStreamTest, GetSSLInfoAfterSessionClosed) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   SSLInfo ssl_info;
@@ -995,7 +995,7 @@ TEST_P(QuicHttpStreamTest, GetAlternativeService) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   AlternativeService alternative_service;
@@ -1028,7 +1028,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1067,7 +1067,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1102,7 +1102,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   EXPECT_EQ(OK,
@@ -1147,7 +1147,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
               IsOk());
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1218,7 +1218,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
               IsOk());
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1293,7 +1293,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1367,7 +1367,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1435,7 +1435,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1495,7 +1495,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1539,8 +1539,9 @@ TEST_P(QuicHttpStreamTest, Priority) {
   request_.method = "GET";
   request_.url = GURL("https://www.example.org/");
 
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM, net_log_.bound(),
-                                          callback_.callback()));
+  EXPECT_EQ(OK,
+            stream_->InitializeStream(&request_, true, MEDIUM, net_log_.bound(),
+                                      callback_.callback()));
 
   // Check that priority is highest.
   QuicChromiumClientStream::Handle* reliable_stream =
@@ -1606,7 +1607,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   size_t chunk_size = strlen(kUploadData);
   chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   QuicHttpStream* stream = stream_.get();
   DeleteStreamCallback delete_stream_callback(std::move(stream_));
@@ -1634,7 +1635,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1668,7 +1669,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   ASSERT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -1683,7 +1684,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
@@ -1695,9 +1696,9 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   // Receive the promised response headers.
   response_headers_ = promised_response_.Clone();
@@ -1749,7 +1750,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
@@ -1761,9 +1762,9 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   // Now sending a matching request will rendezvous with the promised
   // stream, but pending secondary validation.
@@ -1823,7 +1824,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCancelHttpStreamBeforeResponse) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
@@ -1835,9 +1836,9 @@ TEST_P(QuicHttpStreamTest, ServerPushCancelHttpStreamBeforeResponse) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   // Now sending a matching request will rendezvous with the promised
   // stream, but pending secondary validation.
@@ -1865,7 +1866,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
@@ -1881,9 +1882,9 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   // Receive the promised response headers.
   response_headers_ = promised_response_.Clone();
@@ -1935,7 +1936,7 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginFail) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
@@ -1958,7 +1959,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   push_promise_["accept-encoding"] = "gzip";
@@ -1972,9 +1973,9 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   headers_.SetHeader("accept-encoding", "gzip");
 
@@ -2049,7 +2050,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   request_.url = GURL("https://www.example.org/");
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, true, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   push_promise_["accept-encoding"] = "gzip";
@@ -2063,9 +2064,9 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
 
   // Make the second stream that will exercise the first step of the
   // server push rendezvous mechanism.
-  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                                   net_log_.bound(),
-                                                   callback_.callback()));
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(
+                    &request_, true, DEFAULT_PRIORITY, net_log_.bound(),
+                    callback_.callback()));
 
   headers_.SetHeader("accept-encoding", "sdch");
 
@@ -2164,7 +2165,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   int result = stream_->SendRequest(headers_, &response_, callback_.callback());
@@ -2200,7 +2201,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
                     TestCompletionCallback().callback(), NetLogWithSource()));
 
   EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
   int result = stream_->SendRequest(headers_, &response_, callback_.callback());

@@ -51,9 +51,12 @@ class NET_EXPORT_PRIVATE HttpStream {
   // Initialize stream.  Must be called before calling SendRequest().
   // The consumer should ensure that request_info points to a valid value till
   // final response headers are received; after that point, the HttpStream
-  // will not access |*request_info| and it may be deleted.
+  // will not access |*request_info| and it may be deleted. If |can_send_early|
+  // is true, this stream may send data early without confirming the handshake
+  // if this is a resumption of a previously established connection.
   // Returns a net error code, possibly ERR_IO_PENDING.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
+                               bool can_send_early,
                                RequestPriority priority,
                                const NetLogWithSource& net_log,
                                const CompletionCallback& callback) = 0;
