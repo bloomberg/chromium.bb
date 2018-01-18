@@ -1,14 +1,21 @@
 <!DOCTYPE html>
+<html class="reftest-wait">
+<script src="/common/reftest-wait.js"></script>
 <title>Text track cue layout after controls are added (reference)</title>
 <style>
 ::cue {
   font-size: 50px;
 }
+
+/* Video width should be large enough to display all of the media controls. */
+video {
+  border: 1px solid gray;
+  width: 500px;
+}
 </style>
-<!-- Width should be large enough to display all of the media controls. -->
-<video controls style="border:1px solid gray; width: 500px;">
-  <source src="../content/white.webm" type="video/webm">
-  <source src="../content/white.mp4" type="video/mp4">
+<video controls onloadeddata="this.onloadeddata = null; takeScreenshot();">
+  <source src="/media/white.webm" type="video/webm">
+  <source src="/media/white.mp4" type="video/mp4">
 </video>
 <script>
 // Add a single cue at line -2, where it would be if there were controls visible
@@ -21,3 +28,4 @@ cue.line = -2;
 track.addCue(cue);
 track.mode = "showing";
 </script>
+</html>
