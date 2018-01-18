@@ -24,10 +24,10 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
-class VrAssetsComponentInstallerTraits : public ComponentInstallerPolicy {
+class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  VrAssetsComponentInstallerTraits() {}
-  ~VrAssetsComponentInstallerTraits() override {}
+  VrAssetsComponentInstallerPolicy() {}
+  ~VrAssetsComponentInstallerPolicy() override {}
 
  private:
   static void UpdateComponent(ComponentUpdateService* cus);
@@ -52,7 +52,7 @@ class VrAssetsComponentInstallerTraits : public ComponentInstallerPolicy {
 
   friend void UpdateVrAssetsComponent(ComponentUpdateService* cus);
 
-  DISALLOW_COPY_AND_ASSIGN(VrAssetsComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(VrAssetsComponentInstallerPolicy);
 };
 
 // Call once to make the component update service aware of the VR Assets

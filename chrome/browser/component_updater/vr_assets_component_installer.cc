@@ -45,7 +45,7 @@ const base::FilePath::CharType kRelativeInstallDir[] =
 namespace component_updater {
 
 // static
-void VrAssetsComponentInstallerTraits::UpdateComponent(
+void VrAssetsComponentInstallerPolicy::UpdateComponent(
     ComponentUpdateService* cus) {
 #if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
   const std::string crx_id = crx_file::id_util::GenerateIdFromHash(
@@ -58,26 +58,26 @@ void VrAssetsComponentInstallerTraits::UpdateComponent(
 #endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
 }
 
-bool VrAssetsComponentInstallerTraits::
+bool VrAssetsComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
 }
 
-bool VrAssetsComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool VrAssetsComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-VrAssetsComponentInstallerTraits::OnCustomInstall(
+VrAssetsComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
 
-void VrAssetsComponentInstallerTraits::OnCustomUninstall() {}
+void VrAssetsComponentInstallerPolicy::OnCustomUninstall() {}
 
 // Called during startup and installation before ComponentReady().
-bool VrAssetsComponentInstallerTraits::VerifyInstallation(
+bool VrAssetsComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   auto* version_value = manifest.FindKey("version");
@@ -107,7 +107,7 @@ bool VrAssetsComponentInstallerTraits::VerifyInstallation(
   return true;
 }
 
-void VrAssetsComponentInstallerTraits::ComponentReady(
+void VrAssetsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -122,27 +122,27 @@ void VrAssetsComponentInstallerTraits::ComponentReady(
                                                     std::move(manifest));
 }
 
-base::FilePath VrAssetsComponentInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath VrAssetsComponentInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(kRelativeInstallDir);
 }
 
-void VrAssetsComponentInstallerTraits::GetHash(
+void VrAssetsComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kVrAssetsPublicKeySHA256,
                kVrAssetsPublicKeySHA256 + arraysize(kVrAssetsPublicKeySHA256));
 }
 
-std::string VrAssetsComponentInstallerTraits::GetName() const {
+std::string VrAssetsComponentInstallerPolicy::GetName() const {
   return kVrAssetsComponentName;
 }
 
 update_client::InstallerAttributes
-VrAssetsComponentInstallerTraits::GetInstallerAttributes() const {
+VrAssetsComponentInstallerPolicy::GetInstallerAttributes() const {
   return {{"compatible_major_version",
            std::to_string(vr::kCompatibleMajorVrAssetsComponentVersion)}};
 }
 
-std::vector<std::string> VrAssetsComponentInstallerTraits::GetMimeTypes()
+std::vector<std::string> VrAssetsComponentInstallerPolicy::GetMimeTypes()
     const {
   return std::vector<std::string>();
 }
@@ -150,7 +150,7 @@ std::vector<std::string> VrAssetsComponentInstallerTraits::GetMimeTypes()
 void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
 #if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
   std::unique_ptr<ComponentInstallerPolicy> policy(
-      new VrAssetsComponentInstallerTraits());
+      new VrAssetsComponentInstallerPolicy());
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::Closure());
   vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
@@ -159,7 +159,7 @@ void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
 }
 
 void UpdateVrAssetsComponent(ComponentUpdateService* cus) {
-  VrAssetsComponentInstallerTraits::UpdateComponent(cus);
+  VrAssetsComponentInstallerPolicy::UpdateComponent(cus);
 }
 
 }  // namespace component_updater
