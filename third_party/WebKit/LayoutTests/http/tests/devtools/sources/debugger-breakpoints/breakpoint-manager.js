@@ -42,19 +42,6 @@
   }
 
   TestRunner.runTestSuite([
-    function testRestoreBreakpoints(next) {
-      var breakpointManager = createBreakpointManager(serializedBreakpoints);
-      addUISourceCode(breakpointManager, 'a.js');
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
-    function testRestoreBreakpointsTwice(next) {
-      var breakpointManager = createBreakpointManager(serializedBreakpoints);
-      addUISourceCode(breakpointManager, 'a.js');
-      addUISourceCode(breakpointManager, 'a.js');
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
     function testRemoveBreakpoints(next) {
       var breakpointManager = createBreakpointManager(serializedBreakpoints);
       var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
