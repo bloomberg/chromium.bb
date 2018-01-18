@@ -80,8 +80,7 @@ static struct TargetVideoCaptureStack {
 }  // namespace
 
 // This class is the content_browsertests for Image Capture API, which allows
-// for capturing still images out of a MediaStreamTrack. Is a
-// WebRtcWebcamBrowserTest to be able to use a physical camera.
+// for capturing still images out of a MediaStreamTrack.
 class WebRtcImageCaptureBrowserTestBase : public WebRtcWebcamBrowserTest {
  public:
   WebRtcImageCaptureBrowserTestBase() = default;
@@ -119,7 +118,7 @@ class WebRtcImageCaptureBrowserTestBase : public WebRtcWebcamBrowserTest {
     NavigateToURL(shell(), url);
 
     if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
-      DVLOG(1) << "No video device; skipping test...";
+      LOG(INFO) << "No video device; skipping test...";
       return true;
     }
 
@@ -146,6 +145,9 @@ class WebRtcImageCaptureSucceedsBrowserTest
   WebRtcImageCaptureSucceedsBrowserTest() {
     if (std::get<1>(GetParam()).use_video_capture_service) {
       scoped_feature_list_.InitAndEnableFeature(
+          video_capture::kMojoVideoCapture);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
           video_capture::kMojoVideoCapture);
     }
   }
