@@ -496,7 +496,7 @@ const char kEnableOutOfBlinkCORSDescription[] =
     "CORS handling logic is moved out of blink.";
 
 const char kEnableOutOfProcessHeapProfilingName[] =
-    "Out of process heap profiling.";
+    "Out of process heap profiling start mode.";
 const char kEnableOutOfProcessHeapProfilingDescription[] =
     "Creates a profiling service that records stacktraces for all live, "
     "malloced objects. Heap dumps can be obtained at chrome://tracing "

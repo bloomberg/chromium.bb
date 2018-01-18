@@ -12,91 +12,24 @@ to provide an actionable analysis.
 
 Here is a table of common area of inquiry and suggested tools for examining them.
 
-| Topic/Area of Inquiry  | Tool(s) | What this is good for | Caveats |
-|----------------------- | ------- | --------------------- | ------- |
-| Object allocation over time | [`diff_heap_profiler.py`](#diff-heap-profiler), [memory-infra in Chrome Tracing](#tracing-memory-infra) | Finding leaked C++ objects over time. |
-| Self-reported stats for resource usage per subsystem  | [memory-infra in Chrome Tracing](#tracing-memory-infra) | Gaining a global overview of which subsystems are using memory. |
-| Suspected Renderer DOM leaks | [Real World Leak Detector](#real-world-leak-detector) | Finding leaks within the Renderer where C++ objects are refcounted using Oilpan |
-| Kernel/Drive Resource Usage | [perfmon (win), ETW](#os-tools) | Finding resource leaks that are not normally considered when the term "memory" is used. |
+| Topic/Area of Inquiry  | Tool(s) |
+|----------------------- | ------- |
+| Which subsystems consuming memory per process.  | [Global Memory Dumps](#global-memory-dumps), [Taking memory-infra trace](#memory-infra-trace) |
+| Tracking C++ object allocation over time | [`diff_heap_profiler.py`](#diff-heap-profiler), [Heap Details in chrome://tracing](#heap-dumps-chrome-tracing) |
+| Suspected DOM leaks in the Renderer | [Real World Leak Detector](#real-world-leak-detector) |
+| Kernel/Driver Memory and Resource Usage | [perfmon (win), ETW](#os-tools) |
 | Blackbox examination of process memory | [VMMAP (win)](#os-tools) | Understanding fragmentation of the memory space |
+| Symbolized Heap Dump data | [Heap Dumps](#heap-dumps) | Grabs raw data for analysis by other tools |
 
 If that seems like a lot of tools and complexity, it is [but there's a reason](#no-one-true-metric).
 
-## <a name="diff-heap-profiler"></a> `diff_heap_profiler.py`
-
-### What this is good for
-Examining allocations that occur within one point in time. This is often useful
-for finding leaks as one call-stack will rise to the top as the leak is repeated
-triggered.
-
-Multiple traces can be given at once to show incremental changes.
-
-TODO(awong): Write about options to script and the flame graph.
-
-### Blindspots
-  * Only catches allocations that pass through the allocator shim
-
-### Instructions
-  1. Ensure browser was started with OOPHP enabled and that the right processes
-     are being profiled. TODO(awong): link instructions.
-  2. Visit chrome://memory-internals and click "Save Dump" for a baseline.
-  3. Record for a few seconds, then stop. *Warning*: traces grow very fast and
-     will crash the trace viewer.
-  2. Visit chrome://memory-internals and click "Save Dump" for a the next
-     sample.
-  4. Symbolize both dump files by running [`symbolize_trace.py`](https://chromium.googlesource.com/catapult/+/master/tracing/bin/symbolize_trace)
-  5. Run resulting traces through [`diff_heap_profiler.py`](https://chromium.googlesource.com/catapult/+/master/experimental/tracing/bin/diff_heap_profiler.py) to show a list of new
-     allocations.
-
-
-## <a name="tracing-memory-infra"></a> Chrome tracing and Memory-infra
-### What this is good for
-Examining self-reported statistics from various subsystems on memory usages.
-This is most useful for getting a high-level understanding of how memory is
-distributed between the different heaps and subsystems in chrome.
-
-It also provides a way to view heap dump allocation information collected per
-process through a progressively expanding stack trace.
-
-Though chrome://tracing itself is a timeline based plot, this data is snapshot
-oriented. Thus the standard chrome://tracing plotting tools do not provide a
-good means for measuring changes per snapshot.
-
-### Blindspots
-  * Statistics are self-reported via "Memory Dump Provider" interfaces. If there
-    is an error in the data collection, or if there are privileged resources
-    that cannot be easily measured from usermode, they will be missed.
-  * The heap dump also only catches allocations that pass through the allocator shim.
-
-### Instructions
-#### Taking a trace
-  1. [optional] Restart browser with OOPHP enabled at startup.
-  2. Visit chrome://tracing
-  3. Start a trace for memory-infra
-      1. Click the "Record" button
-      2. Choose "Manually select settings"
-      3. [optional] Clear out all other tracing categories.
-      4. Select "memory-infra" from the "Disabled by Default Categories"
-      5. Click record again.
-  4. Do work that triggers events/behaviors to measure.
-  5. Click stop
-  6. [optional] Symbolize trace
-      1. Save trace file.
-      2. Run trace file through [`symbolize_trace.py`](../../third_party/catapult/experimental/tracing/bin/symbolize_trace.py)
-      3. Reload the trace file
-
-This should produce a view of the trace file with periodic "light" and "heavy"
-memory dumps.
-
-TODO(ajwong): Add screenshot or at least reference the more detailed
-memory-infra docs.
-
-## <a name="global-memory-dump"></a> Global Memory Dump
-### What this is good for
+-----------
+## <a name="global-memory-dumps"> Global Memory Dumps
 Many Chrome subsystems implement the
 [`trace_event::MemoryDumpProvider`](../../ase/trace_event/memory_dump_provider.h)
 interface to provide self-reported stats detailing their memory usage. The
-Global Memory Dump view provides a snapshot-oriented view of these subsystems.
+Global Memory Dump view provides a snapshot-oriented view of these subsystems
+that can be collected and viewed via the chrome://tracing infrastructure.
 
 In the Analysis split screen, a single roll-up number is provided for each of
 these subsystems. This can give a quick feel for where memory is allocated. The
@@ -125,28 +58,22 @@ collected by the given MemoryDumpProvider however that view is often way outside
 the viewport of the analysis view. Be sure to scroll down.
 
 
-## <a name="heap-profile"></a> Viewing a Heap Profile in chrome://tracing
-### What this is good for
-Heap profiling provides extremely detailed data about object allocations and is
-useful for finding code locations that are generating a large number of live
-allocations.
+-----------
+## <a name="heap-dumps-chrome-tracing"> Heap Dumps in chrome://tracing
+GUI method of exploring the heap dump for a process.
 
-This view is snapshot oriented. To look at changes between snapshots, consider
-a different tool such as [`diff_heap_profiler.py`](#diff-heap-profiler).
-
-Because it tracks malloc()/free() it is less useful in the Renderer process
-where much of the memory allocation is handled via garbage collection in Oilpan.
+TODO(awong): Explain how to interpret + interact with the data. (e.g. threads,
+bottom-up vs top-down, etc)
 
 ### Blindspots
-  * Allocations are tracked via the allocator shim. This can only catch calls
-    for which the shim is effective. In Windows, this does not work on a
-    component build. On Android, this does not register allocations made by
-    Android framework code.
-  * On all platforms, calls made directly to the VM subsystem (eg, via
-    `mmap()` or `VirtualAlloc()`) will not be tracked.
+  * As this is a viewer of [heap dump](#heap-dump) data, it has the same
+    blindspots.
+  * The tool is bound by the memory limits of chrome://tracing. Large dumps
+    (which generate large JS strings) will not be loadable and may likely crash
+    chrome://tracing.
 
 ### Instructions
-  1. Ensure the correct heap-profiling mode is set up.
+  1. [Configure Out-of-process heap profiling](#configure-oophp)
   2. Take a memory-infra trace and symbolize it.
   3. Click on a *dark-purple* M circle.
   4. Find the cell corresponding to the allocator (list below) for the process of interest within the `Global Memory Dump` tab of the Analysis View.
@@ -160,23 +87,162 @@ On step 5, the `Component Details` and `Heap Dump` views that let you examine
 the information collected by the given MemoryDumpProvider is often way outside
 the current viewport of the Analysis View. Be sure to scroll down!
 
-TODO(awong): Explain how to interpret + interact with the data. (e.g. threads,
-bottom-up vs top-down, etc)
-
 Currently supported allocators: malloc, PartitionAlloc, Oilpan.
 
 Note: PartitionAlloc and Oilpan traces have unsymbolized Javascript frames
 which often make exploration via this tool hard to consume.
 
 
+-----------
+
+## <a name="diff-heap-profiler"></a> `diff_heap_profiler.py`
+This is most useful for examining allocations that occur during an interval of
+time. This is often useful for finding leaks as one call-stack will rise to the
+top as the leak is repeated triggered.
+
+Multiple traces can be given at once to show incremental changes. A similar
+analysis can be had via ctrl-clicking multiple Global Memory Dumps in the
+chrome://tracing UI but loading multiiple detailed heapdumps can often crash the
+chrome://tracing UI. This tool is more robust to large data sizes.
+
+The source code can also be used as an example for manually processing heap dump
+data in python.
+
+TODO(awong): Write about options to script and the flame graph.
+
+### Blindspots
+  * As this is a viewer of [heap dump](#heap-dumps) data, it has the same
+    blindspots.
+
+### Instructions
+  1. Get 2 or more [symbolized heap dump](#heap-dumps)
+  3. Run resulting traces through [`diff_heap_profiler.py`](https://chromium.googlesource.com/catapult/+/master/experimental/tracing/bin/diff_heap_profiler.py) to show a list of new allocations.
+
+-----------
+## <a name="heap-dumps"></a>Heap Dumps
+Heap dumps provide extremely detailed data about object allocations and is
+useful for finding code locations that are generating a large number of live
+allocations. Data is tracked and recorded using the [Out-of-process Heap
+Profiler (OOPHP)](../../src/chrome/profiling/README.md).
+
+For the Browser and GPU process, this often quickly finds objects that leak over
+time.
+
+This is less useful in the Renderer process. Even though Oilpan and
+PartitionAlloc are hooked into the data collection, many of the stacks end up
+looking similar due to the nature of DOM node allocation.
+
+### Blindspots
+  * Heap dumps only catch allocations that pass through the allocator shim. In particular,
+    calls made directly to the platform's VM subsystem (eg, via `mmap()` or
+    `VirtualAlloc()`) will not be tracked.
+  * Utility processes are currently not profiled.
+  * Allocations are only recorded after the
+    [ProfilingService](../../src/chrome/profiling/profiling_service.h) has spun up the
+    profiling process and created a connection to the target process. The ProfilingService
+    is a mojo service that can be configured to start early in browser startup
+    but it still takes time to spin up and early allocations are thus lost.
+
+### Instructions
+#### <a name="configure-oophp"></a>Configuration and setup
+  1. [Android Only] For native stack traces, a custom build with
+     `enable_framepoitners=true` is required.
+  2. Configure OOPHP settings in about://flags. (See table below)
+  3. Restart browser with new settings if necessary.
+  4. Verify target processes are being profiled in chrome://memory-internals.
+  5. [Optional] start profiling additional processes in chrome://memory-internals.
+
+| Flag | Notes |
+| ------- | ----- |
+| Out of process heap profiling start mode. | This option is somewhat misnamed. It tells OOPHP which processes to profile at startup. Other processes can selected manually later via chrome://memory-internals even if this is set to "disabled". |
+| Keep track of even the small allocations in memlog heap dumps. | By default, small allocations are not emitted in the heap dump to reduce dump size. Enabling this track _all_ allocations. |
+| The type of stack to record for memlog heap dumps | If possible, use Native stack frames as that provides the best information. When those are not availble either due to performance for build (eg, no frame-pointers on arm32 official) configurations, using trace events for a "pseudo stack" can give good information too. |
+| Heap profiling | Deprecated. Enables the in-process heap profiler. Functionality should be fully subsumed by preceeding options. |
+
+#### Saving a heap dump
+  1. On Desktop, click "save dump" in chrome://memory-internals to save a
+     dump of all the profiled processes. On Android, enable debugging via USB
+     and use chrome://inspect/?tracing#devices to take a memory-infra trace
+     which will have the heap dump embedded.
+  2. Symbolize trace using  [`symbolize_trace.py`](../../third_party/catapult/experimental/tracing/bin/symbolize_trace.py)
+  3. Analyze resuing heap dump using [`diff_heap_profiler.py`](#diff-heap-profiler), or [Heap Profile view in Chrome Tracing](#tracing-heap-profile)
+
+On deskop, using chrome://memory-internals to take a heap dump is more reliable
+as it directly saves the heapdump to a file instead of passing the serialized data
+through the chrome://tracing renderer process which can easily OOM. For Android,
+this native file saving was harder to implement and would still leave the
+problem of getting the dump off the phone so memory-infra tracing is the
+current recommended path.
+
+-----------
+## <a name="memory-infra-trace"></a> Taking a memory-infra trace.
+Examining self-reported statistics from various subsystems on memory usages.
+This is most useful for getting a high-level understanding of how memory is
+distributed between the different heaps and subsystems in chrome.
+
+It also provides a way to view heap dump allocation information collected per
+process through a progressively expanding stack trace.
+
+Though chrome://tracing itself is a timeline based plot, this data is snapshot
+oriented. Thus the standard chrome://tracing plotting tools do not provide a
+good means for measuring changes per snapshot.
+
+### Blindspots
+  * Statistics are self-reported via "Memory Dump Provider" interfaces. If there
+    is an error in the data collection, or if there are privileged resources
+    that cannot be easily measured from usermode, they will be missed.
+
+### Instructions
+  1. Visit chrome://tracing
+  2. Start a trace for memory-infra
+      1. Click the "Record" button
+      2. Choose "Manually select settings"
+      3. [optional] Clear out all other tracing categories.
+      4. Select "memory-infra" from the "Disabled by Default Categories"
+      5. Click record again.
+  3. Wait for a few seconds for a Global Memory Dump to be taken.  If OOPHP
+     is enabled, don't run for more than a few seconds to avoid crashing the
+     chrome://tracing UI with an over-large trace.
+  4. Wait for a few seconds for a Global Memory Dump to be taken.
+  5. Click stop
+
+This should produce a view of the trace file with periodic "light" and "heavy"
+memory dumps. These dumps are created periodically so the time spent waiting
+in step (3) determines how many dumps (which are snapshots) are taken.
+
+**Warning:** If OOPHP is enabled, the tracing UI may not be able to handle
+deserializing or rendering the memory dump. In this situation, save
+the heap dump directly in chrome://memory-internals and use alternate tools to
+analyze it. Also, consider leaving  `#memlog-keep-small-allocations` Disabled in
+`chrome://flags` to reduce the heap dump size.
+
+TODO(ajwong): Add screenshot or at least reference the more detailed
+memory-infra docs.
+
+
+-----------
 ## <a name="real-world-leak-detector"></a> Real World Leak Detector (Blink-only)
+TODO(awong): Fill in.
 
+
+-----------
 ## <a name="os-tools"></a> OS Tools: perfmon, ETW, VMMAP
+Each OS provides specialized tools that give the closest to complete information
+about resource usage. This is a list of commonly interesting tools per platform.
+Use them as search terms to look up new ways to analyze data.
 
+| Platform | Tools |
+| -------- | ----- |
+| Window | [SysInternals vmmap](https://docs.microsoft.com/en-us/sysinternals/downloads/vmmap), resmon (can track kernel resources like Paged Pool), perfmon, ETW, !heap in WinDbg |
+| Mac | [vmmap](https://developer.apple.com/library/content/documentation/Performance/Conceptual/ManagingMemory/Articles/VMPages.html), `vm_stat` |
+| Linux/Android | `cat /proc/pid/maps` |
+
+
+-----------
 ## <a name="no-one-true-metric"></a> No really, I want one tool/metric that views everything. Can I has it plz?
 Sorry. No.
 
-There is a natrual tradeoff between getting detailed information
+There is a natural tradeoff between getting detailed information
 and getting reliably complete information. Getting detailed information requires
 instrumentation which adds complexity and selection bias to the measurement.
 This reduces the reliability and completeness of the metric as code shifts over
