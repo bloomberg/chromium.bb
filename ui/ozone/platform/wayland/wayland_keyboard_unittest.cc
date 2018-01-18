@@ -230,6 +230,102 @@ TEST_P(WaylandKeyboardTest, ControlShiftModifiers) {
   EXPECT_EQ(ET_KEY_PRESSED, key_event3->type());
 }
 
+TEST_P(WaylandKeyboardTest, CapsLockKeypress) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+  wl_array_init(&empty);
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Capslock
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsKeyEvent());
+
+  auto* key_event = event->AsKeyEvent();
+
+  EXPECT_EQ(ui::EF_MOD3_DOWN, key_event->flags());
+  EXPECT_EQ(ui::VKEY_CAPITAL, key_event->key_code());
+  EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
+
+  Sync();
+
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+                       WL_KEYBOARD_KEY_STATE_RELEASED);
+
+  std::unique_ptr<Event> event2;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+
+  Sync();
+  ASSERT_TRUE(event2);
+  ASSERT_TRUE(event2->IsKeyEvent());
+
+  auto* key_event2 = event2->AsKeyEvent();
+
+  EXPECT_EQ(0, key_event2->flags());
+  EXPECT_EQ(ui::VKEY_CAPITAL, key_event2->key_code());
+  EXPECT_EQ(ET_KEY_RELEASED, key_event2->type());
+}
+
+#if BUILDFLAG(USE_XKBCOMMON)
+TEST_P(WaylandKeyboardTest, CapsLockModifier) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+  wl_array_init(&empty);
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Pressing capslock (led ON).
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  Sync();
+
+  wl_keyboard_send_modifiers(keyboard->resource(), 3, 2 /* mods_depressed*/,
+                             0 /* mods_latched */, 2 /* mods_locked */,
+                             0 /* group */);
+  Sync();
+
+  // Releasing capslock (led ON).
+  wl_keyboard_send_key(keyboard->resource(), 4, 0, 58 /* Capslock */,
+                       WL_KEYBOARD_KEY_STATE_RELEASED);
+
+  std::unique_ptr<Event> event2;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+  Sync();
+
+  wl_keyboard_send_modifiers(keyboard->resource(), 5, 0 /* mods_depressed*/,
+                             0 /* mods_latched */, 2 /* mods_locked */,
+                             0 /* group */);
+  Sync();
+
+  // Sending a reguard keypress, eg 'a'.
+  wl_keyboard_send_key(keyboard->resource(), 6, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event3;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event3));
+  Sync();
+
+  ASSERT_TRUE(event3);
+  ASSERT_TRUE(event3->IsKeyEvent());
+
+  auto* key_event3 = event3->AsKeyEvent();
+
+  EXPECT_EQ(ui::EF_CAPS_LOCK_ON, key_event3->flags());
+  EXPECT_EQ(ui::VKEY_A, key_event3->key_code());
+  EXPECT_EQ(ET_KEY_PRESSED, key_event3->type());
+}
+#endif
+
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
                         WaylandKeyboardTest,
                         ::testing::Values(kXdgShellV5));

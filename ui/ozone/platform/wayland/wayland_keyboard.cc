@@ -153,8 +153,17 @@ void WaylandKeyboard::UpdateModifier(int modifier_flag, bool down) {
   if (modifier == MODIFIER_NONE)
     return;
 
-  // TODO(tonikitoo,msisov) handle capslock here.
-  event_modifiers_.UpdateModifier(modifier, down);
+  // This mimics KeyboardEvDev, which matches chrome/x11.
+  // Currently EF_MOD3_DOWN means that the CapsLock key is currently down,
+  // and EF_CAPS_LOCK_ON means the caps lock state is enabled (and the
+  // key may or may not be down, but usually isn't). There does need to
+  // to be two different flags, since the physical CapsLock key is subject
+  // to remapping, but the caps lock state (which can be triggered in a
+  // variety of ways) is not.
+  if (modifier == MODIFIER_CAPS_LOCK)
+    event_modifiers_.UpdateModifier(MODIFIER_MOD3, down);
+  else
+    event_modifiers_.UpdateModifier(modifier, down);
 }
 
 }  // namespace ui
