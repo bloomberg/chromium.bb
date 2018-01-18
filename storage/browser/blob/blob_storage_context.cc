@@ -49,15 +49,13 @@ void RecordBlobItemSizeStats(const network::DataElement& input_element) {
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Bytes", length / 1024);
       break;
     case network::DataElement::TYPE_BLOB:
-      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob",
-                              (length - input_element.offset()) / 1024);
+      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob", length / 1024);
       break;
     case network::DataElement::TYPE_FILE: {
       bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", full_file);
       if (!full_file) {
-        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.File",
-                                (length - input_element.offset()) / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.File", length / 1024);
       }
       break;
     }
@@ -67,13 +65,12 @@ void RecordBlobItemSizeStats(const network::DataElement& input_element) {
                             full_file);
       if (!full_file) {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.FileSystem",
-                                (length - input_element.offset()) / 1024);
+                                length / 1024);
       }
       break;
     }
     case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",
-                              (length - input_element.offset()) / 1024);
+      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry", length / 1024);
       break;
     case network::DataElement::TYPE_RAW_FILE:
     case network::DataElement::TYPE_DATA_PIPE:
@@ -121,6 +118,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
           (type == network::DataElement::TYPE_BYTES_DESCRIPTION);
       checked_transport_quota_needed += length;
       checked_total_size += length;
+      checked_total_memory_size += length;
       scoped_refptr<ShareableBlobDataItem> item = new ShareableBlobDataItem(
           std::move(input_item), ShareableBlobDataItem::QUOTA_NEEDED);
       pending_transport_items.push_back(item);
