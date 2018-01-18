@@ -141,8 +141,12 @@ bool DisplayManager::SetDisplayConfiguration(
     LOG(ERROR) << "SetDisplayConfiguration primary id not in displays";
     return false;
   }
+
+  // Ignore a temporarily missing interal display during ash unified mode setup.
   if (!found_internal_display &&
-      internal_display_id != display::kInvalidDisplayId) {
+      internal_display_id != display::kInvalidDisplayId &&
+      (displays.size() != 1 ||
+       displays[0].id() != display::kUnifiedDisplayId)) {
     LOG(ERROR) << "SetDisplayConfiguration internal display id not in displays";
     return false;
   }
