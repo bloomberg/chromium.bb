@@ -113,7 +113,7 @@ MediaControlInputElement::MediaControlInputElement(
     MediaControlElementType display_type)
     : HTMLInputElement(media_controls.GetDocument(), false),
       MediaControlElementBase(media_controls, display_type, this) {
-  CreateLegacyUserAgentShadowRootV0();
+  CreateUserAgentShadowRootV1();
   CreateShadowSubtree();
 }
 

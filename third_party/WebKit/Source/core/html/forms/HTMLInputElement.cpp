@@ -128,7 +128,7 @@ HTMLInputElement* HTMLInputElement::Create(Document& document,
       new HTMLInputElement(document, created_by_parser);
   if (!created_by_parser) {
     DCHECK(input_element->input_type_view_->NeedsShadowSubtree());
-    input_element->CreateLegacyUserAgentShadowRootV0();
+    input_element->CreateUserAgentShadowRootV1();
     input_element->CreateShadowSubtree();
   }
   return input_element;
@@ -381,7 +381,7 @@ void HTMLInputElement::InitializeTypeInParsing() {
   has_been_password_field_ |= new_type_name == InputTypeNames::password;
 
   if (input_type_view_->NeedsShadowSubtree()) {
-    CreateLegacyUserAgentShadowRootV0();
+    CreateUserAgentShadowRootV1();
     CreateShadowSubtree();
   }
 
@@ -440,7 +440,7 @@ void HTMLInputElement::UpdateType() {
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   if (input_type_view_->NeedsShadowSubtree()) {
-    EnsureLegacyUserAgentShadowRootV0();
+    EnsureUserAgentShadowRootV1();
     CreateShadowSubtree();
   }
 
@@ -1949,7 +1949,7 @@ void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
   // Some input types only need shadow roots to hide any children that may
   // have been appended by script. For such types, shadow roots are lazily
   // created when children are added for the first time.
-  EnsureLegacyUserAgentShadowRootV0();
+  EnsureUserAgentShadowRootV1();
   ContainerNode::ChildrenChanged(change);
 }
 

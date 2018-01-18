@@ -788,7 +788,7 @@ void HTMLImageElement::SetLayoutDisposition(
   } else {
     if (layout_disposition_ == LayoutDisposition::kFallbackContent) {
       EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
-      EnsureLegacyUserAgentShadowRootV0();
+      EnsureUserAgentShadowRootV1();
     }
     LazyReattachIfAttached();
   }
