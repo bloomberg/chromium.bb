@@ -8,10 +8,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 
+class Browser;
+
 namespace device {
 class UsbDevice;
 }
 
 base::string16 FormatUsbDeviceName(scoped_refptr<device::UsbDevice> device);
+
+Browser* GetBrowser();
 
 #endif  // CHROME_BROWSER_USB_USB_UTIL_H_
