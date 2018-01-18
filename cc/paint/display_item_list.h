@@ -82,10 +82,6 @@ class CC_PAINT_EXPORT DisplayItemList
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
 
-    // Empty paint item.
-    if (visual_rects_.size() == paint_op_buffer_.size())
-      return;
-
     while (visual_rects_.size() < paint_op_buffer_.size())
       visual_rects_.push_back(visual_rect);
     GrowCurrentBeginItemVisualRect(visual_rect);

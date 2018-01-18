@@ -1019,4 +1019,35 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
+TEST(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
+  auto list = base::MakeRefCounted<DisplayItemList>();
+
+  // Some paired operations have drawing effect (e.g. some image filters),
+  // so we should not ignore visual rect for empty painting.
+
+  gfx::Rect visual_rect(11, 22, 33, 44);
+  {
+    list->StartPaint();
+    list->push<SaveOp>();
+    list->push<TranslateOp>(10.f, 20.f);
+    list->EndPaintOfPairedBegin();
+  }
+
+  {
+    list->StartPaint();
+    list->EndPaintOfUnpaired(visual_rect);
+  }
+
+  {
+    list->StartPaint();
+    list->push<RestoreOp>();
+    list->EndPaintOfPairedEnd();
+  }
+
+  EXPECT_EQ(3u, list->op_count());
+  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(0));
+  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(2));
+}
+
 }  // namespace cc
