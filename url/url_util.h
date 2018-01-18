@@ -262,10 +262,21 @@ URL_EXPORT bool ReplaceComponents(
 
 // String helper functions -----------------------------------------------------
 
+enum class DecodeURLResult {
+  // Did not contain code points greater than 0x7F.
+  kAsciiOnly,
+  // Did UTF-8 decode only.
+  kUTF8,
+  // Did byte to Unicode mapping only.
+  kIsomorphic,
+  // Did both of UTF-8 decode and isomorphic decode.
+  kMixed,
+};
+
 // Unescapes the given string using URL escaping rules.
-URL_EXPORT void DecodeURLEscapeSequences(const char* input,
-                                         int length,
-                                         CanonOutputW* output);
+URL_EXPORT DecodeURLResult DecodeURLEscapeSequences(const char* input,
+                                                    int length,
+                                                    CanonOutputW* output);
 
 // Escapes the given string as defined by the JS method encodeURIComponent. See
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent

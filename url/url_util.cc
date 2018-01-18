@@ -784,9 +784,9 @@ bool ReplaceComponents(const char* spec,
                              charset_converter, output, out_parsed);
 }
 
-void DecodeURLEscapeSequences(const char* input,
-                              int length,
-                              CanonOutputW* output) {
+DecodeURLResult DecodeURLEscapeSequences(const char* input,
+                                         int length,
+                                         CanonOutputW* output) {
   RawCanonOutputT<char> unescaped_chars;
   for (int i = 0; i < length; i++) {
     if (input[i] == '%') {
@@ -803,6 +803,8 @@ void DecodeURLEscapeSequences(const char* input,
     }
   }
 
+  bool did_utf8_decode = false;
+  bool did_isomorphic_decode = false;
   // Convert that 8-bit to UTF-16. It's not clear IE does this at all to
   // JavaScript URLs, but Firefox and Safari do.
   for (int i = 0; i < unescaped_chars.length(); i++) {
@@ -820,6 +822,7 @@ void DecodeURLEscapeSequences(const char* input,
         // Valid UTF-8 character, convert to UTF-16.
         AppendUTF16Value(code_point, output);
         i = next_character;
+        did_utf8_decode = true;
       } else {
         // If there are any sequences that are not valid UTF-8, we keep
         // invalid code points and promote to UTF-16. We copy all characters
@@ -829,9 +832,18 @@ void DecodeURLEscapeSequences(const char* input,
           i++;
         }
         output->push_back(static_cast<unsigned char>(unescaped_chars.at(i)));
+        did_isomorphic_decode = true;
       }
     }
   }
+
+  if (did_utf8_decode && did_isomorphic_decode)
+    return DecodeURLResult::kMixed;
+  if (did_isomorphic_decode)
+    return DecodeURLResult::kIsomorphic;
+  if (did_utf8_decode)
+    return DecodeURLResult::kUTF8;
+  return DecodeURLResult::kAsciiOnly;
 }
 
 void EncodeURIComponent(const char* input, int length, CanonOutput* output) {

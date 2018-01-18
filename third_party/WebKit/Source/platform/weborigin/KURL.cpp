@@ -625,11 +625,14 @@ void KURL::SetPath(const String& path) {
   ReplaceComponents(replacements);
 }
 
-String DecodeURLEscapeSequences(const String& string) {
+String DecodeURLEscapeSequences(const String& string,
+                                DecodeURLResult* optional_result) {
   StringUTF8Adaptor string_utf8(string);
   url::RawCanonOutputT<base::char16> unescaped;
-  url::DecodeURLEscapeSequences(string_utf8.Data(), string_utf8.length(),
-                                &unescaped);
+  DecodeURLResult result = url::DecodeURLEscapeSequences(
+      string_utf8.Data(), string_utf8.length(), &unescaped);
+  if (optional_result)
+    *optional_result = result;
   return StringImpl::Create8BitIfPossible(
       reinterpret_cast<UChar*>(unescaped.data()), unescaped.length());
 }

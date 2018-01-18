@@ -34,6 +34,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
+#include "url/url_util.h"
 
 // KURL is Blink's main URL class, and is the analog to GURL in other Chromium
 // code. It is not thread safe but is generally cheap to copy and compare KURLs
@@ -273,6 +274,8 @@ PLATFORM_EXPORT bool ProtocolIsJavaScript(const String& url);
 
 PLATFORM_EXPORT bool IsValidProtocol(const String&);
 
+using DecodeURLResult = url::DecodeURLResult;
+
 // Unescapes the given string using URL escaping rules.
 //
 // DANGER: If the URL has "%00" in it, the resulting string will have embedded
@@ -280,7 +283,9 @@ PLATFORM_EXPORT bool IsValidProtocol(const String&);
 //
 // This function is also used to decode javascript: URLs and as a general
 // purpose unescaping function.
-PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&);
+// TODO(tkent): Remove the second argument after collecting data.
+PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&,
+                                                DecodeURLResult* = nullptr);
 
 PLATFORM_EXPORT String EncodeWithURLEscapeSequences(const String&);
 
