@@ -331,7 +331,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body,
     ServiceWorkerFetchType fetch_type,
-    const base::Optional<base::TimeDelta>& timeout,
     Delegate* delegate)
     : net::URLRequestJob(request, network_delegate),
       delegate_(delegate),
@@ -352,7 +351,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       fall_back_required_(false),
       body_(body),
       fetch_type_(fetch_type),
-      timeout_(timeout),
       weak_factory_(this) {
   DCHECK(delegate_) << "ServiceWorkerURLRequestJob requires a delegate";
 }
@@ -990,7 +988,7 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       CreateFetchRequest(), base::WrapRefCounted(active_worker), resource_type_,
-      timeout_, request()->net_log(),
+      request()->net_log(),
       base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),
