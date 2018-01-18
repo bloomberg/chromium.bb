@@ -234,24 +234,17 @@ void ScriptWrappableVisitor::WriteBarrier(
 
   // Conservatively assume that the source object containing |dst_object| is
   // marked.
-  visitor->MarkWrapper(
-      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(dst_object).Get()));
+  visitor->TraceWrappers(dst_object);
 }
 
-void ScriptWrappableVisitor::TraceWrappers(
+void ScriptWrappableVisitor::Visit(
     const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const {
-  MarkWrapper(
-      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(traced_wrapper).Get()));
-}
-
-void ScriptWrappableVisitor::MarkWrapper(
-    const v8::PersistentBase<v8::Value>* handle) const {
   // The write barrier may try to mark a wrapper because cleanup is still
   // delayed. Bail out in this case. We also allow unconditional marking which
   // requires us to bail out here when tracing is not in progress.
-  if (!tracing_in_progress_ || handle->IsEmpty())
+  if (!tracing_in_progress_ || traced_wrapper.Get().IsEmpty())
     return;
-  handle->RegisterExternalReference(isolate_);
+  traced_wrapper.Get().RegisterExternalReference(isolate_);
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(
