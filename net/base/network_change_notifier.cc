@@ -499,6 +499,11 @@ NetworkChangeNotifier::~NetworkChangeNotifier() {
 }
 
 // static
+NetworkChangeNotifierFactory* NetworkChangeNotifier::GetFactory() {
+  return g_network_change_notifier_factory;
+}
+
+// static
 void NetworkChangeNotifier::SetFactory(
     NetworkChangeNotifierFactory* factory) {
   CHECK(!g_network_change_notifier_factory);
