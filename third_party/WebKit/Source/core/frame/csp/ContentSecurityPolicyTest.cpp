@@ -203,6 +203,22 @@ TEST_F(ContentSecurityPolicyTest, IsFrameAncestorsEnforced) {
   EXPECT_TRUE(csp->IsFrameAncestorsEnforced());
 }
 
+TEST_F(ContentSecurityPolicyTest, IsActiveForConnectionsWithConnectSrc) {
+  EXPECT_FALSE(csp->IsActiveForConnections());
+  csp->DidReceiveHeader("connect-src 'none';",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsActiveForConnections());
+}
+
+TEST_F(ContentSecurityPolicyTest, IsActiveForConnectionsWithDefaultSrc) {
+  EXPECT_FALSE(csp->IsActiveForConnections());
+  csp->DidReceiveHeader("default-src 'none';",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->IsActiveForConnections());
+}
+
 // Tests that frame-ancestors directives are discarded from policies
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {

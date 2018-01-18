@@ -159,6 +159,10 @@ class CORE_EXPORT CSPDirectiveList
   bool IsReportOnly() const {
     return header_type_ == kContentSecurityPolicyHeaderTypeReport;
   }
+  bool IsActiveForConnections() const {
+    return OperativeDirective(
+        ContentSecurityPolicy::DirectiveType::kConnectSrc);
+  }
   const Vector<String>& ReportEndpoints() const { return report_endpoints_; }
   bool UseReportingApi() const { return use_reporting_api_; }
   uint8_t RequireSRIForTokens() const { return require_sri_for_; }

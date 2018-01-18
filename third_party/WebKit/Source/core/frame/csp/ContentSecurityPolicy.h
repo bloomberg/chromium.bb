@@ -332,6 +332,7 @@ class CORE_EXPORT ContentSecurityPolicy
   void SetOverrideURLForSelf(const KURL&);
 
   bool IsActive() const;
+  bool IsActiveForConnections() const;
 
   // If a frame is passed in, the message will be logged to its active
   // document's console.  Otherwise, the message will be logged to this object's
