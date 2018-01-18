@@ -539,7 +539,8 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
     text =
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
   }
-
+  message_center::RichNotificationData options;
+  options.should_make_spoken_feedback_for_popup_updates = false;
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
@@ -547,8 +548,7 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierAccessibility),
-          message_center::RichNotificationData(), nullptr,
-          GetNotificationIcon(being_enabled),
+          options, nullptr, GetNotificationIcon(being_enabled),
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center->AddNotification(std::move(notification));
