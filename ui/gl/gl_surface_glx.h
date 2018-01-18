@@ -11,18 +11,20 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/vsync_provider.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gpu_timing.h"
+
+namespace gfx {
+class VSyncProvider;
+}
 
 namespace gl {
+
+class GLSurfacePresentationHelper;
 
 // Base class for GLX surfaces.
 class GL_EXPORT GLSurfaceGLX : public GLSurface {
@@ -113,18 +115,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   // The handle for the drawable to make current or swap.
   GLXDrawable GetDrawableHandle() const;
 
-  void PreSwapBuffers(const PresentationCallback& callback);
-  void PostSwapBuffers();
-
-  // Check |pending_frames_| and run presentation callbacks.
-  void CheckPendingFrames();
-
-  // Callback used by PostDelayedTask for running CheckPendingFrames().
-  void CheckPendingFramesCallback();
-
-  void UpdateVSyncCallback(const base::TimeTicks timebase,
-                           const base::TimeDelta interval);
-
   // Window passed in at creation. Always valid.
   gfx::AcceleratedWidget parent_window_;
 
@@ -140,25 +130,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
-  scoped_refptr<GLContext> gl_context_;
-  scoped_refptr<GPUTimingClient> gpu_timing_client_;
-  struct Frame {
-    Frame(Frame&& other);
-    Frame(std::unique_ptr<GPUTimer>&& timer,
-          const PresentationCallback& callback);
-    ~Frame();
-    Frame& operator=(Frame&& other);
-    std::unique_ptr<GPUTimer> timer;
-    PresentationCallback callback;
-  };
-  base::circular_deque<Frame> pending_frames_;
-
-  base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
-
-  bool waiting_for_vsync_parameters_;
-
-  base::WeakPtrFactory<NativeViewGLSurfaceGLX> weak_ptr_factory_;
+  std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceGLX);
 };
