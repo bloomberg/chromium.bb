@@ -198,6 +198,18 @@ TEST_F(CORSTest, CheckAccessDetectsAllowOriginMismatch) {
       network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error2);
   EXPECT_EQ(mojom::CORSError::kAllowOriginMismatch, *error2);
+
+  // Allow "null" value to match serialized unique origins.
+  const std::string null_string("null");
+  const url::Origin null_origin;
+  EXPECT_EQ(null_string, null_origin.Serialize());
+
+  base::Optional<mojom::CORSError> error3 = cors::CheckAccess(
+      response_url, response_status_code, null_string /* allow_origin_header */,
+      base::nullopt /* allow_suborigin_header */,
+      base::nullopt /* allow_credentials_header */,
+      network::mojom::FetchCredentialsMode::kOmit, null_origin);
+  EXPECT_FALSE(error3);
 }
 
 // Tests if cors::CheckAccess detects kDisallowCredentialsNotSetToTrue error

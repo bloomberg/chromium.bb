@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -166,67 +167,7 @@ class HTTPHeaderNameListParser {
   size_t pos_;
 };
 
-static bool IsOriginSeparator(UChar ch) {
-  return IsASCIISpace(ch) || ch == ',';
-}
-
 }  // namespace
-
-base::Optional<CORSError> CheckAccess(
-    const WebURL response_url,
-    const int response_status_code,
-    const WebHTTPHeaderMap& response_header,
-    const network::mojom::FetchCredentialsMode credentials_mode,
-    const WebSecurityOrigin& security_origin) {
-  if (!response_status_code)
-    return CORSError::kInvalidResponse;
-
-  const WebString& allow_origin_header_value =
-      response_header.Get(HTTPNames::Access_Control_Allow_Origin);
-
-  // Check Suborigins, unless the Access-Control-Allow-Origin is '*', which
-  // implies that all Suborigins are okay as well.
-  if (!security_origin.Suborigin().IsEmpty() &&
-      allow_origin_header_value != WebString(g_star_atom)) {
-    const WebString& allow_suborigin_header_value =
-        response_header.Get(HTTPNames::Access_Control_Allow_Suborigin);
-    if (allow_suborigin_header_value != WebString(g_star_atom) &&
-        allow_suborigin_header_value != security_origin.Suborigin()) {
-      return CORSError::kSubOriginMismatch;
-    }
-  }
-
-  if (allow_origin_header_value == "*") {
-    // A wildcard Access-Control-Allow-Origin can not be used if credentials are
-    // to be sent, even with Access-Control-Allow-Credentials set to true.
-    if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude)
-      return base::nullopt;
-    // TODO(hintzed): Is the following a sound substitute for
-    // blink::ResourceResponse::IsHTTP()?
-    if (GURL(response_url.GetString().Utf16()).SchemeIsHTTPOrHTTPS())
-      return CORSError::kWildcardOriginNotAllowed;
-  } else if (allow_origin_header_value != security_origin.ToString()) {
-    if (allow_origin_header_value.IsNull())
-      return CORSError::kMissingAllowOriginHeader;
-    if (String(allow_origin_header_value).Find(IsOriginSeparator, 0) !=
-        kNotFound) {
-      return CORSError::kMultipleAllowOriginValues;
-    }
-    KURL header_origin(NullURL(), allow_origin_header_value);
-    if (!header_origin.IsValid())
-      return CORSError::kInvalidAllowOriginValue;
-
-    return CORSError::kAllowOriginMismatch;
-  }
-
-  if (credentials_mode == network::mojom::FetchCredentialsMode::kInclude) {
-    const WebString& allow_credentials_header_value =
-        response_header.Get(HTTPNames::Access_Control_Allow_Credentials);
-    if (allow_credentials_header_value != "true")
-      return CORSError::kDisallowCredentialsNotSetToTrue;
-  }
-  return base::nullopt;
-}
 
 base::Optional<CORSError> HandleRedirect(
     WebSecurityOrigin& current_security_origin,
@@ -248,9 +189,11 @@ base::Optional<CORSError> HandleRedirect(
     if (redirect_error)
       return redirect_error;
 
-    base::Optional<CORSError> access_error = CheckAccess(
-        redirect_response_url, redirect_response_status_code,
-        redirect_response_header, credentials_mode, current_security_origin);
+    KURL redirect_response_kurl = redirect_response_url;
+    base::Optional<CORSError> access_error =
+        CORS::CheckAccess(redirect_response_kurl, redirect_response_status_code,
+                          redirect_response_header.GetHTTPHeaderMap(),
+                          credentials_mode, *current_security_origin.Get());
     if (access_error)
       return access_error;
 
@@ -568,11 +511,6 @@ bool IsCORSSafelistedMethod(const WebString& method) {
 bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {
   return FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
       map.GetHTTPHeaderMap());
-}
-
-bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode mode) {
-  return mode == network::mojom::FetchRequestMode::kCORS ||
-         mode == network::mojom::FetchRequestMode::kCORSWithForcedPreflight;
 }
 
 // No-CORS requests are allowed for all these contexts, and plugin contexts with
