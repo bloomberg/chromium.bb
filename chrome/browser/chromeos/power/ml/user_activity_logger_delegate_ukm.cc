@@ -118,6 +118,14 @@ void UserActivityLoggerDelegateUkm::LogActivity(
       .SetDeviceType(event.features().device_type())
       .SetDeviceMode(event.features().device_mode());
 
+  if (event.features().has_on_to_dim_sec()) {
+    user_activity.SetScreenDimDelay(event.features().on_to_dim_sec());
+  }
+  if (event.features().has_dim_to_screen_off_sec()) {
+    user_activity.SetScreenDimToOffDelay(
+        event.features().dim_to_screen_off_sec());
+  }
+
   if (event.features().has_last_user_activity_time_sec()) {
     user_activity.SetLastUserActivityTime(
         std::floor(event.features().last_user_activity_time_sec() / 3600));

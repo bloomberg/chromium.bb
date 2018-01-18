@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_logger.h"
 
+#include <cmath>
+
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -32,7 +34,8 @@ UserActivityLogger::UserActivityLogger(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       user_manager_(user_manager),
-      idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)) {
+      idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)),
+      weak_ptr_factory_(this) {
   DCHECK(logger_delegate_);
   DCHECK(idle_event_notifier);
   idle_event_observer_.Add(idle_event_notifier);
@@ -43,8 +46,12 @@ UserActivityLogger::UserActivityLogger(
   DCHECK(power_manager_client);
   power_manager_client_observer_.Add(power_manager_client);
   power_manager_client->RequestStatusUpdate();
-  power_manager_client->GetSwitchStates(base::BindOnce(
-      &UserActivityLogger::OnReceiveSwitchStates, base::Unretained(this)));
+  power_manager_client->GetSwitchStates(
+      base::BindOnce(&UserActivityLogger::OnReceiveSwitchStates,
+                     weak_ptr_factory_.GetWeakPtr()));
+  power_manager_client->GetInactivityDelays(
+      base::BindOnce(&UserActivityLogger::OnReceiveInactivityDelays,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   DCHECK(session_manager);
   session_manager_observer_.Add(session_manager);
@@ -114,6 +121,11 @@ void UserActivityLogger::SuspendDone(
                 UserActivityEvent::Event::IDLE_SLEEP);
 }
 
+void UserActivityLogger::InactivityDelaysChanged(
+    const power_manager::PowerManagementPolicy::Delays& delays) {
+  OnReceiveInactivityDelays(delays);
+}
+
 void UserActivityLogger::OnVideoActivityStarted() {
   MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
                 UserActivityEvent::Event::VIDEO_ACTIVITY);
@@ -143,9 +155,28 @@ void UserActivityLogger::OnReceiveSwitchStates(
   }
 }
 
+void UserActivityLogger::OnReceiveInactivityDelays(
+    base::Optional<power_manager::PowerManagementPolicy::Delays> delays) {
+  if (delays.has_value()) {
+    screen_dim_delay_ =
+        base::TimeDelta::FromMilliseconds(delays->screen_dim_ms());
+    screen_off_delay_ =
+        base::TimeDelta::FromMilliseconds(delays->screen_off_ms());
+  }
+}
+
 void UserActivityLogger::ExtractFeatures(
     const IdleEventNotifier::ActivityData& activity_data) {
   features_.Clear();
+
+  // Set transition times for dim and screen-off.
+  if (!screen_dim_delay_.is_zero()) {
+    features_.set_on_to_dim_sec(std::ceil(screen_dim_delay_.InSecondsF()));
+  }
+  if (!screen_off_delay_.is_zero()) {
+    features_.set_dim_to_screen_off_sec(
+        std::ceil((screen_off_delay_ - screen_dim_delay_).InSecondsF()));
+  }
 
   // Set time related features.
   features_.set_last_activity_time_sec(
