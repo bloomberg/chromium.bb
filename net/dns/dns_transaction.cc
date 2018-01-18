@@ -43,10 +43,38 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
 namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("dns_transaction", R"(
+        semantics {
+          sender: "DNS Transaction"
+          description:
+            "DNS Transaction implements a stub DNS resolver as defined in RFC "
+            "1034."
+          trigger:
+            "Any network request that may require DNS resolution, including "
+            "navigations, connecting to a proxy server, detecting proxy "
+            "settings, getting proxy config, certificate checking, and more."
+          data:
+            "Domain name that needs resolution."
+          destination: OTHER
+          destination_other:
+            "The connection is made to a DNS server based on user's network "
+            "settings."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature cannot be disabled. Without DNS Transactions Chrome "
+            "cannot resolve host names."
+          policy_exception_justification:
+            "Essential for Chrome's navigation."
+        })");
 
 // Count labels in the fully-qualified name in DNS format.
 int CountLabels(const std::string& name) {
@@ -247,10 +275,10 @@ class DnsUDPAttempt : public DnsAttempt {
 
   int DoSendQuery() {
     next_state_ = STATE_SEND_QUERY_COMPLETE;
-    return socket()->Write(query_->io_buffer(),
-                           query_->io_buffer()->size(),
-                           base::Bind(&DnsUDPAttempt::OnIOComplete,
-                                      base::Unretained(this)));
+    return socket()->Write(
+        query_->io_buffer(), query_->io_buffer()->size(),
+        base::Bind(&DnsUDPAttempt::OnIOComplete, base::Unretained(this)),
+        kTrafficAnnotation);
   }
 
   int DoSendQueryComplete(int rv) {
@@ -443,9 +471,9 @@ class DnsTCPAttempt : public DnsAttempt {
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_SEND_LENGTH;
       return socket_->Write(
-          buffer_.get(),
-          buffer_->BytesRemaining(),
-          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
+          buffer_.get(), buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)),
+          kTrafficAnnotation);
     }
     buffer_ = new DrainableIOBuffer(query_->io_buffer(),
                                     query_->io_buffer()->size());
@@ -462,9 +490,9 @@ class DnsTCPAttempt : public DnsAttempt {
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_SEND_QUERY;
       return socket_->Write(
-          buffer_.get(),
-          buffer_->BytesRemaining(),
-          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
+          buffer_.get(), buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)),
+          kTrafficAnnotation);
     }
     buffer_ =
         new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
