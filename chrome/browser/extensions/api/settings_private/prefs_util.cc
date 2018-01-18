@@ -42,8 +42,9 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
+#include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -337,10 +338,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)[prefs::kUserTimezone] =
       settings_api::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)[prefs::kResolveTimezoneByGeolocationMethod] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[settings_private::kResolveTimezoneByGeolocationOnOff] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kPerUserTimezoneEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[settings_private::kResolveTimezoneByGeolocationMethodShort] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[chromeos::kFineGrainedTimeZoneResolveEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[prefs::kSystemTimezoneAutomaticDetectionPolicy] =
@@ -519,17 +522,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object.reset(new settings_api::PrefObject());
     pref_object->key = pref->name();
     pref_object->type = GetType(name, pref->GetType());
-#if defined(OS_CHROMEOS)
-    if (name == prefs::kResolveTimezoneByGeolocationMethod) {
-      pref_object->value.reset(new base::Value(
-          static_cast<int>(chromeos::system::TimeZoneResolverManager::
-                               GetEffectiveUserTimeZoneResolveMethod(
-                                   pref_service, true /* check_policy */))));
-    }
-#endif
-
-    if (!pref_object->value)
-      pref_object->value.reset(pref->GetValue()->DeepCopy());
+    pref_object->value.reset(pref->GetValue()->DeepCopy());
   }
 
 #if defined(OS_CHROMEOS)
@@ -650,19 +643,8 @@ settings_private::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
       double double_value;
       if (!value->GetAsDouble(&double_value))
         return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
-      bool value_set = false;
-#if defined(OS_CHROMEOS)
-      if (pref_name == ::prefs::kResolveTimezoneByGeolocationMethod) {
-        pref_service->SetInteger(
-            pref_name,
-            static_cast<int>(chromeos::system::TimeZoneResolverManager::
-                                 TimeZoneResolveMethodFromInt(
-                                     static_cast<int>(double_value))));
-        value_set = true;
-      }
-#endif
-      if (!value_set)
-        pref_service->SetInteger(pref_name, static_cast<int>(double_value));
+
+      pref_service->SetInteger(pref_name, static_cast<int>(double_value));
       break;
     }
     case base::Value::Type::STRING: {
@@ -764,8 +746,7 @@ bool PrefsUtil::IsPrefEnterpriseManaged(const std::string& pref_name) {
   if (IsPrivilegedCrosSetting(pref_name))
     return true;
   if (pref_name == chromeos::kSystemTimezone ||
-      pref_name == prefs::kUserTimezone ||
-      pref_name == prefs::kResolveTimezoneByGeolocationMethod) {
+      pref_name == prefs::kUserTimezone) {
     return chromeos::system::IsTimezonePrefsManaged(pref_name);
   }
   return false;
@@ -788,7 +769,6 @@ bool PrefsUtil::IsPrefPrimaryUserControlled(const std::string& pref_name) {
   // chromeos::kSystemTimezone is read-only, but for the non-primary users
   // it should have "primary user controlled" attribute.
   if (pref_name == prefs::kWakeOnWifiDarkConnect ||
-      pref_name == prefs::kResolveTimezoneByGeolocationMethod ||
       pref_name == prefs::kUserTimezone ||
       pref_name == chromeos::kSystemTimezone) {
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();

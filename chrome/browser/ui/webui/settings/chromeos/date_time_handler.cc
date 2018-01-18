@@ -83,13 +83,6 @@ DateTimeHandler* DateTimeHandler::Create(
       "timeZoneID",
       system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
 
-  if (!IsTimezoneAutomaticDetectionUserEditable()) {
-    html_source->AddBoolean("timeZoneAutoDetectValueFromPolicy",
-                            g_browser_process->platform_part()
-                                ->GetTimezoneResolverManager()
-                                ->ShouldApplyResolvedTimezone());
-  }
-
   return new DateTimeHandler;
 }
 

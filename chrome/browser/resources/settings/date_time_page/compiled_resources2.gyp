@@ -8,7 +8,6 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
-        '../prefs/compiled_resources2.gyp:prefs_types',
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_indicator_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
@@ -32,7 +31,6 @@
       'dependencies': [
         '../controls/compiled_resources2.gyp:settings_dropdown_menu',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
-        '../prefs/compiled_resources2.gyp:prefs_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         'date_time_types',

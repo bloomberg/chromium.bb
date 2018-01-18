@@ -10,10 +10,22 @@
 #include "chrome/browser/extensions/api/settings_private/prefs_util_enums.h"
 #include "chrome/common/extensions/api/settings_private.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
+#include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#endif
+
 namespace extensions {
 namespace settings_private {
 
-GeneratedPrefs::GeneratedPrefs(Profile* profile) {}
+GeneratedPrefs::GeneratedPrefs(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  prefs_[kResolveTimezoneByGeolocationOnOff] =
+      CreateGeneratedResolveTimezoneByGeolocationOnOff(profile);
+  prefs_[kResolveTimezoneByGeolocationMethodShort] =
+      CreateGeneratedResolveTimezoneByGeolocationMethodShort(profile);
+#endif
+}
 
 GeneratedPrefs::~GeneratedPrefs() = default;
 

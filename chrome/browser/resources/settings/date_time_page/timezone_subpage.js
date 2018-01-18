@@ -6,9 +6,6 @@
  * @fileoverview 'timezone-subpage' is the collapsible section containing
  * time zone settings.
  */
-(function() {
-'use strict';
-
 Polymer({
   is: 'timezone-subpage',
 
@@ -22,22 +19,43 @@ Polymer({
       type: String,
       notify: true,
     },
-
-    /**
-     * The effective time zone auto-detect enabled/disabled status.
-     */
-    timeZoneAutoDetect: Boolean,
-
-    /**
-     * settings.TimeZoneAutoDetectMethod values.
-     * @private {!Object<settings.TimeZoneAutoDetectMethod, number>}
-     */
-    timezoneAutodetectMethodValues_: Object,
-
   },
 
-  attached: function() {
-    this.timezoneAutodetectMethodValues_ = settings.TimeZoneAutoDetectMethod;
+  /**
+   * Returns value list for timeZoneResolveMethodDropdown menu.
+   * @private
+   */
+  getTimeZoneResolveMethodsList_: function() {
+    let result = [];
+    // Make sure current value is in the list, even if it is not
+    // user-selectable.
+    if (this.getPref('generated.resolve_timezone_by_geolocation_method_short')
+            .value == settings.TimeZoneAutoDetectMethod.DISABLED) {
+      result.push({
+        value: settings.TimeZoneAutoDetectMethod.DISABLED,
+        name: loadTimeData.getString('setTimeZoneAutomaticallyDisabled')
+      });
+    }
+    result.push({
+      value: settings.TimeZoneAutoDetectMethod.IP_ONLY,
+      name: loadTimeData.getString('setTimeZoneAutomaticallyIpOnlyDefault')
+    });
+
+    if (this.getPref('generated.resolve_timezone_by_geolocation_method_short')
+            .value ==
+        settings.TimeZoneAutoDetectMethod.SEND_WIFI_ACCESS_POINTS) {
+      result.push({
+        value: settings.TimeZoneAutoDetectMethod.SEND_WIFI_ACCESS_POINTS,
+        name: loadTimeData.getString(
+            'setTimeZoneAutomaticallyWithWiFiAccessPointsData')
+      });
+    }
+    result.push({
+      value: settings.TimeZoneAutoDetectMethod.SEND_ALL_LOCATION_INFO,
+      name:
+          loadTimeData.getString('setTimeZoneAutomaticallyWithAllLocationInfo')
+    });
+    return result;
   },
+
 });
-})();
