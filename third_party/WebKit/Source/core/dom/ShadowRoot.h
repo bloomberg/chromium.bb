@@ -50,7 +50,6 @@ class V0InsertionPoint;
 class WhitespaceAttacher;
 
 enum class ShadowRootType {
-  kLegacyUserAgentV0,
   V0,
   kOpen,
   kClosed,
@@ -102,10 +101,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
            GetType() == ShadowRootType::kClosed ||
            GetType() == ShadowRootType::kUserAgentV1;
   }
-  bool IsUserAgent() const {
-    return GetType() == ShadowRootType::kLegacyUserAgentV0 ||
-           GetType() == ShadowRootType::kUserAgentV1;
-  }
+  bool IsUserAgent() const { return GetType() == ShadowRootType::kUserAgentV1; }
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;

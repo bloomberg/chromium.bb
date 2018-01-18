@@ -166,9 +166,6 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
     if (shadow_type == ShadowRootType::V0) {
       DCHECK(!delegates_focus);
       shadow_root = &host_element->CreateShadowRootInternal();
-    } else if (shadow_type == ShadowRootType::kLegacyUserAgentV0) {
-      DCHECK(!delegates_focus);
-      shadow_root = &host_element->CreateLegacyUserAgentShadowRootV0();
     } else {
       shadow_root =
           &host_element->AttachShadowRootInternal(shadow_type, delegates_focus);

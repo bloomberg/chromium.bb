@@ -1386,7 +1386,6 @@ String InspectorDOMAgent::DocumentBaseURLString(Document* document) {
 static protocol::DOM::ShadowRootType GetShadowRootType(
     ShadowRoot* shadow_root) {
   switch (shadow_root->GetType()) {
-    case ShadowRootType::kLegacyUserAgentV0:
     case ShadowRootType::kUserAgentV1:
       return protocol::DOM::ShadowRootTypeEnum::UserAgent;
     case ShadowRootType::V0:
