@@ -2,9 +2,11 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
-  <link rel="import" href="chrome://resources/html/polymer.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+  <if expr="not is_android and not is_ios">
+    <link rel="import" href="chrome://resources/html/polymer.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+  </if>
   <title>Signin Internals</title>
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/util.js"></script>
