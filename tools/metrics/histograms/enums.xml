@@ -1811,6 +1811,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="384 kHz"/>
 </enum>
 
+<enum name="AudioStreamFormatRelatedInitError">
+  <int value="0" label="Unsupported format"/>
+  <int value="1" label="Unsupported format when conversion was used"/>
+  <int value="2" label="Invalid argument"/>
+  <int value="3" label="Invalid argument when conversion was used"/>
+</enum>
+
 <enum name="AudioStreamOpenResult">
   <int value="0" label="OK"/>
   <int value="1" label="CREATE_INSTANCE"/>
