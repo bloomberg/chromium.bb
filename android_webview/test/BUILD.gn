@@ -275,6 +275,7 @@ test("android_webview_unittests") {
   ]
 
   sources = [
+    "../browser/aw_content_browser_client_unittest.cc",
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
@@ -292,7 +293,6 @@ test("android_webview_unittests") {
     "../browser/permission/permission_request_handler_unittest.cc",
     "../browser/renderer_host/auto_login_parser_unittest.cc",
     "../browser/state_serializer_unittest.cc",
-    "../browser/test/aw_content_browser_client_unittest.cc",
     "../browser/test/fake_window.cc",
     "../browser/test/fake_window.h",
     "../browser/test/rendering_test.cc",
