@@ -10,6 +10,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -34,6 +35,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +61,7 @@ const char kTestChromeContentSuggestionsSignedOutUrl[] =
 const char kTestChromeContentSuggestionsSignedInUrl[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 
-const char kTestEmail[] = "foo@bar.com";
+const char kTestAccount[] = "foo@bar.com";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -291,18 +293,25 @@ class RemoteSuggestionsFetcherImplTestBase
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
-    if (fake_token_service_)
+    if (fake_token_service_) {
       fake_token_service_->RemoveDiagnosticsObserver(this);
+      identity_manager_.reset();
+    }
+
     fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
         std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
 
     fake_token_service_->AddDiagnosticsObserver(this);
 
+    // TODO(blundell): Convert this test to use IdentityTestEnvironment once
+    // that infrastructure lands in the codebase.
+    identity_manager_ = std::make_unique<identity::IdentityManager>(
+        utils_.fake_signin_manager(), fake_token_service_.get());
+
     fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
-        utils_.fake_signin_manager(), fake_token_service_.get(),
-        std::move(request_context_getter), utils_.pref_service(), nullptr,
-        base::Bind(&ParseJsonDelayed),
+        identity_manager_.get(), std::move(request_context_getter),
+        utils_.pref_service(), nullptr, base::BindRepeating(&ParseJsonDelayed),
         GetFetchEndpoint(version_info::Channel::STABLE), api_key,
         user_classifier_.get());
 
@@ -311,26 +320,24 @@ class RemoteSuggestionsFetcherImplTestBase
   }
 
   void SignIn() {
-#if defined(OS_CHROMEOS)
-    utils_.fake_signin_manager()->SignIn(kTestEmail);
-#else
-    utils_.fake_signin_manager()->SignIn(kTestEmail, "user", "password");
-#endif
+    identity_manager_->SetPrimaryAccountSynchronouslyForTests(kTestAccount,
+                                                              kTestAccount, "");
   }
 
   void IssueRefreshToken() {
-    fake_token_service_->GetDelegate()->UpdateCredentials(kTestEmail, "token");
+    fake_token_service_->GetDelegate()->UpdateCredentials(kTestAccount,
+                                                          "token");
   }
 
   void IssueOAuth2Token() {
-    fake_token_service_->IssueAllTokensForAccount(kTestEmail, "access_token",
+    fake_token_service_->IssueAllTokensForAccount(kTestAccount, "access_token",
                                                   base::Time::Max());
   }
 
   void CancelOAuth2TokenRequests() {
     fake_token_service_->IssueErrorForAllPendingRequestsForAccount(
-        kTestEmail, GoogleServiceAuthError(
-                        GoogleServiceAuthError::State::REQUEST_CANCELED));
+        kTestAccount, GoogleServiceAuthError(
+                          GoogleServiceAuthError::State::REQUEST_CANCELED));
   }
 
   RemoteSuggestionsFetcher::SnippetsAvailableCallback
@@ -408,6 +415,7 @@ class RemoteSuggestionsFetcherImplTestBase
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
+  std::unique_ptr<identity::IdentityManager> identity_manager_;
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;

@@ -15,9 +15,9 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/user_classifier.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using language::UrlLanguageHistogram;
@@ -124,8 +124,7 @@ void FilterCategories(FetchedCategoriesVector* categories,
 }  // namespace
 
 RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* token_service,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
     UrlLanguageHistogram* language_histogram,
@@ -133,8 +132,7 @@ RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     const GURL& api_endpoint,
     const std::string& api_key,
     const UserClassifier* user_classifier)
-    : signin_manager_(signin_manager),
-      token_service_(token_service),
+    : identity_manager_(identity_manager),
       url_request_context_getter_(std::move(url_request_context_getter)),
       language_histogram_(language_histogram),
       parse_json_callback_(parse_json_callback),
@@ -179,7 +177,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
       .SetUrlRequestContextGetter(url_request_context_getter_)
       .SetUserClassifier(*user_classifier_);
 
-  if (signin_manager_->IsAuthenticated()) {
+  if (identity_manager_->HasPrimaryAccount()) {
     // Signed-in: get OAuth token --> fetch suggestions.
     pending_requests_.emplace(std::move(builder), std::move(callback));
     StartTokenRequest();
@@ -211,7 +209,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsAuthenticated(
     const std::string& oauth_access_token) {
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   builder.SetUrl(fetch_url_)
-      .SetAuthentication(signin_manager_->GetAuthenticatedAccountId(),
+      .SetAuthentication(identity_manager_->GetPrimaryAccountInfo().account_id,
                          base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                             oauth_access_token.c_str()));
   StartRequest(std::move(builder), std::move(callback));
@@ -234,8 +232,8 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      "ntp_snippets", signin_manager_, token_service_, scopes,
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      "ntp_snippets", scopes,
       base::BindOnce(&RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
