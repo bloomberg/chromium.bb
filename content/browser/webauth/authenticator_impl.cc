@@ -208,6 +208,15 @@ void AuthenticatorImpl::MakeCredential(
       std::move(response_callback));
 }
 
+// mojom:Authenticator
+void AuthenticatorImpl::GetAssertion(
+    webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
+    GetAssertionCallback callback) {
+  std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_IMPLEMENTED,
+                          nullptr);
+  return;
+}
+
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorImpl::OnRegisterResponse(
     device::U2fReturnCode status_code,
@@ -237,15 +246,23 @@ void AuthenticatorImpl::OnRegisterResponse(
 }
 
 void AuthenticatorImpl::OnTimeout() {
-  DCHECK(make_credential_response_callback_);
+  DCHECK(make_credential_response_callback_ ||
+         get_assertion_response_callback_);
+  if (make_credential_response_callback_) {
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::TIMED_OUT, nullptr);
+  } else if (get_assertion_response_callback_) {
+    std::move(get_assertion_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::TIMED_OUT, nullptr);
+  }
   Cleanup();
-  std::move(make_credential_response_callback_)
-      .Run(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
 }
 
 void AuthenticatorImpl::Cleanup() {
   u2f_request_.reset();
   u2f_discovery_.reset();
+  make_credential_response_callback_.Reset();
+  get_assertion_response_callback_.Reset();
   client_data_ = CollectedClientData();
 }
 }  // namespace content

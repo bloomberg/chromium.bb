@@ -14,7 +14,9 @@ namespace blink {
 class ArrayBufferOrArrayBufferView;
 class Credential;
 class MakePublicKeyCredentialOptions;
+class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialParameters;
+class PublicKeyCredentialRequestOptions;
 class PublicKeyCredentialRpEntity;
 class PublicKeyCredentialUserEntity;
 }  // namespace blink
@@ -77,6 +79,13 @@ struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialRpEntityPtr,
 };
 
 template <>
+struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialDescriptorPtr,
+                     blink::PublicKeyCredentialDescriptor> {
+  static webauth::mojom::blink::PublicKeyCredentialDescriptorPtr Convert(
+      const blink::PublicKeyCredentialDescriptor&);
+};
+
+template <>
 struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialParametersPtr,
                      blink::PublicKeyCredentialParameters> {
   static webauth::mojom::blink::PublicKeyCredentialParametersPtr Convert(
@@ -88,6 +97,14 @@ struct TypeConverter<webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr,
                      blink::MakePublicKeyCredentialOptions> {
   static webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr Convert(
       const blink::MakePublicKeyCredentialOptions&);
+};
+
+template <>
+struct TypeConverter<
+    webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr,
+    blink::PublicKeyCredentialRequestOptions> {
+  static webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr Convert(
+      const blink::PublicKeyCredentialRequestOptions&);
 };
 
 }  // namespace mojo

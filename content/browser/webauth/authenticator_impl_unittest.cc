@@ -36,8 +36,11 @@ using webauth::mojom::PublicKeyCredentialRpEntityPtr;
 using webauth::mojom::PublicKeyCredentialUserEntity;
 using webauth::mojom::PublicKeyCredentialUserEntityPtr;
 using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
+using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::PublicKeyCredentialParameters;
 using webauth::mojom::PublicKeyCredentialParametersPtr;
+using webauth::mojom::PublicKeyCredentialRequestOptions;
+using webauth::mojom::PublicKeyCredentialRequestOptionsPtr;
 
 namespace {
 
@@ -59,10 +62,9 @@ constexpr uint8_t kTestChallengeBytes[] = {
     0xB8, 0x8C, 0x25, 0xDB, 0x9E, 0x60, 0x26, 0x45, 0xF1, 0x41};
 
 constexpr char kTestClientDataJsonString[] =
-    "{\"challenge\":\"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE\","
-    "\"hashAlgorithm\""
-    ":\"SHA-256\",\"origin\":\"google.com\",\"tokenBinding\":\"unused\","
-    "\"type\":\"webauthn.create\"}";
+    R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE",)"
+    R"("hashAlgorithm":"SHA-256","origin":"google.com","tokenBinding":)"
+    R"("unused","type":"webauthn.create"})";
 
 constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
     {"http://localhost", "localhost"},
@@ -156,20 +158,19 @@ std::vector<uint8_t> GetTestChallengeBytes() {
                               std::end(kTestChallengeBytes));
 }
 
-
 PublicKeyCredentialRpEntityPtr GetTestPublicKeyCredentialRPEntity() {
   auto entity = PublicKeyCredentialRpEntity::New();
   entity->id = std::string(kTestRelyingPartyId);
-  entity->name = std::string("TestRP@example.com");
+  entity->name = "TestRP@example.com";
   return entity;
 }
 
 PublicKeyCredentialUserEntityPtr GetTestPublicKeyCredentialUserEntity() {
   auto entity = PublicKeyCredentialUserEntity::New();
-  entity->display_name = std::string("User A. Name");
+  entity->display_name = "User A. Name";
   std::vector<uint8_t> id(32, 0x0A);
   entity->id = id;
-  entity->name = std::string("username@example.com");
+  entity->name = "username@example.com";
   entity->icon = GURL("fakeurl2.png");
   return entity;
 }
@@ -186,12 +187,20 @@ GetTestPublicKeyCredentialParameters(int32_t algorithm_identifier) {
 
 MakePublicKeyCredentialOptionsPtr GetTestMakePublicKeyCredentialOptions() {
   auto options = MakePublicKeyCredentialOptions::New();
-  std::vector<uint8_t> buffer(32, 0x0A);
   options->relying_party = GetTestPublicKeyCredentialRPEntity();
   options->user = GetTestPublicKeyCredentialUserEntity();
   options->public_key_parameters =
       GetTestPublicKeyCredentialParameters(kCoseEs256);
-  options->challenge = std::move(buffer);
+  options->challenge.assign(32, 0x0A);
+  options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  return options;
+}
+
+PublicKeyCredentialRequestOptionsPtr
+GetTestPublicKeyCredentialRequestOptions() {
+  auto options = PublicKeyCredentialRequestOptions::New();
+  options->relying_party_id = std::string("localhost");
+  options->challenge.assign(32, 0x0A);
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
   return options;
 }
@@ -245,7 +254,7 @@ class TestMakeCredentialCallback {
   void ReceivedCallback(AuthenticatorStatus status,
                         MakeCredentialAuthenticatorResponsePtr credential) {
     response_ = std::make_pair(status, std::move(credential));
-    closure_.Run();
+    std::move(closure_).Run();
   }
 
   // TODO(crbug.com/799044) - simplify the runloop usage.
@@ -265,6 +274,39 @@ class TestMakeCredentialCallback {
       response_;
   base::Closure closure_;
   AuthenticatorImpl::MakeCredentialCallback callback_;
+  base::RunLoop run_loop_;
+};
+
+class TestGetAssertionCallback {
+ public:
+  TestGetAssertionCallback()
+      : callback_(base::BindOnce(&TestGetAssertionCallback::ReceivedCallback,
+                                 base::Unretained(this))) {}
+  ~TestGetAssertionCallback() {}
+
+  void ReceivedCallback(AuthenticatorStatus status,
+                        GetAssertionAuthenticatorResponsePtr credential) {
+    response_ = std::make_pair(status, std::move(credential));
+    std::move(closure_).Run();
+  }
+
+  // TODO(crbug.com/799044) - simplify the runloop usage.
+  std::pair<AuthenticatorStatus, GetAssertionAuthenticatorResponsePtr>&
+  WaitForCallback() {
+    closure_ = run_loop_.QuitClosure();
+    run_loop_.Run();
+    return response_;
+  }
+
+  AuthenticatorImpl::GetAssertionCallback callback() {
+    return std::move(callback_);
+  }
+
+ private:
+  std::pair<AuthenticatorStatus, GetAssertionAuthenticatorResponsePtr>
+      response_;
+  base::OnceClosure closure_;
+  AuthenticatorImpl::GetAssertionCallback callback_;
   base::RunLoop run_loop_;
 };
 
@@ -330,12 +372,12 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
 }
 
 // Test that client data serializes to JSON properly.
-TEST_F(AuthenticatorImplTest, TestSerializedClientData) {
+TEST_F(AuthenticatorImplTest, TestSerializedRegisterClientData) {
   EXPECT_EQ(kTestClientDataJsonString,
             GetTestClientData(client_data::kCreateType).SerializeToJson());
 }
 
-TEST_F(AuthenticatorImplTest, TestTimeout) {
+TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   SimulateNavigation(GURL(kTestOrigin1));
   MakePublicKeyCredentialOptionsPtr options =
       GetTestMakePublicKeyCredentialOptions();
@@ -344,8 +386,7 @@ TEST_F(AuthenticatorImplTest, TestTimeout) {
   // Set up service_manager::Connector for tests.
   auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
   service_manager::mojom::ConnectorRequest request;
-  std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&request);
+  auto connector = service_manager::Connector::Create(&request);
   service_manager::Connector::TestApi test_api(connector.get());
   test_api.OverrideBinderForTesting(
       device::mojom::kServiceName, device::mojom::HidManager::Name_,
@@ -355,7 +396,7 @@ TEST_F(AuthenticatorImplTest, TestTimeout) {
   // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  std::unique_ptr<base::TickClock> tick_clock = task_runner->GetMockTickClock();
+  auto tick_clock = task_runner->GetMockTickClock();
   auto timer = std::make_unique<base::OneShotTimer>(tick_clock.get());
   timer->SetTaskRunner(task_runner);
   AuthenticatorPtr authenticator =
@@ -369,8 +410,22 @@ TEST_F(AuthenticatorImplTest, TestTimeout) {
   std::pair<webauth::mojom::AuthenticatorStatus,
             webauth::mojom::MakeCredentialAuthenticatorResponsePtr>& response =
       cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
-            response.first);
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::TIMED_OUT, response.first);
 }
 
+// Test that service returns NOT_IMPLEMENTED on a call to GetAssertion.
+TEST_F(AuthenticatorImplTest, GetAssertionNotImplemented) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+
+  TestGetAssertionCallback cb;
+  authenticator->GetAssertion(std::move(options), cb.callback());
+  std::pair<webauth::mojom::AuthenticatorStatus,
+            webauth::mojom::GetAssertionAuthenticatorResponsePtr>& response =
+      cb.WaitForCallback();
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_IMPLEMENTED,
+            response.first);
+}
 }  // namespace content

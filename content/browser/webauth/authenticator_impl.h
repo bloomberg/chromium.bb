@@ -56,6 +56,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void MakeCredential(webauth::mojom::MakePublicKeyCredentialOptionsPtr options,
                       MakeCredentialCallback callback) override;
 
+  void GetAssertion(
+      webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
+      GetAssertionCallback callback) override;
+
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
       device::U2fReturnCode status_code,
@@ -70,6 +74,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   std::unique_ptr<device::U2fDiscovery> u2f_discovery_;
   std::unique_ptr<device::U2fRequest> u2f_request_;
   MakeCredentialCallback make_credential_response_callback_;
+  GetAssertionCallback get_assertion_response_callback_;
 
   // Holds the client data to be returned to the caller.
   CollectedClientData client_data_;
