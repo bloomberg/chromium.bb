@@ -73,6 +73,11 @@ class AppBannerManager::StatusReporter {
 
   // Reports |code| (via a mechanism which depends on the implementation).
   virtual void ReportStatus(InstallableStatusCode code) = 0;
+
+  // Returns the WebappInstallSource to be used for this installation.
+  virtual WebappInstallSource GetInstallSource(
+      content::WebContents* web_contents,
+      InstallTrigger trigger) = 0;
 };
 
 }  // namespace banners
@@ -90,6 +95,11 @@ class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
   // Logs an error message corresponding to |code| to the devtools console.
   void ReportStatus(InstallableStatusCode code) override {
     LogErrorToConsole(web_contents_, code);
+  }
+
+  WebappInstallSource GetInstallSource(content::WebContents* web_contents,
+                                       InstallTrigger trigger) override {
+    return WebappInstallSource::DEBUG;
   }
 
  private:
@@ -113,6 +123,11 @@ class TrackingStatusReporter
     done_ = true;
   }
 
+  WebappInstallSource GetInstallSource(content::WebContents* web_contents,
+                                       InstallTrigger trigger) override {
+    return InstallableMetrics::GetInstallSource(web_contents, trigger);
+  }
+
  private:
   bool done_;
 };
@@ -125,6 +140,12 @@ class NullStatusReporter : public banners::AppBannerManager::StatusReporter {
     // preceding call to RequestAppBanner e.g. because the WebContents is being
     // destroyed. In that case, code should always be NO_ERROR_DETECTED.
     DCHECK(code == NO_ERROR_DETECTED);
+  }
+
+  WebappInstallSource GetInstallSource(content::WebContents* web_contents,
+                                       InstallTrigger trigger) override {
+    NOTREACHED();
+    return WebappInstallSource::COUNT;
   }
 };
 
@@ -654,7 +675,9 @@ void AppBannerManager::OnBannerPromptReply(
 }
 
 void AppBannerManager::ShowBanner() {
-  WebAppInstallSource install_source;
+  content::WebContents* contents = web_contents();
+  WebappInstallSource install_source;
+
   // If we are still in the SENDING_EVENT state, the prompt was never canceled
   // by the page. Otherwise the page requested a delayed showing of the prompt.
   if (state_ == State::SENDING_EVENT) {
@@ -662,11 +685,14 @@ void AppBannerManager::ShowBanner() {
     // requests it to be shown.
     DCHECK(!IsExperimentalAppBannersEnabled());
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
-    install_source = WebAppInstallSource::AUTOMATIC_PROMPT;
+    install_source = status_reporter_->GetInstallSource(
+        contents, InstallTrigger::AUTOMATIC_PROMPT);
+
   } else {
     TrackBeforeInstallEvent(
         BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
-    install_source = WebAppInstallSource::API;
+    install_source =
+        status_reporter_->GetInstallSource(contents, InstallTrigger::API);
   }
 
   // If this is the first time that we are showing the banner for this site,

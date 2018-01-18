@@ -27,25 +27,30 @@ void TrackInstallEvent(InstallEvent event) {
   UMA_HISTOGRAM_ENUMERATION(kInstallEventHistogram, event, INSTALL_EVENT_MAX);
 }
 
-void TrackInstallSource(WebAppInstallSource event) {
+void TrackInstallSource(WebappInstallSource event) {
   webapk::InstallSource source;
   switch (event) {
-    case WebAppInstallSource::AUTOMATIC_PROMPT:
-    case WebAppInstallSource::API:
+    case WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case WebappInstallSource::API_BROWSER_TAB:
+    case WebappInstallSource::API_CUSTOM_TAB:
+    case WebappInstallSource::DEBUG:
       source = InstallSource::INSTALL_SOURCE_BANNER;
       break;
-    case WebAppInstallSource::MENU:
+    case WebappInstallSource::MENU_BROWSER_TAB:
+    case WebappInstallSource::MENU_CUSTOM_TAB:
       source = InstallSource::INSTALL_SOURCE_MENU;
-    case WebAppInstallSource::MANAGEMENT_API:
+      break;
+    case WebappInstallSource::MANAGEMENT_API:
     // MANAGEMENT_API is not reported. Fallthrough to NOTREACHED().
-    case WebAppInstallSource::COUNT:
+    case WebappInstallSource::COUNT:
       NOTREACHED();
       return;
   }
 
   UMA_HISTOGRAM_ENUMERATION(kInstallSourceHistogram, source,
                             INSTALL_SOURCE_MAX);
-  InstallableMetrics::TrackInstallSource(event);
+  InstallableMetrics::TrackInstallEvent(event);
 }
 
 }  // namespace webapk

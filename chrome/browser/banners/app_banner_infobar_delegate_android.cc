@@ -44,7 +44,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
-    WebAppInstallSource install_source,
+    WebappInstallSource install_source,
     bool is_webapk) {
   DCHECK(shortcut_info);
   const GURL url = shortcut_info->url;
@@ -181,7 +181,7 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
-    WebAppInstallSource install_source,
+    WebappInstallSource install_source,
     bool is_webapk)
     : weak_manager_(weak_manager),
       app_title_(shortcut_info->name),

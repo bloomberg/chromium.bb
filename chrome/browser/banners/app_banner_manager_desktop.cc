@@ -82,7 +82,7 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
       web_contents->GetBrowserContext(), start_url);
 }
 
-void AppBannerManagerDesktop::ShowBannerUi(WebAppInstallSource install_source) {
+void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
   content::WebContents* contents = web_contents();
   DCHECK(contents && !manifest_.IsEmpty());
 

@@ -531,7 +531,7 @@ BookmarkAppHelper::BitmapAndSource::~BitmapAndSource() {
 BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
                                      WebApplicationInfo web_app_info,
                                      content::WebContents* contents,
-                                     WebAppInstallSource install_source)
+                                     WebappInstallSource install_source)
     : profile_(profile),
       contents_(contents),
       web_app_info_(web_app_info),
@@ -733,7 +733,7 @@ void BookmarkAppHelper::OnBubbleCompleted(
 
     if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
         installable_ == INSTALLABLE_YES) {
-      InstallableMetrics::TrackInstallSource(install_source_);
+      InstallableMetrics::TrackInstallEvent(install_source_);
     }
   } else {
     callback_.Run(nullptr, web_app_info_);
