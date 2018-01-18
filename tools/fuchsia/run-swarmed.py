@@ -50,6 +50,8 @@ def _Spawn(args):
       '-d', 'os', 'Linux',
       '-d', 'pool', 'Chrome',
       '-d', 'kvm', '1',
+      '-d', 'gpu', 'none',
+      '-d', 'cpu', args.arch,
       '-s', isolated_hash,
       '--dump-json', json_file,
       '--',
@@ -92,6 +94,8 @@ def main():
   parser.add_argument('--out-dir', default='out/fuch', help='Build directory.')
   parser.add_argument('--test-name', '-t', required=True,
                       help='Name of test to run.')
+  parser.add_argument('--arch', '-a', default='detect',
+                      help='CPU architecture of the test binary.')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
   parser.add_argument('--results', '-r', default='results',
@@ -101,6 +105,15 @@ def main():
                            'default filter file, if any.')
 
   args = parser.parse_args()
+
+  # Determine the CPU architecture of the test binary, if not specified.
+  if args.arch == 'detect':
+    executable_info = subprocess.check_output(
+        ['file', os.path.join(args.out_dir, args.test_name)])
+    if 'ARM aarch64' in executable_info:
+      args.arch = 'arm64',
+    else:
+      args.arch = 'x86-64'
 
   subprocess.check_call(
       ['tools/mb/mb.py', 'isolate', '//' + args.out_dir, args.test_name])
