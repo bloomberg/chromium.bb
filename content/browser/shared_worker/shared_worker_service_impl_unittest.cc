@@ -29,6 +29,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 
@@ -108,21 +109,6 @@ template <typename T>
 static bool CheckEquality(const T& expected, const T& actual) {
   EXPECT_EQ(expected, actual);
   return expected == actual;
-}
-
-std::vector<uint8_t> StringPieceToVector(base::StringPiece s) {
-  return std::vector<uint8_t>(s.begin(), s.end());
-}
-
-void BlockingReadFromMessagePort(MessagePortChannel port,
-                                 std::vector<uint8_t>* message) {
-  base::RunLoop run_loop;
-  port.SetCallback(run_loop.QuitClosure(), base::ThreadTaskRunnerHandle::Get());
-  run_loop.Run();
-
-  std::vector<MessagePortChannel> should_be_empty;
-  EXPECT_TRUE(port.GetMessage(message, &should_be_empty));
-  EXPECT_TRUE(should_be_empty.empty());
 }
 
 class MockSharedWorker : public mojom::SharedWorker {
@@ -374,11 +360,12 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
       client.CheckReceivedOnConnected(std::set<blink::mojom::WebFeature>()));
 
   // Verify that |port| corresponds to |connector->local_port()|.
-  std::vector<uint8_t> expected_message(StringPieceToVector("test1"));
-  local_port.PostMessage(expected_message.data(), expected_message.size(),
-                         std::vector<MessagePortChannel>());
-  std::vector<uint8_t> received_message;
-  BlockingReadFromMessagePort(port, &received_message);
+  std::string expected_message("test1");
+  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port.GetHandle().get(),
+                                           expected_message));
+  std::string received_message;
+  EXPECT_TRUE(
+      mojo::test::ReadTextMessage(port.GetHandle().get(), &received_message));
   EXPECT_EQ(expected_message, received_message);
 
   // Send feature from shared worker to host.
@@ -449,11 +436,12 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
       client0.CheckReceivedOnConnected(std::set<blink::mojom::WebFeature>()));
 
   // Verify that |port0| corresponds to |connector0->local_port()|.
-  std::vector<uint8_t> expected_message0(StringPieceToVector("test1"));
-  local_port0.PostMessage(expected_message0.data(), expected_message0.size(),
-                          std::vector<MessagePortChannel>());
-  std::vector<uint8_t> received_message0;
-  BlockingReadFromMessagePort(port0, &received_message0);
+  std::string expected_message0("test1");
+  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port0.GetHandle().get(),
+                                           expected_message0));
+  std::string received_message0;
+  EXPECT_TRUE(
+      mojo::test::ReadTextMessage(port0.GetHandle().get(), &received_message0));
   EXPECT_EQ(expected_message0, received_message0);
 
   auto feature1 = static_cast<blink::mojom::WebFeature>(124);
@@ -506,11 +494,12 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   EXPECT_TRUE(client1.CheckReceivedOnConnected({feature1, feature2}));
 
   // Verify that |worker_msg_port2| corresponds to |connector1->local_port()|.
-  std::vector<uint8_t> expected_message1(StringPieceToVector("test2"));
-  local_port1.PostMessage(expected_message1.data(), expected_message1.size(),
-                          std::vector<MessagePortChannel>());
-  std::vector<uint8_t> received_message1;
-  BlockingReadFromMessagePort(port1, &received_message1);
+  std::string expected_message1("test2");
+  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port1.GetHandle().get(),
+                                           expected_message1));
+  std::string received_message1;
+  EXPECT_TRUE(
+      mojo::test::ReadTextMessage(port1.GetHandle().get(), &received_message1));
   EXPECT_EQ(expected_message1, received_message1);
 
   worker_host->OnFeatureUsed(feature1);
