@@ -1312,6 +1312,7 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
   event_params->SetInteger("targetID", target_id);
   event_params->SetString("eventType", api::automation::ToString(event_type));
   event_params->SetString("eventFrom", ToString(params.event_from));
+  event_params->SetInteger("actionRequestID", params.action_request_id);
   event_params->SetInteger("mouseX", params.mouse_location.x());
   event_params->SetInteger("mouseY", params.mouse_location.y());
   base::ListValue args;

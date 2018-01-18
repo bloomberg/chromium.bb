@@ -172,6 +172,7 @@ class AutomationWebContentsObserver
       params.event_type = event.event_type;
       params.update = event.update;
       params.event_from = event.event_from;
+      params.action_request_id = event.action_request_id;
 #if defined(USE_AURA)
       params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
 #endif

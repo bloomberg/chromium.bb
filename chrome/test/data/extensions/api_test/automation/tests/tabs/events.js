@@ -74,6 +74,15 @@ var allTests = [
       window.setTimeout(chrome.test.succeed.bind(this), 0);
     }, true);
     cancelButton.focus();
+  },
+  function testHitTestWithReply() {
+    var cancelButton = rootNode.firstChild.children[2];
+    assertEq('Cancel', cancelButton.name);
+    var loc = cancelButton.unclippedLocation;
+    rootNode.hitTestWithReply(loc.left, loc.top, function(result) {
+      assertEq(result, cancelButton);
+      chrome.test.succeed();
+    });
   }
 ];
 

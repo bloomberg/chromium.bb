@@ -25,6 +25,10 @@ namespace automationInternal {
     // The mouse coordinates when this event fired.
     double mouseX;
     double mouseY;
+
+
+    // ID of an action request resulting in this event.
+    long actionRequestID;
   };
 
   // All possible actions that can be performed on automation nodes.
