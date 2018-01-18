@@ -80,20 +80,26 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
  public:
   ZeroTouchEnrollmentScreenUnitTest() = default;
 
+  enum AttestationEnrollmentStatus {
+    SUCCESS,
+    DEVICE_NOT_SETUP_FOR_ZERO_TOUCH,
+    DMSERVER_ERROR
+  };
+
   // Closure passed to EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock
   // which creates the EnterpriseEnrollmentHelperMock object that will
   // eventually be tied to the EnrollmentScreen. It also sets up the
   // appropriate expectations for testing with the Google Mock framework.
   // The template parameter should_enroll indicates whether or not
   // the EnterpriseEnrollmentHelper should be mocked to successfully enroll.
-  template <bool should_enroll>
+  template <AttestationEnrollmentStatus status>
   static EnterpriseEnrollmentHelper* MockEnrollmentHelperCreator(
       EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain) {
     EnterpriseEnrollmentHelperMock* mock =
         new EnterpriseEnrollmentHelperMock(status_consumer);
-    if (should_enroll) {
+    if (status == SUCCESS) {
       // Define behavior of EnrollUsingAttestation to successfully enroll.
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
@@ -103,13 +109,17 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
           }));
     } else {
       // Define behavior of EnrollUsingAttestation to fail to enroll.
+      const policy::EnrollmentStatus enrollment_status =
+          policy::EnrollmentStatus::ForRegistrationError(
+              status == DEVICE_NOT_SETUP_FOR_ZERO_TOUCH
+                  ? policy::DeviceManagementStatus::
+                        DM_STATUS_SERVICE_DEVICE_NOT_FOUND
+                  : policy::DeviceManagementStatus::
+                        DM_STATUS_TEMPORARY_UNAVAILABLE);
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
-          .WillRepeatedly(Invoke([mock]() {
-            mock->status_consumer()->OnEnrollmentError(
-                policy::EnrollmentStatus::ForRegistrationError(
-                    policy::DeviceManagementStatus::
-                        DM_STATUS_SERVICE_DEVICE_NOT_FOUND));
+          .WillRepeatedly(Invoke([mock, enrollment_status]() {
+            mock->status_consumer()->OnEnrollmentError(enrollment_status);
           }));
     }
     // Define behavior of ClearAuth to only run the callback it is given.
@@ -144,10 +154,33 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
   }
 
-  void TestFinishesEnrollmentFlow() {
+  void TestRetry() {
+    // Define behavior of EnterpriseEnrollmentHelperMock to always fail
+    // enrollment.
+    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
+            DMSERVER_ERROR>);
+
+    SetUpEnrollmentScreen();
+
+    // Remove jitter to enable deterministic testing.
+    enrollment_screen_->retry_policy_.jitter_factor = 0;
+
+    // Start zero-touch enrollment.
+    enrollment_screen_->Show();
+
+    // Fast forward time by 1 minute.
+    FastForwardTime(base::TimeDelta::FromMinutes(1));
+
+    // Check that we have retried 4 times.
+    EXPECT_EQ(enrollment_screen_->num_retries_, 4);
+  }
+
+  void TestFinishEnrollmentFlow() {
     // Define behavior of EnterpriseEnrollmentHelperMock to successfully enroll.
     EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<true>);
+        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
+            SUCCESS>);
 
     SetUpEnrollmentScreen();
 
@@ -167,7 +200,8 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
     // Define behavior of EnterpriseEnrollmentHelperMock to fail
     // attestation-based enrollment.
     EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<false>);
+        &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
+            DEVICE_NOT_SETUP_FOR_ZERO_TOUCH>);
 
     SetUpEnrollmentScreenForFallback();
 
@@ -182,32 +216,24 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
   DISALLOW_COPY_AND_ASSIGN(ZeroTouchEnrollmentScreenUnitTest);
 };
 
-TEST_F(ZeroTouchEnrollmentScreenUnitTest, Retries) {
-  // Define behavior of EnterpriseEnrollmentHelperMock to always fail
-  // enrollment.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<false>);
-
-  SetUpEnrollmentScreen();
-
-  // Remove jitter to enable deterministic testing.
-  enrollment_screen_->retry_policy_.jitter_factor = 0;
-
-  // Start zero-touch enrollment.
-  enrollment_screen_->Show();
-
-  // Fast forward time by 1 minute.
-  FastForwardTime(base::TimeDelta::FromMinutes(1));
-
-  // Check that we have retried 4 times.
-  EXPECT_EQ(enrollment_screen_->num_retries_, 4);
+TEST_F(ZeroTouchEnrollmentScreenUnitTest, FinishEnrollmentFlow) {
+  TestFinishEnrollmentFlow();
 }
 
-TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoesNotRetryOnTopOfUser) {
+TEST_F(ZeroTouchEnrollmentScreenUnitTest, Fallback) {
+  TestFallback();
+}
+
+TEST_F(ZeroTouchEnrollmentScreenUnitTest, Retry) {
+  TestRetry();
+}
+
+TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryOnTopOfUser) {
   // Define behavior of EnterpriseEnrollmentHelperMock to always fail
   // enrollment.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<false>);
+      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<
+          DMSERVER_ERROR>);
 
   SetUpEnrollmentScreen();
 
@@ -231,10 +257,10 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoesNotRetryOnTopOfUser) {
   EXPECT_EQ(enrollment_screen_->num_retries_, 4);
 }
 
-TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoesNotRetryAfterSuccess) {
+TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryAfterSuccess) {
   // Define behavior of EnterpriseEnrollmentHelperMock to successfully enroll.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<true>);
+      &ZeroTouchEnrollmentScreenUnitTest::MockEnrollmentHelperCreator<SUCCESS>);
 
   SetUpEnrollmentScreen();
 
@@ -248,17 +274,11 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoesNotRetryAfterSuccess) {
   EXPECT_EQ(enrollment_screen_->num_retries_, 0);
 }
 
-TEST_F(ZeroTouchEnrollmentScreenUnitTest, FinishesEnrollmentFlow) {
-  TestFinishesEnrollmentFlow();
-}
-
-TEST_F(ZeroTouchEnrollmentScreenUnitTest, Fallback) {
-  TestFallback();
-}
-
-// We base this off ZeroTouchEnrollmenScreenUnitTests for two reasons:
-//   1. We want to check that some same tests pass in both classes
-//   2. We want to leverage Zero-Touch Hands Off to test for proper completions
+/*
+ * We base these tests off ZeroTouchEnrollmenScreenUnitTest for two reasons:
+ *   1. We want to check that some same tests pass in both classes
+ *   2. We want to leverage Zero-Touch Hands Off to test for proper completions
+ */
 class AutomaticReenrollmentScreenUnitTest
     : public ZeroTouchEnrollmentScreenUnitTest {
  public:
@@ -281,8 +301,15 @@ class AutomaticReenrollmentScreenUnitTest
   DISALLOW_COPY_AND_ASSIGN(AutomaticReenrollmentScreenUnitTest);
 };
 
-TEST_F(AutomaticReenrollmentScreenUnitTest, FinishesEnrollmentFlow) {
-  TestFinishesEnrollmentFlow();
+TEST_F(AutomaticReenrollmentScreenUnitTest, ShowErrorPanel) {
+  // We use Zero-Touch's test for retries as a way to know that there was
+  // an error pane with a Retry button displayed to the user when we encounter
+  // a DMServer error that is not that the device isn't setup for Auto RE.
+  TestRetry();
+}
+
+TEST_F(AutomaticReenrollmentScreenUnitTest, FinishEnrollmentFlow) {
+  TestFinishEnrollmentFlow();
 }
 
 TEST_F(AutomaticReenrollmentScreenUnitTest, Fallback) {
