@@ -2373,7 +2373,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   x->plane[plane].txb_entropy_ctx[block] = best_txb_ctx;
   x->plane[plane].eobs[block] = best_eob;
 
-  if (!is_inter_block(mbmi)) {
+  if (!is_inter_block(mbmi) && best_eob) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.
     if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
