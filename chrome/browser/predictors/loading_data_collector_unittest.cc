@@ -27,13 +27,13 @@ namespace predictors {
 
 class LoadingDataCollectorTest : public testing::Test {
  public:
-  LoadingDataCollectorTest() : profile_(base::MakeUnique<TestingProfile>()) {
+  LoadingDataCollectorTest() : profile_(std::make_unique<TestingProfile>()) {
     LoadingPredictorConfig config;
     PopulateTestConfig(&config);
     mock_predictor_ =
-        base::MakeUnique<StrictMock<MockResourcePrefetchPredictor>>(
+        std::make_unique<StrictMock<MockResourcePrefetchPredictor>>(
             config, profile_.get()),
-    collector_ = base::MakeUnique<LoadingDataCollector>(mock_predictor_.get(),
+    collector_ = std::make_unique<LoadingDataCollector>(mock_predictor_.get(),
                                                         nullptr, config);
   }
 

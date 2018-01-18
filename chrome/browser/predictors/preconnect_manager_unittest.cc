@@ -77,10 +77,10 @@ class PreconnectManagerTest : public testing::Test {
 
 PreconnectManagerTest::PreconnectManagerTest()
     : mock_delegate_(
-          base::MakeUnique<StrictMock<MockPreconnectManagerDelegate>>()),
+          std::make_unique<StrictMock<MockPreconnectManagerDelegate>>()),
       context_getter_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
           base::ThreadTaskRunnerHandle::Get())),
-      preconnect_manager_(base::MakeUnique<StrictMock<MockPreconnectManager>>(
+      preconnect_manager_(std::make_unique<StrictMock<MockPreconnectManager>>(
           mock_delegate_->AsWeakPtr(),
           context_getter_)) {}
 

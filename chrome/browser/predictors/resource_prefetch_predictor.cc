@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -217,15 +216,15 @@ void ResourcePrefetchPredictor::StartInitialization() {
   initialization_state_ = INITIALIZING;
 
   // Create local caches using the database as loaded.
-  auto url_resource_data = base::MakeUnique<PrefetchDataMap>(
+  auto url_resource_data = std::make_unique<PrefetchDataMap>(
       tables_, tables_->url_resource_table(), config_.max_urls_to_track);
-  auto host_resource_data = base::MakeUnique<PrefetchDataMap>(
+  auto host_resource_data = std::make_unique<PrefetchDataMap>(
       tables_, tables_->host_resource_table(), config_.max_hosts_to_track);
-  auto url_redirect_data = base::MakeUnique<RedirectDataMap>(
+  auto url_redirect_data = std::make_unique<RedirectDataMap>(
       tables_, tables_->url_redirect_table(), config_.max_urls_to_track);
-  auto host_redirect_data = base::MakeUnique<RedirectDataMap>(
+  auto host_redirect_data = std::make_unique<RedirectDataMap>(
       tables_, tables_->host_redirect_table(), config_.max_hosts_to_track);
-  auto origin_data = base::MakeUnique<OriginDataMap>(
+  auto origin_data = std::make_unique<OriginDataMap>(
       tables_, tables_->origin_table(), config_.max_hosts_to_track);
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs

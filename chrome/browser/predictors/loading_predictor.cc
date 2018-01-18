@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
@@ -53,11 +52,11 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
     : config_(config),
       profile_(profile),
       resource_prefetch_predictor_(
-          base::MakeUnique<ResourcePrefetchPredictor>(config, profile)),
-      stats_collector_(base::MakeUnique<LoadingStatsCollector>(
+          std::make_unique<ResourcePrefetchPredictor>(config, profile)),
+      stats_collector_(std::make_unique<LoadingStatsCollector>(
           resource_prefetch_predictor_.get(),
           config)),
-      loading_data_collector_(base::MakeUnique<LoadingDataCollector>(
+      loading_data_collector_(std::make_unique<LoadingDataCollector>(
           resource_prefetch_predictor_.get(),
           stats_collector_.get(),
           config)),
@@ -148,7 +147,7 @@ PreconnectManager* LoadingPredictor::preconnect_manager() {
 
   if (!preconnect_manager_ &&
       config_.IsPreconnectEnabledForSomeOrigin(profile_)) {
-    preconnect_manager_ = base::MakeUnique<PreconnectManager>(
+    preconnect_manager_ = std::make_unique<PreconnectManager>(
         GetWeakPtr(), profile_->GetRequestContext());
   }
 
@@ -272,7 +271,7 @@ void LoadingPredictor::MaybeAddPrefetch(const GURL& url,
   if (prefetches_.find(host) != prefetches_.end())
     return;
 
-  auto prefetcher = base::MakeUnique<ResourcePrefetcher>(
+  auto prefetcher = std::make_unique<ResourcePrefetcher>(
       GetWeakPtr(), profile_->GetRequestContext(),
       config_.max_prefetches_inflight_per_navigation,
       config_.max_prefetches_inflight_per_host_per_navigation, url, urls);

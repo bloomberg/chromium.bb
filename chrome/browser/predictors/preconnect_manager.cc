@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_hints.h"
@@ -79,7 +78,7 @@ void PreconnectManager::Start(const GURL& url,
     return;
 
   auto iterator_and_whether_inserted = preresolve_info_.emplace(
-      host, base::MakeUnique<PreresolveInfo>(url, requests.size()));
+      host, std::make_unique<PreresolveInfo>(url, requests.size()));
   PreresolveInfo* info = iterator_and_whether_inserted.first->second.get();
 
   for (const auto& request : requests) {

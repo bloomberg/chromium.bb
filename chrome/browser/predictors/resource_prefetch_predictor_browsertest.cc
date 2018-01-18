@@ -4,9 +4,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <set>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
@@ -340,7 +340,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     // cross domains navigations (matching url_visit_count_, etc).
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    https_server_ = base::MakeUnique<net::EmbeddedTestServer>(
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
 
     for (auto* server : {embedded_test_server(), https_server()}) {
@@ -666,7 +666,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       return nullptr;
 
     auto http_response =
-        base::MakeUnique<net::test_server::BasicHttpResponse>();
+        std::make_unique<net::test_server::BasicHttpResponse>();
 
     if (request.headers.find("If-None-Match") != request.headers.end() &&
         request.headers.at("If-None-Match") ==
@@ -711,7 +711,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       return nullptr;
 
     auto http_response =
-        base::MakeUnique<net::test_server::BasicHttpResponse>();
+        std::make_unique<net::test_server::BasicHttpResponse>();
     http_response->set_code(redirect_it->second.code);
     http_response->AddCustomHeader("Location", redirect_it->second.url.spec());
     return std::move(http_response);

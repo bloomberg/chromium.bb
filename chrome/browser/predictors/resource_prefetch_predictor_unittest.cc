@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -153,7 +152,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     LoadingPredictorConfig config;
     PopulateTestConfig(&config, small_db);
     loading_predictor_ =
-        base::MakeUnique<LoadingPredictor>(config, profile_.get());
+        std::make_unique<LoadingPredictor>(config, profile_.get());
     predictor_ = loading_predictor_->resource_prefetch_predictor();
     predictor_->set_mock_tables(mock_tables_);
   }
@@ -181,7 +180,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
-    : profile_(base::MakeUnique<TestingProfile>()),
+    : profile_(std::make_unique<TestingProfile>()),
       db_task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
       mock_tables_(
           base::MakeRefCounted<StrictMock<MockResourcePrefetchPredictorTables>>(
@@ -212,7 +211,7 @@ void ResourcePrefetchPredictorTest::SetUp() {
   url_request_job_factory_.Reset();
   url_request_context_.set_job_factory(&url_request_job_factory_);
 
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void ResourcePrefetchPredictorTest::TearDown() {
@@ -426,7 +425,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationLowHistoryCount) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   PrefetchData host_data = CreatePrefetchData("www.google.com");
@@ -516,7 +515,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   PrefetchData url_data = CreatePrefetchData("http://www.google.com/");
@@ -623,7 +622,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   PrefetchData url_data = CreatePrefetchData("http://www.google.com/");
@@ -723,7 +722,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   PrefetchData url_data = CreatePrefetchData("http://www.nike.com/");
@@ -801,7 +800,7 @@ TEST_F(ResourcePrefetchPredictorTest,
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   PrefetchData url_data = CreatePrefetchData("http://www.google.com/");
@@ -846,7 +845,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   RedirectData url_redirect_data = CreateRedirectData("http://fb.com/google");
@@ -884,7 +883,7 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   EXPECT_CALL(mock_observer, OnNavigationLearned(kVisitCount, page_summary));
 
   predictor_->RecordPageRequestSummary(
-      base::MakeUnique<PageRequestSummary>(page_summary));
+      std::make_unique<PageRequestSummary>(page_summary));
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
   RedirectData url_redirect_data = CreateRedirectData("http://fb.com/google");
@@ -1184,7 +1183,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
 
 TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   const GURL main_frame_url("http://google.com/?query=cats");
-  auto prediction = base::MakeUnique<PreconnectPrediction>();
+  auto prediction = std::make_unique<PreconnectPrediction>();
   // No prefetch data.
   EXPECT_FALSE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_FALSE(
@@ -1205,7 +1204,7 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
                        true, true);  // Low confidence - ignore.
   predictor_->origin_data_->UpdateData(google.host(), google);
 
-  prediction = base::MakeUnique<PreconnectPrediction>();
+  prediction = std::make_unique<PreconnectPrediction>();
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
@@ -1221,7 +1220,7 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   predictor_->host_redirect_data_->UpdateData(redirect.primary_key(), redirect);
 
   // Prediction failed: no data associated with the redirect endpoint.
-  prediction = base::MakeUnique<PreconnectPrediction>();
+  prediction = std::make_unique<PreconnectPrediction>();
   EXPECT_FALSE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_FALSE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
@@ -1233,7 +1232,7 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
                        true);  // High confidence - preconnect.
   predictor_->origin_data_->UpdateData(www_google.host(), www_google);
 
-  prediction = base::MakeUnique<PreconnectPrediction>();
+  prediction = std::make_unique<PreconnectPrediction>();
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));

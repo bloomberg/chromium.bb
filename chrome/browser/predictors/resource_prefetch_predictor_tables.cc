@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -126,16 +125,16 @@ void ResourcePrefetchPredictorTables::SortOrigins(
 ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
     : PredictorTableBase(db_task_runner) {
-  url_resource_table_ = base::MakeUnique<GlowplugKeyValueTable<PrefetchData>>(
+  url_resource_table_ = std::make_unique<GlowplugKeyValueTable<PrefetchData>>(
       kUrlResourceTableName);
-  url_redirect_table_ = base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
+  url_redirect_table_ = std::make_unique<GlowplugKeyValueTable<RedirectData>>(
       kUrlRedirectTableName);
-  host_resource_table_ = base::MakeUnique<GlowplugKeyValueTable<PrefetchData>>(
+  host_resource_table_ = std::make_unique<GlowplugKeyValueTable<PrefetchData>>(
       kHostResourceTableName);
-  host_redirect_table_ = base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
+  host_redirect_table_ = std::make_unique<GlowplugKeyValueTable<RedirectData>>(
       kHostRedirectTableName);
   origin_table_ =
-      base::MakeUnique<GlowplugKeyValueTable<OriginData>>(kOriginTableName);
+      std::make_unique<GlowplugKeyValueTable<OriginData>>(kOriginTableName);
 }
 
 ResourcePrefetchPredictorTables::~ResourcePrefetchPredictorTables() = default;

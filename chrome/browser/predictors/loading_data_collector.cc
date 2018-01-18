@@ -325,7 +325,7 @@ void LoadingDataCollector::RecordURLRequest(const URLRequestSummary& request) {
   const GURL& main_frame_url = request.navigation_id.main_frame_url;
   inflight_navigations_.emplace(
       request.navigation_id,
-      base::MakeUnique<PageRequestSummary>(main_frame_url));
+      std::make_unique<PageRequestSummary>(main_frame_url));
 }
 
 void LoadingDataCollector::RecordURLResponse(
@@ -422,7 +422,7 @@ void LoadingDataCollector::OnMainFrameRedirect(
 
   // If we lost the information about the first hop for some reason.
   if (!summary) {
-    summary = base::MakeUnique<PageRequestSummary>(main_frame_url);
+    summary = std::make_unique<PageRequestSummary>(main_frame_url);
   }
 
   // A redirect will not lead to another OnMainFrameRequest call, so record the
