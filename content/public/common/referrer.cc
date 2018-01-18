@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "content/common/loader_util.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/loader_util.h"
 
 namespace content {
 
@@ -87,7 +87,7 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
 // static
 void Referrer::SetReferrerForRequest(net::URLRequest* request,
                                      const Referrer& referrer) {
-  request->SetReferrer(ComputeReferrer(referrer.url));
+  request->SetReferrer(network::ComputeReferrer(referrer.url));
   request->set_referrer_policy(ReferrerPolicyForUrlRequest(referrer.policy));
 }
 

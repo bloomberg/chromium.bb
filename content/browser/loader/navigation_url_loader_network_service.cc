@@ -31,7 +31,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
-#include "content/common/loader_util.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
@@ -55,6 +54,7 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -826,7 +826,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       request_info->common_params.referrer.policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
-  new_request->headers.SetHeader(kAcceptHeader, kFrameAcceptHeader);
+  new_request->headers.SetHeader(network::kAcceptHeader,
+                                 network::kFrameAcceptHeader);
 
   new_request->resource_type = request_info->is_main_frame
                                    ? RESOURCE_TYPE_MAIN_FRAME

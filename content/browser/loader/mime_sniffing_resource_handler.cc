@@ -20,7 +20,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
-#include "content/common/loader_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -36,6 +35,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "url/origin.h"
@@ -149,7 +149,7 @@ void MimeSniffingResourceHandler::OnResponseStarted(
         response_->head.headers->response_code() == 304)) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     if (request_context_type_ != REQUEST_CONTEXT_TYPE_FETCH &&
-        ShouldSniffContent(request(), response_.get())) {
+        network::ShouldSniffContent(request(), response_.get())) {
       controller->Resume();
       return;
     }

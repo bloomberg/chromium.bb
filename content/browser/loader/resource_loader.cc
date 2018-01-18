@@ -25,7 +25,6 @@
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
-#include "content/common/loader_util.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -43,6 +42,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 
 using base::TimeDelta;
@@ -77,8 +77,9 @@ void PopulateResourceResponse(
         static_cast<int>(request_info->GetPreviewsState());
   }
   if (info->ShouldReportRawHeaders()) {
-    response->head.raw_request_response_info = BuildRawRequestResponseInfo(
-        *request, raw_request_headers, raw_response_headers);
+    response->head.raw_request_response_info =
+        network::BuildRawRequestResponseInfo(*request, raw_request_headers,
+                                             raw_response_headers);
   }
 
   response->head.effective_connection_type =

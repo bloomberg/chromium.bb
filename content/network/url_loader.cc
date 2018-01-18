@@ -12,7 +12,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/common/loader_util.h"
 #include "content/network/data_pipe_element_reader.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
@@ -23,6 +22,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/cert/symantec_certs.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -220,7 +220,7 @@ URLLoader::URLLoader(NetworkContext* context,
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
-  url_request_->SetReferrer(ComputeReferrer(request.referrer));
+  url_request_->SetReferrer(network::ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->SetExtraRequestHeaders(request.headers);
 
@@ -248,7 +248,7 @@ URLLoader::URLLoader(NetworkContext* context,
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
-  url_request_->SetLoadFlags(BuildLoadFlagsForRequest(request));
+  url_request_->SetLoadFlags(request.load_flags);
   if (report_raw_headers_) {
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,
@@ -351,8 +351,9 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response.get());
   if (report_raw_headers_) {
-    response->head.raw_request_response_info = BuildRawRequestResponseInfo(
-        *url_request_, raw_request_headers_, raw_response_headers_.get());
+    response->head.raw_request_response_info =
+        network::BuildRawRequestResponseInfo(
+            *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
   }
@@ -404,8 +405,9 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response_.get());
   if (report_raw_headers_) {
-    response_->head.raw_request_response_info = BuildRawRequestResponseInfo(
-        *url_request_, raw_request_headers_, raw_response_headers_.get());
+    response_->head.raw_request_response_info =
+        network::BuildRawRequestResponseInfo(
+            *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
   }
@@ -427,7 +429,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                  base::Unretained(this)));
 
   if (!(options_ & network::mojom::kURLLoadOptionSniffMimeType) ||
-      !ShouldSniffContent(url_request_.get(), response_.get()))
+      !network::ShouldSniffContent(url_request_.get(), response_.get()))
     SendResponseToClient();
 
   // Start reading...

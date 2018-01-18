@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "content/common/loader_util.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "ui/base/page_transition_types.h"
@@ -136,8 +136,8 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       original_request.method, original_request.url,
       original_request.site_for_cookies, first_party_url_policy,
       original_request.referrer_policy,
-      ComputeReferrer(original_request.referrer), response_head.headers.get(),
-      response_head.headers->response_code(),
+      network::ComputeReferrer(original_request.referrer),
+      response_head.headers.get(), response_head.headers->response_code(),
       original_request.url.Resolve(new_location), token_binding_negotiated);
 }
 

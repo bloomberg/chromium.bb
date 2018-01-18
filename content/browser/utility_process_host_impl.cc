@@ -32,6 +32,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/zygote_features.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_switches.h"
@@ -296,6 +297,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     // Browser command-line switches to propagate to the utility process.
     static const char* const kSwitchNames[] = {
+      network::switches::kNoReferrers,
       switches::kHostResolverRules,
       switches::kIgnoreCertificateErrors,
       switches::kIgnoreCertificateErrorsSPKIList,

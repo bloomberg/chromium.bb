@@ -195,8 +195,6 @@ source_set("common") {
     "inter_process_time_ticks_converter.h",
     "layer_tree_settings_factory.cc",
     "layer_tree_settings_factory.h",
-    "loader_util.cc",
-    "loader_util.h",
     "mac/attributed_string_coder.h",
     "mac/attributed_string_coder.mm",
     "mac/font_loader.h",

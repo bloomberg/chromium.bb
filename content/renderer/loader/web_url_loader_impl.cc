@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
-#include "content/common/loader_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -46,6 +45,7 @@
 #include "content/renderer/loader/weburlresponse_extradata_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_sct_to_string.h"
@@ -55,6 +55,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
@@ -660,18 +661,23 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   if (resource_request->resource_type == RESOURCE_TYPE_STYLESHEET) {
-    resource_request->headers.SetHeader(kAcceptHeader, kStylesheetAcceptHeader);
+    resource_request->headers.SetHeader(network::kAcceptHeader,
+                                        kStylesheetAcceptHeader);
   } else if (resource_request->resource_type == RESOURCE_TYPE_FAVICON ||
              resource_request->resource_type == RESOURCE_TYPE_IMAGE) {
-    resource_request->headers.SetHeader(kAcceptHeader, kImageAcceptHeader);
+    resource_request->headers.SetHeader(network::kAcceptHeader,
+                                        kImageAcceptHeader);
   } else {
     // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
     // manually set an accept header on an XHR.
-    resource_request->headers.SetHeaderIfMissing(kAcceptHeader,
-                                                 kDefaultAcceptHeader);
+    resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
+                                                 network::kDefaultAcceptHeader);
   }
 
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
+  if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH)
+    resource_request->load_flags |= net::LOAD_PREFETCH;
+
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even
   // for requests from in-process plugins.
