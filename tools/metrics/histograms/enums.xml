@@ -44738,10 +44738,24 @@ Called by update_traffic_annotation_histograms.py.-->
 </enum>
 
 <enum name="WebAppInstallSource">
+  <obsolete>
+    Removed from code Jan 2018.
+  </obsolete>
   <int value="0" label="Installed via the automatically-triggered prompt"/>
   <int value="1" label="Installed via the menu"/>
   <int value="2" label="Installed via a developer-triggered API call"/>
   <int value="3" label="Installed via the management API (not reported)"/>
+</enum>
+
+<enum name="WebappInstallSource">
+  <int value="0" label="Menu via a browser tab"/>
+  <int value="1" label="Menu via an Android Custom Tab"/>
+  <int value="2" label="Automatic prompt via a browser tab"/>
+  <int value="3" label="Automatic prompt via an Android Custom Tab"/>
+  <int value="4" label="Developer API prompt via a browser tab"/>
+  <int value="5" label="Developer API prompt via an Android Custom Tab"/>
+  <int value="6" label="Via a debug source"/>
+  <int value="7" label="Extensions management API (not reported)"/>
 </enum>
 
 <enum name="WebAudioAutoplayStatus">

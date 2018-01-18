@@ -41,7 +41,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                      std::unique_ptr<ShortcutInfo> info,
                      const SkBitmap& primary_icon,
                      const SkBitmap& badge_icon,
-                     WebAppInstallSource install_source,
+                     WebappInstallSource install_source,
                      bool is_webapk);
 
   // Creates an infobar and delegate for promoting the installation of an
@@ -83,7 +83,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                                   std::unique_ptr<ShortcutInfo> info,
                                   const SkBitmap& primary_icon,
                                   const SkBitmap& badge_icon,
-                                  WebAppInstallSource install_source,
+                                  WebappInstallSource install_source,
                                   bool is_webapk);
 
   // Delegate for promoting an Android app.
@@ -132,7 +132,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   bool has_user_interaction_;
 
   bool is_webapk_;
-  WebAppInstallSource install_source_;
+  WebappInstallSource install_source_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
 };

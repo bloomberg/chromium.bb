@@ -96138,7 +96138,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.Install.InstallEvent" enum="WebappInstallSource">
+  <owner>dominickn@chromium.org</owner>
+  <owner>mcgreevy@chromium.org</owner>
+  <summary>
+    Records the mechanism and source from which a web app installation was
+    triggered, regardless of whether the installation was successful.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Install.InstallSource" enum="WebAppInstallSource">
+  <obsolete>
+    Deprecated 2018-01 in favour of Webapp.Install.InstallEvent.
+  </obsolete>
   <owner>mcgreevy@chromium.org</owner>
   <summary>
     Records the mechanism by which a web app installation was triggered,

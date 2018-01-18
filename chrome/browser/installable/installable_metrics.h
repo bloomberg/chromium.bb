@@ -7,6 +7,16 @@
 
 #include <memory>
 
+namespace content {
+class WebContents;
+}
+
+enum class InstallTrigger {
+  API,
+  AUTOMATIC_PROMPT,
+  MENU,
+};
+
 // This enum backs a UMA histogram and must be treated as append-only.
 enum class InstallabilityCheckStatus {
   NOT_STARTED,
@@ -31,15 +41,36 @@ enum class AddToHomescreenTimeoutStatus {
   COUNT,
 };
 
-// The ways that an app install can be triggered.
+// Sources for triggering webapp installation.
 // NOTE: each enum entry which is reportable must be added to
 // InstallableMetrics::IsReportableInstallSource().
 // This enum backs a UMA histogram and must be treated as append-only.
-enum class WebAppInstallSource {
-  AUTOMATIC_PROMPT = 0,  // Automatic prompt e.g. install banner.
-  MENU = 1,              // Chrome menu
-  API = 2,               // BeforeInstallPrompt.prompt().
-  MANAGEMENT_API = 3,    // Extensions management API (not reported).
+enum class WebappInstallSource {
+  // Menu item in a browser tab.
+  MENU_BROWSER_TAB = 0,
+
+  // Menu item in an Android Custom Tab.
+  MENU_CUSTOM_TAB = 1,
+
+  // Automatic prompt in a browser tab.
+  AUTOMATIC_PROMPT_BROWSER_TAB = 2,
+
+  // Automatic prompt in an Android Custom Tab.
+  AUTOMATIC_PROMPT_CUSTOM_TAB = 3,
+
+  // Developer-initiated API in a browser tab.
+  API_BROWSER_TAB = 4,
+
+  // Developer-initiated API in an Android Custom Tab.
+  API_CUSTOM_TAB = 5,
+
+  // Installation from a debug flow (e.g. via devtools).
+  DEBUG = 6,
+
+  // Extensions management API (not reported).
+  MANAGEMENT_API = 7,
+
+  // Add any new values above this one.
   COUNT,
 };
 
@@ -64,11 +95,17 @@ class InstallableMetrics {
 
   // Records |source| in the Webapp.Install.InstallSource histogram.
   // IsReportableInstallSource(|source|) must be true.
-  static void TrackInstallSource(WebAppInstallSource source);
+  static void TrackInstallEvent(WebappInstallSource source);
 
   // Returns whether |source| is a value that may be passed to
-  // TrackInstallSource.
-  static bool IsReportableInstallSource(WebAppInstallSource source);
+  // TrackInstallEvent.
+  static bool IsReportableInstallSource(WebappInstallSource source);
+
+  // Returns the appropriate WebappInstallSource for |web_contents| when the
+  // install originates from |trigger|.
+  static WebappInstallSource GetInstallSource(
+      content::WebContents* web_contents,
+      InstallTrigger trigger);
 
   // This records the state of the installability check when the Android menu is
   // opened.

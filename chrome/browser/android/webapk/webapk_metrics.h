@@ -31,10 +31,10 @@ enum InstallEvent {
 };
 
 // The ways in which WebAPK installation can be started.
-// InstallSource is deprecated in favor of WebAppInstallSource, which tracks
+// InstallSource is deprecated in favor of WebappInstallSource, which tracks
 // install sources for both desktop and Android.  If a new element is added to
 // InstallSource, it should be mapped (in webapk::TrackInstallSource()) to an
-// element in WebAppInstallSource.
+// element in WebappInstallSource.
 // TODO(crbug.com/790788): Once Webapp.Install.InstallSource contains enough
 // historical data for Android, remove the Android-specific metric and use the
 // general metric instead.
@@ -47,7 +47,7 @@ enum InstallSource {
 void TrackRequestTokenDuration(base::TimeDelta delta);
 void TrackInstallDuration(base::TimeDelta delta);
 void TrackInstallEvent(InstallEvent event);
-void TrackInstallSource(WebAppInstallSource event);
+void TrackInstallSource(WebappInstallSource event);
 
 };  // namespace webapk
 

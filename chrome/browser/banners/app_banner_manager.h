@@ -285,7 +285,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Creates the app banner UI. Overridden by subclasses as the infobar is
   // platform-specific.
-  virtual void ShowBannerUi(WebAppInstallSource install_source) = 0;
+  virtual void ShowBannerUi(WebappInstallSource install_source) = 0;
 
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the

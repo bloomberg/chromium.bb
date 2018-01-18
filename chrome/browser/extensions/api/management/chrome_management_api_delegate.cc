@@ -151,7 +151,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
 
     bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
         Profile::FromBrowserContext(context), web_app, nullptr,
-        WebAppInstallSource::MANAGEMENT_API));
+        WebappInstallSource::MANAGEMENT_API));
     bookmark_app_helper_->Create(
         base::Bind(&extensions::ManagementGenerateAppForLinkFunction::
                        FinishCreateBookmarkApp,

@@ -71,7 +71,9 @@ void AddToHomescreenManager::AddShortcut(
     WebApkInstallService::Get(web_contents->GetBrowserContext())
         ->InstallAsync(web_contents, data_fetcher_->shortcut_info(),
                        data_fetcher_->primary_icon(),
-                       data_fetcher_->badge_icon(), WebAppInstallSource::MENU);
+                       data_fetcher_->badge_icon(),
+                       InstallableMetrics::GetInstallSource(
+                           web_contents, InstallTrigger::MENU));
   } else {
     base::string16 user_title =
         base::android::ConvertJavaStringToUTF16(env, j_user_title);
