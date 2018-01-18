@@ -283,14 +283,13 @@ enum WhitespacePositionOption {
   kConsiderNonCollapsibleWhitespace
 };
 
-// |leadingWhitespacePosition(position)| returns a previous position of
-// |position| if it is at collapsible whitespace, otherwise it returns null
+// |leadingCollapsibleWhitespacePosition(position)| returns a previous position
+// of |position| if it is at collapsible whitespace, otherwise it returns null
 // position. When it is called with |NotConsiderNonCollapsibleWhitespace| and
 // a previous position in a element which has CSS property "white-space:pre",
-// or its variant, |leadingWhitespacePosition()| returns null position.
-// TODO(yosin) We should rename |leadingWhitespacePosition()| to
-// |leadingCollapsibleWhitespacePosition()| as this function really returns.
-Position LeadingWhitespacePosition(
+// or its variant, |leadingCollapsibleWhitespacePosition()| returns null
+// position.
+Position LeadingCollapsibleWhitespacePosition(
     const Position&,
     TextAffinity,
     WhitespacePositionOption = kNotConsiderNonCollapsibleWhitespace);

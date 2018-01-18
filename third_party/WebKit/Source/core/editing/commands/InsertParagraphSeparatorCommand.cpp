@@ -485,11 +485,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // Make sure we do not cause a rendered space to become unrendered.
   // FIXME: We need the affinity for pos, but mostForwardCaretPosition does not
   // give it
-  Position leading_whitespace =
-      LeadingWhitespacePosition(insertion_position, TextAffinity::kDefault);
-  // FIXME: leadingWhitespacePosition is returning the position before preserved
-  // newlines for positions after the preserved newline, causing the newline to
-  // be turned into a nbsp.
+  Position leading_whitespace = LeadingCollapsibleWhitespacePosition(
+      insertion_position, TextAffinity::kDefault);
+  // FIXME: leadingCollapsibleWhitespacePosition is returning the position
+  // before preserved newlines for positions after the preserved newline,
+  // causing the newline to be turned into a nbsp.
   if (leading_whitespace.IsNotNull() &&
       leading_whitespace.AnchorNode()->IsTextNode()) {
     Text* text_node = ToText(leading_whitespace.AnchorNode());
