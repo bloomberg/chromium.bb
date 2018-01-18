@@ -11,6 +11,7 @@
 #include "net/http/http_response_body_drainer.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -42,7 +43,9 @@ int HttpBasicStream::SendRequest(const HttpRequestHeaders& headers,
       raw_headers.Add(it.name(), it.value());
     request_headers_callback_.Run(std::move(raw_headers));
   }
-  return parser()->SendRequest(state_.GenerateRequestLine(), headers, response,
+  // TODO(crbug.com/656607): Add propoer annotation.
+  return parser()->SendRequest(state_.GenerateRequestLine(), headers,
+                               NO_TRAFFIC_ANNOTATION_BUG_656607, response,
                                callback);
 }
 

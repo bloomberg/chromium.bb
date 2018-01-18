@@ -417,8 +417,10 @@ int HttpProxyClientSocket::DoSendRequest() {
   parser_buf_ = new GrowableIOBuffer();
   http_stream_parser_.reset(new HttpStreamParser(
       transport_.get(), &request_, parser_buf_.get(), net_log_));
-  return http_stream_parser_->SendRequest(
-      request_line_, request_headers_, &response_, io_callback_);
+  // TODO(crbug.com/656607): Add propoer annotation.
+  return http_stream_parser_->SendRequest(request_line_, request_headers_,
+                                          NO_TRAFFIC_ANNOTATION_BUG_656607,
+                                          &response_, io_callback_);
 }
 
 int HttpProxyClientSocket::DoSendRequestComplete(int result) {
