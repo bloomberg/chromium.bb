@@ -25,10 +25,80 @@ namespace storage {
 namespace {
 
 const static int kInvalidDiskCacheSideStreamIndex = -1;
+const FilePath::CharType kFutureFileName[] = FILE_PATH_LITERAL("_future_name_");
 
 }  // namespace
 
-const FilePath::CharType kFutureFileName[] = FILE_PATH_LITERAL("_future_name_");
+BlobDataBuilder::FutureData::FutureData(FutureData&&) = default;
+BlobDataBuilder::FutureData& BlobDataBuilder::FutureData::operator=(
+    FutureData&&) = default;
+BlobDataBuilder::FutureData::~FutureData() = default;
+
+bool BlobDataBuilder::FutureData::Populate(base::span<const char> data,
+                                           size_t offset) const {
+  DCHECK(data.data());
+  base::span<char> target = GetDataToPopulate(offset, data.length());
+  if (!target.data())
+    return false;
+  DCHECK_EQ(target.length(), data.length());
+  std::memcpy(target.data(), data.data(), data.length());
+  return true;
+}
+
+base::span<char> BlobDataBuilder::FutureData::GetDataToPopulate(
+    size_t offset,
+    size_t length) const {
+  network::DataElement* element = item_->data_element_ptr();
+
+  // We lazily allocate our data buffer by waiting until the first
+  // PopulateFutureData call.
+  // Why? The reason we have the AppendFutureData  method is to create our Blob
+  // record when the Renderer tells us about the blob without actually
+  // allocating the memory yet, as we might not have the quota yet. So we don't
+  // want to allocate the memory until we're actually receiving the data (which
+  // the browser process only does when it has quota).
+  if (element->type() == network::DataElement::TYPE_BYTES_DESCRIPTION) {
+    element->SetToAllocatedBytes(element->length());
+    // The type of the element is now TYPE_BYTES.
+  }
+  DCHECK_EQ(element->type(), network::DataElement::TYPE_BYTES);
+  base::CheckedNumeric<size_t> checked_end = offset;
+  checked_end += length;
+  if (!checked_end.IsValid() || checked_end.ValueOrDie() > element->length()) {
+    DVLOG(1) << "Invalid offset or length.";
+    return nullptr;
+  }
+  return base::make_span(element->mutable_bytes() + offset, length);
+}
+
+BlobDataBuilder::FutureData::FutureData(scoped_refptr<BlobDataItem> item)
+    : item_(item) {}
+
+BlobDataBuilder::FutureFile::FutureFile(FutureFile&&) = default;
+BlobDataBuilder::FutureFile& BlobDataBuilder::FutureFile::operator=(
+    FutureFile&&) = default;
+BlobDataBuilder::FutureFile::~FutureFile() = default;
+
+bool BlobDataBuilder::FutureFile::Populate(
+    scoped_refptr<ShareableFileReference> file_reference,
+    const base::Time& expected_modification_time) {
+  if (!item_) {
+    DVLOG(1) << "File item already populated";
+    return false;
+  }
+  network::DataElement* element = item_->data_element_ptr();
+  DCHECK_EQ(element->type(), network::DataElement::TYPE_FILE);
+  uint64_t length = element->length();
+  uint64_t offset = element->offset();
+  element->SetToFilePathRange(file_reference->path(), offset, length,
+                              expected_modification_time);
+  item_->data_handle_ = std::move(file_reference);
+  item_ = nullptr;
+  return true;
+}
+
+BlobDataBuilder::FutureFile::FutureFile(scoped_refptr<BlobDataItem> item)
+    : item_(item) {}
 
 /* static */
 base::FilePath BlobDataBuilder::GetFutureFileItemPath(uint64_t file_id) {
@@ -106,88 +176,24 @@ void BlobDataBuilder::AppendData(const char* data, size_t length) {
   items_.push_back(new BlobDataItem(std::move(element)));
 }
 
-size_t BlobDataBuilder::AppendFutureData(size_t length) {
+BlobDataBuilder::FutureData BlobDataBuilder::AppendFutureData(size_t length) {
   CHECK_NE(length, 0u);
   std::unique_ptr<network::DataElement> element(new network::DataElement());
   element->SetToBytesDescription(length);
   items_.push_back(new BlobDataItem(std::move(element)));
-  return items_.size() - 1;
+  return FutureData(items_.back());
 }
 
-bool BlobDataBuilder::PopulateFutureData(size_t index,
-                                         const char* data,
-                                         size_t offset,
-                                         size_t length) {
-  DCHECK(data);
-
-  char* target = GetFutureDataPointerToPopulate(index, offset, length);
-  if (!target)
-    return false;
-  std::memcpy(target, data, length);
-  return true;
-}
-
-char* BlobDataBuilder::GetFutureDataPointerToPopulate(size_t index,
-                                                      size_t offset,
-                                                      size_t length) {
-  DCHECK_LT(index, items_.size());
-  network::DataElement* element = items_[index]->data_element_ptr();
-
-  // We lazily allocate our data buffer by waiting until the first
-  // PopulateFutureData call.
-  // Why? The reason we have the AppendFutureData  method is to create our Blob
-  // record when the Renderer tells us about the blob without actually
-  // allocating the memory yet, as we might not have the quota yet. So we don't
-  // want to allocate the memory until we're actually receiving the data (which
-  // the browser process only does when it has quota).
-  if (element->type() == network::DataElement::TYPE_BYTES_DESCRIPTION) {
-    element->SetToAllocatedBytes(element->length());
-    // The type of the element is now TYPE_BYTES.
-  }
-  if (element->type() != network::DataElement::TYPE_BYTES) {
-    DVLOG(1) << "Invalid item type.";
-    return nullptr;
-  }
-  base::CheckedNumeric<size_t> checked_end = offset;
-  checked_end += length;
-  if (!checked_end.IsValid() || checked_end.ValueOrDie() > element->length()) {
-    DVLOG(1) << "Invalid offset or length.";
-    return nullptr;
-  }
-  return element->mutable_bytes() + offset;
-}
-
-size_t BlobDataBuilder::AppendFutureFile(uint64_t offset,
-                                         uint64_t length,
-                                         uint64_t file_id) {
+BlobDataBuilder::FutureFile BlobDataBuilder::AppendFutureFile(
+    uint64_t offset,
+    uint64_t length,
+    uint64_t file_id) {
   CHECK_NE(length, 0ull);
   std::unique_ptr<network::DataElement> element(new network::DataElement());
   element->SetToFilePathRange(GetFutureFileItemPath(file_id), offset, length,
                               base::Time());
   items_.push_back(new BlobDataItem(std::move(element)));
-  return items_.size() - 1;
-}
-
-bool BlobDataBuilder::PopulateFutureFile(
-    size_t index,
-    const scoped_refptr<ShareableFileReference>& file_reference,
-    const base::Time& expected_modification_time) {
-  DCHECK_LT(index, items_.size());
-  network::DataElement* element = items_[index]->data_element_ptr();
-
-  if (element->type() != network::DataElement::TYPE_FILE) {
-    DVLOG(1) << "Invalid item type.";
-    return false;
-  } else if (!IsFutureFileItem(*element)) {
-    DVLOG(1) << "Item not created by AppendFutureFile";
-    return false;
-  }
-  uint64_t length = element->length();
-  uint64_t offset = element->offset();
-  items_[index]->data_handle_ = std::move(file_reference);
-  element->SetToFilePathRange(file_reference->path(), offset, length,
-                              expected_modification_time);
-  return true;
+  return FutureFile(items_.back());
 }
 
 void BlobDataBuilder::AppendFile(const FilePath& file_path,

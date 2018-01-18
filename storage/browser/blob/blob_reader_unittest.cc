@@ -1210,7 +1210,7 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
   std::vector<FileCreationInfo> files;
 
   BlobDataBuilder b(kUuid);
-  b.AppendFutureData(kDataSize);
+  BlobDataBuilder::FutureData future_data = b.AppendFutureData(kDataSize);
   BlobStatus can_populate_status =
       BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
   blob_handle_ = context_.BuildBlob(
@@ -1223,7 +1223,7 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
-  b.PopulateFutureData(0, kData.data(), 0, kDataSize);
+  future_data.Populate(base::make_span(kData.data(), kDataSize), 0);
   context_.NotifyTransportComplete(kUuid);
   base::RunLoop().RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kDataSize, size_result);
