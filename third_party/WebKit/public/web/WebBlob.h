@@ -31,7 +31,6 @@
 #ifndef WebBlob_h
 #define WebBlob_h
 
-#include "public/platform/WebBlobData.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"

@@ -31,7 +31,6 @@
 #ifndef WebHTTPBody_h
 #define WebHTTPBody_h
 
-#include "WebBlobData.h"
 #include "WebData.h"
 #include "WebString.h"
 #include "WebURL.h"

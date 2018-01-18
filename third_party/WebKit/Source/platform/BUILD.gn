@@ -604,7 +604,6 @@ jumbo_component("platform") {
     "exported/WebActiveGestureAnimation.h",
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
-    "exported/WebBlobData.cpp",
     "exported/WebBlobInfo.cpp",
     "exported/WebCORS.cpp",
     "exported/WebCORSPreflightResultCache.cpp",

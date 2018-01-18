@@ -136,7 +136,6 @@ source_set("blink_headers") {
     "platform/WebAudioSourceProvider.h",
     "platform/WebAudioSourceProviderClient.h",
     "platform/WebBlendMode.h",
-    "platform/WebBlobData.h",
     "platform/WebBlobInfo.h",
     "platform/WebBlobRegistry.h",
     "platform/WebBrowserControlsState.h",
