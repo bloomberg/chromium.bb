@@ -172,6 +172,8 @@ class CORE_EXPORT HTMLSelectElement final
   // Used for slot assignment.
   static bool CanAssignToSelectSlot(const Node&);
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
   void Trace(blink::Visitor*) override;
 
  protected:

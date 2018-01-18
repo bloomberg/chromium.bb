@@ -49,6 +49,8 @@ class HTMLFrameSetElement final : public HTMLElement {
   const Vector<HTMLDimension>& RowLengths() const { return row_lengths_; }
   const Vector<HTMLDimension>& ColLengths() const { return col_lengths_; }
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
   LocalDOMWindow* AnonymousNamedGetter(const AtomicString&);
 
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
