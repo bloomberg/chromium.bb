@@ -69,12 +69,19 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
 // This class contains functions used to register and install a component.
 class CrOSComponentManager {
  public:
+  using LoadCallback = base::OnceCallback<void(const base::FilePath&)>;
+  enum class MountPolicy {
+    kMount,
+    kDontMount,
+  };
+
   CrOSComponentManager();
   ~CrOSComponentManager();
   // Installs a component and keeps it up-to-date. |load_callback| returns the
   // mount point path.
   void Load(const std::string& name,
-            base::OnceCallback<void(const base::FilePath&)> load_callback);
+            MountPolicy mount_policy,
+            LoadCallback load_callback);
 
   // Stops updating and removes a component.
   // Returns true if the component was successfully unloaded
@@ -110,7 +117,8 @@ class CrOSComponentManager {
   // Installs a component with a dedicated ComponentUpdateService instance.
   void Install(ComponentUpdateService* cus,
                const std::string& name,
-               base::OnceCallback<void(const base::FilePath&)> load_callback);
+               MountPolicy mount_policy,
+               LoadCallback load_callback);
 
   // Calls OnDemandUpdate to install the component right after being registered.
   // |id| is the component id generated from its sha2 hash.
@@ -119,19 +127,17 @@ class CrOSComponentManager {
                     update_client::Callback install_callback);
 
   // Calls LoadInternal to load the installed component.
-  void FinishInstall(
-      const std::string& name,
-      base::OnceCallback<void(const base::FilePath&)> load_callback,
-      update_client::Error error);
+  void FinishInstall(const std::string& name,
+                     MountPolicy mount_policy,
+                     LoadCallback load_callback,
+                     update_client::Error error);
 
   // Internal function to load a component.
-  void LoadInternal(
-      const std::string& name,
-      base::OnceCallback<void(const base::FilePath&)> load_callback);
+  void LoadInternal(const std::string& name, LoadCallback load_callback);
 
   // Calls load_callback and pass in the parameter |result| (component mount
   // point).
-  void FinishLoad(base::OnceCallback<void(const base::FilePath&)> load_callback,
+  void FinishLoad(LoadCallback load_callback,
                   base::Optional<base::FilePath> result);
 
   // Returns all installed components.

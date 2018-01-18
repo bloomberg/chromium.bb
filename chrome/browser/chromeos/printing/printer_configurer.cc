@@ -215,6 +215,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
         auto& component_name = *components_requested.begin();
         g_browser_process->platform_part()->cros_component_manager()->Load(
             component_name,
+            component_updater::CrOSComponentManager::MountPolicy::kMount,
             base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
                            weak_factory_.GetWeakPtr(), printer, ppd_contents,
                            std::move(cb)));

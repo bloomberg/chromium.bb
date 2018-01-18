@@ -179,16 +179,20 @@ CrOSComponentManager::CrOSComponentManager() {}
 
 CrOSComponentManager::~CrOSComponentManager() {}
 
-void CrOSComponentManager::Load(
-    const std::string& name,
-    base::OnceCallback<void(const base::FilePath&)> load_callback) {
+void CrOSComponentManager::Load(const std::string& name,
+                                MountPolicy mount_policy,
+                                LoadCallback load_callback) {
   if (!IsCompatible(name)) {
     // A compatible component is not installed, start installation process.
     auto* const cus = g_browser_process->component_updater();
-    Install(cus, name, std::move(load_callback));
-  } else {
-    // A compatible component is intalled, load it directly.
+    Install(cus, name, mount_policy, std::move(load_callback));
+  } else if (mount_policy == MountPolicy::kMount) {
+    // A compatible component is installed, load it.
     LoadInternal(name, std::move(load_callback));
+  } else {
+    // A compatible component is installed, do not load it.
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback), base::FilePath()));
   }
 }
 
@@ -241,10 +245,10 @@ void CrOSComponentManager::Register(ComponentUpdateService* cus,
   installer->Register(cus, std::move(register_callback));
 }
 
-void CrOSComponentManager::Install(
-    ComponentUpdateService* cus,
-    const std::string& name,
-    base::OnceCallback<void(const base::FilePath&)> load_callback) {
+void CrOSComponentManager::Install(ComponentUpdateService* cus,
+                                   const std::string& name,
+                                   MountPolicy mount_policy,
+                                   LoadCallback load_callback) {
   const ConfigMap components = CONFIG_MAP_CONTENT;
   const auto it = components.find(name);
   if (it == components.end()) {
@@ -255,12 +259,12 @@ void CrOSComponentManager::Install(
   ComponentConfig config(it->first, it->second.find("env_version")->second,
                          it->second.find("sha2hashstr")->second);
   Register(cus, config,
-           base::BindOnce(&CrOSComponentManager::StartInstall,
-                          base::Unretained(this), cus,
-                          GenerateId(it->second.find("sha2hashstr")->second),
-                          base::BindOnce(&CrOSComponentManager::FinishInstall,
-                                         base::Unretained(this), name,
-                                         std::move(load_callback))));
+           base::BindOnce(
+               &CrOSComponentManager::StartInstall, base::Unretained(this), cus,
+               GenerateId(it->second.find("sha2hashstr")->second),
+               base::BindOnce(&CrOSComponentManager::FinishInstall,
+                              base::Unretained(this), name, mount_policy,
+                              std::move(load_callback))));
 }
 
 void CrOSComponentManager::StartInstall(
@@ -270,16 +274,20 @@ void CrOSComponentManager::StartInstall(
   cus->GetOnDemandUpdater().OnDemandUpdate(id, std::move(install_callback));
 }
 
-void CrOSComponentManager::FinishInstall(
-    const std::string& name,
-    base::OnceCallback<void(const base::FilePath&)> load_callback,
-    update_client::Error error) {
-  LoadInternal(name, std::move(load_callback));
+void CrOSComponentManager::FinishInstall(const std::string& name,
+                                         MountPolicy mount_policy,
+                                         LoadCallback load_callback,
+                                         update_client::Error error) {
+  if (mount_policy == MountPolicy::kMount) {
+    LoadInternal(name, std::move(load_callback));
+  } else {
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback), base::FilePath()));
+  }
 }
 
-void CrOSComponentManager::LoadInternal(
-    const std::string& name,
-    base::OnceCallback<void(const base::FilePath&)> load_callback) {
+void CrOSComponentManager::LoadInternal(const std::string& name,
+                                        LoadCallback load_callback) {
   DCHECK(IsCompatible(name));
   const base::FilePath path = GetCompatiblePath(name);
   // path is empty if no compatible component is available to load.
@@ -296,9 +304,8 @@ void CrOSComponentManager::LoadInternal(
   }
 }
 
-void CrOSComponentManager::FinishLoad(
-    base::OnceCallback<void(const base::FilePath&)> load_callback,
-    base::Optional<base::FilePath> result) {
+void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
+                                      base::Optional<base::FilePath> result) {
   PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
                                      result.value_or(base::FilePath())));
 }
