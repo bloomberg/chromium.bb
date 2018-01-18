@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -80,8 +81,14 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void AttachToCompositor(WindowAndroidCompositor* compositor);
   void DetachFromCompositor();
 
-  // Returns the ID for the current Surface.
-  viz::SurfaceId SurfaceId() const;
+  void WasResized();
+
+  // Returns the ID for the current Surface. Returns an invalid ID if no
+  // surface exists (!HasDelegatedContent()).
+  const viz::SurfaceId& SurfaceId() const;
+
+  // Returns the local surface ID for this delegated content.
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
  private:
   // viz::mojom::CompositorFrameSinkClient implementation.
@@ -125,6 +132,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   bool has_transparent_background_ = false;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;
+
+  const bool enable_surface_synchronization_;
+  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
 
   // A lock that is held from the point at which we attach to the compositor to
   // the point at which we submit our first frame to the compositor. This
