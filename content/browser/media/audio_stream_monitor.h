@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "media/audio/audio_output_controller.h"
 
 namespace base {
@@ -39,10 +40,10 @@ class WebContents;
 // active audio streams.
 //
 // Each WebContentsImpl owns an AudioStreamMonitor.
-class CONTENT_EXPORT AudioStreamMonitor {
+class CONTENT_EXPORT AudioStreamMonitor : public WebContentsObserver {
  public:
   explicit AudioStreamMonitor(WebContents* contents);
-  ~AudioStreamMonitor();
+  ~AudioStreamMonitor() override;
 
   // Returns true if audio has recently been audible from the tab.  This is
   // usually called whenever the tab data model is refreshed; but there are
@@ -73,6 +74,11 @@ class CONTENT_EXPORT AudioStreamMonitor {
                                        int render_frame_id,
                                        int stream_id,
                                        bool is_audible);
+
+  // WebContentsObserver implementation
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  // Overloaded to avoid conflict with RenderProcessGone(int).
+  void RenderProcessGone(base::TerminationStatus status) override {}
 
   void set_was_recently_audible_for_testing(bool value) {
     indicator_is_on_ = value;
