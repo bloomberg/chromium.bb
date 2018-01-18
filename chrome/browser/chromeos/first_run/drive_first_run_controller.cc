@@ -21,6 +21,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,7 +45,6 @@
 #include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
@@ -460,19 +460,18 @@ void DriveFirstRunController::ShowNotification() {
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON)));
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kDriveOfflineNotificationId,
-          base::string16(),  // title
-          l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE),
-          resource_bundle.GetImageNamed(IDR_NOTIFICATION_DRIVE),
-          base::UTF8ToUTF16(extension->name()), GURL(),
-          message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                     kDriveHostedAppId),
-          data, new DriveOfflineNotificationDelegate(profile_)));
-  notification->set_priority(message_center::LOW_PRIORITY);
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
+  message_center::Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kDriveOfflineNotificationId,
+      base::string16(),  // title
+      l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE),
+      resource_bundle.GetImageNamed(IDR_NOTIFICATION_DRIVE),
+      base::UTF8ToUTF16(extension->name()), GURL(),
+      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                 kDriveHostedAppId),
+      data, new DriveOfflineNotificationDelegate(profile_));
+  notification.set_priority(message_center::LOW_PRIORITY);
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::TRANSIENT, notification);
 }
 
 }  // namespace chromeos
