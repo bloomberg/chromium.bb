@@ -68,7 +68,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   IDB_TRACE("IDBFactory::getDatabaseNamesRequestSetup");
   IDBRequest::AsyncTraceState metrics("IDBFactory::getDatabaseNames");
-  IDBRequest* request = IDBRequest::Create(script_state, IDBAny::CreateNull(),
+  IDBRequest* request = IDBRequest::Create(script_state, IDBRequest::Source(),
                                            nullptr, std::move(metrics));
   // TODO(jsbell): Used only by inspector; remove unneeded checks/exceptions?
   if (!IsContextValid(ExecutionContext::From(script_state)))

@@ -45,7 +45,6 @@
 namespace blink {
 
 class DOMStringList;
-class IDBAny;
 class ExceptionState;
 
 class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
@@ -120,7 +119,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   // Exposed for the use of IDBCursor::update().
   IDBRequest* DoPut(ScriptState*,
                     WebIDBPutMode,
-                    IDBAny* source,
+                    const IDBRequest::Source&,
                     const ScriptValue&,
                     const IDBKey*,
                     ExceptionState&);
@@ -196,7 +195,6 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                         ExceptionState&);
   IDBRequest* DoPut(ScriptState*,
                     WebIDBPutMode,
-                    IDBAny* source,
                     const ScriptValue&,
                     const ScriptValue& key_value,
                     ExceptionState&);

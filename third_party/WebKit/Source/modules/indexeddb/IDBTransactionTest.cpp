@@ -130,7 +130,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   EXPECT_EQ(1u, live_transactions.size());
 
   Persistent<IDBRequest> request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
 
   DeactivateNewTransactions(scope.GetIsolate());
@@ -163,7 +163,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   EXPECT_EQ(1U, live_transactions.size());
 
   Persistent<IDBRequest> request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
@@ -204,7 +204,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   EXPECT_EQ(1U, live_transactions.size());
 
   Persistent<IDBRequest> request =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
@@ -241,10 +241,10 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   EXPECT_EQ(1U, live_transactions.size());
 
   Persistent<IDBRequest> request1 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   Persistent<IDBRequest> request2 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 
@@ -285,10 +285,10 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   EXPECT_EQ(1U, live_transactions.size());
 
   Persistent<IDBRequest> request1 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   Persistent<IDBRequest> request2 =
-      IDBRequest::Create(scope.GetScriptState(), IDBAny::Create(store_.Get()),
+      IDBRequest::Create(scope.GetScriptState(), store_.Get(),
                          transaction_.Get(), IDBRequest::AsyncTraceState());
   DeactivateNewTransactions(scope.GetIsolate());
 

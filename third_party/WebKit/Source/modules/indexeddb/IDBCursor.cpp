@@ -131,8 +131,8 @@ IDBRequest* IDBCursor::update(ScriptState* script_state,
 
   IDBObjectStore* object_store = EffectiveObjectStore();
   return object_store->DoPut(script_state, kWebIDBPutModeCursorUpdate,
-                             IDBAny::Create(this), value, IdbPrimaryKey(),
-                             exception_state);
+                             IDBRequest::Source::FromIDBCursor(this), value,
+                             IdbPrimaryKey(), exception_state);
 }
 
 void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
@@ -350,9 +350,8 @@ IDBRequest* IDBCursor::Delete(ScriptState* script_state,
     return nullptr;
   }
 
-  IDBRequest* request =
-      IDBRequest::Create(script_state, IDBAny::Create(this), transaction_.Get(),
-                         std::move(metrics));
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
   transaction_->BackendDB()->Delete(
       transaction_->Id(), EffectiveObjectStore()->Id(),
       WebIDBKeyView(IdbPrimaryKey()), request->CreateWebCallbacks().release());

@@ -46,6 +46,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/html_canvas_element_or_offscreen_canvas.h",
   "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index.cc",
   "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index.h",
+  "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index_or_idb_cursor.cc",
+  "$bindings_modules_v8_output_dir/idb_object_store_or_idb_index_or_idb_cursor.h",
   "$bindings_modules_v8_output_dir/long_or_constrain_long_range.cc",
   "$bindings_modules_v8_output_dir/long_or_constrain_long_range.h",
   "$bindings_modules_v8_output_dir/offscreen_rendering_context.cc",

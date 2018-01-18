@@ -35,6 +35,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/modules/v8/idb_object_store_or_idb_index.h"
+#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/PausableObject.h"
 #include "core/dom/events/EventListener.h"
@@ -68,6 +70,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
  public:
+  using Source = IDBObjectStoreOrIDBIndexOrIDBCursor;
   // Container for async tracing state.
   //
   // The documentation for TRACE_EVENT_ASYNC_{BEGIN,END} suggests identifying
@@ -156,7 +159,19 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   };
 
   static IDBRequest* Create(ScriptState*,
-                            IDBAny* source,
+                            IDBIndex* source,
+                            IDBTransaction*,
+                            AsyncTraceState);
+  static IDBRequest* Create(ScriptState*,
+                            IDBObjectStore* source,
+                            IDBTransaction*,
+                            AsyncTraceState);
+  static IDBRequest* Create(ScriptState*,
+                            IDBCursor*,
+                            IDBTransaction* source,
+                            AsyncTraceState);
+  static IDBRequest* Create(ScriptState*,
+                            const Source&,
                             IDBTransaction*,
                             AsyncTraceState);
   ~IDBRequest() override;
@@ -165,7 +180,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   v8::Isolate* GetIsolate() const { return isolate_; }
   ScriptValue result(ScriptState*, ExceptionState&);
   DOMException* error(ExceptionState&) const;
-  ScriptValue source(ScriptState*) const;
+  void source(ScriptState*, Source&) const;
   IDBTransaction* transaction() const { return transaction_.Get(); }
 
   bool isResultDirty() const { return result_dirty_; }
@@ -318,7 +333,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   }
 
  protected:
-  IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*, AsyncTraceState);
+  IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   void EnqueueEvent(Event*);
   void DequeueEvent(Event*);
   virtual bool ShouldEnqueueEvent() const;
@@ -370,7 +385,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
 
-  Member<IDBAny> source_;
+  Source source_;
   Member<IDBAny> result_;
   Member<DOMException> error_;
 

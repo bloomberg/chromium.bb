@@ -25,7 +25,9 @@
 
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 
+#include <memory>
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -33,7 +35,6 @@
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
-#include <memory>
 
 using blink::WebIDBDatabase;
 
@@ -57,7 +58,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* script_state,
                                    int64_t version,
                                    IDBRequest::AsyncTraceState metrics)
     : IDBRequest(script_state,
-                 IDBAny::CreateNull(),
+                 IDBRequest::Source(),
                  nullptr,
                  std::move(metrics)),
       database_callbacks_(callbacks),
