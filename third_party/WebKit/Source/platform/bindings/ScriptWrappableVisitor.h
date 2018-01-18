@@ -136,16 +136,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   static void WriteBarrier(v8::Isolate*,
                            const TraceWrapperV8Reference<v8::Value>&);
 
-  // TODO(mlippautz): Remove once ScriptWrappable is converted to
-  // TraceWrapperV8Reference.
-  static void WriteBarrier(v8::Isolate* isolate,
-                           const v8::Persistent<v8::Object>& dst_object) {
-    ScriptWrappableVisitor* visitor = CurrentVisitor(isolate);
-    if (dst_object.IsEmpty() || !visitor->WrapperTracingInProgress())
-      return;
-    visitor->MarkWrapper(&dst_object.As<v8::Value>());
-  }
-
   ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
   ~ScriptWrappableVisitor() override;
 
@@ -184,10 +174,9 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
 
   template <typename V8Type>
   void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
-    TraceWrappers(v8reference.template Cast<v8::Value>());
+    Visit(v8reference.template Cast<v8::Value>());
   }
-  virtual void TraceWrappers(const TraceWrapperV8Reference<v8::Value>&) const;
-  virtual void MarkWrapper(const v8::PersistentBase<v8::Value>*) const;
+
   virtual bool MarkWrapperHeader(HeapObjectHeader*) const;
 
   virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
@@ -227,6 +216,10 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   size_t NumberOfWrappersToTrace() override;
 
  protected:
+  // The visitor interface. Derived visitors should override this
+  // function to visit V8 references.
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const;
+
   template <typename T>
   static NOINLINE void MissedWriteBarrier() {
     NOTREACHED();

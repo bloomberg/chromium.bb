@@ -148,9 +148,12 @@ class PLATFORM_EXPORT ScriptWrappable
 
   bool ContainsWrapper() const { return !main_world_wrapper_.IsEmpty(); }
 
-  //  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
-  //  wrapper in the main world. To mark wrappers in all worlds call
-  //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
+  // Mark wrapper of this ScriptWrappable as alive in V8. Only marks
+  // wrapper in the main world. To mark wrappers in all worlds call
+  // ScriptWrappableVisitor::MarkWrappersInAllWorlds.
+  // TODO(ulan): Move body of this function to TraceWrappers and
+  // remove this function once all ScriptWrappable objects dispatch to
+  // ScriptWrappable::TraceWrappers from their overriden TraceWrappers.
   void MarkWrapper(const ScriptWrappableVisitor*) const;
 
  protected:

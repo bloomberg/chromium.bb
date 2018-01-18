@@ -14,8 +14,6 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
   explicit ScriptWrappableVisitorVerifier(v8::Isolate* isolate)
       : ScriptWrappableVisitor(isolate) {}
 
-  void TraceWrappers(const TraceWrapperV8Reference<v8::Value>&) const final {}
-  void MarkWrapper(const v8::PersistentBase<v8::Value>*) const final {}
   bool MarkWrapperHeader(HeapObjectHeader* header) const final {
     if (!visited_headers_.Contains(header)) {
       visited_headers_.insert(header);
@@ -46,6 +44,9 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
     }
     trace_wrappers_callback(this, object);
   }
+
+ protected:
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) const final {}
 
  private:
   mutable WTF::HashSet<HeapObjectHeader*> visited_headers_;

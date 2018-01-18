@@ -268,7 +268,7 @@ class InterceptingScriptWrappableVisitor
       : ScriptWrappableVisitor(isolate), marked_wrappers_(new size_t(0)) {}
   ~InterceptingScriptWrappableVisitor() { delete marked_wrappers_; }
 
-  virtual void MarkWrapper(const v8::PersistentBase<v8::Value>* handle) const {
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) const override {
     *marked_wrappers_ += 1;
     // Do not actually mark this visitor, as this would call into v8, which
     // would require executing an actual GC.
