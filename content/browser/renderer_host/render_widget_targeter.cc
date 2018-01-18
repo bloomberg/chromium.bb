@@ -268,7 +268,8 @@ void RenderWidgetTargeter::FoundTarget(
                                       target_location->y());
     }
     if (mouse_event.GetType() != blink::WebInputEvent::kUndefined)
-      delegate_->DispatchEventToTarget(root_view, target, mouse_event, latency);
+      delegate_->DispatchEventToTarget(root_view, target, mouse_event, latency,
+                                       target_location);
   } else if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
              blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
              blink::WebInputEvent::IsGestureEventType(event.GetType())) {
@@ -277,7 +278,8 @@ void RenderWidgetTargeter::FoundTarget(
                 blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
             static_cast<const blink::WebGestureEvent&>(event).source_device ==
                 blink::WebGestureDevice::kWebGestureDeviceTouchpad));
-    delegate_->DispatchEventToTarget(root_view, target, event, latency);
+    delegate_->DispatchEventToTarget(root_view, target, event, latency,
+                                     target_location);
   } else {
     NOTREACHED();
     return;

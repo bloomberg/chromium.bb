@@ -57,10 +57,13 @@ class RenderWidgetTargeter {
         RenderWidgetHostViewBase* root_view,
         const blink::WebInputEvent& event) = 0;
 
-    virtual void DispatchEventToTarget(RenderWidgetHostViewBase* root_view,
-                                       RenderWidgetHostViewBase* target,
-                                       const blink::WebInputEvent& event,
-                                       const ui::LatencyInfo& latency) = 0;
+    // |event| is in |root_view|'s coordinate space.
+    virtual void DispatchEventToTarget(
+        RenderWidgetHostViewBase* root_view,
+        RenderWidgetHostViewBase* target,
+        const blink::WebInputEvent& event,
+        const ui::LatencyInfo& latency,
+        const base::Optional<gfx::PointF>& target_location) = 0;
 
     virtual RenderWidgetHostViewBase* FindViewFromFrameSinkId(
         const viz::FrameSinkId& frame_sink_id) const = 0;

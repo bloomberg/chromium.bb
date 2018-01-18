@@ -203,7 +203,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
       const blink::WebMouseWheelEvent& mouse_wheel_event,
-      const ui::LatencyInfo& latency);
+      const ui::LatencyInfo& latency,
+      const base::Optional<gfx::PointF>& target_location);
   // Assumes |touch_event| has coordinates in the root view's coordinate space.
   void DispatchTouchEvent(RenderWidgetHostViewBase* root_view,
                           RenderWidgetHostViewBase* target,
@@ -220,10 +221,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetTargetResult FindTargetSynchronously(
       RenderWidgetHostViewBase* root_view,
       const blink::WebInputEvent& event) override;
-  void DispatchEventToTarget(RenderWidgetHostViewBase* root_view,
-                             RenderWidgetHostViewBase* target,
-                             const blink::WebInputEvent& event,
-                             const ui::LatencyInfo& latency) override;
+  void DispatchEventToTarget(
+      RenderWidgetHostViewBase* root_view,
+      RenderWidgetHostViewBase* target,
+      const blink::WebInputEvent& event,
+      const ui::LatencyInfo& latency,
+      const base::Optional<gfx::PointF>& target_location) override;
   RenderWidgetHostViewBase* FindViewFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) const override;
 
