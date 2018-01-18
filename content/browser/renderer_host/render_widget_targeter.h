@@ -45,6 +45,8 @@ struct RenderWidgetTargetResult {
   base::Optional<gfx::PointF> target_location = base::nullopt;
 };
 
+class TracingUmaTracker;
+
 class RenderWidgetTargeter {
  public:
   class Delegate {
@@ -108,6 +110,7 @@ class RenderWidgetTargeter {
                         const ui::LatencyInfo& latency,
                         uint32_t request_id,
                         const gfx::PointF& target_location,
+                        TracingUmaTracker tracker,
                         const viz::FrameSinkId& frame_sink_id);
 
   // |event| is in the coordinate space of |root_view|. |target_location|, if
@@ -142,6 +145,7 @@ class RenderWidgetTargeter {
     base::WeakPtr<RenderWidgetHostViewBase> root_view;
     ui::WebScopedInputEvent event;
     ui::LatencyInfo latency;
+    std::unique_ptr<TracingUmaTracker> tracker;
   };
 
   bool request_in_flight_ = false;
