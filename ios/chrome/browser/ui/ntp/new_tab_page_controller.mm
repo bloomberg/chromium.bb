@@ -184,6 +184,7 @@ const CGFloat kToolbarHeight = 56;
     } else {
       _currentController = self.homePanel;
     }
+    [_currentController wasShown];
   }
   return self;
 }
@@ -353,7 +354,7 @@ const CGFloat kToolbarHeight = 56;
     // is initiated, and when WebController calls -willBeDismissed.
     DCHECK(panelController);
     [self.parentViewController addChildViewController:panelController];
-    [self.view addSubview:view];
+    [self.view insertSubview:view belowSubview:self.view.tabBar];
     self.view.contentView = view;
     [panelController didMoveToParentViewController:self.parentViewController];
   }
