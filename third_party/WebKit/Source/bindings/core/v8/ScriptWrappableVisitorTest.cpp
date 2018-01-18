@@ -170,7 +170,7 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
       V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
   visitor->TracePrologue();
 
-  visitor->MarkAndPushToMarkingDeque(object);
+  visitor->TraceWrappersWithManualWriteBarrier(object);
 
   EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
 

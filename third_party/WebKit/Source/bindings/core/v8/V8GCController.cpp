@@ -136,7 +136,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
 
   // Collect interesting V8 roots for the heap snapshot. Currently these are
   // DOM nodes.
-  void CollectV8Roots() { isolate_->VisitHandlesWithClassIds(this); }
+  void CollectV8Roots() { isolate()->VisitHandlesWithClassIds(this); }
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) override {
@@ -144,10 +144,10 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
       return;
 
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
-        isolate_, v8::Persistent<v8::Object>::Cast(*value));
-    DCHECK(V8Node::hasInstance(wrapper, isolate_));
+        isolate(), v8::Persistent<v8::Object>::Cast(*value));
+    DCHECK(V8Node::hasInstance(wrapper, isolate()));
     Node* node = V8Node::ToImpl(wrapper);
-    Node* root = V8GCController::OpaqueRootForGC(isolate_, node);
+    Node* root = V8GCController::OpaqueRootForGC(isolate(), node);
     nodes_requiring_tracing_[root].push_back(node);
   }
 
@@ -158,7 +158,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
     current_parent_ = nullptr;
 
     TracePrologue();
-    ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
+    ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate(), this);
     AdvanceTracing(
         0,
         v8::EmbedderHeapTracer::AdvanceTracingActions(

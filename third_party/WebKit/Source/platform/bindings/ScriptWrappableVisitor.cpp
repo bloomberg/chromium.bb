@@ -52,10 +52,8 @@ void ScriptWrappableVisitor::TraceEpilogue() {
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
-  ScriptWrappableVisitorVerifier verifier(isolate_);
-  for (auto& marking_data : verifier_deque_) {
-    marking_data.TraceWrappers(&verifier);
-  }
+  ScriptWrappableVisitorVerifier verifier(isolate_, &verifier_deque_);
+  verifier.Verify();
 #endif
 
   should_cleanup_ = true;
@@ -206,17 +204,14 @@ bool ScriptWrappableVisitor::AdvanceTracing(
   return true;
 }
 
-bool ScriptWrappableVisitor::MarkWrapperHeader(HeapObjectHeader* header) const {
-  if (header->IsWrapperHeaderMarked())
-    return false;
-
+void ScriptWrappableVisitor::MarkWrapperHeader(HeapObjectHeader* header) const {
+  DCHECK(!header->IsWrapperHeaderMarked());
   // Verify that no compactable & movable objects are slated for
   // lazy unmarking.
   DCHECK(!HeapCompact::IsCompactableArena(
       PageFromObject(header)->Arena()->ArenaIndex()));
   header->MarkWrapperHeader();
   headers_to_unmark_.push_back(header);
-  return true;
 }
 
 void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
@@ -245,6 +240,23 @@ void ScriptWrappableVisitor::Visit(
   if (!tracing_in_progress_ || traced_wrapper.Get().IsEmpty())
     return;
   traced_wrapper.Get().RegisterExternalReference(isolate_);
+}
+
+void ScriptWrappableVisitor::Visit(
+    const WrapperDescriptor& wrapper_descriptor) const {
+  HeapObjectHeader* header = wrapper_descriptor.heap_object_header_callback(
+      wrapper_descriptor.traceable);
+  if (header->IsWrapperHeaderMarked())
+    return;
+  MarkWrapperHeader(header);
+  DCHECK(tracing_in_progress_);
+  DCHECK(header->IsWrapperHeaderMarked());
+  marking_deque_.push_back(WrapperMarkingData(wrapper_descriptor));
+#if DCHECK_IS_ON()
+  if (!advancing_tracing_) {
+    verifier_deque_.push_back(WrapperMarkingData(wrapper_descriptor));
+  }
+#endif
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(
