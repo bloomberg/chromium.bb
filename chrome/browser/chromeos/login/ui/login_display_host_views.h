@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_VIEWS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -41,7 +42,7 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   void OnStartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
-  void StartArcKiosk(const AccountId& account_id) override;
+  void OnStartArcKiosk() override;
   void StartVoiceInteractionOobe() override;
   bool IsVoiceInteractionOobe() override;
 

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
+#include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -114,6 +115,16 @@ void LoginDisplayHost::StartDemoAppLaunch() {
 
   demo_app_launcher_ = std::make_unique<DemoAppLauncher>();
   demo_app_launcher_->StartDemoAppLaunch();
+}
+
+void LoginDisplayHost::StartArcKiosk(const AccountId& account_id) {
+  VLOG(1) << "Login >> start ARC kiosk.";
+  SetStatusAreaVisible(false);
+  arc_kiosk_controller_ =
+      std::make_unique<ArcKioskController>(this, GetOobeUI());
+  arc_kiosk_controller_->StartArcKiosk(account_id);
+
+  OnStartArcKiosk();
 }
 
 void LoginDisplayHost::OnAuthPrewarmDone() {

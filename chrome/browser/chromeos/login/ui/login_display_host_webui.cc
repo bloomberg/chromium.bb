@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -774,10 +773,7 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
   login_view_->set_should_emit_login_prompt_visible(false);
 }
 
-void LoginDisplayHostWebUI::StartArcKiosk(const AccountId& account_id) {
-  VLOG(1) << "Login WebUI >> start ARC kiosk.";
-  SetStatusAreaVisible(false);
-
+void LoginDisplayHostWebUI::OnStartArcKiosk() {
   // Animation is not supported in Mash.
   if (!ash_util::IsRunningInMash())
     finalize_animation_type_ = ANIMATION_FADE_OUT;
@@ -787,11 +783,6 @@ void LoginDisplayHostWebUI::StartArcKiosk(const AccountId& account_id) {
   }
 
   login_view_->set_should_emit_login_prompt_visible(false);
-
-  arc_kiosk_controller_ =
-      std::make_unique<ArcKioskController>(this, GetOobeUI());
-
-  arc_kiosk_controller_->StartArcKiosk(account_id);
 }
 
 bool LoginDisplayHostWebUI::IsVoiceInteractionOobe() {
