@@ -212,6 +212,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebVR))
     WebRuntimeFeatures::EnableWebVR(true);
 
+  WebRuntimeFeatures::EnableWebVRExperimentalRendering(
+      base::FeatureList::IsEnabled(features::kWebVrExperimentalRendering));
+
   WebRuntimeFeatures::EnableWebXR(
       base::FeatureList::IsEnabled(features::kWebXr));
 

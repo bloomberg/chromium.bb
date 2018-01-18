@@ -25952,7 +25952,6 @@ from previous Chrome versions.
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
-  <int value="-112459802" label="WebXrRenderPath:enabled"/>
   <int value="-110465424" label="PictureInPicture:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-102537270" label="extension-content-verification"/>
@@ -26616,7 +26615,6 @@ from previous Chrome versions.
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
   <int value="1658644418" label="disable-app-list-voice-search"/>
   <int value="1659082220" label="EnableManualSaving:disabled"/>
-  <int value="1659372520" label="WebXrRenderPath:disabled"/>
   <int value="1661925474" label="silent-debugger-extension-api"/>
   <int value="1664401033" label="ColorCorrectRendering:enabled"/>
   <int value="1665349789" label="spurious-power-button-window"/>
@@ -46135,11 +46133,6 @@ Called by update_traffic_annotation_histograms.py.-->
 <enum name="XPCConnectionEvent">
   <int value="0" label="Interrupted"/>
   <int value="1" label="Invalidated"/>
-</enum>
-
-<enum name="XRRenderPath">
-  <int value="0" label="ClientWait"/>
-  <int value="1" label="GpuFence"/>
 </enum>
 
 <enum name="YoungGenerationHandling">
