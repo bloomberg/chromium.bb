@@ -47,6 +47,21 @@ def GetDefaultWaterfall(build_config, is_release_branch):
     return None
 
 
+def getInfoVMTest():
+  suites = ['vmtest-informational1',
+            'vmtest-informational2',
+            'vmtest-informational3',
+            'vmtest-informational4',
+            'arc-gts']
+  ret = []
+  for suite in suites:
+    ret.append(config_lib.VMTestConfig(
+        constants.VM_SUITE_TEST_TYPE,
+        test_suite=suite,
+        timeout=12 * 60 * 60))
+  return ret
+
+
 class HWTestList(object):
   """Container for methods to generate HWTest lists."""
 
@@ -2887,14 +2902,8 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       boards=['betty'],
       active_waterfall=waterfall.WATERFALL_INTERNAL,
-      vm_tests=[config_lib.VMTestConfig(
-          constants.VM_SUITE_TEST_TYPE,
-          test_suite='vmtest-informational',
-          timeout=12*60*60)],
-      vm_tests_override=[config_lib.VMTestConfig(
-          constants.VM_SUITE_TEST_TYPE,
-          test_suite='vmtest-informational',
-          timeout=12*60*60)],
+      vm_tests=getInfoVMTest(),
+      vm_tests_override=getInfoVMTest(),
   )
 
   site_config.Add(
@@ -3869,6 +3878,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_TRYBOT,
   )
 
+
+
   site_config.AddWithoutTemplate(
       'betty-vmtest-informational',
       site_config.templates.internal,
@@ -3878,14 +3889,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=['betty'],
       builder_class_name='test_builders.VMInformationalBuilder',
-      vm_tests=[config_lib.VMTestConfig(
-          constants.VM_SUITE_TEST_TYPE,
-          test_suite='vmtest-informational',
-          timeout=23*60*60)],
-      vm_tests_override=[config_lib.VMTestConfig(
-          constants.VM_SUITE_TEST_TYPE,
-          test_suite='vmtest-informational',
-          timeout=23*60*60)],
+      vm_tests=getInfoVMTest(),
+      vm_tests_override=getInfoVMTest(),
       active_waterfall=constants.WATERFALL_INTERNAL,
       vm_test_report_to_dashboards=True,
   )
