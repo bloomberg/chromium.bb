@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/UUID.h"
+#include "platform/blob/BlobBytesProvider.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
@@ -33,31 +34,6 @@ using mojom::blink::DataElementBytes;
 using mojom::blink::DataElementFile;
 using mojom::blink::DataElementFilesystemURL;
 using mojom::blink::DataElementPtr;
-
-namespace {
-const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
-}
-
-TEST(BlobDataTest, Consolidation) {
-  BlobData data(BlobData::FileCompositionStatus::NO_UNKNOWN_SIZE_FILES);
-  const char* text1 = "abc";
-  const char* text2 = "def";
-  data.AppendBytes(text1, 3u);
-  data.AppendBytes(text2, 3u);
-  data.AppendText("ps1", false);
-  data.AppendText("ps2", false);
-
-  EXPECT_EQ(1u, data.items_.size());
-  EXPECT_EQ(12u, data.items_[0].data->length());
-  EXPECT_EQ(0, memcmp(data.items_[0].data->data(), "abcdefps1ps2", 12));
-
-  auto large_data = std::make_unique<char[]>(kMaxConsolidatedItemSizeInBytes);
-  data.AppendBytes(large_data.get(), kMaxConsolidatedItemSizeInBytes);
-
-  EXPECT_EQ(2u, data.items_.size());
-  EXPECT_EQ(12u, data.items_[0].data->length());
-  EXPECT_EQ(kMaxConsolidatedItemSizeInBytes, data.items_[1].data->length());
-}
 
 namespace {
 
@@ -197,10 +173,12 @@ class BlobDataHandleTest : public ::testing::Test {
     for (size_t i = 0; i < large_test_data_.size(); ++i)
       large_test_data_[i] = i % 251;
 
-    ASSERT_LT(small_test_data_.size(), kMaxConsolidatedItemSizeInBytes);
+    ASSERT_LT(small_test_data_.size(),
+              BlobBytesProvider::kMaxConsolidatedItemSizeInBytes);
     ASSERT_LT(medium_test_data_.size(),
               DataElementBytes::kMaximumEmbeddedDataSize);
-    ASSERT_GT(medium_test_data_.size(), kMaxConsolidatedItemSizeInBytes);
+    ASSERT_GT(medium_test_data_.size(),
+              BlobBytesProvider::kMaxConsolidatedItemSizeInBytes);
     ASSERT_GT(large_test_data_.size(),
               DataElementBytes::kMaximumEmbeddedDataSize);
 
@@ -398,7 +376,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedBytes) {
   std::unique_ptr<BlobData> data = BlobData::Create();
   data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
-  EXPECT_EQ(2u, data->Items().size());
+  EXPECT_EQ(1u, data->Elements().size());
 
   Vector<uint8_t> expected_data = medium_test_data_;
   expected_data.AppendVector(small_test_data_);
@@ -414,7 +392,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedLargeAndSmallBytes) {
   std::unique_ptr<BlobData> data = BlobData::Create();
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
-  EXPECT_EQ(2u, data->Items().size());
+  EXPECT_EQ(1u, data->Elements().size());
 
   Vector<uint8_t> expected_data = large_test_data_;
   expected_data.AppendVector(small_test_data_);
@@ -430,7 +408,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
   std::unique_ptr<BlobData> data = BlobData::Create();
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
-  EXPECT_EQ(2u, data->Items().size());
+  EXPECT_EQ(1u, data->Elements().size());
 
   Vector<uint8_t> expected_data = small_test_data_;
   expected_data.AppendVector(large_test_data_);

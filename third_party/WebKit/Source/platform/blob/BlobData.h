@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class BlobBytesProvider;
 class BlobDataHandle;
 
 class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
@@ -62,86 +63,12 @@ class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
   Vector<char> data_;
 };
 
-struct PLATFORM_EXPORT BlobDataItem {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  static const long long kToEndOfFile;
-
-  // Default constructor.
-  BlobDataItem()
-      : type(kData),
-        offset(0),
-        length(kToEndOfFile),
-        expected_modification_time(InvalidFileTime()) {}
-
-  // Constructor for String type (complete string).
-  explicit BlobDataItem(scoped_refptr<RawData> data)
-      : type(kData),
-        data(std::move(data)),
-        offset(0),
-        length(kToEndOfFile),
-        expected_modification_time(InvalidFileTime()) {}
-
-  // Constructor for File type (complete file).
-  explicit BlobDataItem(const String& path)
-      : type(kFile),
-        path(path),
-        offset(0),
-        length(kToEndOfFile),
-        expected_modification_time(InvalidFileTime()) {}
-
-  // Constructor for File type (partial file).
-  BlobDataItem(const String& path,
-               long long offset,
-               long long length,
-               double expected_modification_time)
-      : type(kFile),
-        path(path),
-        offset(offset),
-        length(length),
-        expected_modification_time(expected_modification_time) {}
-
-  // Constructor for Blob type.
-  BlobDataItem(scoped_refptr<BlobDataHandle> blob_data_handle,
-               long long offset,
-               long long length)
-      : type(kBlob),
-        blob_data_handle(std::move(blob_data_handle)),
-        offset(offset),
-        length(length),
-        expected_modification_time(InvalidFileTime()) {}
-
-  // Constructor for FileSystem file type.
-  BlobDataItem(const KURL& file_system_url,
-               long long offset,
-               long long length,
-               double expected_modification_time)
-      : type(kFileSystemURL),
-        file_system_url(file_system_url),
-        offset(offset),
-        length(length),
-        expected_modification_time(expected_modification_time) {}
-
-  // Detaches from current thread so that it can be passed to another thread.
-  void DetachFromCurrentThread();
-
-  const enum { kData, kFile, kBlob, kFileSystemURL } type;
-
-  scoped_refptr<RawData> data;            // For Data type.
-  String path;                            // For File type.
-  KURL file_system_url;                   // For FileSystemURL type.
-  scoped_refptr<BlobDataHandle> blob_data_handle;  // For Blob type.
-
-  long long offset;
-  long long length;
-  double expected_modification_time;
-};
-
-typedef Vector<BlobDataItem> BlobDataItemList;
-
 class PLATFORM_EXPORT BlobData {
   USING_FAST_MALLOC(BlobData);
 
  public:
+  static constexpr long long kToEndOfFile = -1;
+
   static std::unique_ptr<BlobData> Create();
 
   // Calling append* on objects returned by createFor___WithUnknownSize will
@@ -162,7 +89,12 @@ class PLATFORM_EXPORT BlobData {
   const String& ContentType() const { return content_type_; }
   void SetContentType(const String&);
 
-  const BlobDataItemList& Items() const { return items_; }
+  const Vector<mojom::blink::DataElementPtr>& Elements() const {
+    return elements_;
+  }
+  Vector<mojom::blink::DataElementPtr> ReleaseElements() {
+    return std::move(elements_);
+  }
 
   void AppendBytes(const void*, size_t length);
   void AppendData(scoped_refptr<RawData>);
@@ -185,15 +117,13 @@ class PLATFORM_EXPORT BlobData {
   // The value of the size property for a Blob who has this data.
   // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet
   // determined.
-  long long length() const;
+  uint64_t length() const;
 
   bool IsSingleUnknownSizeFile() const {
     return file_composition_ == FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE;
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BlobDataTest, Consolidation);
-
   enum class FileCompositionStatus {
     SINGLE_UNKNOWN_SIZE_FILE,
     NO_UNKNOWN_SIZE_FILES
@@ -202,11 +132,15 @@ class PLATFORM_EXPORT BlobData {
   explicit BlobData(FileCompositionStatus composition)
       : file_composition_(composition) {}
 
-  bool CanConsolidateData(size_t length);
+  void AppendDataInternal(base::span<const char> data,
+                          scoped_refptr<RawData> = nullptr);
 
   String content_type_;
   FileCompositionStatus file_composition_;
-  BlobDataItemList items_;
+
+  Vector<mojom::blink::DataElementPtr> elements_;
+  size_t current_memory_population_ = 0;
+  BlobBytesProvider* last_bytes_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BlobData);
 };

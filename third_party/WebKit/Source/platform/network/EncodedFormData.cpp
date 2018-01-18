@@ -120,8 +120,8 @@ void EncodedFormData::AppendData(const void* data, size_t size) {
 }
 
 void EncodedFormData::AppendFile(const String& filename) {
-  elements_.push_back(FormDataElement(filename, 0, BlobDataItem::kToEndOfFile,
-                                      InvalidFileTime()));
+  elements_.push_back(
+      FormDataElement(filename, 0, BlobData::kToEndOfFile, InvalidFileTime()));
 }
 
 void EncodedFormData::AppendFileRange(const String& filename,

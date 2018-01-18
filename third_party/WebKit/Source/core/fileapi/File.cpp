@@ -86,7 +86,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithMetadata(
     const String& file_system_name,
     const FileMetadata& metadata) {
   std::unique_ptr<BlobData> blob_data;
-  if (metadata.length == BlobDataItem::kToEndOfFile) {
+  if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileWithUnknownSize(
         metadata.platform_path, metadata.modification_time / kMsPerSecond);
   } else {
@@ -103,7 +103,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
     const KURL& file_system_url,
     const FileMetadata& metadata) {
   std::unique_ptr<BlobData> blob_data;
-  if (metadata.length == BlobDataItem::kToEndOfFile) {
+  if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileSystemURLWithUnknownSize(
         file_system_url, metadata.modification_time / kMsPerSecond);
   } else {

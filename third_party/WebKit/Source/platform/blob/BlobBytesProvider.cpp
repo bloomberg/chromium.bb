@@ -106,9 +106,15 @@ void DecreaseChildProcessRefCount() {
 
 }  // namespace
 
-BlobBytesProvider::BlobBytesProvider(scoped_refptr<RawData> data) {
+constexpr size_t BlobBytesProvider::kMaxConsolidatedItemSizeInBytes;
+
+BlobBytesProvider::BlobBytesProvider() {
   IncreaseChildProcessRefCount();
-  data_.push_back(std::move(data));
+}
+
+BlobBytesProvider::BlobBytesProvider(scoped_refptr<RawData> data)
+    : BlobBytesProvider() {
+  AppendData(std::move(data));
 }
 
 BlobBytesProvider::~BlobBytesProvider() {
@@ -117,6 +123,14 @@ BlobBytesProvider::~BlobBytesProvider() {
 
 void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
   data_.push_back(std::move(data));
+}
+
+void BlobBytesProvider::AppendData(base::span<const char> data) {
+  if (data_.IsEmpty() || data_.back()->length() + data.length() >
+                             kMaxConsolidatedItemSizeInBytes) {
+    data_.push_back(RawData::Create());
+  }
+  data_.back()->MutableData()->Append(data.data(), data.length());
 }
 
 void BlobBytesProvider::RequestAsReply(RequestAsReplyCallback callback) {
