@@ -494,7 +494,13 @@ void DataReductionProxyMetricsObserver::ProcessMemoryDump(
                              memory_dump->process_dumps().end()));
 
   auto process_dump_it = memory_dump->process_dumps().begin();
+  if (process_dump_it == memory_dump->process_dumps().end())
+    return;
+
+  // We want to catch this in debug but not crash in release.
   DCHECK_EQ(process_id_, process_dump_it->pid());
+  if (process_dump_it->pid() != process_id_)
+    return;
   renderer_memory_usage_kb_ =
       static_cast<int64_t>(process_dump_it->os_dump().private_footprint_kb);
 }
