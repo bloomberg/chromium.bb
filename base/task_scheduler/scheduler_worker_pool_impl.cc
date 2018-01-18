@@ -189,7 +189,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
           1,
           100,
           50,
-          HistogramBase::kUmaTargetedHistogramFlag)) {}
+          HistogramBase::kUmaTargetedHistogramFlag)) {
+  DCHECK(!name_.empty());
+}
 
 void SchedulerWorkerPoolImpl::Start(
     const SchedulerWorkerPoolParams& params,

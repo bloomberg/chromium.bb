@@ -11,7 +11,7 @@
 namespace base {
 namespace internal {
 
-TaskTrackerPosix::TaskTrackerPosix() = default;
+TaskTrackerPosix::TaskTrackerPosix(StringPiece name) : TaskTracker(name) {}
 TaskTrackerPosix::~TaskTrackerPosix() = default;
 
 void TaskTrackerPosix::RunOrSkipTask(Task task,

@@ -901,7 +901,7 @@ TEST_F(TaskSchedulerTaskTrackerTest, RunNextTaskReturnsSequenceToReschedule) {
 TEST_F(TaskSchedulerTaskTrackerTest,
        WillScheduleBackgroundSequenceWithMaxBackgroundSequences) {
   constexpr int kMaxNumDispatchedBackgroundSequences = 2;
-  TaskTracker tracker(kMaxNumDispatchedBackgroundSequences);
+  TaskTracker tracker(StringPiece(), kMaxNumDispatchedBackgroundSequences);
 
   // Simulate posting |kMaxNumDispatchedBackgroundSequences| background tasks
   // and scheduling the associated sequences. This should succeed.
@@ -980,7 +980,7 @@ void SetBool(bool* arg) {
 TEST_F(TaskSchedulerTaskTrackerTest,
        RunNextBackgroundTaskWithEarlierPendingBackgroundTask) {
   constexpr int kMaxNumDispatchedBackgroundSequences = 1;
-  TaskTracker tracker(kMaxNumDispatchedBackgroundSequences);
+  TaskTracker tracker(StringPiece(), kMaxNumDispatchedBackgroundSequences);
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
 
   // Simulate posting a background task and scheduling the associated sequence.
@@ -1115,29 +1115,33 @@ TEST(TaskSchedulerTaskTrackerHistogramTest, TaskLatency) {
   struct {
     const TaskTraits traits;
     const char* const expected_histogram;
-  } tests[] = {
-      {{TaskPriority::BACKGROUND},
-       "TaskScheduler.TaskLatencyMicroseconds.BackgroundTaskPriority"},
-      {{MayBlock(), TaskPriority::BACKGROUND},
-       "TaskScheduler.TaskLatencyMicroseconds.BackgroundTaskPriority.MayBlock"},
-      {{WithBaseSyncPrimitives(), TaskPriority::BACKGROUND},
-       "TaskScheduler.TaskLatencyMicroseconds.BackgroundTaskPriority.MayBlock"},
-      {{TaskPriority::USER_VISIBLE},
-       "TaskScheduler.TaskLatencyMicroseconds.UserVisibleTaskPriority"},
-      {{MayBlock(), TaskPriority::USER_VISIBLE},
-       "TaskScheduler.TaskLatencyMicroseconds.UserVisibleTaskPriority."
-       "MayBlock"},
-      {{WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
-       "TaskScheduler.TaskLatencyMicroseconds.UserVisibleTaskPriority."
-       "MayBlock"},
-      {{TaskPriority::USER_BLOCKING},
-       "TaskScheduler.TaskLatencyMicroseconds.UserBlockingTaskPriority"},
-      {{MayBlock(), TaskPriority::USER_BLOCKING},
-       "TaskScheduler.TaskLatencyMicroseconds.UserBlockingTaskPriority."
-       "MayBlock"},
-      {{WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
-       "TaskScheduler.TaskLatencyMicroseconds.UserBlockingTaskPriority."
-       "MayBlock"}};
+  } tests[] = {{{TaskPriority::BACKGROUND},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "BackgroundTaskPriority"},
+               {{MayBlock(), TaskPriority::BACKGROUND},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "BackgroundTaskPriority_MayBlock"},
+               {{WithBaseSyncPrimitives(), TaskPriority::BACKGROUND},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "BackgroundTaskPriority_MayBlock"},
+               {{TaskPriority::USER_VISIBLE},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserVisibleTaskPriority"},
+               {{MayBlock(), TaskPriority::USER_VISIBLE},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserVisibleTaskPriority_MayBlock"},
+               {{WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserVisibleTaskPriority_MayBlock"},
+               {{TaskPriority::USER_BLOCKING},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserBlockingTaskPriority"},
+               {{MayBlock(), TaskPriority::USER_BLOCKING},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserBlockingTaskPriority_MayBlock"},
+               {{WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
+                "TaskScheduler.TaskLatencyMicroseconds."
+                "UserBlockingTaskPriority_MayBlock"}};
 
   for (const auto& test : tests) {
     Task task(FROM_HERE, Bind(&DoNothing), test.traits, TimeDelta());
