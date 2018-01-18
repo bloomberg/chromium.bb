@@ -1805,7 +1805,6 @@ test("content_unittests") {
       "../browser/renderer_host/p2p/socket_host_udp_unittest.cc",
       "../browser/webrtc/webrtc_event_log_manager_unittest.cc",
       "../browser/webrtc/webrtc_internals_unittest.cc",
-      "../renderer/media/audio_repetition_detector_unittest.cc",
       "../renderer/media/gpu/rtc_video_decoder_unittest.cc",
       "../renderer/media/gpu/rtc_video_encoder_unittest.cc",
       "../renderer/media/media_devices_event_dispatcher_unittest.cc",

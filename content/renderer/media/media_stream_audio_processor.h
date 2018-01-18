@@ -20,23 +20,12 @@
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
-#include "content/renderer/media/audio_repetition_detector.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
-
-// The audio repetition detector is by default only used on non-official
-// ChromeOS builds for debugging purposes. http://crbug.com/658719.
-#if !defined(ENABLE_AUDIO_REPETITION_DETECTOR)
-#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
-#define ENABLE_AUDIO_REPETITION_DETECTOR 1
-#else
-#define ENABLE_AUDIO_REPETITION_DETECTOR 0
-#endif
-#endif
 
 namespace media {
 class AudioBus;
@@ -182,11 +171,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
-
-#if ENABLE_AUDIO_REPETITION_DETECTOR
-  // Module to detect and report (to UMA) bit exact audio repetition.
-  std::unique_ptr<AudioRepetitionDetector> audio_repetition_detector_;
-#endif  // ENABLE_AUDIO_REPETITION_DETECTOR
 
   // Low-priority task queue for doing AEC dump recordings. It has to
   // out-live audio_processing_ and be created/destroyed from the same

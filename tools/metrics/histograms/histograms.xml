@@ -33604,6 +33604,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.AudioCapturerRepetition" units="ms">
+  <obsolete>
+    Deprecated as of Jan 2018.
+  </obsolete>
   <owner>minyue@chromium.org</owner>
   <summary>
     Captures bit-exact audio repetitions with pre-defined look back time. As

@@ -686,8 +686,6 @@ target(link_target_type, "renderer") {
       "media/aec_dump_message_filter.h",
       "media/apply_constraints_processor.cc",
       "media/apply_constraints_processor.h",
-      "media/audio_repetition_detector.cc",
-      "media/audio_repetition_detector.h",
       "media/external_media_stream_audio_source.cc",
       "media/external_media_stream_audio_source.h",
       "media/gpu/rtc_video_decoder.cc",
