@@ -35,7 +35,9 @@
     Stack Trace
   </message>
   <message name="IDS_MD_EXTENSIONS_ERROR_LINES_NOT_SHOWN" desc="The label displayed to the users indicating that some lines of code are truncated.">
-    &lt;<ph name="LINE_COUNT">$1<ex>100</ex></ph> lines not shown&gt;
+    {LINE_COUNT, plural,
+      =1 {&lt;1 line not shown&gt;}
+      other {&lt;$1 lines not shown&gt;}}
   </message>
   <message name="IDS_MD_EXTENSIONS_LEARN_MORE" desc="Learn more text">
     Learn more
