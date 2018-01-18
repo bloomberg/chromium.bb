@@ -993,63 +993,35 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
 // Test that stored blacklisted forms are correctly evaluated for whether they
 // apply to the observed form.
 TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
-  observed_form()->origin = GURL("http://accounts.google.com/a/LoginAuth");
-  observed_form()->action = GURL("http://accounts.google.com/a/Login");
-  observed_form()->signon_realm = "http://accounts.google.com";
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(),
-                                   std::make_unique<MockFormSaver>(), &fetcher);
-  form_manager.Init(nullptr);
-
   // Doesn't apply because it is just a PSL match of the observed form.
   PasswordForm blacklisted_psl = *observed_form();
   blacklisted_psl.signon_realm = "http://m.accounts.google.com";
   blacklisted_psl.is_public_suffix_match = true;
   blacklisted_psl.blacklisted_by_user = true;
 
-  // Doesn't apply because of different origin.
-  PasswordForm blacklisted_not_match = *observed_form();
-  blacklisted_not_match.origin = GURL("http://google.com/a/LoginAuth");
-  blacklisted_not_match.blacklisted_by_user = true;
-
-  // Doesn't apply because of different username element and different page.
-  PasswordForm blacklisted_not_match2 = *observed_form();
-  blacklisted_not_match2.origin = GURL("http://accounts.google.com/a/Login123");
-  blacklisted_not_match2.username_element = ASCIIToUTF16("Element");
-  blacklisted_not_match2.blacklisted_by_user = true;
-
   // Doesn't apply because of different PasswordForm::Scheme.
-  PasswordForm blacklisted_not_match3 = *observed_form();
-  blacklisted_not_match3.scheme = PasswordForm::SCHEME_BASIC;
+  PasswordForm blacklisted_not_match = *observed_form();
+  blacklisted_not_match.scheme = PasswordForm::SCHEME_BASIC;
 
-  // Applies because of same element names, despite different page
+  // Applies despite different element names and path.
   PasswordForm blacklisted_match = *observed_form();
   blacklisted_match.origin = GURL("http://accounts.google.com/a/LoginAuth1234");
+  blacklisted_match.username_element = ASCIIToUTF16("Element1");
+  blacklisted_match.password_element = ASCIIToUTF16("Element2");
+  blacklisted_match.submit_element = ASCIIToUTF16("Element3");
   blacklisted_match.blacklisted_by_user = true;
-
-  // Applies because of same page, despite different element names
-  PasswordForm blacklisted_match2 = *observed_form();
-  blacklisted_match2.origin = GURL("http://accounts.google.com/a/LoginAuth");
-  blacklisted_match2.username_element = ASCIIToUTF16("Element");
-  blacklisted_match2.blacklisted_by_user = true;
 
   std::vector<const PasswordForm*> matches = {&blacklisted_psl,
                                               &blacklisted_not_match,
-                                              &blacklisted_not_match2,
-                                              &blacklisted_not_match3,
                                               &blacklisted_match,
-                                              &blacklisted_match2,
                                               saved_match()};
-  fetcher.SetNonFederated(matches, 0u);
+  fake_form_fetcher()->SetNonFederated(matches, 0u);
 
-  EXPECT_TRUE(form_manager.IsBlacklisted());
-  EXPECT_THAT(form_manager.blacklisted_matches(),
-              UnorderedElementsAre(Pointee(blacklisted_match),
-                                   Pointee(blacklisted_match2)));
-  EXPECT_EQ(1u, form_manager.best_matches().size());
-  EXPECT_EQ(*saved_match(), *form_manager.preferred_match());
+  EXPECT_TRUE(form_manager()->IsBlacklisted());
+  EXPECT_THAT(form_manager()->blacklisted_matches(),
+              ElementsAre(Pointee(blacklisted_match)));
+  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
 }
 
 // Test that even in the presence of blacklisted matches, the non-blacklisted
@@ -3461,8 +3433,7 @@ TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
 // Sanity check for calling ProcessMatches with empty vector. Should not crash
 // or make sanitizers scream.
 TEST_F(PasswordFormManagerTest, ProcessMatches_Empty) {
-  static_cast<FormFetcher::Consumer*>(form_manager())
-      ->ProcessMatches(std::vector<const PasswordForm*>(), 0u);
+  fake_form_fetcher()->SetNonFederated({}, 0u);
 }
 
 // For all combinations of PasswordForm schemes, test that ProcessMatches
@@ -3498,16 +3469,14 @@ TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
       non_match.scheme = kWrongScheme;
 
       // First try putting the correct scheme first in returned matches.
-      static_cast<FormFetcher::Consumer*>(&form_manager)
-          ->ProcessMatches({&match, &non_match}, 0u);
+      fetcher.SetNonFederated({&match, &non_match}, 0);
 
       EXPECT_EQ(1u, form_manager.best_matches().size());
       EXPECT_EQ(kCorrectScheme,
                 form_manager.best_matches().begin()->second->scheme);
 
       // Now try putting the correct scheme last in returned matches.
-      static_cast<FormFetcher::Consumer*>(&form_manager)
-          ->ProcessMatches({&non_match, &match}, 0u);
+      fetcher.SetNonFederated({&non_match, &match}, 0);
 
       EXPECT_EQ(1u, form_manager.best_matches().size());
       EXPECT_EQ(kCorrectScheme,
