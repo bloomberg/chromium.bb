@@ -101,6 +101,12 @@ set(AOM_UNIT_TEST_ENCODER_SOURCES
     "${AOM_ROOT}/test/y4m_video_source.h"
     "${AOM_ROOT}/test/yuv_video_source.h")
 
+if (CONFIG_MONO_VIDEO)
+  set(AOM_UNIT_TEST_ENCODER_SOURCES
+      ${AOM_UNIT_TEST_ENCODER_SOURCES}
+      "${AOM_ROOT}/test/monochrome_test.cc")
+endif ()
+
 if (NOT BUILD_SHARED_LIBS)
   set(AOM_UNIT_TEST_ENCODER_SOURCES
       ${AOM_UNIT_TEST_ENCODER_SOURCES}

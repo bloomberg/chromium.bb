@@ -152,17 +152,19 @@ static bool compare_img(const aom_image_t *img1, const aom_image_t *img2,
 #if CONFIG_CICP
   if (img1->fmt != img2->fmt || img1->cp != img2->cp || img1->tc != img2->tc ||
       img1->mc != img2->mc || img1->d_w != img2->d_w ||
-      img1->d_h != img2->d_h) {
+      img1->d_h != img2->d_h || img1->monochrome != img2->monochrome) {
 #else
   if (img1->fmt != img2->fmt || img1->cs != img2->cs ||
-      img1->d_w != img2->d_w || img1->d_h != img2->d_h) {
+      img1->d_w != img2->d_w || img1->d_h != img2->d_h ||
+      img1->monochrome != img2->monochrome) {
 #endif
     if (mismatch_row != NULL) *mismatch_row = -1;
     if (mismatch_col != NULL) *mismatch_col = -1;
     return false;
   }
 
-  for (int plane = 0; plane < 3; plane++) {
+  const int num_planes = img1->monochrome ? 1 : 3;
+  for (int plane = 0; plane < num_planes; plane++) {
     if (!compare_plane(img1->planes[plane], img1->stride[plane],
                        img2->planes[plane], img2->stride[plane],
                        aom_img_plane_width(img1, plane),
