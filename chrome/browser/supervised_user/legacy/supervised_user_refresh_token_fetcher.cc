@@ -25,7 +25,6 @@
 #include "net/url_request/url_request_status.h"
 
 using GaiaConstants::kChromeSyncSupervisedOAuth2Scope;
-using base::Time;
 using gaia::GaiaOAuthClient;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
@@ -77,7 +76,7 @@ class SupervisedUserRefreshTokenFetcherImpl
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                          const std::string& access_token,
-                         const Time& expiration_time) override;
+                         const base::Time& expiration_time) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
@@ -153,7 +152,7 @@ void SupervisedUserRefreshTokenFetcherImpl::StartFetching() {
 void SupervisedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
-    const Time& expiration_time) {
+    const base::Time& expiration_time) {
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_ = access_token;
 

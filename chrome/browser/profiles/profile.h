@@ -29,7 +29,6 @@ class TestingProfile;
 
 namespace base {
 class SequencedTaskRunner;
-class Time;
 }
 
 namespace chrome_browser_net {

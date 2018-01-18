@@ -179,7 +179,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
-using base::Time;
 using base::TimeDelta;
 using bookmarks::BookmarkModel;
 using content::BrowserThread;
@@ -397,7 +396,7 @@ ProfileImpl::ProfileImpl(
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
-      start_time_(Time::Now()),
+      start_time_(base::Time::Now()),
       delegate_(delegate),
       predictor_(nullptr) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
@@ -1124,7 +1123,7 @@ bool ProfileImpl::IsSameProfile(Profile* profile) {
   return otr_profile && profile == otr_profile;
 }
 
-Time ProfileImpl::GetStartTime() const {
+base::Time ProfileImpl::GetStartTime() const {
   return start_time_;
 }
 

@@ -128,7 +128,7 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 #endif
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
-    : profile_(real_profile), start_time_(Time::Now()) {
+    : profile_(real_profile), start_time_(base::Time::Now()) {
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
@@ -470,7 +470,7 @@ bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }
 
-Time OffTheRecordProfileImpl::GetStartTime() const {
+base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
