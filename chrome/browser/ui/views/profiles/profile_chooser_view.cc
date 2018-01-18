@@ -212,7 +212,7 @@ std::vector<AccountInfo> GetAccountsForProfile(Profile* profile) {
   for (const std::string& account_id : account_ids) {
     AccountInfo account_info =
         account_tracker_service->GetAccountInfo(account_id);
-    if (account_id == cookie_accounts[0].id)
+    if (account_id == gaia_default_account_id)
       accounts.insert(accounts.begin(), account_info);
     else
       accounts.push_back(account_info);
