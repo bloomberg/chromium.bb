@@ -146,8 +146,18 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .CLIPBOARD] =
         'enableClipboardContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes.ADS] =
+        'enableSafeBrowsingSubresourceFilter';
 
     browserProxy.setPrefs(prefs);
+
+    // First, explicitly set all the optional settings to false.
+    for (contentSetting in optionalSiteDetailsContentSettingsTypes) {
+      const loadTimeDataOverride = {};
+      loadTimeDataOverride
+          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
+      loadTimeData.overrideValues(loadTimeDataOverride);
+    }
 
     // Iterate over each flag in on / off state, assuming that the on state
     // means the content setting will show, and off hides it.
