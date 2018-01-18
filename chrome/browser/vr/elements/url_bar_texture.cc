@@ -31,15 +31,9 @@ namespace {
 // including the security icon, offline chip text and separator, and URL.
 // Most of this could be decomposed into sub-elements in a linear layout, if
 // linear layout gains the ability to constrain its total size by limiting one
-// (or more) of it's children.  For now, there is a tight dependency between the
-// element size, and the constants given here, so use scene constants for the
-// width and height used here.
+// (or more) of it's children.
 constexpr float kWidth = kUrlBarOriginContentWidthDMM;
 constexpr float kHeight = kUrlBarHeightDMM;
-constexpr float kFontHeight = 0.027f;
-constexpr float kFieldSpacing = 0.014f;
-constexpr float kSecurityIconSize = 0.048f;
-constexpr float kChipTextLineMargin = kHeight * 0.3f;
 
 using security_state::SecurityLevel;
 
@@ -126,25 +120,27 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   // Site security state icon.
   if (state_.should_display_url && state_.vector_icon != nullptr) {
-    gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconSize / 2,
-                           kSecurityIconSize, kSecurityIconSize);
+    gfx::RectF icon_region(left_edge, kHeight / 2 - kUrlBarIconSizeDMM / 2,
+                           kUrlBarIconSizeDMM, kUrlBarIconSizeDMM);
     VectorIcon::DrawVectorIcon(
-        &gfx_canvas, *state_.vector_icon, ToPixels(kSecurityIconSize),
+        &gfx_canvas, *state_.vector_icon, ToPixels(kUrlBarIconSizeDMM),
         {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
         GetIconColor(state_.security_level, colors_));
     security_hit_region_ = icon_region;
-    left_edge += kSecurityIconSize + kFieldSpacing;
+    left_edge += kUrlBarIconSizeDMM;
   }
 
   // Possibly draw security text (eg. "Offline") next to the icon.  This text
   // consumes a significant percentage of URL bar text space, so for now, only
   // Offline mode shows text (see crbug.com/735770).
   if (state_.offline_page && state_.should_display_url) {
+    left_edge += kUrlBarOfflineIconTextSpacingDMM;
     float chip_max_width = kWidth - left_edge;
     gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(chip_max_width),
                           ToPixels(kHeight));
 
-    int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+    int pixel_font_height =
+        texture_size.height() * kUrlBarFontHeightDMM / kHeight;
     const base::string16& chip_text = state_.secure_verbose_text;
     DCHECK(!chip_text.empty());
 
@@ -171,18 +167,20 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     left_edge += ToMeters(string_size.width());
 
     // Separator line between security text and URL.
-    left_edge += kFieldSpacing;
+    left_edge += kUrlBarFieldSpacingDMM;
     SkPaint paint;
     paint.setColor(colors_.deemphasized);
     canvas->drawRect(
-        SkRect::MakeXYWH(ToPixels(left_edge), ToPixels(kChipTextLineMargin),
-                         ToPixels(kUrlBarSeparatorWidthDMM),
-                         ToPixels(kHeight - 2 * kChipTextLineMargin)),
+        SkRect::MakeXYWH(
+            ToPixels(left_edge), ToPixels(kUrlBarSecuritySeparatorHeightDMM),
+            ToPixels(kUrlBarSeparatorWidthDMM),
+            ToPixels(kHeight - 2 * kUrlBarSecuritySeparatorHeightDMM)),
         paint);
-    left_edge += kFieldSpacing + kUrlBarSeparatorWidthDMM;
+    left_edge += kUrlBarSeparatorWidthDMM;
   }
 
   if (state_.should_display_url) {
+    left_edge += kUrlBarFieldSpacingDMM;
     float url_x = left_edge;
     if (!url_render_text_ || url_dirty_) {
       float url_width = kWidth - url_x;
@@ -209,7 +207,8 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
       state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
       nullptr);
 
-  int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+  int pixel_font_height =
+      texture_size.height() * kUrlBarFontHeightDMM / kHeight;
   gfx::FontList font_list;
   if (!GetDefaultFontList(pixel_font_height, unelided_url, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
