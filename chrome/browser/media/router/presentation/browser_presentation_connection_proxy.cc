@@ -4,9 +4,9 @@
 
 #include "chrome/browser/media/router/presentation/browser_presentation_connection_proxy.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/media_router.h"
 
 namespace media_router {
@@ -47,7 +47,7 @@ void BrowserPresentationConnectionProxy::OnMessage(
   if (message.is_binary()) {
     router_->SendRouteBinaryMessage(
         route_id_,
-        base::MakeUnique<std::vector<uint8_t>>(std::move(message.data.value())),
+        std::make_unique<std::vector<uint8_t>>(std::move(message.data.value())),
         std::move(on_message_callback));
   } else {
     router_->SendRouteMessage(route_id_, message.message.value(),

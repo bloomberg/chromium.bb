@@ -125,7 +125,7 @@ AudioDebugRecordingManager::CreateAudioDebugRecordingHelper(
     const AudioParameters& params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::OnceClosure on_destruction_closure) {
-  return base::MakeUnique<AudioDebugRecordingHelper>(
+  return std::make_unique<AudioDebugRecordingHelper>(
       params, task_runner, base::BindRepeating(&CreateFile),
       std::move(on_destruction_closure));
 }

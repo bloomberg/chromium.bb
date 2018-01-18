@@ -268,7 +268,7 @@ TEST_F(MediaEngagementScoreTest, ContentSettings) {
   // Store some example data in content settings.
   GURL origin("https://www.google.com");
   std::unique_ptr<base::DictionaryValue> score_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   score_dict->SetInteger(MediaEngagementScore::kVisitsKey, example_num_visits);
   score_dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey,
                          example_media_playbacks);

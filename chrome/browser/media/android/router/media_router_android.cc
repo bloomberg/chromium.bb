@@ -9,7 +9,6 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
@@ -67,7 +66,7 @@ void MediaRouterAndroid::CreateRoute(
       && web_contents->GetBrowserContext()->IsOffTheRecord();
 
   int route_request_id =
-      route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
+      route_requests_.Add(std::make_unique<MediaRouteRequest>(
           MediaSource(source_id), presentation_id, std::move(callbacks)));
   bridge_->CreateRoute(source_id, sink_id, presentation_id, origin, tab_id,
                        is_incognito, route_request_id);
@@ -102,7 +101,7 @@ void MediaRouterAndroid::JoinRoute(
   DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
            << origin.GetURL().spec() << ", " << tab_id;
 
-  int request_id = route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
+  int request_id = route_requests_.Add(std::make_unique<MediaRouteRequest>(
       MediaSource(source_id), presentation_id, std::move(callbacks)));
   bridge_->JoinRoute(source_id, presentation_id, origin, tab_id, request_id);
 }
@@ -115,7 +114,7 @@ void MediaRouterAndroid::SendRouteMessage(const MediaRoute::Id& route_id,
                                           const std::string& message,
                                           SendRouteMessageCallback callback) {
   int callback_id = message_callbacks_.Add(
-      base::MakeUnique<SendRouteMessageCallback>(std::move(callback)));
+      std::make_unique<SendRouteMessageCallback>(std::move(callback)));
   bridge_->SendRouteMessage(route_id, message, callback_id);
 }
 
@@ -152,7 +151,7 @@ bool MediaRouterAndroid::RegisterMediaSinksObserver(
   const std::string& source_id = observer->source().id();
   auto& observer_list = sinks_observers_[source_id];
   if (!observer_list) {
-    observer_list = base::MakeUnique<base::ObserverList<MediaSinksObserver>>();
+    observer_list = std::make_unique<base::ObserverList<MediaSinksObserver>>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -201,7 +200,7 @@ void MediaRouterAndroid::RegisterRouteMessageObserver(
   auto& observer_list = message_observers_[route_id];
   if (!observer_list) {
     observer_list =
-        base::MakeUnique<base::ObserverList<RouteMessageObserver>>();
+        std::make_unique<base::ObserverList<RouteMessageObserver>>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }

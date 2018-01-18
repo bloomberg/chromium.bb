@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 
+#include <memory>
 #include <unordered_set>
 
 #include "base/lazy_instance.h"
@@ -95,9 +96,9 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
           base::ObserverListPolicy::EXISTING_ONLY)),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(base::MayBlock())),
       network_info_function_(strategy),
-      metric_observer_(base::MakeUnique<DiscoveryNetworkMonitorMetricObserver>(
+      metric_observer_(std::make_unique<DiscoveryNetworkMonitorMetricObserver>(
           base::DefaultTickClock::GetInstance(),
-          base::MakeUnique<DiscoveryNetworkMonitorMetrics>())) {
+          std::make_unique<DiscoveryNetworkMonitorMetrics>())) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   AddObserver(metric_observer_.get());
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);

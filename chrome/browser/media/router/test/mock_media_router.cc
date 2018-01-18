@@ -4,12 +4,14 @@
 
 #include "chrome/browser/media/router/test/mock_media_router.h"
 
+#include <memory>
+
 namespace media_router {
 
 // static
 std::unique_ptr<KeyedService> MockMediaRouter::Create(
     content::BrowserContext* context) {
-  return base::MakeUnique<MockMediaRouter>();
+  return std::make_unique<MockMediaRouter>();
 }
 
 MockMediaRouter::MockMediaRouter() {}

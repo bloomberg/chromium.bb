@@ -140,7 +140,7 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
     return false;
   }
 
-  start_presentation_context_ = base::MakeUnique<StartPresentationContext>(
+  start_presentation_context_ = std::make_unique<StartPresentationContext>(
       presentation_request, std::move(success_cb), std::move(error_cb));
   MediaRouterMetrics::RecordMediaRouterDialogOrigin(
       MediaRouterDialogOpenOrigin::PAGE);

@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -307,7 +306,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
       FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
                      base::Unretained(webrtc_log_uploader.get()),
-                     std::move(log), base::MakeUnique<MetaDataMap>(),
+                     std::move(log), std::make_unique<MetaDataMap>(),
                      upload_done_data),
       run_loop.QuitClosure());
   run_loop.Run();

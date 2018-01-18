@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -156,7 +155,7 @@ void JpegClient::CreateJpegEncoder() {
   encoder_ = nullptr;
 
 #if BUILDFLAG(USE_VAAPI)
-  encoder_ = base::MakeUnique<VaapiJpegEncodeAccelerator>(
+  encoder_ = std::make_unique<VaapiJpegEncodeAccelerator>(
       base::ThreadTaskRunnerHandle::Get());
 #endif
 
@@ -360,7 +359,7 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
 
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(hw_out_shm_->handle());
-  encoded_buffer_ = base::MakeUnique<BitstreamBuffer>(
+  encoded_buffer_ = std::make_unique<BitstreamBuffer>(
       bitstream_buffer_id, dup_handle, image_file->output_size);
   scoped_refptr<VideoFrame> input_frame_ = VideoFrame::WrapExternalSharedMemory(
       PIXEL_FORMAT_I420, image_file->visible_size,
@@ -461,7 +460,7 @@ void JpegEncodeAcceleratorTestEnvironment::SetUp() {
     ASSERT_TRUE(!image_size.IsEmpty());
 
     base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = base::MakeUnique<TestImageFile>(filename, image_size);
+    auto image_data = std::make_unique<TestImageFile>(filename, image_size);
     ASSERT_NO_FATAL_FAILURE(ReadTestYuvImage(input_file, image_data.get()));
     image_data_user_.push_back(std::move(image_data));
   }
@@ -542,9 +541,9 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
   std::vector<std::unique_ptr<JpegClient>> clients;
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
-    notes.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
+    notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
     clients.push_back(
-        base::MakeUnique<JpegClient>(test_image_files_, notes.back().get()));
+        std::make_unique<JpegClient>(test_image_files_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::CreateJpegEncoder,
                                   base::Unretained(clients.back().get())));

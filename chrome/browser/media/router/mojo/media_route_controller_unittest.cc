@@ -42,7 +42,7 @@ class MediaRouteControllerTest : public ::testing::Test {
     auto result = controller->InitMojoInterfaces();
     mock_media_controller_.Bind(std::move(result.first));
     mojo_media_status_observer_ = std::move(result.second);
-    observer_ = base::MakeUnique<MockMediaRouteControllerObserver>(
+    observer_ = std::make_unique<MockMediaRouteControllerObserver>(
         std::move(controller));
   }
 
@@ -61,7 +61,7 @@ class MediaRouteControllerTest : public ::testing::Test {
   // This must be called only after |observer_| is set.
   std::unique_ptr<StrictMock<MockMediaRouteControllerObserver>> CreateObserver()
       const {
-    return base::MakeUnique<StrictMock<MockMediaRouteControllerObserver>>(
+    return std::make_unique<StrictMock<MockMediaRouteControllerObserver>>(
         GetController());
   }
 

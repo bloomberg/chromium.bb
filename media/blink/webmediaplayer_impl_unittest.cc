@@ -1037,7 +1037,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   InitializeWebMediaPlayerImpl();
 
   std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
-      base::MakeUnique<cc_blink::WebLayerImpl>();
+      std::make_unique<cc_blink::WebLayerImpl>();
   cc_blink::WebLayerImpl* web_layer_ptr = web_layer.get();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())

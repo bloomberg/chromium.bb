@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -104,7 +104,7 @@ CastRemotingSender::CastRemotingSender(
   pointer_in_map = this;
 
   transport_->InitializeStream(
-      config, base::MakeUnique<RemotingRtcpClient>(weak_factory_.GetWeakPtr()));
+      config, std::make_unique<RemotingRtcpClient>(weak_factory_.GetWeakPtr()));
 
   if (!frame_event_cb_.is_null())
     DCHECK(logging_flush_interval_ > base::TimeDelta());
@@ -167,7 +167,7 @@ void CastRemotingSender::FindAndBind(
   sender->error_callback_ = error_callback;
 
   sender->data_pipe_reader_ =
-      base::MakeUnique<media::MojoDataPipeReader>(std::move(pipe));
+      std::make_unique<media::MojoDataPipeReader>(std::move(pipe));
   sender->binding_.Bind(std::move(request));
   sender->binding_.set_connection_error_handler(sender->error_callback_);
 }

@@ -46,7 +46,7 @@ class TestProcessManager : public extensions::ProcessManager {
 
   static std::unique_ptr<KeyedService> Create(
       content::BrowserContext* context) {
-    return base::MakeUnique<TestProcessManager>(context);
+    return std::make_unique<TestProcessManager>(context);
   }
 
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& ext_id));
@@ -67,7 +67,7 @@ class EventPageRequestManagerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
     // Set up a mock ProcessManager instance.
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
         profile_.get(), &TestProcessManager::Create);

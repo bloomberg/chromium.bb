@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/presentation/local_presentation_manager.h"
@@ -111,7 +110,7 @@ class MockLocalPresentationManager : public LocalPresentationManager {
 
 std::unique_ptr<KeyedService> BuildMockLocalPresentationManager(
     content::BrowserContext* context) {
-  return base::MakeUnique<MockLocalPresentationManager>();
+  return std::make_unique<MockLocalPresentationManager>();
 }
 
 class PresentationServiceDelegateImplTest
@@ -137,7 +136,7 @@ class PresentationServiceDelegateImplTest
     delegate_impl_ = PresentationServiceDelegateImpl::FromWebContents(wc);
     delegate_impl_->SetMediaRouterForTest(&router_);
     SetMainFrame();
-    presentation_request_ = base::MakeUnique<content::PresentationRequest>(
+    presentation_request_ = std::make_unique<content::PresentationRequest>(
         RenderFrameHostId(main_frame_process_id_, main_frame_routing_id_),
         presentation_urls_, frame_origin_);
     SetMockLocalPresentationManager();
@@ -641,7 +640,7 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(base::MakeUnique<base::Value>(origin));
+    update->AppendIfNotPresent(std::make_unique<base::Value>(origin));
   }
 
   auto& mock_local_manager = GetMockLocalPresentationManager();
@@ -694,7 +693,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(base::MakeUnique<base::Value>(origin));
+    update->AppendIfNotPresent(std::make_unique<base::Value>(origin));
   }
 
   auto& mock_local_manager = GetMockLocalPresentationManager();

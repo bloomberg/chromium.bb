@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/cast_messages.h"
@@ -185,7 +184,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   std::unique_ptr<media::cast::CastTransport> transport =
       media::cast::CastTransport::Create(
           base::DefaultTickClock::GetInstance(), kSendEventsInterval,
-          base::MakeUnique<TransportClient>(channel_id, this),
+          std::make_unique<TransportClient>(channel_id, this),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   transport->SetOptions(options);
   id_map_.AddWithID(std::move(transport), channel_id);
@@ -227,7 +226,7 @@ void CastTransportHostFilter::OnInitializeStream(
         config.rtp_payload_type == media::cast::RtpPayloadType::REMOTE_VIDEO) {
       // Create CastRemotingSender for this RTP stream.
       remoting_sender_map_.AddWithID(
-          base::MakeUnique<CastRemotingSender>(
+          std::make_unique<CastRemotingSender>(
               transport, config, kSendEventsInterval,
               base::Bind(&CastTransportHostFilter::OnCastRemotingSenderEvents,
                          weak_factory_.GetWeakPtr(), channel_id)),
@@ -238,7 +237,7 @@ void CastTransportHostFilter::OnInitializeStream(
       stream_id_map_.insert(std::make_pair(channel_id, config.rtp_stream_id));
     } else {
       transport->InitializeStream(
-          config, base::MakeUnique<RtcpClient>(channel_id, config.ssrc,
+          config, std::make_unique<RtcpClient>(channel_id, config.ssrc,
                                                weak_factory_.GetWeakPtr()));
     }
   } else {

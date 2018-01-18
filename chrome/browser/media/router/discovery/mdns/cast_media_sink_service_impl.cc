@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -491,7 +490,7 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
   failure_count_map_[ip_endpoint] = std::min(failure_count, kMaxFailureCount);
 
   if (!backoff_entry)
-    backoff_entry = base::MakeUnique<net::BackoffEntry>(&backoff_policy_);
+    backoff_entry = std::make_unique<net::BackoffEntry>(&backoff_policy_);
 
   if (backoff_entry->failure_count() >= retry_params_.max_retry_attempts) {
     DVLOG(1) << "Fail to open channel after all retry attempts: "

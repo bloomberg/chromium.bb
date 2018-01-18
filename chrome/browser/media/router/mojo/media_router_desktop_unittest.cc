@@ -155,18 +155,18 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
       mojom::MediaRouter::SinkAvailability::PER_SOURCE);
   EXPECT_CALL(mock_extension_provider_,
               StartObservingMediaSinks(media_source.id()));
-  sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_TRUE(sinks_observer->Init());
 
   EXPECT_CALL(mock_extension_provider_,
               StartObservingMediaRoutes(media_source.id()));
   routes_observer =
-      base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
+      std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
 
   EXPECT_CALL(mock_extension_provider_,
               StartListeningForRouteMessages(kRouteId));
-  messages_observer = base::MakeUnique<NullMessageObserver>(router(), kRouteId);
+  messages_observer = std::make_unique<NullMessageObserver>(router(), kRouteId);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_extension_provider_));
 }

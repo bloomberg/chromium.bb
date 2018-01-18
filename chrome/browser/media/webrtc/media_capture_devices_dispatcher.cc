@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -98,26 +97,26 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   media_access_handlers_.push_back(
-      base::MakeUnique<ChromeOSLoginMediaAccessHandler>());
+      std::make_unique<ChromeOSLoginMediaAccessHandler>());
   // Wrapper around ExtensionMediaAccessHandler used in Public Sessions.
   media_access_handlers_.push_back(
-      base::MakeUnique<PublicSessionMediaAccessHandler>());
+      std::make_unique<PublicSessionMediaAccessHandler>());
 #else
   media_access_handlers_.push_back(
-      base::MakeUnique<ExtensionMediaAccessHandler>());
+      std::make_unique<ExtensionMediaAccessHandler>());
 #endif
   media_access_handlers_.push_back(
-      base::MakeUnique<DesktopCaptureAccessHandler>());
+      std::make_unique<DesktopCaptureAccessHandler>());
 #if defined(OS_CHROMEOS)
   // Wrapper around TabCaptureAccessHandler used in Public Sessions.
   media_access_handlers_.push_back(
-      base::MakeUnique<PublicSessionTabCaptureAccessHandler>());
+      std::make_unique<PublicSessionTabCaptureAccessHandler>());
 #else
-  media_access_handlers_.push_back(base::MakeUnique<TabCaptureAccessHandler>());
+  media_access_handlers_.push_back(std::make_unique<TabCaptureAccessHandler>());
 #endif
 #endif
   media_access_handlers_.push_back(
-      base::MakeUnique<PermissionBubbleMediaAccessHandler>());
+      std::make_unique<PermissionBubbleMediaAccessHandler>());
 }
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
