@@ -17,7 +17,7 @@ namespace {
 bool MergeEventIfPossible(const blink::WebInputEvent& event,
                           ui::WebScopedInputEvent* blink_event) {
   if (ui::CanCoalesce(event, **blink_event)) {
-    *blink_event = ui::WebInputEventTraits::Clone(event);
+    ui::Coalesce(event, blink_event->get());
     return true;
   }
   return false;

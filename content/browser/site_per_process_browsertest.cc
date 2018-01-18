@@ -261,13 +261,17 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
     return events_received_;
   }
 
+  const blink::WebInputEvent& event() const { return *event_; }
+
   void OnInputEvent(const blink::WebInputEvent& event) override {
     events_received_.push_back(event.GetType());
+    event_ = ui::WebInputEventTraits::Clone(event);
   };
 
  private:
   RenderWidgetHost* host_;
   std::vector<blink::WebInputEvent::Type> events_received_;
+  ui::WebScopedInputEvent event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
 };
@@ -2314,6 +2318,89 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollEventToOOPIF) {
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       InputEventRouterWheelCoalesceTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  RenderWidgetHostViewAura* rwhv_parent =
+      static_cast<RenderWidgetHostViewAura*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  // Create listener for input events.
+  TestInputEventObserver child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+  InputEventAckWaiter waiter(
+      child_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kMouseWheel);
+
+  // Send a mouse wheel event to child.
+  blink::WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  wheel_event.SetPositionInWidget(75, 75);
+  wheel_event.delta_x = 10;
+  wheel_event.delta_y = 20;
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  router->RouteMouseWheelEvent(rwhv_parent, &wheel_event, ui::LatencyInfo());
+
+  // Send more mouse wheel events to the child. Since we are waiting for the
+  // async targeting on the first event, these new mouse wheel events should
+  // be coalesced properly.
+  blink::WebMouseWheelEvent wheel_event1(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  wheel_event1.SetPositionInWidget(70, 70);
+  wheel_event1.delta_x = 12;
+  wheel_event1.delta_y = 22;
+  wheel_event1.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  router->RouteMouseWheelEvent(rwhv_parent, &wheel_event1, ui::LatencyInfo());
+
+  blink::WebMouseWheelEvent wheel_event2(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  wheel_event2.SetPositionInWidget(65, 65);
+  wheel_event2.delta_x = 14;
+  wheel_event2.delta_y = 24;
+  wheel_event2.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  router->RouteMouseWheelEvent(rwhv_parent, &wheel_event2, ui::LatencyInfo());
+
+  // Since we are targeting child, event dispatch should not happen
+  // synchronously. Validate that the expected target does not receive the
+  // event immediately.
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+
+  waiter.Wait();
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
+
+  // Check if the two mouse-wheel update events are coalesced correctly.
+  const auto& gesture_event =
+      static_cast<const blink::WebGestureEvent&>(child_frame_monitor.event());
+  EXPECT_EQ(26 /* wheel_event1.delta_x + wheel_event2.delta_x */,
+            gesture_event.data.scroll_update.delta_x);
+  EXPECT_EQ(46 /* wheel_event1.delta_y + wheel_event2.delta_y */,
+            gesture_event.data.scroll_update.delta_y);
 }
 #endif
 
