@@ -26,7 +26,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 #include "url/ipc/url_param_traits.h"
-#include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -42,16 +41,6 @@ class IPEndPoint;
 }
 
 namespace IPC {
-
-template <>
-struct CONTENT_EXPORT ParamTraits<url::Origin> {
-  typedef url::Origin param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {

@@ -59,7 +59,7 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,

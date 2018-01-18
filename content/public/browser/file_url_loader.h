@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
@@ -43,8 +43,8 @@ class CONTENT_EXPORT FileURLLoaderObserver
 // A directory path will always yield a FILE_NOT_FOUND network error.
 CONTENT_EXPORT void CreateFileURLLoader(
     const network::ResourceRequest& request,
-    mojom::URLLoaderRequest loader,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer);
 
 }  // namespace content

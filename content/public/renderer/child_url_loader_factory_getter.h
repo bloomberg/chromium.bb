@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_CHILD_URL_LOADER_FACTORY_GETTER_H_
 
 #include "base/memory/ref_counted.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 class GURL;
 
@@ -22,16 +22,16 @@ class ChildURLLoaderFactoryGetter
   // ChildURLLoaderFactoryGetter in worker thread.
   class Info {
    public:
-    Info(mojom::URLLoaderFactoryPtrInfo network_loader_factory_info,
-         mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info);
+    Info(network::mojom::URLLoaderFactoryPtrInfo network_loader_factory_info,
+         network::mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info);
     Info(Info&& other);
     ~Info();
 
     scoped_refptr<ChildURLLoaderFactoryGetter> Bind();
 
    private:
-    mojom::URLLoaderFactoryPtrInfo network_loader_factory_info_;
-    mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info_;
+    network::mojom::URLLoaderFactoryPtrInfo network_loader_factory_info_;
+    network::mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info_;
   };
 
   virtual Info GetClonedInfo() = 0;
@@ -40,12 +40,12 @@ class ChildURLLoaderFactoryGetter
   // returns BlobURLLoader factory for blob: URL requests). When an appropriate
   // factory cannot be determined, |default_factory| is returned if non-null
   // factory is given, or Network URLLoaderFactory is returned otherwise.
-  virtual mojom::URLLoaderFactory* GetFactoryForURL(
+  virtual network::mojom::URLLoaderFactory* GetFactoryForURL(
       const GURL& request_url,
-      mojom::URLLoaderFactory* default_factory = nullptr) = 0;
+      network::mojom::URLLoaderFactory* default_factory = nullptr) = 0;
 
-  virtual mojom::URLLoaderFactory* GetNetworkLoaderFactory() = 0;
-  virtual mojom::URLLoaderFactory* GetBlobLoaderFactory() = 0;
+  virtual network::mojom::URLLoaderFactory* GetNetworkLoaderFactory() = 0;
+  virtual network::mojom::URLLoaderFactory* GetBlobLoaderFactory() = 0;
 
  protected:
   friend class base::RefCounted<ChildURLLoaderFactoryGetter>;

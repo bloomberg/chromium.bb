@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_provider.mojom";
-import "content/public/common/url_loader_factory.mojom";
 
 // Per-process browser-side interface.
 // The renderer uses this interface to tell the browser when potential service

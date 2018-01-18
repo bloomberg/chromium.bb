@@ -50,7 +50,7 @@ class AppCacheDispatcher : public mojom::AppCacheFrontend {
   void ContentBlocked(int32_t host_id, const GURL& manifest_url) override;
   void SetSubresourceFactory(
       int32_t host_id,
-      mojom::URLLoaderFactoryPtr url_loader_factory) override;
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
 
   AppCacheBackendProxy backend_proxy_;
   std::unique_ptr<content::AppCacheFrontend> frontend_;

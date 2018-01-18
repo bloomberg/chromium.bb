@@ -32,8 +32,6 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
@@ -58,6 +56,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -205,8 +205,8 @@ class MojoAsyncResourceHandlerWithStubOperations
   MojoAsyncResourceHandlerWithStubOperations(
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
       uint32_t options)
       : MojoAsyncResourceHandler(request,
                                  rdh,
@@ -285,34 +285,38 @@ class MojoAsyncResourceHandlerWithStubOperations
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandlerWithStubOperations);
 };
 
-class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
+class TestURLLoaderFactory final : public network::mojom::URLLoaderFactory {
  public:
   TestURLLoaderFactory() {}
   ~TestURLLoaderFactory() override {}
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client_ptr,
+                            network::mojom::URLLoaderClientPtr client_ptr,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     loader_request_ = std::move(request);
     client_ptr_ = std::move(client_ptr);
   }
 
-  mojom::URLLoaderRequest PassLoaderRequest() {
+  network::mojom::URLLoaderRequest PassLoaderRequest() {
     return std::move(loader_request_);
   }
 
-  mojom::URLLoaderClientPtr PassClientPtr() { return std::move(client_ptr_); }
+  network::mojom::URLLoaderClientPtr PassClientPtr() {
+    return std::move(client_ptr_);
+  }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
  private:
-  mojom::URLLoaderRequest loader_request_;
-  mojom::URLLoaderClientPtr client_ptr_;
+  network::mojom::URLLoaderRequest loader_request_;
+  network::mojom::URLLoaderClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
@@ -349,13 +353,14 @@ class MojoAsyncResourceHandlerTestBase {
         nullptr);                                // navigation_ui_data
 
     network::ResourceRequest request;
-    base::WeakPtr<mojo::StrongBinding<mojom::URLLoaderFactory>> weak_binding =
-        mojo::MakeStrongBinding(std::make_unique<TestURLLoaderFactory>(),
-                                mojo::MakeRequest(&url_loader_factory_));
+    base::WeakPtr<mojo::StrongBinding<network::mojom::URLLoaderFactory>>
+        weak_binding =
+            mojo::MakeStrongBinding(std::make_unique<TestURLLoaderFactory>(),
+                                    mojo::MakeRequest(&url_loader_factory_));
 
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId,
-        mojom::kURLLoadOptionNone, request,
+        network::mojom::kURLLoadOptionNone, request,
         url_loader_client_.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -415,8 +420,8 @@ class MojoAsyncResourceHandlerTestBase {
   TestBrowserThreadBundle thread_bundle_;
   TestResourceDispatcherHostDelegate rdh_delegate_;
   ResourceDispatcherHostImpl rdh_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
-  mojom::URLLoaderPtr url_loader_proxy_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  network::mojom::URLLoaderPtr url_loader_proxy_;
   TestURLLoaderClient url_loader_client_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::TestDelegate url_request_delegate_;
@@ -435,7 +440,8 @@ class MojoAsyncResourceHandlerTest : public MojoAsyncResourceHandlerTestBase,
                                      public ::testing::Test {
  protected:
   MojoAsyncResourceHandlerTest()
-      : MojoAsyncResourceHandlerTestBase(nullptr, mojom::kURLLoadOptionNone) {}
+      : MojoAsyncResourceHandlerTestBase(nullptr,
+                                         network::mojom::kURLLoadOptionNone) {}
 };
 
 class MojoAsyncResourceHandlerDeferOnResponseStartedTest
@@ -445,7 +451,7 @@ class MojoAsyncResourceHandlerDeferOnResponseStartedTest
   MojoAsyncResourceHandlerDeferOnResponseStartedTest()
       : MojoAsyncResourceHandlerTestBase(
             nullptr,
-            mojom::kURLLoadOptionPauseOnResponseStarted) {}
+            network::mojom::kURLLoadOptionPauseOnResponseStarted) {}
 };
 
 class MojoAsyncResourceHandlerSendSSLInfoWithResponseTest
@@ -455,7 +461,7 @@ class MojoAsyncResourceHandlerSendSSLInfoWithResponseTest
   MojoAsyncResourceHandlerSendSSLInfoWithResponseTest()
       : MojoAsyncResourceHandlerTestBase(
             nullptr,
-            mojom::kURLLoadOptionSendSSLInfoWithResponse) {}
+            network::mojom::kURLLoadOptionSendSSLInfoWithResponse) {}
 };
 
 class MojoAsyncResourceHandlerSendSSLInfoForCertificateError
@@ -465,7 +471,7 @@ class MojoAsyncResourceHandlerSendSSLInfoForCertificateError
   MojoAsyncResourceHandlerSendSSLInfoForCertificateError()
       : MojoAsyncResourceHandlerTestBase(
             nullptr,
-            mojom::kURLLoadOptionSendSSLInfoForCertificateError) {}
+            network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) {}
 };
 
 // This test class is parameterized with MojoAsyncResourceHandler's allocation
@@ -475,7 +481,8 @@ class MojoAsyncResourceHandlerWithAllocationSizeTest
       public ::testing::TestWithParam<size_t> {
  protected:
   MojoAsyncResourceHandlerWithAllocationSizeTest()
-      : MojoAsyncResourceHandlerTestBase(nullptr, mojom::kURLLoadOptionNone) {
+      : MojoAsyncResourceHandlerTestBase(nullptr,
+                                         network::mojom::kURLLoadOptionNone) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
   }
 };
@@ -487,7 +494,7 @@ class MojoAsyncResourceHandlerUploadTest
   MojoAsyncResourceHandlerUploadTest()
       : MojoAsyncResourceHandlerTestBase(
             std::make_unique<DummyUploadDataStream>(),
-            mojom::kURLLoadOptionNone) {}
+            network::mojom::kURLLoadOptionNone) {}
 };
 
 TEST_F(MojoAsyncResourceHandlerTest, InFlightRequests) {

@@ -11,10 +11,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/simple_url_loader.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -67,7 +67,7 @@ void UrlIconSource::StartIconFetch() {
           })");
   simple_loader_ = content::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
-  content::mojom::URLLoaderFactory* loader_factory =
+  network::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(browser_context_)
           ->GetURLLoaderFactoryForBrowserProcess();
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

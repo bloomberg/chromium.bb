@@ -4,13 +4,13 @@
 
 module content.mojom;
 
-import "content/public/common/url_loader_factory.mojom";
+import "services/network/public/interfaces/url_loader_factory.mojom";
 
 // Serializes a collection of URLLoaderFactory interfaces.
 struct URLLoaderFactoryBundle {
   // The default factory to be used when no others apply.
-  URLLoaderFactory default_factory;
+  network.mojom.URLLoaderFactory default_factory;
 
   // A mapping from URL scheme to factory interface.
-  map<string, URLLoaderFactory> factories;
+  map<string, network.mojom.URLLoaderFactory> factories;
 };

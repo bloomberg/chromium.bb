@@ -39,7 +39,7 @@ WebstoreInstallHelper::WebstoreInstallHelper(Delegate* delegate,
 WebstoreInstallHelper::~WebstoreInstallHelper() {}
 
 void WebstoreInstallHelper::Start(
-    content::mojom::URLLoaderFactory* loader_factory) {
+    network::mojom::URLLoaderFactory* loader_factory) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   data_decoder::SafeJsonParser::Parse(

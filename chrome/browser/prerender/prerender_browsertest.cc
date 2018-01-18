@@ -986,7 +986,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                     first = false;
                     // Need to leak the client pipe, or else the renderer will
                     // get a disconnect error and load the error page.
-                    auto* leak_client = new content::mojom::URLLoaderClientPtr;
+                    auto* leak_client = new network::mojom::URLLoaderClientPtr;
                     *leak_client = std::move(params->client);
                     closure.Run();
                     return true;
@@ -3278,9 +3278,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriority) {
 
 namespace {
 
-class HangingURLLoader : public content::mojom::URLLoader {
+class HangingURLLoader : public network::mojom::URLLoader {
  public:
-  explicit HangingURLLoader(content::mojom::URLLoaderClientPtr client)
+  explicit HangingURLLoader(network::mojom::URLLoaderClientPtr client)
       : client_(std::move(client)) {}
   ~HangingURLLoader() override {}
   // mojom::URLLoader implementation:
@@ -3300,7 +3300,7 @@ class HangingURLLoader : public content::mojom::URLLoader {
   }
 
  private:
-  content::mojom::URLLoaderClientPtr client_;
+  network::mojom::URLLoaderClientPtr client_;
   SetPriorityCallback set_priority_callback_;
 };
 

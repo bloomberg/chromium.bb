@@ -25,6 +25,7 @@ include_rules = [
   "+ppapi/features",
   "+services/data_decoder/public/cpp",
   "+services/network/public/cpp",
+  "+services/network/public/interfaces",
   "+services/preferences/public/cpp",
   "+services/service_manager/public/cpp",
   "+skia/ext/image_operations.h",

@@ -48,7 +48,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
@@ -57,6 +56,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 
@@ -187,7 +187,7 @@ bool IsDownload(const network::ResourceResponse& response,
 // may be performed multiple times when redirects happen.
 // TODO(michaeln): Expose this class and add more unittests.
 class NavigationURLLoaderNetworkService::URLLoaderRequestController
-    : public mojom::URLLoaderClient {
+    : public network::mojom::URLLoaderClient {
  public:
   URLLoaderRequestController(
       std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers,
@@ -214,17 +214,17 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   static uint32_t GetURLLoaderOptions(bool is_main_frame) {
-    uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse;
+    uint32_t options = network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
     if (is_main_frame)
-      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+      options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      options |= mojom::kURLLoadOptionSniffMimeType;
+      options |= network::mojom::kURLLoadOptionSniffMimeType;
     } else {
       // TODO(arthursonzogni): This is a temporary option. Remove this as soon
       // as the InterceptingResourceHandler is removed.
       // See https://crbug.com/791049.
-      options |= mojom::kURLLoadOptionPauseOnResponseStarted;
+      options |= network::mojom::kURLLoadOptionPauseOnResponseStarted;
     }
 
     return options;
@@ -237,8 +237,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
-      mojom::URLLoaderRequest url_loader,
-      mojom::URLLoaderClientPtr url_loader_client) {
+      network::mojom::URLLoaderRequest url_loader,
+      network::mojom::URLLoaderClientPtr url_loader_client) {
     DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -298,7 +298,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      mojom::URLLoaderFactoryPtrInfo factory_for_webui,
+      network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
@@ -327,8 +327,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               std::move(factory_for_webui)),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_, navigation_ui_data_.get()),
-          0 /* routing_id */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
-          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
+          0 /* routing_id */, 0 /* request_id? */,
+          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+          kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
@@ -439,13 +440,13 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return;
     }
 
-    mojom::URLLoaderFactory* factory = nullptr;
+    network::mojom::URLLoaderFactory* factory = nullptr;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
       factory = default_url_loader_factory_getter_->GetBlobFactory();
     } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
                !resource_request_->url.SchemeIs(url::kDataScheme)) {
-      mojom::URLLoaderFactoryPtr& non_network_factory =
+      network::mojom::URLLoaderFactoryPtr& non_network_factory =
           non_network_url_loader_factories_[resource_request_->url.scheme()];
       if (!non_network_factory.is_bound()) {
         BrowserThread::PostTask(
@@ -523,11 +524,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
  private:
-  // mojom::URLLoaderClient implementation:
+  // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -536,13 +537,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     if (MaybeCreateLoaderForResponse(head))
       return;
 
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
     if (url_loader_) {
       url_loader_client_endpoints = url_loader_->Unbind();
     } else {
-      url_loader_client_endpoints = mojom::URLLoaderClientEndpoints::New(
-          response_url_loader_.PassInterface(),
-          response_loader_binding_.Unbind());
+      url_loader_client_endpoints =
+          network::mojom::URLLoaderClientEndpoints::New(
+              response_url_loader_.PassInterface(),
+              response_loader_binding_.Unbind());
     }
 
     scoped_refptr<network::ResourceResponse> response(
@@ -668,7 +670,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return false;
 
     for (auto& handler : handlers_) {
-      mojom::URLLoaderClientRequest response_client_request;
+      network::mojom::URLLoaderClientRequest response_client_request;
       if (handler->MaybeCreateLoaderForResponse(response, &response_url_loader_,
                                                 &response_client_request)) {
         response_loader_binding_.Bind(std::move(response_client_request));
@@ -721,11 +723,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // URLLoaderClient binding for loaders created for responses received from the
   // network loader.
-  mojo::Binding<mojom::URLLoaderClient> response_loader_binding_;
+  mojo::Binding<network::mojom::URLLoaderClient> response_loader_binding_;
 
   // URLLoader instance for response loaders, i.e loaders created for handing
   // responses received from the network URLLoader.
-  mojom::URLLoaderPtr response_url_loader_;
+  network::mojom::URLLoaderPtr response_url_loader_;
 
   // Set to true if we receive a valid response from a URLLoader, i.e.
   // URLLoaderClient::OnReceivedResponse() is called.
@@ -735,7 +737,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // Lazily initialized and used in the case of non-network resource
   // navigations. Keyed by URL scheme.
-  std::map<std::string, mojom::URLLoaderFactoryPtr>
+  std::map<std::string, network::mojom::URLLoaderFactoryPtr>
       non_network_url_loader_factories_;
 
   // The completion status if it has been received. This is needed to handle
@@ -856,7 +858,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   // Check if a web UI scheme wants to handle this request.
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  mojom::URLLoaderFactoryPtrInfo factory_for_webui;
+  network::mojom::URLLoaderFactoryPtrInfo factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = new_request->url.scheme();
   if (std::find(schemes.begin(), schemes.end(), scheme) != schemes.end()) {
@@ -920,13 +922,13 @@ void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
 
 void NavigationURLLoaderNetworkService::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const base::Optional<net::SSLInfo>& maybe_ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
     bool is_stream,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderNetworkService", this, "success",
                          true);
@@ -972,7 +974,7 @@ void NavigationURLLoaderNetworkService::OnRequestStarted(
 
 void NavigationURLLoaderNetworkService::BindNonNetworkURLLoaderFactoryRequest(
     const GURL& url,
-    mojom::URLLoaderFactoryRequest factory) {
+    network::mojom::URLLoaderFactoryRequest factory) {
   auto it = non_network_url_loader_factories_.find(url.scheme());
   if (it == non_network_url_loader_factories_.end()) {
     DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();

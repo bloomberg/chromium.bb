@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_FACTORY_H_
 
 #include "base/macros.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -19,7 +19,8 @@ class URLLoaderFactoryGetter;
 // installation, eventually). This is kept alive while
 // ServiceWorkerNetworkProvider in the renderer process is alive.
 // Used only when IsServicificationEnabled is true.
-class ServiceWorkerScriptURLLoaderFactory : public mojom::URLLoaderFactory {
+class ServiceWorkerScriptURLLoaderFactory
+    : public network::mojom::URLLoaderFactory {
  public:
   ServiceWorkerScriptURLLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -27,16 +28,16 @@ class ServiceWorkerScriptURLLoaderFactory : public mojom::URLLoaderFactory {
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter);
   ~ServiceWorkerScriptURLLoaderFactory() override;
 
-  // mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& resource_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
   bool ShouldHandleScriptRequest(

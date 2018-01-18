@@ -29,8 +29,6 @@
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -42,6 +40,8 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -316,7 +316,7 @@ class MockFrontend : public AppCacheFrontend {
 
   void OnSetSubresourceFactory(
       int host_id,
-      mojom::URLLoaderFactoryPtr url_loader_factory) override {}
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
   void AddExpectedEvent(const std::vector<int>& host_ids,
       AppCacheEventID event_id) {
@@ -589,17 +589,17 @@ class IfModifiedSinceJobFactory
 // MockHttpServer and RetryRequestTestJob classes.
 // TODO(ananta/michaeln). Remove dependencies on URLRequest based
 // classes by refactoring the response headers/data into a common class.
-class MockURLLoaderFactory : public mojom::URLLoaderFactory {
+class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   MockURLLoaderFactory() {}
 
-  // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     if (url_request.url.host() == "failme" ||
@@ -636,7 +636,9 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTREACHED();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockURLLoaderFactory);

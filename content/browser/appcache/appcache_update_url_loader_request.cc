@@ -18,13 +18,13 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  mojom::URLLoaderClientPtr client;
+  network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
 
   DCHECK(loader_factory_getter_->GetNetworkFactory());
   loader_factory_getter_->GetNetworkFactory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_), -1, -1, mojom::kURLLoadOptionNone,
-      request_, std::move(client),
+      mojo::MakeRequest(&url_loader_), -1, -1,
+      network::mojom::kURLLoadOptionNone, request_, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(GetTrafficAnnotation()));
 }
 
@@ -97,7 +97,7 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   response_ = response_head;
 
   // TODO(ananta/michaeln)

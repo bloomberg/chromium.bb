@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_BRIDGE_INTERFACE_H_
 
 class PasswordDialogController;
-namespace content {
+namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
@@ -23,7 +23,7 @@ class PasswordPromptBridgeInterface {
   virtual PasswordDialogController* GetDialogController() = 0;
 
   // Returns the URL loader factory for fetching the avatars.
-  virtual content::mojom::URLLoaderFactory* GetURLLoaderFactory() const = 0;
+  virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory() const = 0;
 
  protected:
   virtual ~PasswordPromptBridgeInterface() = default;

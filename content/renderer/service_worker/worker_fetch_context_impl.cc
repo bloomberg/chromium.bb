@@ -54,7 +54,7 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
   }
 
   void SetServiceWorkerURLLoaderFactory(
-      mojom::URLLoaderFactoryPtr service_worker_url_loader_factory) {
+      network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory) {
     service_worker_url_loader_factory_ =
         base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
             std::move(service_worker_url_loader_factory));
@@ -282,7 +282,7 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
     url_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;
   }
-  mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
+  network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
           base::MakeRefCounted<ControllerServiceWorkerConnector>(

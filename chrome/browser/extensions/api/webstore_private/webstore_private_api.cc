@@ -217,7 +217,7 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
   ActiveInstallData install_data(details().id);
   scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
 
-  content::mojom::URLLoaderFactory* loader_factory = nullptr;
+  network::mojom::URLLoaderFactory* loader_factory = nullptr;
   if (!icon_url.is_empty()) {
     loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(browser_context())

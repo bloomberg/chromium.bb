@@ -62,7 +62,7 @@ CredentialsItemView::CredentialsItemView(
     const base::string16& lower_text,
     SkColor hover_color,
     const autofill::PasswordForm* form,
-    content::mojom::URLLoaderFactory* loader_factory)
+    network::mojom::URLLoaderFactory* loader_factory)
     : Button(button_listener),
       form_(form),
       upper_label_(nullptr),

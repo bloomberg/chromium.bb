@@ -8,9 +8,9 @@
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/possibly_associated_interface_ptr_info.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -19,39 +19,41 @@ namespace content {
 // preflight requests to the supplied |network_loader_factory|. Its lifetime is
 // bound to that of the pipes connected to it and the CORSURLLoader instances it
 // creates.
-class CONTENT_EXPORT CORSURLLoaderFactory : public mojom::URLLoaderFactory {
+class CONTENT_EXPORT CORSURLLoaderFactory
+    : public network::mojom::URLLoaderFactory {
  public:
-  static void CreateAndBind(PossiblyAssociatedInterfacePtrInfo<
-                                mojom::URLLoaderFactory> network_loader_factory,
-                            mojom::URLLoaderFactoryRequest request);
+  static void CreateAndBind(
+      PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
+          network_loader_factory,
+      network::mojom::URLLoaderFactoryRequest request);
 
   explicit CORSURLLoaderFactory(
-      PossiblyAssociatedInterfacePtrInfo<mojom::URLLoaderFactory>
+      PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
           network_loader_factory);
   ~CORSURLLoaderFactory() override;
 
-  // mojom::URLLoaderFactory
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& resource_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
   void OnConnectionError();
 
  private:
-  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
+  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
       network_loader_factory_;
 
   // The factory owns the CORSURLLoaders it creates so that they can share
   // |network_loader_factory_|.
-  mojo::StrongBindingSet<mojom::URLLoader> loader_bindings_;
+  mojo::StrongBindingSet<network::mojom::URLLoader> loader_bindings_;
 
-  mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 };
 
 }  // namespace content

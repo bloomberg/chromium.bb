@@ -11,15 +11,17 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "net/http/http_util.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
-class URLLoaderInterceptor::Interceptor : public mojom::URLLoaderFactory {
+class URLLoaderInterceptor::Interceptor
+    : public network::mojom::URLLoaderFactory {
  public:
   using ProcessIdGetter = base::Callback<int()>;
-  using OriginalFactoryGetter = base::Callback<mojom::URLLoaderFactory*()>;
+  using OriginalFactoryGetter =
+      base::Callback<network::mojom::URLLoaderFactory*()>;
 
   Interceptor(URLLoaderInterceptor* parent,
               const ProcessIdGetter& process_id_getter,
@@ -31,13 +33,13 @@ class URLLoaderInterceptor::Interceptor : public mojom::URLLoaderFactory {
   ~Interceptor() override {}
 
  private:
-  // mojom::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     RequestParams params;
@@ -74,7 +76,9 @@ class URLLoaderInterceptor::Interceptor : public mojom::URLLoaderFactory {
         params.traffic_annotation);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
   URLLoaderInterceptor* parent_;
   ProcessIdGetter process_id_getter_;
@@ -93,7 +97,7 @@ class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
       : url_loader_factory_getter_(url_loader_factory_getter) {
     frame_interceptor_ = std::make_unique<Interceptor>(
         parent, base::BindRepeating([]() { return 0; }),
-        base::BindLambdaForTesting([=]() -> mojom::URLLoaderFactory* {
+        base::BindLambdaForTesting([=]() -> network::mojom::URLLoaderFactory* {
           return url_loader_factory_getter
               ->original_network_factory_for_testing()
               ->get();
@@ -115,10 +119,10 @@ class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
 // loader so that it can intercept subresource requests.
 class URLLoaderInterceptor::SubresourceWrapper {
  public:
-  SubresourceWrapper(mojom::URLLoaderFactoryRequest factory_request,
+  SubresourceWrapper(network::mojom::URLLoaderFactoryRequest factory_request,
                      int process_id,
                      URLLoaderInterceptor* parent,
-                     mojom::URLLoaderFactoryPtrInfo original_factory)
+                     network::mojom::URLLoaderFactoryPtrInfo original_factory)
       : interceptor_(
             parent,
             base::BindRepeating([](int process_id) { return process_id; },
@@ -135,13 +139,13 @@ class URLLoaderInterceptor::SubresourceWrapper {
   ~SubresourceWrapper() {}
 
  private:
-  mojom::URLLoaderFactory* GetOriginalFactory() {
+  network::mojom::URLLoaderFactory* GetOriginalFactory() {
     return original_factory_.get();
   }
 
   Interceptor interceptor_;
-  mojo::Binding<mojom::URLLoaderFactory> binding_;
-  mojom::URLLoaderFactoryPtr original_factory_;
+  mojo::Binding<network::mojom::URLLoaderFactory> binding_;
+  network::mojom::URLLoaderFactoryPtr original_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceWrapper);
 };
@@ -194,9 +198,10 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
   run_loop.Run();
 }
 
-void URLLoaderInterceptor::WriteResponse(const std::string& headers,
-                                         const std::string& body,
-                                         mojom::URLLoaderClient* client) {
+void URLLoaderInterceptor::WriteResponse(
+    const std::string& headers,
+    const std::string& body,
+    network::mojom::URLLoaderClient* client) {
   net::HttpResponseInfo info;
   info.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
@@ -217,9 +222,9 @@ void URLLoaderInterceptor::WriteResponse(const std::string& headers,
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
-    mojom::URLLoaderFactoryRequest request,
+    network::mojom::URLLoaderFactoryRequest request,
     int process_id,
-    mojom::URLLoaderFactoryPtrInfo original_factory) {
+    network::mojom::URLLoaderFactoryPtrInfo original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -269,7 +274,7 @@ void URLLoaderInterceptor::InitializeOnIOThread(base::OnceClosure closure) {
           return ResourceMessageFilter::GetCurrentForTesting()->child_id();
         }),
         base::BindRepeating([]() {
-          mojom::URLLoaderFactory* factory =
+          network::mojom::URLLoaderFactory* factory =
               ResourceMessageFilter::GetCurrentForTesting();
           return factory;
         }));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module network.mojom;
 
 [Native]
 struct URLRequest;
@@ -21,6 +21,14 @@ struct CORSErrorStatus;
 
 [Native]
 struct URLLoaderCompletionStatus;
+
+// TODO(jam): move these two Native blocks to network_service_test.mojom once it
+// moves to services/network.
+[Native]
+struct CertVerifyResult;
+
+[Native]
+struct X509Certificate;
 
 // This enum corresponds to net::RequestPriority. See its comments for details.
 enum RequestPriority {

@@ -346,8 +346,8 @@ void ResourceRequestInfoImpl::UpdateForTransfer(
     int render_frame_id,
     int request_id,
     ResourceRequesterInfo* requester_info,
-    mojom::URLLoaderRequest url_loader_request,
-    mojom::URLLoaderClientPtr url_loader_client) {
+    network::mojom::URLLoaderRequest url_loader_request,
+    network::mojom::URLLoaderClientPtr url_loader_client) {
   route_id_ = route_id;
   render_frame_id_ = render_frame_id;
   plugin_child_id_ = ChildProcessHost::kInvalidUniqueID;

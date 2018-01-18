@@ -26,7 +26,7 @@ mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
   return network_context_;
 }
 
-mojom::URLLoaderFactory*
+network::mojom::URLLoaderFactory*
 TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return url_loader_factory_for_browser_process_;
 }

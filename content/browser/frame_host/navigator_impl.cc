@@ -41,10 +41,10 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -1043,7 +1043,7 @@ void NavigatorImpl::RequestNavigation(
         render_frame_host);
     render_frame_host->CommitNavigation(
         nullptr,  // response
-        mojom::URLLoaderClientEndpointsPtr(),
+        network::mojom::URLLoaderClientEndpointsPtr(),
         nullptr,  // body
         scoped_request->common_params(), scoped_request->request_params(),
         scoped_request->is_view_source(), base::nullopt,

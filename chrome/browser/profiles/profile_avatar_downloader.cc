@@ -63,7 +63,7 @@ void ProfileAvatarDownloader::Start() {
   // In unit tests, the browser process can return a NULL context manager
   if (!system_network_context_manager)
     return;
-  content::mojom::URLLoaderFactory* loader_factory =
+  network::mojom::URLLoaderFactory* loader_factory =
       system_network_context_manager->GetURLLoaderFactory();
   if (loader_factory) {
     fetcher_->Init(

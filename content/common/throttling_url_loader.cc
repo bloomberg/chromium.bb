@@ -114,7 +114,7 @@ ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 ThrottlingURLLoader::ResponseInfo::ResponseInfo(
     const network::ResourceResponseHead& in_response_head,
     const base::Optional<net::SSLInfo>& in_ssl_info,
-    mojom::DownloadedTempFilePtr in_downloaded_file)
+    network::mojom::DownloadedTempFilePtr in_downloaded_file)
     : response_head(in_response_head),
       ssl_info(in_ssl_info),
       downloaded_file(std::move(in_downloaded_file)) {}
@@ -143,7 +143,7 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     network::ResourceRequest* url_request,
-    mojom::URLLoaderClient* client,
+    network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
@@ -159,12 +159,12 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     int32_t routing_id,
     network::ResourceRequest* url_request,
-    mojom::URLLoaderClient* client,
+    network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
-  loader->Start(nullptr, routing_id, 0, mojom::kURLLoadOptionNone,
+  loader->Start(nullptr, routing_id, 0, network::mojom::kURLLoadOptionNone,
                 std::move(start_loader_callback), url_request,
                 std::move(task_runner));
   return loader;
@@ -210,14 +210,14 @@ void ThrottlingURLLoader::DisconnectClient() {
   loader_cancelled_ = true;
 }
 
-mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
-  return mojom::URLLoaderClientEndpoints::New(url_loader_.PassInterface(),
-                                              client_binding_.Unbind());
+network::mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
+  return network::mojom::URLLoaderClientEndpoints::New(
+      url_loader_.PassInterface(), client_binding_.Unbind());
 }
 
 ThrottlingURLLoader::ThrottlingURLLoader(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    mojom::URLLoaderClient* client,
+    network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
       client_binding_(this),
@@ -239,7 +239,7 @@ void ThrottlingURLLoader::Start(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
 
-  if (options & mojom::kURLLoadOptionSynchronous)
+  if (options & network::mojom::kURLLoadOptionSynchronous)
     is_synchronous_ = true;
 
   DCHECK(deferring_throttles_.empty());
@@ -276,7 +276,7 @@ void ThrottlingURLLoader::StartNow(
     StartLoaderCallback start_loader_callback,
     network::ResourceRequest* url_request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  mojom::URLLoaderClientPtr client;
+  network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
   client_binding_.set_connection_error_handler(base::Bind(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
@@ -331,7 +331,7 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
 void ThrottlingURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
   DCHECK(deferring_throttles_.empty());

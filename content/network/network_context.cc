@@ -164,15 +164,16 @@ void NetworkContext::DeregisterURLLoader(URLLoader* url_loader) {
 }
 
 void NetworkContext::CreateURLLoaderFactory(
-    mojom::URLLoaderFactoryRequest request,
+    network::mojom::URLLoaderFactoryRequest request,
     uint32_t process_id) {
   loader_factory_bindings_.AddBinding(
       std::make_unique<NetworkServiceURLLoaderFactory>(this, process_id),
       std::move(request));
 }
 
-void NetworkContext::HandleViewCacheRequest(const GURL& url,
-                                            mojom::URLLoaderClientPtr client) {
+void NetworkContext::HandleViewCacheRequest(
+    const GURL& url,
+    network::mojom::URLLoaderClientPtr client) {
   StartCacheURLLoader(url, url_request_context_, std::move(client));
 }
 

@@ -942,7 +942,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to handle navigation URL requests for schemes not handled by the Network
   // Service. Only called when the Network Service is enabled.
   using NonNetworkURLLoaderFactoryMap =
-      std::map<std::string, std::unique_ptr<mojom::URLLoaderFactory>>;
+      std::map<std::string, std::unique_ptr<network::mojom::URLLoaderFactory>>;
   virtual void RegisterNonNetworkNavigationURLLoaderFactories(
       RenderFrameHost* frame_host,
       NonNetworkURLLoaderFactoryMap* factories);

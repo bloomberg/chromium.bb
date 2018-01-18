@@ -50,8 +50,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
   }
 
   void StartLoader(network::ResourceRequest resource_request,
-                   mojom::URLLoaderRequest request,
-                   mojom::URLLoaderClientPtr client) {
+                   network::mojom::URLLoaderRequest request,
+                   network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     // The URLLoader will delete itself upon completion.
     new URLLoader(context_.get(), std::move(request), 0 /* options */,
@@ -62,8 +62,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
 
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
-      mojom::URLLoaderPtr* loader,
-      mojom::URLLoaderClientRequest* client_request) override {
+      network::mojom::URLLoaderPtr* loader,
+      network::mojom::URLLoaderClientRequest* client_request) override {
     return false;
   }
 

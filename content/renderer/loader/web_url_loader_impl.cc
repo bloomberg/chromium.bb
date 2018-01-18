@@ -34,7 +34,6 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/service_worker_modes.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
@@ -58,6 +57,7 @@
 #include "net/url_request/url_request_data_job.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
@@ -714,7 +714,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // The renderer should request a stream which contains the body of the
   // response. If the Network Service or NavigationMojoResponse is enabled, the
   // URLLoaderClientEndpoints is used instead to get the body.
-  mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
+  network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
   if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);

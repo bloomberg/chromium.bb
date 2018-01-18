@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -15,14 +15,15 @@ namespace content {
 // loading. The instance is held by the client and lives until the client
 // destroys the interface, slightly after the URLLoader is destroyed.
 class CONTENT_EXPORT DownloadedTempFileImpl final
-    : public mojom::DownloadedTempFile {
+    : public network::mojom::DownloadedTempFile {
  public:
   // Creates a DownloadedTempFileImpl, binds it as a strong interface, and
   // returns the interface ptr to be passed to the client.
   // That means:
   //  * The DownloadedTempFile object created here is essentially owned by the
   //    client. It keeps alive until the client destroys the other endpoint.
-  static mojom::DownloadedTempFilePtr Create(int child_id, int request_id);
+  static network::mojom::DownloadedTempFilePtr Create(int child_id,
+                                                      int request_id);
 
   DownloadedTempFileImpl(int child_id, int request_id);
   ~DownloadedTempFileImpl() override;

@@ -5,7 +5,7 @@
 #ifndef CONTENT_NETWORK_CACHE_URL_LOADER_H_
 #define CONTENT_NETWORK_CACHE_URL_LOADER_H_
 
-#include "content/public/common/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace net {
 class URLRequestContext;
@@ -16,7 +16,7 @@ namespace content {
 // Creates a URLLoader that responds to developer requests to view the cache.
 void StartCacheURLLoader(const GURL& url,
                          net::URLRequestContext* request_context,
-                         mojom::URLLoaderClientPtr client);
+                         network::mojom::URLLoaderClientPtr client);
 
 }  // namespace content
 

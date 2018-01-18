@@ -92,7 +92,7 @@ void AvatarFetcherAndroid::OnFetchComplete(const GURL& url,
 void FetchAvatar(const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
                  const autofill::PasswordForm* password_form,
                  int index,
-                 content::mojom::URLLoaderFactory* loader_factory) {
+                 network::mojom::URLLoaderFactory* loader_factory) {
   if (!password_form->icon_url.is_valid())
     return;
   // Fetcher deletes itself once fetching is finished.
@@ -149,7 +149,7 @@ void AccountChooserDialogAndroid::ShowDialog() {
       title_link_range.start(), title_link_range.end(),
       base::android::ConvertUTF8ToJavaString(env, origin),
       base::android::ConvertUTF16ToJavaString(env, signin_button)));
-  content::mojom::URLLoaderFactory* loader_factory =
+  network::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
           ->GetURLLoaderFactoryForBrowserProcess();

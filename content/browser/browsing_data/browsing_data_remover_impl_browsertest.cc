@@ -128,7 +128,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
     return false;
   }
 
-  mojom::URLLoaderFactory* url_loader_factory() {
+  network::mojom::URLLoaderFactory* url_loader_factory() {
     return BrowserContext::GetDefaultStoragePartition(
                shell()->web_contents()->GetBrowserContext())
         ->GetURLLoaderFactoryForBrowserProcess();

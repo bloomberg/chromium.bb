@@ -93,7 +93,7 @@ class AppCacheRequestHandlerTest
 
     void OnSetSubresourceFactory(
         int host_id,
-        mojom::URLLoaderFactoryPtr url_loader_factory) override {}
+        network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
   };
 
   // Helper callback to run a test on our io_thread. The io_thread is spun up

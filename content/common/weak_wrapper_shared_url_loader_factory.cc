@@ -10,7 +10,7 @@
 namespace content {
 
 WeakWrapperSharedURLLoaderFactory::WeakWrapperSharedURLLoaderFactory(
-    mojom::URLLoaderFactory* factory_ptr)
+    network::mojom::URLLoaderFactory* factory_ptr)
     : factory_ptr_(factory_ptr) {}
 
 void WeakWrapperSharedURLLoaderFactory::Detach() {
@@ -18,12 +18,12 @@ void WeakWrapperSharedURLLoaderFactory::Detach() {
 }
 
 void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    network::mojom::URLLoaderRequest loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     const Constraints& constraints) {
   if (!factory_ptr_)
@@ -35,7 +35,7 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
 
 std::unique_ptr<SharedURLLoaderFactoryInfo>
 WeakWrapperSharedURLLoaderFactory::Clone() {
-  mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
   if (factory_ptr_)
     factory_ptr_->Clone(mojo::MakeRequest(&factory_ptr_info));
   return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(

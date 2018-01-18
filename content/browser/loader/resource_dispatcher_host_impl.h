@@ -37,10 +37,10 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -258,8 +258,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,
-      mojom::URLLoaderClientPtr url_loader_client,
-      mojom::URLLoaderRequest url_loader_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest url_loader_request,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
@@ -282,8 +282,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Helper function for initializing the |request| passed in. By initializing
@@ -532,21 +532,22 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int request_id,
       bool is_sync_load,
       const network::ResourceRequest& request_data,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   bool IsRequestIDInUse(const GlobalRequestID& id) const;
 
   // Update the ResourceRequestInfo and internal maps when a request is
   // transferred from one process to another.
-  void UpdateRequestForTransfer(ResourceRequesterInfo* requester_info,
-                                int route_id,
-                                int request_id,
-                                const network::ResourceRequest& request_data,
-                                LoaderMap::iterator iter,
-                                mojom::URLLoaderRequest mojo_request,
-                                mojom::URLLoaderClientPtr url_loader_client);
+  void UpdateRequestForTransfer(
+      ResourceRequesterInfo* requester_info,
+      int route_id,
+      int request_id,
+      const network::ResourceRequest& request_data,
+      LoaderMap::iterator iter,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client);
 
   // If |request_data| is for a request being transferred from another process,
   // then CompleteTransfer method can be used to complete the transfer.
@@ -554,16 +555,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                         int request_id,
                         const network::ResourceRequest& request_data,
                         int route_id,
-                        mojom::URLLoaderRequest mojo_request,
-                        mojom::URLLoaderClientPtr url_loader_client);
+                        network::mojom::URLLoaderRequest mojo_request,
+                        network::mojom::URLLoaderClientPtr url_loader_client);
 
   void BeginRequest(ResourceRequesterInfo* requester_info,
                     int request_id,
                     const network::ResourceRequest& request_data,
                     bool is_sync_load,
                     int route_id,
-                    mojom::URLLoaderRequest mojo_request,
-                    mojom::URLLoaderClientPtr url_loader_client,
+                    network::mojom::URLLoaderRequest mojo_request,
+                    network::mojom::URLLoaderClientPtr url_loader_client,
                     const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // There are requests which need decisions to be made like the following:
@@ -581,8 +582,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_sync_load,
       int route_id,
       const net::HttpRequestHeaders& headers,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
       BlobHandles blob_handles,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       HeaderInterceptorResult interceptor_result);
@@ -596,14 +597,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       int child_id,
       ResourceContext* resource_context,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client);
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client);
 
   // Creates either MojoAsyncResourceHandler or AsyncResourceHandler.
   std::unique_ptr<ResourceHandler> CreateBaseResourceHandler(
       net::URLRequest* request,
-      mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      network::mojom::URLLoaderRequest mojo_request,
+      network::mojom::URLLoaderClientPtr url_loader_client,
       ResourceType resource_type);
 
   // Wraps |handler| in the standard resource handlers for normal resource

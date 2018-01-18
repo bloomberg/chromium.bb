@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_HISTOGRAM_INTERNALS_URL_LOADER_H_
 #define CONTENT_BROWSER_HISTOGRAM_INTERNALS_URL_LOADER_H_
 
-#include "content/public/common/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
 
 // Creates the data for chrome://histograms.
-void StartHistogramInternalsURLLoader(const network::ResourceRequest& request,
-                                      mojom::URLLoaderClientPtr client);
+void StartHistogramInternalsURLLoader(
+    const network::ResourceRequest& request,
+    network::mojom::URLLoaderClientPtr client);
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_HISTOGRAM_INTERNALS_URL_LOADER_H_

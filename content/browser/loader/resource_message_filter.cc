@@ -18,7 +18,7 @@
 
 namespace content {
 namespace {
-mojom::URLLoaderFactory* g_test_factory;
+network::mojom::URLLoaderFactory* g_test_factory;
 ResourceMessageFilter* g_current_filter;
 }  // namespace
 
@@ -31,7 +31,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     const GetContextsCallback& get_contexts_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : BrowserMessageFilter(ResourceMsgStart),
-      BrowserAssociatedInterface<mojom::URLLoaderFactory>(this, this),
+      BrowserAssociatedInterface<network::mojom::URLLoaderFactory>(this, this),
       is_channel_closed_(false),
       requester_info_(
           ResourceRequesterInfo::CreateForRenderer(child_id,
@@ -91,12 +91,12 @@ base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
 }
 
 void ResourceMessageFilter::CreateLoaderAndStart(
-    mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (g_test_factory && !g_current_filter) {
     g_current_filter = this;
@@ -113,7 +113,8 @@ void ResourceMessageFilter::CreateLoaderAndStart(
       net::NetworkTrafficAnnotationTag(traffic_annotation));
 }
 
-void ResourceMessageFilter::Clone(mojom::URLLoaderFactoryRequest request) {
+void ResourceMessageFilter::Clone(
+    network::mojom::URLLoaderFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -126,7 +127,7 @@ void ResourceMessageFilter::InitializeForTest() {
 }
 
 void ResourceMessageFilter::SetNetworkFactoryForTesting(
-    mojom::URLLoaderFactory* test_factory) {
+    network::mojom::URLLoaderFactory* test_factory) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!test_factory || !g_test_factory);

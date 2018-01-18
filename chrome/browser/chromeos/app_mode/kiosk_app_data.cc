@@ -25,7 +25,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -35,6 +34,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
@@ -194,7 +194,7 @@ class KioskAppData::WebstoreDataParser
   void Start(const std::string& app_id,
              const std::string& manifest,
              const GURL& icon_url,
-             content::mojom::URLLoaderFactory* loader_factory) {
+             network::mojom::URLLoaderFactory* loader_factory) {
     scoped_refptr<extensions::WebstoreInstallHelper> webstore_helper =
         new extensions::WebstoreInstallHelper(this, app_id, manifest, icon_url);
     webstore_helper->Start(loader_factory);
@@ -367,7 +367,7 @@ net::URLRequestContextGetter* KioskAppData::GetRequestContextGetter() {
   return g_browser_process->system_request_context();
 }
 
-content::mojom::URLLoaderFactory* KioskAppData::GetURLLoaderFactory() {
+network::mojom::URLLoaderFactory* KioskAppData::GetURLLoaderFactory() {
   return g_browser_process->system_network_context_manager()
       ->GetURLLoaderFactory();
 }

@@ -63,7 +63,7 @@ void RendererWebApplicationCacheHostImpl::OnCacheSelected(
 }
 
 void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(
-    mojom::URLLoaderFactoryPtr url_loader_factory) {
+    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   RenderFrameImpl* render_frame =
       RenderFrameImpl::FromRoutingID(frame_routing_id_);
   if (render_frame) {

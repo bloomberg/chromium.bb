@@ -50,9 +50,9 @@ CORSURLLoader::CORSURLLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    mojom::URLLoaderClientPtr client,
+    network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::URLLoaderFactory* network_loader_factory)
+    network::mojom::URLLoaderFactory* network_loader_factory)
     : network_loader_factory_(network_loader_factory),
       network_client_binding_(this),
       forwarding_client_(std::move(client)),
@@ -74,7 +74,7 @@ CORSURLLoader::CORSURLLoader(
   // TODO(toyoshim): Needs some checks if the calculated fetch_cors_flag_
   // is allowed in this request or not.
 
-  mojom::URLLoaderClientPtr network_client;
+  network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
   // |network_client_binding_| shares this object's lifetime.
@@ -122,7 +122,7 @@ void CORSURLLoader::ResumeReadingBodyFromNet() {
 void CORSURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    network::mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
@@ -217,10 +217,10 @@ void CORSURLLoader::OnComplete(
 
 void CORSURLLoader::OnUpstreamConnectionError() {
   // |network_client_binding_| has experienced a connection error and will no
-  // longer call any of the mojom::URLLoaderClient methods above. The client
-  // pipe to the downstream client is closed to inform it of this failure. The
-  // client should respond by closing its mojom::URLLoader pipe which will cause
-  // this object to be destroyed.
+  // longer call any of the network::mojom::URLLoaderClient methods above. The
+  // client pipe to the downstream client is closed to inform it of this
+  // failure. The client should respond by closing its network::mojom::URLLoader
+  // pipe which will cause this object to be destroyed.
   forwarding_client_.reset();
 }
 

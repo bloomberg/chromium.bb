@@ -5,12 +5,7 @@
 module content.mojom;
 
 import "services/network/public/interfaces/network_change_manager.mojom";
-
-[Native]
-struct CertVerifyResult;
-
-[Native]
-struct X509Certificate;
+import "services/network/public/interfaces/url_loader.mojom";
 
 struct Rule {
   string host_pattern;
@@ -40,8 +35,8 @@ interface NetworkServiceTest {
 
   [Sync]
   MockCertVerifierAddResultForCertAndHost(
-      X509Certificate cert,
+      network.mojom.X509Certificate cert,
       string host_pattern,
-      CertVerifyResult verify_result,
+      network.mojom.CertVerifyResult verify_result,
       int32 rv) => ();
 };

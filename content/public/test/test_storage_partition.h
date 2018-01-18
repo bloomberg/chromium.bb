@@ -58,11 +58,13 @@ class TestStoragePartition : public StoragePartition {
   mojom::NetworkContext* GetNetworkContext() override;
 
   void set_url_loader_factory_for_browser_process(
-      mojom::URLLoaderFactory* url_loader_factory_for_browser_process) {
+      network::mojom::URLLoaderFactory*
+          url_loader_factory_for_browser_process) {
     url_loader_factory_for_browser_process_ =
         url_loader_factory_for_browser_process;
   }
-  mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() override;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess()
+      override;
 
   void set_cookie_manager_for_browser_process(
       network::mojom::CookieManager* cookie_manager_for_browser_process) {
@@ -171,7 +173,8 @@ class TestStoragePartition : public StoragePartition {
   net::URLRequestContextGetter* url_request_context_getter_ = nullptr;
   net::URLRequestContextGetter* media_url_request_context_getter_ = nullptr;
   mojom::NetworkContext* network_context_ = nullptr;
-  mojom::URLLoaderFactory* url_loader_factory_for_browser_process_ = nullptr;
+  network::mojom::URLLoaderFactory* url_loader_factory_for_browser_process_ =
+      nullptr;
   network::mojom::CookieManager* cookie_manager_for_browser_process_ = nullptr;
   storage::QuotaManager* quota_manager_ = nullptr;
   AppCacheService* app_cache_service_ = nullptr;

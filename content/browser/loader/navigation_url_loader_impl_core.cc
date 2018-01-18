@@ -18,11 +18,11 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -56,9 +56,11 @@ void NavigationURLLoaderImplCore::Start(
     ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
         resource_context, url_request_context_getter->GetURLRequestContext(),
         upload_file_system_context, *request_info,
-        std::move(navigation_ui_data), this, mojom::URLLoaderClientPtr(),
-        mojom::URLLoaderRequest(), service_worker_handle_core,
-        appcache_handle_core, mojom::kURLLoadOptionNone, &global_request_id);
+        std::move(navigation_ui_data), this,
+        network::mojom::URLLoaderClientPtr(),
+        network::mojom::URLLoaderRequest(), service_worker_handle_core,
+        appcache_handle_core, network::mojom::kURLLoadOptionNone,
+        &global_request_id);
   }
 
   // Careful, |this| could be destroyed at this point. Don't notify start if

@@ -4,11 +4,33 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# This interface is put in its own target to avoid a circular dependency, which
+# comes from the fact that the typemap for url_loader.mojom
+# (ResourceRequestBody) uses the interface from data_pipe_getter.mojom.
+mojom("data_pipe_interface") {
+  sources = [
+    "data_pipe_getter.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
+
+  # TODO(crbug/598073): When moving the service implementation to
+  # //services/network, add the correct values for export_class_attribute /
+  # export_define / export_header here. Context in https://crrev.com/2225673002.
+
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+  }
+}
+
 mojom("interfaces") {
   sources = [
     "cookie_manager.mojom",
     "cors.mojom",
-    "data_pipe_getter.mojom",
     "fetch_api.mojom",
     "http_request_headers.mojom",
     "mutable_network_traffic_annotation_tag.mojom",
@@ -18,9 +40,12 @@ mojom("interfaces") {
     "proxy_config.mojom",
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
+    "url_loader.mojom",
+    "url_loader_factory.mojom",
   ]
 
   public_deps = [
+    ":data_pipe_interface",
     "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
   ]

@@ -10,14 +10,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
 // A URLLoaderFactory used for the file:// scheme used when Network Service is
 // enabled.
-class CONTENT_EXPORT FileURLLoaderFactory : public mojom::URLLoaderFactory {
+class CONTENT_EXPORT FileURLLoaderFactory
+    : public network::mojom::URLLoaderFactory {
  public:
   // SequencedTaskRunner must be allowed to block and should have background
   // priority since it will be used to schedule synchronous file I/O tasks.
@@ -26,20 +27,20 @@ class CONTENT_EXPORT FileURLLoaderFactory : public mojom::URLLoaderFactory {
   ~FileURLLoaderFactory() override;
 
  private:
-  // mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest loader) override;
+  void Clone(network::mojom::URLLoaderFactoryRequest loader) override;
 
   const base::FilePath profile_path_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
 };

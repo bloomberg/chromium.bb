@@ -9,20 +9,20 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
 class URLLoaderClientImplTest : public ::testing::Test,
-                                public mojom::URLLoaderFactory {
+                                public network::mojom::URLLoaderFactory {
  protected:
   URLLoaderClientImplTest()
       : dispatcher_(new ResourceDispatcher(message_loop_.task_runner())) {
@@ -34,7 +34,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
                                           &request_peer_context_),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr());
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();
@@ -45,18 +45,20 @@ class URLLoaderClientImplTest : public ::testing::Test,
     url_loader_client_ = nullptr;
   }
 
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     url_loader_client_ = std::move(client);
   }
 
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED();
+  }
 
   static MojoCreateDataPipeOptions DataPipeOptions() {
     MojoCreateDataPipeOptions options;
@@ -71,7 +73,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
   std::unique_ptr<ResourceDispatcher> dispatcher_;
   TestRequestPeer::Context request_peer_context_;
   int request_id_ = 0;
-  mojom::URLLoaderClientPtr url_loader_client_;
+  network::mojom::URLLoaderClientPtr url_loader_client_;
 };
 
 TEST_F(URLLoaderClientImplTest, OnReceiveResponse) {

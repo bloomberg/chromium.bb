@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/shared_url_loader_factory.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
  public:
   WrapperSharedURLLoaderFactoryInfo();
   explicit WrapperSharedURLLoaderFactoryInfo(
-      mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
+      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
 
   ~WrapperSharedURLLoaderFactoryInfo() override;
 
@@ -26,7 +26,7 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
   // SharedURLLoaderFactoryInfo implementation.
   scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
 
-  mojom::URLLoaderFactoryPtrInfo factory_ptr_info_;
+  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info_;
 };
 
 // A SharedURLLoaderFactory implementation that wraps a
@@ -35,18 +35,18 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactory
     : public SharedURLLoaderFactory {
  public:
   explicit WrapperSharedURLLoaderFactory(
-      mojom::URLLoaderFactoryPtr factory_ptr);
+      network::mojom::URLLoaderFactoryPtr factory_ptr);
   explicit WrapperSharedURLLoaderFactory(
-      mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
+      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
 
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(
-      mojom::URLLoaderRequest loader,
+      network::mojom::URLLoaderRequest loader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       const Constraints& constraints) override;
 
@@ -55,7 +55,7 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactory
  private:
   ~WrapperSharedURLLoaderFactory() override;
 
-  mojom::URLLoaderFactoryPtr factory_ptr_;
+  network::mojom::URLLoaderFactoryPtr factory_ptr_;
 };
 
 }  // namespace content

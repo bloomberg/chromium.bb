@@ -91,7 +91,7 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
 
 void AppCacheFrontendImpl::OnSetSubresourceFactory(
     int host_id,
-    mojom::URLLoaderFactoryPtr url_loader_factory) {
+    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
     host->SetSubresourceFactory(std::move(url_loader_factory));

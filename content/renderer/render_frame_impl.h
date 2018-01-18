@@ -49,7 +49,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/stop_find_action.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/input/input_target_client_impl.h"
@@ -64,6 +63,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -496,7 +496,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::TaskType task_type) override;
   int GetEnabledBindings() const override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
-  mojom::URLLoaderFactory* GetURLLoaderFactory(
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory(
       const GURL& request_url) override;
 
   // blink::mojom::EngagementClient implementation:
@@ -524,7 +524,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::Optional<URLLoaderFactoryBundle> subresource_loaders,
       mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
       const base::UnguessableToken& devtools_navigation_token) override;
@@ -860,7 +860,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SyncSelectionIfRequired();
 
   // Sets the custom URLLoaderFactory instance to be used for network requests.
-  void SetCustomURLLoaderFactory(mojom::URLLoaderFactoryPtr factory);
+  void SetCustomURLLoaderFactory(network::mojom::URLLoaderFactoryPtr factory);
 
   void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
   void DidChangeVisibleViewport();
@@ -1101,7 +1101,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebURLRequest CreateURLRequestForCommit(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const network::ResourceResponseHead& head,
       const GURL& body_url,
       bool is_same_document_navigation);
@@ -1271,7 +1271,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type);
 
-  mojom::URLLoaderFactory* custom_url_loader_factory() {
+  network::mojom::URLLoaderFactory* custom_url_loader_factory() {
     return custom_url_loader_factory_.get();
   }
 
@@ -1590,7 +1590,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // This frame might be given a custom default URLLoaderFactory (e.g.
   // for AppCache).
-  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
+  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
       custom_url_loader_factory_;
 
   // Non-null if this frame is to be controlled by a service worker.

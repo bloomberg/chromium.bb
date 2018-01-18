@@ -785,7 +785,7 @@ void DownloadManagerImpl::InterceptNavigation(
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1021,7 +1021,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
   if (!is_download_allowed)
     return;
@@ -1045,7 +1045,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<ResourceDownloader> resource_downloader =

@@ -84,7 +84,7 @@ class CONTENT_EXPORT AppCacheFrontend {
   // parameter.
   virtual void OnSetSubresourceFactory(
       int host_id,
-      mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
 
   virtual ~AppCacheFrontend() {}
 };

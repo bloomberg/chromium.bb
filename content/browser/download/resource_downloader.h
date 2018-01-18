@@ -10,9 +10,9 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace storage {
 class FileSystemContext;
@@ -49,7 +49,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const base::Optional<std::string>& suggested_filename,
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   ResourceDownloader(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
@@ -80,7 +80,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       net::CertStatus cert_status,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   base::WeakPtr<UrlDownloadHandler::Delegate> delegate_;
 
@@ -88,14 +88,14 @@ class ResourceDownloader : public UrlDownloadHandler,
   std::unique_ptr<network::ResourceRequest> resource_request_;
 
   // Object that will handle the response.
-  std::unique_ptr<mojom::URLLoaderClient> url_loader_client_;
+  std::unique_ptr<network::mojom::URLLoaderClient> url_loader_client_;
 
   // URLLoaderClient binding. It sends any requests to the |url_loader_client_|.
-  std::unique_ptr<mojo::Binding<mojom::URLLoaderClient>>
+  std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
       url_loader_client_binding_;
 
   // URLLoader for sending out the request.
-  mojom::URLLoaderPtr url_loader_;
+  network::mojom::URLLoaderPtr url_loader_;
 
   // ID of the download, or DownloadItem::kInvalidId if this is a new
   // download.

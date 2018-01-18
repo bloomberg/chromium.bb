@@ -16,7 +16,6 @@
 #include "content/network/data_pipe_element_reader.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/mime_sniffer.h"
@@ -27,6 +26,7 @@
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -190,11 +190,11 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 }  // namespace
 
 URLLoader::URLLoader(NetworkContext* context,
-                     mojom::URLLoaderRequest url_loader_request,
+                     network::mojom::URLLoaderRequest url_loader_request,
                      int32_t options,
                      const network::ResourceRequest& request,
                      bool report_raw_headers,
-                     mojom::URLLoaderClientPtr url_loader_client,
+                     network::mojom::URLLoaderClientPtr url_loader_client,
                      const net::NetworkTrafficAnnotationTag& traffic_annotation,
                      uint32_t process_id)
     : context_(context),
@@ -426,7 +426,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       base::Bind(&URLLoader::OnResponseBodyStreamReady,
                  base::Unretained(this)));
 
-  if (!(options_ & mojom::kURLLoadOptionSniffMimeType) ||
+  if (!(options_ & network::mojom::kURLLoadOptionSniffMimeType) ||
       !ShouldSniffContent(url_request_.get(), response_.get()))
     SendResponseToClient();
 
@@ -563,7 +563,8 @@ void URLLoader::NotifyCompleted(int error_code) {
   status.encoded_body_length = url_request_->GetRawBodyBytes();
   status.decoded_body_length = total_written_bytes_;
 
-  if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
+  if ((options_ &
+       network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
       net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
       !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
     status.ssl_info = url_request_->ssl_info();
@@ -617,9 +618,9 @@ void URLLoader::DeleteIfNeeded() {
 
 void URLLoader::SendResponseToClient() {
   base::Optional<net::SSLInfo> ssl_info;
-  if (options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse)
+  if (options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
     ssl_info = url_request_->ssl_info();
-  mojom::DownloadedTempFilePtr downloaded_file_ptr;
+  network::mojom::DownloadedTempFilePtr downloaded_file_ptr;
   url_loader_client_->OnReceiveResponse(response_->head, ssl_info,
                                         std::move(downloaded_file_ptr));
 

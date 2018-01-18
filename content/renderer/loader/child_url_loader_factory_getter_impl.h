@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -17,9 +17,9 @@ class CONTENT_EXPORT ChildURLLoaderFactoryGetterImpl
     : public ChildURLLoaderFactoryGetter {
  public:
   using PossiblyAssociatedURLLoaderFactory =
-      PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>;
+      PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>;
   using URLLoaderFactoryGetterCallback =
-      base::OnceCallback<mojom::URLLoaderFactoryPtr()>;
+      base::OnceCallback<network::mojom::URLLoaderFactoryPtr()>;
 
   ChildURLLoaderFactoryGetterImpl();
 
@@ -33,11 +33,11 @@ class CONTENT_EXPORT ChildURLLoaderFactoryGetterImpl
 
   Info GetClonedInfo() override;
 
-  mojom::URLLoaderFactory* GetFactoryForURL(
+  network::mojom::URLLoaderFactory* GetFactoryForURL(
       const GURL& url,
-      mojom::URLLoaderFactory* default_factory) override;
-  mojom::URLLoaderFactory* GetNetworkLoaderFactory() override;
-  mojom::URLLoaderFactory* GetBlobLoaderFactory() override;
+      network::mojom::URLLoaderFactory* default_factory) override;
+  network::mojom::URLLoaderFactory* GetNetworkLoaderFactory() override;
+  network::mojom::URLLoaderFactory* GetBlobLoaderFactory() override;
 
  private:
   ~ChildURLLoaderFactoryGetterImpl() override;

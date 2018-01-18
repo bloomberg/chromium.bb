@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_NAVIGATION_SUBRESOURCE_LOADER_PARAMS_H_
 
 #include "content/common/service_worker/controller_service_worker.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -24,7 +24,7 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
 
   // The subresource loader factory info that is to be used to create a
   // subresource loader in the renderer.
-  mojom::URLLoaderFactoryPtrInfo loader_factory_info;
+  network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
 
   // The controller service worker, non-null if the frame is to be
   // controlled by the service worker.

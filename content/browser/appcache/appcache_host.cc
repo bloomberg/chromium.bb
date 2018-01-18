@@ -15,8 +15,8 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
@@ -535,7 +535,7 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   if (subresource_url_factory_.get())
     return;
 
-  mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
+  network::mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
 
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
       service()->url_loader_factory_getter(), GetWeakPtr(), &factory_ptr);

@@ -643,7 +643,7 @@ mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   return network_context_.get();
 }
 
-mojom::URLLoaderFactory*
+network::mojom::URLLoaderFactory*
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   // Create the URLLoaderFactory as needed.
   if (!url_loader_factory_for_browser_process_ ||

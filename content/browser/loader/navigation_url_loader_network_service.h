@@ -12,8 +12,8 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/url_loader.mojom.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace net {
 struct RedirectInfo;
@@ -52,13 +52,13 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
 
   void OnReceiveResponse(
       scoped_refptr<network::ResourceResponse> response,
-      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const base::Optional<net::SSLInfo>& maybe_ssl_info,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,
       bool is_stream,
-      mojom::DownloadedTempFilePtr downloaded_file);
+      network::mojom::DownloadedTempFilePtr downloaded_file);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          scoped_refptr<network::ResourceResponse> response);
   void OnComplete(const network::URLLoaderCompletionStatus& status);
@@ -69,7 +69,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
 
   void BindNonNetworkURLLoaderFactoryRequest(
       const GURL& url,
-      mojom::URLLoaderFactoryRequest factory);
+      network::mojom::URLLoaderFactoryRequest factory);
 
   NavigationURLLoaderDelegate* delegate_;
 

@@ -35,7 +35,7 @@ void BitmapFetcher::Init(const std::string& referrer,
                                                     traffic_annotation_);
 }
 
-void BitmapFetcher::Start(content::mojom::URLLoaderFactory* loader_factory) {
+void BitmapFetcher::Start(network::mojom::URLLoaderFactory* loader_factory) {
   if (simple_loader_) {
     content::SimpleURLLoader::BodyAsStringCallback callback = base::BindOnce(
         &BitmapFetcher::OnSimpleLoaderComplete, base::Unretained(this));

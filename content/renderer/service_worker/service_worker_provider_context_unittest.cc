@@ -16,7 +16,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
@@ -30,6 +29,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
@@ -165,22 +165,22 @@ class ServiceWorkerTestSender : public ThreadSafeSender {
 
 // S13nServiceWorker: a fake URLLoaderFactory implementation that basically
 // does nothing but records the requests.
-class FakeURLLoaderFactory final : public mojom::URLLoaderFactory {
+class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
  public:
   FakeURLLoaderFactory() = default;
   ~FakeURLLoaderFactory() override = default;
 
-  void AddBinding(mojom::URLLoaderFactoryRequest request) {
+  void AddBinding(network::mojom::URLLoaderFactoryRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     // Does nothing, but just record the request and hold the client (to avoid
@@ -188,14 +188,16 @@ class FakeURLLoaderFactory final : public mojom::URLLoaderFactory {
     last_url_ = url_request.url;
     clients_.push_back(std::move(client));
   }
-  void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTREACHED();
+  }
 
   size_t clients_count() const { return clients_.size(); }
   GURL last_request_url() const { return last_url_; }
 
  private:
-  mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
-  std::vector<mojom::URLLoaderClientPtr> clients_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  std::vector<network::mojom::URLLoaderClientPtr> clients_;
   GURL last_url_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLLoaderFactory);
@@ -247,7 +249,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   void EnableS13nServiceWorker() {
     scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
-    mojom::URLLoaderFactoryPtr fake_loader_factory;
+    network::mojom::URLLoaderFactoryPtr fake_loader_factory;
     fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
     loader_factory_getter_ =
         base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
@@ -275,15 +277,16 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     return info;
   }
 
-  void StartRequest(mojom::URLLoaderFactory* factory, const GURL& url) {
+  void StartRequest(network::mojom::URLLoaderFactory* factory,
+                    const GURL& url) {
     network::ResourceRequest request;
     request.url = url;
     request.resource_type = static_cast<int>(RESOURCE_TYPE_SUB_RESOURCE);
-    mojom::URLLoaderPtr loader;
+    network::mojom::URLLoaderPtr loader;
     TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0, 0, mojom::kURLLoadOptionNone, request,
-        loader_client.CreateInterfacePtr(),
+        mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
+        request, loader_client.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     // Need to run one more loop to make a Mojo call.
     base::RunLoop().RunUntilIdle();

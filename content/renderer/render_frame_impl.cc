@@ -3060,7 +3060,7 @@ void RenderFrameImpl::CommitNavigation(
     const GURL& body_url,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     base::Optional<URLLoaderFactoryBundle> subresource_loader_factories,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     const base::UnguessableToken& devtools_navigation_token) {
@@ -6438,7 +6438,7 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
 WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const network::ResourceResponseHead& head,
     const GURL& body_url,
     bool is_same_document_navigation) {
@@ -6575,7 +6575,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 }
 
 void RenderFrameImpl::SetCustomURLLoaderFactory(
-    mojom::URLLoaderFactoryPtr factory) {
+    network::mojom::URLLoaderFactoryPtr factory) {
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     // When the network service is enabled, all subresource loads go through
     // a factory from |subresource_loader_factories|. In this case we simply
@@ -7105,7 +7105,7 @@ void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }
 
-mojom::URLLoaderFactory* RenderFrameImpl::GetURLLoaderFactory(
+network::mojom::URLLoaderFactory* RenderFrameImpl::GetURLLoaderFactory(
     const GURL& request_url) {
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     return GetSubresourceLoaderFactories().GetFactoryForRequest(request_url);

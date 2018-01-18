@@ -78,7 +78,7 @@ void AppCacheFrontendProxy::OnContentBlocked(int host_id,
 
 void AppCacheFrontendProxy::OnSetSubresourceFactory(
     int host_id,
-    mojom::URLLoaderFactoryPtr url_loader_factory) {
+    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   GetAppCacheFrontend()->SetSubresourceFactory(host_id,
                                                std::move(url_loader_factory));
 }

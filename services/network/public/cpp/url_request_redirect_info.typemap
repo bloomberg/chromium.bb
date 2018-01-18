@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//content/public/common/url_loader.mojom"
+mojom = "//services/network/public/interfaces/url_loader.mojom"
 public_headers = [ "//net/url_request/redirect_info.h" ]
 traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
-deps = [
+public_deps = [
   "//net:net",
 ]
-type_mappings = [ "content.mojom.URLRequestRedirectInfo=net::RedirectInfo" ]
+type_mappings = [ "network.mojom.URLRequestRedirectInfo=net::RedirectInfo" ]

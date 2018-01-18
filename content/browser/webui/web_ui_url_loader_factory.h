@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBUI_WEB_UI_URL_LOADER_FACTORY_H_
 #define CONTENT_BROWSER_WEBUI_WEB_UI_URL_LOADER_FACTORY_H_
 
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 class RenderFrameHost;
@@ -14,7 +14,7 @@ class RenderFrameHost;
 // the given |render_frame_host|. The factory will only create loaders for
 // requests with the same scheme as |scheme|. This is needed because there is
 // more than one scheme used for WebUI, and not all have WebUI bindings.
-mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
+network::mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
     RenderFrameHost* render_frame_host,
     const std::string& scheme);
 
