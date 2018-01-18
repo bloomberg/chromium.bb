@@ -321,25 +321,36 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     gfx::FontList text_font_list = position >= range.start()
                                        ? GetFontListForRange(current_range)
                                        : GetDefaultFontList();
-    gfx::ElideRectangleText(remaining_string,
-                            text_font_list,
-                            chunk_bounds.width(),
-                            chunk_bounds.height(),
-                            gfx::WRAP_LONG_WORDS,
-                            &substrings);
+    int elide_result = gfx::ElideRectangleText(
+        remaining_string, text_font_list, chunk_bounds.width(),
+        chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
 
     if (substrings.empty()) {
-      // there is no room for anything; abort.
+      // There is no room for anything; abort. Since wrapping is enabled, this
+      // should only occur if there is insufficient vertical space remaining.
+      // ElideRectangleText always adds a single character, even if there is no
+      // room horizontally.
+      DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
       break;
     }
-    if (substrings[0].empty()) {
-      x = 0;
-      // Nothing fits on this line. Start a new line.
+
+    // Views are aligned to integer coordinates, but typesetting is not. This
+    // means that it's possible for an ElideRectangleText on a prior iteration
+    // to fit a word on the current line, which does not fit after that word is
+    // wrapped in a View for its chunk at the end of the line. In most cases,
+    // this will just wrap more words on to the next line. However, if the
+    // remaining chunk width is insufficient for the very _first_ word, that
+    // word will be incorrectly split. In this case, start a new line instead.
+    bool truncated_chunk =
+        x != 0 && (elide_result & gfx::INSUFFICIENT_SPACE_FOR_FIRST_WORD) != 0;
+    if (substrings[0].empty() || truncated_chunk) {
+      // The entire line is \n, or nothing fits on this line. Start a new line.
       // As for the first line, don't advance line number so that it will be
       // handled again at the beginning of the loop.
-      if (line > 0) {
+      if (x != 0 || line > 0) {
         ++line;
       }
+      x = 0;
       continue;
     }
 
