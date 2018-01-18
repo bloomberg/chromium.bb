@@ -14,7 +14,6 @@
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -126,8 +125,10 @@ void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
   // deserializing function uses an SkReadBuffer which reads each piece of
   // memory once much like PaintOpReader does.
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory_)));
-  val->reset(static_cast<T*>(SkValidatingDeserializeFlattenable(
-      const_cast<const char*>(memory_), bytes, T::GetFlattenableType())));
+  val->reset(static_cast<T*>(
+      SkFlattenable::Deserialize(T::GetFlattenableType(),
+                                 const_cast<const char*>(memory_), bytes)
+          .release()));
   if (!val)
     SetInvalid();
 

@@ -1388,8 +1388,8 @@ bool PaintOp::AreSkFlattenablesEqual(SkFlattenable* left,
   if (!right || !left)
     return !right && !left;
 
-  sk_sp<SkData> left_data(SkValidatingSerializeFlattenable(left));
-  sk_sp<SkData> right_data(SkValidatingSerializeFlattenable(right));
+  sk_sp<SkData> left_data = left->serialize();
+  sk_sp<SkData> right_data = right->serialize();
   if (left_data->size() != right_data->size())
     return false;
   if (!left_data->equals(right_data.get()))
