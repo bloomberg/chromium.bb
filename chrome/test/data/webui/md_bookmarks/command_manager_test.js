@@ -52,6 +52,12 @@ suite('<bookmarks-command-manager>', function() {
                           ]),
                     ]),
                 createItem('13', {url: 'http://13/'}),
+                createFolder(
+                    '14',
+                    [
+                      createItem('141'),
+                      createItem('142'),
+                    ]),
               ]),
           createFolder(
               '2',
@@ -137,6 +143,15 @@ suite('<bookmarks-command-manager>', function() {
 
     MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'c');
     commandManager.assertLastCommand(Command.COPY, ['11', '13']);
+  });
+
+  test('sublabels are shown', function() {
+    store.data.selection.items = new Set(['14']);
+    store.notifyObservers();
+
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
+    assertTrue(commandManager.hasAnySublabel_);
+    assertEquals('2', commandManager.getCommandSublabel_(Command.OPEN_NEW_TAB));
   });
 
   test('cut/paste commands trigger', function() {
