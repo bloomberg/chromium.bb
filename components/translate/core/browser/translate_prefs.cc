@@ -104,8 +104,8 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
 const base::Feature kTranslateUI2016Q2{"TranslateUI2016Q2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kImprovedLanguageSettings{
-    "ImprovedLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kImprovedLanguageSettings{"ImprovedLanguageSettings",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
