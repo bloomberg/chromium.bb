@@ -71,20 +71,27 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   bool avrt_init = avrt::Initialize();
   DCHECK(avrt_init) << "Failed to load the Avrt.dll";
 
-  // Set up the desired capture format specified by the client.
-  format_.wFormatTag = WAVE_FORMAT_PCM;
-  format_.nChannels = params.channels();
-  format_.nSamplesPerSec = params.sample_rate();
-  format_.wBitsPerSample = params.bits_per_sample();
-  format_.nBlockAlign = (format_.wBitsPerSample / 8) * format_.nChannels;
-  format_.nAvgBytesPerSec = format_.nSamplesPerSec * format_.nBlockAlign;
-  format_.cbSize = 0;
+  // Set up the desired output format specified by the client.
+  output_format_.wFormatTag = WAVE_FORMAT_PCM;
+  output_format_.nChannels = params.channels();
+  output_format_.nSamplesPerSec = params.sample_rate();
+  output_format_.wBitsPerSample = params.bits_per_sample();
+  output_format_.nBlockAlign =
+      (output_format_.wBitsPerSample / 8) * output_format_.nChannels;
+  output_format_.nAvgBytesPerSec =
+      output_format_.nSamplesPerSec * output_format_.nBlockAlign;
+  output_format_.cbSize = 0;
+
+  // Set the input (capture) format to the desired output format. In most cases,
+  // it will be used unchanged.
+  input_format_ = output_format_;
 
   // Size in bytes of each audio frame.
-  frame_size_ = format_.nBlockAlign;
+  frame_size_ = input_format_.nBlockAlign;
+
   // Store size of audio packets which we expect to get from the audio
   // endpoint device in each capture event.
-  packet_size_frames_ = params.GetBytesPerBuffer() / format_.nBlockAlign;
+  packet_size_frames_ = params.GetBytesPerBuffer() / input_format_.nBlockAlign;
   packet_size_bytes_ = params.GetBytesPerBuffer();
   DVLOG(1) << "Number of bytes per audio frame  : " << frame_size_;
   DVLOG(1) << "Number of audio frames per packet: " << packet_size_frames_;
@@ -378,7 +385,7 @@ void WASAPIAudioInputStream::Run() {
     ++buffers_required;
 
   DCHECK(!fifo_);
-  fifo_.reset(new AudioBlockFifo(format_.nChannels, packet_size_frames_,
+  fifo_.reset(new AudioBlockFifo(input_format_.nChannels, packet_size_frames_,
                                  buffers_required));
 
   DVLOG(1) << "AudioBlockFifo buffer count: " << buffers_required;
@@ -409,7 +416,7 @@ void WASAPIAudioInputStream::Run() {
         break;
       case WAIT_OBJECT_0 + 1: {
         TRACE_EVENT1("audio", "WASAPIAudioInputStream::Run_0", "sample rate",
-                     format_.nSamplesPerSec);
+                     input_format_.nSamplesPerSec);
         // |audio_samples_ready_event_| has been set.
         BYTE* data_ptr = NULL;
         UINT32 num_frames_to_read = 0;
@@ -454,14 +461,14 @@ void WASAPIAudioInputStream::Run() {
 
         // Adjust |capture_time| for the FIFO before pushing.
         capture_time -= AudioTimestampHelper::FramesToTime(
-            fifo_->GetAvailableFrames(), format_.nSamplesPerSec);
+            fifo_->GetAvailableFrames(), input_format_.nSamplesPerSec);
 
         if (num_frames_to_read != 0) {
           if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
             fifo_->PushSilence(num_frames_to_read);
           } else {
             fifo_->Push(data_ptr, num_frames_to_read,
-                        format_.wBitsPerSample / 8);
+                        input_format_.wBitsPerSample / 8);
           }
         }
 
@@ -488,13 +495,13 @@ void WASAPIAudioInputStream::Run() {
 
             // Move the capture time forward for each vended block.
             capture_time += AudioTimestampHelper::FramesToTime(
-                convert_bus_->frames(), format_.nSamplesPerSec);
+                convert_bus_->frames(), output_format_.nSamplesPerSec);
           } else {
             sink_->OnData(fifo_->Consume(), capture_time, volume);
 
             // Move the capture time forward for each vended block.
             capture_time += AudioTimestampHelper::FramesToTime(
-                packet_size_frames_, format_.nSamplesPerSec);
+                packet_size_frames_, input_format_.nSamplesPerSec);
           }
         }
       } break;
@@ -642,16 +649,18 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
   // Many audio devices support both PCM and non-PCM stream formats. However,
   // the audio engine can mix only PCM streams.
   base::win::ScopedCoMem<WAVEFORMATEX> closest_match;
-  HRESULT hresult = audio_client_->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED,
-                                                     &format_, &closest_match);
+  HRESULT hresult = audio_client_->IsFormatSupported(
+      AUDCLNT_SHAREMODE_SHARED, &input_format_, &closest_match);
   DLOG_IF(ERROR, hresult == S_FALSE)
       << "Format is not supported but a closest match exists.";
 
   if (hresult == S_FALSE) {
-    WAVEFORMATEX new_format = {};
-    new_format.wFormatTag = WAVE_FORMAT_PCM;
-    new_format.nChannels = closest_match->nChannels;
-    new_format.nSamplesPerSec = closest_match->nSamplesPerSec;
+    // Change the format we're going to ask for to better match with what the OS
+    // can provide.  If we succeed in initializing the audio client in this
+    // format and are able to convert from this format, we will do that
+    // conversion.
+    input_format_.nChannels = closest_match->nChannels;
+    input_format_.nSamplesPerSec = closest_match->nSamplesPerSec;
 
     // If the closest match is fixed point PCM (WAVE_FORMAT_PCM or
     // KSDATAFORMAT_SUBTYPE_PCM), we use the closest match's bits per sample.
@@ -668,59 +677,56 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
       }
       return false;
     };
-    new_format.wBitsPerSample = format_is_pcm(closest_match)
-                                    ? closest_match->wBitsPerSample
-                                    : format_.wBitsPerSample;
+    if (format_is_pcm(closest_match))
+      input_format_.wBitsPerSample = closest_match->wBitsPerSample;
 
-    new_format.nBlockAlign =
-        (new_format.wBitsPerSample / 8) * new_format.nChannels;
-    new_format.nAvgBytesPerSec =
-        new_format.nSamplesPerSec * new_format.nBlockAlign;
+    input_format_.nBlockAlign =
+        (input_format_.wBitsPerSample / 8) * input_format_.nChannels;
+    input_format_.nAvgBytesPerSec =
+        input_format_.nSamplesPerSec * input_format_.nBlockAlign;
 
-    if (IsSupportedFormatForConversion(new_format)) {
-      DVLOG(1) << "Audio capture data conversion needed.";
+    if (IsSupportedFormatForConversion(input_format_)) {
+      DVLOG(1) << "Will convert capture audio from: \nbits: "
+               << input_format_.wBitsPerSample
+               << "\nsample rate: " << input_format_.nSamplesPerSec
+               << "\nchannels: " << input_format_.nChannels
+               << "\nblock align: " << input_format_.nBlockAlign
+               << "\navg bytes per sec: " << input_format_.nAvgBytesPerSec;
+
       // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
       // we give to OnData so that each buffer we receive from the OS can be
       // directly converted to a buffer that matches with what was asked for.
-      const double buffer_ratio =
-          format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
-      double new_frames_per_buffer = new_format.nSamplesPerSec / buffer_ratio;
+      const double buffer_ratio = output_format_.nSamplesPerSec /
+                                  static_cast<double>(packet_size_frames_);
+      double new_frames_per_buffer =
+          input_format_.nSamplesPerSec / buffer_ratio;
 
-      const auto input_layout = GuessChannelLayout(new_format.nChannels);
+      const auto input_layout = GuessChannelLayout(input_format_.nChannels);
       DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
-      const auto output_layout = GuessChannelLayout(format_.nChannels);
+      const auto output_layout = GuessChannelLayout(output_format_.nChannels);
       DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
 
       const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  input_layout, new_format.nSamplesPerSec,
-                                  new_format.wBitsPerSample,
+                                  input_layout, input_format_.nSamplesPerSec,
+                                  input_format_.wBitsPerSample,
                                   static_cast<int>(new_frames_per_buffer));
 
       const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                   output_layout, format_.nSamplesPerSec,
-                                   format_.wBitsPerSample, packet_size_frames_);
+                                   output_layout, output_format_.nSamplesPerSec,
+                                   output_format_.wBitsPerSample,
+                                   packet_size_frames_);
 
       converter_.reset(new AudioConverter(input, output, false));
       converter_->AddInput(this);
       converter_->PrimeWithSilence();
       convert_bus_ = AudioBus::Create(output);
 
-      // Now change the format we're going to ask for to better match with what
-      // the OS can provide.  If we succeed in opening the stream with these
-      // params, we can take care of the required format conversion.
-      format_ = new_format;
-      DVLOG(1) << "Will convert audio from: \nbits: " << format_.wBitsPerSample
-               << "\nsample rate: " << format_.nSamplesPerSec
-               << "\nchannels: " << format_.nChannels
-               << "\nblock align: " << format_.nBlockAlign
-               << "\navg bytes per sec: " << format_.nAvgBytesPerSec;
-
       // Update our packet size assumptions based on the new format.
       const auto new_bytes_per_buffer =
-          static_cast<int>(new_frames_per_buffer) * format_.nBlockAlign;
-      packet_size_frames_ = new_bytes_per_buffer / format_.nBlockAlign;
+          static_cast<int>(new_frames_per_buffer) * input_format_.nBlockAlign;
+      packet_size_frames_ = new_bytes_per_buffer / input_format_.nBlockAlign;
       packet_size_bytes_ = new_bytes_per_buffer;
-      frame_size_ = format_.nBlockAlign;
+      frame_size_ = input_format_.nBlockAlign;
 
       imperfect_buffer_size_conversion_ =
           std::modf(new_frames_per_buffer, &new_frames_per_buffer) != 0.0;
@@ -762,9 +768,10 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   HRESULT hr = audio_client_->Initialize(
       AUDCLNT_SHAREMODE_SHARED, flags,
       0,  // hnsBufferDuration
-      0, &format_, device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
-                       ? &kCommunicationsSessionId
-                       : nullptr);
+      0, &input_format_,
+      device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
+          ? &kCommunicationsSessionId
+          : nullptr);
 
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_AUDIO_CLIENT_INIT_FAILED;
@@ -839,7 +846,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
     hr = audio_render_client_for_loopback_->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST, 0, 0,
-        &format_, NULL);
+        &input_format_, NULL);
     if (FAILED(hr)) {
       open_result_ = OPEN_RESULT_LOOPBACK_INIT_FAILED;
       return hr;
@@ -880,8 +887,20 @@ void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
   if (open_result_ != OPEN_RESULT_OK &&
       open_result_ != OPEN_RESULT_OK_WITH_RESAMPLING) {
     log_callback_.Run(base::StringPrintf(
-        "WASAPIAIS::Open: failed, result = %d, hresult = %#lx", open_result_,
-        hr));
+        "WASAPIAIS::Open: failed, result = %d, hresult = %#lx, "
+        "input format = %#x/%d/%ld/%d/%d/%ld/%d, "
+        "output format = %#x/%d/%ld/%d/%d/%ld/%d",
+        // clang-format off
+        open_result_, hr,
+        input_format_.wFormatTag, input_format_.nChannels,
+        input_format_.nSamplesPerSec, input_format_.wBitsPerSample,
+        input_format_.nBlockAlign, input_format_.nAvgBytesPerSec,
+        input_format_.cbSize,
+        output_format_.wFormatTag, output_format_.nChannels,
+        output_format_.nSamplesPerSec, output_format_.wBitsPerSample,
+        output_format_.nBlockAlign,output_format_.nAvgBytesPerSec,
+        output_format_.cbSize));
+    // clang-format on
   }
 }
 
