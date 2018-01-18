@@ -26,8 +26,11 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     media::MojoSharedBufferVideoFrame* mojo_frame =
         static_cast<media::MojoSharedBufferVideoFrame*>(input.get());
 
+    // TODO(https://crbug.com/803136): This should duplicate as READ_ONLY, but
+    // can't because there is no guarantee that the input handle is sharable as
+    // read-only.
     mojo::ScopedSharedBufferHandle dup = mojo_frame->Handle().Clone(
-        mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+        mojo::SharedBufferHandle::AccessMode::READ_WRITE);
     DCHECK(dup.is_valid());
 
     return media::mojom::VideoFrameData::NewSharedBufferData(

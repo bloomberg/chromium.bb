@@ -87,7 +87,8 @@ void MojoAudioOutputStream::OnStreamCreated(
   }
 
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      foreign_memory_handle, shared_memory->requested_size(), false);
+      foreign_memory_handle, shared_memory->requested_size(),
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 

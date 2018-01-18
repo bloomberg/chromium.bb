@@ -135,11 +135,20 @@ class VideoCaptureImplTest : public ::testing::Test {
     video_capture_impl_->StopCapture(client_id);
   }
 
+  bool CreateAndMapSharedMemory(size_t size, base::SharedMemory* shm) {
+    base::SharedMemoryCreateOptions options;
+    options.size = size;
+    options.share_read_only = true;
+    if (!shm->Create(options))
+      return false;
+    return shm->Map(size);
+  }
+
   void SimulateOnBufferCreated(int buffer_id, const base::SharedMemory& shm) {
-    auto handle = base::SharedMemory::DuplicateHandle(shm.handle());
     video_capture_impl_->OnBufferCreated(
-        buffer_id, mojo::WrapSharedMemoryHandle(handle, shm.mapped_size(),
-                                                true /* read_only */));
+        buffer_id, mojo::WrapSharedMemoryHandle(
+                       shm.GetReadOnlyHandle(), shm.mapped_size(),
+                       mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly));
   }
 
   void SimulateBufferReceived(int buffer_id, const gfx::Size& size) {
@@ -278,7 +287,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
-  ASSERT_TRUE(shm.CreateAndMapAnonymous(frame_size));
+  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
 
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
@@ -303,7 +312,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_large_.requested_format.frame_size);
-  ASSERT_TRUE(shm.CreateAndMapAnonymous(frame_size));
+  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
 
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
@@ -371,7 +380,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
   base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
-  ASSERT_TRUE(shm.CreateAndMapAnonymous(frame_size));
+  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
 
   InSequence s;
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))

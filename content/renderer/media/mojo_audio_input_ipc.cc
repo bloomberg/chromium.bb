@@ -85,11 +85,11 @@ void MojoAudioInputIPC::StreamCreated(
   DCHECK_EQ(result, MOJO_RESULT_OK);
 
   base::SharedMemoryHandle memory_handle;
-  bool read_only = true;
+  mojo::UnwrappedSharedMemoryHandleProtection protection;
   result = mojo::UnwrapSharedMemoryHandle(std::move(shared_memory),
-                                          &memory_handle, nullptr, &read_only);
+                                          &memory_handle, nullptr, &protection);
   DCHECK_EQ(result, MOJO_RESULT_OK);
-  DCHECK(read_only);
+  DCHECK_EQ(protection, mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
 
   delegate_->OnStreamCreated(memory_handle, socket_handle, initially_muted);
 }

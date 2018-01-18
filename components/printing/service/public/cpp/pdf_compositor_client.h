@@ -18,6 +18,9 @@ class PdfCompositorClient {
   ~PdfCompositorClient();
 
   // Composite the final picture and convert into a PDF file.
+  //
+  // NOTE: |handle| must be a READ-ONLY base::SharedMemoryHandle, i.e. one
+  // acquired by base::SharedMemory::GetReadOnlyHandle().
   void Composite(service_manager::Connector* connector,
                  base::SharedMemoryHandle handle,
                  size_t data_size,

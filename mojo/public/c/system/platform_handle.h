@@ -79,9 +79,14 @@ struct MOJO_ALIGNAS(8) MojoSharedBufferGuid {
 // |MojoPlatformSharedBufferHandleFlags|: Flags relevant to wrapped platform
 //     shared buffers.
 //
-//   |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_NONE| - No flags.
-//   |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_READ_ONLY| - Indicates that the wrapped
-//       buffer handle may only be mapped for reading.
+//   |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE| - No flags.
+//   |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY| - Indicates
+//       that the handle being wrapped is mappable only to read-only memory.
+//
+//       IMPORTANT: THIS DOES NOT CONTROL MEMORY PROTECTION ON THE WRAPPED
+//       HANDLE. It merely conveys a |MojoWrapPlatformSharedBufferHandle()|
+//       caller's knowledge about whether or not the handle being wrapped is
+//       already read-only.
 
 typedef uint32_t MojoPlatformSharedBufferHandleFlags;
 
@@ -90,12 +95,12 @@ const MojoPlatformSharedBufferHandleFlags
     MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE = 0;
 
 const MojoPlatformSharedBufferHandleFlags
-    MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY = 1 << 0;
+    MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY = 1 << 0;
 #else
 #define MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE \
   ((MojoPlatformSharedBufferHandleFlags)0)
 
-#define MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY \
+#define MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY \
   ((MojoPlatformSharedBufferHandleFlags)1 << 0)
 #endif
 
@@ -145,14 +150,7 @@ MojoUnwrapPlatformHandle(MojoHandle mojo_handle,
 //     shared buffer object.
 // |num_bytes|: The size of the shared buffer in bytes.
 // |flags|: Flags which influence the treatment of the shared buffer object. See
-//     below.
-//
-// Flags:
-//    |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE| indicates default behavior.
-//        No flags set.
-//    |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY| indicates that the
-//        buffer handled to be wrapped may only be mapped as read-only. This
-//        flag does NOT change the access control of the buffer in any way.
+//     the |MojoPlatformSharedBufferHandleFlags| definition for details.
 //
 // Returns:
 //     |MOJO_RESULT_OK| if the handle was successfully wrapped. In this case
@@ -186,8 +184,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWrapPlatformSharedBufferHandle(
 //        shared buffer handle.
 //
 // Flags which may be set in |*flags| upon success:
-//    |MOJO_PLATFORM_SHARED_BUFFER_FLAG_READ_ONLY| is set iff the unwrapped
-//        shared buffer handle may only be mapped as read-only.
+//    |MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY| is set iff
+//        the unwrapped shared buffer handle can only be mapped to a read-only
+//        memory segment.
 MOJO_SYSTEM_EXPORT MojoResult MojoUnwrapPlatformSharedBufferHandle(
     MojoHandle mojo_handle,
     struct MojoPlatformHandle* platform_handle,

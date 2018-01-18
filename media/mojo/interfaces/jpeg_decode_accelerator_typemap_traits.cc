@@ -72,8 +72,13 @@ StructTraits<media::mojom::BitstreamBufferDataView, media::BitstreamBuffer>::
     DLOG(ERROR) << "Failed to duplicate handle of BitstreamBuffer";
     return mojo::ScopedSharedBufferHandle();
   }
-  return mojo::WrapSharedMemoryHandle(input_handle, input.size(),
-                                      true /* read_only */);
+
+  // TODO(https://crbug.com/793446): Update this to |kReadOnly| protection once
+  // BitstreamBuffer can guarantee that its handle() field always corresponds to
+  // a read-only SharedMemoryHandle.
+  return mojo::WrapSharedMemoryHandle(
+      input_handle, input.size(),
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 }
 
 // static

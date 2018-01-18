@@ -74,8 +74,9 @@ class MojoDiscardableSharedMemoryManagerImpl
     if (manager_) {
       manager_->AllocateLockedDiscardableSharedMemoryForClient(client_id_, size,
                                                                id, &handle);
-      memory =
-          mojo::WrapSharedMemoryHandle(handle, size, false /* read_only */);
+      memory = mojo::WrapSharedMemoryHandle(
+          handle, size,
+          mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
     }
     std::move(callback).Run(std::move(memory));
   }

@@ -19,6 +19,7 @@ source_set("tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/test:test_support",
     "//mojo/public/c/system/tests",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",

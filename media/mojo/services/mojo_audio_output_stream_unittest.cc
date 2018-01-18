@@ -107,13 +107,15 @@ class MockClient : public mojom::AudioOutputStreamClient {
 
     size_t memory_length;
     base::SharedMemoryHandle shmem_handle;
-    bool read_only;
+    mojo::UnwrappedSharedMemoryHandleProtection protection;
     EXPECT_EQ(
         mojo::UnwrapSharedMemoryHandle(std::move(shared_buffer), &shmem_handle,
-                                       &memory_length, &read_only),
+                                       &memory_length, &protection),
         MOJO_RESULT_OK);
-    EXPECT_FALSE(read_only);
-    buffer_ = std::make_unique<base::SharedMemory>(shmem_handle, read_only);
+    EXPECT_EQ(protection,
+              mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+    buffer_ = std::make_unique<base::SharedMemory>(shmem_handle,
+                                                   false /* read_only */);
 
     GotNotification();
   }

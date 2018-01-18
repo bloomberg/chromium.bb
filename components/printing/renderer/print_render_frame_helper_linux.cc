@@ -82,8 +82,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   return true;
 #else
   PrintHostMsg_DidPrintDocument_Params page_params;
-  if (!CopyMetafileDataToSharedMem(metafile,
-                                   &page_params.metafile_data_handle)) {
+  if (!CopyMetafileDataToReadOnlySharedMem(metafile,
+                                           &page_params.metafile_data_handle)) {
     return false;
   }
 

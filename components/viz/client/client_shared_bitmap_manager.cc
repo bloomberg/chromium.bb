@@ -170,7 +170,8 @@ uint32_t ClientSharedBitmapManager::NotifyAllocatedSharedBitmap(
   }
 
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      handle_to_send, memory->mapped_size(), true /* read_only */);
+      handle_to_send, memory->mapped_size(),
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
   {
     base::AutoLock lock(lock_);

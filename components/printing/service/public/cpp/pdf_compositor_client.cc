@@ -47,8 +47,9 @@ void PdfCompositorClient::Composite(
   if (!compositor_)
     Connect(connector);
 
-  mojo::ScopedSharedBufferHandle buffer_handle =
-      mojo::WrapSharedMemoryHandle(handle, data_size, true);
+  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
+      handle, data_size,
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
 
   compositor_->CompositePdf(
       std::move(buffer_handle),
