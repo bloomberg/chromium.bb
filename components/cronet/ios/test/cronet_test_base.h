@@ -53,6 +53,11 @@ typedef void (^BlockType)(void);
 // Contains metrics data.
 @property(readonly) NSURLSessionTaskMetrics* taskMetrics NS_AVAILABLE_IOS(10.0);
 
+// Contains NSHTTPURLResponses for the tasks.
+@property(readonly)
+    NSMutableDictionary<NSURLSessionDataTask*, NSHTTPURLResponse*>*
+        responsePerTask;
+
 // Resets the delegate, so it can be used again for another request.
 - (void)reset;
 
@@ -100,8 +105,8 @@ class CronetTestBase : public ::testing::Test {
   void PostBlockToNetworkThread(const base::Location& from_here,
                                 BlockType block);
 
-  ::testing::AssertionResult IsResponseSuccessful();
-  ::testing::AssertionResult IsResponseCanceled();
+  ::testing::AssertionResult IsResponseSuccessful(NSURLSessionDataTask* task);
+  ::testing::AssertionResult IsResponseCanceled(NSURLSessionDataTask* task);
 
   TestDelegate* delegate_;
 
