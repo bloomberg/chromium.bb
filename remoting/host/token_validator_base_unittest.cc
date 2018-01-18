@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
-#include "base/memory/ptr_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/client_cert_identity_test_util.h"
@@ -41,7 +40,7 @@ std::unique_ptr<net::FakeClientCertIdentity> CreateFakeCert(
   if (!ssl_private_key)
     return nullptr;
 
-  return base::MakeUnique<net::FakeClientCertIdentity>(cert, ssl_private_key);
+  return std::make_unique<net::FakeClientCertIdentity>(cert, ssl_private_key);
 }
 
 }  // namespace

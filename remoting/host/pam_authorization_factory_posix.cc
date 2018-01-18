@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
-#include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/username.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -173,7 +172,7 @@ PamAuthorizationFactory::CreateAuthenticator(const std::string& local_jid,
                                              const std::string& remote_jid) {
   std::unique_ptr<protocol::Authenticator> authenticator(
       underlying_->CreateAuthenticator(local_jid, remote_jid));
-  return base::MakeUnique<PamAuthorizer>(std::move(authenticator));
+  return std::make_unique<PamAuthorizer>(std::move(authenticator));
 }
 
 }  // namespace remoting

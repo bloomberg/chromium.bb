@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/jingle_session.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -94,7 +95,7 @@ class FakeTransport : public Transport {
 
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override {
     received_messages_.push_back(
-        base::MakeUnique<buzz::XmlElement>(*transport_info));
+        std::make_unique<buzz::XmlElement>(*transport_info));
     if (!on_message_callback_.is_null())
       on_message_callback_.Run();
     return true;
@@ -188,9 +189,9 @@ class JingleSessionTest : public testing::Test {
   void CreateSessionManagers(FakeAuthenticator::Config auth_config,
                              int messages_till_start) {
     host_signal_strategy_ =
-        base::MakeUnique<FakeSignalStrategy>(SignalingAddress(kHostJid));
+        std::make_unique<FakeSignalStrategy>(SignalingAddress(kHostJid));
     client_signal_strategy_ =
-        base::MakeUnique<FakeSignalStrategy>(SignalingAddress(kClientJid));
+        std::make_unique<FakeSignalStrategy>(SignalingAddress(kClientJid));
 
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
@@ -284,7 +285,7 @@ class JingleSessionTest : public testing::Test {
   }
 
   void ConnectClient(FakeAuthenticator::Config auth_config) {
-    ConnectClient(base::MakeUnique<FakeAuthenticator>(
+    ConnectClient(std::make_unique<FakeAuthenticator>(
         FakeAuthenticator::CLIENT, auth_config,
         client_signal_strategy_->GetLocalAddress().id(), kNormalizedHostJid));
   }
@@ -623,7 +624,7 @@ TEST_F(JingleSessionTest, ImmediatelyCloseSessionAfterConnect) {
   CreateSessionManagers(auth_config);
   client_session_ = client_server_->Connect(
       SignalingAddress(kNormalizedHostJid),
-      base::MakeUnique<FakeAuthenticator>(
+      std::make_unique<FakeAuthenticator>(
           FakeAuthenticator::CLIENT, auth_config,
           client_signal_strategy_->GetLocalAddress().id(), kNormalizedHostJid));
 

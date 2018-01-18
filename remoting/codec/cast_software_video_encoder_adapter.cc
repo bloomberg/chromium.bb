@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/cast/sender/sender_encoded_frame.h"
@@ -76,7 +75,7 @@ std::unique_ptr<CastSoftwareVideoEncoderAdapter::EncodedFrame>
 CastSoftwareVideoEncoderAdapter::CreateEncodedFrame(
     const webrtc::DesktopFrame& frame,
     media::cast::SenderEncodedFrame&& media_frame) const {
-  std::unique_ptr<EncodedFrame> result = base::MakeUnique<EncodedFrame>();
+  std::unique_ptr<EncodedFrame> result = std::make_unique<EncodedFrame>();
   result->size = frame.size();
   // TODO(zijiehe): Should INDEPENDENT frames also be considered as key frames?
   result->key_frame =

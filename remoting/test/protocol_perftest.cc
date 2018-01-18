@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <numeric>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -154,7 +154,7 @@ class ProtocolPerfTest
   // protocol::FrameConsumer interface.
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override {
-    return base::MakeUnique<webrtc::BasicDesktopFrame>(size);
+    return std::make_unique<webrtc::BasicDesktopFrame>(size);
   }
 
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,

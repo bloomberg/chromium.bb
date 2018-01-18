@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/authenticator.h"
 
-#include "base/memory/ptr_util.h"
 #include "remoting/base/constants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
@@ -24,7 +23,7 @@ bool Authenticator::IsAuthenticatorMessage(const buzz::XmlElement* message) {
 // static
 std::unique_ptr<buzz::XmlElement>
 Authenticator::CreateEmptyAuthenticatorMessage() {
-  return base::MakeUnique<buzz::XmlElement>(kAuthenticationQName);
+  return std::make_unique<buzz::XmlElement>(kAuthenticationQName);
 }
 
 // static

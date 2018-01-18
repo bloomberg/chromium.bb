@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <windows.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
@@ -397,7 +398,7 @@ bool DisconnectWindowWin::SetStrings() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::MakeUnique<DisconnectWindowWin>();
+  return std::make_unique<DisconnectWindowWin>();
 }
 
 }  // namespace remoting

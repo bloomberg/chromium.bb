@@ -73,8 +73,8 @@ void DesktopCapturerProxy::Core::CreateCapturer(
   DCHECK(!capturer_);
 
 #if defined(OS_CHROMEOS)
-  capturer_ = base::MakeUnique<webrtc::DesktopCapturerDifferWrapper>(
-      base::MakeUnique<AuraDesktopCapturer>());
+  capturer_ = std::make_unique<webrtc::DesktopCapturerDifferWrapper>(
+      std::make_unique<AuraDesktopCapturer>());
 #else  // !defined(OS_CHROMEOS)
   capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);
 #endif  // !defined(OS_CHROMEOS)

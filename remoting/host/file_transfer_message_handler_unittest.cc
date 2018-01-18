@@ -26,7 +26,7 @@ constexpr char kTestFilename[] = "test-file.txt";
 
 std::unique_ptr<remoting::CompoundBuffer> ToBuffer(const std::string& data) {
   std::unique_ptr<remoting::CompoundBuffer> buffer =
-      base::MakeUnique<remoting::CompoundBuffer>();
+      std::make_unique<remoting::CompoundBuffer>();
   buffer->Append(new net::WrappedIOBuffer(data.data()), data.size());
   return buffer;
 }
@@ -186,7 +186,7 @@ void FileTransferMessageHandlerTest::TearDown() {}
 // FileProxyWrapper without errors when given valid input.
 TEST_F(FileTransferMessageHandlerTest, WriteTwoChunks) {
   std::unique_ptr<FakeFileProxyWrapper> file_proxy_wrapper =
-      base::MakeUnique<FakeFileProxyWrapper>();
+      std::make_unique<FakeFileProxyWrapper>();
   // |file_proxy_wrapper_ptr| is valid until fake_pipe_->ClosePipe() is called.
   FakeFileProxyWrapper* file_proxy_wrapper_ptr = file_proxy_wrapper.get();
 
@@ -232,7 +232,7 @@ TEST_F(FileTransferMessageHandlerTest, WriteTwoChunks) {
 // FileProxyWrapper returns an error.
 TEST_F(FileTransferMessageHandlerTest, FileProxyError) {
   std::unique_ptr<FakeFileProxyWrapper> file_proxy_wrapper =
-      base::MakeUnique<FakeFileProxyWrapper>();
+      std::make_unique<FakeFileProxyWrapper>();
   // |file_proxy_wrapper_ptr| is valid until fake_pipe_->ClosePipe() is called.
   FakeFileProxyWrapper* file_proxy_wrapper_ptr = file_proxy_wrapper.get();
 

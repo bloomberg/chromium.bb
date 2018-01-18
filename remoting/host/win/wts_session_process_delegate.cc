@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -393,7 +392,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   std::string mojo_pipe_token = mojo::edk::GenerateRandomToken();
   broker_client_invitation_ =
-      base::MakeUnique<mojo::edk::OutgoingBrokerClientInvitation>();
+      std::make_unique<mojo::edk::OutgoingBrokerClientInvitation>();
   std::unique_ptr<IPC::ChannelProxy> channel = IPC::ChannelProxy::Create(
       broker_client_invitation_->AttachMessagePipe(mojo_pipe_token).release(),
       IPC::Channel::MODE_SERVER, this, io_task_runner_,
@@ -408,11 +407,11 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
     mojo::edk::NamedPlatformChannelPair::Options options;
     options.security_descriptor = base::UTF8ToUTF16(channel_security_);
     elevated_mojo_channel =
-        base::MakeUnique<mojo::edk::NamedPlatformChannelPair>(options);
+        std::make_unique<mojo::edk::NamedPlatformChannelPair>(options);
     elevated_mojo_channel->PrepareToPassClientHandleToChildProcess(
         &command_line);
   } else {
-    normal_mojo_channel = base::MakeUnique<mojo::edk::PlatformChannelPair>();
+    normal_mojo_channel = std::make_unique<mojo::edk::PlatformChannelPair>();
     normal_mojo_channel->PrepareToPassClientHandleToChildProcess(
         &command_line, &handles_to_inherit);
   }

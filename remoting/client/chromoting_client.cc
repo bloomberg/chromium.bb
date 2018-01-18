@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
 #include "remoting/client/client_context.h"
@@ -259,7 +258,7 @@ void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto session = session_manager_->Connect(
       SignalingAddress(host_jid_),
-      base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
+      std::make_unique<protocol::NegotiatingClientAuthenticator>(
           signal_strategy_->GetLocalAddress().id(), host_jid_,
           client_auth_config_));
   if (host_experiment_sender_) {

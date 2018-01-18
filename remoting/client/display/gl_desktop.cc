@@ -121,7 +121,7 @@ void GlDesktop::ReallocateTextures(const webrtc::DesktopSize& size) {
           max_texture_size_);
       rect.IntersectWith(desktop_rect);
       std::unique_ptr<GlDesktopTextureContainer> container = base::WrapUnique(
-          new GlDesktopTextureContainer{base::MakeUnique<GlRenderLayer>(
+          new GlDesktopTextureContainer{std::make_unique<GlRenderLayer>(
                                             texture_id, canvas_->GetWeakPtr()),
                                         rect});
       FillRectangleVertexPositions(rect.left(), rect.top(), rect.width(),

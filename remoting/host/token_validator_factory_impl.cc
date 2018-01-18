@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -14,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
@@ -140,7 +140,7 @@ TokenValidatorFactoryImpl::~TokenValidatorFactoryImpl() = default;
 std::unique_ptr<protocol::TokenValidator>
 TokenValidatorFactoryImpl::CreateTokenValidator(const std::string& local_jid,
                                                 const std::string& remote_jid) {
-  return base::MakeUnique<TokenValidatorImpl>(third_party_auth_config_,
+  return std::make_unique<TokenValidatorImpl>(third_party_auth_config_,
                                               key_pair_, local_jid, remote_jid,
                                               request_context_getter_);
 }

@@ -13,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -126,7 +125,7 @@ FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() = default;
 
 std::unique_ptr<It2MeConfirmationDialog> FakeIt2MeDialogFactory::Create() {
   EXPECT_FALSE(remote_user_email_.empty());
-  return base::MakeUnique<FakeIt2MeConfirmationDialog>(remote_user_email_,
+  return std::make_unique<FakeIt2MeConfirmationDialog>(remote_user_email_,
                                                        dialog_result_);
 }
 
@@ -236,7 +235,7 @@ void It2MeHostTest::OnValidationComplete(const base::Closure& resume_callback,
 void It2MeHostTest::SetPolicies(
     std::initializer_list<std::pair<base::StringPiece, const base::Value&>>
         policies) {
-  policies_ = base::MakeUnique<base::DictionaryValue>();
+  policies_ = std::make_unique<base::DictionaryValue>();
   for (const auto& policy : policies) {
     policies_->Set(policy.first, policy.second.CreateDeepCopy());
   }
@@ -274,7 +273,7 @@ void It2MeHostTest::StartHost() {
       base::Time::Now() + base::TimeDelta::FromHours(1);
 
   auto fake_signal_strategy =
-      base::MakeUnique<FakeSignalStrategy>(SignalingAddress("fake_local_jid"));
+      std::make_unique<FakeSignalStrategy>(SignalingAddress("fake_local_jid"));
   fake_bot_signal_strategy_->ConnectTo(fake_signal_strategy.get());
 
   it2me_host_ = new It2MeHost();

@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -115,12 +114,10 @@ class ResizingHostObserverTest : public testing::Test {
                          bool restore_resolution) {
     current_resolution_ = initial_resolution;
     call_counts_ = FakeDesktopResizer::CallCounts();
-    resizing_host_observer_ = base::MakeUnique<ResizingHostObserver>(
-        base::MakeUnique<FakeDesktopResizer>(exact_size_supported,
-                                             std::move(supported_resolutions),
-                                             &current_resolution_,
-                                             &call_counts_,
-                                             restore_resolution),
+    resizing_host_observer_ = std::make_unique<ResizingHostObserver>(
+        std::make_unique<FakeDesktopResizer>(
+            exact_size_supported, std::move(supported_resolutions),
+            &current_resolution_, &call_counts_, restore_resolution),
         restore_resolution);
     resizing_host_observer_->SetNowFunctionForTesting(
         base::Bind(&ResizingHostObserverTest::GetTimeAndIncrement,

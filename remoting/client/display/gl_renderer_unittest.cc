@@ -4,9 +4,10 @@
 
 #include "remoting/client/display/gl_renderer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -151,7 +152,7 @@ std::vector<base::WeakPtr<Drawable>> GlRendererTest::GetDrawables() {
 
 void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
   renderer_->OnFrameReceived(
-      base::MakeUnique<webrtc::BasicDesktopFrame>(size),
+      std::make_unique<webrtc::BasicDesktopFrame>(size),
       base::Bind(&GlRendererTest::OnDesktopFrameProcessed,
                  base::Unretained(this)));
 }
@@ -252,24 +253,24 @@ TEST_F(GlRendererTest, TestOnFrameReceivedDoneCallbacks) {
 // TODO(yuweih): Add tests to validate the rendered output.
 
 TEST_F(GlRendererTest, TestAddDrawable) {
-  std::unique_ptr<FakeDrawable> drawable0 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable0 = std::make_unique<FakeDrawable>();
   drawable0->SetId(0);
   renderer_->AddDrawable(drawable0->GetWeakPtr());
   ASSERT_EQ(1, GetDrawablesCount());
 }
 
 TEST_F(GlRendererTest, TestAddDrawableDefaultOrder) {
-  std::unique_ptr<FakeDrawable> drawable0 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable0 = std::make_unique<FakeDrawable>();
   drawable0->SetId(0);
   renderer_->AddDrawable(drawable0->GetWeakPtr());
   ASSERT_EQ(1, GetDrawablesCount());
 
-  std::unique_ptr<FakeDrawable> drawable1 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable1 = std::make_unique<FakeDrawable>();
   drawable1->SetId(1);
   renderer_->AddDrawable(drawable1->GetWeakPtr());
   ASSERT_EQ(2, GetDrawablesCount());
 
-  std::unique_ptr<FakeDrawable> drawable2 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable2 = std::make_unique<FakeDrawable>();
   drawable2->SetId(2);
   renderer_->AddDrawable(drawable2->GetWeakPtr());
   ASSERT_EQ(3, GetDrawablesCount());
@@ -284,18 +285,18 @@ TEST_F(GlRendererTest, TestAddDrawableDefaultOrder) {
 }
 
 TEST_F(GlRendererTest, TestAddDrawableOrder) {
-  std::unique_ptr<FakeDrawable> drawable2 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable2 = std::make_unique<FakeDrawable>();
   drawable2->SetId(2);
   drawable2->SetZIndex(2);
   renderer_->AddDrawable(drawable2->GetWeakPtr());
   ASSERT_EQ(1, GetDrawablesCount());
 
-  std::unique_ptr<FakeDrawable> drawable0 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable0 = std::make_unique<FakeDrawable>();
   drawable0->SetId(0);
   renderer_->AddDrawable(drawable0->GetWeakPtr());
   ASSERT_EQ(2, GetDrawablesCount());
 
-  std::unique_ptr<FakeDrawable> drawable1 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable1 = std::make_unique<FakeDrawable>();
   drawable1->SetId(1);
   drawable1->SetZIndex(1);
   renderer_->AddDrawable(drawable1->GetWeakPtr());
@@ -311,16 +312,16 @@ TEST_F(GlRendererTest, TestAddDrawableOrder) {
 }
 
 TEST_F(GlRendererTest, TestAddDrawableDrawn) {
-  std::unique_ptr<Canvas> fakeCanvas = base::MakeUnique<FakeCanvas>();
+  std::unique_ptr<Canvas> fakeCanvas = std::make_unique<FakeCanvas>();
   renderer_->OnSurfaceCreated(std::move(fakeCanvas));
   delegate_.can_render_frame_ = true;
   PostSetDesktopFrameTasks(webrtc::DesktopSize(16, 16), 1);
-  std::unique_ptr<FakeDrawable> drawable0 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable0 = std::make_unique<FakeDrawable>();
   drawable0->SetId(3);
   renderer_->AddDrawable(drawable0->GetWeakPtr());
   RequestRender();
   RunTasksInCurrentQueue();
-  std::unique_ptr<FakeDrawable> drawable1 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable1 = std::make_unique<FakeDrawable>();
   drawable1->SetId(2);
   drawable1->SetZIndex(1);
   renderer_->AddDrawable(drawable1->GetWeakPtr());
@@ -328,7 +329,7 @@ TEST_F(GlRendererTest, TestAddDrawableDrawn) {
   RequestRender();
   RunTasksInCurrentQueue();
 
-  std::unique_ptr<FakeDrawable> drawable2 = base::MakeUnique<FakeDrawable>();
+  std::unique_ptr<FakeDrawable> drawable2 = std::make_unique<FakeDrawable>();
   drawable2->SetId(1);
   drawable2->SetZIndex(2);
   renderer_->AddDrawable(drawable2->GetWeakPtr());

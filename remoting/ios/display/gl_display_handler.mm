@@ -7,6 +7,7 @@
 #endif
 
 #include <array>
+#include <memory>
 
 #import "remoting/ios/display/gl_display_handler.h"
 
@@ -17,7 +18,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/cursor_shape_stub_proxy.h"
@@ -206,7 +206,7 @@ void Core::SurfaceCreated(EAGLView* view) {
                                        }));
 
   renderer_->OnSurfaceCreated(
-      base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
+      std::make_unique<GlCanvas>(static_cast<int>([eagl_context_ API])));
 
   renderer_->RequestCanvasSize();
 
@@ -261,12 +261,12 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 }
 
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer {
-  return base::MakeUnique<remoting::SoftwareVideoRenderer>(
+  return std::make_unique<remoting::SoftwareVideoRenderer>(
       _core->GrabFrameConsumer());
 }
 
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub {
-  return base::MakeUnique<remoting::CursorShapeStubProxy>(
+  return std::make_unique<remoting::CursorShapeStubProxy>(
       _core->GetWeakPtr(), _runtime->display_task_runner());
 }
 

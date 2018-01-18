@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/url_request.h"
@@ -39,9 +38,10 @@ constexpr base::TimeDelta kMinimumIceConfigLifetime =
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
-      nullptr, base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
-      nullptr, protocol::NetworkSettings(
-                   protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
+      nullptr, std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
+      nullptr,
+      protocol::NetworkSettings(
+          protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);
 }
 #endif  // !defined(OS_NACL)

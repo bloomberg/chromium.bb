@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -80,7 +79,7 @@ class WebrtcVideoEncoderSelectorTest : public ::testing::Test {
 
   // Returns a FakeWebrtcVideoEncoder with |index| as its index.
   std::unique_ptr<WebrtcVideoEncoder> CreateEncoder(int index) {
-    return base::MakeUnique<FakeWebrtcVideoEncoder>(index);
+    return std::make_unique<FakeWebrtcVideoEncoder>(index);
   }
 };
 

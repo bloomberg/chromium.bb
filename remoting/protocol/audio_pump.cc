@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_bus.h"
@@ -43,7 +42,7 @@ std::unique_ptr<media::AudioBus> AudioPacketToAudioBus(
 std::unique_ptr<remoting::AudioPacket> AudioBusToAudioPacket(
     const media::AudioBus& packet) {
   std::unique_ptr<remoting::AudioPacket> result =
-      base::MakeUnique<remoting::AudioPacket>();
+      std::make_unique<remoting::AudioPacket>();
   result->add_data()->resize(
       packet.channels() * packet.frames() * sizeof(int16_t));
   packet.ToInterleaved<media::SignedInt16SampleTypeTraits>(
@@ -208,7 +207,7 @@ std::unique_ptr<AudioPacket> AudioPump::Core::Downmix(
 
   if (!mixer_ || mixer_input_layout_ != input_layout) {
     mixer_input_layout_ = input_layout;
-    mixer_ = base::MakeUnique<media::ChannelMixer>(
+    mixer_ = std::make_unique<media::ChannelMixer>(
         input_layout, media::CHANNEL_LAYOUT_STEREO);
   }
 

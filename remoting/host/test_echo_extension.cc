@@ -4,7 +4,8 @@
 
 #include "remoting/host/test_echo_extension.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "remoting/host/test_echo_extension_session.h"
 
 namespace {
@@ -24,7 +25,7 @@ std::string TestEchoExtension::capability() const {
 std::unique_ptr<HostExtensionSession> TestEchoExtension::CreateExtensionSession(
     ClientSessionDetails* details,
     protocol::ClientStub* client_stub) {
-  return base::MakeUnique<TestEchoExtensionSession>();
+  return std::make_unique<TestEchoExtensionSession>();
 }
 
 }  // namespace remoting

@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -100,7 +99,7 @@ std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return base::MakeUnique<IpcDesktopEnvironment>(
+  return std::make_unique<IpcDesktopEnvironment>(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
       client_session_control, connector_factory_.GetWeakPtr(), options);
 }

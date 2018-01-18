@@ -11,7 +11,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "remoting/base/logging.h"
@@ -190,7 +189,7 @@ void SecurityKeyExtensionSession::SendMessageToClient(
   request.SetString(kMessageType, kDataMessage);
   request.SetInteger(kConnectionId, connection_id);
 
-  auto bytes = base::MakeUnique<base::ListValue>();
+  auto bytes = std::make_unique<base::ListValue>();
   for (std::string::const_iterator i = data.begin(); i != data.end(); ++i) {
     bytes->AppendInteger(static_cast<unsigned char>(*i));
   }

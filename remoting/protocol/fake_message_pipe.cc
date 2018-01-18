@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/fake_message_pipe_wrapper.h"
@@ -22,7 +21,7 @@ FakeMessagePipe::FakeMessagePipe(bool asynchronous)
 FakeMessagePipe::~FakeMessagePipe() = default;
 
 std::unique_ptr<FakeMessagePipeWrapper> FakeMessagePipe::Wrap() {
-  return base::MakeUnique<FakeMessagePipeWrapper>(this);
+  return std::make_unique<FakeMessagePipeWrapper>(this);
 }
 
 void FakeMessagePipe::Start(EventHandler* event_handler) {

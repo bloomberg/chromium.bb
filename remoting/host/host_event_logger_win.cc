@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -145,7 +144,7 @@ void HostEventLoggerWin::LogString(WORD type,
 std::unique_ptr<HostEventLogger> HostEventLogger::Create(
     scoped_refptr<HostStatusMonitor> monitor,
     const std::string& application_name) {
-  return base::MakeUnique<HostEventLoggerWin>(monitor, application_name);
+  return std::make_unique<HostEventLoggerWin>(monitor, application_name);
 }
 
 }  // namespace remoting

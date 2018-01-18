@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -73,7 +72,7 @@ void BufferedSocketWriter::Write(
   if (closed_)
     return;
 
-  queue_.push_back(base::MakeUnique<PendingPacket>(
+  queue_.push_back(std::make_unique<PendingPacket>(
       new net::DrainableIOBuffer(data.get(), data->size()), done_task,
       traffic_annotation));
 

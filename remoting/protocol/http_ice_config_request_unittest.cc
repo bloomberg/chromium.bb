@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -89,7 +88,7 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     EXPECT_EQ(UrlRequest::Type::GET, type);
     EXPECT_TRUE(results_.count(url));
-    return base::MakeUnique<FakeUrlRequest>(results_[url], expect_oauth_token_);
+    return std::make_unique<FakeUrlRequest>(results_[url], expect_oauth_token_);
   }
 
  private:
@@ -105,7 +104,7 @@ static const char kTestUrl[] = "http://host/ice_config";
 class HttpIceConfigRequestTest : public testing::Test {
  public:
   void OnResult(const IceConfig& config) {
-    received_config_ = base::MakeUnique<IceConfig>(config);
+    received_config_ = std::make_unique<IceConfig>(config);
   }
 
  protected:
@@ -156,7 +155,7 @@ TEST_F(HttpIceConfigRequestTest, Authentication) {
 
   FakeOAuthTokenGetter token_getter(OAuthTokenGetter::SUCCESS,
                                     "user@example.com", kTestOAuthToken);
-  request_ = base::MakeUnique<HttpIceConfigRequest>(&url_request_factory_,
+  request_ = std::make_unique<HttpIceConfigRequest>(&url_request_factory_,
                                                     kTestUrl, &token_getter);
   request_->Send(
       base::Bind(&HttpIceConfigRequestTest::OnResult, base::Unretained(this)));

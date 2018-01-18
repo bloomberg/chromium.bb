@@ -250,7 +250,7 @@ void ChromotingHost::OnIncomingSession(
   std::vector<HostExtension*> extension_ptrs;
   for (const auto& extension : extensions_)
     extension_ptrs.push_back(extension.get());
-  clients_.push_back(base::MakeUnique<ClientSession>(
+  clients_.push_back(std::make_unique<ClientSession>(
       this, std::move(connection), desktop_environment_factory_,
       desktop_environment_options_, max_session_duration_, pairing_registry_,
       extension_ptrs));

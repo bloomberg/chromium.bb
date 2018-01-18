@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -13,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -642,7 +642,7 @@ void InputInjectorX11::Core::Start(
   clipboard_->Start(std::move(client_clipboard));
 
   character_injector_.reset(
-      new X11CharacterInjector(base::MakeUnique<X11KeyboardImpl>(display_)));
+      new X11CharacterInjector(std::make_unique<X11KeyboardImpl>(display_)));
 }
 
 void InputInjectorX11::Core::Stop() {

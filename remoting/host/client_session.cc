@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -177,7 +176,7 @@ void ClientSession::SetCapabilities(
   }
 
   // Compute the set of capabilities supported by both client and host.
-  client_capabilities_ = base::MakeUnique<std::string>();
+  client_capabilities_ = std::make_unique<std::string>();
   if (capabilities.has_capabilities())
     *client_capabilities_ = capabilities.capabilities();
   capabilities_ = IntersectCapabilities(*client_capabilities_,
@@ -442,7 +441,7 @@ void ClientSession::SetEventTimestampsSourceForTests(
 
 std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::MakeUnique<protocol::ClipboardThreadProxy>(
+  return std::make_unique<protocol::ClipboardThreadProxy>(
       client_clipboard_factory_.GetWeakPtr(),
       base::ThreadTaskRunnerHandle::Get());
 }

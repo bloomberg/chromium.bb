@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -92,7 +91,7 @@ class PairingRegistryTest : public testing::Test {
 
 TEST_F(PairingRegistryTest, CreateAndGetPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::MakeUnique<MockPairingRegistryDelegate>());
+      std::make_unique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("my_client");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("my_client");
 
@@ -114,7 +113,7 @@ TEST_F(PairingRegistryTest, CreateAndGetPairings) {
 
 TEST_F(PairingRegistryTest, GetAllPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::MakeUnique<MockPairingRegistryDelegate>());
+      std::make_unique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -142,7 +141,7 @@ TEST_F(PairingRegistryTest, GetAllPairings) {
 
 TEST_F(PairingRegistryTest, DeletePairing) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::MakeUnique<MockPairingRegistryDelegate>());
+      std::make_unique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -167,7 +166,7 @@ TEST_F(PairingRegistryTest, DeletePairing) {
 
 TEST_F(PairingRegistryTest, ClearAllPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::MakeUnique<MockPairingRegistryDelegate>());
+      std::make_unique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -218,7 +217,7 @@ TEST_F(PairingRegistryTest, SerializedRequests) {
 
   scoped_refptr<PairingRegistry> registry =
       new PairingRegistry(base::ThreadTaskRunnerHandle::Get(),
-                          base::MakeUnique<MockPairingRegistryDelegate>());
+                          std::make_unique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
   registry->GetPairing(

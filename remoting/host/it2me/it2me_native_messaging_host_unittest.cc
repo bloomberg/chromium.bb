@@ -517,7 +517,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(host_task_runner_);
   auto policy_loader =
-      base::MakeUnique<policy::FakeAsyncPolicyLoader>(host_task_runner_);
+      std::make_unique<policy::FakeAsyncPolicyLoader>(host_task_runner_);
   policy_loader_ = policy_loader.get();
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::CreateFromPolicyLoaderForTesting(std::move(policy_loader));
