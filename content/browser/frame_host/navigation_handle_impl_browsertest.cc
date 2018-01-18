@@ -1726,8 +1726,7 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-  GURL error_url(
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
+  GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
