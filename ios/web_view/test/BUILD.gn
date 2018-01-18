@@ -16,6 +16,7 @@ group("all_tests") {
 test("ios_web_view_inttests") {
   testonly = true
   sources = [
+    "scroll_view_kvo_inttest.mm",
     "web_view_autofill_inttest.mm",
     "web_view_int_test.h",
     "web_view_int_test.mm",
