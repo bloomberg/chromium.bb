@@ -326,6 +326,20 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   if (!text_control->SupportsAutocapitalize())
     return 0;
 
+  // We set the autocapitalization flag corresponding to the "used
+  // autocapitalization hint" for the focused element:
+  // https://html.spec.whatwg.org/multipage/interaction.html#used-autocapitalization-hint
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+    const AtomicString& input_type = input->type();
+    if (input_type == InputTypeNames::email ||
+        input_type == InputTypeNames::url ||
+        input_type == InputTypeNames::password) {
+      // The autocapitalize IDL attribute value is ignored for these input
+      // types, so we set the None flag.
+      return kWebTextInputFlagAutocapitalizeNone;
+    }
+  }
+
   int flags = 0;
 
   DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
