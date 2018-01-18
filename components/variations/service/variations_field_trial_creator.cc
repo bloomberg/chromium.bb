@@ -168,10 +168,15 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   TRACE_EVENT0("startup", "VariationsFieldTrialCreator::CreateTrialsFromSeed");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!create_trials_from_seed_called_);
+  create_trials_from_seed_called_ = true;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  create_trials_from_seed_called_ = true;
+  const base::Version current_version(version_info::GetVersionNumber());
+  if (!current_version.IsValid())
+    return false;
+  std::unique_ptr<ClientFilterableState> client_filterable_state =
+      GetClientFilterableStateForVersion(current_version);
 
   VariationsSeed seed;
   std::string seed_data;
@@ -179,34 +184,10 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   if (!LoadSeed(&seed, &seed_data, &base64_seed_signature))
     return false;
 
-  const base::Time last_fetch_time =
-      local_state()->GetTime(prefs::kVariationsLastFetchTime);
-  if (last_fetch_time.is_null()) {
-    // If the last fetch time is missing and we have a seed, then this must be
-    // the first run of Chrome. Store the current time as the last fetch time.
-    RecordLastFetchTime();
-    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
-  } else {
-    // Reject the seed if it is more than 30 days old.
-    const base::TimeDelta seed_age = base::Time::Now() - last_fetch_time;
-    if (seed_age.InDays() > kMaxVariationsSeedAgeDays) {
-      RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_EXPIRED);
-      return false;
-    }
-    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_NOT_EXPIRED);
-  }
-
-  const base::Version current_version(version_info::GetVersionNumber());
-  if (!current_version.IsValid())
-    return false;
-
-  std::unique_ptr<ClientFilterableState> client_filterable_state =
-      GetClientFilterableStateForVersion(current_version);
-
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
-  // safe because the callback is executed synchronously. It is not possible
-  // to pass UIStringOverrider itself to VariationSeedProcessor as variations
-  // components should not depends on //ui/base.
+  // safe because the callback is executed synchronously. It is not possible to
+  // pass UIStringOverrider directly to VariationSeedProcessor as the variations
+  // component should not depend on //ui/base.
   VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, *client_filterable_state,
       base::Bind(&UIStringOverrider::OverrideUIString,
@@ -217,18 +198,6 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   // to create the field trials.
   safe_seed_manager->SetActiveSeedState(seed_data, base64_seed_signature,
                                         std::move(client_filterable_state));
-
-  const base::Time now = base::Time::Now();
-
-  // Log the "freshness" of the seed that was just used. The freshness is the
-  // time between the last successful seed download and now.
-  if (!last_fetch_time.is_null()) {
-    const base::TimeDelta delta = now - last_fetch_time;
-    // Log the value in number of minutes.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", delta.InMinutes(),
-                                1, base::TimeDelta::FromDays(30).InMinutes(),
-                                50);
-  }
 
   UMA_HISTOGRAM_TIMES("Variations.SeedProcessingTime",
                       base::TimeTicks::Now() - start_time);
@@ -353,16 +322,47 @@ void VariationsFieldTrialCreator::RecordLastFetchTime() {
   local_state()->SetTime(prefs::kVariationsLastFetchTime, base::Time::Now());
 }
 
-bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
-                                           std::string* seed_data,
-                                           std::string* base64_signature) {
-  return seed_store_.LoadSeed(seed, seed_data, base64_signature);
-}
-
 void VariationsFieldTrialCreator::OverrideVariationsPlatform(
     Study::Platform platform_override) {
   has_platform_override_ = true;
   platform_override_ = platform_override;
+}
+
+bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
+                                           std::string* seed_data,
+                                           std::string* base64_signature) {
+  if (!LoadSeedFromStore(seed, seed_data, base64_signature))
+    return false;
+
+  const base::Time last_fetch_time =
+      local_state()->GetTime(prefs::kVariationsLastFetchTime);
+  if (last_fetch_time.is_null()) {
+    // If the last fetch time is missing and we have a seed, then this must be
+    // the first run of Chrome. Store the current time as the last fetch time.
+    RecordLastFetchTime();
+    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
+    return true;
+  }
+
+  // Reject the seed if it is more than 30 days old.
+  const base::TimeDelta seed_age = base::Time::Now() - last_fetch_time;
+  if (seed_age.InDays() > kMaxVariationsSeedAgeDays) {
+    RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_EXPIRED);
+    return false;
+  }
+
+  // Record that a suitably fresh seed was loaded.
+  RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_NOT_EXPIRED);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", seed_age.InMinutes(),
+                              1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+  return true;
+}
+
+bool VariationsFieldTrialCreator::LoadSeedFromStore(
+    VariationsSeed* seed,
+    std::string* seed_data,
+    std::string* base64_signature) {
+  return seed_store_.LoadSeed(seed, seed_data, base64_signature);
 }
 
 bool VariationsFieldTrialCreator::SetupFieldTrials(
