@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -581,7 +582,8 @@ public class OmahaBaseTest {
 
             String mockResponse = buildServerResponseString(usingTablet, sendInstallEvent);
             mOutputStream = new ByteArrayOutputStream();
-            mServerResponse = new ByteArrayInputStream(mockResponse.getBytes());
+            mServerResponse =
+                    new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(mockResponse));
             mConnectionTimesOut = connectionTimesOut;
 
             if (sendValidResponse) {

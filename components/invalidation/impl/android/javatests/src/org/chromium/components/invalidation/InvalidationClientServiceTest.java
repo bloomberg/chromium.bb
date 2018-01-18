@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
@@ -158,14 +159,14 @@ public class InvalidationClientServiceTest extends
         InvalidationPreferences invPrefs = new InvalidationPreferences();
         EditContext editContext = invPrefs.edit();
         invPrefs.setSyncTypes(editContext, CollectionUtil.newArrayList("BOOKMARK", "SESSION"));
-        ObjectId objectId = ObjectId.newInstance(1, "obj".getBytes());
+        ObjectId objectId = ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj"));
         invPrefs.setObjectIds(editContext, CollectionUtil.newArrayList(objectId));
         Assert.assertTrue(invPrefs.commit(editContext));
 
         // Issue ready.
         getService().ready(CLIENT_ID);
         Assert.assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
-        byte[] otherCid = "otherCid".getBytes();
+        byte[] otherCid = ApiCompatibilityUtils.getBytesUtf8("otherCid");
         getService().ready(otherCid);
         Assert.assertTrue(Arrays.equals(otherCid, InvalidationClientService.getClientIdForTest()));
 
@@ -194,7 +195,7 @@ public class InvalidationClientServiceTest extends
         InvalidationPreferences invPrefs = new InvalidationPreferences();
         EditContext editContext = invPrefs.edit();
         invPrefs.setSyncTypes(editContext, CollectionUtil.newArrayList("BOOKMARK", "SESSION"));
-        ObjectId objectId = ObjectId.newInstance(1, "obj".getBytes());
+        ObjectId objectId = ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj"));
         invPrefs.setObjectIds(editContext, CollectionUtil.newArrayList(objectId));
         Assert.assertTrue(invPrefs.commit(editContext));
 
@@ -223,8 +224,10 @@ public class InvalidationClientServiceTest extends
         InvalidationPreferences invPrefs = new InvalidationPreferences();
         EditContext editContext = invPrefs.edit();
         invPrefs.setSyncTypes(editContext, CollectionUtil.newArrayList("SESSION"));
-        ObjectId desiredObjectId = ObjectId.newInstance(1, "obj1".getBytes());
-        ObjectId undesiredObjectId = ObjectId.newInstance(1, "obj2".getBytes());
+        ObjectId desiredObjectId =
+                ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj1"));
+        ObjectId undesiredObjectId =
+                ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj2"));
         invPrefs.setObjectIds(editContext, CollectionUtil.newArrayList(desiredObjectId));
         Assert.assertTrue(invPrefs.commit(editContext));
 
@@ -285,8 +288,10 @@ public class InvalidationClientServiceTest extends
         InvalidationPreferences invPrefs = new InvalidationPreferences();
         EditContext editContext = invPrefs.edit();
         invPrefs.setSyncTypes(editContext, CollectionUtil.newArrayList("SESSION"));
-        ObjectId desiredObjectId = ObjectId.newInstance(1, "obj1".getBytes());
-        ObjectId undesiredObjectId = ObjectId.newInstance(1, "obj2".getBytes());
+        ObjectId desiredObjectId =
+                ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj1"));
+        ObjectId undesiredObjectId =
+                ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj2"));
         invPrefs.setObjectIds(editContext, CollectionUtil.newArrayList(desiredObjectId));
         Assert.assertTrue(invPrefs.commit(editContext));
 
@@ -388,12 +393,14 @@ public class InvalidationClientServiceTest extends
         int version = 4747;
         int objectSource = 55;
         String objectName = "BOOKMARK";
-        ObjectId objectId = ObjectId.newInstance(objectSource, objectName.getBytes());
+        ObjectId objectId =
+                ObjectId.newInstance(objectSource, ApiCompatibilityUtils.getBytesUtf8(objectName));
         final String payload = "testInvalidate-" + hasPayload;
         Invalidation invalidation = hasPayload
-                ? Invalidation.newInstance(objectId, version, payload.getBytes())
+                ? Invalidation.newInstance(
+                          objectId, version, ApiCompatibilityUtils.getBytesUtf8(payload))
                 : Invalidation.newInstance(objectId, version);
-        byte[] ackHandle = ("testInvalidate-" + hasPayload).getBytes();
+        byte[] ackHandle = ApiCompatibilityUtils.getBytesUtf8("testInvalidate-" + hasPayload);
         getService().invalidate(invalidation, ackHandle);
 
         // Validate bundle.
@@ -418,8 +425,9 @@ public class InvalidationClientServiceTest extends
          */
         int objectSource = 55;
         String objectName = "BOOKMARK";
-        ObjectId objectId = ObjectId.newInstance(objectSource, objectName.getBytes());
-        byte[] ackHandle = "testInvalidateUV".getBytes();
+        ObjectId objectId =
+                ObjectId.newInstance(objectSource, ApiCompatibilityUtils.getBytesUtf8(objectName));
+        byte[] ackHandle = ApiCompatibilityUtils.getBytesUtf8("testInvalidateUV");
         getService().invalidateUnknownVersion(objectId, ackHandle);
 
         // Validate bundle.
@@ -441,7 +449,7 @@ public class InvalidationClientServiceTest extends
         /*
          * Test plan: call invalidateAll(). Verify the produced bundle has the correct fields.
          */
-        byte[] ackHandle = "testInvalidateAll".getBytes();
+        byte[] ackHandle = ApiCompatibilityUtils.getBytesUtf8("testInvalidateAll");
         getService().invalidateAll(ackHandle);
 
         // Validate bundle.
@@ -643,8 +651,8 @@ public class InvalidationClientServiceTest extends
         Set<Integer> types = new HashSet<>();
 
         // Register for some object ids.
-        objectIds.add(ObjectId.newInstance(1, "obj1".getBytes()));
-        objectIds.add(ObjectId.newInstance(2, "obj2".getBytes()));
+        objectIds.add(ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("obj1")));
+        objectIds.add(ObjectId.newInstance(2, ApiCompatibilityUtils.getBytesUtf8("obj2")));
         Intent registrationIntent =
                 createRegisterIntent(account, new int[] {1, 2}, new String[] {"obj1", "obj2"});
         getService().onHandleIntent(registrationIntent);
@@ -662,7 +670,7 @@ public class InvalidationClientServiceTest extends
         Assert.assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change object id registration with types registered.
-        objectIds.add(ObjectId.newInstance(3, "obj3".getBytes()));
+        objectIds.add(ObjectId.newInstance(3, ApiCompatibilityUtils.getBytesUtf8("obj3")));
         registrationIntent = createRegisterIntent(
             account, new int[] {1, 2, 3}, new String[] {"obj1", "obj2", "obj3"});
         getService().onHandleIntent(registrationIntent);
@@ -681,7 +689,7 @@ public class InvalidationClientServiceTest extends
         Assert.assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change object id registration with no types registered.
-        objectIds.remove(ObjectId.newInstance(2, "obj2".getBytes()));
+        objectIds.remove(ObjectId.newInstance(2, ApiCompatibilityUtils.getBytesUtf8("obj2")));
         registrationIntent = createRegisterIntent(
             account, new int[] {1, 3}, new String[] {"obj1", "obj3"});
         getService().onHandleIntent(registrationIntent);
@@ -923,7 +931,8 @@ public class InvalidationClientServiceTest extends
     /** Returns whether {@code intent} is an {@link AndroidListener} start intent. */
     private boolean isAndroidListenerStartIntent(Intent intent) {
         Intent startIntent = AndroidListener.createStartIntent(getContext(),
-                InvalidationClientService.CLIENT_TYPE, "unused".getBytes());
+                InvalidationClientService.CLIENT_TYPE,
+                ApiCompatibilityUtils.getBytesUtf8("unused"));
         return intent.getExtras().keySet().equals(startIntent.getExtras().keySet());
     }
 

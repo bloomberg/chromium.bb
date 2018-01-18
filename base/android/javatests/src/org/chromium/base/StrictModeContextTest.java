@@ -63,7 +63,7 @@ public class StrictModeContextTest {
 
     private void writeToDisk() {
         try {
-            mFosForWriting.write("Foo".getBytes());
+            mFosForWriting.write(ApiCompatibilityUtils.getBytesUtf8("Foo"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

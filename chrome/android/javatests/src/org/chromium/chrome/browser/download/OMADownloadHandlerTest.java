@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
@@ -223,7 +224,7 @@ public class OMADownloadHandlerTest {
                 + "<nextURL>http://nexturl.html</nextURL>\r\n"
                 + "</media>";
         OMADownloadHandler.OMAInfo info = OMADownloadHandler.parseDownloadDescriptor(
-                new ByteArrayInputStream(downloadDescriptor.getBytes()));
+                new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(downloadDescriptor)));
         Assert.assertFalse(info.isEmpty());
         Assert.assertEquals(
                 info.getValue(OMADownloadHandler.OMA_OBJECT_URI), "http://test/test.dm");
@@ -250,7 +251,7 @@ public class OMADownloadHandlerTest {
                 "<media xmlns=\"http://www.openmobilealliance.org/xmlns/dd\">\r\n"
                 + "</media>";
         OMADownloadHandler.OMAInfo info = OMADownloadHandler.parseDownloadDescriptor(
-                new ByteArrayInputStream(downloadDescriptor.getBytes()));
+                new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(downloadDescriptor)));
         Assert.assertTrue(info.isEmpty());
 
         downloadDescriptor =
@@ -262,7 +263,7 @@ public class OMADownloadHandlerTest {
                 + "</name>\r\n"
                 + "</media>";
         info = OMADownloadHandler.parseDownloadDescriptor(
-                new ByteArrayInputStream(downloadDescriptor.getBytes()));
+                new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(downloadDescriptor)));
         Assert.assertNull(info);
 
         downloadDescriptor =
@@ -271,7 +272,7 @@ public class OMADownloadHandlerTest {
                 + "<DDVersion>1.0</DDVersion>\r\n"
                 + "</media>";
         info = OMADownloadHandler.parseDownloadDescriptor(
-                new ByteArrayInputStream(downloadDescriptor.getBytes()));
+                new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(downloadDescriptor)));
         Assert.assertNull(info);
     }
 

@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -85,7 +86,8 @@ public class VariationsSeedFetcherTest {
         when(mConnection.getHeaderField("X-Country")).thenReturn("Nowhere Land");
         when(mConnection.getHeaderField("Date")).thenReturn("A date");
         when(mConnection.getHeaderField("IM")).thenReturn("gzip");
-        when(mConnection.getInputStream()).thenReturn(new ByteArrayInputStream("1234".getBytes()));
+        when(mConnection.getInputStream())
+                .thenReturn(new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8("1234")));
 
         mFetcher.fetchSeed(sRestrict, sMilestone, sChannel);
 
@@ -98,7 +100,8 @@ public class VariationsSeedFetcherTest {
         assertTrue(mPrefs.getBoolean(
                 VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, false));
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_BASE64, ""),
-                equalTo(Base64.encodeToString("1234".getBytes(), Base64.NO_WRAP)));
+                equalTo(Base64.encodeToString(
+                        ApiCompatibilityUtils.getBytesUtf8("1234"), Base64.NO_WRAP)));
     }
 
     /**

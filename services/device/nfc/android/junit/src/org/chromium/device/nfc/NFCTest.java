@@ -40,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
@@ -244,8 +245,8 @@ public class NFCTest {
         assertEquals(TEST_TEXT, new String(textNfcMessage.data[0].data));
 
         // Test MIME record conversion.
-        NdefMessage mimeNdefMessage =
-                new NdefMessage(NdefRecord.createMime(TEXT_MIME, TEST_TEXT.getBytes()));
+        NdefMessage mimeNdefMessage = new NdefMessage(
+                NdefRecord.createMime(TEXT_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
         NfcMessage mimeNfcMessage = NfcTypeConverter.toNfcMessage(mimeNdefMessage);
         assertNull(mimeNfcMessage.url);
         assertEquals(1, mimeNfcMessage.data.length);
@@ -254,8 +255,8 @@ public class NFCTest {
         assertEquals(TEST_TEXT, new String(textNfcMessage.data[0].data));
 
         // Test JSON record conversion.
-        NdefMessage jsonNdefMessage =
-                new NdefMessage(NdefRecord.createMime(JSON_MIME, TEST_JSON.getBytes()));
+        NdefMessage jsonNdefMessage = new NdefMessage(
+                NdefRecord.createMime(JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON)));
         NfcMessage jsonNfcMessage = NfcTypeConverter.toNfcMessage(jsonNdefMessage);
         assertNull(jsonNfcMessage.url);
         assertEquals(1, jsonNfcMessage.data.length);
@@ -264,8 +265,10 @@ public class NFCTest {
         assertEquals(TEST_JSON, new String(jsonNfcMessage.data[0].data));
 
         // Test NfcMessage with WebNFC external type.
-        NdefRecord jsonNdefRecord = NdefRecord.createMime(JSON_MIME, TEST_JSON.getBytes());
-        NdefRecord extNdefRecord = NdefRecord.createExternal(DOMAIN, TYPE, TEST_URL.getBytes());
+        NdefRecord jsonNdefRecord =
+                NdefRecord.createMime(JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON));
+        NdefRecord extNdefRecord = NdefRecord.createExternal(
+                DOMAIN, TYPE, ApiCompatibilityUtils.getBytesUtf8(TEST_URL));
         NdefMessage webNdefMessage = new NdefMessage(jsonNdefRecord, extNdefRecord);
         NfcMessage webNfcMessage = NfcTypeConverter.toNfcMessage(webNdefMessage);
         assertEquals(TEST_URL, webNfcMessage.url);
@@ -293,7 +296,7 @@ public class NFCTest {
         NfcRecord textNfcRecord = new NfcRecord();
         textNfcRecord.recordType = NfcRecordType.TEXT;
         textNfcRecord.mediaType = TEXT_MIME;
-        textNfcRecord.data = TEST_TEXT.getBytes();
+        textNfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NfcMessage textNfcMessage = createNfcMessage(TEST_URL, textNfcRecord);
         NdefMessage textNdefMessage = NfcTypeConverter.toNdefMessage(textNfcMessage);
         assertEquals(2, textNdefMessage.getRecords().length);
@@ -307,7 +310,7 @@ public class NFCTest {
         NfcRecord mimeNfcRecord = new NfcRecord();
         mimeNfcRecord.recordType = NfcRecordType.OPAQUE_RECORD;
         mimeNfcRecord.mediaType = TEXT_MIME;
-        mimeNfcRecord.data = TEST_TEXT.getBytes();
+        mimeNfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NfcMessage mimeNfcMessage = createNfcMessage(TEST_URL, mimeNfcRecord);
         NdefMessage mimeNdefMessage = NfcTypeConverter.toNdefMessage(mimeNfcMessage);
         assertEquals(2, mimeNdefMessage.getRecords().length);
@@ -320,7 +323,7 @@ public class NFCTest {
         NfcRecord jsonNfcRecord = new NfcRecord();
         jsonNfcRecord.recordType = NfcRecordType.OPAQUE_RECORD;
         jsonNfcRecord.mediaType = JSON_MIME;
-        jsonNfcRecord.data = TEST_JSON.getBytes();
+        jsonNfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_JSON);
         NfcMessage jsonNfcMessage = createNfcMessage(TEST_URL, jsonNfcRecord);
         NdefMessage jsonNdefMessage = NfcTypeConverter.toNdefMessage(jsonNfcMessage);
         assertEquals(2, jsonNdefMessage.getRecords().length);
@@ -1093,7 +1096,7 @@ public class NFCTest {
         NfcRecord nfcRecord = new NfcRecord();
         nfcRecord.recordType = NfcRecordType.TEXT;
         nfcRecord.mediaType = TEXT_MIME;
-        nfcRecord.data = TEST_TEXT.getBytes();
+        nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         message.data[0] = nfcRecord;
         return message;
     }
@@ -1110,7 +1113,7 @@ public class NFCTest {
         NfcRecord urlNfcRecord = new NfcRecord();
         urlNfcRecord.recordType = NfcRecordType.URL;
         urlNfcRecord.mediaType = TEXT_MIME;
-        urlNfcRecord.data = TEST_URL.getBytes();
+        urlNfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
         NfcMessage urlNfcMessage = createNfcMessage(webNfcId, urlNfcRecord);
         try {
             return NfcTypeConverter.toNdefMessage(urlNfcMessage);

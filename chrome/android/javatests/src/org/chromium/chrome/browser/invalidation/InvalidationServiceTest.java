@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -79,8 +80,10 @@ public class InvalidationServiceTest {
                 intent.getStringArrayListExtra(InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
         Set<ObjectId> objectIds = InvalidationIntentProtocol.getRegisteredObjectIds(intent);
         Assert.assertEquals(2, objectIds.size());
-        Assert.assertTrue(objectIds.contains(ObjectId.newInstance(1, "a".getBytes())));
-        Assert.assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
+        Assert.assertTrue(objectIds.contains(
+                ObjectId.newInstance(1, ApiCompatibilityUtils.getBytesUtf8("a"))));
+        Assert.assertTrue(objectIds.contains(
+                ObjectId.newInstance(2, ApiCompatibilityUtils.getBytesUtf8("b"))));
     }
 
     /**
