@@ -654,6 +654,10 @@ __gCrWeb['common'] = __gCrWeb.common;
     // Some frameworks will use the data field to update their cache value.
     changeEvent.data = element.value;
 
+    // Adding a |simulated| flag on the event will force the React framework to
+    // update the backend store.
+    changeEvent.simulated = true;
+
     // A timer is used to avoid reentering JavaScript evaluation.
     window.setTimeout(function() {
       element.dispatchEvent(changeEvent);
