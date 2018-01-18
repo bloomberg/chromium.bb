@@ -532,6 +532,10 @@ void WKBasedNavigationManagerImpl::FinishGoToIndex(
   }
 }
 
+bool WKBasedNavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
+  return placeholder_navigation_util::IsPlaceholderUrl(url);
+}
+
 int WKBasedNavigationManagerImpl::GetWKCurrentItemIndex() const {
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
   if (proxy.backForwardList.currentItem) {

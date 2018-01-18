@@ -1193,7 +1193,8 @@ GURL URLEscapedForHistory(const GURL& url) {
       return [self.nativeController url];
     }
   }
-  web::NavigationItem* item = self.currentNavItem;
+  web::NavigationItem* item =
+      self.navigationManagerImpl->GetLastCommittedItem();
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -1435,8 +1436,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   if (!IsPlaceholderUrl(requestURL)) {
     _webStateImpl->SetIsLoading(true);
+
+    // WKBasedNavigationManager triggers HTML load when placeholder navigation
+    // finishes.
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
+      [_webUIManager loadWebUIForURL:requestURL];
   }
-  [_webUIManager loadWebUIForURL:requestURL];
   return context;
 }
 
@@ -1817,8 +1822,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
+  const bool isCurrentURLAppSpecific =
+      web::GetWebClient()->IsAppSpecificURL(currentURL);
   // If it's a chrome URL, but not a native one, create the WebUI instance.
-  if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
+  if (isCurrentURLAppSpecific &&
       ![_nativeProvider hasControllerForURL:currentURL]) {
     if (!(item->GetTransitionType() & ui::PAGE_TRANSITION_TYPED ||
           item->GetTransitionType() & ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
@@ -1838,6 +1845,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // a native view.
   if ([self shouldLoadURLInNativeView:currentURL]) {
     [self loadCurrentURLInNativeView];
+  } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+             isCurrentURLAppSpecific) {
+    // Handle WebUI separately from regular web page load in new nav manager.
+    DCHECK(_webStateImpl->HasWebUI());
+    [self loadPlaceholderInWebViewForURL:currentURL completionHandler:nil];
   } else {
     [self loadCurrentURLInWebView];
   }
@@ -3944,20 +3956,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
   CHECK(web::GetWebClient()->IsAppSpecificURL(URL));
-
-  ProceduralBlock finishLoadHTMLForAppSpecificURL = ^{
-    [self loadHTML:HTML forURL:URL];
-  };
-
-  // When using WKBasedNavigationManagerImpl, a placeholder must be loaded into
-  // the web view for each WebUI page so that the WKBackForwardList has an entry
-  // for each user-visible navigation.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [self loadPlaceholderInWebViewForURL:URL
-                       completionHandler:finishLoadHTMLForAppSpecificURL];
-  } else {
-    finishLoadHTMLForAppSpecificURL();
-  }
+  [self loadHTML:HTML forURL:URL];
 }
 
 - (void)stopLoading {
@@ -4296,7 +4295,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self clearWebUI];
 
-  if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
+  // When using WKBasedNavigationManager, if |backForwardList.currentItem| is a
+  // placeholder URL for the provisional load URL (i.e. webView.URL), then this
+  // is an in-progress app-specific load and should not be restarted.
+  bool currentItemIsPlaceholderForProvisionalURL =
+      web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      CreatePlaceholderUrlForUrl(webViewURL) ==
+          net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+
+  if (web::GetWebClient()->IsAppSpecificURL(webViewURL) &&
+      !currentItemIsPlaceholderForProvisionalURL) {
     // Restart app specific URL loads to properly capture state.
     // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
     // navigation rather than restarting the load.
@@ -4307,15 +4315,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // dangerous.
     if (web::GetWebClient()->IsAppSpecificURL(_documentURL)) {
       [self abortLoad];
-
-      // Do some additional book keeping for WKBasedNavigationManagerImpl, which
-      // doesn't use KVO to manage navigation states. Sometimes
-      // WKNavigationDelegate callbacks may arrive after calling |stopLoading|.
-      // Remove this navigation from |_navigationStates| allows those delinquent
-      // callbacks to be ignored.
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        [_navigationStates removeNavigation:navigation];
-      }
       NavigationManager::WebLoadParams params(webViewURL);
       self.webState->GetNavigationManager()->LoadURLWithParams(params);
     }
@@ -4520,12 +4519,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.webStateImpl->OnNavigationFinished(context);
   }
 
-  [self updateSSLStatusForCurrentNavigationItem];
-
-  // Do not update the HTML5 history state or last committed item title for
-  // placeholder page because the actual navigation item will not be committed
-  // until the native content or WebUI is shown.
+  // Do not update the HTML5 history state or states of the last committed item
+  // for placeholder page because the actual navigation item will not be
+  // committed until the native content or WebUI is shown.
   if (context && !IsPlaceholderUrl(context->GetUrl())) {
+    [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
     [self setNavigationItemTitle:[_webView title]];
   }
@@ -4593,9 +4591,24 @@ registerLoadRequestForURL:(const GURL&)requestURL
       if (CreatePlaceholderUrlForUrl(item->GetVirtualURL()) != webViewURL)
         return;
 
+      const bool isWebUIURL =
+          web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
+          ![_nativeProvider hasControllerForURL:item->GetURL()];
+      if (isWebUIURL && !_webUIManager) {
+        // WebUIManager is normally created when initiating a new load (in
+        // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
+        // navigation, the WebUI manager would have not been created. Create it
+        // now.
+        [self createWebUIForURL:item->GetURL()];
+      }
+
       if ([self shouldLoadURLInNativeView:item->GetURL()]) {
         [self loadNativeContentForNavigationItem:item];
+      } else if (isWebUIURL) {
+        DCHECK(_webUIManager);
+        [_webUIManager loadWebUIForURL:item->GetURL()];
       } else {
+        // Native error
         CRWPlaceholderNavigationInfo* placeholderNavigationInfo =
             [CRWPlaceholderNavigationInfo infoForNavigation:navigation];
         if (placeholderNavigationInfo) {

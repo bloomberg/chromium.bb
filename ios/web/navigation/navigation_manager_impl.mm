@@ -332,13 +332,18 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
         &loaded_url, browser_state_);
   }
 
-  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+  // The URL should not be changed to app-specific URL in two cases:
+  // 1) The load is renderer-initiated requested by non-app-specific URL. Pages
+  //    with app-specific urls have elevated previledges and should not be
+  //    allowed to open app-specific URLs.
+  // 2) The load is a placeholder URL. Navigation code relies on this special
+  //    URL to implement native view and WebUI.
+  bool is_renderer_initiated_app_specific_url_from_non_app_specific_url =
+      initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
       loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
-      !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
-    // The URL should not be changed to app-specific URL if the load was
-    // renderer-initiated requested by non app-specific URL. Pages with
-    // app-specific urls have elevated previledges and should not be allowed
-    // to open app-specific URLs.
+      !web::GetWebClient()->IsAppSpecificURL(previous_url);
+  if (is_renderer_initiated_app_specific_url_from_non_app_specific_url ||
+      IsPlaceholderUrl(url)) {
     loaded_url = url;
   }
 
@@ -364,6 +369,10 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
       return item;
   }
   return nullptr;
+}
+
+bool NavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
+  return false;  // Default implementation doesn't use placeholder URLs
 }
 
 }  // namespace web
