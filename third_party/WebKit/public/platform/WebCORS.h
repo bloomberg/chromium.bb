@@ -48,23 +48,17 @@ namespace WebCORS {
 // according to CORS. That is:
 // - the URL has a CORS supported scheme and
 // - the URL does not contain the userinfo production.
-//
-// Use |GetErrorString()| to construct a user-friendly error message.
 BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError>
 CheckRedirectLocation(const WebURL&);
 
 // Perform the required CORS checks on the response to a preflight request.
 // Returns |kPreflightSuccess| if preflight response was successful.
-//
-// Use |GetErrorString()| to construct a user-friendly error message.
 BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflight(
     const int preflight_response_status_code);
 
 // Error checking for the currently experimental
 // "Access-Control-Allow-External:" header. Shares error conditions with
 // standard preflight checking.
-//
-// Use |GetErrorString()| to construct a user-friendly error message.
 BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError>
 CheckExternalPreflight(const WebHTTPHeaderMap&);
 
@@ -82,19 +76,6 @@ BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> HandleRedirect(
     const WebHTTPHeaderMap&,
     network::mojom::FetchCredentialsMode,
     ResourceLoaderOptions&);
-
-// Stringify CORSError mainly for inspector messages. Generated string should
-// not be exposed to JavaScript for security reasons.
-// For errors during the redirect check, valid WebURL should be set to
-// |redirect_url|. Otherwise, it should be WebURL(), the invalid instance.
-BLINK_PLATFORM_EXPORT WebString
-GetErrorString(const network::mojom::CORSError,
-               const WebURL& request_url,
-               const WebURL& redirect_url,
-               const int response_status_code,
-               const WebHTTPHeaderMap&,
-               const WebSecurityOrigin&,
-               const WebURLRequest::RequestContext);
 
 BLINK_PLATFORM_EXPORT WebHTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
