@@ -44,6 +44,14 @@ namespace {
 
 const char kDisabledMessage[] = "This device has been disabled.";
 
+constexpr em::AutoUpdateSettingsProto_ConnectionType kConnectionTypes[] = {
+    em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET,
+    em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIFI,
+    em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIMAX,
+    em::AutoUpdateSettingsProto::CONNECTION_TYPE_BLUETOOTH,
+    em::AutoUpdateSettingsProto::CONNECTION_TYPE_CELLULAR,
+};
+
 }  // namespace
 
 class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
@@ -209,6 +217,22 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       const base::Value* const ptr_to_expected_value) {
     VerifyPolicyValue(kAccountsPrefLoginScreenDomainAutoComplete,
                       ptr_to_expected_value);
+  }
+
+  // Helper routine to set AutoUpdates connection types policy.
+  void SetAutoUpdateConnectionTypes(const std::vector<int>& values) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+
+    em::AutoUpdateSettingsProto* proto =
+        device_policy_.payload().mutable_auto_update_settings();
+    proto->set_update_disabled(false);
+    for (auto const& value : values) {
+      proto->add_allowed_connection_types(kConnectionTypes[value]);
+    }
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
   }
 
   // Helper routine to set HostnameTemplate policy.
@@ -539,6 +563,23 @@ TEST_F(DeviceSettingsProviderTest, DecodeDomainAutoComplete) {
   const base::Value domain_value(domain);
   SetDomainAutoComplete(domain);
   VerifyDomainAutoComplete(&domain_value);
+}
+
+TEST_F(DeviceSettingsProviderTest, EmptyAllowedConnectionTypesForUpdate) {
+  // By default AllowedConnectionTypesForUpdate policy should not be set.
+  VerifyPolicyValue(kAllowedConnectionTypesForUpdate, nullptr);
+
+  // In case of empty list policy should not be set.
+  const std::vector<int> no_values = {};
+  SetAutoUpdateConnectionTypes(no_values);
+  VerifyPolicyValue(kAllowedConnectionTypesForUpdate, nullptr);
+
+  const std::vector<int> single_value = {0};
+  // Check some meaningful value. Policy should be set.
+  SetAutoUpdateConnectionTypes(single_value);
+  base::ListValue allowed_connections;
+  allowed_connections.AppendInteger(0);
+  VerifyPolicyValue(kAllowedConnectionTypesForUpdate, &allowed_connections);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeHostnameTemplate) {
