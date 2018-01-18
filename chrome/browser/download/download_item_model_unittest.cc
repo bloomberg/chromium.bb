@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -192,7 +193,13 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
 }
 
 // Note: This test is currently skipped on Android. See http://crbug.com/139398
-TEST_F(DownloadItemModelTest, InterruptTooltip) {
+// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
+#if defined(OS_MACOSX)
+#define MAYBE_InterruptTooltip DISABLED_InterruptTooltip
+#else
+#define MAYBE_InterruptTooltip InterruptTooltip
+#endif
+TEST_F(DownloadItemModelTest, MAYBE_InterruptTooltip) {
   // Test that we have the correct interrupt tooltip for downloads that are in
   // the INTERRUPTED state.
   const struct TestCase {

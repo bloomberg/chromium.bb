@@ -180,7 +180,13 @@ void RunElisionTest(const std::vector<Testcase>& testcases) {
 }
 
 // Test eliding of commonplace URLs.
-TEST(TextEliderTest, TestGeneralEliding) {
+// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
+#if defined(OS_MACOSX)
+#define MAYBE_TestGeneralEliding DISABLED_TestGeneralEliding
+#else
+#define MAYBE_TestGeneralEliding TestGeneralEliding
+#endif
+TEST(TextEliderTest, MAYBE_TestGeneralEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<ProgressiveTestcase> progressive_testcases = {
       // Elide a non-www URL (www URLs are handled differently). In this first
@@ -363,7 +369,13 @@ TEST(TextEliderTest, TestElisionSpecialCases) {
 }
 
 // Test eliding of file: URLs.
-TEST(TextEliderTest, TestFileURLEliding) {
+// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
+#if defined(OS_MACOSX)
+#define MAYBE_TestFileURLEliding DISABLED_TestFileURLEliding
+#else
+#define MAYBE_TestFileURLEliding TestFileURLEliding
+#endif
+TEST(TextEliderTest, MAYBE_TestFileURLEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<ProgressiveTestcase> progressive_testcases = {
     {"file:///C:/path1/path2/path3/filename",
@@ -743,7 +755,13 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
       << "Explicitly test the url::Origin which takes an empty, invalid URL";
 }
 
-TEST(TextEliderTest, TestSimpleElisionMethod) {
+// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
+#if defined(OS_MACOSX)
+#define MAYBE_TestSimpleElisionMethod DISABLED_TestSimpleElisionMethod
+#else
+#define MAYBE_TestSimpleElisionMethod TestSimpleElisionMethod
+#endif
+TEST(TextEliderTest, MAYBE_TestSimpleElisionMethod) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<ProgressiveTestcase> testcases = {
       {"https://www.abc.com/def/",
@@ -835,7 +853,14 @@ void RunElisionParsingTest(const std::vector<ParsingTestcase>& testcases) {
 }
 
 // Verify that during elision, the parsed URL components are properly modified.
-TEST(TextEliderTest, TestElisionParsingAdjustments) {
+// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
+#if defined(OS_MACOSX)
+#define MAYBE_TestElisionParsingAdjustments \
+  DISABLED_TestElisionParsingAdjustments
+#else
+#define MAYBE_TestElisionParsingAdjustments TestElisionParsingAdjustments
+#endif
+TEST(TextEliderTest, MAYBE_TestElisionParsingAdjustments) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<ParsingTestcase> testcases = {
       // HTTPS with path.
