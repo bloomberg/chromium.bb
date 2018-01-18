@@ -30,7 +30,7 @@ security_state::SSLStatusInputEventData* GetOrCreateSSLStatusInputEventData(
       static_cast<security_state::SSLStatusInputEventData*>(
           ssl.user_data.get());
   if (!input_events) {
-    ssl.user_data = base::MakeUnique<security_state::SSLStatusInputEventData>();
+    ssl.user_data = std::make_unique<security_state::SSLStatusInputEventData>();
     input_events = static_cast<security_state::SSLStatusInputEventData*>(
         ssl.user_data.get());
   }
@@ -82,7 +82,7 @@ InsecureSensitiveInputDriverFactory::GetOrCreateDriverForFrame(
       frame_driver_map_.insert(std::make_pair(render_frame_host, nullptr));
   if (insertion_result.second) {
     insertion_result.first->second =
-        base::MakeUnique<InsecureSensitiveInputDriver>(render_frame_host);
+        std::make_unique<InsecureSensitiveInputDriver>(render_frame_host);
   }
   return insertion_result.first->second.get();
 }

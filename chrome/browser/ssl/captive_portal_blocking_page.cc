@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -55,7 +54,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      base::MakeUnique<ChromeMetricsHelper>(web_contents, request_url,
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
                                             reporting_info, kMetricsName);
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
   return metrics_helper;
@@ -82,7 +81,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
           std::move(ssl_cert_reporter),
           false /* overridable */,
           base::Time::Now(),
-          base::MakeUnique<SSLErrorControllerClient>(
+          std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
               request_url,

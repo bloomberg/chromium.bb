@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
 #include <stdint.h>
+#include <memory>
 #include <unordered_set>
 #include <utility>
 
@@ -265,7 +266,7 @@ ConfigSingleton::ConfigSingleton()
           base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds)),
       is_enterprise_managed_for_testing_(ENTERPRISE_MANAGED_STATUS_NOT_SET),
       os_captive_portal_status_for_testing_(OS_CAPTIVE_PORTAL_STATUS_NOT_SET),
-      ssl_error_assistant_(base::MakeUnique<SSLErrorAssistant>()) {}
+      ssl_error_assistant_(std::make_unique<SSLErrorAssistant>()) {}
 
 base::TimeDelta ConfigSingleton::interstitial_delay() const {
   return interstitial_delay_;

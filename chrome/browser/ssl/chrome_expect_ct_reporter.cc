@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -60,13 +59,13 @@ std::string TimeToISO8601(const base::Time& t) {
 std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
     const net::X509Certificate* cert_chain) {
   if (!cert_chain)
-    return base::MakeUnique<base::ListValue>();
+    return std::make_unique<base::ListValue>();
 
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
   for (const std::string& cert : pem_encoded_chain)
-    result->Append(base::MakeUnique<base::Value>(cert));
+    result->Append(std::make_unique<base::Value>(cert));
 
   return result;
 }
@@ -171,7 +170,7 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
 
   base::DictionaryValue outer_report;
   base::DictionaryValue* report = outer_report.SetDictionary(
-      "expect-ct-report", base::MakeUnique<base::DictionaryValue>());
+      "expect-ct-report", std::make_unique<base::DictionaryValue>());
   report->SetString("hostname", host_port_pair.host());
   report->SetInteger("port", host_port_pair.port());
   report->SetString("date-time", TimeToISO8601(base::Time::Now()));
@@ -277,7 +276,7 @@ void ChromeExpectCTReporter::SendPreflight(
   url_request->SetExtraRequestHeaders(extra_headers);
 
   net::URLRequest* raw_request = url_request.get();
-  inflight_preflights_[raw_request] = base::MakeUnique<PreflightInProgress>(
+  inflight_preflights_[raw_request] = std::make_unique<PreflightInProgress>(
       std::move(url_request), serialized_report, report_uri);
   raw_request->Start();
 }

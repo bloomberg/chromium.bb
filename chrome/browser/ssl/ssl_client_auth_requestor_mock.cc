@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
@@ -48,5 +47,5 @@ SSLClientAuthRequestorMock::~SSLClientAuthRequestorMock() {}
 
 std::unique_ptr<content::ClientCertificateDelegate>
 SSLClientAuthRequestorMock::CreateDelegate() {
-  return base::MakeUnique<FakeClientCertificateDelegate>(this);
+  return std::make_unique<FakeClientCertificateDelegate>(this);
 }

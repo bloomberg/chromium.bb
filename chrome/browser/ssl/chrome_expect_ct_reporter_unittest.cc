@@ -364,7 +364,7 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
     if (handled_preflight_) {
       return;
     }
-    preflight_run_loop_ = base::MakeUnique<base::RunLoop>();
+    preflight_run_loop_ = std::make_unique<base::RunLoop>();
     preflight_run_loop_->Run();
   }
 

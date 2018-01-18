@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -120,7 +121,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
     const net::test_server::HttpRequest& request) {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    quit_closure);
-  return base::MakeUnique<net::test_server::HungResponse>();
+  return std::make_unique<net::test_server::HungResponse>();
 }
 
 class TestSSLErrorHandler : public SSLErrorHandler {
@@ -429,7 +430,7 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
     auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+        std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     config_proto->set_version_id(kLargeVersionId);
 
     config_proto->add_captive_portal_cert()->set_sha256_hash(
@@ -499,7 +500,7 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
   // outdated antivirus and misconfigured firewall certificate.
   void InitMITMSoftwareList() {
     auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+        std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     config_proto->set_version_id(kLargeVersionId);
 
     chrome_browser_ssl::MITMSoftware* filter =
@@ -1216,7 +1217,7 @@ TEST_F(SSLErrorAssistantProtoTest,
                               net::CERT_STATUS_AUTHORITY_INVALID);
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
@@ -1238,7 +1239,7 @@ TEST_F(SSLErrorAssistantProtoTest,
                               net::CERT_STATUS_AUTHORITY_INVALID);
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
@@ -1283,7 +1284,7 @@ TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_CertificateMatchesCommonName) {
   // Register a MITM Software entry in the SSL error assistant proto that has a
   // common name regex but not an organization name regex.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
@@ -1304,7 +1305,7 @@ TEST_F(SSLErrorAssistantProtoTest,
   // Register a MITM Software entry in the SSL error assistant proto that has an
   // organization name regex, but not a common name regex.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
@@ -1327,7 +1328,7 @@ TEST_F(SSLErrorAssistantProtoTest,
   // regexes that will match part of each the certificate's common name and
   // organization name fields but not the entire field.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
@@ -1455,7 +1456,7 @@ TEST_F(SSLErrorAssistantProtoTest,
   // less than the version_id of the local resource bundle, so the dynamic
   // update will be ignored.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(0u);
 
   chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();

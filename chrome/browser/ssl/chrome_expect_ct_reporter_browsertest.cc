@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
@@ -29,7 +31,7 @@ class ExpectCTBrowserTest : public CertVerifierBrowserTest {
   ExpectCTBrowserTest() : CertVerifierBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   void TearDown() override { run_loop_.reset(nullptr); }

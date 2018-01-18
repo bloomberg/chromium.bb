@@ -112,7 +112,7 @@ void SetInputEvents(content::NavigationEntry* entry,
           ssl.user_data.get());
   if (!input_events) {
     ssl.user_data =
-        base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+        std::make_unique<security_state::SSLStatusInputEventData>(events);
   } else {
     *input_events->input_events() = events;
   }

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/grit/browser_resources.h"
@@ -70,7 +71,7 @@ std::unordered_set<std::string> HashesFromDynamicInterstitial(
 
 std::unique_ptr<std::unordered_set<std::string>> LoadCaptivePortalCertHashes(
     const chrome_browser_ssl::SSLErrorAssistantConfig& proto) {
-  auto hashes = base::MakeUnique<std::unordered_set<std::string>>();
+  auto hashes = std::make_unique<std::unordered_set<std::string>>();
   for (const chrome_browser_ssl::CaptivePortalCert& cert :
        proto.captive_portal_cert()) {
     hashes.get()->insert(cert.sha256_hash());
@@ -80,7 +81,7 @@ std::unique_ptr<std::unordered_set<std::string>> LoadCaptivePortalCertHashes(
 
 std::unique_ptr<std::vector<MITMSoftwareType>> LoadMITMSoftwareList(
     const chrome_browser_ssl::SSLErrorAssistantConfig& proto) {
-  auto mitm_software_list = base::MakeUnique<std::vector<MITMSoftwareType>>();
+  auto mitm_software_list = std::make_unique<std::vector<MITMSoftwareType>>();
 
   for (const chrome_browser_ssl::MITMSoftware& proto_entry :
        proto.mitm_software()) {
@@ -106,7 +107,7 @@ std::unique_ptr<std::vector<DynamicInterstitialInfo>>
 LoadDynamicInterstitialList(
     const chrome_browser_ssl::SSLErrorAssistantConfig& proto) {
   auto dynamic_interstitial_list =
-      base::MakeUnique<std::vector<DynamicInterstitialInfo>>();
+      std::make_unique<std::vector<DynamicInterstitialInfo>>();
   for (const chrome_browser_ssl::DynamicInterstitial& entry :
        proto.dynamic_interstitial()) {
     dynamic_interstitial_list.get()->push_back(DynamicInterstitialInfo(
@@ -120,7 +121,7 @@ LoadDynamicInterstitialList(
 // Reads the SSL error assistant configuration from the resource bundle.
 std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
 ReadErrorAssistantProtoFromResourceBundle() {
-  auto proto = base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  auto proto = std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(proto);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

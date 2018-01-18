@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -1441,7 +1442,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 
 // Visits a page in an app window with https error and proceed:
 IN_PROC_BROWSER_TEST_P(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
-  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   ASSERT_TRUE(https_server_expired_.Start());
@@ -5583,7 +5584,7 @@ std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
 MakeCaptivePortalConfig(int version_id,
                         const std::set<std::string>& spki_hashes) {
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(version_id);
   for (const std::string& hash : spki_hashes) {
     config_proto->add_captive_portal_cert()->set_sha256_hash(hash);
@@ -6075,7 +6076,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
   // certificate as a MITM software certificate.
   void SetUpMITMSoftwareCertList(uint32_t version_id) {
     auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+        std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     config_proto->set_version_id(version_id);
 
     chrome_browser_ssl::MITMSoftware* mitm_software =
@@ -6255,7 +6256,7 @@ IN_PROC_BROWSER_TEST_P(
   // Set up an error assistant proto with a list of MITM software regexed that
   // the certificate issued by our server won't match.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name(kTestMITMSoftwareName);
@@ -6301,7 +6302,7 @@ IN_PROC_BROWSER_TEST_P(
   // Set up an error assistant proto with a list of MITM software regexed that
   // the certificate issued by our server won't match.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name(kTestMITMSoftwareName);
@@ -6345,7 +6346,7 @@ IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest,
   // Set up an error assistant proto with a list of MITM software regexes that
   // the certificate issued by our server won't match.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name("Non-Matching MITM Software");
@@ -6708,7 +6709,7 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
 
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
-    require_ct_delegate_ = base::MakeUnique<NoRequireCTDelegate>();
+    require_ct_delegate_ = std::make_unique<NoRequireCTDelegate>();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(
@@ -6858,7 +6859,7 @@ namespace {
 std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
 MakeDynamicInterstitial(const std::vector<DynamicInterstitialInfo>& list) {
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   for (const DynamicInterstitialInfo& info : list) {
