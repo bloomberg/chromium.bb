@@ -128,7 +128,6 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/message_center/message_center.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
