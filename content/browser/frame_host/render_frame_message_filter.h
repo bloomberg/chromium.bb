@@ -13,10 +13,10 @@
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)

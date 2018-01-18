@@ -50,7 +50,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser()->profile());
 
-  mojom::NetworkContext* old_network_context = partition->GetNetworkContext();
+  network::mojom::NetworkContext* old_network_context =
+      partition->GetNetworkContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(old_network_context, GetTestURL()));
 
   // Crash the NetworkService process. Existing interfaces should receive error
@@ -77,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   SystemNetworkContextManager* system_network_context_manager =
       g_browser_process->system_network_context_manager();
 
-  mojom::NetworkContext* old_network_context =
+  network::mojom::NetworkContext* old_network_context =
       system_network_context_manager->GetContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(old_network_context, GetTestURL()));
 

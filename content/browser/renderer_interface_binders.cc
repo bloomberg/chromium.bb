@@ -98,7 +98,7 @@ void GetRestrictedCookieManagerForWorker(
 
   StoragePartition* storage_partition =
       render_process_host->GetStoragePartition();
-  mojom::NetworkContext* network_context =
+  network::mojom::NetworkContext* network_context =
       storage_partition->GetNetworkContext();
   uint32_t render_process_id = render_process_host->GetID();
   network_context->GetRestrictedCookieManager(

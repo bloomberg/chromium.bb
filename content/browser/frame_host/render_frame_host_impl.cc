@@ -122,7 +122,6 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -143,6 +142,7 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -3071,7 +3071,7 @@ void GetRestrictedCookieManager(
       render_frame_host_impl->GetProcess()->GetBrowserContext();
   StoragePartition* storage_partition =
       BrowserContext::GetDefaultStoragePartition(browser_context);
-  mojom::NetworkContext* network_context =
+  network::mojom::NetworkContext* network_context =
       storage_partition->GetNetworkContext();
   uint32_t render_process_id = render_frame_host_impl->GetProcess()->GetID();
   uint32_t render_frame_id = render_frame_host_impl->GetRoutingID();

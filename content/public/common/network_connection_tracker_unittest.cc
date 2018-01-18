@@ -128,8 +128,8 @@ class ConnectionTypeGetter {
 class NetworkConnectionTrackerTest : public testing::Test {
  public:
   NetworkConnectionTrackerTest() {
-    mojom::NetworkServicePtr network_service_ptr;
-    mojom::NetworkServiceRequest network_service_request =
+    network::mojom::NetworkServicePtr network_service_ptr;
+    network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
         NetworkService::Create(std::move(network_service_request),
@@ -219,8 +219,8 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
   SetConnectionType(net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
   // Creates a new NetworkService so it initializes a NetworkChangeManager
   // with initial connection type as CONNECTION_3G.
-  mojom::NetworkServicePtr network_service_ptr;
-  mojom::NetworkServiceRequest network_service_request =
+  network::mojom::NetworkServicePtr network_service_ptr;
+  network::mojom::NetworkServiceRequest network_service_request =
       mojo::MakeRequest(&network_service_ptr);
   std::unique_ptr<NetworkService> network_service =
       NetworkService::Create(std::move(network_service_request), nullptr);

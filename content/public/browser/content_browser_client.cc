@@ -579,16 +579,16 @@ void ContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     const GURL& frame_url,
     NonNetworkURLLoaderFactoryMap* factories) {}
 
-mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
+network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return nullptr;
 
-  mojom::NetworkContextPtr network_context;
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   context_params->enable_data_url_support = true;
   context_params->enable_file_url_support = true;
   GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),

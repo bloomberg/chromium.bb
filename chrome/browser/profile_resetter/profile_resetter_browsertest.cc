@@ -55,7 +55,7 @@ class RemoveCookieTester {
 RemoveCookieTester::RemoveCookieTester(Profile* profile)
     : waiting_callback_(false),
       profile_(profile) {
-  content::mojom::NetworkContext* network_context =
+  network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetNetworkContext();
   network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));

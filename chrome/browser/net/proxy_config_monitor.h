@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/proxy/proxy_config_service.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/proxy_config.mojom.h"
 
 namespace net {
@@ -44,7 +44,7 @@ class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
   // whenever the configuration changes. Can be called more than once to inform
   // multiple NetworkContexts of proxy changes.
   void AddToNetworkContextParams(
-      content::mojom::NetworkContextParams* network_context_params);
+      network::mojom::NetworkContextParams* network_context_params);
 
   // Flushes all pending data on the pipe, blocking the current thread until
   // they're received, to allow tests to wait until all pending proxy

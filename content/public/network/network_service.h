@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
-#include "content/public/common/network_service.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace net {
 class NetLog;
@@ -20,7 +20,7 @@ namespace content {
 class URLRequestContextBuilderMojo;
 
 // Allows an in-process NetworkService to be set up.
-class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
+class CONTENT_EXPORT NetworkService : public network::mojom::NetworkService {
  public:
   // Creates a NetworkService instance on the current thread, optionally using
   // the passed-in NetLog. Does not take ownership of |net_log|. Must be
@@ -29,7 +29,7 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   // TODO(https://crbug.com/767450): Make it so NetworkService can always create
   // its own NetLog, instead of sharing one.
   static std::unique_ptr<NetworkService> Create(
-      mojom::NetworkServiceRequest request,
+      network::mojom::NetworkServiceRequest request,
       net::NetLog* net_log = nullptr);
 
   // Can be used to seed a NetworkContext with a consumer-configured
@@ -42,10 +42,10 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   // This method is intended to ease the transition to an out-of-process
   // NetworkService, and will be removed once that ships. It should only be
   // called if the network service is disabled.
-  virtual std::unique_ptr<mojom::NetworkContext>
+  virtual std::unique_ptr<network::mojom::NetworkContext>
   CreateNetworkContextWithBuilder(
-      mojom::NetworkContextRequest request,
-      mojom::NetworkContextParamsPtr params,
+      network::mojom::NetworkContextRequest request,
+      network::mojom::NetworkContextParamsPtr params,
       std::unique_ptr<URLRequestContextBuilderMojo> builder,
       net::URLRequestContext** url_request_context) = 0;
 

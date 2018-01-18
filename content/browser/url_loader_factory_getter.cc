@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/public/common/network_service.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
 

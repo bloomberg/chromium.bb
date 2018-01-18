@@ -29,9 +29,9 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -1080,7 +1080,7 @@ bool IsNetworkServiceRunningInProcess();
 void SimulateNetworkServiceCrash();
 
 // Load the given |url| with |network_context| and return the |net::Error| code.
-int LoadBasicRequest(mojom::NetworkContext* network_context,
+int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id = 0,
                      int render_frame_id = 0);

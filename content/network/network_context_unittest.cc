@@ -24,7 +24,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -44,6 +43,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -54,8 +54,9 @@ namespace content {
 
 namespace {
 
-mojom::NetworkContextParamsPtr CreateContextParams() {
-  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
+network::mojom::NetworkContextParamsPtr CreateContextParams() {
+  network::mojom::NetworkContextParamsPtr params =
+      network::mojom::NetworkContextParams::New();
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
   params->initial_proxy_config = net::ProxyConfig::CreateDirect();
@@ -71,7 +72,7 @@ class NetworkContextTest : public testing::Test {
   ~NetworkContextTest() override {}
 
   std::unique_ptr<NetworkContext> CreateContextWithParams(
-      mojom::NetworkContextParamsPtr context_params) {
+      network::mojom::NetworkContextParamsPtr context_params) {
     return std::make_unique<NetworkContext>(
         network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
         std::move(context_params));
@@ -98,7 +99,7 @@ class NetworkContextTest : public testing::Test {
     return net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
   }
 
-  mojom::NetworkService* network_service() const {
+  network::mojom::NetworkService* network_service() const {
     return network_service_.get();
   }
 
@@ -109,7 +110,7 @@ class NetworkContextTest : public testing::Test {
   // since destroying this before the NetworkContext itself triggers deletion of
   // the NetworkContext. These tests are probably fine anyways, since the
   // message loop must be spun for that to happen.
-  mojom::NetworkContextPtr network_context_ptr_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
 };
 
 TEST_F(NetworkContextTest, DisableQuic) {
@@ -155,8 +156,8 @@ TEST_F(NetworkContextTest, DisableQuic) {
 
 TEST_F(NetworkContextTest, EnableBrotli) {
   for (bool enable_brotli : {true, false}) {
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
+    network::mojom::NetworkContextParamsPtr context_params =
+        network::mojom::NetworkContextParams::New();
     context_params->enable_brotli = enable_brotli;
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
@@ -167,8 +168,8 @@ TEST_F(NetworkContextTest, EnableBrotli) {
 
 TEST_F(NetworkContextTest, ContextName) {
   const char kContextName[] = "Jim";
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   context_params->context_name = std::string(kContextName);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -177,7 +178,8 @@ TEST_F(NetworkContextTest, ContextName) {
 
 TEST_F(NetworkContextTest, QuicUserAgentId) {
   const char kQuicUserAgentId[] = "007";
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->quic_user_agent_id = kQuicUserAgentId;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -189,7 +191,8 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
 }
 
 TEST_F(NetworkContextTest, DisableDataUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_data_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -199,7 +202,8 @@ TEST_F(NetworkContextTest, DisableDataUrlSupport) {
 }
 
 TEST_F(NetworkContextTest, EnableDataUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_data_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -209,7 +213,8 @@ TEST_F(NetworkContextTest, EnableDataUrlSupport) {
 }
 
 TEST_F(NetworkContextTest, DisableFileUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_file_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -220,7 +225,8 @@ TEST_F(NetworkContextTest, DisableFileUrlSupport) {
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
 TEST_F(NetworkContextTest, EnableFileUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_file_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -231,7 +237,8 @@ TEST_F(NetworkContextTest, EnableFileUrlSupport) {
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
 
 TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_ftp_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -242,7 +249,8 @@ TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 TEST_F(NetworkContextTest, EnableFtpUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->enable_ftp_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -253,7 +261,8 @@ TEST_F(NetworkContextTest, EnableFtpUrlSupport) {
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 TEST_F(NetworkContextTest, Http09Disabled) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_09_on_non_default_ports_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -265,7 +274,8 @@ TEST_F(NetworkContextTest, Http09Disabled) {
 }
 
 TEST_F(NetworkContextTest, Http09Enabled) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_09_on_non_default_ports_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -317,7 +327,8 @@ TEST_F(NetworkContextTest, FixedHttpPort) {
 }
 
 TEST_F(NetworkContextTest, NoCache) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_cache_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -327,7 +338,8 @@ TEST_F(NetworkContextTest, NoCache) {
 }
 
 TEST_F(NetworkContextTest, MemoryCache) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_cache_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -346,7 +358,8 @@ TEST_F(NetworkContextTest, MemoryCache) {
 }
 
 TEST_F(NetworkContextTest, DiskCache) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_cache_enabled = true;
 
   base::ScopedTempDir temp_dir;
@@ -377,7 +390,8 @@ TEST_F(NetworkContextTest, DiskCache) {
 TEST_F(NetworkContextTest, SimpleCache) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseSimpleCacheBackend, "on");
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->http_cache_enabled = true;
 
   base::ScopedTempDir temp_dir;
@@ -412,8 +426,8 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
 
   // Create a context with on-disk storage of HTTP server properties.
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   context_params->http_server_properties_path = file_path;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -434,7 +448,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   scoped_task_environment_.RunUntilIdle();
 
   // Create a new NetworkContext using the same path for HTTP server properties.
-  context_params = mojom::NetworkContextParams::New();
+  context_params = network::mojom::NetworkContextParams::New();
   context_params->http_server_properties_path = file_path;
   network_context = CreateContextWithParams(std::move(context_params));
 
@@ -468,7 +482,7 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
 
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(network::mojom::NetworkContextParams::New());
 
   EXPECT_FALSE(network_context->url_request_context()
                    ->http_server_properties()
@@ -504,7 +518,7 @@ void GetCookieListCallback(base::RunLoop* run_loop,
 
 TEST_F(NetworkContextTest, CookieManager) {
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(network::mojom::NetworkContextParams::New());
 
   network::mojom::CookieManagerPtr cookie_manager_ptr;
   network::mojom::CookieManagerRequest cookie_manager_request(
@@ -555,7 +569,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
   // Try each proxy config as the initial config, to make sure setting the
   // initial config works.
   for (const auto& initial_proxy_config : proxy_configs) {
-    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+    network::mojom::NetworkContextParamsPtr context_params =
+        CreateContextParams();
     context_params->initial_proxy_config = initial_proxy_config;
     network::mojom::ProxyConfigClientPtr config_client;
     context_params->proxy_config_client_request =
@@ -588,7 +603,8 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   net::ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");
 
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->initial_proxy_config = proxy_config;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -603,7 +619,8 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
 }
 
 TEST_F(NetworkContextTest, NoInitialProxyConfig) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  network::mojom::NetworkContextParamsPtr context_params =
+      CreateContextParams();
   context_params->initial_proxy_config.reset();
   network::mojom::ProxyConfigClientPtr config_client;
   context_params->proxy_config_client_request =

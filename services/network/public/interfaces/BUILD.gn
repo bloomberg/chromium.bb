@@ -41,6 +41,8 @@ mojom("interfaces") {
     "mutable_network_traffic_annotation_tag.mojom",
     "mutable_partial_network_traffic_annotation_tag.mojom",
     "network_change_manager.mojom",
+    "network_service.mojom",
+    "network_service_test.mojom",
     "network_types.mojom",
     "proxy_config.mojom",
     "request_context_frame_type.mojom",
@@ -52,6 +54,7 @@ mojom("interfaces") {
   public_deps = [
     ":data_pipe_interface",
     "//mojo/common:common_custom_types",
+    "//services/proxy_resolver/public/interfaces",
     "//url/mojo:url_mojom_gurl",
   ]
 

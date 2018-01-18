@@ -22,14 +22,6 @@ struct CORSErrorStatus;
 [Native]
 struct URLLoaderCompletionStatus;
 
-// TODO(jam): move these two Native blocks to network_service_test.mojom once it
-// moves to services/network.
-[Native]
-struct CertVerifyResult;
-
-[Native]
-struct X509Certificate;
-
 // This enum corresponds to net::RequestPriority. See its comments for details.
 enum RequestPriority {
   kThrottled = 0,

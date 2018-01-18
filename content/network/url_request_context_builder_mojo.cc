@@ -30,7 +30,7 @@ void URLRequestContextBuilderMojo::SetMojoProxyResolverFactory(
 }
 
 URLRequestContextOwner URLRequestContextBuilderMojo::Create(
-    mojom::NetworkContextParams* params,
+    network::mojom::NetworkContextParams* params,
     bool quic_disabled,
     net::NetLog* net_log) {
   return NetworkContext::ApplyContextParamsToBuilder(this, params,

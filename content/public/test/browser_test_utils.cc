@@ -71,8 +71,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service.mojom.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -95,6 +93,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2402,7 +2402,7 @@ void SimulateNetworkServiceCrash() {
   CHECK(base::FeatureList::IsEnabled(features::kNetworkService));
   CHECK(!IsNetworkServiceRunningInProcess())
       << "Can't crash the network service if it's running in-process!";
-  mojom::NetworkServiceTestPtr network_service_test;
+  network::mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
 
@@ -2416,7 +2416,7 @@ void SimulateNetworkServiceCrash() {
   FlushNetworkServiceInstanceForTesting();
 }
 
-int LoadBasicRequest(mojom::NetworkContext* network_context,
+int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id,
                      int render_frame_id) {

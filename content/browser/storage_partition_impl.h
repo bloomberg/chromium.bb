@@ -34,10 +34,10 @@
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if !defined(OS_ANDROID)
@@ -78,7 +78,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   base::FilePath GetPath() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
-  mojom::NetworkContext* GetNetworkContext() override;
+  network::mojom::NetworkContext* GetNetworkContext() override;
   network::mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess()
       override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
@@ -302,7 +302,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // service. When it's disabled, the underlying NetworkContext may either be
   // provided by the embedder, or is created by the StoragePartition and owned
   // by |network_context_owner_|.
-  mojom::NetworkContextPtr network_context_;
+  network::mojom::NetworkContextPtr network_context_;
 
   // URLLoaderFactory/CookieManager for use in the browser process only.
   // See the method comment for

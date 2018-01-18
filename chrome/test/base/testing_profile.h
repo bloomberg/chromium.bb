@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "content/public/common/network_service.mojom.h"
 #include "extensions/features/features.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -321,7 +321,7 @@ class TestingProfile : public Profile {
   bool IsGuestSession() const override;
   void SetExitType(ExitType exit_type) override {}
   ExitType GetLastSessionExitType() override;
-  content::mojom::NetworkContextPtr CreateMainNetworkContext() override;
+  network::mojom::NetworkContextPtr CreateMainNetworkContext() override;
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override {}
   void OnLogin() override {}

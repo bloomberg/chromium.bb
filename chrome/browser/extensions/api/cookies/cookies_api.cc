@@ -27,13 +27,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/network_service.mojom.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 using content::BrowserThread;
 

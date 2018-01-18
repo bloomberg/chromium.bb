@@ -29,7 +29,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -47,6 +46,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,7 +133,7 @@ class NetworkContextConfigurationBrowserTest
     return nullptr;
   }
 
-  content::mojom::NetworkContext* network_context() const {
+  network::mojom::NetworkContext* network_context() const {
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
         return g_browser_process->system_network_context_manager()

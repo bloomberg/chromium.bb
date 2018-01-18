@@ -2861,7 +2861,7 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
   return g_browser_process->rappor_service();
 }
 
-content::mojom::NetworkContextPtr
+network::mojom::NetworkContextPtr
 ChromeContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

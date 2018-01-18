@@ -18,10 +18,10 @@ namespace content {
 
 namespace {
 
-mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
+network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 NetworkServiceImpl* g_network_service;
 
-void CreateNetworkServiceOnIO(mojom::NetworkServiceRequest request) {
+void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
   if (g_network_service) {
     // GetNetworkServiceImpl() was already called and created the object, so
     // just bind it.
@@ -35,11 +35,11 @@ void CreateNetworkServiceOnIO(mojom::NetworkServiceRequest request) {
 
 }  // namespace
 
-mojom::NetworkService* GetNetworkService() {
+network::mojom::NetworkService* GetNetworkService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!g_network_service_ptr)
-    g_network_service_ptr = new mojom::NetworkServicePtr;
+    g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
@@ -54,7 +54,7 @@ mojom::NetworkService* GetNetworkService() {
                          mojo::MakeRequest(g_network_service_ptr)));
     }
 
-    mojom::NetworkServiceClientPtr client_ptr;
+    network::mojom::NetworkServiceClientPtr client_ptr;
     delete g_client;  // In case we're recreating the network service.
     g_client = new NetworkServiceClient(mojo::MakeRequest(&client_ptr));
     (*g_network_service_ptr)->SetClient(std::move(client_ptr));

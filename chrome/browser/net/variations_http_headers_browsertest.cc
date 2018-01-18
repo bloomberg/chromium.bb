@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromNetworkService) {
   content::StoragePartition* partition =
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
-  content::mojom::NetworkContext* network_context =
+  network::mojom::NetworkContext* network_context =
       partition->GetNetworkContext();
   EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context,
                                                GetGoogleRedirectUrl1()));

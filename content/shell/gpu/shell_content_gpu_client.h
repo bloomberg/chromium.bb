@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/gpu/content_gpu_client.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 
 namespace content {
 

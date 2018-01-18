@@ -254,7 +254,7 @@ bool Profile::ShouldPersistSessionCookies() {
   return false;
 }
 
-content::mojom::NetworkContextPtr Profile::CreateMainNetworkContext() {
+network::mojom::NetworkContextPtr Profile::CreateMainNetworkContext() {
   return ProfileNetworkContextServiceFactory::GetForContext(this)
       ->CreateMainNetworkContext();
 }

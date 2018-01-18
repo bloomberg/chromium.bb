@@ -51,7 +51,7 @@ void DisableQuicOnIOThread(
 base::LazyInstance<SystemNetworkContextManager>::Leaky
     g_system_network_context_manager = LAZY_INSTANCE_INITIALIZER;
 
-content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
+network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     // SetUp should already have been called.
     DCHECK(io_thread_network_context_);
@@ -60,7 +60,7 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
 
   if (!network_service_network_context_ ||
       network_service_network_context_.encountered_error()) {
-    content::mojom::NetworkService* network_service =
+    network::mojom::NetworkService* network_service =
         content::GetNetworkService();
     if (!is_quic_allowed_)
       network_service->DisableQuic();
@@ -81,8 +81,8 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
 }
 
 void SystemNetworkContextManager::SetUp(
-    content::mojom::NetworkContextRequest* network_context_request,
-    content::mojom::NetworkContextParamsPtr* network_context_params,
+    network::mojom::NetworkContextRequest* network_context_request,
+    network::mojom::NetworkContextParamsPtr* network_context_params,
     bool* is_quic_allowed) {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
@@ -142,10 +142,10 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
     url_loader_factory_.FlushForTesting();
 }
 
-content::mojom::NetworkContextParamsPtr
+network::mojom::NetworkContextParamsPtr
 SystemNetworkContextManager::CreateNetworkContextParams() {
   // TODO(mmenke): Set up parameters here (in memory cookie store, etc).
-  content::mojom::NetworkContextParamsPtr network_context_params =
+  network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
 
   network_context_params->context_name = std::string("system");

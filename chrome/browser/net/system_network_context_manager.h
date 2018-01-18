@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
-#include "content/public/common/network_service.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 class ProxyConfigMonitor;
 
@@ -44,14 +44,14 @@ class SystemNetworkContextManager {
   // Must be called before the system NetworkContext is first used.
   //
   // |is_quic_allowed| is set to true if policy allows QUIC to be enabled.
-  void SetUp(content::mojom::NetworkContextRequest* network_context_request,
-             content::mojom::NetworkContextParamsPtr* network_context_params,
+  void SetUp(network::mojom::NetworkContextRequest* network_context_request,
+             network::mojom::NetworkContextParamsPtr* network_context_params,
              bool* is_quic_allowed);
 
   // Returns the System NetworkContext. May only be called after SetUp(). Does
   // any initialization of the NetworkService that may be needed when first
   // called.
-  content::mojom::NetworkContext* GetContext();
+  network::mojom::NetworkContext* GetContext();
 
   // Returns a URLLoaderFactory owned by the SystemNetworkContextManager that is
   // backed by the SystemNetworkContext. Allows sharing of the URLLoaderFactory.
@@ -72,18 +72,18 @@ class SystemNetworkContextManager {
  private:
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
-  content::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
   ProxyConfigMonitor proxy_config_monitor_;
 
   // NetworkContext using the network service, if the network service is
   // enabled. nullptr, otherwise.
-  content::mojom::NetworkContextPtr network_service_network_context_;
+  network::mojom::NetworkContextPtr network_service_network_context_;
 
   // This is a NetworkContext that wraps the IOThread's SystemURLRequestContext.
   // Always initialized in SetUp, but it's only returned by Context() when the
   // network service is disabled.
-  content::mojom::NetworkContextPtr io_thread_network_context_;
+  network::mojom::NetworkContextPtr io_thread_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
   // consumers don't all need to create their own factory.

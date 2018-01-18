@@ -42,7 +42,7 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
 
-content::mojom::NetworkContextPtr
+network::mojom::NetworkContextPtr
 ProfileNetworkContextService::CreateMainNetworkContext() {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     // |profile_io_data_main_network_context_| may be initialized if
@@ -54,15 +54,15 @@ ProfileNetworkContextService::CreateMainNetworkContext() {
     return std::move(profile_io_data_main_network_context_);
   }
 
-  content::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextPtr network_context;
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), CreateMainNetworkContextParams());
   return network_context;
 }
 
 void ProfileNetworkContextService::SetUpProfileIODataMainContext(
-    content::mojom::NetworkContextRequest* network_context_request,
-    content::mojom::NetworkContextParamsPtr* network_context_params) {
+    network::mojom::NetworkContextRequest* network_context_request,
+    network::mojom::NetworkContextParamsPtr* network_context_params) {
   DCHECK(network_context_request);
   DCHECK(network_context_params);
 
@@ -82,7 +82,7 @@ void ProfileNetworkContextService::SetUpProfileIODataMainContext(
   // Just use default if network service is enabled, to avoid the legacy
   // in-process URLRequestContext from fighting with the NetworkService over
   // ownership of on-disk files.
-  *network_context_params = content::mojom::NetworkContextParams::New();
+  *network_context_params = network::mojom::NetworkContextParams::New();
 }
 
 void ProfileNetworkContextService::RegisterProfilePrefs(
@@ -105,10 +105,10 @@ void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
 
-content::mojom::NetworkContextParamsPtr
+network::mojom::NetworkContextParamsPtr
 ProfileNetworkContextService::CreateMainNetworkContextParams() {
   // TODO(mmenke): Set up parameters here.
-  content::mojom::NetworkContextParamsPtr network_context_params =
+  network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
 
   network_context_params->context_name = std::string("main");

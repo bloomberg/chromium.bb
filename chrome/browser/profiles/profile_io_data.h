@@ -28,7 +28,6 @@
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/network/url_request_context_owner.h"
 #include "extensions/features/features.h"
 #include "net/cookies/cookie_store.h"
@@ -37,6 +36,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
@@ -323,8 +323,8 @@ class ProfileIOData {
 
     // Used to configure the main URLRequestContext through the IOThread's
     // in-process network service.
-    content::mojom::NetworkContextRequest main_network_context_request;
-    content::mojom::NetworkContextParamsPtr main_network_context_params;
+    network::mojom::NetworkContextRequest main_network_context_request;
+    network::mojom::NetworkContextParamsPtr main_network_context_params;
 
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
@@ -594,7 +594,7 @@ class ProfileIOData {
 
   // When the network service is enabled, this holds on to a
   // content::NetworkContext class that owns |main_request_context_|.
-  mutable std::unique_ptr<content::mojom::NetworkContext> main_network_context_;
+  mutable std::unique_ptr<network::mojom::NetworkContext> main_network_context_;
   // When the network service is disabled, this owns |system_request_context|.
   mutable content::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;

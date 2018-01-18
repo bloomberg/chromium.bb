@@ -31,7 +31,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -41,6 +40,7 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/platform_window_defaults.h"
@@ -432,7 +432,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
-  std::vector<mojom::RulePtr> mojo_rules;
+  std::vector<network::mojom::RulePtr> mojo_rules;
   for (const auto& rule : rules) {
     // For now, this covers all the rules used in content's tests.
     // TODO(jam: expand this when we try to make browser_tests and
@@ -444,7 +444,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
         rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
         !!rule.latency_ms || rule.replacement.empty())
       continue;
-    mojom::RulePtr mojo_rule = mojom::Rule::New();
+    network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
     mojo_rule->host_pattern = rule.host_pattern;
     mojo_rule->replacement = rule.replacement;
     mojo_rules.push_back(std::move(mojo_rule));
@@ -453,7 +453,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
   if (mojo_rules.empty())
     return;
 
-  mojom::NetworkServiceTestPtr network_service_test;
+  network::mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;

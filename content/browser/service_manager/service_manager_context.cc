@@ -40,7 +40,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "device/geolocation/geolocation_provider.h"
@@ -56,6 +55,7 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/interfaces/constants.mojom.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
@@ -318,7 +318,7 @@ std::unique_ptr<service_manager::Service> CreateNetworkService() {
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
-      [](content::mojom::NetworkServiceTestRequest request) {}));
+      [](network::mojom::NetworkServiceTestRequest request) {}));
   return std::make_unique<NetworkServiceImpl>(std::move(registry));
 }
 

@@ -10,7 +10,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -18,15 +17,16 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/shell/browser/shell.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
 
 namespace {
 
-mojom::NetworkContextPtr CreateNetworkContext() {
-  mojom::NetworkContextPtr network_context;
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+network::mojom::NetworkContextPtr CreateNetworkContext() {
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context),
                                             std::move(context_params));
   return network_context;
@@ -96,7 +96,7 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        NetworkServiceProcessRecovery) {
-  mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context.get(), GetTestURL()));
   EXPECT_TRUE(network_context.is_bound());
   EXPECT_FALSE(network_context.encountered_error());
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
             LoadBasicRequest(network_context.get(), GetTestURL()));
 
   // NetworkService should restart automatically and return valid interface.
-  mojom::NetworkContextPtr network_context2 = CreateNetworkContext();
+  network::mojom::NetworkContextPtr network_context2 = CreateNetworkContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context2.get(), GetTestURL()));
   EXPECT_TRUE(network_context2.is_bound());
   EXPECT_FALSE(network_context2.encountered_error());
@@ -128,7 +128,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
-  mojom::NetworkContext* old_network_context = partition->GetNetworkContext();
+  network::mojom::NetworkContext* old_network_context =
+      partition->GetNetworkContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(old_network_context, GetTestURL()));
 
   // Crash the NetworkService process. Existing interfaces should receive error

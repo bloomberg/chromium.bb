@@ -75,7 +75,7 @@ bool IsQuicEnabled(
   return is_quic_enabled;
 }
 
-bool IsQuicEnabled(content::mojom::NetworkContext* network_context) {
+bool IsQuicEnabled(network::mojom::NetworkContext* network_context) {
   GURL url =
       GURL(std::string("https://") + grpc_support::kTestServerHost + ":" +
            base::NumberToString(grpc_support::GetQuicTestServerPort()) +
