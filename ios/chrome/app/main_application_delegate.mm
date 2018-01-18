@@ -7,7 +7,6 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/app/application_delegate/background_activity.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
@@ -169,11 +168,10 @@
     completionHandler(UIBackgroundFetchResultNewData);
     return;
   }
-
-  [BackgroundActivity application:application
-      performFetchWithCompletionHandler:completionHandler
-                        metricsMediator:_metricsMediator
-                        browserLauncher:_browserLauncher];
+  // This initialization to BACKGROUND stage may not be necessary, but is
+  // preserved in case somewhere there is a dependency on this.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_BACKGROUND];
+  completionHandler(UIBackgroundFetchResultFailed);
 }
 
 - (void)application:(UIApplication*)application
@@ -181,10 +179,10 @@
                       completionHandler:(void (^)(void))completionHandler {
   if ([_appState isInSafeMode])
     return;
-
-  [BackgroundActivity handleEventsForBackgroundURLSession:identifier
-                                        completionHandler:completionHandler
-                                          browserLauncher:_browserLauncher];
+  // This initialization to BACKGROUND stage may not be necessary, but is
+  // preserved in case somewhere there is a dependency on this.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_BACKGROUND];
+  completionHandler();
 }
 
 #pragma mark Continuing User Activity and Handling Quick Actions

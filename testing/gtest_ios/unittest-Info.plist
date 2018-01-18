@@ -169,10 +169,6 @@
 			<string>org.appextension.find-login-action</string>
 		</dict>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-	</array>
 	<key>SSOAuthURLScheme</key>
 	<string>${IOS_BUNDLE_ID_PREFIX}.sso.${PRODUCT_NAME:rfc1034identifier}</string>
 </dict>
