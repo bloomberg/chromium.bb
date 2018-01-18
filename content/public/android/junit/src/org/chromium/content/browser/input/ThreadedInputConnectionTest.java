@@ -47,7 +47,8 @@ import java.util.concurrent.Callable;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ThreadedInputConnectionTest {
-    @Mock ImeAdapter mImeAdapter;
+    @Mock
+    ImeAdapterImpl mImeAdapter;
 
     ThreadedInputConnection mConnection;
     InOrder mInOrder;
@@ -59,7 +60,7 @@ public class ThreadedInputConnectionTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        mImeAdapter = Mockito.mock(ImeAdapter.class);
+        mImeAdapter = Mockito.mock(ImeAdapterImpl.class);
         mInOrder = inOrder(mImeAdapter);
 
         // Mocks required to create a ThreadedInputConnection object

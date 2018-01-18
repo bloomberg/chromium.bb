@@ -70,6 +70,7 @@ import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.JavascriptInjector;
@@ -888,13 +889,7 @@ public class AwContents implements SmartClipProvider {
 
         // Listen for dpad events from IMEs (e.g. Samsung Cursor Control) so we know to enable
         // spatial navigation mode to allow these events to move focus out of the WebView.
-        contentViewCore.addImeEventObserver(new ImeEventObserver() {
-            @Override
-            public void onImeEvent() {}
-
-            @Override
-            public void onNodeAttributeUpdated(boolean editable, boolean password) {}
-
+        ImeAdapter.fromWebContents(webContents).addEventObserver(new ImeEventObserver() {
             @Override
             public void onBeforeSendKeyEvent(KeyEvent event) {
                 if (AwContents.isDpadEvent(event)) {
@@ -3313,8 +3308,9 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-            return isDestroyedOrNoOperation(NO_WARN) ? null
-                    : mContentViewCore.onCreateInputConnection(outAttrs);
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? null
+                    : ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
         }
 
         @Override

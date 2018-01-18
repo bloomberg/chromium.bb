@@ -38,6 +38,9 @@ import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.picker.InputDialogContainer;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewUtils;
@@ -50,8 +53,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapts and plumbs android IME service onto the chrome text input API.
- * ImeAdapter provides an interface in both ways native <-> java:
+ * Implementation of the interface {@link ImeAdapter} providing an interface
+ * in both ways native <-> java:
+ *
  * 1. InputConnectionAdapter notifies native code of text composition state and
  *    dispatch key events from java -> WebKit.
  * 2. Native ImeAdapter notifies java side to clear composition text.
@@ -71,13 +75,13 @@ import java.util.List;
  * lifetime of the object.
  */
 @JNINamespace("content")
-public class ImeAdapter {
+public class ImeAdapterImpl implements ImeAdapter {
     private static final String TAG = "cr_Ime";
     private static final boolean DEBUG_LOGS = false;
 
     private static final float SUGGESTION_HIGHLIGHT_BACKGROUND_TRANSPARENCY = 0.4f;
 
-    public static final int COMPOSITION_KEY_CODE = 229;
+    public static final int COMPOSITION_KEY_CODE = ImeAdapter.COMPOSITION_KEY_CODE;
     private static final int IME_FLAG_NO_PERSONALIZED_LEARNING = 0x1000000;
 
     // Color used by AOSP Android for a SuggestionSpan with FLAG_EASY_CORRECT set
@@ -99,7 +103,7 @@ public class ImeAdapter {
     // InputMethodManager on appropriate timing, depending on how IME requested the information
     // via InputConnection. The update request is per InputConnection, hence for each time it is
     // re-created, the monitoring status will be reset.
-    private final CursorAnchorInfoController mCursorAnchorInfoController;
+    private CursorAnchorInfoController mCursorAnchorInfoController;
 
     private final List<ImeEventObserver> mEventObservers = new ArrayList<>();
 
@@ -126,6 +130,9 @@ public class ImeAdapter {
     // True if ImeAdapter is connected to render process.
     private boolean mIsConnected;
 
+    // True if the instance is properly initialized with |init|.
+    private boolean mInitialized;
+
     /**
      * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
      * editable node at the right timing, which is after input method window shows up.
@@ -137,31 +144,71 @@ public class ImeAdapter {
         // showSoftInput(), is in the control of Android's input method framework and IME app,
         // so we use a weakref to avoid tying ImeAdapter's lifetime to that of ResultReceiver
         // object.
-        private final WeakReference<ImeAdapter> mImeAdapter;
+        private final WeakReference<ImeAdapterImpl> mImeAdapter;
 
-        public ShowKeyboardResultReceiver(ImeAdapter imeAdapter, Handler handler) {
+        public ShowKeyboardResultReceiver(ImeAdapterImpl imeAdapter, Handler handler) {
             super(handler);
             mImeAdapter = new WeakReference<>(imeAdapter);
         }
 
         @Override
         public void onReceiveResult(int resultCode, Bundle resultData) {
-            ImeAdapter imeAdapter = mImeAdapter.get();
+            ImeAdapterImpl imeAdapter = mImeAdapter.get();
             if (imeAdapter == null) return;
             imeAdapter.onShowKeyboardReceiveResult(resultCode);
         }
     }
 
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<ImeAdapterImpl> INSTANCE = ImeAdapterImpl::new;
+    }
+
     /**
+     * Create {@link ImeAdapterImpl} instance.
      * @param webContents WebContents instance with which this ImeAdapter is associated.
      * @param containerView {@link View} instance which input events are posted on.
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
      */
-    public ImeAdapter(
+    public static ImeAdapterImpl create(
             WebContents webContents, View containerView, InputMethodManagerWrapper wrapper) {
+        ImeAdapterImpl imeAdapter = WebContentsUserData.fromWebContents(
+                webContents, ImeAdapterImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert imeAdapter != null && !imeAdapter.initialized();
+        imeAdapter.init(containerView, wrapper);
+        return imeAdapter;
+    }
+
+    private boolean initialized() {
+        return mInitialized;
+    }
+
+    /**
+     * Get {@link ImeAdapter} object used for the give WebContents.
+     * {@link #create()} should precede any calls to this.
+     * @param webContents {@link WebContents} object.
+     * @return {@link ImeAdapter} object. {@code null} if not available because
+     *         {@link #create()} is not called yet.
+     */
+    public static ImeAdapterImpl fromWebContents(WebContents webContents) {
+        return WebContentsUserData.fromWebContents(webContents, ImeAdapterImpl.class, null);
+    }
+
+    /**
+     * Create {@link ImeAdapterImpl} instance.
+     * @param webContents WebContents instance.
+     */
+    public ImeAdapterImpl(WebContents webContents) {
         mWebContents = webContents;
-        mContainerView = containerView;
+    }
+
+    /**
+     * @param view {@link View} instance which input events are posted on.
+     * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
+     *                InputMethodManager.
+     */
+    private void init(View view, InputMethodManagerWrapper wrapper) {
+        mContainerView = view;
         mInputMethodManagerWrapper = wrapper;
 
         // Deep copy newConfig so that we can notice the difference.
@@ -169,8 +216,8 @@ public class ImeAdapter {
 
         // CursorAnchroInfo is supported only after L.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mCursorAnchorInfoController = CursorAnchorInfoController.create(wrapper,
-                    new CursorAnchorInfoController.ComposingTextDelegate() {
+            mCursorAnchorInfoController = CursorAnchorInfoController.create(
+                    wrapper, new CursorAnchorInfoController.ComposingTextDelegate() {
                         @Override
                         public CharSequence getText() {
                             return mLastText;
@@ -195,7 +242,19 @@ public class ImeAdapter {
         } else {
             mCursorAnchorInfoController = null;
         }
-        mNativeImeAdapterAndroid = nativeInit(webContents);
+        mNativeImeAdapterAndroid = nativeInit(mWebContents);
+        mInitialized = true;
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        boolean allowKeyboardLearning = mWebContents != null && !mWebContents.isIncognito();
+        return onCreateInputConnection(outAttrs, allowKeyboardLearning);
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return isTextInputType(mTextInputType);
     }
 
     /**
@@ -206,6 +265,7 @@ public class ImeAdapter {
         mContainerView = containerView;
     }
 
+    @Override
     public void addEventObserver(ImeEventObserver eventObserver) {
         mEventObservers.add(eventObserver);
     }
@@ -268,12 +328,7 @@ public class ImeAdapter {
         mInputConnection = inputConnection;
     }
 
-    /**
-     * Overrides the InputMethodManagerWrapper that ImeAdapter uses to make calls to
-     * InputMethodManager.
-     * @param immw InputMethodManagerWrapper that should be used to call InputMethodManager.
-     */
-    @VisibleForTesting
+    @Override
     public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
         if (mCursorAnchorInfoController != null) {
@@ -295,7 +350,8 @@ public class ImeAdapter {
      * Get the current input connection for testing purposes.
      */
     @VisibleForTesting
-    public ChromiumBaseInputConnection getInputConnectionForTest() {
+    @Override
+    public InputConnection getInputConnectionForTest() {
         return mInputConnection;
     }
 
@@ -461,7 +517,7 @@ public class ImeAdapter {
         }
     }
 
-    @VisibleForTesting
+    @Override
     public ResultReceiver getNewShowKeyboardReceiver() {
         if (mShowKeyboardResultReceiver == null) {
             // Note: the returned object will get leaked by Android framework.
@@ -484,7 +540,7 @@ public class ImeAdapter {
         // Detach input connection by returning null from onCreateInputConnection().
         if (mTextInputType == TextInputType.NONE && mInputConnection != null) {
             ChromiumBaseInputConnection inputConnection = mInputConnection;
-            restartInput();  // resets mInputConnection
+            restartInput(); // resets mInputConnection
             // crbug.com/666982: Restart input may not happen if view is detached from window, but
             // we need to unblock in any case. We want to call this after restartInput() to
             // ensure that there is no additional IME operation in the queue.
@@ -559,17 +615,8 @@ public class ImeAdapter {
         }
     }
 
-    @VisibleForTesting
-    void setInputTypeForTest(int textInputType) {
-        mTextInputType = textInputType;
-    }
-
     private static boolean isTextInputType(int type) {
         return type != TextInputType.NONE && !InputDialogContainer.isDialogInputType(type);
-    }
-
-    public boolean hasTextInputType() {
-        return isTextInputType(mTextInputType);
     }
 
     /**
@@ -694,14 +741,10 @@ public class ImeAdapter {
 
     public void sendSyntheticKeyPress(int keyCode, int flags) {
         long eventTime = SystemClock.uptimeMillis();
-        sendKeyEvent(new KeyEvent(eventTime, eventTime,
-                KeyEvent.ACTION_DOWN, keyCode, 0, 0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                flags));
-        sendKeyEvent(new KeyEvent(eventTime, eventTime,
-                KeyEvent.ACTION_UP, keyCode, 0, 0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                flags));
+        sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, flags));
+        sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, flags));
     }
 
     private void onImeEvent() {
@@ -759,7 +802,7 @@ public class ImeAdapter {
 
         return nativeSendKeyEvent(mNativeImeAdapterAndroid, event, type,
                 getModifiers(event.getMetaState()), event.getEventTime(), event.getKeyCode(),
-                             event.getScanCode(), /*isSystemKey=*/false, event.getUnicodeChar());
+                event.getScanCode(), /*isSystemKey=*/false, event.getUnicodeChar());
     }
 
     /**
@@ -915,8 +958,7 @@ public class ImeAdapter {
         if (!(text instanceof SpannableString)) return;
 
         SpannableString spannableString = ((SpannableString) text);
-        CharacterStyle spans[] =
-                spannableString.getSpans(0, text.length(), CharacterStyle.class);
+        CharacterStyle spans[] = spannableString.getSpans(0, text.length(), CharacterStyle.class);
         for (CharacterStyle span : spans) {
             if (span instanceof BackgroundColorSpan) {
                 nativeAppendBackgroundColorSpan(imeTextSpans, spannableString.getSpanStart(span),
@@ -992,20 +1034,20 @@ public class ImeAdapter {
     private static native void nativeAppendSuggestionSpan(long spanPtr, int start, int end,
             boolean isMisspelling, int underlineColor, int suggestionHighlightColor,
             String[] suggestions);
-    private native void nativeSetComposingText(long nativeImeAdapterAndroid, CharSequence text,
-            String textStr, int newCursorPosition);
+    private native void nativeSetComposingText(
+            long nativeImeAdapterAndroid, CharSequence text, String textStr, int newCursorPosition);
     private native void nativeCommitText(
             long nativeImeAdapterAndroid, CharSequence text, String textStr, int newCursorPosition);
     private native void nativeFinishComposingText(long nativeImeAdapterAndroid);
-    private native void nativeSetEditableSelectionOffsets(long nativeImeAdapterAndroid,
-            int start, int end);
+    private native void nativeSetEditableSelectionOffsets(
+            long nativeImeAdapterAndroid, int start, int end);
     private native void nativeSetComposingRegion(long nativeImeAdapterAndroid, int start, int end);
-    private native void nativeDeleteSurroundingText(long nativeImeAdapterAndroid,
-            int before, int after);
+    private native void nativeDeleteSurroundingText(
+            long nativeImeAdapterAndroid, int before, int after);
     private native void nativeDeleteSurroundingTextInCodePoints(
             long nativeImeAdapterAndroid, int before, int after);
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
-    private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,
-            boolean immediateRequest, boolean monitorRequest);
+    private native void nativeRequestCursorUpdate(
+            long nativeImeAdapterAndroid, boolean immediateRequest, boolean monitorRequest);
     private native void nativeAdvanceFocusInForm(long nativeImeAdapterAndroid, int focusType);
 }

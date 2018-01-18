@@ -28,6 +28,8 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper.InputConnectionProvider;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.ui.base.ime.TextInputType;
@@ -45,7 +47,7 @@ import java.util.concurrent.TimeoutException;
 class ImeActivityTestRule extends ContentShellActivityTestRule {
     private ChromiumBaseInputConnection mConnection;
     private TestInputConnectionFactory mConnectionFactory;
-    private ImeAdapter mImeAdapter;
+    private ImeAdapterImpl mImeAdapter;
 
     static final String INPUT_FORM_HTML = "content/test/data/android/input/input_forms.html";
     static final String PASSWORD_FORM_HTML = "content/test/data/android/input/password_form.html";
@@ -60,7 +62,11 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         mContentViewCore = getContentViewCore();
         mSelectionPopupController =
                 SelectionPopupControllerImpl.fromWebContents(mContentViewCore.getWebContents());
-        mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore) {
+
+        final ImeAdapter imeAdapter = getImeAdapter();
+        InputConnectionProvider provider =
+                TestInputMethodManagerWrapper.defaultInputConnectionProvider(imeAdapter);
+        mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(provider) {
             private boolean mExpectsSelectionOutsideComposition;
 
             @Override
@@ -285,8 +291,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         });
     }
 
-    ImeAdapter getImeAdapter() {
-        return mContentViewCore.getImeAdapterForTest();
+    ImeAdapterImpl getImeAdapter() {
+        return ImeAdapterImpl.fromWebContents(getWebContents());
     }
 
     ChromiumBaseInputConnection getInputConnection() {
@@ -294,7 +300,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
             return ThreadUtils.runOnUiThreadBlocking(new Callable<ChromiumBaseInputConnection>() {
                 @Override
                 public ChromiumBaseInputConnection call() {
-                    return mContentViewCore.getImeAdapterForTest().getInputConnectionForTest();
+                    return (ChromiumBaseInputConnection) getImeAdapter()
+                            .getInputConnectionForTest();
                 }
             });
         } catch (ExecutionException e) {
@@ -571,7 +578,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         }
 
         @Override
-        public ChromiumBaseInputConnection initializeAndGet(View view, ImeAdapter imeAdapter,
+        public ChromiumBaseInputConnection initializeAndGet(View view, ImeAdapterImpl imeAdapter,
                 int inputType, int inputFlags, int inputMode, int selectionStart, int selectionEnd,
                 EditorInfo outAttrs) {
             mTextInputTypeList.add(inputType);

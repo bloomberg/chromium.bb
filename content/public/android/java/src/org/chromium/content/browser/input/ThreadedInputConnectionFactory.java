@@ -107,8 +107,8 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     }
 
     @Override
-    public ThreadedInputConnection initializeAndGet(View view, ImeAdapter imeAdapter, int inputType,
-            int inputFlags, int inputMode, int selectionStart, int selectionEnd,
+    public ThreadedInputConnection initializeAndGet(View view, ImeAdapterImpl imeAdapter,
+            int inputType, int inputFlags, int inputMode, int selectionStart, int selectionEnd,
             EditorInfo outAttrs) {
         ImeUtils.checkOnUiThread();
 
