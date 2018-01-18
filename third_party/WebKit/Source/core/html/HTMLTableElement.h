@@ -71,6 +71,8 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   const CSSPropertyValueSet* AdditionalCellStyle();
   const CSSPropertyValueSet* AdditionalGroupStyle(bool rows);
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
   virtual void Trace(blink::Visitor*);
 
  private:

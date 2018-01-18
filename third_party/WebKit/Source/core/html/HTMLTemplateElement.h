@@ -45,6 +45,9 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLTemplateElement);
   ~HTMLTemplateElement() override;
+
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
   virtual void Trace(blink::Visitor*);
 
   DocumentFragment* content() const;

@@ -37,6 +37,8 @@ class CORE_EXPORT HTMLHtmlElement final : public HTMLElement {
 
   void InsertedByParser();
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
  private:
   explicit HTMLHtmlElement(Document&);
 

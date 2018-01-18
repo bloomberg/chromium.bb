@@ -50,6 +50,8 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
   const AtomicString& Headers() const;
   void setRowSpan(unsigned);
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
  private:
   HTMLTableCellElement(const QualifiedName&, Document&);
 

@@ -43,6 +43,8 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
 
   HTMLCollection* rows();
 
+  bool HasNonInBodyInsertionMode() const override { return true; }
+
  private:
   HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
 
