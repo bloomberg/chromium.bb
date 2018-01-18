@@ -97,38 +97,94 @@ const AtomicString& HTMLSlotElement::UserAgentCustomAssignSlotName() {
 }
 
 const HeapVector<Member<Node>>& HTMLSlotElement::AssignedNodes() const {
+  if (!SupportsAssignment()) {
+    DCHECK(assigned_nodes_.IsEmpty());
+    return assigned_nodes_;
+  }
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    if (!SupportsAssignment()) {
-      DCHECK(assigned_nodes_.IsEmpty());
-      return assigned_nodes_;
-    }
     ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
     return assigned_nodes_;
   }
 
   DCHECK(!NeedsDistributionRecalc());
-  DCHECK(IsInShadowTree() || assigned_nodes_.IsEmpty());
   return assigned_nodes_;
 }
 
-const HeapVector<Member<Node>> HTMLSlotElement::assignedNodesForBinding(
+namespace {
+
+const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
+    const Node& node) {
+  if (auto* slot = ToHTMLSlotElementOrNull(node)) {
+    if (slot->SupportsAssignment())
+      return slot;
+  }
+  return nullptr;
+}
+
+HeapVector<Member<Node>> FlattenedAssignedNodes(const HTMLSlotElement& slot) {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  DCHECK(slot.SupportsAssignment());
+
+  const HeapVector<Member<Node>>& assigned_nodes = slot.AssignedNodes();
+  HeapVector<Member<Node>> nodes;
+  if (assigned_nodes.IsEmpty()) {
+    // Fallback contents.
+    for (auto& child : NodeTraversal::ChildrenOf(slot)) {
+      if (!child.IsSlotable())
+        continue;
+      if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(child))
+        nodes.AppendVector(FlattenedAssignedNodes(*slot));
+      else
+        nodes.push_back(child);
+    }
+  } else {
+    for (auto& node : assigned_nodes) {
+      DCHECK(node->IsSlotable());
+      if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(*node))
+        nodes.AppendVector(FlattenedAssignedNodes(*slot));
+      else
+        nodes.push_back(node);
+    }
+  }
+  return nodes;
+}
+
+}  // namespace
+
+const HeapVector<Member<Node>> HTMLSlotElement::AssignedNodesForBinding(
     const AssignedNodesOptions& options) {
+  if (!SupportsAssignment()) {
+    DCHECK(assigned_nodes_.IsEmpty());
+    return assigned_nodes_;
+  }
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    if (options.hasFlatten() && options.flatten()) {
+      return FlattenedAssignedNodes(*this);
+    }
+    return AssignedNodes();
+  }
+
   UpdateDistribution();
   if (options.hasFlatten() && options.flatten())
     return GetDistributedNodes();
   return assigned_nodes_;
 }
 
-const HeapVector<Member<Element>> HTMLSlotElement::assignedElements(
-    const AssignedNodesOptions& options) {
-  UpdateDistribution();
-  const HeapVector<Member<Node>>& nodes =
-      (options.hasFlatten() && options.flatten()) ? GetDistributedNodes()
-                                                  : assigned_nodes_;
+const HeapVector<Member<Element>> HTMLSlotElement::AssignedElements() {
   HeapVector<Member<Element>> elements;
-  for (auto node : nodes) {
-    if (node->IsElementNode())
-      elements.push_back(ToElement(node));
+  for (auto& node : AssignedNodes()) {
+    if (Element* element = ToElementOrNull(node))
+      elements.push_back(element);
+  }
+  return elements;
+}
+
+const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
+    const AssignedNodesOptions& options) {
+  HeapVector<Member<Element>> elements;
+  for (auto& node : AssignedNodesForBinding(options)) {
+    if (Element* element = ToElementOrNull(node))
+      elements.push_back(element);
   }
   return elements;
 }

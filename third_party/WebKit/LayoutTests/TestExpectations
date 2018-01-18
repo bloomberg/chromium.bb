@@ -678,17 +678,11 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 
 # ====== IncrementalShadowDOM-only failures from here ======
 
-crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/HTMLSlotElement-interface.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fallback-in-document.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fallback.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-dom-event-dispatching-details-summary.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/user-modify-inheritance.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/css-style-inherit.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/offsetParent.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-text-nodes.html [ Failure ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
