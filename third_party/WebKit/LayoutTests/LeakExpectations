@@ -44,9 +44,6 @@ crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-be
 crbug.com/780386 external/wpt/html/dom/reflection-grouping.html [ Leak Pass ]
 crbug.com/796944 [ Linux ] synthetic_gestures/synthetic-pinch-zoom-gesture.html [ Leak Pass ]
 crbug.com/667560 [ Linux ] http/tests/devtools/console/console-search.js [ Leak Pass ]
-crbug.com/798735 [ Linux ] fast/events/drop-handler-should-not-stop-navigate.html [ Leak Pass ]
-crbug.com/798735 [ Linux ] virtual/mouseevent_fractional/fast/events/drop-handler-should-not-stop-navigate.html [ Leak Pass ]
-crbug.com/798735 [ Linux ] fast/events/only-valid-drop-targets-receive-file-drop.html [ Leak Pass ]
 
 # -----------------------------------------------------------------
 # Not revert suspected CL as jam@ request, expected to be fixed soon.
