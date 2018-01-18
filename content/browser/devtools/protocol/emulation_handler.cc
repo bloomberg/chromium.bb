@@ -246,12 +246,11 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 
   bool size_changed = false;
   if (!dont_set_visible_size.fromMaybe(false) && width > 0 && height > 0) {
-    gfx::Size new_size(width, height);
-    if (widget_host->GetView()->GetViewBounds().size() != new_size) {
-      if (original_view_size_.IsEmpty())
-        original_view_size_ = widget_host->GetView()->GetViewBounds().size();
-      widget_host->GetView()->SetSize(new_size);
-      size_changed = true;
+    if (GetWebContents()) {
+      size_changed =
+          GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
+    } else {
+      return Response::Error("Can't find the associated web contents");
     }
   }
 
@@ -272,18 +271,14 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
-    return Response::Error("Target does not support metrics override");
   if (!device_emulation_enabled_)
     return Response::OK();
-
+  if (GetWebContents())
+    GetWebContents()->ClearDeviceEmulationSize();
+  else
+    return Response::Error("Can't find the associated web contents");
   device_emulation_enabled_ = false;
   device_emulation_params_ = blink::WebDeviceEmulationParams();
-  if (original_view_size_.width())
-    widget_host->GetView()->SetSize(original_view_size_);
-  original_view_size_ = gfx::Size();
   UpdateDeviceEmulationState();
   // Renderer should answer after emulation was disabled, so that the response
   // is only sent to the client once updates were applied.
@@ -294,13 +289,11 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
   if (width < 0 || height < 0)
     return Response::InvalidParams("Width and height must be non-negative");
 
-  // Set size of frame by resizing RWHV if available.
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
-    return Response::Error("Target does not support setVisibleSize");
+  if (GetWebContents())
+    GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
+  else
+    return Response::Error("Can't find the associated web contents");
 
-  widget_host->GetView()->SetSize(gfx::Size(width, height));
   return Response::OK();
 }
 

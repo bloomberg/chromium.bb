@@ -757,7 +757,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool* proceed_to_fire_unload) override;
   void RenderProcessGoneFromRenderManager(
       RenderViewHost* render_view_host) override;
-  void UpdateRenderViewSizeForRenderManager() override;
+  void UpdateRenderViewSizeForRenderManager(bool is_main_frame) override;
   void CancelModalDialogsForRenderManager() override;
   void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
                                       RenderFrameHost* new_host,
@@ -839,6 +839,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
+
+  // Override the render view/widget size of the main frame, return whether the
+  // size changed.
+  bool SetDeviceEmulationSize(const gfx::Size& new_size);
+  void ClearDeviceEmulationSize();
 
   AudioStreamMonitor* audio_stream_monitor() {
     return &audio_stream_monitor_;
@@ -1275,7 +1280,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RemoveBrowserPluginEmbedder();
 
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
-  gfx::Size GetSizeForNewRenderView();
+  gfx::Size GetSizeForNewRenderView(bool is_main_frame);
 
   void OnFrameRemoved(RenderFrameHost* render_frame_host);
 
@@ -1513,6 +1518,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Size set by a top-level frame with auto-resize enabled. This is needed by
   // out-of-process iframes for their visible viewport size.
   gfx::Size auto_resize_size_;
+
+  // When device emulation is enabled, override the size of current and newly
+  // created render views/widgets.
+  gfx::Size device_emulation_size_;
+  gfx::Size view_size_before_emulation_;
 
 #if defined(OS_ANDROID)
   // Date time chooser opened by this tab.
