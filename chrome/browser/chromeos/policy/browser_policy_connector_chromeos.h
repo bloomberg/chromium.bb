@@ -58,6 +58,7 @@ class BrowserPolicyConnectorChromeOS
 
   ~BrowserPolicyConnectorChromeOS() override;
 
+  // ChromeBrowserPolicyConnector:
   void Init(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
@@ -177,6 +178,12 @@ class BrowserPolicyConnectorChromeOS
 
   chromeos::AffiliationIDSet GetDeviceAffiliationIDs() const;
 
+ protected:
+  // ChromeBrowserPolicyConnector:
+  void BuildPolicyProviders(
+      std::vector<std::unique_ptr<ConfigurationPolicyProvider>>* providers)
+      override;
+
  private:
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
@@ -222,6 +229,10 @@ class BrowserPolicyConnectorChromeOS
 
   std::unique_ptr<DeviceNetworkConfigurationUpdater>
       device_network_configuration_updater_;
+
+  // The ConfigurationPolicyProviders created in the constructor are initially
+  // added here, and then pushed to the super class in BuildPolicyProviders().
+  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers_for_init_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 

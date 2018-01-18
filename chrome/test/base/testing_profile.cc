@@ -799,7 +799,10 @@ void TestingProfile::CreateProfilePolicyConnector() {
 
   if (!policy_service_) {
     std::vector<policy::ConfigurationPolicyProvider*> providers;
-    policy_service_.reset(new policy::PolicyServiceImpl(providers));
+    std::unique_ptr<policy::PolicyServiceImpl> policy_service =
+        std::make_unique<policy::PolicyServiceImpl>();
+    policy_service->SetProviders(providers);
+    policy_service_ = std::move(policy_service);
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
