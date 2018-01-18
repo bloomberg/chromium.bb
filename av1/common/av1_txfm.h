@@ -75,8 +75,21 @@ static const int32_t cospi_arr_data[7][64] = {
     14359, 12785, 11204, 9616,  8022,  6424,  4821,  3216,  1608 }
 };
 
+//  sinpi_arr_data[i][j] = (int)round((sqrt(2) * sin(kPi/9) * 2 / 3) * (1 <<
+//  (cos_bit_min + i)))
+static const int32_t sinpi_arr_data[7][5] = {
+  { 0, 330, 621, 836, 951 },        { 0, 660, 1241, 1672, 1902 },
+  { 0, 1321, 2482, 3344, 3803 },    { 0, 2642, 4965, 6689, 7606 },
+  { 0, 5283, 9929, 13377, 15212 },  { 0, 10566, 19858, 26755, 30425 },
+  { 0, 21133, 39717, 53510, 60849 }
+};
+
 static INLINE const int32_t *cospi_arr(int n) {
   return cospi_arr_data[n - cos_bit_min];
+}
+
+static INLINE const int32_t *sinpi_arr(int n) {
+  return sinpi_arr_data[n - cos_bit_min];
 }
 
 static INLINE int32_t round_shift(int32_t value, int bit) {

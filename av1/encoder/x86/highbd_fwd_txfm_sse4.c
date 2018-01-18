@@ -121,12 +121,12 @@ static INLINE void write_buffer_4x4(__m128i *res, int32_t *output) {
 }
 
 static void fadst4x4_sse4_1(__m128i *in, int bit) {
-  bit = 14;
+  const int32_t *sinpi = sinpi_arr(bit);
   const __m128i rnding = _mm_set1_epi32(1 << (bit - 1));
-  const __m128i sinpi1 = _mm_set1_epi32((int)sinpi_1_9);
-  const __m128i sinpi2 = _mm_set1_epi32((int)sinpi_2_9);
-  const __m128i sinpi3 = _mm_set1_epi32((int)sinpi_3_9);
-  const __m128i sinpi4 = _mm_set1_epi32((int)sinpi_4_9);
+  const __m128i sinpi1 = _mm_set1_epi32((int)sinpi[1]);
+  const __m128i sinpi2 = _mm_set1_epi32((int)sinpi[2]);
+  const __m128i sinpi3 = _mm_set1_epi32((int)sinpi[3]);
+  const __m128i sinpi4 = _mm_set1_epi32((int)sinpi[4]);
   __m128i t;
   __m128i s0, s1, s2, s3, s4, s5, s6, s7;
   __m128i x0, x1, x2, x3;

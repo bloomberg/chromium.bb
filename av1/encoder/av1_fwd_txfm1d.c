@@ -694,8 +694,10 @@ void av1_fadst4_new(const int32_t *input, int32_t *output,
                     const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
   (void)stage_range;
-  int64_t x0, x1, x2, x3;
-  int64_t s0, s1, s2, s3, s4, s5, s6, s7;
+  int bit = cos_bit[0];
+  const int32_t *sinpi = sinpi_arr(bit);
+  int32_t x0, x1, x2, x3;
+  int32_t s0, s1, s2, s3, s4, s5, s6, s7;
 
   x0 = input[0];
   x1 = input[1];
@@ -707,17 +709,17 @@ void av1_fadst4_new(const int32_t *input, int32_t *output,
     return;
   }
 
-  s0 = sinpi_1_9 * x0;
-  s1 = sinpi_4_9 * x0;
-  s2 = sinpi_2_9 * x1;
-  s3 = sinpi_1_9 * x1;
-  s4 = sinpi_3_9 * x2;
-  s5 = sinpi_4_9 * x3;
-  s6 = sinpi_2_9 * x3;
+  s0 = sinpi[1] * x0;
+  s1 = sinpi[4] * x0;
+  s2 = sinpi[2] * x1;
+  s3 = sinpi[1] * x1;
+  s4 = sinpi[3] * x2;
+  s5 = sinpi[4] * x3;
+  s6 = sinpi[2] * x3;
   s7 = x0 + x1 - x3;
 
   x0 = s0 + s2 + s5;
-  x1 = sinpi_3_9 * s7;
+  x1 = sinpi[3] * s7;
   x2 = s1 - s3 + s6;
   x3 = s4;
 
@@ -727,10 +729,10 @@ void av1_fadst4_new(const int32_t *input, int32_t *output,
   s3 = x2 - x0 + x3;
 
   // 1-D transform scaling factor is sqrt(2).
-  output[0] = (int32_t)fdct_round_shift(s0);
-  output[1] = (int32_t)fdct_round_shift(s1);
-  output[2] = (int32_t)fdct_round_shift(s2);
-  output[3] = (int32_t)fdct_round_shift(s3);
+  output[0] = round_shift(s0, bit);
+  output[1] = round_shift(s1, bit);
+  output[2] = round_shift(s2, bit);
+  output[3] = round_shift(s3, bit);
 }
 
 void av1_fadst8_new(const int32_t *input, int32_t *output,
