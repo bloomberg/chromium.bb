@@ -2289,6 +2289,13 @@ be describing additional metrics about the same event.
       |chromeos::power::ml::UserActivityEvent::Feature::DeviceType|
     </summary>
   </metric>
+  <metric name="EventLogDuration">
+    <summary>
+      Time taken in seconds from when we start logging the features to the
+      moment when the event type is known and we finish logging the complete
+      event.
+    </summary>
+  </metric>
   <metric name="EventReason">
     <summary>
       An enum representing the reason of the event, defined in

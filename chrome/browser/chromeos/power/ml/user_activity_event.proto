@@ -48,6 +48,11 @@ message UserActivityEvent {
       IDLE_SLEEP = 9;
     }
     optional Reason reason = 2;
+
+    // Time taken in seconds from when we start logging the features to the
+    // moment when the event type is known and we finish logging the complete
+    // event.
+    optional int32 log_duration_sec = 3;
   }
 
   message Features {
