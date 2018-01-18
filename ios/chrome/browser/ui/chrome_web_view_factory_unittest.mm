@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_isolated_context.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
@@ -29,7 +30,7 @@ namespace {
 class ChromeWebViewFactoryTest : public PlatformTest {
  public:
   ChromeWebViewFactoryTest()
-      : web_client_(base::MakeUnique<ChromeWebClient>()) {}
+      : web_client_(std::make_unique<ChromeWebClient>()) {}
 
  protected:
   web::TestWebThreadBundle thread_bundle_;

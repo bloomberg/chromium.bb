@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
@@ -57,7 +56,7 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<AccountConsistencyService>(
+  return std::make_unique<AccountConsistencyService>(
       chrome_browser_state,
       ios::AccountReconcilorFactory::GetForBrowserState(chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),

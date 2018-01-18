@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/fullscreen/system_notification_fullscreen_disabler.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 
@@ -54,7 +55,7 @@
     // Create a disabler if VoiceOver is enabled.
     if (UIAccessibilityIsVoiceOverRunning()) {
       _voiceOverDisabler =
-          base::MakeUnique<ScopedFullscreenDisabler>(_controller);
+          std::make_unique<ScopedFullscreenDisabler>(_controller);
     }
     // Regsiter for keyboard visibility notifications.
     [[NSNotificationCenter defaultCenter]
@@ -88,13 +89,13 @@
 - (void)voiceOverStatusChanged {
   _voiceOverDisabler =
       UIAccessibilityIsVoiceOverRunning()
-          ? base::MakeUnique<ScopedFullscreenDisabler>(self.controller)
+          ? std::make_unique<ScopedFullscreenDisabler>(self.controller)
           : nullptr;
 }
 
 - (void)keyboardWillShow {
   _keyboardDisabler =
-      base::MakeUnique<ScopedFullscreenDisabler>(self.controller);
+      std::make_unique<ScopedFullscreenDisabler>(self.controller);
 }
 
 - (void)keyboardDidHide {

@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -22,10 +21,10 @@ std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate =
-      base::MakeUnique<ProfileOAuth2TokenServiceIOSDelegate>(
+      std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
           SigninClientFactory::GetForBrowserState(browser_state),
-          base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
+          std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(browser_state));
-  return base::MakeUnique<FakeProfileOAuth2TokenService>(std::move(delegate));
+  return std::make_unique<FakeProfileOAuth2TokenService>(std::move(delegate));
 }

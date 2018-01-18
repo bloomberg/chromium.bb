@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -40,7 +40,7 @@ DesktopPromotionSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<DesktopPromotionSyncService>(
+  return std::make_unique<DesktopPromotionSyncService>(
       browser_state->GetPrefs(),
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }

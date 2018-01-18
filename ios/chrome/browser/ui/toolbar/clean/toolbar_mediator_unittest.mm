@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -64,7 +65,7 @@ class ToolbarMediatorTest : public PlatformTest {
         chrome_browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
-        base::MakeUnique<ToolbarTestNavigationManager>();
+        std::make_unique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     test_web_state_ = std::make_unique<ToolbarTestWebState>();
     test_web_state_->SetNavigationManager(std::move(navigation_manager));
@@ -83,7 +84,7 @@ class ToolbarMediatorTest : public PlatformTest {
  protected:
   web::TestWebThreadBundle thread_bundle_;
   void SetUpWebStateList() {
-    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
+    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
     web_state_list_->InsertWebState(0, std::move(test_web_state_),
                                     WebStateList::INSERT_FORCE_INDEX,
                                     WebStateOpener());
@@ -102,7 +103,7 @@ class ToolbarMediatorTest : public PlatformTest {
   }
 
   void InsertNewWebState(int index) {
-    auto web_state = base::MakeUnique<web::TestWebState>();
+    auto web_state = std::make_unique<web::TestWebState>();
     GURL url("http://test/" + std::to_string(index));
     web_state->SetCurrentURL(url);
     web_state_list_->InsertWebState(index, std::move(web_state),

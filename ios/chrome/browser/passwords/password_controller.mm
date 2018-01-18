@@ -16,7 +16,6 @@
 #include "base/json/json_writer.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -217,14 +216,14 @@ NSString* SerializeFillData(const GURL& origin,
   rootDict.SetString("origin", origin.spec());
   rootDict.SetString("action", action.spec());
 
-  auto fieldList = base::MakeUnique<base::ListValue>();
+  auto fieldList = std::make_unique<base::ListValue>();
 
-  auto usernameField = base::MakeUnique<base::DictionaryValue>();
+  auto usernameField = std::make_unique<base::DictionaryValue>();
   usernameField->SetString("name", username_element);
   usernameField->SetString("value", username_value);
   fieldList->Append(std::move(usernameField));
 
-  auto passwordField = base::MakeUnique<base::DictionaryValue>();
+  auto passwordField = std::make_unique<base::DictionaryValue>();
   passwordField->SetString("name", password_element);
   passwordField->SetString("value", password_value);
   fieldList->Append(std::move(passwordField));
@@ -333,7 +332,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     sentRequestToStore_ = NO;
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
-      credentialManager_ = base::MakeUnique<CredentialManager>(
+      credentialManager_ = std::make_unique<CredentialManager>(
           passwordManagerClient_.get(), webState_);
     }
 

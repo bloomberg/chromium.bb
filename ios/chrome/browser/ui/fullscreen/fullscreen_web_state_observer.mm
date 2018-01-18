@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_scroll_view_replacement_handler.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -92,7 +91,7 @@ void FullscreenWebStateObserver::SetIsSSLBroken(bool broken) {
   if (!!ssl_disabler_.get() == broken)
     return;
   ssl_disabler_ = broken
-                      ? base::MakeUnique<ScopedFullscreenDisabler>(controller_)
+                      ? std::make_unique<ScopedFullscreenDisabler>(controller_)
                       : nullptr;
 }
 
@@ -100,6 +99,6 @@ void FullscreenWebStateObserver::SetIsLoading(bool loading) {
   if (!!loading_disabler_.get() == loading)
     return;
   loading_disabler_ =
-      loading ? base::MakeUnique<ScopedFullscreenDisabler>(controller_)
+      loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
               : nullptr;
 }

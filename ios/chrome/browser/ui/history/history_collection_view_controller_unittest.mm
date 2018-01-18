@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
@@ -60,7 +59,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
       ios::ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  return base::MakeUnique<SyncSetupServiceMock>(sync_service,
+  return std::make_unique<SyncSetupServiceMock>(sync_service,
                                                 browser_state->GetPrefs());
 }
 

@@ -6,11 +6,11 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -167,7 +167,7 @@ void SetCertificate() {
             channel_id_service->GetChannelIDStore();
         base::Time now = base::Time::Now();
         channel_id_store->SetChannelID(
-            base::MakeUnique<net::ChannelIDStore::ChannelID>(
+            std::make_unique<net::ChannelIDStore::ChannelID>(
                 kTestOrigin1, now, crypto::ECPrivateKey::Create()));
       }));
 

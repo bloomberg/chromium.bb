@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -70,7 +69,7 @@ BrowserListSessionServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   // It is safe to use base::Unretained here as BrowserListSessionServiceImpl
   // will be destroyed before the ChromeBrowserState (as it is a KeyedService).
-  return base::MakeUnique<BrowserListSessionServiceImpl>(
+  return std::make_unique<BrowserListSessionServiceImpl>(
       BrowserListFactory::GetForBrowserState(browser_state),
       base::SysUTF8ToNSString(browser_state->GetStatePath().AsUTF8Unsafe()),
       [SessionServiceIOS sharedService],

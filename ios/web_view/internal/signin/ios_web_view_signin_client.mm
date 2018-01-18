@@ -115,7 +115,7 @@ std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* getter) {
-  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, getter);
+  return std::make_unique<GaiaAuthFetcher>(consumer, source, getter);
 }
 
 void IOSWebViewSigninClient::OnErrorChanged() {}

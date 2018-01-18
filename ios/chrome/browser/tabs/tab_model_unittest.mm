@@ -5,7 +5,6 @@
 #import <objc/runtime.h>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -76,8 +75,8 @@ class TabModelTest : public PlatformTest {
  public:
   TabModelTest()
       : scoped_browser_state_manager_(
-            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())),
-        web_client_(base::MakeUnique<ChromeWebClient>()) {
+            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
+        web_client_(std::make_unique<ChromeWebClient>()) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
     TestChromeBrowserState::Builder test_cbs_builder;

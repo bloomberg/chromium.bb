@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -40,10 +39,10 @@ static GURL emptyGurl_ = GURL("foo", 3, url::Parsed(), false);
 PerfTestWithBVC::PerfTestWithBVC(std::string testGroup)
     : PerfTest(testGroup),
       slow_teardown_(false),
-      web_client_(base::MakeUnique<ChromeWebClient>()),
+      web_client_(std::make_unique<ChromeWebClient>()),
       provider_(ios::CreateChromeBrowserProvider()),
       browser_state_manager_(
-          base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {}
+          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {}
 
 PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
                                  std::string firstLabel,
@@ -59,10 +58,10 @@ PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
                verbose,
                repeat),
       slow_teardown_(slowTeardown),
-      web_client_(base::MakeUnique<ChromeWebClient>()),
+      web_client_(std::make_unique<ChromeWebClient>()),
       provider_(ios::CreateChromeBrowserProvider()),
       browser_state_manager_(
-          base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {}
+          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {}
 
 PerfTestWithBVC::~PerfTestWithBVC() {}
 

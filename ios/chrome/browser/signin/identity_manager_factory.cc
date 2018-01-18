@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -56,6 +57,6 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return base::MakeUnique<IdentityManagerHolder>(
+  return std::make_unique<IdentityManagerHolder>(
       ios::ChromeBrowserState::FromBrowserState(browser_state));
 }

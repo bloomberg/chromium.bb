@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
@@ -41,7 +40,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
  protected:
   SettingsNavigationControllerTest()
       : scoped_browser_state_manager_(
-            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {
+            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),

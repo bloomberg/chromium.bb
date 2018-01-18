@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
@@ -94,7 +93,7 @@ FaviconClientImpl::GetFaviconForNativeApplicationURL(
   DCHECK(IsNativeApplicationURL(url));
 
   auto favicon_bitmap_results =
-      base::MakeUnique<std::vector<favicon_base::FaviconRawBitmapResult>>();
+      std::make_unique<std::vector<favicon_base::FaviconRawBitmapResult>>();
   GetFaviconBitmapForNativeURL(url, desired_sizes_in_pixel,
                                favicon_bitmap_results.get());
 

@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/ntp_snippets/content_suggestion.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,7 +33,7 @@
 - (void)registerArticleProvider:
     (ntp_snippets::ContentSuggestionsService*)service {
   std::unique_ptr<ntp_snippets::MockContentSuggestionsProvider> provider =
-      base::MakeUnique<ntp_snippets::MockContentSuggestionsProvider>(
+      std::make_unique<ntp_snippets::MockContentSuggestionsProvider>(
           service, std::vector<ntp_snippets::Category>{
                        ntp_snippets::Category::FromKnownCategory(
                            ntp_snippets::KnownCategories::ARTICLES)});

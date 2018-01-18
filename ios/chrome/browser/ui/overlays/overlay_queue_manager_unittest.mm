@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
@@ -80,7 +79,7 @@ TEST_F(OverlayQueueManagerTest, AddAndRemoveWebState) {
   // Create a WebState and add it to the WebStateList, verifying that the
   // manager's queues are updated and that the observer callback is received.
   std::unique_ptr<web::WebState> web_state =
-      base::MakeUnique<web::TestWebState>();
+      std::make_unique<web::TestWebState>();
   web_state_list()->InsertWebState(0, std::move(web_state),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
@@ -104,7 +103,7 @@ TEST_F(OverlayQueueManagerTest, AddAndReplaceWebState) {
   // Create a WebState and add it to the WebStateList, verifying that the
   // manager's queues are updated and that the observer callback is received.
   std::unique_ptr<web::WebState> web_state =
-      base::MakeUnique<web::TestWebState>();
+      std::make_unique<web::TestWebState>();
   web_state_list()->InsertWebState(0, std::move(web_state),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
@@ -118,7 +117,7 @@ TEST_F(OverlayQueueManagerTest, AddAndReplaceWebState) {
   // that the queues were successfully added and removed.
   observer()->reset();
   std::unique_ptr<web::WebState> replacement =
-      base::MakeUnique<web::TestWebState>();
+      std::make_unique<web::TestWebState>();
   web_state_list()->ReplaceWebStateAt(0, std::move(replacement));
   EXPECT_TRUE(observer()->will_remove_called());
   EXPECT_TRUE(observer()->did_add_called());

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -313,7 +312,7 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
   // TODO(crbug.com/779106): Check if cookiestore type should be changed.
   std::unique_ptr<net::CookieStore> cookie_store =
       cookie_util::CreateCookieStore(
-          ios_cookie_config, base::MakeUnique<net::NSHTTPSystemCookieStore>());
+          ios_cookie_config, std::make_unique<net::NSHTTPSystemCookieStore>());
 
   // Transfer ownership of the ChannelIDStore, HttpNetworkSession, cookies, and
   // cache to AppRequestContext.

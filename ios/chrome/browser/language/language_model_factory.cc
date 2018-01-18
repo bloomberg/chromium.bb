@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/language/language_model_factory.h"
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/baseline_language_model.h"
@@ -44,13 +43,13 @@ std::unique_ptr<KeyedService> LanguageModelFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(state);
 
   if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
-    return base::MakeUnique<language::HeuristicLanguageModel>(
+    return std::make_unique<language::HeuristicLanguageModel>(
         chrome_state->GetPrefs(),
         GetApplicationContext()->GetApplicationLocale(),
         prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
 
-  return base::MakeUnique<language::BaselineLanguageModel>(
+  return std::make_unique<language::BaselineLanguageModel>(
       chrome_state->GetPrefs(), GetApplicationContext()->GetApplicationLocale(),
       prefs::kAcceptLanguages);
 }

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "testing/gtest_mac.h"
@@ -38,7 +37,7 @@
 - (instancetype)init {
   if (self == [super init]) {
     _observerBridge =
-        base::MakeUnique<ChromeBrowserProviderObserverBridge>(self);
+        std::make_unique<ChromeBrowserProviderObserverBridge>(self);
   }
   return self;
 }

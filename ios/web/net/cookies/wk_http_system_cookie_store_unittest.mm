@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/Webkit.h>
 
+#include <memory>
+
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
 #import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -28,7 +30,7 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
     if (@available(iOS 11, *)) {
       shared_store_ =
           [WKWebsiteDataStore nonPersistentDataStore].httpCookieStore;
-      store_ = base::MakeUnique<web::WKHTTPSystemCookieStore>(shared_store_);
+      store_ = std::make_unique<web::WKHTTPSystemCookieStore>(shared_store_);
     }
   }
 

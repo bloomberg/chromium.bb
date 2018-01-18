@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
@@ -32,7 +34,7 @@ CaptivePortalDetectorTabHelper::CaptivePortalDetectorTabHelper(
     web::WebState* web_state,
     id<CaptivePortalDetectorTabHelperDelegate> delegate)
     : delegate_(delegate),
-      detector_(base::MakeUnique<captive_portal::CaptivePortalDetector>(
+      detector_(std::make_unique<captive_portal::CaptivePortalDetector>(
           web_state->GetBrowserState()->GetRequestContext())) {
   DCHECK(delegate);
 }

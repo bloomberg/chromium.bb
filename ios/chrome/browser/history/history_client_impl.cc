@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "ios/chrome/browser/history/history_backend_client_impl.h"
@@ -65,7 +64,7 @@ void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status,
 
 std::unique_ptr<history::HistoryBackendClient>
 HistoryClientImpl::CreateBackendClient() {
-  return base::MakeUnique<HistoryBackendClientImpl>(bookmark_model_);
+  return std::make_unique<HistoryBackendClientImpl>(bookmark_model_);
 }
 
 void HistoryClientImpl::BookmarkModelChanged() {

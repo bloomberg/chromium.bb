@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -52,8 +51,8 @@ class NotificationPromoTest : public PlatformTest {
  public:
   NotificationPromoTest()
       : notification_promo_(&local_state_),
-        field_trial_list_(base::MakeUnique<base::FieldTrialList>(
-            base::MakeUnique<base::MockEntropyProvider>())),
+        field_trial_list_(std::make_unique<base::FieldTrialList>(
+            std::make_unique<base::MockEntropyProvider>())),
         received_notification_(false),
         start_(0.0),
         end_(0.0),

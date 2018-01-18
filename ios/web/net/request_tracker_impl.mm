@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "ios/web/history_state_util.h"
@@ -321,7 +320,7 @@ void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
   }
   const GURL& url = request->original_url();
   auto counts =
-      base::MakeUnique<TrackerCounts>(GURLByRemovingRefFromGURL(url), request);
+      std::make_unique<TrackerCounts>(GURLByRemovingRefFromGURL(url), request);
   counts_by_request_[request] = counts.get();
   counts_.push_back(std::move(counts));
   if (page_url_.SchemeIsCryptographic() && !url.SchemeIsCryptographic())

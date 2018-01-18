@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -133,7 +135,7 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
                repeatedFailure:repeated_failure];
 
   last_failed_url_ = url_causing_failure;
-  last_failed_timer_ = base::MakeUnique<base::ElapsedTimer>();
+  last_failed_timer_ = std::make_unique<base::ElapsedTimer>();
 }
 
 void SadTabTabHelper::ReloadTab() {

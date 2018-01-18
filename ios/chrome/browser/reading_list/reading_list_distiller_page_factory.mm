@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 #include "ios/web/public/browser_state.h"
@@ -19,7 +18,7 @@ ReadingListDistillerPageFactory::ReadingListDistillerPageFactory(
     web::BrowserState* browser_state)
     : browser_state_(browser_state) {
   web_state_dispatcher_ =
-      base::MakeUnique<reading_list::FaviconWebStateDispatcherImpl>(
+      std::make_unique<reading_list::FaviconWebStateDispatcherImpl>(
           browser_state_, -1);
 }
 
@@ -29,7 +28,7 @@ std::unique_ptr<ReadingListDistillerPage>
 ReadingListDistillerPageFactory::CreateReadingListDistillerPage(
     const GURL& url,
     ReadingListDistillerPageDelegate* delegate) const {
-  return base::MakeUnique<ReadingListDistillerPage>(
+  return std::make_unique<ReadingListDistillerPage>(
       url, browser_state_, web_state_dispatcher_.get(), delegate);
 }
 

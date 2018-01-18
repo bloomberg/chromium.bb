@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -307,7 +306,7 @@
           self.browserState);
   DCHECK(fullscreenController);
   _fullscreenUpdater =
-      base::MakeUnique<FullscreenUIUpdater>(self.toolbarController);
+      std::make_unique<FullscreenUIUpdater>(self.toolbarController);
   fullscreenController->AddObserver(_fullscreenUpdater.get());
 }
 

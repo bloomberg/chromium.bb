@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -47,7 +48,7 @@
     DCHECK(_updater);
     _webStateList = webStateList;
     DCHECK(_webStateList);
-    _bridge = base::MakeUnique<WebStateListObserverBridge>(self);
+    _bridge = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_bridge.get());
     web::WebState* activeWebState = webStateList->GetActiveWebState();
     if (activeWebState) {

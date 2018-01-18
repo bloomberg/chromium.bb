@@ -55,7 +55,7 @@ class SadTabTabHelperTest : public PlatformTest {
 
     // Setup navigation manager.
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        base::MakeUnique<web::TestNavigationManager>();
+        std::make_unique<web::TestNavigationManager>();
     navigation_manager->SetBrowserState(browser_state_.get());
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));

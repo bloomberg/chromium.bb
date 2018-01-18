@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -60,7 +61,7 @@ void VoiceSearchNavigationTabHelper::NavigationItemCommitted(
   DCHECK_EQ(web_state_, web_state);
   if (will_navigate_to_voice_search_result_) {
     load_details.item->SetUserData(
-        kNavigationMarkerKey, base::MakeUnique<VoiceSearchNavigationMarker>());
+        kNavigationMarkerKey, std::make_unique<VoiceSearchNavigationMarker>());
     will_navigate_to_voice_search_result_ = false;
   }
 }

@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
@@ -41,7 +40,7 @@ ChromeOmniboxClientIOS::~ChromeOmniboxClientIOS() {}
 
 std::unique_ptr<AutocompleteProviderClient>
 ChromeOmniboxClientIOS::CreateAutocompleteProviderClient() {
-  return base::MakeUnique<AutocompleteProviderClientImpl>(browser_state_);
+  return std::make_unique<AutocompleteProviderClientImpl>(browser_state_);
 }
 
 std::unique_ptr<OmniboxNavigationObserver>

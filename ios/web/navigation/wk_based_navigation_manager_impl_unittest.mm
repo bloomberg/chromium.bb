@@ -7,7 +7,6 @@
 #include <WebKit/WebKit.h>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -570,10 +569,10 @@ TEST_F(WKBasedNavigationManagerTest, CanGoToOffset) {
 
 // Tests that non-empty session history can be restored.
 TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
-  auto item0 = base::MakeUnique<NavigationItemImpl>();
+  auto item0 = std::make_unique<NavigationItemImpl>();
   item0->SetURL(GURL("http://www.0.com"));
   item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
-  auto item1 = base::MakeUnique<NavigationItemImpl>();
+  auto item1 = std::make_unique<NavigationItemImpl>();
   item1->SetURL(GURL("http://www.1.com"));
 
   std::vector<std::unique_ptr<NavigationItem>> items;
@@ -638,7 +637,7 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
 
   // Restores a fake session.
   std::vector<std::unique_ptr<NavigationItem>> items;
-  items.push_back(base::MakeUnique<NavigationItemImpl>());
+  items.push_back(std::make_unique<NavigationItemImpl>());
   manager_->Restore(0 /* last_committed_item_index */, std::move(items));
 
   // Check that last_committed_index, previous_item_index and pending_item_index

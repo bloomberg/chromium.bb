@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ios/web/public/app/web_main.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -39,7 +38,7 @@
   _delegate.reset(new web::ShellMainDelegate());
 
   web::WebMainParams params(_delegate.get());
-  _webMain = base::MakeUnique<web::WebMain>(std::move(params));
+  _webMain = std::make_unique<web::WebMain>(std::move(params));
 
   web::ShellWebClient* client =
       static_cast<web::ShellWebClient*>(web::GetWebClient());

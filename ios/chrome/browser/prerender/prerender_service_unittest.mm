@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -24,7 +23,7 @@ class PrerenderServiceTest : public PlatformTest {
   PrerenderServiceTest() {
     TestChromeBrowserState::Builder builder;
     browser_state_ = builder.Build();
-    service_ = base::MakeUnique<PrerenderService>(browser_state_.get());
+    service_ = std::make_unique<PrerenderService>(browser_state_.get());
   }
   ~PrerenderServiceTest() override = default;
 

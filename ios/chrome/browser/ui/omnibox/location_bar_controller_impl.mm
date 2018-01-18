@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/security_state/core/security_state_ui.h"
@@ -150,7 +149,7 @@ LocationBarControllerImpl::LocationBarControllerImpl(
     ios::ChromeBrowserState* browser_state,
     id<LocationBarDelegate> delegate,
     id<BrowserCommands> dispatcher)
-    : edit_view_(base::MakeUnique<OmniboxViewIOS>(location_bar_view.textField,
+    : edit_view_(std::make_unique<OmniboxViewIOS>(location_bar_view.textField,
                                                   this,
                                                   this,
                                                   browser_state)),
@@ -171,7 +170,7 @@ LocationBarControllerImpl::~LocationBarControllerImpl() {}
 OmniboxPopupCoordinator* LocationBarControllerImpl::CreatePopupCoordinator(
     id<OmniboxPopupPositioner> positioner) {
   std::unique_ptr<OmniboxPopupViewIOS> popup_view =
-      base::MakeUnique<OmniboxPopupViewIOS>(edit_view_->model(),
+      std::make_unique<OmniboxPopupViewIOS>(edit_view_->model(),
                                             edit_view_.get());
 
   edit_view_->model()->set_popup_model(popup_view->model());
@@ -311,7 +310,7 @@ void LocationBarControllerImpl::OnSetFocus() {
   // Disable fullscreen while focused so that the location bar cannot be scolled
   // offscreen.
   if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    fullscreen_disabler_ = base::MakeUnique<ScopedFullscreenDisabler>(
+    fullscreen_disabler_ = std::make_unique<ScopedFullscreenDisabler>(
         FullscreenControllerFactory::GetInstance()->GetForBrowserState(
             browser_state_));
   }

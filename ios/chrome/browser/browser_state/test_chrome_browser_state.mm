@@ -55,7 +55,7 @@ namespace {
 std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<history::HistoryService>(
+  return std::make_unique<history::HistoryService>(
       base::WrapUnique(new HistoryClientImpl(
           ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
       nullptr);
@@ -66,7 +66,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
       ios::ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(
-          base::MakeUnique<BookmarkClientImpl>(browser_state)));
+          std::make_unique<BookmarkClientImpl>(browser_state)));
   bookmark_model->Load(
       browser_state->GetPrefs(),
       browser_state->GetStatePath(), browser_state->GetIOTaskRunner(),
@@ -82,7 +82,7 @@ void NotReachedErrorCallback(WebDataServiceWrapper::ErrorType,
 
 std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   const base::FilePath& browser_state_path = context->GetStatePath();
-  return base::MakeUnique<WebDataServiceWrapper>(
+  return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),

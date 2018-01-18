@@ -12,7 +12,6 @@
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -444,7 +443,7 @@ URLDataManagerIOSBackend::~URLDataManagerIOSBackend() {
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerIOSBackend::CreateProtocolHandler(BrowserState* browser_state) {
   DCHECK(browser_state);
-  return base::MakeUnique<ChromeProtocolHandler>(
+  return std::make_unique<ChromeProtocolHandler>(
       browser_state, browser_state->IsOffTheRecord());
 }
 

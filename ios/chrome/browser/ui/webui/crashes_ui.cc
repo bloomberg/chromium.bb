@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -150,7 +151,7 @@ void CrashesDOMHandler::UpdateUI() {
 ///////////////////////////////////////////////////////////////////////////////
 
 CrashesUI::CrashesUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<CrashesDOMHandler>());
+  web_ui->AddMessageHandler(std::make_unique<CrashesDOMHandler>());
 
   // Set up the chrome://crashes/ source.
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),

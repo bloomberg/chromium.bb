@@ -6,8 +6,9 @@
 
 #import <objc/runtime.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -82,7 +83,7 @@ const void* const kFullscreenDisablerKey = &kFullscreenDisablerKey;
 }
 
 - (void)createDisabler {
-  _disabler = base::MakeUnique<ScopedFullscreenDisabler>(self.controller);
+  _disabler = std::make_unique<ScopedFullscreenDisabler>(self.controller);
 }
 
 - (void)resetDisabler {

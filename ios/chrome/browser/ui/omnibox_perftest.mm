@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "components/toolbar/test_toolbar_model.h"
@@ -81,11 +80,11 @@ class OmniboxPerfTest : public PerfTest {
 
     // Create a WebStateList that will always return the test WebState as
     // the active WebState.
-    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
+    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
     std::unique_ptr<web::TestWebState> web_state =
-        base::MakeUnique<web::TestWebState>();
+        std::make_unique<web::TestWebState>();
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        base::MakeUnique<web::TestNavigationManager>();
+        std::make_unique<web::TestNavigationManager>();
     web_state->SetNavigationManager(std::move(navigation_manager));
     web_state_list_->InsertWebState(0, std::move(web_state),
                                     WebStateList::INSERT_FORCE_INDEX,

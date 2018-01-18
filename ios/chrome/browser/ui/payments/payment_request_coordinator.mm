@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 
+#include <memory>
+
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/autofill_payment_instrument.h"
@@ -180,7 +181,7 @@ requestFullCreditCard:(const autofill::CreditCard&)card
            (base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>)
                resultDelegate {
   _fullCardRequester =
-      base::MakeUnique<FullCardRequester>(_navigationController, _browserState);
+      std::make_unique<FullCardRequester>(_navigationController, _browserState);
   _fullCardRequester->GetFullCard(card, _autofillManager, resultDelegate);
 }
 

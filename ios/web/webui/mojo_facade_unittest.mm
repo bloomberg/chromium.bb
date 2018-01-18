@@ -51,12 +51,12 @@ id GetObject(const std::string& json) {
 class MojoFacadeTest : public WebTest {
  protected:
   MojoFacadeTest() {
-    interface_provider_ = base::MakeUnique<WebStateInterfaceProvider>();
+    interface_provider_ = std::make_unique<WebStateInterfaceProvider>();
     interface_provider_->registry()->AddInterface(base::Bind(
         &MojoFacadeTest::BindTestUIHandlerMojoRequest, base::Unretained(this)));
     evaluator_ =
         [OCMockObject mockForProtocol:@protocol(CRWJSInjectionEvaluator)];
-    facade_ = base::MakeUnique<MojoFacade>(
+    facade_ = std::make_unique<MojoFacade>(
         interface_provider_.get(),
         static_cast<id<CRWJSInjectionEvaluator>>(evaluator_));
   }

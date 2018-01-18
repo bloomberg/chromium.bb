@@ -6,10 +6,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
@@ -65,7 +65,7 @@ class CRWSessionControllerTest : public PlatformTest {
   void CreateNavigationManagerForSessionController(
       CRWSessionController* session_controller) {
     auto navigation_manager =
-        base::MakeUnique<web::LegacyNavigationManagerImpl>();
+        std::make_unique<web::LegacyNavigationManagerImpl>();
     navigation_manager->SetBrowserState(&browser_state_);
     navigation_manager->SetDelegate(&delegate_);
     navigation_manager->SetSessionController(session_controller);
@@ -739,7 +739,7 @@ std::unique_ptr<web::NavigationItem> CreateNavigationItem(
   web::Referrer referrer_object(GURL(referrer),
                                 web::ReferrerPolicyDefault);
   std::unique_ptr<web::NavigationItemImpl> navigation_item =
-      base::MakeUnique<web::NavigationItemImpl>();
+      std::make_unique<web::NavigationItemImpl>();
   navigation_item->SetURL(GURL(url));
   navigation_item->SetReferrer(referrer_object);
   navigation_item->SetTitle(base::SysNSStringToUTF16(title));

@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #import "ios/testing/wait_util.h"
@@ -373,7 +372,7 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
 
   void SetUp() override {
     WebIntTest::SetUp();
-    decider_ = base::MakeUnique<StrictMock<PolicyDeciderMock>>(web_state());
+    decider_ = std::make_unique<StrictMock<PolicyDeciderMock>>(web_state());
     scoped_observer_.Add(web_state());
 
     // Stub out NativeContent objects.

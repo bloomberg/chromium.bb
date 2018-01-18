@@ -10,7 +10,6 @@
 #include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
 #include "base/mac/bundle_locations.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/payments/core/features.h"
@@ -70,7 +69,7 @@ ChromeWebClient::ChromeWebClient() {}
 ChromeWebClient::~ChromeWebClient() {}
 
 std::unique_ptr<web::WebMainParts> ChromeWebClient::CreateWebMainParts() {
-  return base::MakeUnique<IOSChromeMainParts>(
+  return std::make_unique<IOSChromeMainParts>(
       *base::CommandLine::ForCurrentProcess());
 }
 

@@ -216,8 +216,8 @@ void CleanCertificatePolicyCache(
     _observers = [TabModelObservers observers];
 
     _webStateListDelegate =
-        base::MakeUnique<TabModelWebStateListDelegate>(self);
-    _webStateList = base::MakeUnique<WebStateList>(_webStateListDelegate.get());
+        std::make_unique<TabModelWebStateListDelegate>(self);
+    _webStateList = std::make_unique<WebStateList>(_webStateListDelegate.get());
 
     _browserState = browserState;
     DCHECK(_browserState);
@@ -227,12 +227,12 @@ void CleanCertificatePolicyCache(
     // important to the backend code to always have a sync window delegate.
     if (!_browserState->IsOffTheRecord()) {
       // Set up the usage recorder before tabs are created.
-      _tabUsageRecorder = base::MakeUnique<TabUsageRecorder>(
+      _tabUsageRecorder = std::make_unique<TabUsageRecorder>(
           _webStateList.get(),
           PrerenderServiceFactory::GetForBrowserState(browserState));
     }
     _syncedWindowDelegate =
-        base::MakeUnique<TabModelSyncedWindowDelegate>(_webStateList.get());
+        std::make_unique<TabModelSyncedWindowDelegate>(_webStateList.get());
 
     // There must be a valid session service defined to consume session windows.
     DCHECK(service);
@@ -249,23 +249,23 @@ void CleanCertificatePolicyCache(
     [retainedWebStateListObservers addObject:tabModelClosingWebStateObserver];
 
     _webStateListObservers.push_back(
-        base::MakeUnique<WebStateListObserverBridge>(
+        std::make_unique<WebStateListObserverBridge>(
             tabModelClosingWebStateObserver));
 
     SnapshotCache* snapshotCache =
         SnapshotCacheFactory::GetForBrowserState(_browserState);
     if (snapshotCache) {
       _webStateListObservers.push_back(
-          base::MakeUnique<SnapshotCacheWebStateListObserver>(snapshotCache));
+          std::make_unique<SnapshotCacheWebStateListObserver>(snapshotCache));
     }
 
-    _webStateListObservers.push_back(base::MakeUnique<TabParentingObserver>());
+    _webStateListObservers.push_back(std::make_unique<TabParentingObserver>());
 
     TabModelSelectedTabObserver* tabModelSelectedTabObserver =
         [[TabModelSelectedTabObserver alloc] initWithTabModel:self];
     [retainedWebStateListObservers addObject:tabModelSelectedTabObserver];
     _webStateListObservers.push_back(
-        base::MakeUnique<WebStateListObserverBridge>(
+        std::make_unique<WebStateListObserverBridge>(
             tabModelSelectedTabObserver));
 
     TabModelObserversBridge* tabModelObserversBridge =
@@ -273,21 +273,21 @@ void CleanCertificatePolicyCache(
                                         tabModelObservers:_observers];
     [retainedWebStateListObservers addObject:tabModelObserversBridge];
     _webStateListObservers.push_back(
-        base::MakeUnique<WebStateListObserverBridge>(tabModelObserversBridge));
+        std::make_unique<WebStateListObserverBridge>(tabModelObserversBridge));
 
     _webStateListObservers.push_back(
         std::make_unique<TabModelFaviconDriverObserver>(self, _observers));
 
     auto webStateListMetricsObserver =
-        base::MakeUnique<WebStateListMetricsObserver>();
+        std::make_unique<WebStateListMetricsObserver>();
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
     _webStateListObservers.push_back(
-        base::MakeUnique<TabModelWebUsageEnabledObserver>(self));
+        std::make_unique<TabModelWebUsageEnabledObserver>(self));
 
     auto tabModelNotificationObserver =
-        base::MakeUnique<TabModelNotificationObserver>(self);
+        std::make_unique<TabModelNotificationObserver>(self);
     _tabModelNotificationObserver = tabModelNotificationObserver.get();
     _webStateListObservers.push_back(std::move(tabModelNotificationObserver));
 

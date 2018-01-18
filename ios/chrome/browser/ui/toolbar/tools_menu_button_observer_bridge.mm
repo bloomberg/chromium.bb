@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 
@@ -33,7 +34,7 @@
     [_button addTarget:self
                   action:@selector(buttonPressed:)
         forControlEvents:UIControlEventTouchUpInside];
-    _modelBridge = base::MakeUnique<ReadingListModelBridge>(self, _model);
+    _modelBridge = std::make_unique<ReadingListModelBridge>(self, _model);
   }
   return self;
 }

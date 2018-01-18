@@ -11,7 +11,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,7 +105,7 @@ PasswordController* CreatePasswordController(
     web::WebState* web_state,
     password_manager::PasswordStore* store,
     MockPasswordManagerClient** weak_client) {
-  auto client = base::MakeUnique<NiceMock<MockPasswordManagerClient>>(store);
+  auto client = std::make_unique<NiceMock<MockPasswordManagerClient>>(store);
   if (weak_client)
     *weak_client = client.get();
   return [[PasswordController alloc] initWithWebState:web_state

@@ -4,7 +4,8 @@
 
 #include "ios/web_view/internal/web_view_global_state_util.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ios/web/public/app/web_main.h"
 #import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
@@ -22,13 +23,13 @@ void InitializeGlobalState() {
   static std::unique_ptr<web::WebMain> web_main;
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    web_client = base::MakeUnique<ios_web_view::WebViewWebClient>();
+    web_client = std::make_unique<ios_web_view::WebViewWebClient>();
     web::SetWebClient(web_client.get());
 
     web_main_delegate =
-        base::MakeUnique<ios_web_view::WebViewWebMainDelegate>();
+        std::make_unique<ios_web_view::WebViewWebMainDelegate>();
     web::WebMainParams params(web_main_delegate.get());
-    web_main = base::MakeUnique<web::WebMain>(std::move(params));
+    web_main = std::make_unique<web::WebMain>(std::move(params));
   });
 }
 

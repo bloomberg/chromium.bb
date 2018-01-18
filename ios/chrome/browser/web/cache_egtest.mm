@@ -4,8 +4,9 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include <memory>
+
 #include "base/ios/ios_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -126,7 +127,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
     EARL_GREY_TEST_DISABLED(@"Disabled on iOS 10.3.1 and afterwards.");
   }
 
-  web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
+  web::test::SetUpHttpServer(std::make_unique<CacheTestResponseProvider>());
 
   const GURL cacheTestFirstPageURL =
       HttpServer::MakeUrl(kCacheTestFirstPageURL);
@@ -156,7 +157,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
 // Tests caching behavior when opening new tab. New tab should not use the
 // cached page.
 - (void)testCachingBehaviorOnOpenNewTab {
-  web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
+  web::test::SetUpHttpServer(std::make_unique<CacheTestResponseProvider>());
 
   const GURL cacheTestFirstPageURL =
       HttpServer::MakeUrl(kCacheTestFirstPageURL);
@@ -192,7 +193,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
 
-  web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
+  web::test::SetUpHttpServer(std::make_unique<CacheTestResponseProvider>());
 
   // Clear the history to ensure expected omnibox autocomplete results.
   chrome_test_util::ClearBrowsingHistory();

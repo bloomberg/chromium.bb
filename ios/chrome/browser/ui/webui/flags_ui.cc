@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/flags_ui.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -131,8 +132,8 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
 
   base::DictionaryValue results;
 
-  auto supported_features = base::MakeUnique<base::ListValue>();
-  auto unsupported_features = base::MakeUnique<base::ListValue>();
+  auto supported_features = std::make_unique<base::ListValue>();
+  auto unsupported_features = std::make_unique<base::ListValue>();
   GetFlagFeatureEntries(flags_storage_.get(), access_, supported_features.get(),
                         unsupported_features.get());
   results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
@@ -192,7 +193,7 @@ FlagsUI::FlagsUI(web::WebUIIOS* web_ui)
   web_ui->AddMessageHandler(base::WrapUnique(handler));
 
   flags_ui::FlagAccess flag_access = flags_ui::kOwnerAccessToFlags;
-  handler->Init(base::MakeUnique<flags_ui::PrefServiceFlagsStorage>(
+  handler->Init(std::make_unique<flags_ui::PrefServiceFlagsStorage>(
                     GetApplicationContext()->GetLocalState()),
                 flag_access);
 

@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -25,7 +26,7 @@ class JavaScriptBlockingTestWebState : public web::TestWebState {
   JavaScriptBlockingTestWebState() : web::TestWebState() {
     last_committed_item_ = web::NavigationItem::Create();
     std::unique_ptr<web::TestNavigationManager> manager =
-        base::MakeUnique<web::TestNavigationManager>();
+        std::make_unique<web::TestNavigationManager>();
     manager->SetLastCommittedItem(last_committed_item_.get());
     manager_ = manager.get();
     SetNavigationManager(std::move(manager));

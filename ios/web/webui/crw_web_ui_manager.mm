@@ -9,7 +9,6 @@
 
 #include "base/json/string_escape.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
@@ -204,7 +203,7 @@ const char kScriptCommandPrefix[] = "webui";
 - (std::unique_ptr<web::URLFetcherBlockAdapter>)
     fetcherForURL:(const GURL&)URL
 completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
-  return base::MakeUnique<web::URLFetcherBlockAdapter>(
+  return std::make_unique<web::URLFetcherBlockAdapter>(
       URL, _webState->GetBrowserState()->GetRequestContext(), handler);
 }
 

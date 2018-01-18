@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,9 +40,9 @@ class WebStateOpenerTest : public PlatformTest {
   WebStateOpenerTest() = default;
 
   std::unique_ptr<web::WebState> CreateWebState(int last_committed_item_index) {
-    auto test_web_state = base::MakeUnique<web::TestWebState>();
+    auto test_web_state = std::make_unique<web::TestWebState>();
     test_web_state->SetNavigationManager(
-        base::MakeUnique<FakeNavigationManager>(last_committed_item_index));
+        std::make_unique<FakeNavigationManager>(last_committed_item_index));
     return test_web_state;
   }
 

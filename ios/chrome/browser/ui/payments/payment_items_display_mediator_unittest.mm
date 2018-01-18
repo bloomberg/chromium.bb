@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
@@ -28,7 +30,7 @@ class PaymentRequestPaymentItemsDisplayMediatorTest
 // Tests that the expected total item is created.
 TEST_F(PaymentRequestPaymentItemsDisplayMediatorTest, TotalItem) {
   payments::WebPaymentRequest web_payment_request;
-  web_payment_request.details.total = base::MakeUnique<payments::PaymentItem>();
+  web_payment_request.details.total = std::make_unique<payments::PaymentItem>();
   web_payment_request.details.total->label = "Total Cost";
   web_payment_request.details.total->amount->value = "9.99";
   web_payment_request.details.total->amount->currency = "USD";
@@ -50,7 +52,7 @@ TEST_F(PaymentRequestPaymentItemsDisplayMediatorTest, TotalItem) {
 // Tests that the expected line items are created.
 TEST_F(PaymentRequestPaymentItemsDisplayMediatorTest, LineItems) {
   payments::WebPaymentRequest web_payment_request;
-  web_payment_request.details.total = base::MakeUnique<payments::PaymentItem>();
+  web_payment_request.details.total = std::make_unique<payments::PaymentItem>();
 
   payments::TestPaymentRequest payment_request1(web_payment_request,
                                                 browser_state(), web_state(),

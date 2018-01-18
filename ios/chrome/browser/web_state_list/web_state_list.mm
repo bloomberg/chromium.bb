@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
@@ -97,7 +96,7 @@ bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
 
 WebStateList::WebStateList(WebStateListDelegate* delegate)
     : delegate_(delegate),
-      order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {
+      order_controller_(std::make_unique<WebStateListOrderController>(this)) {
   DCHECK(delegate_);
 }
 
@@ -170,7 +169,7 @@ int WebStateList::InsertWebState(int index,
   web::WebState* web_state_ptr = web_state.get();
   web_state_wrappers_.insert(
       web_state_wrappers_.begin() + index,
-      base::MakeUnique<WebStateWrapper>(std::move(web_state)));
+      std::make_unique<WebStateWrapper>(std::move(web_state)));
 
   if (active_index_ >= index)
     ++active_index_;

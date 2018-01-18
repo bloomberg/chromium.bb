@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -126,7 +125,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
     manifest_provider_ = std::move(manifest_provider);
-    service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
+    service_manager_ = std::make_unique<service_manager::ServiceManager>(
         nullptr, nullptr, manifest_provider_.get());
 
     service_manager::mojom::ServicePtr packaged_services_service;
@@ -152,7 +151,7 @@ ServiceManagerContext::ServiceManagerContext() {
   service_manager::mojom::ServiceRequest packaged_services_request;
   DCHECK(!service_manager::ServiceManagerIsRemote());
   std::unique_ptr<BuiltinManifestProvider> manifest_provider =
-      base::MakeUnique<BuiltinManifestProvider>();
+      std::make_unique<BuiltinManifestProvider>();
 
   const std::array<ManifestInfo, 3> manifests = {{
       {mojom::kBrowserServiceName, IDR_MOJO_WEB_BROWSER_MANIFEST},

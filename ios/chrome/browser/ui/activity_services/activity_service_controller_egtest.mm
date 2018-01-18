@@ -4,8 +4,9 @@
 
 #import <XCTest/XCTest.h>
 
+#include <memory>
+
 #include "base/ios/ios_util.h"
-#include "base/memory/ptr_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -77,7 +78,7 @@ id<GREYMatcher> PrintButton() {
   const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://choux");
   responses[regularPageURL] = "fleur";
   web::test::SetUpHttpServer(
-      base::MakeUnique<ErrorPageResponseProvider>(responses));
+      std::make_unique<ErrorPageResponseProvider>(responses));
 
   // Open a regular page and verify that you can share.
   [ChromeEarlGrey loadURL:regularPageURL];

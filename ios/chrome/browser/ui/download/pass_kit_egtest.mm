@@ -5,7 +5,8 @@
 #import <EarlGrey/EarlGrey.h>
 #import <PassKit/PassKit.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #include "ios/chrome/browser/download/pass_kit_test_util.h"
@@ -40,7 +41,7 @@ id<GREYMatcher> PassKitErrorInfobar() {
 // PassKit landing page and download request handler.
 std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     const net::test_server::HttpRequest& request) {
-  auto result = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto result = std::make_unique<net::test_server::BasicHttpResponse>();
   result->set_code(net::HTTP_OK);
 
   if (request.GetURL().path() == "/") {

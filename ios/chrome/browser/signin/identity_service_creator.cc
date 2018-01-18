@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/identity_service_creator.h"
 
+#include <memory>
+
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
@@ -24,7 +26,7 @@ std::unique_ptr<service_manager::Service> CreateIdentityService(
       ios::SigninManagerFactory::GetForBrowserState(browser_state);
   ProfileOAuth2TokenService* token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
-  return base::MakeUnique<identity::IdentityService>(
+  return std::make_unique<identity::IdentityService>(
       account_tracker, signin_manager, token_service);
 }
 

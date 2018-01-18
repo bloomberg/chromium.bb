@@ -5,7 +5,6 @@
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
 
 #import "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,7 +37,7 @@ class SerializableUserDataManagerWrapper : public base::SupportsUserData::Data {
 
     web_state->SetUserData(
         kSerializableUserDataManagerKey,
-        base::MakeUnique<SerializableUserDataManagerWrapper>());
+        std::make_unique<SerializableUserDataManagerWrapper>());
     return static_cast<SerializableUserDataManagerWrapper*>(
         web_state->GetUserData(kSerializableUserDataManagerKey));
   }
@@ -54,7 +53,7 @@ class SerializableUserDataManagerWrapper : public base::SupportsUserData::Data {
 
 // static
 std::unique_ptr<SerializableUserData> SerializableUserData::Create() {
-  return base::MakeUnique<SerializableUserDataImpl>();
+  return std::make_unique<SerializableUserDataImpl>();
 }
 
 SerializableUserDataImpl::SerializableUserDataImpl() : data_(@{}) {}
@@ -138,7 +137,7 @@ id<NSCoding> SerializableUserDataManagerImpl::GetValueForSerializationKey(
 
 std::unique_ptr<SerializableUserData>
 SerializableUserDataManagerImpl::CreateSerializableUserData() const {
-  return base::MakeUnique<SerializableUserDataImpl>(data_);
+  return std::make_unique<SerializableUserDataImpl>(data_);
 }
 
 void SerializableUserDataManagerImpl::AddSerializableUserData(

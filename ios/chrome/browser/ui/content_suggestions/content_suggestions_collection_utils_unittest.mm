@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -18,28 +19,28 @@ namespace content_suggestions {
 class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
  public:
   void SetAsIPad() {
-    device_type_swizzler_ = base::MakeUnique<ScopedBlockSwizzler>(
+    device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
           return UIUserInterfaceIdiomPad;
         });
   }
   void SetAsIPhone() {
-    device_type_swizzler_ = base::MakeUnique<ScopedBlockSwizzler>(
+    device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
           return UIUserInterfaceIdiomPhone;
         });
   }
   void SetAsPortrait() {
-    orientation_swizzler_ = base::MakeUnique<ScopedBlockSwizzler>(
+    orientation_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIApplication class], @selector(statusBarOrientation),
         ^UIInterfaceOrientation(id self) {
           return UIInterfaceOrientationPortrait;
         });
   }
   void SetAsLandscape() {
-    orientation_swizzler_ = base::MakeUnique<ScopedBlockSwizzler>(
+    orientation_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIApplication class], @selector(statusBarOrientation),
         ^UIInterfaceOrientation(id self) {
           return UIInterfaceOrientationLandscapeLeft;

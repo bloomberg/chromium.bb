@@ -4,7 +4,8 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -83,7 +84,7 @@ void WaitForHttpAuthDialog() {
   }
 
   GURL URL = web::test::HttpServer::MakeUrl("http://good-auth");
-  web::test::SetUpHttpServer(base::MakeUnique<web::HttpAuthResponseProvider>(
+  web::test::SetUpHttpServer(std::make_unique<web::HttpAuthResponseProvider>(
       URL, "GoodRealm", "gooduser", "goodpass"));
   chrome_test_util::LoadUrl(URL);
   WaitForHttpAuthDialog();
@@ -109,7 +110,7 @@ void WaitForHttpAuthDialog() {
   }
 
   GURL URL = web::test::HttpServer::MakeUrl("http://bad-auth");
-  web::test::SetUpHttpServer(base::MakeUnique<web::HttpAuthResponseProvider>(
+  web::test::SetUpHttpServer(std::make_unique<web::HttpAuthResponseProvider>(
       URL, "BadRealm", "baduser", "badpass"));
   chrome_test_util::LoadUrl(URL);
   WaitForHttpAuthDialog();
@@ -135,7 +136,7 @@ void WaitForHttpAuthDialog() {
   }
 
   GURL URL = web::test::HttpServer::MakeUrl("http://cancel-auth");
-  web::test::SetUpHttpServer(base::MakeUnique<web::HttpAuthResponseProvider>(
+  web::test::SetUpHttpServer(std::make_unique<web::HttpAuthResponseProvider>(
       URL, "CancellingRealm", "", ""));
   chrome_test_util::LoadUrl(URL);
   WaitForHttpAuthDialog();

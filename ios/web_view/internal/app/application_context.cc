@@ -5,7 +5,6 @@
 #include "ios/web_view/internal/app/application_context.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -30,7 +29,7 @@ ApplicationContext* ApplicationContext::GetInstance() {
 }
 
 ApplicationContext::ApplicationContext() {
-  net_log_ = base::MakeUnique<net_log::ChromeNetLog>();
+  net_log_ = std::make_unique<net_log::ChromeNetLog>();
 
   SetApplicationLocale(l10n_util::GetLocaleOverride());
 }
@@ -40,7 +39,7 @@ ApplicationContext::~ApplicationContext() = default;
 void ApplicationContext::PreCreateThreads() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   web_view_io_thread_ =
-      base::MakeUnique<WebViewIOThread>(GetLocalState(), GetNetLog());
+      std::make_unique<WebViewIOThread>(GetLocalState(), GetNetLog());
 }
 
 void ApplicationContext::SaveState() {

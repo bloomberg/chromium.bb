@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
@@ -51,7 +52,7 @@ void UpdateSearchEngine(TemplateURLService* service) {
   }
   for (const auto& engine : new_engines) {
     if (engine->prepopulate_id != kGoogleEnginePrepopulatedId)
-      service->Add(base::MakeUnique<TemplateURL>(*engine));
+      service->Add(std::make_unique<TemplateURL>(*engine));
   }
 }
 

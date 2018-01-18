@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -141,7 +140,7 @@ void NotificationPromo::WritePrefs(int promo_id,
                                    double first_view_time,
                                    int views,
                                    bool closed) {
-  auto ntp_promo = base::MakeUnique<base::DictionaryValue>();
+  auto ntp_promo = std::make_unique<base::DictionaryValue>();
   ntp_promo->SetDouble(kPrefPromoFirstViewTime, first_view_time);
   ntp_promo->SetInteger(kPrefPromoViews, views);
   ntp_promo->SetBoolean(kPrefPromoClosed, closed);

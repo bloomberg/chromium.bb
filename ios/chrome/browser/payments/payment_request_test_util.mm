@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_method_data.h"
@@ -23,7 +24,7 @@ payments::WebPaymentRequest CreateTestWebPaymentRequest() {
   method_datum.supported_methods.push_back("visa");
   method_datum.supported_methods.push_back("amex");
   web_payment_request.method_data.push_back(method_datum);
-  web_payment_request.details.total = base::MakeUnique<payments::PaymentItem>();
+  web_payment_request.details.total = std::make_unique<payments::PaymentItem>();
   web_payment_request.details.total->label = "Total";
   web_payment_request.details.total->amount->value = "1.00";
   web_payment_request.details.total->amount->currency = "USD";

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -322,7 +321,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   if (gesture.state == UIGestureRecognizerStateBegan) {
     if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       // Disable fullscreen while the side swipe gesture is occurring.
-      fullscreenDisabler_ = base::MakeUnique<ScopedFullscreenDisabler>(
+      fullscreenDisabler_ = std::make_unique<ScopedFullscreenDisabler>(
           FullscreenControllerFactory::GetInstance()->GetForBrowserState(
               browserState_));
     } else {

@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -37,7 +39,7 @@ constexpr CFTimeInterval kDisappearanceTimeout = 4;
 std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
-      base::MakeUnique<net::test_server::BasicHttpResponse>();
+      std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(
       "<head><title>Example website</title></head>"

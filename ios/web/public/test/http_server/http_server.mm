@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -75,7 +74,7 @@ HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
 std::unique_ptr<net::test_server::HttpResponse> HttpServer::GetResponse(
     const net::test_server::HttpRequest& request) {
   if (isSuspended) {
-    return base::MakeUnique<net::test_server::HungResponse>();
+    return std::make_unique<net::test_server::HungResponse>();
   }
   ResponseProvider::Request provider_request =
       ResponseProviderRequestFromEmbeddedTestServerRequest(request);
@@ -107,7 +106,7 @@ void HttpServer::StartOrDie() {
   // Registers request handler which serves files from the http test files
   // directory. The current tests calls full path relative to DIR_SOURCE_ROOT.
   // Registers the DIR_SOURCE_ROOT to avoid massive test changes.
-  embedded_test_server_ = base::MakeUnique<net::EmbeddedTestServer>();
+  embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
   embedded_test_server_->ServeFilesFromSourceDirectory(".");
 
   embedded_test_server_->RegisterDefaultHandler(

@@ -120,7 +120,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
   method_datum1.supported_methods.push_back("https://jefpay.com");
   method_datum1.supported_methods.push_back("https://bobpay.com");
   std::unique_ptr<base::DictionaryValue> data =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   data->SetString("Some data", "Some stringified data");
   std::string stringified_data;
   base::JSONWriter::Write(*data, &stringified_data);
@@ -171,7 +171,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        LaunchIOSPaymentInstrument_MalformedUniversalLink) {
   if (base::ios::IsRunningOnIOS10OrLater()) {
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        base::MakeUnique<web::TestNavigationManager>();
+        std::make_unique<web::TestNavigationManager>();
     web_state_.SetNavigationManager(std::move(navigation_manager));
 
     WebPaymentRequest web_payment_request =

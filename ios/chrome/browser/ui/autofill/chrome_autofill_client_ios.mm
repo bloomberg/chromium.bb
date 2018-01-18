@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
@@ -122,7 +121,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+      std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
           callback, GetPrefs())));
 }
@@ -133,7 +132,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     bool should_cvc_be_requested,
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+      std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           true, card, std::move(legal_message), callback, GetPrefs())));
 }
 
@@ -141,7 +140,7 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     const base::Closure& callback) {
   auto infobar_delegate =
-      base::MakeUnique<AutofillCreditCardFillingInfoBarDelegateMobile>(
+      std::make_unique<AutofillCreditCardFillingInfoBarDelegateMobile>(
           card, callback);
   auto* raw_delegate = infobar_delegate.get();
   if (infobar_manager_->AddInfoBar(

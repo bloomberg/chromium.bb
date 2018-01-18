@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/test_timeouts.h"
 #include "ios/web/public/browser_state.h"
@@ -57,7 +56,7 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
     ASSERT_TRUE(server.IsRunning());
 
     auto provider =
-        base::MakeUnique<web::StringResponseProvider>("Hello World");
+        std::make_unique<web::StringResponseProvider>("Hello World");
     provider_ = provider.get();  // Keep a weak copy to allow unregistration.
     server.AddResponseProvider(std::move(provider));
   }

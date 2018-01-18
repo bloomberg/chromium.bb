@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/mac/bundle_locations.h"
-#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
@@ -317,7 +316,7 @@ class UpgradeInfoBarDismissObserver
   if ([upgradeInfoBarDelegates_ objectForKey:tabId])
     return;
 
-  auto infobarDelegate = base::MakeUnique<UpgradeInfoBarDelegate>();
+  auto infobarDelegate = std::make_unique<UpgradeInfoBarDelegate>();
   DelegateHolder* delegateHolder =
       [[DelegateHolder alloc] initWithInfoBarManager:infoBarManager
                                      infoBarDelegate:infobarDelegate.get()

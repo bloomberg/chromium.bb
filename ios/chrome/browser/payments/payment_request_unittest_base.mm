@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payments_test_util.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -35,7 +34,7 @@ void PaymentRequestUnitTestBase::TearDown() {
 }
 
 void PaymentRequestUnitTestBase::CreateTestPaymentRequest() {
-  payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
+  payment_request_ = std::make_unique<payments::TestPaymentRequest>(
       payment_request_test_util::CreateTestWebPaymentRequest(),
       chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
   payment_request_->SetPrefService(pref_service_.get());

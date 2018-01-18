@@ -6,8 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -38,7 +39,7 @@ security_state::SSLStatusInputEventData* GetOrCreateSSLStatusInputEventData(
       static_cast<security_state::SSLStatusInputEventData*>(
           ssl.user_data.get());
   if (!input_events) {
-    ssl.user_data = base::MakeUnique<security_state::SSLStatusInputEventData>();
+    ssl.user_data = std::make_unique<security_state::SSLStatusInputEventData>();
     input_events = static_cast<security_state::SSLStatusInputEventData*>(
         ssl.user_data.get());
   }

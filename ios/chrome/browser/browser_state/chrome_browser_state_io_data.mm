@@ -399,7 +399,7 @@ void ChromeBrowserStateIOData::Init(
             "Not implemented, this is a feature that websites can opt into and "
             "thus there is no Chrome-wide policy to disable it."
         })");
-  certificate_report_sender_ = base::MakeUnique<net::ReportSender>(
+  certificate_report_sender_ = std::make_unique<net::ReportSender>(
       main_request_context_.get(), traffic_annotation);
   transport_security_state_->SetReportSender(certificate_report_sender_.get());
 
@@ -435,19 +435,19 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   // ChromeBrowserStateIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::MakeUnique<net::FileProtocolHandler>(
+      std::make_unique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
 
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
+      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
 
   job_factory->SetProtocolHandler(
       url::kAboutScheme,
-      base::MakeUnique<about_handler::AboutProtocolHandler>());
+      std::make_unique<about_handler::AboutProtocolHandler>());
 
   return job_factory;
 }

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -41,7 +40,7 @@ WebViewTranslateRankerFactory::BuildServiceInstanceFor(
   WebViewBrowserState* web_view_browser_state =
       WebViewBrowserState::FromBrowserState(context);
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
-      base::MakeUnique<translate::TranslateRankerImpl>(
+      std::make_unique<translate::TranslateRankerImpl>(
           translate::TranslateRankerImpl::GetModelPath(
               web_view_browser_state->GetStatePath()),
           translate::TranslateRankerImpl::GetModelURL(),

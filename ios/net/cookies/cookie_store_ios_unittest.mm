@@ -10,7 +10,6 @@
 
 #include "base/bind_helpers.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -34,7 +33,7 @@ class TestingCookieStoreIOS : public CookieStoreIOS {
   TestingCookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store)
       : CookieStoreIOS(std::move(system_store)),
         scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()) {}
+            std::make_unique<TestCookieStoreIOSClient>()) {}
 
  private:
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
@@ -43,8 +42,8 @@ class TestingCookieStoreIOS : public CookieStoreIOS {
 struct CookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
     ClearCookies();
-    return base::MakeUnique<TestingCookieStoreIOS>(
-        base::MakeUnique<NSHTTPSystemCookieStore>());
+    return std::make_unique<TestingCookieStoreIOS>(
+        std::make_unique<NSHTTPSystemCookieStore>());
   }
 
   static const bool supports_http_only = false;
@@ -106,16 +105,16 @@ class CookieStoreIOSTest : public PlatformTest {
         kTestCookieURLFoo("http://foo.google.com"),
         kTestCookieURLBarBar("http://bar.google.com/bar"),
         scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()),
+            std::make_unique<TestCookieStoreIOSClient>()),
         backend_(new TestPersistentCookieStore) {
     ClearCookies();
     std::unique_ptr<NSHTTPSystemCookieStore> system_store(
-        base::MakeUnique<NSHTTPSystemCookieStore>());
+        std::make_unique<NSHTTPSystemCookieStore>());
     // |system_store_| doesn't own the NSHTTPSystemCookieStore object, the
     // object is owned  by store_, this will work as we will not use
     // |system_store_| after |store_| is deleted.
     system_store_ = system_store.get();
-    store_ = base::MakeUnique<net::CookieStoreIOS>(std::move(system_store));
+    store_ = std::make_unique<net::CookieStoreIOS>(std::move(system_store));
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURLFooBar, "abc",
         base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
@@ -235,10 +234,10 @@ TEST_F(CookieStoreIOSTest, SameValueDoesNotCallHook) {
 TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
   const GURL kTestCookieURLFooBar("http://foo.google.com/bar");
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
-      base::MakeUnique<TestCookieStoreIOSClient>());
+      std::make_unique<TestCookieStoreIOSClient>());
   ClearCookies();
-  std::unique_ptr<CookieStoreIOS> cookie_store(base::MakeUnique<CookieStoreIOS>(
-      base::MakeUnique<NSHTTPSystemCookieStore>()));
+  std::unique_ptr<CookieStoreIOS> cookie_store(std::make_unique<CookieStoreIOS>(
+      std::make_unique<NSHTTPSystemCookieStore>()));
 
   // Add a cookie.
   net::CookieOptions options;

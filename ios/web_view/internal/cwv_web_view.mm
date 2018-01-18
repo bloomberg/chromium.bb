@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
@@ -452,15 +451,15 @@ static NSString* gUserAgentProduct = nil;
   }
   _webState->AddObserver(_webStateObserver.get());
 
-  _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
+  _webStateDelegate = std::make_unique<web::WebStateDelegateBridge>(self);
   _webState->SetDelegate(_webStateDelegate.get());
 
   _webStatePolicyDecider =
-      base::MakeUnique<ios_web_view::WebViewWebStatePolicyDecider>(
+      std::make_unique<ios_web_view::WebViewWebStatePolicyDecider>(
           _webState.get(), self);
 
   _javaScriptDialogPresenter =
-      base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
+      std::make_unique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
                                                                        nullptr);
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;

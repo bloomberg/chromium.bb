@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/webui/about_ui.h"
@@ -41,13 +40,13 @@ using WebUIIOSFactoryFunction =
 template <class T>
 std::unique_ptr<WebUIIOSController> NewWebUIIOS(WebUIIOS* web_ui,
                                                 const GURL& url) {
-  return base::MakeUnique<T>(web_ui);
+  return std::make_unique<T>(web_ui);
 }
 
 template <class T>
 std::unique_ptr<WebUIIOSController> NewWebUIIOSWithHost(WebUIIOS* web_ui,
                                                         const GURL& url) {
-  return base::MakeUnique<T>(web_ui, url.host());
+  return std::make_unique<T>(web_ui, url.host());
 }
 
 // Returns a function that can be used to create the right type of WebUIIOS for

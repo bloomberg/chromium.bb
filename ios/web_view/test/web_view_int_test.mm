@@ -38,7 +38,7 @@ std::unique_ptr<net::test_server::HttpResponse> CreatePageHTMLResponse(
       "<html><head><title>%s</title></head><body>%s</body></html>",
       title.c_str(), body.c_str());
 
-  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_content(html);
   return std::move(http_response);
 }
@@ -98,7 +98,7 @@ namespace ios_web_view {
 
 WebViewIntTest::WebViewIntTest()
     : web_view_(test::CreateWebView()),
-      test_server_(base::MakeUnique<net::EmbeddedTestServer>(
+      test_server_(std::make_unique<net::EmbeddedTestServer>(
           net::test_server::EmbeddedTestServer::TYPE_HTTP)) {
   test_server_->RegisterRequestHandler(base::Bind(&TestRequestHandler));
 }

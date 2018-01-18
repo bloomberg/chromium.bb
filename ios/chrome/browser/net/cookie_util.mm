@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -56,7 +55,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return base::MakeUnique<net::CookieMonster>(nullptr);
+    return std::make_unique<net::CookieMonster>(nullptr);
   }
 
   const bool restore_old_session_cookies =
@@ -100,7 +99,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.path, true /* restore_old_session_cookies */,
         config.crypto_delegate);
   }
-  return base::MakeUnique<net::CookieStoreIOSPersistent>(
+  return std::make_unique<net::CookieStoreIOSPersistent>(
       persistent_store.get(), std::move(system_cookie_store));
 }
 

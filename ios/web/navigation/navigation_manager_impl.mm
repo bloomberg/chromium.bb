@@ -4,7 +4,6 @@
 
 #import "ios/web/navigation/navigation_manager_impl.h"
 
-#include "base/memory/ptr_util.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/public/web_client.h"
 #include "ui/base/page_transition_types.h"
@@ -347,7 +346,7 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
     loaded_url = url;
   }
 
-  auto item = base::MakeUnique<NavigationItemImpl>();
+  auto item = std::make_unique<NavigationItemImpl>();
   item->SetOriginalRequestURL(loaded_url);
   item->SetURL(loaded_url);
   item->SetReferrer(referrer);

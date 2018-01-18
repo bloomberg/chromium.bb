@@ -43,7 +43,7 @@ class OmahaServiceTest : public PlatformTest {
   OmahaServiceTest()
       : need_update_(false),
         scoped_browser_state_manager_(
-            base::MakeUnique<TestChromeBrowserStateManager>(
+            std::make_unique<TestChromeBrowserStateManager>(
                 base::FilePath(kUserDataDir))) {
     GetApplicationContext()->GetLocalState()->SetInt64(
         metrics::prefs::kInstallDate, install_time_util::kUnknownInstallDate);

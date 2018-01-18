@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -51,7 +50,7 @@ WebViewAccountTrackerServiceFactory::BuildServiceInstanceFor(
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
   std::unique_ptr<AccountTrackerService> service =
-      base::MakeUnique<AccountTrackerService>();
+      std::make_unique<AccountTrackerService>();
   service->Initialize(
       WebViewSigninClientFactory::GetForBrowserState(browser_state));
   return service;

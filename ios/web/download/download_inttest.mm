@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/testing/wait_util.h"
@@ -33,7 +34,7 @@ const char kContent[] = "testdata";
 // Returns HTTP response which causes WebState to start the download.
 std::unique_ptr<net::test_server::HttpResponse> GetDownloadResponse(
     const net::test_server::HttpRequest& request) {
-  auto result = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto result = std::make_unique<net::test_server::BasicHttpResponse>();
   result->set_code(net::HTTP_OK);
   result->set_content(kContent);
   result->AddCustomHeader("Content-Type", kMimeType);
@@ -91,7 +92,7 @@ TEST_F(DownloadTest, SucessfullDownload) {
   EXPECT_EQ("download.test", base::UTF16ToUTF8(task->GetSuggestedFilename()));
 
   // Start the download task and wait for completion.
-  task->Start(base::MakeUnique<net::URLFetcherStringWriter>());
+  task->Start(std::make_unique<net::URLFetcherStringWriter>());
   ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return task->IsDone();

@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/memory/ptr_util.h"
 #import "ios/web/public/test/http_server/html_response_provider.h"
 #include "url/gurl.h"
 
@@ -24,7 +23,7 @@ std::unique_ptr<ResponseProvider> CreateBlankPageResponseProvider(
     const GURL& url) {
   std::map<GURL, std::string> responses;
   responses[url] = kBlankTestPageHtml;
-  return base::MakeUnique<HtmlResponseProvider>(responses);
+  return std::make_unique<HtmlResponseProvider>(responses);
 }
 
 }  // namespace test

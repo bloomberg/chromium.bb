@@ -68,7 +68,7 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(
     web::WebState* web_state,
     id<LanguageSelectionHandler> language_selection_handler)
     : web_state_(web_state),
-      translate_manager_(base::MakeUnique<translate::TranslateManager>(
+      translate_manager_(std::make_unique<translate::TranslateManager>(
           this,
           translate::TranslateRankerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
@@ -154,7 +154,7 @@ void ChromeIOSTranslateClient::RecordTranslateEvent(
   if (item == nullptr)
     return;
 
-  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
   // We only log the event we care about.
   const bool needs_logging = translate::ConstructTranslateEvent(
       item->GetTimestamp().ToInternalValue(), translate_event, specifics.get());

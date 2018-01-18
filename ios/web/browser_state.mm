@@ -4,10 +4,11 @@
 
 #include "ios/web/public/browser_state.h"
 
+#include <memory>
+
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "ios/web/public/certificate_policy_cache.h"
@@ -106,7 +107,7 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
   DCHECK_CURRENTLY_ON(WebThread::UI);
   if (!browser_state->GetUserData(kCertificatePolicyCacheKeyName)) {
     browser_state->SetUserData(kCertificatePolicyCacheKeyName,
-                               base::MakeUnique<CertificatePolicyCacheHandle>(
+                               std::make_unique<CertificatePolicyCacheHandle>(
                                    new CertificatePolicyCache()));
   }
 
@@ -122,7 +123,7 @@ BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {
   // may be passed a content::BrowserContext instead of a BrowserState, attach
   // an empty object to this via a private key.
   SetUserData(kBrowserStateIdentifierKey,
-              base::MakeUnique<SupportsUserData::Data>());
+              std::make_unique<SupportsUserData::Data>());
 }
 
 BrowserState::~BrowserState() {
@@ -176,10 +177,10 @@ void BrowserState::Initialize(BrowserState* browser_state,
   RemoveBrowserStateFromUserIdMap(browser_state);
   g_user_id_to_browser_state.Get()[new_id] = browser_state;
   browser_state->SetUserData(kServiceUserId,
-                             base::MakeUnique<ServiceUserIdHolder>(new_id));
+                             std::make_unique<ServiceUserIdHolder>(new_id));
 
   browser_state->SetUserData(kMojoWasInitialized,
-                             base::MakeUnique<base::SupportsUserData::Data>());
+                             std::make_unique<base::SupportsUserData::Data>());
 
   ServiceManagerConnection* service_manager_connection =
       ServiceManagerConnection::Get();
@@ -201,7 +202,7 @@ void BrowserState::Initialize(BrowserState* browser_state,
 
     service_manager_connection->GetConnector()->StartService(identity);
     auto connection_holder =
-        base::MakeUnique<BrowserStateServiceManagerConnectionHolder>(
+        std::make_unique<BrowserStateServiceManagerConnectionHolder>(
             std::move(service_request));
 
     ServiceManagerConnection* connection =

@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -37,7 +36,7 @@ std::unique_ptr<KeyedService> TranslateRankerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<TranslateRankerImpl>(
+  return std::make_unique<TranslateRankerImpl>(
       TranslateRankerImpl::GetModelPath(browser_state->GetStatePath()),
       TranslateRankerImpl::GetModelURL(), nullptr /* ukm::UkmRecorder */);
 }

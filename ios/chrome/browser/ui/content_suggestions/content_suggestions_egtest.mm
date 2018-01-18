@@ -5,10 +5,10 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -76,7 +76,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     return nullptr;
   }
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
-      base::MakeUnique<net::test_server::BasicHttpResponse>();
+      std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content("<html><head><title>" + std::string(kPageTitle) +
                              "</title></head><body>" +

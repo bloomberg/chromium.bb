@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/ios/ios_util.h"
@@ -1022,7 +1023,7 @@ class LoadIfNecessaryTest : public WebTest {
  protected:
   void SetUp() override {
     WebTest::SetUp();
-    web_state_ = base::MakeUnique<WebStateImpl>(
+    web_state_ = std::make_unique<WebStateImpl>(
         WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
   }
 

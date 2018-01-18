@@ -207,7 +207,7 @@ void WebMainLoop::InitializeMainThread() {
 
 int WebMainLoop::WebThreadsStarted() {
   cookie_notification_bridge_.reset(new CookieNotificationBridge);
-  service_manager_context_ = base::MakeUnique<ServiceManagerContext>();
+  service_manager_context_ = std::make_unique<ServiceManagerContext>();
   return result_code_;
 }
 

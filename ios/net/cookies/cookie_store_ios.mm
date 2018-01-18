@@ -16,7 +16,6 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -248,7 +247,7 @@ CookieStoreIOS::CookieStoreIOS(
 
 CookieStoreIOS::CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store)
     : CookieStoreIOS(
-          base::MakeUnique<NSHTTPSystemCookieStore>(ns_cookie_store)) {}
+          std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store)) {}
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
@@ -621,7 +620,7 @@ CookieStoreIOS::AddCallbackForCookie(const GURL& gurl,
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0) {
     UpdateCacheForCookieFromSystem(gurl, name, /*run_callbacks=*/false);
-    hook_map_[key] = base::MakeUnique<CookieChangedCallbackList>();
+    hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
   }
 
   DCHECK(hook_map_.find(key) != hook_map_.end());

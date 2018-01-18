@@ -7,9 +7,9 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -759,7 +759,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
             FullscreenController* fullscreenController =
                 FullscreenControllerFactory::GetInstance()->GetForBrowserState(
                     self.browserState);
-            _fullscreenDisabler = base::MakeUnique<ScopedFullscreenDisabler>(
+            _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
                 fullscreenController);
           }
         }

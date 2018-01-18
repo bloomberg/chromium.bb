@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -365,9 +366,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
       [self selectIdentity:identities[0]];
     }
     _identityServiceObserver =
-        base::MakeUnique<ChromeIdentityServiceObserverBridge>(self);
+        std::make_unique<ChromeIdentityServiceObserverBridge>(self);
     _browserProviderObserver =
-        base::MakeUnique<ChromeBrowserProviderObserverBridge>(self);
+        std::make_unique<ChromeBrowserProviderObserverBridge>(self);
   }
   return self;
 }
@@ -572,7 +573,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 - (void)chromeIdentityServiceDidChange:(ios::ChromeIdentityService*)identity {
   DCHECK(!_identityServiceObserver.get());
   _identityServiceObserver =
-      base::MakeUnique<ChromeIdentityServiceObserverBridge>(self);
+      std::make_unique<ChromeIdentityServiceObserverBridge>(self);
 }
 
 - (void)chromeBrowserProviderWillBeDestroyed {

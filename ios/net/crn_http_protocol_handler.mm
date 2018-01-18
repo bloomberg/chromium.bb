@@ -15,7 +15,6 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -266,7 +265,7 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       if (!post_data_readers_.empty()) {
         // NOTE: This call will result in |post_data_readers_| being cleared,
         // which is the desired behavior.
-        net_request_->set_upload(base::MakeUnique<ElementsUploadDataStream>(
+        net_request_->set_upload(std::make_unique<ElementsUploadDataStream>(
             std::move(post_data_readers_), 0));
         DCHECK(post_data_readers_.empty());
       }
@@ -286,7 +285,7 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
         std::vector<char> owned_data(read_buffer_.get(),
                                      read_buffer_.get() + length);
         post_data_readers_.push_back(
-            base::MakeUnique<UploadOwnedBytesElementReader>(&owned_data));
+            std::make_unique<UploadOwnedBytesElementReader>(&owned_data));
       } else if (length < 0) {  // Error
         StopRequestWithError(stream.streamError.code, ERR_FAILED);
       }

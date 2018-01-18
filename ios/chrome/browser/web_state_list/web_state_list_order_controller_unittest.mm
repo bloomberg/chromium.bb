@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -49,10 +48,10 @@ class WebStateListOrderControllerTest : public PlatformTest {
   WebStateListOrderController order_controller_;
 
   void InsertNewWebState(int index, WebStateOpener opener) {
-    auto test_web_state = base::MakeUnique<web::TestWebState>();
+    auto test_web_state = std::make_unique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(kURL));
     test_web_state->SetNavigationManager(
-        base::MakeUnique<FakeNavigationManager>());
+        std::make_unique<FakeNavigationManager>());
     web_state_list_.InsertWebState(index, std::move(test_web_state),
                                    WebStateList::INSERT_FORCE_INDEX, opener);
   }

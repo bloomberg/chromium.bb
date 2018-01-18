@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/testing/wait_util.h"
@@ -127,7 +126,7 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
       const GURL& url) const override {
     DCHECK_EQ(url.scheme(), kTestWebUIScheme);
     DCHECK_EQ(url.host(), kTestWebUIURLHost);
-    return base::MakeUnique<TestUI>(web_ui, ui_handler_);
+    return std::make_unique<TestUI>(web_ui, ui_handler_);
   }
 
  private:
@@ -141,9 +140,9 @@ class WebUIMojoTest : public WebIntTest {
  protected:
   void SetUp() override {
     WebIntTest::SetUp();
-    ui_handler_ = base::MakeUnique<TestUIHandler>();
+    ui_handler_ = std::make_unique<TestUIHandler>();
     web::WebState::CreateParams params(GetBrowserState());
-    web_state_ = base::MakeUnique<web::WebStateImpl>(params);
+    web_state_ = std::make_unique<web::WebStateImpl>(params);
     web_state_->GetNavigationManagerImpl().InitializeSession();
     WebUIIOSControllerFactory::RegisterFactory(
         new TestWebUIControllerFactory(ui_handler_.get()));
