@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var maps_key = "ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w";
+var maps_key = "AIzaSyBa5aieunaIp3Obco-dNVYMdbnTZGAVkKQ";
 
 function gclient_geocode(address) {
   var url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' +
@@ -18,12 +18,10 @@ function gclient_geocode(address) {
         var json = JSON.parse(request.responseText);
         var latlng = json.results[0].geometry.location;
         latlng = latlng.lat + ',' + latlng.lng;
-
-        var src = "https://maps.google.com/staticmap?center=" + latlng +
-                  "&markers=" + latlng + "&zoom=14" +
-                  "&size=512x512&sensor=false&key=" + maps_key;
-        var map = document.getElementById("map");
-
+        var src = 'https://maps.googleapis.com/maps/api/staticmap?center=' +
+            latlng + '&markers=' + latlng + '&zoom=14' +
+            '&size=512x512&sensor=false&key=' + maps_key;
+        var map = document.getElementById('map');
         map.src = src;
         map.addEventListener('click', function () {
           window.close();

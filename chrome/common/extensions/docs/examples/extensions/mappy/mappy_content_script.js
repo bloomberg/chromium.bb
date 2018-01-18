@@ -49,4 +49,3 @@ var findAddress = function() {
   }
   return null;
 }
-
