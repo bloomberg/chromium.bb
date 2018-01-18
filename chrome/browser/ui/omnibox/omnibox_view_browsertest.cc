@@ -61,8 +61,6 @@
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
-using base::Time;
-using base::TimeDelta;
 using bookmarks::BookmarkModel;
 
 namespace {
@@ -290,7 +288,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     }
   }
 
-  void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
+  void AddHistoryEntry(const TestHistoryEntry& entry, const base::Time& time) {
     Profile* profile = browser()->profile();
     history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfile(
@@ -328,7 +326,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     for (size_t i = 0; i < arraysize(kHistoryEntries); i++) {
       // Add everything in order of time. We don't want to have a time that
       // is "right now" or it will nondeterministically appear in the results.
-      Time t = Time::Now() - TimeDelta::FromHours(i + 1);
+      base::Time t = base::Time::Now() - base::TimeDelta::FromHours(i + 1);
       ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(kHistoryEntries[i], t));
     }
   }
@@ -1100,8 +1098,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   };
 
   // Add a history entry to trigger inline autocomplete when typing "foo".
-  ASSERT_NO_FATAL_FAILURE(
-      AddHistoryEntry(kHistoryFoobar, Time::Now() - TimeDelta::FromHours(1)));
+  ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(
+      kHistoryFoobar, base::Time::Now() - base::TimeDelta::FromHours(1)));
 
   // Type "fo" to trigger inline autocomplete.
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordPrefixKeys));
@@ -1159,8 +1157,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
 
   // Add a history entry to trigger HQP matching with text == keyword when
   // typing "fo te".
-  ASSERT_NO_FATAL_FAILURE(
-      AddHistoryEntry(kHistoryFoo, Time::Now() - TimeDelta::FromMinutes(10)));
+  ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(
+      kHistoryFoo, base::Time::Now() - base::TimeDelta::FromMinutes(10)));
 
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_F, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_O, 0));
@@ -1445,8 +1443,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabTraverseResultsTest) {
   };
 
   // Add a history entry so "foo" gets multiple matches.
-  ASSERT_NO_FATAL_FAILURE(
-      AddHistoryEntry(kHistoryFoo, Time::Now() - TimeDelta::FromHours(1)));
+  ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(
+      kHistoryFoo, base::Time::Now() - base::TimeDelta::FromHours(1)));
 
   // Load results.
   ASSERT_NO_FATAL_FAILURE(omnibox_view->SelectAll(false));

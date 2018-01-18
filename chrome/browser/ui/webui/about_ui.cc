@@ -83,10 +83,7 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #endif
 
-using base::Time;
-using base::TimeDelta;
 using content::BrowserThread;
-using content::WebContents;
 
 namespace {
 

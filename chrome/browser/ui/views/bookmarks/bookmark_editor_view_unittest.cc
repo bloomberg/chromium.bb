@@ -22,8 +22,6 @@
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
-using base::Time;
-using base::TimeDelta;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
@@ -202,7 +200,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
 
 // Changes the url and makes sure parent/visual order doesn't change.
 TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
-  Time node_time = Time::Now() + TimeDelta::FromDays(2);
+  base::Time node_time = base::Time::Now() + base::TimeDelta::FromDays(2);
   GetMutableNode("a")->set_date_added(node_time);
   CreateEditor(profile_.get(), NULL,
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
@@ -234,7 +232,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 
 // Moves 'a' to be a child of the other node and changes its url to new_a.
 TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
-  Time node_time = Time::Now() + TimeDelta::FromDays(2);
+  base::Time node_time = base::Time::Now() + base::TimeDelta::FromDays(2);
   GetMutableNode("a")->set_date_added(node_time);
   CreateEditor(profile_.get(), NULL,
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
