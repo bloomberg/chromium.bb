@@ -97,7 +97,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // (when there'd be no point).
   void DisableAccessibility();
 
-  void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
+  void HandleAXEvent(const blink::WebAXObject& obj,
+                     ui::AXEvent event,
+                     int action_request_id = -1);
 
  protected:
   // Returns the main top-level document for this page, or NULL if there's
@@ -122,7 +124,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnFatalError();
   void OnReset(int reset_token);
 
-  void OnHitTest(const gfx::Point& point, ui::AXEvent event_to_fire);
+  void OnHitTest(const gfx::Point& point,
+                 ui::AXEvent event_to_fire,
+                 int action_request_id);
   void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);

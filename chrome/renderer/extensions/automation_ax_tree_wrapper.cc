@@ -39,6 +39,8 @@ api::automation::EventType ToAutomationEvent(ui::AXEvent event_type) {
       return api::automation::EVENT_TYPE_FOCUS;
     case ui::AX_EVENT_HIDE:
       return api::automation::EVENT_TYPE_HIDE;
+    case ui::AX_EVENT_HIT_TEST_RESULT:
+      return api::automation::EVENT_TYPE_HITTESTRESULT;
     case ui::AX_EVENT_HOVER:
       return api::automation::EVENT_TYPE_HOVER;
     case ui::AX_EVENT_IMAGE_FRAME_UPDATED:
@@ -306,6 +308,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_NONE:
     case api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED:
     case api::automation::EVENT_TYPE_CLICKED:
+    case api::automation::EVENT_TYPE_HITTESTRESULT:
     case api::automation::EVENT_TYPE_HOVER:
     case api::automation::EVENT_TYPE_MEDIASTARTEDPLAYING:
     case api::automation::EVENT_TYPE_MEDIASTOPPEDPLAYING:

@@ -93,6 +93,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
 
   // The mouse location in screen coordinates.
   IPC_STRUCT_MEMBER(gfx::Point, mouse_location)
+
+  // ID of the action request triggering this event.
+  IPC_STRUCT_MEMBER(int, action_request_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityLocationChangeParams)

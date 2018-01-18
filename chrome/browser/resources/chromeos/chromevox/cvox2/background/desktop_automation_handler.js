@@ -198,6 +198,30 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
+   * Handles the result of a hit test.
+   * @param {!AutomationNode} node The hit result.
+   */
+  onHitTestResult: function(node) {
+    chrome.automation.getFocus(function(focus) {
+      if (!focus && !node)
+        return;
+
+      focus = node || focus;
+      var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
+      var output = new Output();
+      if (focus != focusedRoot && focusedRoot)
+        output.format('$name', focusedRoot);
+
+      // Even though we usually don't output events from actions, hit test
+      // results should generate output.
+      var range = cursors.Range.fromNode(focus);
+      ChromeVoxState.instance.setCurrentRange(range);
+      output.withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
+          .go();
+    });
+  },
+
+  /**
    * @param {!AutomationEvent} evt
    */
   onHover: function(evt) {
@@ -584,14 +608,14 @@ DesktopAutomationHandler.prototype = {
     url = url.substring(0, url.indexOf('#')) || url;
     var pos = cvox.ChromeVox.position[url];
     if (pos) {
-      focus = AutomationUtil.hitTest(focusedRoot, pos) || focus;
-      if (focus != focusedRoot)
-        o.format('$name', focusedRoot);
-    } else {
-      // This catches initial focus (i.e. on startup).
-      if (!curRoot && focus != focusedRoot)
-        o.format('$name', focusedRoot);
+      focusedRoot.hitTestWithReply(
+          pos.x, pos.y, this.onHitTestResult.bind(this));
+      return;
     }
+
+    // This catches initial focus (i.e. on startup).
+    if (!curRoot && focus != focusedRoot)
+      o.format('$name', focusedRoot);
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
 

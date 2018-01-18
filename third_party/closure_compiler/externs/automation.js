@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ chrome.automation.EventType = {
   FOCUS: 'focus',
   IMAGE_FRAME_UPDATED: 'imageFrameUpdated',
   HIDE: 'hide',
+  HIT_TEST_RESULT: 'hitTestResult',
   HOVER: 'hover',
   INVALID_STATUS_CHANGED: 'invalidStatusChanged',
   LAYOUT_COMPLETE: 'layoutComplete',
@@ -1119,6 +1120,16 @@ chrome.automation.AutomationNode.prototype.getImageData = function(maxWidth, max
  * @see https://developer.chrome.com/extensions/automation#method-hitTest
  */
 chrome.automation.AutomationNode.prototype.hitTest = function(x, y, eventToFire) {};
+
+/**
+ * Does a $(ref:automation.AutomationNode.hitTest), and receives a callback with
+ * the resulting hit node.
+ * @param {number} x
+ * @param {number} y
+ * @param {function(!chrome.automation.AutomationNode):void} callback
+ * @see https://developer.chrome.com/extensions/automation#method-hitTestWithReply
+ */
+chrome.automation.AutomationNode.prototype.hitTestWithReply = function(x, y, callback) {};
 
 /**
  * Scrolls this node to make it visible.
