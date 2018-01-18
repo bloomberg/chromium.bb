@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -122,7 +122,7 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
   GURL url(account_info_.picture_url);
   if (!url.is_valid())
     return std::string();
-  return profiles::GetImageURLWithOptions(
+  return signin::GetAvatarImageURLWithOptions(
              GURL(account_info_.picture_url),
              delegate_->GetDesiredImageSideLength(), true /* no_silhouette */)
       .spec();

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -92,8 +93,8 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   GURL picture_gurl(picture_url);
   if (picture_gurl.is_valid()) {
     picture_url_to_load =
-        profiles::GetImageURLWithOptions(picture_gurl, kProfileImageSize,
-                                         false /* no_silhouette */)
+        signin::GetAvatarImageURLWithOptions(picture_gurl, kProfileImageSize,
+                                             false /* no_silhouette */)
             .spec();
   } else {
     // Use the placeholder avatar icon until the account picture URL is fetched.
