@@ -17,3 +17,13 @@ function process(a, b) {
   b = b / 2;
   return a + b;
 }
+
+
+
+
+
+
+
+function another() {
+  return 1;
+}

@@ -42,51 +42,6 @@
   }
 
   TestRunner.runTestSuite([
-    function testRemoveBreakpoints(next) {
-      var breakpointManager = createBreakpointManager(serializedBreakpoints);
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      window.setBreakpointCallback = step2.bind(this);
-
-      function step2() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, '', true, step3);
-      }
-
-      function step3() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        SourcesTestRunner.BreakpointManager.removeBreakpoint(breakpointManager, uiSourceCode, 30, 0);
-        SourcesTestRunner.BreakpointManager.removeBreakpoint(breakpointManager, uiSourceCode, 10, 0);
-        SourcesTestRunner.BreakpointManager.removeBreakpoint(breakpointManager, uiSourceCode, 20, 0);
-        SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-      }
-    },
-
-    function testSetBreakpointThatShifts(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, '', true);
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
-    function testSetBreakpointThatShiftsTwice(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, '', true, step2);
-
-      function step2() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, '', true);
-        SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-      }
-    },
-
-    function testSetBreakpointOutsideScript(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      breakpointManager.setBreakpoint(uiSourceCode, 2500, 0, '', true);
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
     function testNavigation(next) {
       var breakpointManager = createBreakpointManager(serializedBreakpoints);
       var uiSourceCodeA = addUISourceCode(breakpointManager, 'a.js');
