@@ -25,7 +25,6 @@
 #include "core/html/HTMLViewSourceDocument.h"
 
 #include "core/dom/Text.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLBaseElement.h"
