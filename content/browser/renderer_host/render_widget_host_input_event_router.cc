@@ -1112,10 +1112,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
   DCHECK_EQ(blink::kWebGestureDeviceTouchscreen, event->source_device);
-  RenderWidgetTargetResult event_target =
-      FindTouchscreenGestureEventTarget(root_view, *event);
-  DispatchTouchscreenGestureEvent(root_view, event_target.view, *event,
-                                  latency);
+  event_targeter_->FindTargetAndDispatch(root_view, *event, latency);
 }
 
 RenderWidgetTargetResult
