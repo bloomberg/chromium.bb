@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
-#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/interfaces/geolocation_context.mojom.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation_service.mojom.h"
 
 namespace blink {
