@@ -61,9 +61,8 @@ GamepadSource RawInputDataFetcher::source() {
 }
 
 void RawInputDataFetcher::OnAddedToProvider() {
-  hid_dll_.Reset(base::LoadNativeLibrary(
-      base::FilePath(FILE_PATH_LITERAL("hid.dll")), nullptr));
-  rawinput_available_ = GetHidDllFunctions();
+  hid_functions_ = std::make_unique<HidDllFunctionsWin>();
+  rawinput_available_ = hid_functions_->IsValid();
 }
 
 RAWINPUTDEVICE* RawInputDataFetcher::GetRawInputDevices(DWORD flags) {
@@ -247,6 +246,8 @@ void RawInputDataFetcher::EnumerateDevices() {
 }
 
 RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
+  DCHECK(hid_functions_);
+  DCHECK(hid_functions_->IsValid());
   UINT size = 0;
 
   // Query basic device info.
@@ -329,8 +330,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
       name_buffer.get(), GENERIC_READ | GENERIC_WRITE,
       FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
   if (hid_handle) {
-    got_product_string = hidd_get_product_string_(hid_handle, gamepad_info->id,
-                                                  sizeof(gamepad_info->id));
+    got_product_string = hid_functions_->HidDGetProductString()(
+        hid_handle, gamepad_info->id, sizeof(gamepad_info->id));
     CloseHandle(hid_handle);
   }
 
@@ -357,7 +358,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   DCHECK_EQ(size, result);
 
   HIDP_CAPS caps;
-  NTSTATUS status = hidp_get_caps_(gamepad_info->preparsed_data, &caps);
+  NTSTATUS status =
+      hid_functions_->HidPGetCaps()(gamepad_info->preparsed_data, &caps);
   DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
 
   // Query button information.
@@ -365,8 +367,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   if (count > 0) {
     std::unique_ptr<HIDP_BUTTON_CAPS[]> button_caps(
         new HIDP_BUTTON_CAPS[count]);
-    status = hidp_get_button_caps_(HidP_Input, button_caps.get(), &count,
-                                   gamepad_info->preparsed_data);
+    status = hid_functions_->HidPGetButtonCaps()(
+        HidP_Input, button_caps.get(), &count, gamepad_info->preparsed_data);
     DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
 
     for (uint32_t i = 0; i < count; ++i) {
@@ -384,8 +386,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   // Query axis information.
   count = caps.NumberInputValueCaps;
   std::unique_ptr<HIDP_VALUE_CAPS[]> axes_caps(new HIDP_VALUE_CAPS[count]);
-  status = hidp_get_value_caps_(HidP_Input, axes_caps.get(), &count,
-                                gamepad_info->preparsed_data);
+  status = hid_functions_->HidPGetValueCaps()(
+      HidP_Input, axes_caps.get(), &count, gamepad_info->preparsed_data);
 
   bool mapped_all_axes = true;
 
@@ -439,6 +441,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
 
 void RawInputDataFetcher::UpdateGamepad(RAWINPUT* input,
                                         RawGamepadInfo* gamepad_info) {
+  DCHECK(hid_functions_);
+  DCHECK(hid_functions_->IsValid());
   NTSTATUS status;
 
   gamepad_info->report_id++;
@@ -449,18 +453,18 @@ void RawInputDataFetcher::UpdateGamepad(RAWINPUT* input,
     ZeroMemory(gamepad_info->buttons, sizeof(gamepad_info->buttons));
     ULONG buttons_length = 0;
 
-    hidp_get_usages_ex_(HidP_Input, 0, NULL, &buttons_length,
-                        gamepad_info->preparsed_data,
-                        reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-                        input->data.hid.dwSizeHid);
+    hid_functions_->HidPGetUsagesEx()(
+        HidP_Input, 0, NULL, &buttons_length, gamepad_info->preparsed_data,
+        reinterpret_cast<PCHAR>(input->data.hid.bRawData),
+        input->data.hid.dwSizeHid);
 
     std::unique_ptr<USAGE_AND_PAGE[]> usages(
         new USAGE_AND_PAGE[buttons_length]);
-    status =
-        hidp_get_usages_ex_(HidP_Input, 0, usages.get(), &buttons_length,
-                            gamepad_info->preparsed_data,
-                            reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-                            input->data.hid.dwSizeHid);
+    status = hid_functions_->HidPGetUsagesEx()(
+        HidP_Input, 0, usages.get(), &buttons_length,
+        gamepad_info->preparsed_data,
+        reinterpret_cast<PCHAR>(input->data.hid.bRawData),
+        input->data.hid.dwSizeHid);
 
     if (status == HIDP_STATUS_SUCCESS) {
       // Set each reported button to true.
@@ -483,7 +487,7 @@ void RawInputDataFetcher::UpdateGamepad(RAWINPUT* input,
     // If the min is < 0 we have to query the scaled value, otherwise we need
     // the normal unscaled value.
     if (axis->caps.LogicalMin < 0) {
-      status = hidp_get_scaled_usage_value_(
+      status = hid_functions_->HidPGetScaledUsageValue()(
           HidP_Input, axis->caps.UsagePage, 0, axis->caps.Range.UsageMin,
           &scaled_axis_value, gamepad_info->preparsed_data,
           reinterpret_cast<PCHAR>(input->data.hid.bRawData),
@@ -493,7 +497,7 @@ void RawInputDataFetcher::UpdateGamepad(RAWINPUT* input,
                                     axis->caps.PhysicalMax);
       }
     } else {
-      status = hidp_get_usage_value_(
+      status = hid_functions_->HidPGetUsageValue()(
           HidP_Input, axis->caps.UsagePage, 0, axis->caps.Range.UsageMin,
           &axis_value, gamepad_info->preparsed_data,
           reinterpret_cast<PCHAR>(input->data.hid.bRawData),
@@ -551,50 +555,6 @@ bool RawInputDataFetcher::HandleMessage(UINT message,
     default:
       return false;
   }
-}
-
-bool RawInputDataFetcher::GetHidDllFunctions() {
-  hidp_get_caps_ = NULL;
-  hidp_get_button_caps_ = NULL;
-  hidp_get_value_caps_ = NULL;
-  hidp_get_usages_ex_ = NULL;
-  hidp_get_usage_value_ = NULL;
-  hidp_get_scaled_usage_value_ = NULL;
-  hidd_get_product_string_ = NULL;
-
-  if (!hid_dll_.is_valid())
-    return false;
-
-  hidp_get_caps_ = reinterpret_cast<HidPGetCapsFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetCaps"));
-  if (!hidp_get_caps_)
-    return false;
-  hidp_get_button_caps_ = reinterpret_cast<HidPGetButtonCapsFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetButtonCaps"));
-  if (!hidp_get_button_caps_)
-    return false;
-  hidp_get_value_caps_ = reinterpret_cast<HidPGetValueCapsFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetValueCaps"));
-  if (!hidp_get_value_caps_)
-    return false;
-  hidp_get_usages_ex_ = reinterpret_cast<HidPGetUsagesExFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetUsagesEx"));
-  if (!hidp_get_usages_ex_)
-    return false;
-  hidp_get_usage_value_ = reinterpret_cast<HidPGetUsageValueFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetUsageValue"));
-  if (!hidp_get_usage_value_)
-    return false;
-  hidp_get_scaled_usage_value_ = reinterpret_cast<HidPGetScaledUsageValueFunc>(
-      hid_dll_.GetFunctionPointer("HidP_GetScaledUsageValue"));
-  if (!hidp_get_scaled_usage_value_)
-    return false;
-  hidd_get_product_string_ = reinterpret_cast<HidDGetStringFunc>(
-      hid_dll_.GetFunctionPointer("HidD_GetProductString"));
-  if (!hidd_get_product_string_)
-    return false;
-
-  return true;
 }
 
 }  // namespace device
