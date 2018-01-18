@@ -171,8 +171,13 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   std::string process_type =
       command_line->GetSwitchValueNative(switches::kProcessType);
   if (process_type == switches::kGpuProcess) {
-    gfx::Size res =
-        display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+    auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+    gfx::Size res = display.GetSizeInPixel();
+    if (display.rotation() == display::Display::ROTATE_90 ||
+        display.rotation() == display::Display::ROTATE_270) {
+      res = gfx::Size(res.height(), res.width());
+    }
+
     if (!command_line->HasSwitch(switches::kCastInitialScreenWidth)) {
       command_line->AppendSwitchASCII(switches::kCastInitialScreenWidth,
                                       base::IntToString(res.width()));
