@@ -669,6 +669,7 @@ interface PerformanceObserver
     method constructor
     method disconnect
     method observe
+    method takeRecords
 interface PerformanceObserverEntryList
     attribute @@toStringTag
     method constructor

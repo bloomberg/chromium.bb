@@ -14,4 +14,5 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
 ] interface PerformanceObserver {
     [RaisesException] void observe(PerformanceObserverInit options);
     void disconnect();
+    PerformanceEntryList takeRecords();
 };
