@@ -130,10 +130,9 @@ enum class Typesetter {
   NATIVE,
 
   // The typesetter used for function default arguments. The default can be used
-  // from locations that are unaffected by the Mac Harfbuzz transition. Once all
-  // callers rendering to Cocoa UI have been updated to BROWSER, this will
-  // switch to HARFBUZZ.
-  DEFAULT = BROWSER
+  // from locations that are unaffected by the Mac Harfbuzz transition. Cocoa UI
+  // on Mac must specify something else.
+  DEFAULT = HARFBUZZ
 };
 
 }  // namespace gfx

@@ -704,15 +704,8 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextFirstWordTruncated) {
   const FontList font_list;
   const int line_height = font_list.GetHeight();
 
-  // TOOD(tapted): Remove HARFBUZZ from these when default.
-  // See http://crbug.com/798927.
-  static_assert(Typesetter::DEFAULT != Typesetter::HARFBUZZ,
-                "Typesetter arg is redundant.");
-
-  const float test_width =
-      GetStringWidthF(ASCIIToUTF16("Test"), font_list, Typesetter::HARFBUZZ);
-  const float tes_width =
-      GetStringWidthF(ASCIIToUTF16("Tes"), font_list, Typesetter::HARFBUZZ);
+  const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
+  const float tes_width = GetStringWidthF(ASCIIToUTF16("Tes"), font_list);
 
   std::vector<base::string16> lines;
 
@@ -759,8 +752,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextFirstWordTruncated) {
 }
 
 // TODO(crbug.com/338784): Enable this on android.
-// Disabled on Mac: fails on 10.11. http://crbug.com/801029
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleTextPunctuation \
     DISABLED_ElideRectangleTextPunctuation
 #else
@@ -809,8 +801,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
 }
 
 // TODO(crbug.com/338784): Enable this on android.
-// Disabled on Mac: fails on 10.11. http://crbug.com/801029
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 #define MAYBE_ElideRectangleTextLongWords DISABLED_ElideRectangleTextLongWords
 #else
 #define MAYBE_ElideRectangleTextLongWords ElideRectangleTextLongWords
