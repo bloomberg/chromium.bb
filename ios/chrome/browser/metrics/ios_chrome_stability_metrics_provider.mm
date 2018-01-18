@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -63,7 +64,9 @@ void IOSChromeStabilityMetricsProvider::WebStateDidStartLoading(
     return;
 
   UMA_HISTOGRAM_BOOLEAN(kPageLoadCountLoadingStartedMetric, true);
-  helper_.LogLoadStarted();
+  bool is_incognito =
+      web_state != nullptr && web_state->GetBrowserState()->IsOffTheRecord();
+  helper_.LogLoadStarted(is_incognito);
 }
 
 void IOSChromeStabilityMetricsProvider::WebStateDidStartNavigation(
