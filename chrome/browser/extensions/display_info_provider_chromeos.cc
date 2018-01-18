@@ -385,6 +385,10 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
     }
   }
 
+  // Update the display zoom.
+  if (info.display_zoom_factor)
+    display_manager->UpdateZoomFactor(id, *info.display_zoom_factor);
+
   // Set the display mode.
   if (info.display_mode) {
     display::ManagedDisplayMode current_mode;
@@ -744,6 +748,9 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
         unit->mirroring_destination_ids.emplace_back(base::Int64ToString(id));
     }
   }
+
+  unit->display_zoom_factor =
+      display_manager->GetZoomFactorForDisplay(display.id());
 
   const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(display.id());
