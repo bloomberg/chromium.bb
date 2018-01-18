@@ -22,6 +22,8 @@ class FilePath;
 
 namespace content {
 
+class BrowserMainParts;
+
 class BrowserTestBase : public testing::Test {
  public:
   BrowserTestBase();
@@ -64,6 +66,10 @@ class BrowserTestBase : public testing::Test {
 
   // Override this for things you would normally override TearDown for.
   virtual void TearDownInProcessBrowserTestFixture() {}
+
+  // Called after the BrowserMainParts have been created, and before
+  // PreEarlyInitialization() has been called.
+  virtual void CreatedBrowserMainParts(BrowserMainParts* browser_main_parts) {}
 
   // This is invoked from main after browser_init/browser_main have completed.
   // This prepares for the test by creating a new browser and doing any other

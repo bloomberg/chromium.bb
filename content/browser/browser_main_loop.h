@@ -228,6 +228,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 #endif
 
+  BrowserMainParts* parts() { return parts_.get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserMainLoopTest, CreateThreadsInSingleProcess);
 
