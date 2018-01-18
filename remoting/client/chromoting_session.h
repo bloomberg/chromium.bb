@@ -90,14 +90,18 @@ class ChromotingSession : public ClientUserInterface,
   // Must be called before destruction.
   void Disconnect();
 
-  // Requests the android app to fetch a third-party token.
+  // Similar to Disconnect(), except that this method allows you to specify the
+  // reason to disconnect, which will be reported to telemetry.
+  void DisconnectForReason(protocol::ErrorCode error);
+
+  // Requests the client to fetch a third-party token.
   void FetchThirdPartyToken(
       const std::string& host_public_key,
       const std::string& token_url,
       const std::string& scope,
       const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback);
 
-  // Called by the android app when the token is fetched.
+  // Called by the client when the token is fetched.
   void HandleOnThirdPartyTokenFetched(const std::string& token,
                                       const std::string& shared_secret);
 
@@ -211,9 +215,9 @@ class ChromotingSession : public ClientUserInterface,
   // set of capabilities for this remoting session.
   std::string capabilities_;
 
-  // Indicates whether the client is connected to the host. Used on network
-  // thread.
-  bool connected_ = false;
+  // The current session state. Used on network thread.
+  protocol::ConnectionToHost::State session_state_ =
+      protocol::ConnectionToHost::INITIALIZING;
 
   std::unique_ptr<ClientTelemetryLogger> logger_;
 
