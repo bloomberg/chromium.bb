@@ -15,8 +15,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
 #include "device/geolocation/public/cpp/geoposition.h"
-#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/interfaces/geolocation_context.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace content {

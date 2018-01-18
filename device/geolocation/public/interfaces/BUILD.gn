@@ -8,7 +8,6 @@ mojom("interfaces") {
   sources = [
     "geolocation.mojom",
     "geolocation_config.mojom",
-    "geolocation_context.mojom",
     "geoposition.mojom",
   ]
   public_deps = [
