@@ -99,9 +99,6 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   ~MockProtocolHandler() override = default;
 
   void set_resource_type(ResourceType type) { resource_type_ = type; }
-  void set_custom_timeout(base::Optional<base::TimeDelta> timeout) {
-    custom_timeout_ = timeout;
-  }
   void set_simulate_navigation_preload() {
     simulate_navigation_preload_ = true;
   }
@@ -128,7 +125,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         REQUEST_CONTEXT_TYPE_HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel,
         scoped_refptr<network::ResourceRequestBody>(),
-        ServiceWorkerFetchType::FETCH, custom_timeout_, delegate_);
+        ServiceWorkerFetchType::FETCH, delegate_);
     if (simulate_navigation_preload_) {
       job_->set_simulate_navigation_preload_for_test();
     }
@@ -145,7 +142,6 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   ServiceWorkerURLRequestJob::Delegate* delegate_;
   ResourceType resource_type_;
   bool simulate_navigation_preload_;
-  base::Optional<base::TimeDelta> custom_timeout_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
@@ -702,20 +698,6 @@ TEST_F(ServiceWorkerURLRequestJobTest,
       "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
       "StartWorkerExistingProcess",
       0);
-}
-
-TEST_F(ServiceWorkerURLRequestJobTest, CustomTimeout) {
-  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
-
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-
-  // Set mock clock on version_ to check timeout behavior.
-  tick_clock_.SetNowTicks(base::TimeTicks::Now());
-  version_->SetTickClockForTesting(&tick_clock_);
-
-  protocol_handler_->set_custom_timeout(base::TimeDelta::FromSeconds(5));
-  TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(5), version_->remaining_timeout());
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {

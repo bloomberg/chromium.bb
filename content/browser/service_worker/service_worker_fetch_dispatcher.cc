@@ -457,7 +457,6 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<ServiceWorkerVersion> version,
-    const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
@@ -467,7 +466,6 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       net_log_(net_log),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
-      timeout_(timeout),
       did_complete_(false),
       weak_factory_(this) {
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
@@ -481,7 +479,6 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<ServiceWorkerFetchRequest> legacy_request,
     scoped_refptr<ServiceWorkerVersion> version,
     ResourceType resource_type,
-    const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
@@ -491,7 +488,6 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       net_log_(net_log),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
-      timeout_(timeout),
       did_complete_(false),
       weak_factory_(this) {
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
@@ -577,29 +573,13 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   ResponseCallback* response_callback_rawptr = response_callback.get();
 
   // Set up the fetch event.
-  int fetch_event_id;
-  int event_finish_id;
-  if (timeout_) {
-    fetch_event_id = version_->StartRequestWithCustomTimeout(
-        GetEventType(),
-        base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                       weak_factory_.GetWeakPtr(),
-                       std::move(response_callback)),
-        *timeout_, ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
-    event_finish_id = version_->StartRequestWithCustomTimeout(
-        ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
-        base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback), *timeout_,
-        ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
-  } else {
-    fetch_event_id = version_->StartRequest(
-        GetEventType(),
-        base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                       weak_factory_.GetWeakPtr(),
-                       std::move(response_callback)));
-    event_finish_id = version_->StartRequest(
-        ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
-        base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
-  }
+  int fetch_event_id = version_->StartRequest(
+      GetEventType(),
+      base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
+                     weak_factory_.GetWeakPtr(), std::move(response_callback)));
+  int event_finish_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
 
   // Report navigation preload to DevTools if needed.

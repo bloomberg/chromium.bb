@@ -46,7 +46,6 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
             network::mojom::RequestContextFrameType::kTopLevel,
             scoped_refptr<network::ResourceRequestBody>(),
             ServiceWorkerFetchType::FETCH,
-            base::Optional<base::TimeDelta>(),
             delegate),
         is_response_started_(false) {}
 

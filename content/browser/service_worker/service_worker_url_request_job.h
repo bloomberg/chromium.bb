@@ -90,7 +90,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body,
       ServiceWorkerFetchType fetch_type,
-      const base::Optional<base::TimeDelta>& timeout,
       Delegate* delegate);
 
   ~ServiceWorkerURLRequestJob() override;
@@ -327,7 +326,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
   scoped_refptr<storage::BlobHandle> request_body_blob_handle_;
   ServiceWorkerFetchType fetch_type_;
-  base::Optional<base::TimeDelta> timeout_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;
   bool did_record_result_ = false;

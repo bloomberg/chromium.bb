@@ -157,8 +157,7 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::make_unique<network::ResourceRequest>(resource_request_),
-      active_worker, base::nullopt /* timeout */,
-      net::NetLogWithSource() /* TODO(scottmg): net log? */,
+      active_worker, net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),
