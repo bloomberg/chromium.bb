@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,7 +60,7 @@ std::unique_ptr<KeyedService> CreateSyncSetupService(
   syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           chrome_browser_state);
-  return base::MakeUnique<SyncSetupServiceMock>(
+  return std::make_unique<SyncSetupServiceMock>(
       sync_service, chrome_browser_state->GetPrefs());
 }
 

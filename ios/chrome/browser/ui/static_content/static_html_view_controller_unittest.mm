@@ -7,7 +7,6 @@
 #include <memory>
 
 #import "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -99,7 +98,7 @@ void DryRunLoop(bool publishSentinel) {
 class StaticHtmlViewControllerTest : public PlatformTest {
  public:
   StaticHtmlViewControllerTest()
-      : web_client_(base::MakeUnique<web::TestWebClient>()) {}
+      : web_client_(std::make_unique<web::TestWebClient>()) {}
 
  protected:
   void SetUp() override {

@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -26,7 +25,7 @@ namespace net {
 
 struct InactiveCookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
-    return base::MakeUnique<CookieStoreIOSPersistent>(nullptr);
+    return std::make_unique<CookieStoreIOSPersistent>(nullptr);
   }
 
   static const bool is_cookie_monster = false;
@@ -58,10 +57,10 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
   CookieStoreIOSPersistentTest()
       : kTestCookieURL("http://foo.google.com/bar"),
         scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()),
+            std::make_unique<TestCookieStoreIOSClient>()),
         backend_(new net::TestPersistentCookieStore),
         store_(
-            base::MakeUnique<net::CookieStoreIOSPersistent>(backend_.get())) {
+            std::make_unique<net::CookieStoreIOSPersistent>(backend_.get())) {
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURL, "abc",
         base::Bind(&net::RecordCookieChanges, &cookies_changed_,

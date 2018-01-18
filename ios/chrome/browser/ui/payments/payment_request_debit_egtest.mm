@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -68,7 +67,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
 
 - (void)setUp {
   [super setUp];
-  _profile = base::MakeUnique<autofill::AutofillProfile>(
+  _profile = std::make_unique<autofill::AutofillProfile>(
       autofill::test::GetFullProfile());
   [self addAutofillProfile:*_profile];
 }

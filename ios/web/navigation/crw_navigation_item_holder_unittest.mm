@@ -4,7 +4,6 @@
 
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 
-#include "base/memory/ptr_util.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -29,7 +28,7 @@ TEST_F(CRWNavigationItemHolderTest, NewHolderCreatedAutomatically) {
 // Tests that stored NavigationItemImpl can be retrieved.
 TEST_F(CRWNavigationItemHolderTest, SetNavigationItem) {
   GURL url("http://www.0.com");
-  auto navigation_item = base::MakeUnique<web::NavigationItemImpl>();
+  auto navigation_item = std::make_unique<web::NavigationItemImpl>();
   navigation_item->SetURL(url);
 
   WKBackForwardListItem* item = OCMClassMock([WKBackForwardListItem class]);
@@ -47,14 +46,14 @@ TEST_F(CRWNavigationItemHolderTest, SetNavigationItem) {
 // Tests that each WKBackForwardListItem has its unique CRWNavigationItemHolder.
 TEST_F(CRWNavigationItemHolderTest, OneHolderPerWKItem) {
   GURL url1("http://www.1.com");
-  auto navigation_item1 = base::MakeUnique<web::NavigationItemImpl>();
+  auto navigation_item1 = std::make_unique<web::NavigationItemImpl>();
   navigation_item1->SetURL(url1);
   WKBackForwardListItem* item1 = OCMClassMock([WKBackForwardListItem class]);
   [[CRWNavigationItemHolder holderForBackForwardListItem:item1]
       setNavigationItem:std::move(navigation_item1)];
 
   GURL url2("http://www.2.com");
-  auto navigation_item2 = base::MakeUnique<web::NavigationItemImpl>();
+  auto navigation_item2 = std::make_unique<web::NavigationItemImpl>();
   navigation_item2->SetURL(url2);
   WKBackForwardListItem* item2 = OCMClassMock([WKBackForwardListItem class]);
   [[CRWNavigationItemHolder holderForBackForwardListItem:item2]

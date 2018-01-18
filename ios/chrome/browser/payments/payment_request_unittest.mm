@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -94,7 +93,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   WebPaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
-  web_payment_request.details.total = base::MakeUnique<PaymentItem>();
+  web_payment_request.details.total = std::make_unique<PaymentItem>();
   web_payment_request.details.total->amount->currency = "USD";
   TestPaymentRequest payment_request1(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
@@ -378,7 +377,7 @@ TEST_F(PaymentRequestTest, SelectedShippingOptions) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
-  details.total = base::MakeUnique<PaymentItem>();
+  details.total = std::make_unique<PaymentItem>();
   std::vector<PaymentShippingOption> shipping_options;
   PaymentShippingOption option1;
   option1.id = "option:1";
@@ -414,7 +413,7 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNewTotal) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
-  details.total = base::MakeUnique<PaymentItem>();
+  details.total = std::make_unique<PaymentItem>();
   details.total->amount->value = "10.00";
   details.total->amount->currency = "USD";
   web_payment_request.details = std::move(details);
@@ -425,7 +424,7 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNewTotal) {
 
   // Simulate an update with a new total amount.
   PaymentDetails new_details;
-  new_details.total = base::MakeUnique<PaymentItem>();
+  new_details.total = std::make_unique<PaymentItem>();
   new_details.total->amount->value = "20.00";
   new_details.total->amount->currency = "CAD";
   payment_request.UpdatePaymentDetails(std::move(new_details));
@@ -440,7 +439,7 @@ TEST_F(PaymentRequestTest, UpdatePaymentDetailsNoTotal) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   PaymentDetails details;
-  details.total = base::MakeUnique<PaymentItem>();
+  details.total = std::make_unique<PaymentItem>();
   details.total->amount->value = "10.00";
   details.total->amount->currency = "USD";
   web_payment_request.details = std::move(details);
@@ -885,7 +884,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
   PaymentDetailsModifier modifier;
   modifier.method_data.supported_methods.push_back("basic-card");
   modifier.method_data.supported_networks.push_back("amex");
-  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";
   modifier.total->amount->currency = "USD";
@@ -923,7 +922,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
   PaymentDetailsModifier modifier;
   modifier.method_data.supported_methods.push_back("basic-card");
   modifier.method_data.supported_networks.push_back("amex");
-  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";
   modifier.total->amount->currency = "USD";
@@ -973,7 +972,7 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
   modifier.method_data.supported_networks.push_back("amex");
   modifier.method_data.supported_types.insert(
       autofill::CreditCard::CARD_TYPE_CREDIT);
-  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";
   modifier.total->amount->currency = "USD";
@@ -1016,7 +1015,7 @@ TEST_F(PaymentRequestTest,
   modifier.method_data.supported_networks.push_back("amex");
   modifier.method_data.supported_types.insert(
       autofill::CreditCard::CARD_TYPE_CREDIT);
-  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";
   modifier.total->amount->currency = "USD";

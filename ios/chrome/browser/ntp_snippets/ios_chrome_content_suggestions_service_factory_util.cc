@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -111,13 +110,13 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   DCHECK(!browser_state->IsOffTheRecord());
   PrefService* prefs = chrome_browser_state->GetPrefs();
 
-  auto user_classifier = base::MakeUnique<UserClassifier>(
+  auto user_classifier = std::make_unique<UserClassifier>(
       prefs, base::DefaultClock::GetInstance());
 
-  auto debug_logger = base::MakeUnique<Logger>();
+  auto debug_logger = std::make_unique<Logger>();
 
   // TODO(crbug.com/676249): Implement a persistent scheduler for iOS.
-  auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
+  auto scheduler = std::make_unique<RemoteSuggestionsSchedulerImpl>(
       /*persistent_scheduler=*/nullptr, user_classifier.get(), prefs,
       GetApplicationContext()->GetLocalState(),
       base::DefaultClock::GetInstance(), debug_logger.get());
@@ -135,7 +134,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
       ntp_snippets::BuildSelectedCategoryRanker(
           prefs, base::DefaultClock::GetInstance(),
           /*is_chrome_home_enabled=*/false);
-  return base::MakeUnique<ContentSuggestionsService>(
+  return std::make_unique<ContentSuggestionsService>(
       State::ENABLED, signin_manager, history_service, large_icon_service,
       prefs, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler), std::move(debug_logger));
@@ -150,7 +149,7 @@ void RegisterReadingListProvider(ContentSuggestionsService* service,
       ReadingListModelFactory::GetForBrowserState(chrome_browser_state);
   std::unique_ptr<ntp_snippets::ReadingListSuggestionsProvider>
       reading_list_suggestions_provider =
-          base::MakeUnique<ntp_snippets::ReadingListSuggestionsProvider>(
+          std::make_unique<ntp_snippets::ReadingListSuggestionsProvider>(
               service, reading_list_model);
   service->RegisterProvider(std::move(reading_list_suggestions_provider));
 }
@@ -177,7 +176,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
     api_key = is_stable_channel ? google_apis::GetAPIKey()
                                 : google_apis::GetNonStableAPIKey();
   }
-  auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
+  auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, request_context, prefs, nullptr,
       base::BindRepeating(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
@@ -185,14 +184,14 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
   // This pref is also used for logging. If it is changed, change it in the
   // other places.
   std::string pref_name = prefs::kArticlesForYouEnabled;
-  auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
+  auto provider = std::make_unique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
       std::move(suggestions_fetcher),
-      base::MakeUnique<ImageFetcherImpl>(CreateIOSImageDecoder(),
+      std::make_unique<ImageFetcherImpl>(CreateIOSImageDecoder(),
                                          request_context.get()),
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
-      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
+      std::make_unique<RemoteSuggestionsDatabase>(database_dir),
+      std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           signin_manager->IsAuthenticated(), prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
       /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger(),

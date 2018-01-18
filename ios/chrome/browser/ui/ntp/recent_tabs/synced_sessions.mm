@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/driver/sync_service.h"
@@ -36,7 +35,7 @@ void AddTabToDistantSession(const sessions::SessionTab& session_tab,
                             synced_sessions::DistantSession* distant_session) {
   if (session_tab.navigations.size() > 0) {
     distant_session->tabs.push_back(
-        base::MakeUnique<synced_sessions::DistantTab>());
+        std::make_unique<synced_sessions::DistantTab>());
     synced_sessions::DistantTab& distant_tab = *distant_session->tabs.back();
     distant_tab.session_tag = session_tag;
     distant_tab.tab_id = session_tab.tab_id.id();

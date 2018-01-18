@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/overlays/overlay_scheduler.h"
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test_util.h"
@@ -107,7 +106,7 @@ TEST_F(OverlaySchedulerTest, AddBrowserOverlay) {
 // Tests that adding an overlay to a WebStateOverlayQueue triggers successful
 // presentation.
 TEST_F(OverlaySchedulerTest, AddWebStateOverlay) {
-  web_state_list()->InsertWebState(0, base::MakeUnique<web::TestWebState>(),
+  web_state_list()->InsertWebState(0, std::make_unique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
   web_state_list()->ActivateWebStateAt(0);
@@ -133,11 +132,11 @@ TEST_F(OverlaySchedulerTest, AddWebStateOverlay) {
 // correctly switch the active WebState before presenting.
 TEST_F(OverlaySchedulerTest, SwitchWebStateForOverlay) {
   // Add two WebStates and activate the second.
-  web_state_list()->InsertWebState(0, base::MakeUnique<web::TestWebState>(),
+  web_state_list()->InsertWebState(0, std::make_unique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
   ASSERT_EQ(web_state_list()->count(), 1);
-  web_state_list()->InsertWebState(1, base::MakeUnique<web::TestWebState>(),
+  web_state_list()->InsertWebState(1, std::make_unique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
   web_state_list()->ActivateWebStateAt(1);
@@ -166,11 +165,11 @@ TEST_F(OverlaySchedulerTest, SwitchWebStateForOverlay) {
 // correctly switch the active WebState before presenting.
 TEST_F(OverlaySchedulerTest, SwitchWebStateForQueuedOverlays) {
   // Add two WebStates and activate the second.
-  web_state_list()->InsertWebState(0, base::MakeUnique<web::TestWebState>(),
+  web_state_list()->InsertWebState(0, std::make_unique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
   ASSERT_EQ(web_state_list()->count(), 1);
-  web_state_list()->InsertWebState(1, base::MakeUnique<web::TestWebState>(),
+  web_state_list()->InsertWebState(1, std::make_unique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
   web_state_list()->ActivateWebStateAt(1);

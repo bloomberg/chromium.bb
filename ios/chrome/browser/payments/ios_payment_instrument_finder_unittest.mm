@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/payments/ios_payment_instrument_finder.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -44,7 +43,7 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
         context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         ios_payment_instrument_finder_(
-            base::MakeUnique<TestIOSPaymentInstrumentFinder>(
+            std::make_unique<TestIOSPaymentInstrumentFinder>(
                 context_getter_.get())) {}
 
   ~PaymentRequestIOSPaymentInstrumentFinderTest() override {}

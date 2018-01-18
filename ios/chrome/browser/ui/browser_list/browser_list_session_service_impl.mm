@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
@@ -157,7 +156,7 @@ void BrowserListSessionServiceBrowserListObserver::OnBrowserCreated(
   DCHECK_EQ(browser_list, browser_list_);
   DCHECK(observers_.find(browser) == observers_.end());
   observers_.insert(std::make_pair(
-      browser, base::MakeUnique<BrowserListSessionServiceWebStateListObserver>(
+      browser, std::make_unique<BrowserListSessionServiceWebStateListObserver>(
                    &browser->web_state_list(), closure_)));
 }
 
@@ -188,7 +187,7 @@ BrowserListSessionServiceImpl::BrowserListSessionServiceImpl(
   DCHECK(create_web_state_);
   // It is safe to use base::Unretained as the closure is indirectly owned by
   // the BrowserListSessionServiceImpl instance and will be deleted before it.
-  observer_ = base::MakeUnique<BrowserListSessionServiceBrowserListObserver>(
+  observer_ = std::make_unique<BrowserListSessionServiceBrowserListObserver>(
       browser_list,
       base::BindRepeating(&BrowserListSessionServiceImpl::ScheduleSaveSession,
                           base::Unretained(this), false));

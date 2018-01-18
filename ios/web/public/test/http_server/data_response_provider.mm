@@ -4,7 +4,8 @@
 
 #import "ios/web/public/test/http_server/data_response_provider.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,7 +21,7 @@ DataResponseProvider::GetEmbeddedTestServerResponse(const Request& request) {
   GetResponseHeadersAndBody(request, &response_headers, &response_body);
 
   std::unique_ptr<net::test_server::BasicHttpResponse> data_response =
-      base::MakeUnique<net::test_server::BasicHttpResponse>();
+      std::make_unique<net::test_server::BasicHttpResponse>();
 
   data_response->set_code(
       static_cast<net::HttpStatusCode>(response_headers->response_code()));

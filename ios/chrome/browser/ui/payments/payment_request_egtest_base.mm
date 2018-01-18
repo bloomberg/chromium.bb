@@ -9,7 +9,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -108,7 +107,7 @@ std::vector<autofill::CreditCard> _cards;
 - (void)addServerCreditCard:(const autofill::CreditCard&)card {
   DCHECK(card.record_type() != autofill::CreditCard::LOCAL_CARD);
   [self personalDataManager]->AddServerCreditCardForTest(
-      base::MakeUnique<autofill::CreditCard>(card));
+      std::make_unique<autofill::CreditCard>(card));
 }
 
 - (payments::PaymentRequestCache::PaymentRequestSet&)paymentRequestsForWebState:

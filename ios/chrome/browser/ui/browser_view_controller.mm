@@ -25,7 +25,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -1201,7 +1200,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
              webStateList:[_model webStateList]];
       StartBroadcastingMainContentUI(self, broadcaster);
 
-      _fullscreenUIUpdater = base::MakeUnique<FullscreenUIUpdater>(self);
+      _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
       fullscreenController->AddObserver(_fullscreenUIUpdater.get());
 
       fullscreenController->SetWebStateList([_model webStateList]);
@@ -1877,7 +1876,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   for (NSUInteger index = 0; index < count; ++index)
     [self installDelegatesForTab:[_model tabAtIndex:index]];
 
-  _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
+  _imageFetcher = std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
       _browserState->GetRequestContext());
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
 

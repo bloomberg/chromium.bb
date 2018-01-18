@@ -4,7 +4,8 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -341,7 +342,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
 // Tests that a POST followed by a redirect does not show the popup.
 - (void)testRepostFormCancellingAfterRedirect {
-  web::test::SetUpHttpServer(base::MakeUnique<TestFormResponseProvider>());
+  web::test::SetUpHttpServer(std::make_unique<TestFormResponseProvider>());
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetRedirectFormUrl()];
@@ -376,7 +377,7 @@ id<GREYMatcher> GoButtonMatcher() {
 #define MAYBE_testPostFormToSamePage FLAKY_testPostFormToSamePage
 #endif
 - (void)MAYBE_testPostFormToSamePage {
-  web::test::SetUpHttpServer(base::MakeUnique<TestFormResponseProvider>());
+  web::test::SetUpHttpServer(std::make_unique<TestFormResponseProvider>());
   const GURL formURL = GetFormPostOnSamePageUrl();
 
   // Open the first URL so it's in history.

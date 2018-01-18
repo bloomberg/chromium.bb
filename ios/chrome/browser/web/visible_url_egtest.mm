@@ -4,8 +4,9 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -155,7 +156,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
   responses[_testURL3] = std::string(kTestPage3) + pageContent;
 
   std::unique_ptr<PausableResponseProvider> unique_provider =
-      base::MakeUnique<PausableResponseProvider>(responses);
+      std::make_unique<PausableResponseProvider>(responses);
   _responseProvider = unique_provider.get();
   web::test::SetUpHttpServer(std::move(unique_provider));
 

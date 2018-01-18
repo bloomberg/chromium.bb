@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -446,7 +445,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
   for (auto it = result.begin(); it != result.end(); ++it) {
     // PasswordForm is needed when user wants to delete the site/password.
-    auto form = base::MakeUnique<autofill::PasswordForm>(**it);
+    auto form = std::make_unique<autofill::PasswordForm>(**it);
     if (form->blacklisted_by_user)
       blacklistedForms_.push_back(std::move(form));
     else

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #include "ios/chrome/browser/application_context.h"
@@ -17,7 +16,7 @@
 std::unique_ptr<ntp_tiles::PopularSites>
 IOSPopularSitesFactory::NewForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return base::MakeUnique<ntp_tiles::PopularSitesImpl>(
+  return std::make_unique<ntp_tiles::PopularSitesImpl>(
       browser_state->GetPrefs(),
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
       GetApplicationContext()->GetVariationsService(),

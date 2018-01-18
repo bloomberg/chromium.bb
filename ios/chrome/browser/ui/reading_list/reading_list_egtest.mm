@@ -6,8 +6,9 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include <memory>
+
 #include "base/ios/ios_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
@@ -459,8 +460,8 @@ void AssertIsShowingDistillablePage(bool online) {
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadDistilled {
   auto network_change_disabler =
-      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
-  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
+      std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   GURL distillablePageURL(web::test::HttpServer::MakeUrl(kDistillableURL));
   GURL nonDistillablePageURL(
@@ -515,8 +516,8 @@ void AssertIsShowingDistillablePage(bool online) {
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadNormal {
   auto network_change_disabler =
-      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
-  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
+      std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   std::string pageTitle(kDistillableTitle);
@@ -562,8 +563,8 @@ void AssertIsShowingDistillablePage(bool online) {
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadNoNetwork {
   auto network_change_disabler =
-      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
-  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
+      std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
@@ -614,8 +615,8 @@ void AssertIsShowingDistillablePage(bool online) {
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadBadNetwork {
   auto network_change_disabler =
-      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
-  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
+      std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
   // Open http://potato
@@ -632,8 +633,8 @@ void AssertIsShowingDistillablePage(bool online) {
   AssertEntryVisible(pageTitle);
   WaitForDistillation();
 
-  web::test::SetUpHttpServer(base::MakeUnique<web::DelayedResponseProvider>(
-      base::MakeUnique<HtmlResponseProvider>(ResponsesForDistillationServer()),
+  web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
+      std::make_unique<HtmlResponseProvider>(ResponsesForDistillationServer()),
       kDelayForSlowWebServer));
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);

@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -69,7 +70,7 @@
   }
   _webState = webState;
   if (_webState) {
-    _webStateObserver = base::MakeUnique<web::WebStateObserverBridge>(self);
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserver.get());
     [self updateState];
   }
@@ -80,7 +81,7 @@
 - (void)startUpdating {
   DCHECK(!_webStateListObserver);
   DCHECK(!_webStateObserver);
-  _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
+  _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   self.webStateList->AddObserver(_webStateListObserver.get());
   self.webState = self.webStateList->GetActiveWebState();
   [self updateState];

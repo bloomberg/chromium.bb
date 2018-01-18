@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -53,9 +52,9 @@ class ToolbarModelImplIOSTest : public PlatformTest {
 
     // Create a WebStateList that will always return the test WebState as
     // the active WebState.
-    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
+    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
     std::unique_ptr<ToolbarTestWebState> web_state =
-        base::MakeUnique<ToolbarTestWebState>();
+        std::make_unique<ToolbarTestWebState>();
     web_state->SetBrowserState(chrome_browser_state_.get());
     web_state_ = web_state.get();
     web_state_list_->InsertWebState(
@@ -116,7 +115,7 @@ TEST_F(ToolbarModelImplIOSTest, TestGetLoadProgressFraction) {
 
 TEST_F(ToolbarModelImplIOSTest, TestCanGoBack) {
   web_state_->SetNavigationManager(
-      base::MakeUnique<ToolbarTestNavigationManager>());
+      std::make_unique<ToolbarTestNavigationManager>());
   ToolbarTestNavigationManager* manager =
       static_cast<ToolbarTestNavigationManager*>(
           web_state_->GetNavigationManager());
@@ -130,7 +129,7 @@ TEST_F(ToolbarModelImplIOSTest, TestCanGoBack) {
 
 TEST_F(ToolbarModelImplIOSTest, TestCanGoForward) {
   web_state_->SetNavigationManager(
-      base::MakeUnique<ToolbarTestNavigationManager>());
+      std::make_unique<ToolbarTestNavigationManager>());
   ToolbarTestNavigationManager* manager =
       static_cast<ToolbarTestNavigationManager*>(
           web_state_->GetNavigationManager());

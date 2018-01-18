@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
@@ -52,7 +53,7 @@ TEST_F(FullscreenWebStateListObserverTest, ObserveActiveWebState) {
   // Insert a WebState into the list.  The observer should create a
   // FullscreenWebStateObserver for the newly activated WebState.
   std::unique_ptr<web::TestWebState> inserted_web_state =
-      base::MakeUnique<web::TestWebState>();
+      std::make_unique<web::TestWebState>();
   web::TestWebState* web_state = inserted_web_state.get();
   web_state_list().InsertWebState(0, std::move(inserted_web_state),
                                   WebStateList::INSERT_ACTIVATE,

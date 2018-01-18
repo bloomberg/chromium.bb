@@ -4,7 +4,6 @@
 
 #include "ios/web/public/ssl_status.h"
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -23,7 +22,7 @@ class TrivialUserData : public SSLStatus::UserData {
   int value() { return value_; }
 
   std::unique_ptr<SSLStatus::UserData> Clone() override {
-    return base::MakeUnique<TrivialUserData>(value_);
+    return std::make_unique<TrivialUserData>(value_);
   }
 
  private:
@@ -53,7 +52,7 @@ TEST_F(SSLStatusTest, SSLStatusEqualityTest) {
 
   // Verify a copied SSLStatus still Equals() the original after a UserData is
   // assigned to it.
-  copied_status.user_data = base::MakeUnique<TrivialUserData>();
+  copied_status.user_data = std::make_unique<TrivialUserData>();
   EXPECT_TRUE(status.Equals(copied_status));
   EXPECT_TRUE(copied_status.Equals(status));
 }
@@ -62,7 +61,7 @@ TEST_F(SSLStatusTest, SSLStatusEqualityTest) {
 TEST_F(SSLStatusTest, SSLStatusCloningTest) {
   const int kMagic = 1234;
   SSLStatus status;
-  status.user_data = base::MakeUnique<TrivialUserData>(kMagic);
+  status.user_data = std::make_unique<TrivialUserData>(kMagic);
 
   // Verify that copying a SSLStatus with a UserData assigned will Clone()
   // the UserData to the new copy.

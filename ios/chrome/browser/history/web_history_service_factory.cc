@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
@@ -65,7 +64,7 @@ std::unique_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<history::WebHistoryService>(
+  return std::make_unique<history::WebHistoryService>(
       IdentityManagerFactory::GetForBrowserState(browser_state),
       browser_state->GetRequestContext());
 }

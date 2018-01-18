@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -114,7 +115,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(
-        nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
+        nullptr, nullptr, std::make_unique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
     mediator_ =
@@ -149,7 +150,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
 
   static std::unique_ptr<KeyedService> BuildFeatureEngagementMockTracker(
       web::BrowserState*) {
-    return base::MakeUnique<feature_engagement::test::MockTracker>();
+    return std::make_unique<feature_engagement::test::MockTracker>();
   }
 
  private:

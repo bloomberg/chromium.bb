@@ -28,7 +28,7 @@ WebTest::WebTest() : WebTest(base::WrapUnique(new TestWebClient)) {}
 
 WebTest::WebTest(std::unique_ptr<web::WebClient> web_client)
     : web_client_(std::move(web_client)),
-      crash_observer_(base::MakeUnique<WebTestRenderProcessCrashObserver>()) {}
+      crash_observer_(std::make_unique<WebTestRenderProcessCrashObserver>()) {}
 
 WebTest::~WebTest() {}
 
@@ -44,7 +44,7 @@ void WebTest::SetIgnoreRenderProcessCrashesDuringTesting(bool allow) {
   if (allow) {
     crash_observer_ = nullptr;
   } else {
-    crash_observer_ = base::MakeUnique<WebTestRenderProcessCrashObserver>();
+    crash_observer_ = std::make_unique<WebTestRenderProcessCrashObserver>();
   }
 }
 

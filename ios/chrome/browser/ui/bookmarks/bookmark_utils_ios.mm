@@ -12,7 +12,6 @@
 #include "base/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -456,7 +455,7 @@ void segregateNodes(
         continue;
 
       // No NodesSection found.
-      auto nodesSection = base::MakeUnique<NodesSection>();
+      auto nodesSection = std::make_unique<NodesSection>();
       nodesSection->time = dateAdded;
       nodesSection->timeRepresentation = timeRepresentation;
       nodesSection->vector.push_back(node);

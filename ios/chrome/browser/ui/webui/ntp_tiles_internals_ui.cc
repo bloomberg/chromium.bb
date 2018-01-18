@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/grit/components_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_tiles/field_trial.h"
@@ -121,7 +122,7 @@ NTPTilesInternalsUI::NTPTilesInternalsUI(web::WebUIIOS* web_ui)
   web::WebUIIOSDataSource::Add(browser_state,
                                CreateNTPTilesInternalsHTMLSource());
   web_ui->AddMessageHandler(
-      base::MakeUnique<IOSNTPTilesInternalsMessageHandlerBridge>(
+      std::make_unique<IOSNTPTilesInternalsMessageHandlerBridge>(
           ios::FaviconServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::EXPLICIT_ACCESS)));
 }

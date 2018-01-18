@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -46,7 +45,7 @@ WebViewWebClient::WebViewWebClient() = default;
 WebViewWebClient::~WebViewWebClient() = default;
 
 std::unique_ptr<web::WebMainParts> WebViewWebClient::CreateWebMainParts() {
-  return base::MakeUnique<WebViewWebMainParts>();
+  return std::make_unique<WebViewWebMainParts>();
 }
 
 std::string WebViewWebClient::GetProduct() const {

@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/dom_distiller/core/article_entry.h"
@@ -74,23 +73,22 @@ DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 std::unique_ptr<KeyedService>
 DomDistillerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-
   std::unique_ptr<DistillerPageFactory> distiller_page_factory =
-      base::MakeUnique<DistillerPageFactoryIOS>(context);
+      std::make_unique<DistillerPageFactoryIOS>(context);
 
   std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory =
-      base::MakeUnique<DistillerURLFetcherFactory>(
+      std::make_unique<DistillerURLFetcherFactory>(
           context->GetRequestContext());
 
   dom_distiller::proto::DomDistillerOptions options;
   std::unique_ptr<DistillerFactory> distiller_factory =
-      base::MakeUnique<DistillerFactoryImpl>(
+      std::make_unique<DistillerFactoryImpl>(
           std::move(distiller_url_fetcher_factory), options);
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs =
-      base::MakeUnique<DistilledPagePrefs>(
+      std::make_unique<DistilledPagePrefs>(
           ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs());
 
-  return base::MakeUnique<DomDistillerKeyedService>(
+  return std::make_unique<DomDistillerKeyedService>(
       nullptr, std::move(distiller_factory), std::move(distiller_page_factory),
       std::move(distilled_page_prefs));
 }

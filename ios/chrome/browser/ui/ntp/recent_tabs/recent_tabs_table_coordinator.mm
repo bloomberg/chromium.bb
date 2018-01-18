@@ -168,12 +168,12 @@
 - (void)initObservers {
   if (!_syncedSessionsObserver) {
     _syncedSessionsObserver =
-        base::MakeUnique<synced_sessions::SyncedSessionsObserverBridge>(
+        std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
             self, _browserState);
   }
   if (!_closedTabsObserver) {
     _closedTabsObserver =
-        base::MakeUnique<recent_tabs::ClosedTabsObserverBridge>(self);
+        std::make_unique<recent_tabs::ClosedTabsObserverBridge>(self);
     sessions::TabRestoreService* restoreService =
         IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
     if (restoreService)

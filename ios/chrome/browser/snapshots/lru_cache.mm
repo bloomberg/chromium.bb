@@ -11,7 +11,6 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,7 +47,7 @@ using NSObjectMRUCache = base::MRUCacheBase<id<NSObject>,
 
 - (instancetype)initWithCacheSize:(NSUInteger)maxCacheSize {
   if ((self = [super init])) {
-    _cache = base::MakeUnique<NSObjectMRUCache>(maxCacheSize);
+    _cache = std::make_unique<NSObjectMRUCache>(maxCacheSize);
   }
   return self;
 }

@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -35,7 +34,7 @@ class WebUsageController : public mojom::WebUsageController {
 
   static void Create(mojo::InterfaceRequest<mojom::WebUsageController> request,
                      WebState* web_state) {
-    mojo::MakeStrongBinding(base::MakeUnique<WebUsageController>(web_state),
+    mojo::MakeStrongBinding(std::make_unique<WebUsageController>(web_state),
                             std::move(request));
   }
 
@@ -57,7 +56,7 @@ ShellWebClient::~ShellWebClient() {
 }
 
 std::unique_ptr<web::WebMainParts> ShellWebClient::CreateWebMainParts() {
-  auto web_main_parts = base::MakeUnique<ShellWebMainParts>();
+  auto web_main_parts = std::make_unique<ShellWebMainParts>();
   web_main_parts_ = web_main_parts.get();
   return web_main_parts;
 }
@@ -159,9 +158,9 @@ void ShellWebClient::AllowCertificateError(
 }
 
 void ShellWebClient::InitMainFrameInterfaces() {
-  main_frame_interfaces_ = base::MakeUnique<service_manager::BinderRegistry>();
+  main_frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
   main_frame_interfaces_parameterized_ =
-      base::MakeUnique<service_manager::BinderRegistryWithArgs<WebState*>>();
+      std::make_unique<service_manager::BinderRegistryWithArgs<WebState*>>();
   main_frame_interfaces_parameterized_->AddInterface(
       base::Bind(WebUsageController::Create));
 }

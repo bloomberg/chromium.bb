@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/ios/device_util.h"
 #include "base/ios/ios_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -164,7 +163,7 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                ios::ChromeBrowserState* browser_state)
     : OmniboxView(
           controller,
-          base::MakeUnique<ChromeOmniboxClientIOS>(controller, browser_state)),
+          std::make_unique<ChromeOmniboxClientIOS>(controller, browser_state)),
       browser_state_(browser_state),
       field_(field),
       controller_(controller),

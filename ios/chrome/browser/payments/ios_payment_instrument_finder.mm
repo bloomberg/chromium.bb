@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -342,7 +341,7 @@ void IOSPaymentInstrumentFinder::CreateIOSPaymentInstrument(
         if (data) {
           UIImage* icon =
               [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
-          instruments_found_.push_back(base::MakeUnique<IOSPaymentInstrument>(
+          instruments_found_.push_back(std::make_unique<IOSPaymentInstrument>(
               local_method_name.spec(), local_universal_link, local_app_name,
               icon, payment_request_ui_delegate_));
         }

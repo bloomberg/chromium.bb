@@ -4,7 +4,6 @@
 
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 
-#include "base/memory/ptr_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,7 +45,7 @@ WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
                                                   const GURL& opener_url,
                                                   bool initiated_by_user) {
   last_create_new_web_state_request_ =
-      base::MakeUnique<TestCreateNewWebStateRequest>();
+      std::make_unique<TestCreateNewWebStateRequest>();
   last_create_new_web_state_request_->web_state = source;
   last_create_new_web_state_request_->url = url;
   last_create_new_web_state_request_->opener_url = opener_url;
@@ -67,7 +66,7 @@ WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
 }
 
 void TestWebStateDelegate::CloseWebState(WebState* source) {
-  last_close_web_state_request_ = base::MakeUnique<TestCloseWebStateRequest>();
+  last_close_web_state_request_ = std::make_unique<TestCloseWebStateRequest>();
   last_close_web_state_request_->web_state = source;
 
   // Remove WebState from |child_windows_|.
@@ -83,7 +82,7 @@ void TestWebStateDelegate::CloseWebState(WebState* source) {
 WebState* TestWebStateDelegate::OpenURLFromWebState(
     WebState* web_state,
     const WebState::OpenURLParams& params) {
-  last_open_url_request_ = base::MakeUnique<TestOpenURLRequest>();
+  last_open_url_request_ = std::make_unique<TestOpenURLRequest>();
   last_open_url_request_->web_state = web_state;
   last_open_url_request_->params = params;
   return nullptr;
@@ -103,7 +102,7 @@ void TestWebStateDelegate::HandleContextMenu(WebState*,
 void TestWebStateDelegate::ShowRepostFormWarningDialog(
     WebState* source,
     const base::Callback<void(bool)>& callback) {
-  last_repost_form_request_ = base::MakeUnique<TestRepostFormRequest>();
+  last_repost_form_request_ = std::make_unique<TestRepostFormRequest>();
   last_repost_form_request_->web_state = source;
   last_repost_form_request_->callback = callback;
 }
@@ -118,7 +117,7 @@ void TestWebStateDelegate::OnAuthRequired(
     NSURLProtectionSpace* protection_space,
     NSURLCredential* credential,
     const AuthCallback& callback) {
-  last_authentication_request_ = base::MakeUnique<TestAuthenticationRequest>();
+  last_authentication_request_ = std::make_unique<TestAuthenticationRequest>();
   last_authentication_request_->web_state = source;
   last_authentication_request_->protection_space = protection_space;
   last_authentication_request_->credential = credential;

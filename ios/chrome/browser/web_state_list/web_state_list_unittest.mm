@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -152,10 +151,10 @@ class WebStateListTest : public PlatformTest {
   WebStateListTestObserver observer_;
 
   std::unique_ptr<web::TestWebState> CreateWebState(const char* url) {
-    auto test_web_state = base::MakeUnique<web::TestWebState>();
+    auto test_web_state = std::make_unique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(url));
     test_web_state->SetNavigationManager(
-        base::MakeUnique<FakeNavigationManager>());
+        std::make_unique<FakeNavigationManager>());
     return test_web_state;
   }
 

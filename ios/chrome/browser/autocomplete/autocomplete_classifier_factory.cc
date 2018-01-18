@@ -24,7 +24,7 @@ std::unique_ptr<KeyedService> BuildAutocompleteClassifier(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<AutocompleteClassifier>(
+  return std::make_unique<AutocompleteClassifier>(
       base::WrapUnique(new AutocompleteController(
           base::WrapUnique(new AutocompleteProviderClientImpl(browser_state)),
           nullptr, AutocompleteClassifier::DefaultOmniboxProviders())),

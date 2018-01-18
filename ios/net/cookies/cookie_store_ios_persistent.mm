@@ -6,7 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_util.h"
 #include "net/cookies/cookie_monster.h"
@@ -23,7 +24,7 @@ namespace net {
 CookieStoreIOSPersistent::CookieStoreIOSPersistent(
     net::CookieMonster::PersistentCookieStore* persistent_store)
     : CookieStoreIOS(persistent_store,
-                     base::MakeUnique<net::NSHTTPSystemCookieStore>()) {}
+                     std::make_unique<net::NSHTTPSystemCookieStore>()) {}
 
 CookieStoreIOSPersistent::CookieStoreIOSPersistent(
     net::CookieMonster::PersistentCookieStore* persistent_store,

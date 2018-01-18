@@ -4,10 +4,10 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
+#include <memory>
 #include <unordered_set>
 
 #import "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -58,7 +58,7 @@ class ReadingListCollectionViewControllerTest : public PlatformTest {
         .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
 
     reading_list_model_.reset(new ReadingListModelImpl(
-        nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
+        nullptr, nullptr, std::make_unique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
     mediator_ =

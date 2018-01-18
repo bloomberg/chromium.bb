@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -116,11 +117,11 @@ class PaymentRequestAddressEditCoordinatorTest
     autofill::CountryNames::SetLocaleString("en-US");
     personal_data_manager_.SetPrefService(pref_service());
 
-    payment_request_ = base::MakeUnique<MockTestPaymentRequest>(
+    payment_request_ = std::make_unique<MockTestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         browser_state(), web_state(), &personal_data_manager_);
 
-    profile_comparator_ = base::MakeUnique<MockPaymentsProfileComparator>(
+    profile_comparator_ = std::make_unique<MockPaymentsProfileComparator>(
         payment_request_->GetApplicationLocale(), *payment_request_.get());
     payment_request_->SetProfileComparator(profile_comparator_.get());
 

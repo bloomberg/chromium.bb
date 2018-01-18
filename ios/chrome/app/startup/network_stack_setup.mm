@@ -4,7 +4,8 @@
 
 #include "ios/chrome/app/startup/network_stack_setup.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/net/empty_nsurlcache.h"
@@ -29,7 +30,7 @@
   // Configuration for the HTTP protocol handler.
   //  TODO(crbug.com/585700): Remove this code.
   *httpProtocolHandlerDelegate =
-      base::MakeUnique<web::WebHTTPProtocolHandlerDelegate>(
+      std::make_unique<web::WebHTTPProtocolHandlerDelegate>(
           GetApplicationContext()->GetSystemURLRequestContext());
   net::HTTPProtocolHandlerDelegate::SetInstance(
       httpProtocolHandlerDelegate->get());
@@ -40,7 +41,7 @@
   BOOL success = [NSURLProtocol registerClass:[CRNHTTPProtocolHandler class]];
   DCHECK(success);
   *requestTrackerFactory =
-      base::MakeUnique<web::RequestTrackerFactoryImpl>(kChromeUIScheme);
+      std::make_unique<web::RequestTrackerFactoryImpl>(kChromeUIScheme);
   net::RequestTracker::SetRequestTrackerFactory(requestTrackerFactory->get());
 
   DCHECK(success);

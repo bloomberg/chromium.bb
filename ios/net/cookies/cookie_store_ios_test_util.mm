@@ -6,7 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -48,7 +49,7 @@ void TestPersistentCookieStore::RunLoadedCallback() {
   cookies.push_back(std::move(cookie));
 
   std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie(
-      base::MakeUnique<net::CanonicalCookie>(
+      std::make_unique<net::CanonicalCookie>(
           "name", "\x81r\xe4\xbd\xa0\xe5\xa5\xbd", "domain", "/path/",
           base::Time(),  // creation
           base::Time(),  // expires

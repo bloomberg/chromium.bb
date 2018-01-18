@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -30,9 +31,9 @@ class ReadingListMediatorTest : public PlatformTest {
  public:
   ReadingListMediatorTest() {
     std::unique_ptr<base::SimpleTestClock> clock =
-        base::MakeUnique<base::SimpleTestClock>();
+        std::make_unique<base::SimpleTestClock>();
     clock_ = clock.get();
-    model_ = base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr,
+    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr,
                                                     std::move(clock));
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))

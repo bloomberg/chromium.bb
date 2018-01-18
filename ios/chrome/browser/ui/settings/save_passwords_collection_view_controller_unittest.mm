@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
@@ -91,7 +90,7 @@ class SavePasswordsCollectionViewControllerTest
 
   // Creates and adds a saved password form.
   void AddSavedForm1() {
-    auto form = base::MakeUnique<autofill::PasswordForm>();
+    auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.example.com/accounts/LoginAuth");
     form->action = GURL("http://www.example.com/accounts/Login");
     form->username_element = base::ASCIIToUTF16("Email");
@@ -108,7 +107,7 @@ class SavePasswordsCollectionViewControllerTest
 
   // Creates and adds a saved password form.
   void AddSavedForm2() {
-    auto form = base::MakeUnique<autofill::PasswordForm>();
+    auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.example2.com/accounts/LoginAuth");
     form->action = GURL("http://www.example2.com/accounts/Login");
     form->username_element = base::ASCIIToUTF16("Email");
@@ -126,7 +125,7 @@ class SavePasswordsCollectionViewControllerTest
   // Creates and adds a blacklisted site form to never offer to save
   // user's password to those sites.
   void AddBlacklistedForm1() {
-    auto form = base::MakeUnique<autofill::PasswordForm>();
+    auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret.com/login");
     form->action = GURL("http://www.secret.com/action");
     form->username_element = base::ASCIIToUTF16("email");
@@ -144,7 +143,7 @@ class SavePasswordsCollectionViewControllerTest
   // Creates and adds another blacklisted site form to never offer to save
   // user's password to those sites.
   void AddBlacklistedForm2() {
-    auto form = base::MakeUnique<autofill::PasswordForm>();
+    auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret2.com/login");
     form->action = GURL("http://www.secret2.com/action");
     form->username_element = base::ASCIIToUTF16("email");

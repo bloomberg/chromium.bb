@@ -5,12 +5,12 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -731,7 +731,7 @@ UIColor* BackgroundColor() {
 
   // Disable fullscreen during drags.
   if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    _fullscreenDisabler = base::MakeUnique<ScopedFullscreenDisabler>(
+    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
         FullscreenControllerFactory::GetInstance()->GetForBrowserState(
             _tabModel.browserState));
   }

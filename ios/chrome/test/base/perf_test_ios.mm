@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/test/base/perf_test_ios.h"
 
@@ -19,7 +20,7 @@ PerfTest::PerfTest(std::string testGroup)
       isWaterfall_(false),
       verbose_(true),
       repeatCount_(10),
-      web_client_(base::MakeUnique<ChromeWebClient>()) {}
+      web_client_(std::make_unique<ChromeWebClient>()) {}
 PerfTest::PerfTest(std::string testGroup,
                    std::string firstLabel,
                    std::string averageLabel,
@@ -33,7 +34,7 @@ PerfTest::PerfTest(std::string testGroup,
       isWaterfall_(isWaterfall),
       verbose_(verbose),
       repeatCount_(repeat),
-      web_client_(base::MakeUnique<ChromeWebClient>()) {}
+      web_client_(std::make_unique<ChromeWebClient>()) {}
 
 PerfTest::~PerfTest() {}
 

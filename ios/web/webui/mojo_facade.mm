@@ -15,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
@@ -34,7 +33,7 @@ namespace {
 // Wraps an integer into |base::Value| as |Type::INTEGER|.
 template <typename IntegerT>
 std::unique_ptr<base::Value> ValueFromInteger(IntegerT handle) {
-  return base::MakeUnique<base::Value>(static_cast<int>(handle));
+  return std::make_unique<base::Value>(static_cast<int>(handle));
 }
 
 }  // namespace
@@ -142,7 +141,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleMojoCreateMessagePipe(
     base::DictionaryValue* args) {
   mojo::ScopedMessagePipeHandle handle0, handle1;
   MojoResult mojo_result = mojo::CreateMessagePipe(nullptr, &handle0, &handle1);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetInteger("result", mojo_result);
   if (mojo_result == MOJO_RESULT_OK) {
     result->SetInteger("handle0", handle0.release().value());
@@ -202,15 +201,15 @@ std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleReadMessage(
   mojo::MessagePipeHandle handle(static_cast<MojoHandle>(handle_as_int));
   MojoResult mojo_result =
       mojo::ReadMessageRaw(handle, &bytes, &handles, flags);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   if (mojo_result == MOJO_RESULT_OK) {
-    auto handles_list = base::MakeUnique<base::ListValue>();
+    auto handles_list = std::make_unique<base::ListValue>();
     for (uint32_t i = 0; i < handles.size(); i++) {
       handles_list->AppendInteger(handles[i].release().value());
     }
     result->Set("handles", std::move(handles_list));
 
-    auto buffer = base::MakeUnique<base::ListValue>();
+    auto buffer = std::make_unique<base::ListValue>();
     for (uint32_t i = 0; i < bytes.size(); i++) {
       buffer->AppendInteger(bytes[i]);
     }
@@ -238,7 +237,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleWatch(
                 callback_id, result];
         [script_evaluator_ executeJavaScript:script completionHandler:nil];
       });
-  auto watcher = base::MakeUnique<mojo::SimpleWatcher>(
+  auto watcher = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
   watcher->Watch(static_cast<mojo::Handle>(handle), signals, callback);
   watchers_.insert(std::make_pair(++last_watch_id_, std::move(watcher)));

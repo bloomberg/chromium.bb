@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/memory/ptr_util.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 
@@ -29,7 +28,7 @@ std::unique_ptr<SessionCertificatePolicyCacheImpl>
 SessionCertificatePolicyCacheStorageBuilder::BuildSessionCertificatePolicyCache(
     CRWSessionCertificatePolicyCacheStorage* cache_storage) const {
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cache =
-      base::MakeUnique<SessionCertificatePolicyCacheImpl>();
+      std::make_unique<SessionCertificatePolicyCacheImpl>();
   cache->SetAllowedCerts(cache_storage.certificateStorages);
   return cache;
 }

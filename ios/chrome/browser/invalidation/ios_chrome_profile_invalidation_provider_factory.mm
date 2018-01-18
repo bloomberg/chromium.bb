@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
@@ -78,15 +77,15 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
       std::move(identity_provider),
-      base::MakeUnique<invalidation::TiclProfileSettingsProvider>(
+      std::make_unique<invalidation::TiclProfileSettingsProvider>(
           browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       browser_state->GetRequestContext()));
   service->Init(
-      base::MakeUnique<InvalidatorStorage>(browser_state->GetPrefs()));
+      std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 
-  return base::MakeUnique<ProfileInvalidationProvider>(std::move(service));
+  return std::make_unique<ProfileInvalidationProvider>(std::move(service));
 }
 
 void IOSChromeProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(

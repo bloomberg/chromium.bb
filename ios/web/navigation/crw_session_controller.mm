@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
@@ -494,7 +494,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
                                                 2);
   for (size_t index = 0; index <= sourceLastCommittedItemIndex; ++index) {
     mergedItems[index] =
-        base::MakeUnique<web::NavigationItemImpl>(*sourceItems[index]);
+        std::make_unique<web::NavigationItemImpl>(*sourceItems[index]);
   }
   mergedItems.back() = std::move(_items[self.lastCommittedItemIndex]);
 

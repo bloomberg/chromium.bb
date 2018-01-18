@@ -4,11 +4,11 @@
 
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -67,7 +67,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
         credit_card_(autofill::test::GetCreditCard()),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     personal_data_manager_.AddProfile(profile_);
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = std::make_unique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
   }

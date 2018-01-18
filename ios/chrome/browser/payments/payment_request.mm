@@ -10,7 +10,6 @@
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -263,7 +262,7 @@ PaymentShippingType PaymentRequest::shipping_type() const {
 CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   if (!currency_formatter_) {
     DCHECK(web_payment_request_.details.total);
-    currency_formatter_ = base::MakeUnique<CurrencyFormatter>(
+    currency_formatter_ = std::make_unique<CurrencyFormatter>(
         web_payment_request_.details.total->amount->currency,
         web_payment_request_.details.total->amount->currency_system,
         GetApplicationLocale());
@@ -285,7 +284,7 @@ PaymentRequest::GetAddressNormalizationManager() {
 autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(
     const autofill::AutofillProfile& profile) {
   profile_cache_.push_back(
-      base::MakeUnique<autofill::AutofillProfile>(profile));
+      std::make_unique<autofill::AutofillProfile>(profile));
 
   contact_profiles_.push_back(profile_cache_.back().get());
   shipping_profiles_.push_back(profile_cache_.back().get());
@@ -338,7 +337,7 @@ void PaymentRequest::PopulateProfileCache() {
 
   for (const auto* profile : profiles_to_suggest) {
     profile_cache_.push_back(
-        base::MakeUnique<autofill::AutofillProfile>(*profile));
+        std::make_unique<autofill::AutofillProfile>(*profile));
   }
 }
 
@@ -393,7 +392,7 @@ AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
 
   // AutofillPaymentInstrument makes a copy of |credit_card| so it is
   // effectively owned by this object.
-  payment_method_cache_.push_back(base::MakeUnique<AutofillPaymentInstrument>(
+  payment_method_cache_.push_back(std::make_unique<AutofillPaymentInstrument>(
       method_name, credit_card, matches_merchant_card_type_exactly,
       billing_profiles(), GetApplicationLocale(), this));
 
@@ -436,7 +435,7 @@ bool PaymentRequest::RequestContactInfo() {
 void PaymentRequest::InvokePaymentApp(
     id<PaymentResponseHelperConsumer> consumer) {
   DCHECK(selected_payment_method());
-  response_helper_ = base::MakeUnique<PaymentResponseHelper>(consumer, this);
+  response_helper_ = std::make_unique<PaymentResponseHelper>(consumer, this);
   selected_payment_method()->InvokePaymentApp(response_helper_.get());
 }
 

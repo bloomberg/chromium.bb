@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -148,7 +147,7 @@ class TabTest : public BlockCleanupTest {
  public:
   TabTest()
       : scoped_browser_state_manager_(
-            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())),
+            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
         web_state_impl_(nullptr) {}
 
   void SetUp() override {
@@ -176,7 +175,7 @@ class TabTest : public BlockCleanupTest {
     mock_web_controller_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
     web::WebState::CreateParams create_params(browser_state);
-    web_state_impl_ = base::MakeUnique<web::WebStateImpl>(create_params);
+    web_state_impl_ = std::make_unique<web::WebStateImpl>(create_params);
     web_state_impl_->SetWebController(mock_web_controller_);
     web_state_impl_->GetNavigationManagerImpl().InitializeSession();
     web::WebStateImpl* web_state_impl = web_state_impl_.get();

@@ -4,7 +4,8 @@
 
 #include "ios/web/public/test/test_web_thread_bundle.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -49,7 +50,7 @@ TestWebThreadBundle::~TestWebThreadBundle() {
 
 void TestWebThreadBundle::Init(int options) {
   scoped_task_environment_ =
-      base::MakeUnique<base::test::ScopedTaskEnvironment>(
+      std::make_unique<base::test::ScopedTaskEnvironment>(
           options & TestWebThreadBundle::IO_MAINLOOP
               ? base::test::ScopedTaskEnvironment::MainThreadType::IO
               : base::test::ScopedTaskEnvironment::MainThreadType::UI);

@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
@@ -121,7 +122,7 @@ class TabSwitcherModelTest : public PlatformTest {
 
   std::unique_ptr<synced_sessions::SyncedSessions> syncedSessionsFromTestData(
       LightSS const& lightSyncedSessions) {
-    auto syncedSessions = base::MakeUnique<synced_sessions::SyncedSessions>();
+    auto syncedSessions = std::make_unique<synced_sessions::SyncedSessions>();
     for (auto& lightdistantSession : lightSyncedSessions) {
       AddDetailedSessionToSessions(*syncedSessions, lightdistantSession.tag,
                                    lightdistantSession.distantTabs);
@@ -135,11 +136,11 @@ class TabSwitcherModelTest : public PlatformTest {
       std::vector<LightDT> const& light_distant_tabs) {
     // Create a new DistantSession and initialize it with |sessionTag| and
     // |tabTags|.
-    auto distant_session = base::MakeUnique<synced_sessions::DistantSession>();
+    auto distant_session = std::make_unique<synced_sessions::DistantSession>();
     distant_session->tag = session_tag;
 
     for (auto const& light_distant_tab : light_distant_tabs) {
-      auto temp_tab = base::MakeUnique<synced_sessions::DistantTab>();
+      auto temp_tab = std::make_unique<synced_sessions::DistantTab>();
       temp_tab->virtual_url = GURL(light_distant_tab.url);
       temp_tab->title = base::ASCIIToUTF16(light_distant_tab.title);
       distant_session->tabs.push_back(std::move(temp_tab));

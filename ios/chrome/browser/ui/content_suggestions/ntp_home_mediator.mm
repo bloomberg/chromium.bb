@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -104,7 +106,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
   self = [super init];
   if (self) {
     _webStateList = webStateList;
-    _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
     _templateURLService = templateURLService;
     // Listen for default search engine changes.

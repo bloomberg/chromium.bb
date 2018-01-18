@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -46,7 +45,7 @@ std::unique_ptr<KeyedService> CreateSyncSetupService(
   syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           chrome_browser_state);
-  return base::MakeUnique<SyncSetupServiceMock>(
+  return std::make_unique<SyncSetupServiceMock>(
       sync_service, chrome_browser_state->GetPrefs());
 }
 
@@ -64,7 +63,7 @@ class ProfileSyncServiceMockForRecentTabsTableCoordinator
 std::unique_ptr<KeyedService>
 BuildMockProfileSyncServiceForRecentTabsTableCoordinator(
     web::BrowserState* context) {
-  return base::MakeUnique<ProfileSyncServiceMockForRecentTabsTableCoordinator>(
+  return std::make_unique<ProfileSyncServiceMockForRecentTabsTableCoordinator>(
       CreateProfileSyncServiceParamsForTest(
           nullptr, ios::ChromeBrowserState::FromBrowserState(context)));
 }

@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/address_i18n.h"
@@ -292,7 +291,7 @@ NSString* NormalizeRegionName(NSString* region, NSArray<RegionData*>* regions) {
 
 // Queries the region names based on the selected country code.
 - (void)loadRegions {
-  _regionDataLoader = base::MakeUnique<RegionDataLoader>(self);
+  _regionDataLoader = std::make_unique<RegionDataLoader>(self);
   _regionDataLoader->LoadRegionData(
       base::SysNSStringToUTF8(self.selectedCountryCode),
       _paymentRequest->GetRegionDataLoader());

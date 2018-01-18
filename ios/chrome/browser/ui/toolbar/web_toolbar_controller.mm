@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -507,7 +506,7 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
   [_webToolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                    UIViewAutoresizingFlexibleTopMargin];
   [_webToolbar setFrame:[self specificControlsArea]];
-  _locationBar = base::MakeUnique<LocationBarControllerImpl>(
+  _locationBar = std::make_unique<LocationBarControllerImpl>(
       _locationBarView, _browserState, self, self.dispatcher);
   _omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
   _locationBar->SetURLLoader(self);

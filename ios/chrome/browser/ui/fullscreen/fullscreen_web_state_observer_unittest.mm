@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
@@ -27,7 +26,7 @@ class FullscreenWebStateObserverTest : public PlatformTest {
     SetUpFullscreenModelForTesting(&model_, 100.0);
     // Set up a TestNavigationManager.
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        base::MakeUnique<web::TestNavigationManager>();
+        std::make_unique<web::TestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
     // Begin observing the WebState.

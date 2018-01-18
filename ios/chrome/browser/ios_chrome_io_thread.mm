@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/common/channel_info.h"
 
@@ -22,7 +21,7 @@ IOSChromeIOThread::~IOSChromeIOThread() = default;
 
 std::unique_ptr<net::NetworkDelegate>
 IOSChromeIOThread::CreateSystemNetworkDelegate() {
-  return base::MakeUnique<IOSChromeNetworkDelegate>();
+  return std::make_unique<IOSChromeNetworkDelegate>();
 }
 
 std::string IOSChromeIOThread::GetChannelString() const {

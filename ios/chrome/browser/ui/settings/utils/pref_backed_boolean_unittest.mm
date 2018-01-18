@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -36,7 +36,7 @@ class PrefBackedBooleanTest : public PlatformTest {
   bool GetPref() { return pref_service_.GetBoolean(kTestSwitchPref); }
 
   void SetPref(bool value) {
-    auto booleanValue = base::MakeUnique<base::Value>(value);
+    auto booleanValue = std::make_unique<base::Value>(value);
     pref_service_.SetUserPref(kTestSwitchPref, std::move(booleanValue));
   }
 

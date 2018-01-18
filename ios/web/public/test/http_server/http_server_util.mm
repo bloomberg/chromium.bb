@@ -4,7 +4,8 @@
 
 #include "ios/web/public/test/http_server/http_server_util.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/path_service.h"
 #import "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -17,12 +18,12 @@ namespace web {
 namespace test {
 
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
-  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
+  SetUpHttpServer(std::make_unique<HtmlResponseProvider>(responses));
 }
 
 void SetUpSimpleHttpServerWithSetCookies(
     const std::map<GURL, std::pair<std::string, std::string>>& responses) {
-  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
+  SetUpHttpServer(std::make_unique<HtmlResponseProvider>(responses));
 }
 
 // TODO(crbug.com/694859): Cleanup tests and remove the function. Not

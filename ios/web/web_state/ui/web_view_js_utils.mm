@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -44,11 +43,11 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
     result.reset(new base::Value(static_cast<bool>([wk_result boolValue])));
     DCHECK(result->is_bool());
   } else if (result_type == CFNullGetTypeID()) {
-    result = base::MakeUnique<base::Value>();
+    result = std::make_unique<base::Value>();
     DCHECK(result->is_none());
   } else if (result_type == CFDictionaryGetTypeID()) {
     std::unique_ptr<base::DictionaryValue> dictionary =
-        base::MakeUnique<base::DictionaryValue>();
+        std::make_unique<base::DictionaryValue>();
     for (id key in wk_result) {
       NSString* obj_c_string = base::mac::ObjCCast<NSString>(key);
       const std::string path = base::SysNSStringToUTF8(obj_c_string);
@@ -60,7 +59,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
     }
     result = std::move(dictionary);
   } else if (result_type == CFArrayGetTypeID()) {
-    std::unique_ptr<base::ListValue> list = base::MakeUnique<base::ListValue>();
+    std::unique_ptr<base::ListValue> list = std::make_unique<base::ListValue>();
     for (id list_item in wk_result) {
       std::unique_ptr<base::Value> value =
           ValueResultFromWKResult(list_item, max_depth - 1);

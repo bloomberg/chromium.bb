@@ -6,7 +6,6 @@
 
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/category.h"
@@ -127,7 +126,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   self = [super init];
   if (self) {
     _suggestionBridge =
-        base::MakeUnique<ContentSuggestionsServiceBridge>(self, contentService);
+        std::make_unique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
     _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
 
@@ -143,13 +142,13 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
-    _notificationPromo = base::MakeUnique<NotificationPromoWhatsNew>(
+    _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
     _notificationPromo->Init();
 
     _mostVisitedSites = std::move(mostVisitedSites);
     _mostVisitedBridge =
-        base::MakeUnique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
+        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
     _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
                                                   kMaxNumMostVisitedTiles);
   }

@@ -4,7 +4,6 @@
 
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -38,7 +37,7 @@ WebViewUrlLanguageHistogramFactory::BuildServiceInstanceFor(
     web::BrowserState* const context) const {
   WebViewBrowserState* const web_view_browser_state =
       WebViewBrowserState::FromBrowserState(context);
-  return base::MakeUnique<language::UrlLanguageHistogram>(
+  return std::make_unique<language::UrlLanguageHistogram>(
       web_view_browser_state->GetPrefs());
 }
 

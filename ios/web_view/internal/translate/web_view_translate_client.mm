@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -45,7 +44,7 @@ WebViewBrowserState* GetMainBrowserState() {
 }  // namespace
 
 WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
-    : translate_manager_(base::MakeUnique<translate::TranslateManager>(
+    : translate_manager_(std::make_unique<translate::TranslateManager>(
           this,
           WebViewTranslateRankerFactory::GetForBrowserState(
               WebViewBrowserState::FromBrowserState(GetMainBrowserState())),
@@ -90,7 +89,7 @@ PrefService* WebViewTranslateClient::GetPrefs() {
 
 std::unique_ptr<translate::TranslatePrefs>
 WebViewTranslateClient::GetTranslatePrefs() {
-  return base::MakeUnique<translate::TranslatePrefs>(
+  return std::make_unique<translate::TranslatePrefs>(
       GetPrefs(), prefs::kAcceptLanguages, nullptr);
 }
 

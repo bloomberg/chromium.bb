@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -230,7 +231,7 @@ TEST_F(CredentialManagerUtilTest, ParseFederations) {
 
   // Build example valid |providers| list.
   std::unique_ptr<base::ListValue> list_ptr =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   list_ptr->GetList().emplace_back(kTestWebOrigin);
   list_ptr->GetList().emplace_back("https://google.com");
   json.SetList(kCredentialRequestProvidersKey, std::move(list_ptr));
@@ -242,7 +243,7 @@ TEST_F(CredentialManagerUtilTest, ParseFederations) {
                                                 GURL("https://google.com")));
 
   // ParseFederations should skip invalid URLs.
-  list_ptr = base::MakeUnique<base::ListValue>();
+  list_ptr = std::make_unique<base::ListValue>();
   list_ptr->GetList().emplace_back(kTestWebOrigin);
   list_ptr->GetList().emplace_back("not a valid url");
   json.SetList(kCredentialRequestProvidersKey, std::move(list_ptr));

@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -69,7 +70,7 @@ class LegacyToolbarUIUpdaterTest : public PlatformTest {
   // pointer to the inserted WebState.
   web::TestWebState* InsertActiveWebState() {
     std::unique_ptr<web::TestWebState> web_state =
-        base::MakeUnique<web::TestWebState>();
+        std::make_unique<web::TestWebState>();
     web::TestWebState* inserted_web_state = web_state.get();
     web_state_list_.InsertWebState(0, std::move(web_state),
                                    WebStateList::INSERT_ACTIVATE,

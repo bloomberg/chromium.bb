@@ -5,7 +5,6 @@
 #include "ios/web_view/internal/language/web_view_language_model_factory.h"
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -45,13 +44,13 @@ WebViewLanguageModelFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
 
   if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
-    return base::MakeUnique<language::HeuristicLanguageModel>(
+    return std::make_unique<language::HeuristicLanguageModel>(
         web_view_browser_state->GetPrefs(),
         ApplicationContext::GetInstance()->GetApplicationLocale(),
         prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
 
-  return base::MakeUnique<language::BaselineLanguageModel>(
+  return std::make_unique<language::BaselineLanguageModel>(
       web_view_browser_state->GetPrefs(),
       ApplicationContext::GetInstance()->GetApplicationLocale(),
       prefs::kAcceptLanguages);

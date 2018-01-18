@@ -4,7 +4,8 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -91,7 +92,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   // Load a page which never finishes loading.
   GURL infinitePendingURL = web::test::HttpServer::MakeUrl("http://infinite");
   web::test::SetUpHttpServer(
-      base::MakeUnique<InfinitePendingResponseProvider>(infinitePendingURL));
+      std::make_unique<InfinitePendingResponseProvider>(infinitePendingURL));
 
   // The page being loaded never completes, so call the LoadUrl helper that
   // does not wait for the page to complete loading.

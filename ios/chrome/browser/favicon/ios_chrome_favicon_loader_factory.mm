@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -47,7 +46,7 @@ IOSChromeFaviconLoaderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<FaviconLoader>(
+  return std::make_unique<FaviconLoader>(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS));
 }

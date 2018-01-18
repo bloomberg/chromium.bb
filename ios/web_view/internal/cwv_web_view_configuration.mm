@@ -4,8 +4,9 @@
 
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_preferences_internal.h"
@@ -53,7 +54,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     auto browserState =
-        base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
+        std::make_unique<ios_web_view::WebViewBrowserState>(false);
     gDefaultConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });
@@ -64,7 +65,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     auto browserState =
-        base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
+        std::make_unique<ios_web_view::WebViewBrowserState>(true);
     gIncognitoConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });

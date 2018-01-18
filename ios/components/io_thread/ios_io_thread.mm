@@ -17,7 +17,6 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -446,7 +445,7 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
   // Data URLs are always loaded through the system request context on iOS
   // (due to UIWebView limitations).
   bool set_protocol = system_job_factory->SetProtocolHandler(
-      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
+      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
   globals->system_url_request_job_factory.reset(system_job_factory);
   context->set_job_factory(globals->system_url_request_job_factory.get());

@@ -211,7 +211,7 @@ ApplicationContextImpl::GetMetricsServicesManager() {
   if (!metrics_services_manager_) {
     metrics_services_manager_.reset(
         new metrics_services_manager::MetricsServicesManager(
-            base::MakeUnique<IOSChromeMetricsServicesManagerClient>(
+            std::make_unique<IOSChromeMetricsServicesManagerClient>(
                 GetLocalState())));
   }
   return metrics_services_manager_.get();

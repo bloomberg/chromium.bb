@@ -83,9 +83,9 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    navigation_manager_ = base::MakeUnique<WKBasedNavigationManagerImpl>();
+    navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
   } else {
-    navigation_manager_ = base::MakeUnique<LegacyNavigationManagerImpl>();
+    navigation_manager_ = std::make_unique<LegacyNavigationManagerImpl>();
   }
 
   navigation_manager_->SetDelegate(this);
@@ -100,7 +100,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     RestoreSessionStorage(session_storage);
   } else {
     certificate_policy_cache_ =
-        base::MakeUnique<SessionCertificatePolicyCacheImpl>();
+        std::make_unique<SessionCertificatePolicyCacheImpl>();
   }
 }
 
@@ -470,7 +470,7 @@ std::unique_ptr<web::WebUIIOS> WebStateImpl::CreateWebUIIOS(const GURL& url) {
       WebUIIOSControllerFactoryRegistry::GetInstance();
   if (!factory)
     return nullptr;
-  std::unique_ptr<web::WebUIIOS> web_ui = base::MakeUnique<WebUIIOSImpl>(this);
+  std::unique_ptr<web::WebUIIOS> web_ui = std::make_unique<WebUIIOSImpl>(this);
   auto controller = factory->CreateWebUIIOSControllerForURL(web_ui.get(), url);
   if (!controller)
     return nullptr;
@@ -523,7 +523,7 @@ void WebStateImpl::CommitPreviewingViewController(
 WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
   if (!web_state_interface_provider_) {
     web_state_interface_provider_ =
-        base::MakeUnique<WebStateInterfaceProvider>();
+        std::make_unique<WebStateInterfaceProvider>();
   }
   return web_state_interface_provider_.get();
 }

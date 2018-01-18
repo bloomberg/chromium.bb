@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -56,7 +57,7 @@ class NTPHomeMediatorTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
 
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
-        base::MakeUnique<ToolbarTestNavigationManager>();
+        std::make_unique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     test_web_state_ = std::make_unique<web::TestWebState>();
     test_web_state_->SetNavigationManager(std::move(navigation_manager));
@@ -86,13 +87,13 @@ class NTPHomeMediatorTest : public PlatformTest {
 
  protected:
   void SetUpWebStateList() {
-    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
+    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
     web_state_list_->InsertWebState(0, std::move(test_web_state_),
                                     WebStateList::INSERT_FORCE_INDEX,
                                     WebStateOpener());
     web_state_list_->ActivateWebStateAt(0);
     for (int i = 1; i < kNumberOfWebStates; i++) {
-      auto web_state = base::MakeUnique<web::TestWebState>();
+      auto web_state = std::make_unique<web::TestWebState>();
       GURL url("http://test/" + std::to_string(i));
       web_state->SetCurrentURL(url);
       web_state_list_->InsertWebState(i, std::move(web_state),
@@ -176,7 +177,7 @@ TEST_F(NTPHomeMediatorTest, TestTabCountInsert) {
   OCMExpect([consumer_ setTabCount:kNumberOfWebStates + 1]);
 
   // Action.
-  auto web_state = base::MakeUnique<web::TestWebState>();
+  auto web_state = std::make_unique<web::TestWebState>();
   web_state_list_->InsertWebState(1, std::move(web_state),
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
@@ -204,7 +205,7 @@ TEST_F(NTPHomeMediatorTest, TestChangeActiveWebState) {
   // Setup.
   [mediator_ setUp];
   std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
-      base::MakeUnique<ToolbarTestNavigationManager>();
+      std::make_unique<ToolbarTestNavigationManager>();
   ToolbarTestNavigationManager* nav = navigation_manager.get();
   std::unique_ptr<web::TestWebState> web_state =
       std::make_unique<web::TestWebState>();

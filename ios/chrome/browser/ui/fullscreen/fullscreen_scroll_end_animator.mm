@@ -6,9 +6,9 @@
 
 #include <math.h>
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
@@ -47,7 +47,7 @@
     DCHECK_LE(startProgress, 1.0);
     _startProgress = startProgress;
     _finalProgress = roundf(_startProgress);
-    _bezier = base::MakeUnique<gfx::CubicBezier>(
+    _bezier = std::make_unique<gfx::CubicBezier>(
         timingParams.controlPoint1.x, timingParams.controlPoint1.y,
         timingParams.controlPoint2.x, timingParams.controlPoint2.y);
   }

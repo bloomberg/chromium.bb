@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/providers/chromium_browser_provider.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -12,6 +11,6 @@
 
 namespace ios {
 std::unique_ptr<ChromeBrowserProvider> CreateChromeBrowserProvider() {
-  return base::MakeUnique<ChromiumBrowserProvider>();
+  return std::make_unique<ChromiumBrowserProvider>();
 }
 }  // namespace ios

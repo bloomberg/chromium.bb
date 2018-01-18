@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
@@ -52,7 +51,7 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
     syncer::SyncService* sync_service =
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(
             chrome_browser_state);
-    return base::MakeUnique<SyncSetupServiceMock>(
+    return std::make_unique<SyncSetupServiceMock>(
         sync_service, chrome_browser_state->GetPrefs());
   }
 

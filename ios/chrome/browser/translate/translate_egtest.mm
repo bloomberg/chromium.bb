@@ -4,6 +4,8 @@
 
 #import <XCTest/XCTest.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/bind_objc_block.h"
@@ -324,7 +326,7 @@ using translate::LanguageDetectionController;
   language::IOSLanguageDetectionTabHelper::Callback copyDetailsCallback =
       base::BindBlockArc(^(const translate::LanguageDetectionDetails& details) {
         _language_detection_details =
-            base::MakeUnique<translate::LanguageDetectionDetails>(details);
+            std::make_unique<translate::LanguageDetectionDetails>(details);
       });
   SetTestingLanguageDetectionCallback(copyDetailsCallback);
 }

@@ -187,7 +187,7 @@ class RequestTrackerTest : public PlatformTest {
       url = GetURL(requests_.size());
 
     while (i >= requests_.size()) {
-      contexts_.push_back(base::MakeUnique<net::URLRequestContext>());
+      contexts_.push_back(std::make_unique<net::URLRequestContext>());
       requests_.push_back(contexts_[i]->CreateRequest(
           url, net::DEFAULT_PRIORITY, &request_delegate_));
 

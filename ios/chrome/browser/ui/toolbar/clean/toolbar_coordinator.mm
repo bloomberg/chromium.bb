@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -134,7 +135,7 @@
 
   // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
   // created.
-  _locationBar = base::MakeUnique<LocationBarControllerImpl>(
+  _locationBar = std::make_unique<LocationBarControllerImpl>(
       self.locationBarCoordinator.locationBarView, self.browserState, self,
       self.dispatcher);
   self.locationBarCoordinator.locationBarController = _locationBar.get();
@@ -163,7 +164,7 @@
 
   if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     _fullscreenObserver =
-        base::MakeUnique<FullscreenUIUpdater>(self.toolbarViewController);
+        std::make_unique<FullscreenUIUpdater>(self.toolbarViewController);
     FullscreenControllerFactory::GetInstance()
         ->GetForBrowserState(self.browserState)
         ->AddObserver(_fullscreenObserver.get());

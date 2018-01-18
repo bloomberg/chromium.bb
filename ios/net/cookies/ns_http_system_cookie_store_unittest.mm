@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
 
@@ -22,9 +24,9 @@ class NSHTTPSystemCookieStoreTestDelegate {
  public:
   NSHTTPSystemCookieStoreTestDelegate()
       : scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()),
+            std::make_unique<TestCookieStoreIOSClient>()),
         shared_store_([NSHTTPCookieStorage sharedHTTPCookieStorage]),
-        store_(base::MakeUnique<net::NSHTTPSystemCookieStore>(shared_store_)) {}
+        store_(std::make_unique<net::NSHTTPSystemCookieStore>(shared_store_)) {}
 
   bool IsTestEnabled() { return true; }
 

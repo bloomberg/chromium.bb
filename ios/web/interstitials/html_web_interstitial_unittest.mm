@@ -4,6 +4,8 @@
 
 #import "ios/web/interstitials/html_web_interstitial_impl.h"
 
+#include <memory>
+
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
@@ -40,7 +42,7 @@ class HtmlWebInterstitialImplTest : public WebTest {
   void SetUp() override {
     WebTest::SetUp();
     WebState::CreateParams params(GetBrowserState());
-    web_state_ = base::MakeUnique<WebStateImpl>(params);
+    web_state_ = std::make_unique<WebStateImpl>(params);
     web_state_->GetNavigationManagerImpl().InitializeSession();
 
     // Transient item can only be added for pending non-app-specific loads.
@@ -60,7 +62,7 @@ TEST_F(HtmlWebInterstitialImplTest, Proceed) {
 
   GURL url(kTestHostName);
   std::unique_ptr<MockInterstitialDelegate> delegate =
-      base::MakeUnique<MockInterstitialDelegate>();
+      std::make_unique<MockInterstitialDelegate>();
   EXPECT_CALL(*delegate.get(), OnProceed());
 
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
@@ -78,7 +80,7 @@ TEST_F(HtmlWebInterstitialImplTest, DontProceed) {
   ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
 
   std::unique_ptr<MockInterstitialDelegate> delegate =
-      base::MakeUnique<MockInterstitialDelegate>();
+      std::make_unique<MockInterstitialDelegate>();
   EXPECT_CALL(*delegate.get(), OnDontProceed());
 
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
@@ -96,7 +98,7 @@ TEST_F(HtmlWebInterstitialImplTest, VisibleSecurityStateChanged) {
   TestWebStateObserver observer(web_state_.get());
 
   std::unique_ptr<MockInterstitialDelegate> delegate =
-      base::MakeUnique<MockInterstitialDelegate>();
+      std::make_unique<MockInterstitialDelegate>();
   // Raw pointer to |interstitial| because it deletes itself when dismissed.
   HtmlWebInterstitialImpl* interstitial = new HtmlWebInterstitialImpl(
       web_state_.get(), true, GURL(kTestHostName), std::move(delegate));
@@ -111,7 +113,7 @@ TEST_F(HtmlWebInterstitialImplTest, VisibleSecurityStateChanged) {
 // Tests that the interstitial is dismissed when the web state is destroyed.
 TEST_F(HtmlWebInterstitialImplTest, WebStateDestroyed) {
   std::unique_ptr<MockInterstitialDelegate> delegate =
-      base::MakeUnique<MockInterstitialDelegate>();
+      std::make_unique<MockInterstitialDelegate>();
   // Interstitial should be dismissed if web state is destroyed.
   EXPECT_CALL(*delegate.get(), OnDontProceed());
 

@@ -4,7 +4,6 @@
 
 #include "ios/chrome/app/startup/chrome_main_starter.h"
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/app/startup/ios_chrome_main.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,7 +13,7 @@
 @implementation ChromeMainStarter
 
 + (std::unique_ptr<IOSChromeMain>)startChromeMain {
-  return base::MakeUnique<IOSChromeMain>();
+  return std::make_unique<IOSChromeMain>();
 }
 
 @end

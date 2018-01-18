@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
@@ -185,7 +184,7 @@ class WebStateImplTest : public web::WebTest {
  protected:
   WebStateImplTest() : web::WebTest() {
     web::WebState::CreateParams params(GetBrowserState());
-    web_state_ = base::MakeUnique<web::WebStateImpl>(params);
+    web_state_ = std::make_unique<web::WebStateImpl>(params);
   }
 
   std::unique_ptr<WebStateImpl> web_state_;
@@ -463,7 +462,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_TRUE(observer->load_page_info()->success);
 
   // Test that OnTitleChanged() is called.
-  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
+  observer = std::make_unique<TestWebStateObserver>(web_state_.get());
   ASSERT_FALSE(observer->title_was_set_info());
   web_state_->OnTitleChanged();
   ASSERT_TRUE(observer->title_was_set_info());
@@ -828,7 +827,7 @@ TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 
   // Callback is called when icons were fetched.
-  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
+  observer = std::make_unique<TestWebStateObserver>(web_state_.get());
   web::FaviconURL favicon_url(GURL("https://chromium.test/"),
                               web::FaviconURL::IconType::kTouchIcon,
                               {gfx::Size(5, 6)});

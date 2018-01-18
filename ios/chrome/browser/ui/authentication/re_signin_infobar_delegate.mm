@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -82,7 +81,7 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
       base::UserMetricsAction("Signin_Impression_FromReSigninInfobar"));
   // User needs to be reminded to sign in again. Creates a new infobar delegate
   // and returns it.
-  return base::MakeUnique<ReSignInInfoBarDelegate>(browser_state, presenter);
+  return std::make_unique<ReSignInInfoBarDelegate>(browser_state, presenter);
 }
 
 ReSignInInfoBarDelegate::ReSignInInfoBarDelegate(

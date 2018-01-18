@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sessions/core/session_id.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -196,14 +195,14 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
       NOTREACHED();
       break;
   }
-  return base::MakeUnique<TabModelSnapshot>(tm);
+  return std::make_unique<TabModelSnapshot>(tm);
 }
 
 - (std::unique_ptr<const synced_sessions::DistantSession>)distantSessionForTag:
     (std::string const&)tag {
   syncer::SyncService* syncService =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
-  return base::MakeUnique<synced_sessions::DistantSession>(syncService, tag);
+  return std::make_unique<synced_sessions::DistantSession>(syncService, tag);
 }
 
 - (std::string const&)tagOfDistantSessionAtIndex:(int)index {

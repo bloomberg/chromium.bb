@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -132,7 +131,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!service_context_);
     service_context_.reset(new service_manager::ServiceContext(
-        base::MakeUnique<service_manager::ForwardingService>(this),
+        std::make_unique<service_manager::ForwardingService>(this),
         std::move(pending_service_request_), std::move(io_thread_connector_),
         std::move(pending_connector_request_)));
 
@@ -171,7 +170,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
       const service_manager::EmbeddedServiceInfo& info) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto service =
-        base::MakeUnique<service_manager::EmbeddedServiceRunner>(name, info);
+        std::make_unique<service_manager::EmbeddedServiceRunner>(name, info);
     AddServiceRequestHandlerOnIoThread(
         name,
         base::Bind(&service_manager::EmbeddedServiceRunner::BindServiceRequest,
@@ -290,7 +289,7 @@ void ServiceManagerConnection::Destroy() {
 std::unique_ptr<ServiceManagerConnection> ServiceManagerConnection::Create(
     service_manager::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
-  return base::MakeUnique<ServiceManagerConnectionImpl>(std::move(request),
+  return std::make_unique<ServiceManagerConnectionImpl>(std::move(request),
                                                         io_task_runner);
 }
 

@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/default_clock.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
@@ -64,15 +65,15 @@ class TestWebState : public web::TestWebState {
 class ReadingListWebStateObserverTest : public web::WebTest {
  public:
   ReadingListWebStateObserverTest() {
-    auto test_navigation_manager = base::MakeUnique<TestNavigationManager>();
+    auto test_navigation_manager = std::make_unique<TestNavigationManager>();
     test_navigation_manager_ = test_navigation_manager.get();
     pending_item_ = web::NavigationItem::Create();
     last_committed_item_ = web::NavigationItem::Create();
     test_navigation_manager->SetPendingItem(pending_item_.get());
     test_navigation_manager->SetLastCommittedItem(last_committed_item_.get());
     test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
-    reading_list_model_ = base::MakeUnique<ReadingListModelImpl>(
-        nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
+    reading_list_model_ = std::make_unique<ReadingListModelImpl>(
+        nullptr, nullptr, std::make_unique<base::DefaultClock>());
     reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle,
                                   reading_list::ADDED_VIA_CURRENT_APP);
     ReadingListWebStateObserver::CreateForWebState(&test_web_state_,

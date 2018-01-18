@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/sync_encryption_collection_view_controller.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
@@ -75,7 +76,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
                                   syncService->IsUsingSecondaryPassphrase();
-    _syncObserver = base::MakeUnique<SyncObserverBridge>(self, syncService);
+    _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];

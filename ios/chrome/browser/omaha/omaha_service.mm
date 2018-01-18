@@ -13,7 +13,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/ios/device_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -235,7 +234,7 @@ class XmlWrapper : public OmahaXmlWriter {
         urlIsParsed_ = YES;
         manifestIsParsed_ = YES;
       } else if ([status isEqualToString:@"ok"]) {
-        updateInformation_ = base::MakeUnique<UpgradeRecommendedDetails>();
+        updateInformation_ = std::make_unique<UpgradeRecommendedDetails>();
       } else {
         hasError_ = YES;
       }
@@ -639,7 +638,7 @@ void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
 
 void OmahaService::GetDebugInformationOnIOThread(
     const base::Callback<void(base::DictionaryValue*)> callback) {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
 
   result->SetString("message", GetCurrentPingContent());
   result->SetString("last_sent_time",

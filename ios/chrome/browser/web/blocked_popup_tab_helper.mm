@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -142,7 +141,7 @@ void BlockedPopupTabHelper::ShowInfoBar() {
   RegisterAsInfoBarManagerObserverIfNeeded(infobar_manager);
 
   std::unique_ptr<BlockPopupInfoBarDelegate> delegate(
-      base::MakeUnique<BlockPopupInfoBarDelegate>(GetBrowserState(), web_state_,
+      std::make_unique<BlockPopupInfoBarDelegate>(GetBrowserState(), web_state_,
                                                   popups_));
   std::unique_ptr<infobars::InfoBar> infobar =
       infobar_manager->CreateConfirmInfoBar(std::move(delegate));

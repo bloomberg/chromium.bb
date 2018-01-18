@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -34,7 +34,7 @@ URLDataManagerIOS* GetFromBrowserState(BrowserState* browser_state) {
   if (!browser_state->GetUserData(kURLDataManagerIOSKeyName)) {
     browser_state->SetUserData(
         kURLDataManagerIOSKeyName,
-        base::MakeUnique<URLDataManagerIOS>(browser_state));
+        std::make_unique<URLDataManagerIOS>(browser_state));
   }
   return static_cast<URLDataManagerIOS*>(
       browser_state->GetUserData(kURLDataManagerIOSKeyName));

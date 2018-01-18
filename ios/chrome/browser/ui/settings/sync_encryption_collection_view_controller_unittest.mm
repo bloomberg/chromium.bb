@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -36,7 +35,7 @@ std::unique_ptr<KeyedService> CreateNiceProfileSyncServiceMock(
   browser_sync::ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(
           nullptr, ios::ChromeBrowserState::FromBrowserState(context));
-  return base::MakeUnique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
+  return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
       &init_params);
 }
 

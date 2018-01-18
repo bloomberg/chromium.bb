@@ -4,10 +4,10 @@
 
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/time/default_clock.h"
@@ -126,8 +126,8 @@ TEST_F(OfflineURLUtilsTest, IsOfflineURL) {
 
 // Checks that the offline URLs are correctly detected by |IsOfflineURL|.
 TEST_F(OfflineURLUtilsTest, IsOfflineURLValid) {
-  auto reading_list_model = base::MakeUnique<ReadingListModelImpl>(
-      nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
+  auto reading_list_model = std::make_unique<ReadingListModelImpl>(
+      nullptr, nullptr, std::make_unique<base::DefaultClock>());
   GURL entry_url("http://entry_url.com");
   base::FilePath distilled_path("distilled/page.html");
   GURL distilled_url("http://distilled_url.com");

@@ -50,19 +50,19 @@ ReadingListDownloadServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
       distiller_page_factory =
-          base::MakeUnique<reading_list::ReadingListDistillerPageFactory>(
+          std::make_unique<reading_list::ReadingListDistillerPageFactory>(
               context);
 
   auto distiller_url_fetcher_factory =
-      base::MakeUnique<dom_distiller::DistillerURLFetcherFactory>(
+      std::make_unique<dom_distiller::DistillerURLFetcherFactory>(
           context->GetRequestContext());
 
   dom_distiller::proto::DomDistillerOptions options;
   auto distiller_factory =
-      base::MakeUnique<dom_distiller::DistillerFactoryImpl>(
+      std::make_unique<dom_distiller::DistillerFactoryImpl>(
           std::move(distiller_url_fetcher_factory), options);
 
-  return base::MakeUnique<ReadingListDownloadService>(
+  return std::make_unique<ReadingListDownloadService>(
       ReadingListModelFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->GetPrefs(), chrome_browser_state->GetStatePath(),
       chrome_browser_state->GetRequestContext(), std::move(distiller_factory),

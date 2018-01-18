@@ -62,7 +62,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::MakeUnique<gcm::GCMProfileService>(
+  return std::make_unique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(), ::GetChannel(),
       GetProductCategoryForSubtypes(),

@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
@@ -36,7 +37,7 @@ class ContentSuggestionsHeaderSynchronizerTest : public PlatformTest {
 
   id CollectionController() { return collection_controller_; }
   void SetAsIPhone() {
-    device_type_swizzler_ = base::MakeUnique<ScopedBlockSwizzler>(
+    device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
           return UIUserInterfaceIdiomPhone;

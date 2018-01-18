@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -496,7 +495,7 @@ newPaymentRequestFromMessage:(const base::DictionaryValue&)message
   }
 
   return _paymentRequestCache->AddPaymentRequest(
-      _activeWebState, base::MakeUnique<payments::PaymentRequest>(
+      _activeWebState, std::make_unique<payments::PaymentRequest>(
                            webPaymentRequest, _browserState, _activeWebState,
                            _personalDataManager, self));
 }
