@@ -10,6 +10,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 
 import java.util.List;
 
@@ -102,5 +103,12 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     public void deleteNotificationChannelGroup(String groupId) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mNotificationManager.deleteNotificationChannelGroup(groupId);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public StatusBarNotification[] getActiveNotifications() {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        return mNotificationManager.getActiveNotifications();
     }
 }
