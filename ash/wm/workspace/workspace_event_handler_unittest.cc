@@ -324,7 +324,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   gfx::Rect restore_bounds = window->bounds();
   gfx::Rect work_area_in_parent =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get());
 
   EXPECT_FALSE(window_state->IsMaximized());
 

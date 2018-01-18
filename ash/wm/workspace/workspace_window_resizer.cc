@@ -521,7 +521,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(gfx::Rect* bounds) {
   gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget()));
   int initial_size = PrimaryAxisSize(details().initial_bounds_in_parent.size());
   int current_size = PrimaryAxisSize(bounds->size());
   int start = PrimaryAxisCoordinate(bounds->right(), bounds->bottom());
@@ -935,11 +935,12 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+  gfx::Rect area(screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget()));
   if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     // Increase tolerance for touch-snapping near the screen edges. This is only
     // necessary when the work area left or right edge is same as screen edge.
-    gfx::Rect display_bounds(ScreenUtil::GetDisplayBoundsInParent(GetTarget()));
+    gfx::Rect display_bounds(
+        screen_util::GetDisplayBoundsInParent(GetTarget()));
     int inset_left = 0;
     if (area.x() == display_bounds.x())
       inset_left = kScreenEdgeInsetForTouchDrag;
@@ -961,7 +962,7 @@ bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
   DCHECK(snapped_type == mojom::WindowStateType::LEFT_SNAPPED ||
          snapped_type == mojom::WindowStateType::RIGHT_SNAPPED);
   gfx::Rect snapped_bounds =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget());
+      screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget());
   if (snapped_type == mojom::WindowStateType::RIGHT_SNAPPED)
     snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
   snapped_bounds.set_width(bounds_in_parent.width());

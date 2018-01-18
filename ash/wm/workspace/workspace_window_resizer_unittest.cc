@@ -592,7 +592,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
-        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
+        screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag();
     // With the resolution of 500x600 we will hit in this case the 50% screen
     // size setting.
@@ -881,7 +881,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                          gfx::Insets(0, 0, 50, 0));
-  int left = ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
+  int left = screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
   int pixels_to_left_border = 50;
   int window_width = 300;
   int window_x = left - window_width + pixels_to_left_border;
@@ -899,7 +899,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                          gfx::Insets(0, 0, 50, 0));
   int right =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
   int window_width = 300;
   int window_x = right - pixels_to_right_border;
@@ -919,7 +919,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                          gfx::Insets(0, 0, 50, 0));
   int bottom =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   int delta_to_bottom = 50;
   int height = 380;
   window_->SetBounds(gfx::Rect(100, bottom - delta_to_bottom, 300, height));
@@ -942,7 +942,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                          gfx::Insets(0, 0, 50, 0));
   int right =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).right();
   int pixels_to_right_border = 50;
   int window_width = 300;
   int window_x = right - pixels_to_right_border;
@@ -1069,7 +1069,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTTOPRIGHT));
   ASSERT_TRUE(resizer.get());
@@ -1085,7 +1085,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTBOTTOMRIGHT));
   ASSERT_TRUE(resizer.get());
@@ -1102,7 +1102,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTBOTTOMLEFT));
   ASSERT_TRUE(resizer.get());
@@ -1131,7 +1131,7 @@ TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
   EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
 
   gfx::Rect work_area(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()));
 
   // The initial y position of |window_|.
   int initial_y = 10;

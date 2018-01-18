@@ -179,7 +179,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       // Use entire display instead of workarea. The logic ensures 30%
       // visibility which should be enough to see where the window gets
       // moved.
-      gfx::Rect display_area = ScreenUtil::GetDisplayBoundsInParent(window);
+      gfx::Rect display_area = screen_util::GetDisplayBoundsInParent(window);
       int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
       int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
       wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
@@ -196,7 +196,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
         return;
       }
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
@@ -221,7 +221,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
         return;
       }
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
       if (!::wm::GetTransientParent(window_state->window())) {
         wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
@@ -265,7 +265,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
       return;
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE: {
       gfx::Rect work_area =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+          screen_util::GetDisplayWorkAreaBoundsInParent(window);
 
       // Maximize vertically if:
       // - The window does not have a max height defined.
@@ -297,7 +297,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
       if (!window_state->IsNormalOrSnapped())
         return;
       gfx::Rect work_area =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+          screen_util::GetDisplayWorkAreaBoundsInParent(window);
       if (window_state->IsNormalStateType() &&
           window_state->HasRestoreBounds() &&
           (window->bounds().width() == work_area.width() &&
@@ -392,12 +392,12 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
   DCHECK(!window_state->allow_set_bounds_direct());
   if (window_state->IsMaximized()) {
     window_state->SetBoundsDirect(
-        ScreenUtil::GetMaximizedWindowBoundsInParent(window_state->window()));
+        screen_util::GetMaximizedWindowBoundsInParent(window_state->window()));
     return true;
   }
   if (window_state->IsFullscreen()) {
     window_state->SetBoundsDirect(
-        ScreenUtil::GetDisplayBoundsInParent(window_state->window()));
+        screen_util::GetDisplayBoundsInParent(window_state->window()));
     return true;
   }
   return false;
@@ -431,7 +431,7 @@ void DefaultState::CenterWindow(WindowState* window_state) {
     window_state->Restore();
   } else {
     gfx::Rect center_in_parent =
-        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+        screen_util::GetDisplayWorkAreaBoundsInParent(window);
     center_in_parent.ClampToCenteredSize(window->bounds().size());
     window_state->SetBoundsDirectAnimated(center_in_parent);
   }
@@ -558,7 +558,7 @@ void DefaultState::UpdateBoundsFromState(
     case mojom::WindowStateType::DEFAULT:
     case mojom::WindowStateType::NORMAL: {
       gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+          screen_util::GetDisplayWorkAreaBoundsInParent(window);
       if (window_state->HasRestoreBounds()) {
         bounds_in_parent = window_state->GetRestoreBoundsInParent();
         // Check if the |window|'s restored size is bigger than the working area
@@ -585,13 +585,13 @@ void DefaultState::UpdateBoundsFromState(
       break;
     }
     case mojom::WindowStateType::MAXIMIZED:
-      bounds_in_parent = ScreenUtil::GetMaximizedWindowBoundsInParent(window);
+      bounds_in_parent = screen_util::GetMaximizedWindowBoundsInParent(window);
       break;
 
     case mojom::WindowStateType::FULLSCREEN:
     case mojom::WindowStateType::PINNED:
     case mojom::WindowStateType::TRUSTED_PINNED:
-      bounds_in_parent = ScreenUtil::GetDisplayBoundsInParent(window);
+      bounds_in_parent = screen_util::GetDisplayBoundsInParent(window);
       break;
 
     case mojom::WindowStateType::MINIMIZED:

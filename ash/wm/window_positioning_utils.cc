@@ -35,7 +35,7 @@ int GetDefaultSnappedWindowWidth(aura::Window* window) {
   const float kSnappedWidthWorkspaceRatio = 0.5f;
 
   int work_area_width =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window).width();
+      screen_util::GetDisplayWorkAreaBoundsInParent(window).width();
   int min_width =
       window->delegate() ? window->delegate()->GetMinimumSize().width() : 0;
   int ideal_width =
@@ -91,7 +91,7 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
   gfx::Rect work_area_in_parent(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window));
   return gfx::Rect(work_area_in_parent.x(), work_area_in_parent.y(),
                    GetDefaultSnappedWindowWidth(window),
                    work_area_in_parent.height());
@@ -99,7 +99,7 @@ gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
 
 gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(aura::Window* window) {
   gfx::Rect work_area_in_parent(
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window));
+      screen_util::GetDisplayWorkAreaBoundsInParent(window));
   int width = GetDefaultSnappedWindowWidth(window);
   return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),
                    width, work_area_in_parent.height());

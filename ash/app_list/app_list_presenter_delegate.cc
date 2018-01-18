@@ -39,7 +39,7 @@ namespace {
 gfx::Point GetCenterOfDisplayForWindow(aura::Window* window,
                                        int minimum_height) {
   DCHECK(window);
-  gfx::Rect bounds = ScreenUtil::GetDisplayBoundsWithShelf(window);
+  gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);
   ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
 
   // If the virtual keyboard is active, subtract it from the display bounds, so

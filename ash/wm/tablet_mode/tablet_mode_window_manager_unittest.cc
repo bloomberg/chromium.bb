@@ -351,7 +351,7 @@ TEST_F(TabletModeWindowManagerTest,
   EXPECT_EQ(rect.ToString(), fixed_window->bounds().ToString());
 
   gfx::Size workspace_size =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(unlimited_window.get())
+      screen_util::GetMaximizedWindowBoundsInParent(unlimited_window.get())
           .size();
 
   // Create the manager and make sure that all qualifying windows were detected
@@ -423,7 +423,7 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
   // Make sure that the position of the unresizable window is in the middle of
   // the screen.
   gfx::Size work_area_size =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(w3.get()).size();
+      screen_util::GetDisplayWorkAreaBoundsInParent(w3.get()).size();
   gfx::Point center =
       gfx::Point((work_area_size.width() - rect3.size().width()) / 2,
                  (work_area_size.height() - rect3.size().height()) / 2);
@@ -503,7 +503,7 @@ TEST_F(TabletModeWindowManagerTest, CreateNonMaximizableButResizableWindows) {
                                           rect));
 
   gfx::Size workspace_size =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(unlimited_window.get())
+      screen_util::GetMaximizedWindowBoundsInParent(unlimited_window.get())
           .size();
 
   // All windows should be sized now as big as possible and be centered.

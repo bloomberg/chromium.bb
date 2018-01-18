@@ -214,7 +214,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, PreserveNormalWindowBounds) {
   EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInParent(window.get());
   window->SetBounds(work_area);
 
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());

@@ -46,7 +46,7 @@ gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
   DCHECK(window_state->CanMaximize() || window_state->CanResize());
 
   gfx::Size workspace_size =
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window_state->window())
+      screen_util::GetMaximizedWindowBoundsInParent(window_state->window())
           .size();
 
   gfx::Size size = window_state->window()->delegate()
@@ -63,7 +63,7 @@ gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
 gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
                             wm::WindowState* state_object) {
   gfx::Rect work_area_in_parent =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(state_object->window());
+      screen_util::GetDisplayWorkAreaBoundsInParent(state_object->window());
   work_area_in_parent.ClampToCenteredSize(bounds_in_parent.size());
   return work_area_in_parent;
 }
@@ -80,7 +80,7 @@ bool CanSnap(wm::WindowState* window_state) {
 // Returns the maximized/full screen and/or centered bounds of a window.
 gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
   if (state_object->IsFullscreen() || state_object->IsPinned())
-    return ScreenUtil::GetDisplayBoundsInParent(state_object->window());
+    return screen_util::GetDisplayBoundsInParent(state_object->window());
 
   if (state_object->GetStateType() == mojom::WindowStateType::LEFT_SNAPPED) {
     DCHECK(CanSnap(state_object));

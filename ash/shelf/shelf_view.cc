@@ -1840,7 +1840,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     gfx::Rect shelf_bounds =
         is_overflow_mode()
             ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
-            : ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
+            : screen_util::GetDisplayBoundsWithShelf(shelf_window);
 
     switch (shelf_->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
