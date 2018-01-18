@@ -326,7 +326,11 @@ HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
-    for (auto& node : ChildrenInFlatTreeIfAssignmentIsSupported())
+    const HeapVector<Member<Node>>& flat_tree_children =
+        RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
+            ? assigned_nodes_
+            : distributed_nodes_;
+    for (auto& node : flat_tree_children)
       node->LazyReattachIfAttached();
   }
   HTMLElement::DetachLayoutTree(context);
