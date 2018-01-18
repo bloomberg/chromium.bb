@@ -108,8 +108,9 @@ struct ColorScheme {
   SkColor omnibox_icon;
   SkColor omnibox_text;
   SkColor omnibox_hint;
-  SkColor omnibox_suggestion_content;
-  SkColor omnibox_suggestion_description;
+  SkColor suggestion_text;
+  SkColor suggestion_dim_text;
+  SkColor suggestion_url_text;
   ButtonColors omnibox_voice_search_button_colors;
   ButtonColors suggestion_button_colors;
 

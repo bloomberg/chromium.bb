@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/text.h"
 
 #include "cc/paint/skia_paint_canvas.h"
+#include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -33,6 +34,57 @@ bool IsFixedWidthLayout(TextLayoutMode mode) {
 
 }  // namespace
 
+TextFormattingAttribute::TextFormattingAttribute(SkColor color,
+                                                 const gfx::Range& range)
+    : type_(COLOR), range_(range), color_(color) {}
+
+TextFormattingAttribute::TextFormattingAttribute(gfx::Font::Weight weight,
+                                                 const gfx::Range& range)
+    : type_(WEIGHT), range_(range), weight_(weight) {}
+
+TextFormattingAttribute::TextFormattingAttribute(
+    gfx::DirectionalityMode directionality)
+    : type_(DIRECTIONALITY), directionality_(directionality) {}
+
+bool TextFormattingAttribute::operator==(
+    const TextFormattingAttribute& other) const {
+  if (type_ != other.type_ || range_ != other.range_)
+    return false;
+  switch (type_) {
+    case COLOR:
+      return color_ == other.color_;
+    case WEIGHT:
+      return weight_ == other.weight_;
+    case DIRECTIONALITY:
+      return directionality_ == other.directionality_;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool TextFormattingAttribute::operator!=(
+    const TextFormattingAttribute& other) const {
+  return !(*this == other);
+}
+
+void TextFormattingAttribute::Apply(RenderTextWrapper* render_text) const {
+  switch (type_) {
+    case COLOR: {
+      render_text->ApplyColor(color_, range_);
+      break;
+    }
+    case WEIGHT:
+      render_text->ApplyWeight(weight_, range_);
+      break;
+    case DIRECTIONALITY:
+      render_text->SetDirectionalityMode(directionality_);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 class TextTexture : public UiTexture {
  public:
   TextTexture() = default;
@@ -46,6 +98,10 @@ class TextTexture : public UiTexture {
   void SetText(const base::string16& text) { SetAndDirty(&text_, text); }
 
   void SetColor(SkColor color) { SetAndDirty(&color_, color); }
+
+  void SetFormatting(const TextFormatting& formatting) {
+    SetAndDirty(&formatting_, formatting);
+  }
 
   void SetAlignment(TextAlignment alignment) {
     SetAndDirty(&alignment_, alignment);
@@ -95,6 +151,7 @@ class TextTexture : public UiTexture {
   TextAlignment alignment_ = kTextAlignmentCenter;
   TextLayoutMode text_layout_mode_ = kMultiLineFixedWidth;
   SkColor color_ = SK_ColorBLACK;
+  TextFormatting formatting_;
   bool cursor_enabled_ = false;
   int cursor_position_ = 0;
   gfx::Rect cursor_bounds_;
@@ -120,6 +177,10 @@ void Text::SetText(const base::string16& text) {
 
 void Text::SetColor(SkColor color) {
   texture_->SetColor(color);
+}
+
+void Text::SetFormatting(const TextFormatting& formatting) {
+  texture_->SetFormatting(formatting);
 }
 
 void Text::SetAlignment(UiTexture::TextAlignment alignment) {
@@ -210,6 +271,15 @@ void TextTexture::LayOutText() {
 
   if (cursor_enabled_)
     cursor_bounds_ = lines_.front()->GetUpdatedCursorBounds();
+
+  if (!formatting_.empty()) {
+    DCHECK_EQ(parameters.wrapping_behavior, kWrappingBehaviorNoWrap);
+    DCHECK_EQ(lines_.size(), 1u);
+    RenderTextWrapper render_text(lines_.front().get());
+    for (const auto& attribute : formatting_) {
+      attribute.Apply(&render_text);
+    }
+  }
 
   // Note, there is no padding here whatsoever.
   size_ = gfx::SizeF(text_bounds.size());

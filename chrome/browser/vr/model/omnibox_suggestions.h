@@ -12,14 +12,21 @@
 namespace vr {
 
 struct OmniboxSuggestion {
-  OmniboxSuggestion(const base::string16& new_content,
+  OmniboxSuggestion(const base::string16& new_contents,
                     const base::string16& new_description,
+                    const AutocompleteMatch::ACMatchClassifications&
+                        new_contents_classifications,
+                    const AutocompleteMatch::ACMatchClassifications&
+                        new_description_classifications,
                     AutocompleteMatch::Type new_type,
                     GURL new_destination);
   OmniboxSuggestion(const OmniboxSuggestion& other);
+  ~OmniboxSuggestion();
 
-  base::string16 content;
+  base::string16 contents;
   base::string16 description;
+  AutocompleteMatch::ACMatchClassifications contents_classifications;
+  AutocompleteMatch::ACMatchClassifications description_classifications;
   AutocompleteMatch::Type type;
   GURL destination;
 };

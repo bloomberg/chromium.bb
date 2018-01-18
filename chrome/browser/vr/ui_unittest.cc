@@ -28,6 +28,7 @@
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -898,6 +899,7 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
 
   model_->omnibox_suggestions.emplace_back(
       OmniboxSuggestion(base::string16(), base::string16(),
+                        ACMatchClassifications(), ACMatchClassifications(),
                         AutocompleteMatch::Type::VOICE_SUGGEST, GURL()));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 1u);
@@ -912,9 +914,9 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
 TEST_F(UiTest, OmniboxSuggestionNavigates) {
   CreateScene(kNotInCct, kNotInWebVr);
   GURL gurl("http://test.com/");
-  model_->omnibox_suggestions.emplace_back(
-      OmniboxSuggestion(base::string16(), base::string16(),
-                        AutocompleteMatch::Type::VOICE_SUGGEST, gurl));
+  model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
+      base::string16(), base::string16(), ACMatchClassifications(),
+      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl));
   OnBeginFrame();
 
   UiElement* suggestions = scene_->GetUiElementByName(kOmniboxSuggestions);
