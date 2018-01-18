@@ -677,6 +677,7 @@ void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   NETWORK_DVLOG(1) << "WebSocket " << this
                    << " DidReceiveTextMessage() Text message " << msg;
 
+  DCHECK_NE(state_, kConnecting);
   if (state_ != kOpen)
     return;
   RecordReceiveTypeHistogram(kWebSocketReceiveTypeString);
@@ -691,6 +692,10 @@ void DOMWebSocket::DidReceiveBinaryMessage(
                    << binary_data->size() << " byte binary message";
 
   DCHECK(!origin_string_.IsNull());
+
+  DCHECK_NE(state_, kConnecting);
+  if (state_ != kOpen)
+    return;
 
   switch (binary_type_) {
     case kBinaryTypeBlob: {

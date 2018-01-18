@@ -192,8 +192,7 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(
       identifier_(CreateUniqueIdentifier()),
       loading_context_(loading_context),
       sending_quota_(0),
-      received_data_size_for_flow_control_(
-          kReceivedDataSizeForFlowControlHighWaterMark * 2),  // initial quota
+      received_data_size_for_flow_control_(0),
       sent_size_of_top_message_(0),
       location_at_construction_(std::move(location)),
       handshake_throttle_(std::move(handshake_throttle)),
@@ -280,7 +279,6 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
     throttle_passed_ = true;
   }
 
-  FlowControlIfNecessary();
   TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorWebSocketCreateEvent::Data(
@@ -526,6 +524,12 @@ void DocumentWebSocketChannel::FlowControlIfNecessary() {
   received_data_size_for_flow_control_ = 0;
 }
 
+void DocumentWebSocketChannel::InitialFlowControl() {
+  DCHECK_EQ(received_data_size_for_flow_control_, 0u);
+  DCHECK(handle_);
+  handle_->FlowControl(kReceivedDataSizeForFlowControlHighWaterMark * 2);
+}
+
 void DocumentWebSocketChannel::AbortAsyncOperations() {
   if (blob_loader_) {
     blob_loader_->Cancel();
@@ -578,6 +582,8 @@ void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
         std::make_unique<ConnectInfo>(selected_protocol, extensions);
     return;
   }
+
+  InitialFlowControl();
 
   handshake_throttle_.reset();
 
@@ -760,6 +766,10 @@ void DocumentWebSocketChannel::OnSuccess() {
   throttle_passed_ = true;
   handshake_throttle_ = nullptr;
   if (connect_info_) {
+    // No flow control quota is supplied to the browser until we are ready to
+    // receive messages. This fixes crbug.com/786776.
+    InitialFlowControl();
+
     client_->DidConnect(std::move(connect_info_->selected_protocol),
                         std::move(connect_info_->extensions));
     connect_info_.reset();
