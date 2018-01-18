@@ -466,11 +466,11 @@ class CORE_EXPORT Element : public ContainerNode {
   void RecalcStyleForReattach();
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
-    // TODO(futhark@chromium.org): IsActiveSlotOrActiveV0InsertionPoint() can be
-    // replaced by IsActiveV0InsertionPoint() when slots are always part of the
-    // flat tree, and removed completely when Shadow DOM V0 support is removed.
+    // TODO(futhark@chromium.org): !CanParticipateInFlatTree() can be replaced
+    // by IsActiveV0InsertionPoint() when slots are always part of the flat
+    // tree, and removed completely when Shadow DOM V0 support is removed.
     return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
-           IsActiveSlotOrActiveV0InsertionPoint() ||
+           !CanParticipateInFlatTree() ||
            (whitespace_attacher.TraverseIntoDisplayContents() &&
             HasDisplayContentsStyle());
   }
