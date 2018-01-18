@@ -376,7 +376,12 @@ const base::Feature kUseModernMediaControls{"UseModernMediaControls",
 
 // Allows Media Engagement to use preloaded data to decide whether an origin has
 // a high media engagement.
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+const base::Feature kPreloadMediaEngagementData{
+    "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 }  // namespace media
