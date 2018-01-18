@@ -37,7 +37,7 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 // static
 OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<OfflinePageModelTaskified*>(
+  return static_cast<OfflinePageModel*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 

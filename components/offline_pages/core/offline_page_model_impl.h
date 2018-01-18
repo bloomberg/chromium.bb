@@ -52,7 +52,7 @@ class OfflinePageStorageManager;
 
 // Implementation of service for saving pages offline, storing the offline
 // copy and metadata, and retrieving them upon request.
-class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
+class OfflinePageModelImpl : public OfflinePageModel {
  public:
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModelImpl(
