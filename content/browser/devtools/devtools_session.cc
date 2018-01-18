@@ -143,38 +143,6 @@ void DevToolsSession::InspectElement(const gfx::Point& point) {
     session_ptr_->InspectElement(point);
 }
 
-void DevToolsSession::ReceiveMessageChunk(const DevToolsMessageChunk& chunk) {
-  if (chunk.is_first) {
-    if (response_message_buffer_size_ != 0)
-      return;
-    if (chunk.is_last) {
-      response_message_buffer_size_ = chunk.data.size();
-    } else {
-      response_message_buffer_size_ = chunk.message_size;
-      response_message_buffer_.reserve(chunk.message_size);
-    }
-  }
-
-  if (response_message_buffer_.size() + chunk.data.size() >
-      response_message_buffer_size_)
-    return;
-  response_message_buffer_.append(chunk.data);
-
-  if (!chunk.is_last)
-    return;
-  if (response_message_buffer_.size() != response_message_buffer_size_)
-    return;
-
-  if (!chunk.post_state.empty())
-    state_cookie_ = chunk.post_state;
-  waiting_for_response_messages_.erase(chunk.call_id);
-  response_message_buffer_size_ = 0;
-  std::string message;
-  message.swap(response_message_buffer_);
-  client_->DispatchProtocolMessage(agent_host_, message);
-  // |this| may be deleted at this point.
-}
-
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
