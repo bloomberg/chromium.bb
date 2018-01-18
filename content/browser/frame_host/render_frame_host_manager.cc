@@ -2057,7 +2057,19 @@ void RenderFrameHostManager::CommitPending() {
       render_frame_host_->GetView()->Focus();
     } else {
       // The main frame's view is already focused, but we need to set
-      // page-level focus in the subframe's renderer.
+      // page-level focus in the subframe's renderer.  Before doing that, also
+      // tell the new renderer what the focused frame is if that frame is not
+      // in its process, so that Blink's page-level focus logic won't try to
+      // reset frame focus to the main frame.  See https://crbug.com/802156.
+      FrameTreeNode* focused_frame =
+          frame_tree_node_->frame_tree()->GetFocusedFrame();
+      if (focused_frame && !focused_frame->IsMainFrame() &&
+          focused_frame->current_frame_host()->GetSiteInstance() !=
+              render_frame_host_->GetSiteInstance()) {
+        focused_frame->render_manager()
+            ->GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance())
+            ->SetFocusedFrame();
+      }
       frame_tree_node_->frame_tree()->SetPageFocus(
           render_frame_host_->GetSiteInstance(), true);
     }
