@@ -1574,6 +1574,10 @@ public class ContextualSearchManager
             @Override
             public void tapGestureCommit() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.TAP_GESTURE_COMMIT);
+                if (!mPolicy.isTapSupported()) {
+                    hideContextualSearch(StateChangeReason.UNKNOWN);
+                    return;
+                }
                 // We may be processing a chained search (aka a retap -- a tap near a previous tap).
                 // If it's chained we need to log the outcomes and reset, because we won't be hiding
                 // the panel at the end of the previous search (we'll update it to the new Search).
@@ -1598,11 +1602,7 @@ public class ContextualSearchManager
             @Override
             public void startShowingTapUi() {
                 WebContents baseWebContents = getBaseWebContents();
-                // TODO(donnd): Call isTapSupported earlier so we don't waste time gathering
-                // surrounding text and deciding suppression when unsupported, or remove the whole
-                // idea of unsupported taps in favor of deciding suppression better.
-                // Details in crbug.com/715297.
-                if (baseWebContents != null && mPolicy.isTapSupported()) {
+                if (baseWebContents != null) {
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.START_SHOWING_TAP_UI);
                     mSelectWordAroundCaretCounter++;

@@ -76,6 +76,10 @@ class ContextualSearchRankerLoggerImpl {
   // Sets up the Ranker Predictor for the given |web_contents|.
   void SetupRankerPredictor(const content::WebContents& web_contents);
 
+  // Logs to UMA when an important feature or outcome is present in the example.
+  void logImportantFeaturePresent(const std::string& feature,
+                                  bool is_outcome) const;
+
   // The source_id for UKMs for the current page.
   ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 

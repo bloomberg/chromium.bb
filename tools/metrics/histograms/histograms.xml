@@ -77369,6 +77369,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearch.Ranker.Recorded" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Logs that features were recorded to Ranker and whether it was an outcome or
+    not. Recorded when the UX is shown or hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.RecordedNative" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Logs that features were recorded to Ranker from native code and whether it
+    was an outcome or not. Recorded when the UX is shown or hidden. Implemented
+    for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearch.Ranker.Suppressed" enum="Boolean">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

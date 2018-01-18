@@ -13,6 +13,9 @@ import org.chromium.content_public.browser.WebContents;
  */
 public interface ContextualSearchRankerLogger {
     // TODO(donnd): consider changing this enum to an IntDef.
+    // NOTE: this list needs to be kept in sync with the white list in
+    // predictor_config_definitions.cc, the names list in ContextualSearchRankerLoggerImpl.java
+    // and with ukm.xml!
     enum Feature {
         UNKNOWN,
         // Outcome labels:

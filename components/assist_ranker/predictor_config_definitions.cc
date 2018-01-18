@@ -28,7 +28,7 @@ GetContextualSearchRankerUrlFeatureParam() {
   return kContextualSearchRankerUrl;
 }
 
-// This list needs to be kept in sync with tools/metrics/ukm/ukm.xml.
+// NOTE: This list needs to be kept in sync with tools/metrics/ukm/ukm.xml!
 // Only features within this list will be logged to UKM.
 // TODO(chrome-ranker-team) Deprecate the whitelist once it is available through
 // the UKM generated API.
@@ -44,6 +44,8 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "IsSecondTapOverride",
                                        "IsShortWord",
                                        "IsWordEdge",
+                                       "OutcomeRankerDidPredict",
+                                       "OutcomeRankerPrediction",
                                        "OutcomeWasCardsDataShown",
                                        "OutcomeWasPanelOpened",
                                        "OutcomeWasQuickActionClicked",
