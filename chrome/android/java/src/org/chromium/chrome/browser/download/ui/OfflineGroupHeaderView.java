@@ -79,6 +79,7 @@ public class OfflineGroupHeaderView
 
     @Override
     public void setChecked(boolean checked) {
+        if (checked == isChecked()) return;
         super.setChecked(checked);
         updateCheckIcon(checked);
     }
@@ -105,6 +106,7 @@ public class OfflineGroupHeaderView
         mDescriptionTextView.setText(description);
         updateExpandIcon(header.isExpanded());
         setChecked(mSelectionDelegate.isHeaderSelected(header));
+        updateCheckIcon(isChecked());
     }
 
     private void updateExpandIcon(boolean expanded) {
@@ -124,8 +126,9 @@ public class OfflineGroupHeaderView
                 mIconImageView.setBackgroundColor(mIconBackgroundColorSelected);
             }
 
-            mIconImageView.setImageResource(R.drawable.ic_check_googblue_24dp);
+            mIconImageView.setImageDrawable(mCheckDrawable);
             mIconImageView.setTint(mCheckedIconForegroundColorList);
+            mCheckDrawable.start();
         } else {
             if (FeatureUtilities.isChromeHomeEnabled()) {
                 mIconImageView.setBackgroundResource(mIconBackgroundResId);
