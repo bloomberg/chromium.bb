@@ -65,6 +65,7 @@
 #include "core/inspector/InspectorPerformanceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
+#include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
@@ -199,19 +200,72 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::instance_ = nullptr;
 
+// --------- WebDevToolsAgentImpl::Session -------------
+
+class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
+                                      public mojom::blink::DevToolsSession,
+                                      public InspectorSession::Client {
+ public:
+  Session(WebDevToolsAgentImpl*,
+          mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
+          mojom::blink::DevToolsSessionAssociatedRequest main_request,
+          mojom::blink::DevToolsSessionRequest io_request,
+          const String& reattach_state);
+  ~Session() override {}
+
+  virtual void Trace(blink::Visitor*);
+  void Detach();
+
+  InspectorSession* inspector_session() { return inspector_session_.Get(); }
+  InspectorPageAgent* page_agent() { return page_agent_.Get(); }
+  InspectorTracingAgent* tracing_agent() { return tracing_agent_.Get(); }
+  InspectorOverlayAgent* overlay_agent() { return overlay_agent_.Get(); }
+
+ private:
+  class IOSession;
+
+  // mojom::blink::DevToolsSession implementation.
+  void DispatchProtocolMessage(int call_id,
+                               const String& method,
+                               const String& message) override;
+  void InspectElement(const WebPoint& point_in_root_frame) override;
+
+  // InspectorSession::Client implementation.
+  void SendProtocolMessage(int session_id,
+                           int call_id,
+                           const String& response,
+                           const String& state) override;
+
+  void DispatchProtocolMessageInternal(int call_id,
+                                       const String& method,
+                                       const String& message);
+  void InitializeInspectorSession(const String& reattach_state);
+
+  Member<WebDevToolsAgentImpl> agent_;
+  Member<WebLocalFrameImpl> frame_;
+  mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
+  mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr_;
+  IOSession* io_session_;
+  Member<InspectorSession> inspector_session_;
+  Member<InspectorPageAgent> page_agent_;
+  Member<InspectorTracingAgent> tracing_agent_;
+  Member<InspectorOverlayAgent> overlay_agent_;
+
+  DISALLOW_COPY_AND_ASSIGN(Session);
+};
+
 // Created and stored in unique_ptr on UI.
 // Binds request, receives messages and destroys on IO.
-class WebDevToolsAgentImpl::IOSession : public mojom::blink::DevToolsSession {
+class WebDevToolsAgentImpl::Session::IOSession
+    : public mojom::blink::DevToolsSession {
  public:
-  IOSession(int session_id,
-            scoped_refptr<base::SingleThreadTaskRunner> session_task_runner,
+  IOSession(scoped_refptr<base::SingleThreadTaskRunner> session_task_runner,
             scoped_refptr<WebTaskRunner> agent_task_runner,
-            CrossThreadWeakPersistent<WebDevToolsAgentImpl> agent,
+            CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session,
             mojom::blink::DevToolsSessionRequest request)
-      : session_id_(session_id),
-        session_task_runner_(session_task_runner),
+      : session_task_runner_(session_task_runner),
         agent_task_runner_(agent_task_runner),
-        agent_(std::move(agent)),
+        session_(std::move(session)),
         binding_(this) {
     session_task_runner->PostTask(
         FROM_HERE, ConvertToBaseCallback(CrossThreadBind(
@@ -236,60 +290,245 @@ class WebDevToolsAgentImpl::IOSession : public mojom::blink::DevToolsSession {
     if (method == "Page.crash")
       CHECK(false);
 
-    MainThreadDebugger::InterruptMainThreadAndRun(
-        CrossThreadBind(&WebDevToolsAgentImpl::DispatchMessageFromFrontend,
-                        agent_, session_id_, method, message));
+    MainThreadDebugger::InterruptMainThreadAndRun(CrossThreadBind(
+        &WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal,
+        session_, call_id, method, message));
     PostCrossThreadTask(
         *agent_task_runner_, FROM_HERE,
-        CrossThreadBind(&WebDevToolsAgentImpl::DispatchOnInspectorBackend,
-                        agent_, session_id_, call_id, method, message));
+        CrossThreadBind(&WebDevToolsAgentImpl::Session::DispatchProtocolMessage,
+                        session_, call_id, method, message));
   }
 
   void InspectElement(const WebPoint&) override { NOTREACHED(); }
 
  private:
-  int session_id_;
   scoped_refptr<base::SingleThreadTaskRunner> session_task_runner_;
   scoped_refptr<WebTaskRunner> agent_task_runner_;
-  CrossThreadWeakPersistent<WebDevToolsAgentImpl> agent_;
+  CrossThreadWeakPersistent<WebDevToolsAgentImpl::Session> session_;
   mojo::Binding<mojom::blink::DevToolsSession> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSession);
 };
 
-class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
-                                      public mojom::blink::DevToolsSession {
- public:
-  Session(int session_id,
-          WebDevToolsAgentImpl* agent,
-          mojom::blink::DevToolsSessionAssociatedRequest request)
-      : session_id_(session_id),
-        agent_(agent),
-        binding_(this, std::move(request)) {}
+WebDevToolsAgentImpl::Session::Session(
+    WebDevToolsAgentImpl* agent,
+    mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
+    mojom::blink::DevToolsSessionAssociatedRequest request,
+    mojom::blink::DevToolsSessionRequest io_request,
+    const String& reattach_state)
+    : agent_(agent),
+      frame_(agent->web_local_frame_impl_),
+      binding_(this, std::move(request)) {
+  InitializeInspectorSession(reattach_state);
 
-  ~Session() override {}
+  io_session_ =
+      new IOSession(Platform::Current()->GetIOTaskRunner(),
+                    frame_->GetFrame()->GetTaskRunner(TaskType::kUnthrottled),
+                    WrapCrossThreadWeakPersistent(this), std::move(io_request));
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(agent_); }
+  host_ptr_.Bind(std::move(host_ptr_info));
+  host_ptr_.set_connection_error_handler(WTF::Bind(
+      &WebDevToolsAgentImpl::Session::Detach, WrapWeakPersistent(this)));
+}
 
-  // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolMessage(int call_id,
-                               const String& method,
-                               const String& message) override {
-    DCHECK(!ShouldInterruptForMethod(method));
-    agent_->DispatchOnInspectorBackend(session_id_, call_id, method, message);
+void WebDevToolsAgentImpl::Session::Trace(blink::Visitor* visitor) {
+  visitor->Trace(agent_);
+  visitor->Trace(frame_);
+  visitor->Trace(inspector_session_);
+  visitor->Trace(page_agent_);
+  visitor->Trace(tracing_agent_);
+  visitor->Trace(overlay_agent_);
+}
+
+void WebDevToolsAgentImpl::Session::Detach() {
+  agent_->DetachSession(this);
+  binding_.Close();
+  host_ptr_.reset();
+  io_session_->DeleteSoon();
+  io_session_ = nullptr;
+  inspector_session_->Dispose();
+}
+
+void WebDevToolsAgentImpl::Session::DispatchProtocolMessage(
+    int call_id,
+    const String& method,
+    const String& message) {
+  if (ShouldInterruptForMethod(method))
+    MainThreadDebugger::Instance()->TaskRunner()->RunAllTasksDontWait();
+  else
+    DispatchProtocolMessageInternal(call_id, method, message);
+}
+
+void WebDevToolsAgentImpl::Session::InspectElement(
+    const WebPoint& point_in_root_frame) {
+  WebPoint point = point_in_root_frame;
+  if (frame_->ViewImpl() && frame_->ViewImpl()->Client()) {
+    WebFloatRect rect(point.x, point.y, 0, 0);
+    frame_->ViewImpl()->Client()->ConvertWindowToViewport(&rect);
+    point = WebPoint(rect.x, rect.y);
   }
 
-  void InspectElement(const WebPoint& point) override {
-    agent_->InspectElementAt(session_id_, point);
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kMove | HitTestRequest::kReadOnly |
+      HitTestRequest::kAllowChildFrameContent;
+  HitTestRequest request(hit_type);
+  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WTF::CurrentTimeTicksInMilliseconds());
+  dummy_event.SetPositionInWidget(point.x, point.y);
+  IntPoint transformed_point = FlooredIntPoint(
+      TransformWebMouseEvent(frame_->GetFrameView(), dummy_event)
+          .PositionInRootFrame());
+  HitTestResult result(
+      request, frame_->GetFrameView()->RootFrameToContents(transformed_point));
+  frame_->GetFrame()->ContentLayoutObject()->HitTest(result);
+  Node* node = result.InnerNode();
+  if (!node && frame_->GetFrame()->GetDocument())
+    node = frame_->GetFrame()->GetDocument()->documentElement();
+  overlay_agent_->Inspect(node);
+}
+
+void WebDevToolsAgentImpl::Session::SendProtocolMessage(int session_id,
+                                                        int call_id,
+                                                        const String& response,
+                                                        const String& state) {
+  // Make tests more predictable by flushing all sessions before sending
+  // protocol response in any of them.
+  if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
+    agent_->FlushProtocolNotifications();
+
+  bool single_chunk = response.length() < kMaxDevToolsMessageChunkSize;
+  for (size_t pos = 0; pos < response.length();
+       pos += kMaxDevToolsMessageChunkSize) {
+    mojom::blink::DevToolsMessageChunkPtr chunk =
+        mojom::blink::DevToolsMessageChunk::New();
+    chunk->is_first = pos == 0;
+    chunk->is_last = pos + kMaxDevToolsMessageChunkSize >= response.length();
+    chunk->call_id = chunk->is_last ? call_id : 0;
+    chunk->post_state =
+        chunk->is_last && !state.IsNull() ? state : g_empty_string;
+    chunk->data = single_chunk
+                      ? response
+                      : response.Substring(pos, kMaxDevToolsMessageChunkSize);
+    host_ptr_->DispatchProtocolMessage(std::move(chunk));
+  }
+}
+
+void WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal(
+    int call_id,
+    const String& method,
+    const String& message) {
+  InspectorTaskRunner::IgnoreInterruptsScope scope(
+      MainThreadDebugger::Instance()->TaskRunner());
+  inspector_session_->DispatchProtocolMessage(method, message);
+}
+
+void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
+    const String& reattach_state) {
+  String state = reattach_state;
+  // TODO(dgozman): make InspectorSession check for IsNull() instead.
+  String* state_ptr = nullptr;
+  if (!reattach_state.IsNull())
+    state_ptr = &state;
+
+  ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
+  MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
+  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  InspectedFrames* inspected_frames = agent_->inspected_frames_.Get();
+
+  inspector_session_ = new InspectorSession(
+      this, agent_->probe_sink_.Get(), 0,
+      main_thread_debugger->GetV8Inspector(),
+      main_thread_debugger->ContextGroupId(inspected_frames->Root()),
+      state_ptr);
+
+  InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
+      isolate, inspected_frames, inspector_session_->V8Session());
+  inspector_session_->Append(dom_agent);
+
+  InspectorLayerTreeAgent* layer_tree_agent =
+      InspectorLayerTreeAgent::Create(inspected_frames, agent_);
+  inspector_session_->Append(layer_tree_agent);
+
+  InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
+      inspected_frames, nullptr, inspector_session_->V8Session());
+  inspector_session_->Append(network_agent);
+
+  InspectorCSSAgent* css_agent =
+      InspectorCSSAgent::Create(dom_agent, inspected_frames, network_agent,
+                                agent_->resource_content_loader_.Get(),
+                                agent_->resource_container_.Get());
+  inspector_session_->Append(css_agent);
+
+  InspectorDOMDebuggerAgent* dom_debugger_agent = new InspectorDOMDebuggerAgent(
+      isolate, dom_agent, inspector_session_->V8Session());
+  inspector_session_->Append(dom_debugger_agent);
+
+  inspector_session_->Append(
+      InspectorDOMSnapshotAgent::Create(inspected_frames, dom_debugger_agent));
+
+  inspector_session_->Append(new InspectorAnimationAgent(
+      inspected_frames, css_agent, inspector_session_->V8Session()));
+
+  inspector_session_->Append(InspectorMemoryAgent::Create(inspected_frames));
+
+  inspector_session_->Append(
+      InspectorPerformanceAgent::Create(inspected_frames));
+
+  inspector_session_->Append(
+      InspectorApplicationCacheAgent::Create(inspected_frames));
+
+  InspectorWorkerAgent* worker_agent =
+      new InspectorWorkerAgent(inspected_frames);
+  inspector_session_->Append(worker_agent);
+
+  tracing_agent_ =
+      InspectorTracingAgent::Create(agent_, worker_agent, inspected_frames);
+  inspector_session_->Append(tracing_agent_);
+
+  page_agent_ = InspectorPageAgent::Create(
+      inspected_frames, agent_, agent_->resource_content_loader_.Get(),
+      inspector_session_->V8Session());
+  inspector_session_->Append(page_agent_);
+
+  inspector_session_->Append(new InspectorLogAgent(
+      &inspected_frames->Root()->GetPage()->GetConsoleMessageStorage(),
+      inspected_frames->Root()->GetPerformanceMonitor(),
+      inspector_session_->V8Session()));
+
+  overlay_agent_ =
+      new InspectorOverlayAgent(frame_.Get(), inspected_frames,
+                                inspector_session_->V8Session(), dom_agent);
+  inspector_session_->Append(overlay_agent_);
+
+  inspector_session_->Append(
+      new InspectorIOAgent(isolate, inspector_session_->V8Session()));
+
+  inspector_session_->Append(new InspectorAuditsAgent(network_agent));
+
+  tracing_agent_->SetLayerTreeId(agent_->layer_tree_id_);
+
+  if (agent_->include_view_agents_) {
+    // TODO(dgozman): we should actually pass the view instead of frame, but
+    // during remote->local transition we cannot access mainFrameImpl() yet, so
+    // we have to store the frame which will become the main frame later.
+    inspector_session_->Append(new InspectorEmulationAgent(frame_.Get()));
   }
 
- private:
-  int session_id_;
-  Member<WebDevToolsAgentImpl> agent_;
-  mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
+  // Call session init callbacks registered from higher layers
+  CoreInitializer::GetInstance().InitInspectorAgentSession(
+      inspector_session_, agent_->include_view_agents_, dom_agent,
+      inspected_frames, frame_->ViewImpl()->GetPage());
 
-  DISALLOW_COPY_AND_ASSIGN(Session);
-};
+  if (!reattach_state.IsNull())
+    inspector_session_->Restore();
+
+  // TODO(dgozman): do not send empty state from the browser side.
+  if (agent_->worker_client_ && !reattach_state.IsEmpty())
+    agent_->worker_client_->ResumeStartup();
+}
+
+// --------- WebDevToolsAgentImpl -------------
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
@@ -344,28 +583,21 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
 }
 
 void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(main_sessions_);
+  visitor->Trace(sessions_);
   visitor->Trace(web_local_frame_impl_);
   visitor->Trace(probe_sink_);
   visitor->Trace(resource_content_loader_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
-  visitor->Trace(page_agents_);
-  visitor->Trace(network_agents_);
-  visitor->Trace(tracing_agents_);
-  visitor->Trace(overlay_agents_);
-  visitor->Trace(sessions_);
 }
 
 void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(web_local_frame_impl_->GetFrame());
   DCHECK(inspected_frames_->Root()->View());
 
-  Vector<int> session_ids;
-  for (int session_id : sessions_.Keys())
-    session_ids.push_back(session_id);
-  for (int session_id : session_ids)
-    Detach(session_id);
+  HeapHashSet<Member<Session>> copy(sessions_);
+  for (auto& session : copy)
+    session->Detach();
 
   resource_content_loader_->Dispose();
   worker_client_ = nullptr;
@@ -382,325 +614,70 @@ void WebDevToolsAgentImpl::AttachDevToolsSession(
     mojom::blink::DevToolsSessionAssociatedRequest session,
     mojom::blink::DevToolsSessionRequest io_session,
     const String& reattach_state) {
-  int session_id = ++last_session_id_;
-
-  if (!reattach_state.IsNull()) {
-    Reattach(session_id, reattach_state);
-  } else {
-    Attach(session_id);
-  }
-
-  main_sessions_.insert(session_id,
-                        new Session(session_id, this, std::move(session)));
-  io_sessions_.insert(
-      session_id,
-      new IOSession(session_id, Platform::Current()->GetIOTaskRunner(),
-                    web_local_frame_impl_->GetFrame()->GetTaskRunner(
-                        TaskType::kUnthrottled),
-                    WrapCrossThreadWeakPersistent(this),
-                    std::move(io_session)));
-
-  mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr;
-  host_ptr.Bind(std::move(host));
-  host_ptr.set_connection_error_handler(
-      WTF::Bind(&WebDevToolsAgentImpl::DetachSession, WrapWeakPersistent(this),
-                session_id));
-  hosts_.insert(session_id, std::move(host_ptr));
-}
-
-InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
-                                                          String* state) {
-  ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
-  MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
-  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
-
-  InspectorSession* session = new InspectorSession(
-      this, probe_sink_.Get(), session_id,
-      main_thread_debugger->GetV8Inspector(),
-      main_thread_debugger->ContextGroupId(inspected_frames_->Root()), state);
-
-  InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
-      isolate, inspected_frames_.Get(), session->V8Session());
-  session->Append(dom_agent);
-
-  InspectorLayerTreeAgent* layer_tree_agent =
-      InspectorLayerTreeAgent::Create(inspected_frames_.Get(), this);
-  session->Append(layer_tree_agent);
-
-  InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
-      inspected_frames_.Get(), nullptr, session->V8Session());
-  network_agents_.Set(session_id, network_agent);
-  session->Append(network_agent);
-
-  InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
-      dom_agent, inspected_frames_.Get(), network_agent,
-      resource_content_loader_.Get(), resource_container_.Get());
-  session->Append(css_agent);
-
-  InspectorDOMDebuggerAgent* dom_debugger_agent =
-      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session());
-  session->Append(dom_debugger_agent);
-
-  session->Append(InspectorDOMSnapshotAgent::Create(inspected_frames_.Get(),
-                                                    dom_debugger_agent));
-
-  session->Append(new InspectorAnimationAgent(inspected_frames_.Get(),
-                                              css_agent, session->V8Session()));
-
-  session->Append(InspectorMemoryAgent::Create(inspected_frames_.Get()));
-
-  session->Append(InspectorPerformanceAgent::Create(inspected_frames_.Get()));
-
-  session->Append(
-      InspectorApplicationCacheAgent::Create(inspected_frames_.Get()));
-
-  InspectorWorkerAgent* worker_agent =
-      new InspectorWorkerAgent(inspected_frames_.Get());
-  session->Append(worker_agent);
-
-  InspectorTracingAgent* tracing_agent = InspectorTracingAgent::Create(
-      this, worker_agent, inspected_frames_.Get());
-  tracing_agents_.Set(session_id, tracing_agent);
-  session->Append(tracing_agent);
-
-
-  InspectorPageAgent* page_agent = InspectorPageAgent::Create(
-      inspected_frames_.Get(), this, resource_content_loader_.Get(),
-      session->V8Session());
-  page_agents_.Set(session_id, page_agent);
-  session->Append(page_agent);
-
-  session->Append(new InspectorLogAgent(
-      &inspected_frames_->Root()->GetPage()->GetConsoleMessageStorage(),
-      inspected_frames_->Root()->GetPerformanceMonitor(),
-      session->V8Session()));
-
-  InspectorOverlayAgent* overlay_agent =
-      new InspectorOverlayAgent(web_local_frame_impl_, inspected_frames_.Get(),
-                                session->V8Session(), dom_agent);
-  overlay_agents_.Set(session_id, overlay_agent);
-  session->Append(overlay_agent);
-
-  session->Append(new InspectorIOAgent(isolate, session->V8Session()));
-
-  session->Append(new InspectorAuditsAgent(network_agent));
-
-  tracing_agent->SetLayerTreeId(layer_tree_id_);
-
-  if (include_view_agents_) {
-    // TODO(dgozman): we should actually pass the view instead of frame, but
-    // during remote->local transition we cannot access mainFrameImpl() yet, so
-    // we have to store the frame which will become the main frame later.
-    session->Append(new InspectorEmulationAgent(web_local_frame_impl_));
-  }
-
-  // Call session init callbacks registered from higher layers
-  CoreInitializer::GetInstance().InitInspectorAgentSession(
-      session, include_view_agents_, dom_agent, inspected_frames_.Get(),
-      web_local_frame_impl_->ViewImpl()->GetPage());
-
   if (!sessions_.size())
     Platform::Current()->CurrentThread()->AddTaskObserver(this);
-
-  sessions_.Set(session_id, session);
-  return session;
+  sessions_.insert(new Session(this, std::move(host), std::move(session),
+                               std::move(io_session), reattach_state));
 }
 
-void WebDevToolsAgentImpl::DestroySession(int session_id) {
-  overlay_agents_.erase(session_id);
-  tracing_agents_.erase(session_id);
-  network_agents_.erase(session_id);
-  page_agents_.erase(session_id);
-
-  auto session_it = sessions_.find(session_id);
-  DCHECK(session_it != sessions_.end());
-  session_it->value->Dispose();
-  sessions_.erase(session_it);
-
+void WebDevToolsAgentImpl::DetachSession(Session* session) {
+  sessions_.erase(session);
   if (!sessions_.size())
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
-}
-
-void WebDevToolsAgentImpl::Attach(int session_id) {
-  if (!session_id || sessions_.find(session_id) != sessions_.end())
-    return;
-  InitializeSession(session_id, nullptr);
-}
-
-void WebDevToolsAgentImpl::Reattach(int session_id, const String& saved_state) {
-  if (!session_id || sessions_.find(session_id) != sessions_.end())
-    return;
-  String state = saved_state;
-  InspectorSession* session = InitializeSession(session_id, &state);
-  session->Restore();
-  // TODO(dgozman): use the optional instead of checking for empty.
-  if (worker_client_ && !state.IsEmpty())
-    worker_client_->ResumeStartup();
-}
-
-void WebDevToolsAgentImpl::Detach(int session_id) {
-  if (!session_id || sessions_.find(session_id) == sessions_.end())
-    return;
-  DestroySession(session_id);
-}
-
-void WebDevToolsAgentImpl::DetachSession(int session_id) {
-  Detach(session_id);
-  auto it = io_sessions_.find(session_id);
-  if (it != io_sessions_.end()) {
-    it->value->DeleteSoon();
-    io_sessions_.erase(it);
-  }
-  main_sessions_.erase(session_id);
-  hosts_.erase(session_id);
 }
 
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);
   resource_content_loader_->DidCommitLoadForLocalFrame(frame);
-  for (auto& it : sessions_)
-    it.value->DidCommitLoadForLocalFrame(frame);
+  for (auto& session : sessions_)
+    session->inspector_session()->DidCommitLoadForLocalFrame(frame);
 }
 
 void WebDevToolsAgentImpl::DidStartProvisionalLoad(LocalFrame* frame) {
   if (inspected_frames_->Root() == frame) {
-    for (auto& it : sessions_)
-      it.value->V8Session()->resume();
+    for (auto& session : sessions_)
+      session->inspector_session()->V8Session()->resume();
   }
 }
 
 bool WebDevToolsAgentImpl::ScreencastEnabled() {
-  for (auto& it : page_agents_) {
-    if (it.value->ScreencastEnabled())
+  for (auto& session : sessions_) {
+    if (session->page_agent()->ScreencastEnabled())
       return true;
   }
   return false;
 }
 
 void WebDevToolsAgentImpl::RootLayerCleared() {
-  for (auto& it : tracing_agents_)
-    it.value->RootLayerCleared();
+  for (auto& session : sessions_)
+    session->tracing_agent()->RootLayerCleared();
 }
 
 void WebDevToolsAgentImpl::LayerTreeViewChanged(
     WebLayerTreeView* layer_tree_view) {
   layer_tree_id_ = layer_tree_view ? layer_tree_view->LayerTreeId() : 0;
-  for (auto& it : tracing_agents_)
-    it.value->SetLayerTreeId(layer_tree_id_);
+  for (auto& session : sessions_)
+    session->tracing_agent()->SetLayerTreeId(layer_tree_id_);
 }
 
 void WebDevToolsAgentImpl::ShowReloadingBlanket() {
-  for (auto& it : overlay_agents_)
-    it.value->ShowReloadingBlanket();
+  for (auto& session : sessions_)
+    session->overlay_agent()->ShowReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::HideReloadingBlanket() {
-  for (auto& it : overlay_agents_)
-    it.value->HideReloadingBlanket();
-}
-
-void WebDevToolsAgentImpl::DispatchOnInspectorBackend(int session_id,
-                                                      int call_id,
-                                                      const String& method,
-                                                      const String& message) {
-  if (!Attached())
-    return;
-  if (ShouldInterruptForMethod(method))
-    MainThreadDebugger::Instance()->TaskRunner()->RunAllTasksDontWait();
-  else
-    DispatchMessageFromFrontend(session_id, method, message);
-}
-
-void WebDevToolsAgentImpl::DispatchMessageFromFrontend(int session_id,
-                                                       const String& method,
-                                                       const String& message) {
-  if (!session_id)
-    return;
-  auto session_it = sessions_.find(session_id);
-  if (session_it == sessions_.end())
-    return;
-  InspectorTaskRunner::IgnoreInterruptsScope scope(
-      MainThreadDebugger::Instance()->TaskRunner());
-  session_it->value->DispatchProtocolMessage(method, message);
-}
-
-void WebDevToolsAgentImpl::InspectElementAt(
-    int session_id,
-    const WebPoint& point_in_root_frame) {
-  if (!session_id)
-    return;
-
-  WebPoint point = point_in_root_frame;
-  if (web_local_frame_impl_->ViewImpl() &&
-      web_local_frame_impl_->ViewImpl()->Client()) {
-    WebFloatRect rect(point.x, point.y, 0, 0);
-    web_local_frame_impl_->ViewImpl()->Client()->ConvertWindowToViewport(&rect);
-    point = WebPoint(rect.x, rect.y);
-  }
-
-  auto agent_it = overlay_agents_.find(session_id);
-  if (agent_it == overlay_agents_.end())
-    return;
-  HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kMove | HitTestRequest::kReadOnly |
-      HitTestRequest::kAllowChildFrameContent;
-  HitTestRequest request(hit_type);
-  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            WTF::CurrentTimeTicksInMilliseconds());
-  dummy_event.SetPositionInWidget(point.x, point.y);
-  IntPoint transformed_point = FlooredIntPoint(
-      TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)
-          .PositionInRootFrame());
-  HitTestResult result(
-      request, web_local_frame_impl_->GetFrameView()->RootFrameToContents(
-                   transformed_point));
-  web_local_frame_impl_->GetFrame()->ContentLayoutObject()->HitTest(result);
-  Node* node = result.InnerNode();
-  if (!node && web_local_frame_impl_->GetFrame()->GetDocument())
-    node = web_local_frame_impl_->GetFrame()->GetDocument()->documentElement();
-  agent_it->value->Inspect(node);
-}
-
-void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
-                                               int call_id,
-                                               const String& response,
-                                               const String& state) {
-  DCHECK(Attached());
-  // Make tests more predictable by flushing all sessions before sending
-  // protocol response in any of them.
-  if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
-    FlushProtocolNotifications();
-
-  auto it = hosts_.find(session_id);
-  if (it == hosts_.end())
-    return;
-
-  bool single_chunk = response.length() < kMaxDevToolsMessageChunkSize;
-  for (size_t pos = 0; pos < response.length();
-       pos += kMaxDevToolsMessageChunkSize) {
-    mojom::blink::DevToolsMessageChunkPtr chunk =
-        mojom::blink::DevToolsMessageChunk::New();
-    chunk->is_first = pos == 0;
-    chunk->is_last = pos + kMaxDevToolsMessageChunkSize >= response.length();
-    chunk->call_id = chunk->is_last ? call_id : 0;
-    chunk->post_state =
-        chunk->is_last && !state.IsNull() ? state : g_empty_string;
-    chunk->data = single_chunk
-                      ? response
-                      : response.Substring(pos, kMaxDevToolsMessageChunkSize);
-    it->value->DispatchProtocolMessage(std::move(chunk));
-  }
+  for (auto& session : sessions_)
+    session->overlay_agent()->HideReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
-  for (auto& it : overlay_agents_)
-    it.value->PageLayoutInvalidated(resized);
+  for (auto& session : sessions_)
+    session->overlay_agent()->PageLayoutInvalidated(resized);
 }
 
 bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {
-  for (auto& it : overlay_agents_) {
-    if (it.value->IsInspectorLayer(layer))
+  for (auto& session : sessions_) {
+    if (session->overlay_agent()->IsInspectorLayer(layer))
       return true;
   }
   return false;
@@ -708,47 +685,47 @@ bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {
 
 String WebDevToolsAgentImpl::EvaluateInOverlayForTesting(const String& script) {
   String result;
-  for (auto& it : overlay_agents_)
-    result = it.value->EvaluateInOverlayForTest(script);
+  for (auto& session : sessions_)
+    result = session->overlay_agent()->EvaluateInOverlayForTest(script);
   return result;
 }
 
 void WebDevToolsAgentImpl::PaintOverlay() {
-  for (auto& it : overlay_agents_)
-    it.value->PaintOverlay();
+  for (auto& session : sessions_)
+    session->overlay_agent()->PaintOverlay();
 }
 
 void WebDevToolsAgentImpl::LayoutOverlay() {
-  for (auto& it : overlay_agents_)
-    it.value->LayoutOverlay();
+  for (auto& session : sessions_)
+    session->overlay_agent()->LayoutOverlay();
 }
 
 void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {
-  for (auto& it : overlay_agents_)
-    it.value->DispatchBufferedTouchEvents();
+  for (auto& session : sessions_)
+    session->overlay_agent()->DispatchBufferedTouchEvents();
 }
 
 bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
-  for (auto& it : overlay_agents_) {
-    if (it.value->HandleInputEvent(event))
+  for (auto& session : sessions_) {
+    if (session->overlay_agent()->HandleInputEvent(event))
       return true;
   }
   return false;
 }
 
 void WebDevToolsAgentImpl::FlushProtocolNotifications() {
-  for (auto& it : sessions_)
-    it.value->flushProtocolNotifications();
+  for (auto& session : sessions_)
+    session->inspector_session()->flushProtocolNotifications();
 }
 
 void WebDevToolsAgentImpl::WillProcessTask() {
-  if (!Attached())
+  if (sessions_.IsEmpty())
     return;
   ThreadDebugger::IdleFinished(V8PerIsolateData::MainThreadIsolate());
 }
 
 void WebDevToolsAgentImpl::DidProcessTask() {
-  if (!Attached())
+  if (sessions_.IsEmpty())
     return;
   ThreadDebugger::IdleStarted(V8PerIsolateData::MainThreadIsolate());
   FlushProtocolNotifications();
