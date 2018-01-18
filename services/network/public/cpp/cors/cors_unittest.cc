@@ -276,6 +276,27 @@ TEST_F(CORSTest, CheckRedirectLocationDetectsErrors) {
   EXPECT_EQ(mojom::CORSError::kRedirectContainsCredentials, *error5);
 }
 
+TEST_F(CORSTest, CheckPreflightDetectsErrors) {
+  EXPECT_FALSE(cors::CheckPreflight(200));
+  EXPECT_FALSE(cors::CheckPreflight(299));
+
+  base::Optional<mojom::CORSError> error1 = cors::CheckPreflight(300);
+  ASSERT_TRUE(error1);
+  EXPECT_EQ(mojom::CORSError::kPreflightInvalidStatus, *error1);
+
+  EXPECT_FALSE(cors::CheckExternalPreflight(std::string("true")));
+
+  base::Optional<mojom::CORSError> error2 =
+      cors::CheckExternalPreflight(base::nullopt);
+  ASSERT_TRUE(error2);
+  EXPECT_EQ(mojom::CORSError::kPreflightMissingAllowExternal, *error2);
+
+  base::Optional<mojom::CORSError> error3 =
+      cors::CheckExternalPreflight(std::string("TRUE"));
+  ASSERT_TRUE(error3);
+  EXPECT_EQ(mojom::CORSError::kPreflightInvalidAllowExternal, *error3);
+}
+
 }  // namespace
 
 }  // namespace network

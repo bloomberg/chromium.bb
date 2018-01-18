@@ -44,17 +44,6 @@ struct ResourceLoaderOptions;
 
 namespace WebCORS {
 
-// Perform the required CORS checks on the response to a preflight request.
-// Returns |kPreflightSuccess| if preflight response was successful.
-BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflight(
-    const int preflight_response_status_code);
-
-// Error checking for the currently experimental
-// "Access-Control-Allow-External:" header. Shares error conditions with
-// standard preflight checking.
-BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError>
-CheckExternalPreflight(const WebHTTPHeaderMap&);
-
 BLINK_PLATFORM_EXPORT WebURLRequest
 CreateAccessControlPreflightRequest(const WebURLRequest&);
 

@@ -8,6 +8,13 @@
 #include "url/origin.h"
 #include "url/url_util.h"
 
+namespace {
+
+const char kAsterisk[] = "*";
+const char kLowerCaseTrue[] = "true";
+
+}  // namespace
+
 namespace network {
 
 namespace cors {
@@ -35,9 +42,9 @@ base::Optional<mojom::CORSError> CheckAccess(
 
   // Check Suborigins, unless the Access-Control-Allow-Origin is '*', which
   // implies that all Suborigins are okay as well.
-  bool allow_all_origins = allow_origin_header == "*";
+  bool allow_all_origins = allow_origin_header == kAsterisk;
   if (!origin.suborigin().empty() && !allow_all_origins) {
-    if (allow_suborigin_header != "*" &&
+    if (allow_suborigin_header != kAsterisk &&
         allow_suborigin_header != origin.suborigin()) {
       return mojom::CORSError::kSubOriginMismatch;
     }
@@ -96,7 +103,7 @@ base::Optional<mojom::CORSError> CheckAccess(
     // https://fetch.spec.whatwg.org/#http-access-control-allow-credentials.
     // This check should be case sensitive.
     // See also https://fetch.spec.whatwg.org/#http-new-header-syntax.
-    if (allow_credentials_header != "true")
+    if (allow_credentials_header != kLowerCaseTrue)
       return mojom::CORSError::kDisallowCredentialsNotSetToTrue;
   }
   return base::nullopt;
@@ -124,6 +131,26 @@ base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
     return mojom::CORSError::kRedirectContainsCredentials;
 
   return base::nullopt;
+}
+
+base::Optional<mojom::CORSError> CheckPreflight(const int status_code) {
+  // CORS preflight with 3XX is considered network error in
+  // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
+  // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
+  // https://crbug.com/452394
+  if (200 <= status_code && status_code < 300)
+    return base::nullopt;
+  return mojom::CORSError::kPreflightInvalidStatus;
+}
+
+// https://wicg.github.io/cors-rfc1918/#http-headerdef-access-control-allow-external
+base::Optional<mojom::CORSError> CheckExternalPreflight(
+    const base::Optional<std::string>& allow_external) {
+  if (!allow_external)
+    return mojom::CORSError::kPreflightMissingAllowExternal;
+  if (*allow_external == kLowerCaseTrue)
+    return base::nullopt;
+  return mojom::CORSError::kPreflightInvalidAllowExternal;
 }
 
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode) {
