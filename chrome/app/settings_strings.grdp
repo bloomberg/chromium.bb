@@ -618,7 +618,7 @@
     Export passwords
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION" desc="Text shown to the user on the dialog for exporting passwords, before any passwords have been exported.">
-    Your passwords will be visible to anyone who can see the exported file. Do not share the file with anyone and delete it after importing it.
+    Your passwords will be visible to anyone who can see the exported file.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EXPORT" desc="A button in the dialog for exporting passwords from Chrome. A password list will be written to a destination, which the user will be asked to choose after initiating this action.">
     Export passwords...
