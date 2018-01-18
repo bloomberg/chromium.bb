@@ -658,7 +658,7 @@ TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
           ->GetURLRequestContext()
           ->http_transaction_factory()
           ->GetSession();
-  DCHECK(http_session);
+  ASSERT_TRUE(http_session);
 
   net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
   http_auth_cache->Add(kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
@@ -666,14 +666,46 @@ TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
                        net::AuthCredentials(base::ASCIIToUTF16("foo"),
                                             base::ASCIIToUTF16("bar")),
                        "/");
-  CHECK(http_auth_cache->Lookup(kOrigin1, kTestRealm,
-                                net::HttpAuth::AUTH_SCHEME_BASIC));
+  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                      net::HttpAuth::AUTH_SCHEME_BASIC));
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 
   EXPECT_EQ(nullptr, http_auth_cache->Lookup(kOrigin1, kTestRealm,
                                              net::HttpAuth::AUTH_SCHEME_BASIC));
+}
+
+// Test that removing cookies does not clear HTTP auth data if we're avoiding
+// closing connections.
+TEST_F(BrowsingDataRemoverImplTest,
+       ClearHttpAuthCache_AvoidClosingConnections) {
+  net::HttpNetworkSession* http_session =
+      BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+          ->GetURLRequestContext()
+          ->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession();
+  ASSERT_TRUE(http_session);
+
+  net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
+  net::HttpAuthCache::Entry* entry = http_auth_cache->Add(
+      kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC, "test challenge",
+      net::AuthCredentials(base::ASCIIToUTF16("foo"),
+                           base::ASCIIToUTF16("bar")),
+      "/");
+  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                      net::HttpAuth::AUTH_SCHEME_BASIC));
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      BrowsingDataRemover::DATA_TYPE_COOKIES |
+          BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
+      false);
+
+  // The entry stays unchanged.
+  EXPECT_EQ(entry, http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                           net::HttpAuth::AUTH_SCHEME_BASIC));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDForever) {
@@ -738,6 +770,29 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsForServerIdentifiers) {
   net::ChannelIDStore::ChannelIDList channel_ids;
   tester.GetChannelIDList(&channel_ids);
   EXPECT_EQ(kTestRegisterableDomain3, channel_ids.front().server_identifier());
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsAvoidClosingConnections) {
+  RemoveChannelIDTester tester(GetBrowserContext());
+
+  tester.AddChannelID(kTestOrigin1);
+  EXPECT_EQ(0, tester.ssl_config_changed_count());
+  EXPECT_EQ(1, tester.ChannelIDCount());
+
+  int remove_mask = BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+                    BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), remove_mask,
+                                false);
+
+  EXPECT_EQ(remove_mask, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+            GetOriginTypeMask());
+
+  // No deletion took place because the AVOID_CLOSING_CONNECTIONS flag
+  // was specified.
+  EXPECT_EQ(0, tester.ssl_config_changed_count());
+  EXPECT_EQ(1, tester.ChannelIDCount());
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {

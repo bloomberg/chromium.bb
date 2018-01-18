@@ -84,8 +84,10 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
         BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
 
     if (cookies) {
-      int data_type_mask = BrowsingDataRemover::DATA_TYPE_COOKIES |
-                           BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS;
+      int data_type_mask =
+          BrowsingDataRemover::DATA_TYPE_COOKIES |
+          BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+          BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
 
       BrowsingDataFilterBuilderImpl filter_builder(
           BrowsingDataFilterBuilder::WHITELIST);
