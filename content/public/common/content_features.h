@@ -113,10 +113,15 @@ CONTENT_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseEchoCanceller3;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
-CONTENT_EXPORT extern const base::Feature kWebVrExperimentalRendering;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
 CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kWebXrRenderPath;
+CONTENT_EXPORT extern const char kWebXrRenderPathParamName[];
+CONTENT_EXPORT extern const char kWebXrRenderPathParamValueClientWait[];
+CONTENT_EXPORT extern const char kWebXrRenderPathParamValueGpuFence[];
+#endif  // defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
 
 #if defined(OS_ANDROID)
