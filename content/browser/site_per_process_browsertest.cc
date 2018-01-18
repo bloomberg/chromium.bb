@@ -6409,6 +6409,52 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
   EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
 }
 
+// Check that when a subframe has focus, and another subframe navigates
+// cross-site to a new renderer process, this doesn't reset the focused frame
+// to the main frame.  See https://crbug.com/802156.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeFocusNotLostWhenAnotherFrameNavigatesCrossSite) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+
+  // The main frame should be focused to start with.
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+
+  // Add an <input> element to the first subframe.
+  ExecuteScriptAsync(
+      child1, "document.body.appendChild(document.createElement('input'))");
+
+  // Focus the first subframe using window.focus().
+  FrameFocusedObserver focus_observer(child1->current_frame_host());
+  ExecuteScriptAsync(root, "frames[0].focus()");
+  focus_observer.Wait();
+  EXPECT_EQ(child1, root->frame_tree()->GetFocusedFrame());
+
+  // Give focus to the <input> element in the first subframe.
+  ExecuteScriptAsync(child1, "document.querySelector('input').focus()");
+
+  // Now, navigate second subframe cross-site.  Ensure that this won't change
+  // the focused frame.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(child2, b_url);
+  // This is needed because the incorrect focused frame change as in
+  // https://crbug.com/802156 requires an additional post-commit IPC roundtrip.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(child1, root->frame_tree()->GetFocusedFrame());
+
+  // The <input> in first subframe should still be the activeElement.
+  std::string activeTag;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child1, "domAutomationController.send(document.activeElement.tagName)",
+      &activeTag));
+  EXPECT_EQ("input", base::ToLowerASCII(activeTag));
+}
+
 // There are no cursors on Android.
 #if !defined(OS_ANDROID)
 class CursorMessageFilter : public content::BrowserMessageFilter {
