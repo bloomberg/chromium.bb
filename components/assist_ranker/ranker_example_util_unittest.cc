@@ -103,28 +103,56 @@ TEST_F(RankerExampleUtilTest, GetOneHotValue) {
   EXPECT_FALSE(GetOneHotValue("foo", example_, &value));
 }
 
-TEST_F(RankerExampleUtilTest, FeatureToInt) {
+TEST_F(RankerExampleUtilTest, ScalarFeatureInt64Conversion) {
   Feature feature;
-  int int_value;
+  int64_t int64_value;
+
   feature.set_bool_value(true);
-  EXPECT_TRUE(FeatureToInt(feature, &int_value));
-  EXPECT_EQ(1, int_value);
-  feature.set_bool_value(false);
-  EXPECT_TRUE(FeatureToInt(feature, &int_value));
-  EXPECT_EQ(0, int_value);
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 72057594037927937LL);
 
-  feature.set_int32_value(42);
-  EXPECT_TRUE(FeatureToInt(feature, &int_value));
-  EXPECT_EQ(42, int_value);
-  feature.set_int32_value(-3);
-  EXPECT_TRUE(FeatureToInt(feature, &int_value));
-  EXPECT_EQ(-3, int_value);
+  feature.set_int32_value(std::numeric_limits<int32_t>::max());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 216172784261267455LL);
 
-  // Float and string values are not implemented yet.
-  feature.set_float_value(12.345f);
-  EXPECT_FALSE(FeatureToInt(feature, &int_value));
+  feature.set_int32_value(std::numeric_limits<int32_t>::lowest());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 216172784261267456LL);
+
   feature.set_string_value("foo");
-  EXPECT_FALSE(FeatureToInt(feature, &int_value));
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 288230377439557724LL);
+}
+
+TEST_F(RankerExampleUtilTest, FloatFeatureInt64Conversion) {
+  Feature feature;
+  int64_t int64_value;
+
+  feature.set_float_value(std::numeric_limits<float>::epsilon());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 144115188948271104LL);
+
+  feature.set_float_value(-std::numeric_limits<float>::epsilon());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 144115191095754752LL);
+
+  feature.set_float_value(std::numeric_limits<float>::max());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 144115190214950911LL);
+
+  feature.set_float_value(std::numeric_limits<float>::lowest());
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value));
+  EXPECT_EQ(int64_value, 144115192362434559LL);
+}
+
+TEST_F(RankerExampleUtilTest, StringListInt64Conversion) {
+  Feature feature;
+  int64_t int64_value;
+
+  feature.mutable_string_list()->add_string_value("");
+  feature.mutable_string_list()->add_string_value("TEST");
+  EXPECT_TRUE(FeatureToInt64(feature, &int64_value, 1));
+  EXPECT_EQ(int64_value, 360287974776690660LL);
 }
 
 TEST_F(RankerExampleUtilTest, HashExampleFeatureNames) {
