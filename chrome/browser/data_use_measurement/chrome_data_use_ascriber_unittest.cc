@@ -449,7 +449,7 @@ TEST_F(ChromeDataUseAscriberTest, FailedMainFrameNavigation) {
 
   // Failed request will remove the pending entry.
   request->Cancel();
-  ascriber()->OnUrlRequestCompleted(*request, false);
+  ascriber()->OnUrlRequestCompleted(request.get(), false);
 
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   ascriber()->OnUrlRequestDestroyed(request.get());
@@ -491,7 +491,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
   ascriber()->OnNetworkBytesReceived(request.get(), 2);
 
   EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
-  ascriber()->OnUrlRequestCompleted(*request, false);
+  ascriber()->OnUrlRequestCompleted(request.get(), false);
 
   EXPECT_CALL(mock_observer, OnPageLoadCommit(data_use)).Times(1);
   EXPECT_CALL(mock_observer, OnPageLoadConcluded(testing::_)).Times(1);
@@ -548,7 +548,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
   ascriber()->OnNetworkBytesReceived(request.get(), 2);
 
   EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
-  ascriber()->OnUrlRequestCompleted(*request, false);
+  ascriber()->OnUrlRequestCompleted(request.get(), false);
 
   EXPECT_CALL(mock_observer, OnPageLoadCommit(data_use)).Times(1);
   EXPECT_CALL(mock_observer, OnPageLoadConcluded(testing::_)).Times(1);

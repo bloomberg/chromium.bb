@@ -59,8 +59,7 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       net::URLRequest* request) override;
   ChromeDataUseRecorder* GetDataUseRecorder(
       const net::URLRequest& request) override;
-  void OnUrlRequestCompleted(const net::URLRequest& request,
-                             bool started) override;
+  void OnUrlRequestCompleted(net::URLRequest* request, bool started) override;
   void OnUrlRequestDestroyed(net::URLRequest* request) override;
   std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
       const override;
@@ -112,6 +111,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
 
  private:
   friend class ChromeDataUseAscriberTest;
+
+  void OnUrlRequestCompletedOrDestroyed(net::URLRequest* request);
 
   // Entry in the |data_use_recorders_| list which owns all instances of
   // DataUseRecorder. std::list is used so that iterators remain valid until the
