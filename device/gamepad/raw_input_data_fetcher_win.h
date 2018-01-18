@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
+#include "device/gamepad/hid_dll_functions_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
@@ -91,55 +92,6 @@ class RawInputDataFetcher : public GamepadDataFetcher,
   RAWINPUTDEVICE* GetRawInputDevices(DWORD flags);
   void ClearControllers();
 
-  // Function types we use from hid.dll.
-  typedef NTSTATUS(__stdcall* HidPGetCapsFunc)(
-      PHIDP_PREPARSED_DATA PreparsedData,
-      PHIDP_CAPS Capabilities);
-  typedef NTSTATUS(__stdcall* HidPGetButtonCapsFunc)(
-      HIDP_REPORT_TYPE ReportType,
-      PHIDP_BUTTON_CAPS ButtonCaps,
-      PUSHORT ButtonCapsLength,
-      PHIDP_PREPARSED_DATA PreparsedData);
-  typedef NTSTATUS(__stdcall* HidPGetValueCapsFunc)(
-      HIDP_REPORT_TYPE ReportType,
-      PHIDP_VALUE_CAPS ValueCaps,
-      PUSHORT ValueCapsLength,
-      PHIDP_PREPARSED_DATA PreparsedData);
-  typedef NTSTATUS(__stdcall* HidPGetUsagesExFunc)(
-      HIDP_REPORT_TYPE ReportType,
-      USHORT LinkCollection,
-      PUSAGE_AND_PAGE ButtonList,
-      ULONG* UsageLength,
-      PHIDP_PREPARSED_DATA PreparsedData,
-      PCHAR Report,
-      ULONG ReportLength);
-  typedef NTSTATUS(__stdcall* HidPGetUsageValueFunc)(
-      HIDP_REPORT_TYPE ReportType,
-      USAGE UsagePage,
-      USHORT LinkCollection,
-      USAGE Usage,
-      PULONG UsageValue,
-      PHIDP_PREPARSED_DATA PreparsedData,
-      PCHAR Report,
-      ULONG ReportLength);
-  typedef NTSTATUS(__stdcall* HidPGetScaledUsageValueFunc)(
-      HIDP_REPORT_TYPE ReportType,
-      USAGE UsagePage,
-      USHORT LinkCollection,
-      USAGE Usage,
-      PLONG UsageValue,
-      PHIDP_PREPARSED_DATA PreparsedData,
-      PCHAR Report,
-      ULONG ReportLength);
-  typedef BOOLEAN(__stdcall* HidDGetStringFunc)(HANDLE HidDeviceObject,
-                                                PVOID Buffer,
-                                                ULONG BufferLength);
-
-  // Get functions from dynamically loaded hid.dll. Returns true if loading was
-  // successful.
-  bool GetHidDllFunctions();
-
-  base::ScopedNativeLibrary hid_dll_;
   std::unique_ptr<base::win::MessageWindow> window_;
   bool rawinput_available_;
   bool filter_xinput_;
@@ -150,15 +102,8 @@ class RawInputDataFetcher : public GamepadDataFetcher,
   typedef std::map<HANDLE, RawGamepadInfo*> ControllerMap;
   ControllerMap controllers_;
 
-  // Function pointers to HID functionality, retrieved in
-  // |GetHidDllFunctions|.
-  HidPGetCapsFunc hidp_get_caps_;
-  HidPGetButtonCapsFunc hidp_get_button_caps_;
-  HidPGetValueCapsFunc hidp_get_value_caps_;
-  HidPGetUsagesExFunc hidp_get_usages_ex_;
-  HidPGetUsageValueFunc hidp_get_usage_value_;
-  HidPGetScaledUsageValueFunc hidp_get_scaled_usage_value_;
-  HidDGetStringFunc hidd_get_product_string_;
+  // HID functions loaded from hid.dll.
+  std::unique_ptr<HidDllFunctionsWin> hid_functions_;
 
   DISALLOW_COPY_AND_ASSIGN(RawInputDataFetcher);
 };

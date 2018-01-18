@@ -60,6 +60,8 @@ component("gamepad") {
     "gamepad_standard_mappings_win.cc",
     "gamepad_user_gesture.cc",
     "gamepad_user_gesture.h",
+    "hid_dll_functions_win.cc",
+    "hid_dll_functions_win.h",
     "raw_input_data_fetcher_win.cc",
     "raw_input_data_fetcher_win.h",
     "udev_gamepad_linux.cc",
