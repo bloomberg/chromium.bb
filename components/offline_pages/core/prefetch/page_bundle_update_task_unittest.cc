@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,7 +21,7 @@ using testing::HasSubstr;
 
 namespace offline_pages {
 
-class PageBundleUpdateTaskTest : public TaskTestBase {
+class PageBundleUpdateTaskTest : public PrefetchTaskTestBase {
  public:
   PageBundleUpdateTaskTest() = default;
   ~PageBundleUpdateTaskTest() override = default;

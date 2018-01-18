@@ -12,10 +12,10 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_downloader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +39,7 @@ const PrefetchItem* FindPrefetchItemByOfflineId(
   return nullptr;
 }
 
-class DownloadArchivesTaskTest : public TaskTestBase {
+class DownloadArchivesTaskTest : public PrefetchTaskTestBase {
  public:
   TestPrefetchDownloader* prefetch_downloader() {
     return &test_prefetch_downloader_;

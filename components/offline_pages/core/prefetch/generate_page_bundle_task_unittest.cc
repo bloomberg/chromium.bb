@@ -9,11 +9,11 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 #include "components/offline_pages/core/task.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,7 +28,7 @@ namespace offline_pages {
 // All tests cases here only validate the request data and check for general
 // http response. The tests for the Operation proto data returned in the http
 // response are covered in PrefetchRequestOperationResponseTest.
-class GeneratePageBundleTaskTest : public TaskTestBase {
+class GeneratePageBundleTaskTest : public PrefetchTaskTestBase {
  public:
   GeneratePageBundleTaskTest() = default;
   ~GeneratePageBundleTaskTest() override = default;

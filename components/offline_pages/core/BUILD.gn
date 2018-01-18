@@ -113,6 +113,8 @@ static_library("test_support") {
     "offline_page_test_store.h",
     "stub_offline_page_model.cc",
     "stub_offline_page_model.h",
+    "task_test_base.cc",
+    "task_test_base.h",
     "test_task.cc",
     "test_task.h",
     "test_task_runner.cc",
@@ -126,6 +128,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//components/keyed_service/core",
     "//sql:sql",
+    "//testing/gmock",
     "//testing/gtest",
     "//url",
   ]

@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +59,7 @@ class TestingPrefetchNetworkRequestFactory
 };
 }  // namespace
 
-class SentGetOperationCleanupTaskTest : public TaskTestBase {
+class SentGetOperationCleanupTaskTest : public PrefetchTaskTestBase {
  public:
   SentGetOperationCleanupTaskTest() = default;
   ~SentGetOperationCleanupTaskTest() override = default;
@@ -161,7 +161,8 @@ TEST_F(SentGetOperationCleanupTaskTest, SkipForOngoingRequestWithMaxAttempts) {
 TEST_F(SentGetOperationCleanupTaskTest, NoUpdateForOtherStates) {
   std::set<PrefetchItem> items;
   std::vector<PrefetchItemState> all_other_states =
-      TaskTestBase::GetAllStatesExcept(PrefetchItemState::SENT_GET_OPERATION);
+      PrefetchTaskTestBase::GetAllStatesExcept(
+          PrefetchItemState::SENT_GET_OPERATION);
   for (const auto& state : all_other_states) {
     PrefetchItem item = item_generator()->CreateItem(state);
     item.get_operation_attempts =

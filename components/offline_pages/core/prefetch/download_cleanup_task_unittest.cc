@@ -5,10 +5,10 @@
 #include "components/offline_pages/core/prefetch/download_cleanup_task.h"
 
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -21,7 +21,7 @@ const base::FilePath kTestFilePath(FILE_PATH_LITERAL("foo"));
 const int64_t kTestFileSize = 88888;
 }  // namespace
 
-class DownloadCleanupTaskTest : public TaskTestBase {
+class DownloadCleanupTaskTest : public PrefetchTaskTestBase {
  public:
   DownloadCleanupTaskTest() = default;
   ~DownloadCleanupTaskTest() override = default;
@@ -124,7 +124,7 @@ TEST_F(DownloadCleanupTaskTest, SkipForOngoingDownloadWithMaxAttempts) {
 TEST_F(DownloadCleanupTaskTest, NoUpdateForOtherStates) {
   std::set<PrefetchItem> items;
   std::vector<PrefetchItemState> all_other_states =
-      TaskTestBase::GetAllStatesExcept(PrefetchItemState::DOWNLOADING);
+      PrefetchTaskTestBase::GetAllStatesExcept(PrefetchItemState::DOWNLOADING);
   for (const auto& state : all_other_states) {
     PrefetchItem item = item_generator()->CreateItem(state);
     item.download_initiation_attempts =

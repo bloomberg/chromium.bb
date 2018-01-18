@@ -2,24 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/task_test_base.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 
-#include "base/test/mock_callback.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "components/offline_pages/core/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::_;
 
 namespace offline_pages {
 
 // static
-std::vector<PrefetchItemState> TaskTestBase::GetAllStatesExcept(
+std::vector<PrefetchItemState> PrefetchTaskTestBase::GetAllStatesExcept(
     PrefetchItemState state_to_exclude) {
   static const PrefetchItemState all_states[] = {
       PrefetchItemState::NEW_REQUEST,
@@ -42,38 +35,22 @@ std::vector<PrefetchItemState> TaskTestBase::GetAllStatesExcept(
   return states;
 }
 
-TaskTestBase::TaskTestBase()
-    : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
+PrefetchTaskTestBase::PrefetchTaskTestBase()
+    : store_test_util_(task_runner()) {}
 
-TaskTestBase::~TaskTestBase() = default;
+PrefetchTaskTestBase::~PrefetchTaskTestBase() = default;
 
-void TaskTestBase::SetUp() {
-  testing::Test::SetUp();
+void PrefetchTaskTestBase::SetUp() {
+  TaskTestBase::SetUp();
   store_test_util_.BuildStoreInMemory();
 }
 
-void TaskTestBase::TearDown() {
+void PrefetchTaskTestBase::TearDown() {
   store_test_util_.DeleteStore();
-  task_runner_->FastForwardUntilNoTasksRemain();
-  testing::Test::TearDown();
+  TaskTestBase::TearDown();
 }
 
-void TaskTestBase::RunUntilIdle() {
-  task_runner_->RunUntilIdle();
-}
-
-void TaskTestBase::ExpectTaskCompletes(Task* task) {
-  completion_callbacks_.push_back(
-      std::make_unique<base::MockCallback<Task::TaskCompletionCallback>>());
-  EXPECT_CALL(*completion_callbacks_.back(), Run(_));
-
-  task->SetTaskCompletionCallbackForTesting(
-      task_runner_.get(), completion_callbacks_.back()->Get());
-}
-
-int64_t TaskTestBase::InsertPrefetchItemInStateWithOperation(
+int64_t PrefetchTaskTestBase::InsertPrefetchItemInStateWithOperation(
     std::string operation_name,
     PrefetchItemState state) {
   PrefetchItem item;
@@ -86,7 +63,7 @@ int64_t TaskTestBase::InsertPrefetchItemInStateWithOperation(
   return item.offline_id;
 }
 
-std::set<PrefetchItem> TaskTestBase::FilterByState(
+std::set<PrefetchItem> PrefetchTaskTestBase::FilterByState(
     const std::set<PrefetchItem>& items,
     PrefetchItemState state) const {
   std::set<PrefetchItem> result;

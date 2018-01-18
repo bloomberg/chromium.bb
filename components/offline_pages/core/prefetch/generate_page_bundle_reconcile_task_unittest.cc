@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +55,7 @@ class FakePrefetchNetworkRequestFactory : public PrefetchNetworkRequestFactory {
 };
 }  // namespace
 
-class GeneratePageBundleReconcileTaskTest : public TaskTestBase {
+class GeneratePageBundleReconcileTaskTest : public PrefetchTaskTestBase {
  public:
   GeneratePageBundleReconcileTaskTest();
   ~GeneratePageBundleReconcileTaskTest() override = default;
@@ -180,7 +180,7 @@ TEST_F(GeneratePageBundleReconcileTaskTest, NoUpdateForOtherStates) {
   const int attempts_count =
       GeneratePageBundleReconcileTask::kMaxGenerateBundleAttempts;
   std::vector<PrefetchItemState> all_other_states =
-      TaskTestBase::GetAllStatesExcept(
+      PrefetchTaskTestBase::GetAllStatesExcept(
           PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
   for (const auto& state : all_other_states)
     items.insert(InsertItem(state, attempts_count));
