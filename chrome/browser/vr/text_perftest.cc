@@ -43,9 +43,9 @@ class TextPerfTest : public testing::Test {
 
  protected:
   void PrintResults(const std::string& name) {
-    perf_test::PrintResult(name, "", "render_time_avg", timer_.MsPerLap(), "ms",
-                           true);
-    perf_test::PrintResult(name, "", "number_of_runs",
+    perf_test::PrintResult("TextPerfTest", ".render_time_avg", name,
+                           timer_.MsPerLap(), "ms", true);
+    perf_test::PrintResult("TextPerfTest", ".number_of_runs", name,
                            static_cast<size_t>(timer_.NumLaps()), "runs", true);
   }
 
