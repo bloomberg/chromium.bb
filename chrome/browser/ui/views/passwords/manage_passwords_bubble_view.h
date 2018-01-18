@@ -41,7 +41,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubbleDelegateViewBase,
   // dialogs need to access their parent, as the dialogs become truly separate
   // this should go away on its own.
   friend class ManagePasswordPendingView;
-  friend class ManagePasswordSaveConfirmationView;
   friend class ManagePasswordSignInPromoView;
   friend class ManagePasswordUpdatePendingView;
 
