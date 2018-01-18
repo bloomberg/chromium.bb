@@ -26,6 +26,7 @@ typedef struct QUANT_PARAM {
   TX_SIZE tx_size;
 #if CONFIG_NEW_QUANT
   int dq;
+  int x0;
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
   const qm_val_t *qmatrix;

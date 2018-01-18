@@ -711,13 +711,14 @@ void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                const QUANT_PARAM *qparam) {
   // obsolete skip_block
   const int skip_block = 0;
-  int dq = qparam->dq;
+  const int dq = qparam->dq;
+  const int x0 = qparam->x0;
 
   switch (qparam->log_scale) {
     case 0:
       quantize_nuq(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
                    p->quant_shift_QTX, p->dequant_QTX,
-                   (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                   (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
                    (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq],
                    qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -725,7 +726,7 @@ void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       quantize_32x32_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
           p->quant_shift_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -734,7 +735,7 @@ void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       quantize_64x64_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
           p->quant_shift_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -750,20 +751,21 @@ void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                 const QUANT_PARAM *qparam) {
   // obsolete skip_block
   const int skip_block = 0;
-  int dq = qparam->dq;
+  const int dq = qparam->dq;
+  const int x0 = qparam->x0;
 
   switch (qparam->log_scale) {
     case 0:
       quantize_fp_nuq(coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX,
                       p->dequant_QTX,
-                      (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+                      (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
                       (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq],
                       qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan);
       break;
     case 1:
       quantize_32x32_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -771,7 +773,7 @@ void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     case 2:
       quantize_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -787,27 +789,28 @@ void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                 const QUANT_PARAM *qparam) {
   // obsolete skip_block
   const int skip_block = 0;
-  int dq = qparam->dq;
+  const int dq = qparam->dq;
+  const int x0 = qparam->x0;
   (void)sc;
 
   switch (qparam->log_scale) {
     case 0:
       quantize_dc_fp_nuq(coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-                         p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+                         p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
                          p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr,
                          eob_ptr);
       break;
     case 1:
       quantize_dc_32x32_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-          p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+          p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
           p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr, eob_ptr);
       break;
 #if CONFIG_TX64X64
     case 2:
       quantize_dc_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-          p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+          p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
           p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr, eob_ptr);
       break;
 #endif  // CONFIG_TX64X64
@@ -1338,13 +1341,14 @@ void av1_highbd_quantize_b_nuq_facade(
   // obsolete skip_block
   const int skip_block = 0;
   const int dq = qparam->dq;
+  const int x0 = qparam->x0;
 
   switch (qparam->log_scale) {
     case 0:
       highbd_quantize_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
           p->quant_shift_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -1352,7 +1356,7 @@ void av1_highbd_quantize_b_nuq_facade(
       highbd_quantize_32x32_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
           p->quant_shift_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -1361,7 +1365,7 @@ void av1_highbd_quantize_b_nuq_facade(
       highbd_quantize_64x64_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
           p->quant_shift_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -1377,19 +1381,20 @@ void av1_highbd_quantize_fp_nuq_facade(
   // obsolete skip_block
   const int skip_block = 0;
   const int dq = qparam->dq;
+  const int x0 = qparam->x0;
 
   switch (qparam->log_scale) {
     case 0:
       highbd_quantize_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
     case 1:
       highbd_quantize_32x32_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -1397,7 +1402,7 @@ void av1_highbd_quantize_fp_nuq_facade(
     case 2:
       highbd_quantize_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX,
-          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
+          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[x0],
           (const dequant_val_type_nuq *)p->dequant_val_nuq_QTX[dq], qcoeff_ptr,
           dqcoeff_ptr, eob_ptr, sc->scan);
       break;
@@ -1413,26 +1418,27 @@ void av1_highbd_quantize_dc_nuq_facade(
   // obsolete skip_block
   const int skip_block = 0;
   const int dq = qparam->dq;
+  const int x0 = qparam->x0;
   (void)sc;
 
   switch (qparam->log_scale) {
     case 0:
       highbd_quantize_dc_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-          p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+          p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
           p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr, eob_ptr);
       break;
     case 1:
       highbd_quantize_dc_32x32_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-          p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+          p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
           p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr, eob_ptr);
       break;
 #if CONFIG_TX64X64
     case 2:
       highbd_quantize_dc_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
-          p->dequant_QTX[0], p->cuml_bins_nuq[dq][0],
+          p->dequant_QTX[0], p->cuml_bins_nuq[x0][0],
           p->dequant_val_nuq_QTX[dq][0], qcoeff_ptr, dqcoeff_ptr, eob_ptr);
       break;
 #endif  // CONFIG_TX64X64
@@ -1534,6 +1540,21 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
     }
 
 #if CONFIG_NEW_QUANT
+    int x0;
+    for (x0 = 0; x0 < X0_PROFILES; x0++) {
+      // DC and AC coefs
+      for (i = 0; i < 2; i++) {
+        const int y_quant = deq->y_dequant_QTX[q][i != 0];
+        const int u_quant = deq->u_dequant_QTX[q][i != 0];
+        const int v_quant = deq->v_dequant_QTX[q][i != 0];
+        av1_get_cuml_bins_nuq(y_quant, i, quants->y_cuml_bins_nuq[x0][q][i],
+                              x0);
+        av1_get_cuml_bins_nuq(u_quant, i, quants->u_cuml_bins_nuq[x0][q][i],
+                              x0);
+        av1_get_cuml_bins_nuq(v_quant, i, quants->v_cuml_bins_nuq[x0][q][i],
+                              x0);
+      }
+    }
     int dq;
     for (dq = 0; dq < QUANT_PROFILES; dq++) {
       // DC and AC coefs
@@ -1547,12 +1568,6 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
                                 deq->u_dequant_val_nuq_QTX[dq][q][i], dq);
         av1_get_dequant_val_nuq(v_quant, i,
                                 deq->v_dequant_val_nuq_QTX[dq][q][i], dq);
-        av1_get_cuml_bins_nuq(y_quant, i, quants->y_cuml_bins_nuq[dq][q][i],
-                              dq);
-        av1_get_cuml_bins_nuq(u_quant, i, quants->u_cuml_bins_nuq[dq][q][i],
-                              dq);
-        av1_get_cuml_bins_nuq(v_quant, i, quants->v_cuml_bins_nuq[dq][q][i],
-                              dq);
       }
     }
 #endif  // CONFIG_NEW_QUANT
@@ -1624,9 +1639,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
                     ? NUM_QM_LEVELS - 1
                     : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
 #endif
-#if CONFIG_NEW_QUANT
-  int dq;
-#endif
 
   // Y
   x->plane[0].quant_QTX = quants->y_quant[qindex];
@@ -1644,8 +1656,10 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
   xd->plane[0].dequant_Q3 = cpi->dequants.y_dequant_Q3[qindex];
 #if CONFIG_NEW_QUANT
-  for (dq = 0; dq < QUANT_PROFILES; dq++) {
-    x->plane[0].cuml_bins_nuq[dq] = quants->y_cuml_bins_nuq[dq][qindex];
+  for (int x0 = 0; x0 < X0_PROFILES; x0++) {
+    x->plane[0].cuml_bins_nuq[x0] = quants->y_cuml_bins_nuq[x0][qindex];
+  }
+  for (int dq = 0; dq < QUANT_PROFILES; dq++) {
     x->plane[0].dequant_val_nuq_QTX[dq] =
         cpi->dequants.y_dequant_val_nuq_QTX[dq][qindex];
   }
@@ -1669,8 +1683,10 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
     x->plane[1].dequant_QTX = cpi->dequants.u_dequant_QTX[qindex];
     xd->plane[1].dequant_Q3 = cpi->dequants.u_dequant_Q3[qindex];
 #if CONFIG_NEW_QUANT
-    for (dq = 0; dq < QUANT_PROFILES; dq++) {
-      x->plane[1].cuml_bins_nuq[dq] = quants->u_cuml_bins_nuq[dq][qindex];
+    for (int x0 = 0; x0 < X0_PROFILES; x0++) {
+      x->plane[1].cuml_bins_nuq[x0] = quants->u_cuml_bins_nuq[x0][qindex];
+    }
+    for (int dq = 0; dq < QUANT_PROFILES; dq++) {
       x->plane[1].dequant_val_nuq_QTX[dq] =
           cpi->dequants.u_dequant_val_nuq_QTX[dq][qindex];
     }
@@ -1694,8 +1710,10 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
     x->plane[2].dequant_QTX = cpi->dequants.v_dequant_QTX[qindex];
     xd->plane[2].dequant_Q3 = cpi->dequants.v_dequant_Q3[qindex];
 #if CONFIG_NEW_QUANT
-    for (dq = 0; dq < QUANT_PROFILES; dq++) {
-      x->plane[2].cuml_bins_nuq[dq] = quants->v_cuml_bins_nuq[dq][qindex];
+    for (int x0 = 0; x0 < X0_PROFILES; x0++) {
+      x->plane[2].cuml_bins_nuq[x0] = quants->v_cuml_bins_nuq[x0][qindex];
+    }
+    for (int dq = 0; dq < QUANT_PROFILES; dq++) {
       x->plane[2].dequant_val_nuq_QTX[dq] =
           cpi->dequants.v_dequant_val_nuq_QTX[dq][qindex];
     }

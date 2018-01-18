@@ -513,6 +513,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   qparam.tx_size = tx_size;
 #if CONFIG_NEW_QUANT
   qparam.dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
+  qparam.x0 = get_x0_profile(x->optimize, x->qindex, is_inter, plane_type);
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
   qparam.qmatrix = qmatrix;

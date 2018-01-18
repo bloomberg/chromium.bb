@@ -64,6 +64,9 @@ const qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
 #define QUANT_RANGES 2
 #define NUQ_KNOTS 1
 
+// Encoder only
+#define X0_PROFILES (2 * 8 + 1)
+
 // dequant_val_type_nuq needs space for the 3 possible shift values
 // for different tx sizes
 typedef tran_low_t dequant_val_type_nuq[NUQ_KNOTS * 3];
@@ -105,6 +108,26 @@ static INLINE int get_dq_profile(DqType dqtype, int qindex, int is_inter,
   if (!qindex) return 0;  // lossless
   if (!dqtype) return 0;  // DQ_MULT
   return dq_profile_lookup[dqtype][is_inter][plane_type]
+                          [qindex_to_qrange(qindex)];
+}
+
+// Encoder only
+static INLINE int get_x0_profile(int optimize, int qindex, int is_inter,
+                                 PLANE_TYPE plane_type) {
+  // intra/inter, Y/UV, ctx, qrange
+  static const int x0_profile_lookup[2][REF_TYPES][PLANE_TYPES][QUANT_RANGES] =
+      {
+        {
+            { { 1, 2 }, { 3, 4 } },  // intra: Y, UV
+            { { 5, 6 }, { 7, 8 } },  // inter: Y, UV
+        },
+        {
+            { { 9, 10 }, { 11, 12 } },   // intra: Y, UV
+            { { 13, 14 }, { 15, 16 } },  // inter: Y, UV
+        },
+      };
+  if (!qindex) return 0;  // lossless
+  return x0_profile_lookup[!optimize][is_inter][plane_type]
                           [qindex_to_qrange(qindex)];
 }
 #endif  // CONFIG_NEW_QUANT

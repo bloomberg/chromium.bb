@@ -22,111 +22,77 @@
 // nominal quantization step. The width is only
 // for one side of zero, so the actual width is twice that.
 // These are needed only on the encoder side.
-static const uint8_t x0_nuq[QUANT_PROFILES][2] = {
+static const uint8_t x0_nuq[X0_PROFILES][2] = {
   {
       // lossless
       64, 64,  // dc, ac
   },
 
-  // dq_type = 1
+  // optimize = 1
   {
-      // Y/intra, dq_type 1, low quality
+      // Y/intra, optimize 1, low quality
       64, 64,  // dc, ac
   },
   {
-      // Y/intra, dq_type 1, high quality
+      // Y/intra, optimize 1, high quality
       64, 64,  // dc, ac
   },
   {
-      // UV/intra, dq_type 1, low quality
+      // UV/intra, optimize 1, low quality
       64, 64,  // dc, ac
   },
   {
-      // UV/intra, dq_type 1, high quality
+      // UV/intra, optimize 1, high quality
       64, 64,  // dc, ac
   },
   {
-      // Y/inter, dq_type 1, low quality
+      // Y/inter, optimize 1, low quality
       64, 64,  // dc, ac
   },
   {
-      // Y/inter, dq_type 1, high quality
+      // Y/inter, optimize 1, high quality
       64, 64,  // dc, ac
   },
   {
-      // UV/inter, dq_type 1, low quality
+      // UV/inter, optimize 1, low quality
       64, 64,  // dc, ac
   },
   {
-      // UV/inter, dq_type 1, high quality
+      // UV/inter, optimize 1, high quality
       64, 64,  // dc, ac
   },
 
-  // dq_type = 2
+  // optimize = 0
   {
-      // Y/intra, dq_type 2, low quality
-      72, 72,  // dc, ac
-  },
-  {
-      // Y/intra, dq_type 2, high quality
-      72, 72,  // dc, ac
-  },
-  {
-      // UV/intra, dq_type 2, low quality
-      72, 72,  // dc, ac
-  },
-  {
-      // UV/intra, dq_type 2, high quality
-      72, 72,  // dc, ac
-  },
-  {
-      // Y/inter, dq_type 2, low quality
-      72, 72,  // dc, ac
-  },
-  {
-      // Y/inter, dq_type 2, high quality
-      72, 72,  // dc, ac
-  },
-  {
-      // UV/inter, dq_type 2, low quality
-      72, 72,  // dc, ac
-  },
-  {
-      // UV/inter, dq_type 2, high quality
-      72, 72,  // dc, ac
-  },
-
-  // dq_type = 3
-  {
-      // Y/intra, dq_type 3, low quality
+      // Y/intra, optimize 0, low quality
       80, 80,  // dc, ac
   },
   {
-      // Y/intra, dq_type 3, high quality
+      // Y/intra, optimize 0, high quality
       82, 82,  // dc, ac
   },
   {
-      // UV/intra, dq_type 3, low quality
+      // UV/intra, optimize 0, low quality
       80, 80,  // dc, ac
   },
   {
-      // UV/intra, dq_type 3, high quality
+      // UV/intra, optimize 0, high quality
       82, 82,  // dc, ac
   },
   {
-      // Y/inter, dq_type 3, low quality
+      // Y/inter, optimize 0, low quality
       80, 80,  // dc, ac
   },
   {
-      // Y/inter, dq_type 3, high quality
+      // Y/inter, optimize 0, high quality
       82, 82,  // dc, ac
   },
   {
-      // UV/inter, dq_type 3, low quality
+      // UV/inter, optimize 0, low quality
       80, 80,  // dc, ac
   },
   {
-      // UV/inter, dq_type 3, high quality
+      // UV/inter, optimize 0, high quality
       82, 82,  // dc, ac
   },
 };
@@ -241,25 +207,20 @@ static const int8_t doff_nuq[QUANT_PROFILES][2] = {
   },
 };
 
-static INLINE uint8_t get_nuq_zbin(int is_ac_coeff, int q_profile) {
-  return x0_nuq[q_profile][is_ac_coeff];
+// Encoder only
+static INLINE uint8_t get_nuq_zbin(int is_ac_coeff, int x0_profile) {
+  return x0_nuq[x0_profile][is_ac_coeff];
+}
+
+// Encoder only
+void av1_get_cuml_bins_nuq(int q, int is_ac_coeff, tran_low_t *zbin_width,
+                           int x0_profile) {
+  const uint8_t zbin = get_nuq_zbin(is_ac_coeff, x0_profile);
+  zbin_width[0] = ROUND_POWER_OF_TWO(zbin * q, 7);
 }
 
 static INLINE int8_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
   return doff_nuq[q_profile][is_ac_coeff];
-}
-
-// get zero bin width
-static INLINE void get_cuml_bins_nuq(int q, int is_ac_coeff,
-                                     tran_low_t *zbin_width, int q_profile) {
-  const uint8_t zbin = get_nuq_zbin(is_ac_coeff, q_profile);
-  zbin_width[0] = ROUND_POWER_OF_TWO(zbin * q, 7);
-}
-
-void av1_get_cuml_bins_nuq(int q, int is_ac_coeff, tran_low_t *cuml_bins,
-                           int q_profile) {
-  // Get the quantization boundary for the zero bin
-  get_cuml_bins_nuq(q, is_ac_coeff, cuml_bins, q_profile);
 }
 
 void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
