@@ -97,6 +97,15 @@ void RecordSavePageResultUMA(
   histogram->Add(static_cast<int>(request_status));
 }
 
+// Records whether the request comes from CCT or not
+void RecordSavePageResultCCTUMA(const ClientId& client_id,
+                                const std::string& origin) {
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+      AddHistogramSuffix(client_id, "OfflinePages.Background.SavePageFromCCT"),
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddBoolean(!origin.empty());
+}
+
 void RecordStartTimeUMA(const SavePageRequest& request) {
   std::string histogram_name("OfflinePages.Background.TimeToStart");
   if (base::SysInfo::IsLowEndDevice()) {
@@ -1112,6 +1121,7 @@ void RequestCoordinator::NotifyCompleted(
     const SavePageRequest& request,
     RequestNotifier::BackgroundSavePageResult status) {
   RecordSavePageResultUMA(request.client_id(), status);
+  RecordSavePageResultCCTUMA(request.client_id(), request.request_origin());
   for (Observer& observer : observers_)
     observer.OnCompleted(request, status);
 }
