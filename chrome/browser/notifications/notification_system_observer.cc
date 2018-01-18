@@ -46,8 +46,11 @@ void NotificationSystemObserver::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       DCHECK(!profile->IsOffTheRecord());
       auto* registry = extensions::ExtensionRegistry::Get(profile);
-      DCHECK(!extension_registry_observer_.IsObserving(registry));
-      extension_registry_observer_.Add(registry);
+      // If |this| was created after the profile was created but before the
+      // ADDED notification was sent, we may be already observing it. |this| is
+      // created lazily so it's not easy to predict construction order.
+      if (!extension_registry_observer_.IsObserving(registry))
+        extension_registry_observer_.Add(registry);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
