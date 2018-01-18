@@ -49,10 +49,8 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/cert/sct_status_flags.h"
-#include "net/cert/signed_certificate_timestamp.h"
-#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -2624,6 +2622,20 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                                  https_server_.GetURL("/title2.html"));
     histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
   }
+}
+
+// Tests that the Certificate Transparency compliance of the main resource is
+// recorded in a histogram.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, CTComplianceHistogram) {
+  const char kHistogramName[] =
+      "Security.CertificateTransparency.MainFrameNavigationCompliance";
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  histograms.ExpectUniqueSample(
+      kHistogramName, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+      1);
 }
 
 }  // namespace
