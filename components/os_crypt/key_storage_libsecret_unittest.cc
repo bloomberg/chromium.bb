@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <unordered_map>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/os_crypt/key_storage_libsecret.h"
@@ -11,13 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-// Mock functions expect MockSecretValue, where SecretValue appears, and cast it
-// to the mock type. We can reduce SecretValue to an std::string, because we
-// don't use anything else from it.
-using MockSecretValue = std::string;
-// Likewise, we only need a SecretValue from SecretItem.
-using MockSecretItem = MockSecretValue;
 
 const SecretSchema kKeystoreSchemaV1 = {
     "chrome_libsecret_os_crypt_password",
@@ -34,6 +29,80 @@ const SecretSchema kKeystoreSchemaV2 = {
         {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
     }};
 
+// This test mocks C-functions used by Libsecret. In order to present a
+// consistent world view, we need a single backing instance that contains all
+// the relevant data.
+class MockPasswordStore {
+  // The functions that interact with the password store expect to return
+  // gobjects. These C-style objects are hard to work with. Rather than finagle
+  // with the type system, we always use objects with type G_TYPE_OBJECT. We
+  // then keep a local map from G_TYPE_OBJECT to std::string, and all relevant
+  // translation just look up entries in this map.
+ public:
+  void Reset() {
+    mapping_.clear();
+    ClearV1Password();
+    ClearV2Password();
+    for (GObject* o : objects_returned_to_caller_) {
+      ASSERT_EQ(o->ref_count, 1u);
+      g_object_unref(o);
+    }
+    objects_returned_to_caller_.clear();
+  }
+
+  void ClearV1Password() {
+    if (v1_password_) {
+      ASSERT_EQ(v1_password_->ref_count, 1u);
+      g_object_unref(v1_password_);
+      v1_password_ = nullptr;
+    }
+  }
+  void ClearV2Password() {
+    if (v2_password_) {
+      ASSERT_EQ(v2_password_->ref_count, 1u);
+      g_object_unref(v2_password_);
+      v2_password_ = nullptr;
+    }
+  }
+
+  void SetV1Password(const std::string& password) {
+    ASSERT_FALSE(v1_password_);
+    v1_password_ = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
+    mapping_[v1_password_] = password;
+  }
+
+  void SetV2Password(const std::string& password) {
+    ASSERT_FALSE(v2_password_);
+    v2_password_ = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
+    mapping_[v2_password_] = password;
+  }
+
+  GObject* MakeTempObject(const std::string& value) {
+    GObject* temp = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
+    // The returned object has a ref count of 2. This way, after the client
+    // deletes the object, it isn't destroyed, and we can check that all these
+    // objects have ref count of 1 at the end of the test.
+    g_object_ref(temp);
+    objects_returned_to_caller_.push_back(temp);
+    mapping_[temp] = value;
+    return temp;
+  }
+
+  const gchar* GetString(void* opaque_id) {
+    return mapping_[static_cast<GObject*>(opaque_id)].c_str();
+  }
+
+  GObject* v1_password() { return v1_password_; }
+  GObject* v2_password() { return v2_password_; }
+
+  std::unordered_map<GObject*, std::string> mapping_;
+  std::vector<GObject*> objects_returned_to_caller_;
+  GObject* v1_password_ = nullptr;
+  GObject* v2_password_ = nullptr;
+};
+base::LazyInstance<MockPasswordStore>::Leaky g_password_store =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Replaces some of LibsecretLoader's methods with mocked ones.
 class MockLibsecretLoader : public LibsecretLoader {
  public:
@@ -46,10 +115,6 @@ class MockLibsecretLoader : public LibsecretLoader {
 
   // Releases memory and restores LibsecretLoader to an uninitialized state.
   static void TearDown();
-
-  // Set whether there is an old password that needs to be migrated from the
-  // deprecated schema. Null means no such password. See crbug.com/639298
-  static void SetDeprecatedOSCryptPassword(const char* value);
 
  private:
   // These methods are used to redirect calls through LibsecretLoader
@@ -78,19 +143,11 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                   ...);
 
   static SecretValue* mock_secret_item_get_secret(SecretItem* item);
-
-  // MockLibsecretLoader owns these objects.
-  static MockSecretValue* stored_password_mock_ptr_;
-  static MockSecretValue* deprecated_password_mock_ptr_;
 };
-
-MockSecretValue* MockLibsecretLoader::stored_password_mock_ptr_ = nullptr;
-MockSecretValue* MockLibsecretLoader::deprecated_password_mock_ptr_ = nullptr;
 
 const gchar* MockLibsecretLoader::mock_secret_value_get_text(
     SecretValue* value) {
-  MockSecretValue* mock_value = reinterpret_cast<MockSecretValue*>(value);
-  return mock_value->c_str();
+  return g_password_store.Pointer()->GetString(value);
 }
 
 // static
@@ -107,13 +164,14 @@ gboolean MockLibsecretLoader::mock_secret_password_store_sync(
     return true;
 
   EXPECT_STREQ(kKeystoreSchemaV2.name, schema->name);
-  delete stored_password_mock_ptr_;
-  stored_password_mock_ptr_ = new MockSecretValue(password);
+  g_password_store.Pointer()->SetV2Password(password);
   return true;
 }
 
 // static
-void MockLibsecretLoader::mock_secret_value_unref(gpointer value) {}
+void MockLibsecretLoader::mock_secret_value_unref(gpointer value) {
+  g_object_unref(value);
+}
 
 // static
 GList* MockLibsecretLoader::mock_secret_service_search_sync(
@@ -130,11 +188,21 @@ GList* MockLibsecretLoader::mock_secret_service_search_sync(
   EXPECT_TRUE(flags & SECRET_SEARCH_UNLOCK);
   EXPECT_TRUE(flags & SECRET_SEARCH_LOAD_SECRETS);
 
-  MockSecretItem* item = nullptr;
-  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0)
-    item = stored_password_mock_ptr_;
-  else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0)
-    item = deprecated_password_mock_ptr_;
+  GObject* item = nullptr;
+  MockPasswordStore* store = g_password_store.Pointer();
+  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0) {
+    GObject* password = store->v2_password();
+    if (password)
+      item = store->MakeTempObject(store->GetString(password));
+  } else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0) {
+    GObject* password = store->v1_password();
+    if (password)
+      item = store->MakeTempObject(store->GetString(password));
+  }
+
+  if (!item) {
+    return nullptr;
+  }
 
   GList* result = nullptr;
   result = g_list_append(result, item);
@@ -150,17 +218,15 @@ gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
     ...) {
   // We would only delete entries in the deprecated schema.
   EXPECT_STREQ(kKeystoreSchemaV1.name, schema->name);
-  delete deprecated_password_mock_ptr_;
-  deprecated_password_mock_ptr_ = nullptr;
+  g_password_store.Pointer()->ClearV1Password();
   return true;
 }
 
 // static
 SecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
     SecretItem* item) {
-  static_assert(std::is_same<MockSecretValue, MockSecretItem>::value,
-                "mock_secret_item_get_secret() assumes that the only thing we "
-                "need from MockSercetItem is the MockSecretValue");
+  // Add a ref to make sure that the caller unrefs with secret_value_unref.
+  g_object_ref(item);
   return reinterpret_cast<SecretValue*>(item);
 }
 
@@ -178,29 +244,15 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
   secret_password_clear_sync =
       &MockLibsecretLoader::mock_secret_password_clear_sync;
 
-  delete stored_password_mock_ptr_;
-  stored_password_mock_ptr_ = nullptr;
+  g_password_store.Pointer()->Reset();
   libsecret_loaded_ = true;
 
   return true;
 }
 
 // static
-void MockLibsecretLoader::SetOSCryptPassword(const char* value) {
-  delete stored_password_mock_ptr_;
-  stored_password_mock_ptr_ = new MockSecretValue(value);
-}
-
-// static
-void MockLibsecretLoader::SetDeprecatedOSCryptPassword(const char* value) {
-  delete deprecated_password_mock_ptr_;
-  deprecated_password_mock_ptr_ = new MockSecretValue(value);
-}
-
-// static
 void MockLibsecretLoader::TearDown() {
-  delete stored_password_mock_ptr_;
-  stored_password_mock_ptr_ = nullptr;
+  g_password_store.Pointer()->Reset();
   libsecret_loaded_ =
       false;  // Function pointers will be restored when loading.
 }
@@ -221,6 +273,7 @@ class LibsecretTest : public testing::Test {
 TEST_F(LibsecretTest, LibsecretRepeats) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
+  g_password_store.Pointer()->SetV2Password("initial password");
   std::string password = libsecret.GetKey();
   EXPECT_FALSE(password.empty());
   std::string password_repeat = libsecret.GetKey();
@@ -239,7 +292,8 @@ TEST_F(LibsecretTest, LibsecretCreatesRandomised) {
 TEST_F(LibsecretTest, LibsecretMigratesFromSchemaV1ToV2) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
-  MockLibsecretLoader::SetDeprecatedOSCryptPassword("swallow");
+  g_password_store.Pointer()->SetV1Password("swallow");
+  g_password_store.Pointer()->ClearV2Password();
   std::string password = libsecret.GetKey();
   EXPECT_EQ("swallow", password);
 }

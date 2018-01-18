@@ -24,6 +24,29 @@ class LibsecretLoader {
   static decltype(&::secret_value_get_text) secret_value_get_text;
   static decltype(&::secret_value_unref) secret_value_unref;
 
+  // Wrapper for secret_service_search_sync that prevents common leaks. See
+  // https://crbug.com/393395.
+  class SearchHelper {
+   public:
+    SearchHelper();
+    ~SearchHelper();
+
+    // Search must be called exactly once for success() and results() to be
+    // populated.
+    void Search(const SecretSchema* schema, GHashTable* attrs, int flags);
+
+    bool success() { return !error_; }
+
+    GList* results() { return results_; }
+    GError* error() { return error_; }
+
+   private:
+    // |results_| and |error_| are C-style objects owned by this instance.
+    GList* results_ = nullptr;
+    GError* error_ = nullptr;
+    DISALLOW_COPY_AND_ASSIGN(SearchHelper);
+  };
+
   // Loads the libsecret library and checks that it responds to queries.
   // Returns false if either step fails.
   // Repeated calls check the responsiveness every time, but do not load the

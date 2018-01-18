@@ -321,23 +321,14 @@ bool NativeBackendLibsecret::AddUpdateLoginSearch(
   attrs.Append("signon_realm", lookup_form.signon_realm);
   attrs.Append("application", app_string_);
 
-  GError* error = nullptr;
-  GList* found = LibsecretLoader::secret_service_search_sync(
-      nullptr,  // default secret service
-      &kLibsecretSchema, attrs.Get(),
-      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
-      nullptr,  // no cancellable ojbect
-      &error);
-  if (error) {
-    LOG(ERROR) << "Unable to get logins " << error->message;
-    g_error_free(error);
-    if (found)
-      g_list_free(found);
+  LibsecretLoader::SearchHelper helper;
+  helper.Search(&kLibsecretSchema, attrs.Get(),
+                SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK);
+  if (!helper.success())
     return false;
-  }
 
   PasswordStore::FormDigest form(lookup_form);
-  *forms = ConvertFormList(found, &form);
+  *forms = ConvertFormList(helper.results(), &form);
   return true;
 }
 
@@ -435,22 +426,13 @@ bool NativeBackendLibsecret::GetLoginsList(
       lookup_form->scheme != PasswordForm::SCHEME_HTML)
     attrs.Append("signon_realm", lookup_form->signon_realm);
 
-  GError* error = nullptr;
-  GList* found = LibsecretLoader::secret_service_search_sync(
-      nullptr,  // default secret service
-      &kLibsecretSchema, attrs.Get(),
-      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
-      nullptr,  // no cancellable ojbect
-      &error);
-  if (error) {
-    LOG(ERROR) << "Unable to get logins " << error->message;
-    g_error_free(error);
-    if (found)
-      g_list_free(found);
+  LibsecretLoader::SearchHelper helper;
+  helper.Search(&kLibsecretSchema, attrs.Get(),
+                SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK);
+  if (!helper.success())
     return false;
-  }
 
-  *forms = ConvertFormList(found, lookup_form);
+  *forms = ConvertFormList(helper.results(), lookup_form);
   if (lookup_form)
     return true;
 
@@ -582,6 +564,5 @@ NativeBackendLibsecret::ConvertFormList(
                                   : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
                               password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
-  g_list_free(found);
   return forms;
 }
