@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "geolocation.mojom",
-    "geolocation_config.mojom",
     "geoposition.mojom",
   ]
   public_deps = [

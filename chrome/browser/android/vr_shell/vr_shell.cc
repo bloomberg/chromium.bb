@@ -52,7 +52,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
-#include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "device/vr/vr_device.h"
