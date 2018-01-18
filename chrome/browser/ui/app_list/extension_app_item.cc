@@ -176,6 +176,10 @@ const char* ExtensionAppItem::GetItemType() const {
   return ExtensionAppItem::kItemType;
 }
 
+size_t ExtensionAppItem::BadgedItemCount() const {
+  return icon_ && icon_->icon_is_badged() ? 1 : 0;
+}
+
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
   Launch(event_flags);
 }

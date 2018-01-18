@@ -41,8 +41,6 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
   ~ExtensionAppModelBuilder() override;
 
  private:
-  typedef std::vector<ExtensionAppItem*> ExtensionAppList;
-
   // AppListModelBuilder
   void BuildModel() override;
 

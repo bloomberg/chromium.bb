@@ -77,6 +77,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   void Activate(int event_flags) override;
   ui::MenuModel* GetContextMenuModel() override;
   const char* GetItemType() const override;
+  size_t BadgedItemCount() const override;
 
   // Overridden from app_list::AppContextMenuDelegate:
   void ExecuteLaunchCommand(int event_flags) override;

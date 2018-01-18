@@ -269,4 +269,11 @@ void AppListItemList::FixItemPosition(size_t index) {
     observer.OnListItemMoved(index, index, item);
 }
 
+size_t AppListItemList::BadgedItemCount() const {
+  size_t count = 0;
+  for (size_t i = 0; i < app_list_items_.size(); ++i)
+    count += app_list_items_[i]->BadgedItemCount();
+  return count;
+}
+
 }  // namespace app_list
