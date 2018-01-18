@@ -12,7 +12,7 @@ FakeRasterBufferProviderImpl::~FakeRasterBufferProviderImpl() = default;
 
 std::unique_ptr<RasterBuffer>
 FakeRasterBufferProviderImpl::AcquireBufferForRaster(
-    const Resource* resource,
+    const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
   return nullptr;
@@ -38,12 +38,12 @@ bool FakeRasterBufferProviderImpl::CanPartialRasterIntoProvidedResource()
 }
 
 bool FakeRasterBufferProviderImpl::IsResourceReadyToDraw(
-    viz::ResourceId resource_id) const {
+    const ResourcePool::InUsePoolResource& resource) const {
   return true;
 }
 
 uint64_t FakeRasterBufferProviderImpl::SetReadyToDrawCallback(
-    const ResourceProvider::ResourceIdArray& resource_ids,
+    const std::vector<const ResourcePool::InUsePoolResource*>& resources,
     const base::Callback<void()>& callback,
     uint64_t pending_callback_id) const {
   return 0;

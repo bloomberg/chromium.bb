@@ -25,7 +25,7 @@
 namespace cc {
 namespace {
 
-typedef ParameterizedPixelResourceTest LayerTreeHostMasksPixelTest;
+using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
 INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostMasksPixelTest);
 

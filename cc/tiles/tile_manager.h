@@ -191,12 +191,12 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.set_resource(
+      draw_info.SetResource(
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(false),
               client_->GetRasterColorSpace()),
-          false);
+          false, false);
       draw_info.set_resource_ready_for_draw();
     }
   }
@@ -249,7 +249,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   }
 
   void OnRasterTaskCompleted(Tile::Id tile_id,
-                             Resource* resource,
+                             ResourcePool::InUsePoolResource resource,
                              bool was_canceled);
 
   void SetDecodedImageTracker(DecodedImageTracker* decoded_image_tracker);
@@ -355,7 +355,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       std::unique_ptr<RasterTilePriorityQueue> queue) const;
 
   viz::ResourceFormat DetermineResourceFormat(const Tile* tile) const;
-  bool DetermineResourceRequiresSwizzle(const Tile* tile) const;
 
   void DidFinishRunningTileTasksRequiredForActivation();
   void DidFinishRunningTileTasksRequiredForDraw();

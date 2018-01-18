@@ -248,7 +248,8 @@ void StagingBufferPool::MarkStagingBufferAsBusy(
 }
 
 std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
-    const Resource* resource,
+    const gfx::Size& size,
+    viz::ResourceFormat format,
     uint64_t previous_content_id) {
   base::AutoLock lock(lock_);
 
@@ -310,12 +311,11 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
 
   // Find staging buffer of correct size and format.
   if (!staging_buffer) {
-    StagingBufferDeque::iterator it =
-        std::find_if(free_buffers_.begin(), free_buffers_.end(),
-                     [resource](const std::unique_ptr<StagingBuffer>& buffer) {
-                       return buffer->size == resource->size() &&
-                              buffer->format == resource->format();
-                     });
+    StagingBufferDeque::iterator it = std::find_if(
+        free_buffers_.begin(), free_buffers_.end(),
+        [&size, format](const std::unique_ptr<StagingBuffer>& buffer) {
+          return buffer->size == size && buffer->format == format;
+        });
     if (it != free_buffers_.end()) {
       staging_buffer = std::move(*it);
       free_buffers_.erase(it);
@@ -325,9 +325,8 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
 
   // Create new staging buffer if necessary.
   if (!staging_buffer) {
-    staging_buffer =
-        std::make_unique<StagingBuffer>(resource->size(), resource->format());
-    AddStagingBuffer(staging_buffer.get(), resource->format());
+    staging_buffer = std::make_unique<StagingBuffer>(size, format);
+    AddStagingBuffer(staging_buffer.get(), format);
   }
 
   // Release enough free buffers to stay within the limit.

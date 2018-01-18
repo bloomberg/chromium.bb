@@ -82,7 +82,7 @@ size_t Tile::GPUMemoryUsageInBytes() const {
     // We can use UncheckedSizeInBytes, since the tile size is determined by the
     // compositor.
     return ResourceUtil::UncheckedSizeInBytes<size_t>(
-        draw_info_.resource_->size(), draw_info_.resource_->format());
+        draw_info_.resource_size(), draw_info_.resource_format());
   }
   return 0;
 }

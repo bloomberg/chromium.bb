@@ -37,7 +37,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override;
   void OrderingBarrier() override;
@@ -45,22 +45,24 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
-  bool IsResourceReadyToDraw(viz::ResourceId id) const override;
+  bool IsResourceReadyToDraw(
+      const ResourcePool::InUsePoolResource& resource) const override;
   uint64_t SetReadyToDrawCallback(
-      const ResourceProvider::ResourceIdArray& resource_ids,
+      const std::vector<const ResourcePool::InUsePoolResource*>& resources,
       const base::Closure& callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;
 
   // Playback raster source and copy result into |resource|.
   void PlaybackAndCopyOnWorkerThread(
-      const Resource* resource,
       LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
       const gpu::SyncToken& sync_token,
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
       const gfx::AxisTransform2d& transform,
+      const gfx::Size& resource_size,
+      viz::ResourceFormat resource_format,
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
       uint64_t new_content_id);
@@ -70,7 +72,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
    public:
     RasterBufferImpl(OneCopyRasterBufferProvider* client,
                      LayerTreeResourceProvider* resource_provider,
-                     const Resource* resource,
+                     const ResourcePool::InUsePoolResource& in_use_resource,
                      uint64_t previous_content_id);
     ~RasterBufferImpl() override;
 
@@ -88,10 +90,11 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
     }
 
    private:
-    OneCopyRasterBufferProvider* client_;
-    const Resource* resource_;
+    OneCopyRasterBufferProvider* const client_;
+    const gfx::Size resource_size_;
+    const viz::ResourceFormat resource_format_;
     LayerTreeResourceProvider::ScopedWriteLockRaster lock_;
-    uint64_t previous_content_id_;
+    const uint64_t previous_content_id_;
 
     gpu::SyncToken sync_token_;
 
@@ -101,11 +104,11 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   void WaitSyncToken(const gpu::SyncToken& sync_token);
   void PlaybackToStagingBuffer(
       StagingBuffer* staging_buffer,
-      const Resource* resource,
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
       const gfx::AxisTransform2d& transform,
+      viz::ResourceFormat format,
       const gfx::ColorSpace& dst_color_space,
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
