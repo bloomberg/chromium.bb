@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -34,17 +32,6 @@
 using content::RenderFrameHost;
 using content::WebContents;
 using device::UsbDevice;
-
-namespace {
-
-Browser* GetBrowser() {
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      ProfileManager::GetLastUsedProfileAllowedByPolicy());
-  DCHECK(browser_displayer.browser());
-  return browser_displayer.browser();
-}
-
-}  // namespace
 
 UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,

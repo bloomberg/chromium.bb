@@ -7,6 +7,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/generated_resources.h"
 #include "device/usb/usb_device.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,4 +40,15 @@ base::string16 FormatUsbDeviceName(scoped_refptr<device::UsbDevice> device) {
   }
 
   return device_name;
+}
+
+Browser* GetBrowser() {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+      ProfileManager::GetLastUsedProfileAllowedByPolicy());
+  DCHECK(browser_displayer.browser());
+  return browser_displayer.browser();
+#endif  // !defined(OS_ANDROID)
 }
