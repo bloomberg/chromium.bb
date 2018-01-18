@@ -118,11 +118,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
                        &strings);
     Rect rect(base::saturated_cast<int>(*width), INT_MAX);
 
-    // Note the following DCHECK can be removed when this codepath no longer
-    // uses CreateInstanceDeprecated(), which always uses BROWSER.
-    DCHECK_EQ(Typesetter::BROWSER, typesetter);
-    // This needs to match the instance used in ElideRectangleText.
-    auto render_text = RenderText::CreateInstanceDeprecated();
+    auto render_text = RenderText::CreateFor(typesetter);
 
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
