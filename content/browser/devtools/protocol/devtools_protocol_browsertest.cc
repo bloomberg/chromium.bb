@@ -2189,6 +2189,65 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   EXPECT_EQ(2u, found);
 }
 
+class DevToolsProtocolDeviceEmulationTest : public DevToolsProtocolTest {
+ public:
+  ~DevToolsProtocolDeviceEmulationTest() override {}
+
+  void EmulateDeviceSize(gfx::Size size) {
+    auto params = base::MakeUnique<base::DictionaryValue>();
+    params->SetInteger("width", size.width());
+    params->SetInteger("height", size.height());
+    params->SetDouble("deviceScaleFactor", 0);
+    params->SetBoolean("mobile", false);
+    SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
+  }
+
+  gfx::Size GetViewSize() {
+    return shell()
+        ->web_contents()
+        ->GetMainFrame()
+        ->GetView()
+        ->GetViewBounds()
+        .size();
+  }
+};
+
+// Setting frame size (through RWHV) is not supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_DeviceSize DISABLED_DeviceSize
+#else
+#define MAYBE_DeviceSize DeviceSize
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest, MAYBE_DeviceSize) {
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL test_url1 =
+      embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
+  Attach();
+
+  const gfx::Size original_size = GetViewSize();
+  const gfx::Size emulated_size_1 =
+      gfx::Size(original_size.width() - 50, original_size.height() - 50);
+  const gfx::Size emulated_size_2 =
+      gfx::Size(original_size.width() - 100, original_size.height() - 100);
+
+  EmulateDeviceSize(emulated_size_1);
+  EXPECT_EQ(emulated_size_1, GetViewSize());
+
+  EmulateDeviceSize(emulated_size_2);
+  EXPECT_EQ(emulated_size_2, GetViewSize());
+
+  GURL test_url2 =
+      embedded_test_server()->GetURL("B.com", "/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url2, 1);
+  EXPECT_EQ(emulated_size_2, GetViewSize());
+
+  SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
+  EXPECT_EQ(original_size, GetViewSize());
+}
+
 class DevToolsProtocolTouchTest : public DevToolsProtocolTest {
  public:
   ~DevToolsProtocolTouchTest() override {}

@@ -2048,7 +2048,7 @@ void RenderFrameHostManager::CommitPending() {
   }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
-  delegate_->UpdateRenderViewSizeForRenderManager();
+  delegate_->UpdateRenderViewSizeForRenderManager(is_main_frame);
 
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar(false);
