@@ -4,7 +4,6 @@
 
 #include "content/test/mock_webblob_registry_impl.h"
 
-#include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
