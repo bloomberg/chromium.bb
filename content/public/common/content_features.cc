@@ -464,6 +464,10 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 const base::Feature kKeepAliveRendererForKeepaliveRequests{
     "KeepAliveRendererForKeepaliveRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether WebVR experimental rendering optimizations is enabled.
+const base::Feature kWebVrExperimentalRendering{
+    "WebVRExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether WebVR VSync-aligned render loop timing is enabled.
 const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -474,18 +478,6 @@ const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
 // Controls whether the orientation sensor based device is enabled.
 const base::Feature kWebXrOrientationSensorDevice{
     "WebXROrientationSensorDevice", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if defined(OS_ANDROID)
-// Controls whether an override for the WebXR presentation render path is
-// enabled. The param value specifies the requested specific render path. This
-// is combined with a runtime capability check, the option is ignored if the
-// requested render path is unsupported.
-const base::Feature kWebXrRenderPath{"WebXrRenderPath",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-const char kWebXrRenderPathParamName[] = "RenderPath";
-const char kWebXrRenderPathParamValueClientWait[] = "ClientWait";
-const char kWebXrRenderPathParamValueGpuFence[] = "GpuFence";
-#endif  // defined(OS_ANDROID)
 
 // Enabled "work stealing" in the script runner.
 const base::Feature kWorkStealingInScriptRunner{

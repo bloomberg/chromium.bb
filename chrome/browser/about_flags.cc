@@ -1180,23 +1180,6 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
      arraysize(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
      nullptr}};
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kWebXrRenderPathChoiceClientWait[] = {
-    {features::kWebXrRenderPathParamName,
-     features::kWebXrRenderPathParamValueClientWait}};
-const FeatureEntry::FeatureParam kWebXrRenderPathChoiceGpuFence[] = {
-    {features::kWebXrRenderPathParamName,
-     features::kWebXrRenderPathParamValueGpuFence}};
-
-const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
-    {flag_descriptions::kWebXrRenderPathChoiceClientWaitDescription,
-     kWebXrRenderPathChoiceClientWait,
-     arraysize(kWebXrRenderPathChoiceClientWait), nullptr},
-    {flag_descriptions::kWebXrRenderPathChoiceGpuFenceDescription,
-     kWebXrRenderPathChoiceGpuFence, arraysize(kWebXrRenderPathChoiceGpuFence),
-     nullptr}};
-#endif  // defined(OS_ANDROID)
-
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2215,6 +2198,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webvr", flag_descriptions::kWebvrName,
      flag_descriptions::kWebvrDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
+    {"webvr-experimental-rendering",
+     flag_descriptions::kWebVrExperimentalRenderingName,
+     flag_descriptions::kWebVrExperimentalRenderingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebVrExperimentalRendering)},
     {"webxr", flag_descriptions::kWebXrName,
      flag_descriptions::kWebXrDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXr)},
@@ -2227,11 +2214,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebVrVsyncAlignDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebVrVsyncAlign)},
 #if defined(OS_ANDROID)
-    {"webxr-render-path", flag_descriptions::kWebXrRenderPathName,
-     flag_descriptions::kWebXrRenderPathDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWebXrRenderPath,
-                                    kWebXrRenderPathVariations,
-                                    "WebXrRenderPath")},
     // TODO(crbug.com/731802): Use #if BUILDFLAG(ENABLE_VR_BROWSING) instead.
     {"vr-browsing", flag_descriptions::kVrBrowsingName,
      flag_descriptions::kVrBrowsingDescription, kOsAndroid,
