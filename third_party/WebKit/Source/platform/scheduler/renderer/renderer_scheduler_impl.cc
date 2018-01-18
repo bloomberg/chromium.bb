@@ -31,6 +31,7 @@
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/scheduler/renderer_process_type.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 
 namespace blink {
 namespace scheduler {
@@ -356,7 +357,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                       renderer_scheduler_impl,
                       &renderer_scheduler_impl->tracing_controller_,
                       HiddenStateToString),
-      renderer_backgrounded(false,
+      renderer_backgrounded(kLaunchingProcessIsBackgrounded,
                             "RendererScheduler.Backgrounded",
                             renderer_scheduler_impl,
                             &renderer_scheduler_impl->tracing_controller_,
@@ -367,12 +368,11 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
           renderer_scheduler_impl,
           &renderer_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      stopped_when_backgrounded(
-          false,
-          "RendererScheduler.StoppedWhenBackgrounded",
-          renderer_scheduler_impl,
-          &renderer_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
+      stopped_when_backgrounded(false,
+                                "RendererScheduler.StoppedWhenBackgrounded",
+                                renderer_scheduler_impl,
+                                &renderer_scheduler_impl->tracing_controller_,
+                                YesNoStateToString),
       was_shutdown(false,
                    "RendererScheduler.WasShutdown",
                    renderer_scheduler_impl,
@@ -384,12 +384,11 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
           renderer_scheduler_impl,
           &renderer_scheduler_impl->tracing_controller_,
           TimeDeltaToMilliseconds),
-      timer_task_estimated_cost(
-          base::TimeDelta(),
-          "RendererScheduler.TimerTaskEstimatedCostMs",
-          renderer_scheduler_impl,
-          &renderer_scheduler_impl->tracing_controller_,
-          TimeDeltaToMilliseconds),
+      timer_task_estimated_cost(base::TimeDelta(),
+                                "RendererScheduler.TimerTaskEstimatedCostMs",
+                                renderer_scheduler_impl,
+                                &renderer_scheduler_impl->tracing_controller_,
+                                TimeDeltaToMilliseconds),
       loading_tasks_seem_expensive(
           false,
           "RendererScheduler.LoadingTasksSeemExpensive",
