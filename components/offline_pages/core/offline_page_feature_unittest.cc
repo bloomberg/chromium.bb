@@ -102,13 +102,14 @@ TEST(OfflinePageFeatureTest, OfflinePagesLimitlessPrefetching) {
 
   // Check if helper method works correctly when all required features are
   // enabled.
+  // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
   {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatures(
         {kPrefetchingOfflinePagesFeature,
          kOfflinePagesLimitlessPrefetchingFeature},
         {});
-    EXPECT_TRUE(offline_pages::IsLimitlessPrefetchingEnabled());
+    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
   }
 }
 

@@ -318,8 +318,9 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
       kSmallArchiveSize / 1024, DownloadArchivesTask::kMaxConcurrentDownloads);
 }
 
+// TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
 TEST_F(DownloadArchivesTaskTest,
-       ManyLargeArchivesToDownloadWithLimitlessEnabled) {
+       DISABLED_ManyLargeArchivesToDownloadWithLimitlessEnabled) {
   // Enable limitless prefetching.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(

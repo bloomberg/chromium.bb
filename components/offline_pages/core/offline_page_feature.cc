@@ -100,8 +100,8 @@ bool IsOfflinePagesPrefetchingUIEnabled() {
 }
 
 bool IsLimitlessPrefetchingEnabled() {
-  return IsPrefetchingOfflinePagesEnabled() &&
-         base::FeatureList::IsEnabled(kOfflinePagesLimitlessPrefetchingFeature);
+  // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
+  return false;
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {
