@@ -88,6 +88,7 @@ bool EnumTraits<password_manager::mojom::CredentialManagerError,
       return true;
     case password_manager::mojom::CredentialManagerError::NOT_ALLOWED:
     case password_manager::mojom::CredentialManagerError::NOT_SUPPORTED:
+    case password_manager::mojom::CredentialManagerError::INVALID_DOMAIN:
     case password_manager::mojom::CredentialManagerError::UNKNOWN:
       *output = password_manager::CredentialManagerError::UNKNOWN;
       return true;

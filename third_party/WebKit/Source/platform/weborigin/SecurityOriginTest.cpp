@@ -615,4 +615,50 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
   }
 }
 
+TEST_F(SecurityOriginTest, EffectiveDomain) {
+  constexpr struct {
+    const char* expected_effective_domain;
+    const char* origin;
+  } kTestCases[] = {
+      {NULL, ""},
+      {NULL, "null"},
+      {"", "file://"},
+      {"127.0.0.1", "https://127.0.0.1"},
+      {"[::1]", "https://[::1]"},
+      {"example.com", "file://example.com/foo"},
+      {"example.com", "http://example.com"},
+      {"example.com", "http://example.com:80"},
+      {"example.com", "https://example.com"},
+      {"suborigin.example.com", "https://suborigin.example.com"},
+  };
+
+  for (const auto& test : kTestCases) {
+    scoped_refptr<const SecurityOrigin> origin =
+        SecurityOrigin::CreateFromString(test.origin);
+    if (test.expected_effective_domain) {
+      EXPECT_EQ(test.expected_effective_domain, origin->Domain());
+    } else {
+      EXPECT_TRUE(origin->Domain().IsEmpty());
+    }
+  }
+}
+
+TEST_F(SecurityOriginTest, EffectiveDomainSetFromDom) {
+  constexpr struct {
+    const char* domain_set_from_dom;
+    const char* expected_effective_domain;
+    const char* origin;
+  } kDomainTestCases[] = {
+      {"example.com", "example.com", "http-so://suborigin.example.com"},
+      {"example.com", "example.com", "http://www.suborigin.example.com"},
+  };
+
+  for (const auto& test : kDomainTestCases) {
+    scoped_refptr<SecurityOrigin> origin =
+        SecurityOrigin::CreateFromString(test.origin);
+    origin->SetDomainFromDOM(test.domain_set_from_dom);
+    EXPECT_EQ(test.expected_effective_domain, origin->Domain());
+  }
+}
+
 }  // namespace blink

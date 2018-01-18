@@ -142,3 +142,56 @@ class MockAuthenticator {
 
 var mockAuthenticator = new MockAuthenticator();
 var mockCredentialManager = new MockCredentialManager();
+
+// Common mock values for the mockAuthenticator.
+var CHALLENGE = new TextEncoder().encode("climb a mountain");
+
+var PUBLIC_KEY_RP = {
+    id: "subdomain.example.test",
+    name: "Acme"
+};
+
+var PUBLIC_KEY_USER = {
+    id: new TextEncoder().encode("1098237235409872"),
+    name: "avery.a.jones@example.com",
+    displayName: "Avery A. Jones",
+    icon: "https://pics.acme.com/00/p/aBjjjpqPb.png"
+};
+
+var PUBLIC_KEY_PARAMETERS =  [{
+    type: "public-key",
+    alg: -7,
+},];
+
+var publicKey = {
+    challenge: CHALLENGE,
+    rp: PUBLIC_KEY_RP,
+    user: PUBLIC_KEY_USER,
+    pubKeyCredParams: PUBLIC_KEY_PARAMETERS,
+    excludeCredentials: [],
+};
+
+var RAW_ID = new TextEncoder("utf-8").encode("rawId");
+var ID = btoa("rawId");
+var CLIENT_DATA_JSON = new TextEncoder("utf-8").encode("clientDataJSON");
+var ATTESTATION_OBJECT = new TextEncoder("utf-8").encode("attestationObject");
+
+var TEST_NESTED_CREDENTIAL_ID = "nestedCredentialId";
+
+// Use an invalid algorithm in the parameters for "success" cases
+// so each test will exercise the rpID checks in  both the renderer
+// and browser but return prior to reaching the device layer.
+var CUSTOM_PUBLIC_KEY = 'var customPublicKey = '
+    + '{challenge : new TextEncoder().encode("challenge"), '
+    + 'rp: {id: "subdomain.example.test", name: "Acme"}, '
+    + 'user: {id: new TextEncoder().encode("1098237235409872"), '
+    + 'name: "acme@example.com", displayName: "Acme", icon:"iconUrl"}, '
+    + 'pubKeyCredParams: [{type: "public-key", alg: 0,},], excludeCredentials:[],};';
+
+var CREATE_CUSTOM_CREDENTIALS = CUSTOM_PUBLIC_KEY
+    + "navigator.credentials.create({publicKey : customPublicKey})"
+    + ".then(c => window.parent.postMessage(c.id, '*'))"
+    + ".catch(e => window.parent.postMessage(e.name, '*'));";
+
+var CREATE_CREDENTIALS = "navigator.credentials.create({publicKey})"
+    + ".then(c => window.parent.postMessage(c.id, '*'));";
