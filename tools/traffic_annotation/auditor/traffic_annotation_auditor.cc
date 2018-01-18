@@ -620,7 +620,8 @@ void TrafficAnnotationAuditor::AddMissingAnnotations(
       extracted_annotations_.push_back(AnnotationInstance::LoadFromArchive(
           item.second.type, item.first, item.second.unique_id_hash_code,
           item.second.second_id_hash_code, item.second.content_hash_code,
-          item.second.semantics_fields, item.second.policy_fields));
+          item.second.semantics_fields, item.second.policy_fields,
+          item.second.file_path));
     }
   }
 }

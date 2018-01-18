@@ -206,6 +206,12 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
         current->content_hash_code = content_hash_code;
         modified_ = true;
       }
+
+      // Check file path.
+      if (current->file_path != annotation.proto.source().file()) {
+        current->file_path = annotation.proto.source().file();
+        modified_ = true;
+      }
     } else {
       // If annotation is new, add it and assume it is on all platforms. Tests
       // running on other platforms will request updating this if required.
@@ -257,6 +263,9 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
       base::Time::Now().UTCExplode(&now);
       item.second.deprecation_date = base::StringPrintf(
           "%i-%02i-%02i", now.year, now.month, now.day_of_month);
+      item.second.file_path = "";
+      item.second.semantics_fields.clear();
+      item.second.policy_fields.clear();
       modified_ = true;
     }
   }
