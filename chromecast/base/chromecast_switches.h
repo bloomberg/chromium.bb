@@ -65,6 +65,7 @@ extern const char kMemPressureSystemReservedKb[];
 extern const char kCastInitialScreenWidth[];
 extern const char kCastInitialScreenHeight[];
 extern const char kGraphicsBufferCount[];
+extern const char kVSyncInterval[];
 
 // Graphics switches
 extern const char kDesktopWindow1080p[];

@@ -123,6 +123,9 @@ const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
 const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
 const char kGraphicsBufferCount[] = "graphics-buffer-count";
 
+// Overrides the vsync interval used by the GPU process to refresh the display.
+const char kVSyncInterval[] = "vsync-interval";
+
 // When present, desktop cast_shell will create 1080p window (provided display
 // resolution is high enough).  Otherwise, cast_shell defaults to 720p.
 const char kDesktopWindow1080p[] = "desktop-window-1080p";
