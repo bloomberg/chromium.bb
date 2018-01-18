@@ -601,10 +601,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // the value of another field of the observed form.
   bool has_username_edited_vote_ = false;
 
-  // Tracks if a form with same origin as |observed_form_| found in blacklisted
-  // forms.
-  bool blacklisted_origin_found_ = false;
-
   // If Chrome has already autofilled a few times, it is probable that autofill
   // is triggered by programmatic changes in the page. We set a maximum number
   // of times that Chrome will autofill to avoid being stuck in an infinite

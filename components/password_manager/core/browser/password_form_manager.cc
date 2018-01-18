@@ -56,12 +56,6 @@ std::vector<std::string> SplitPathToSegments(const std::string& path) {
                            base::SPLIT_WANT_ALL);
 }
 
-// Return false iff the strings are neither empty nor equal.
-bool AreStringsEqualOrEmpty(const base::string16& s1,
-                            const base::string16& s2) {
-  return s1.empty() || s2.empty() || s1 == s2;
-}
-
 bool DoesStringContainOnlyDigits(const base::string16& s) {
   for (auto c : s) {
     if (!base::IsAsciiDigit(c))
@@ -612,7 +606,6 @@ void PasswordFormManager::ProcessMatches(
     size_t filtered_count) {
   blacklisted_matches_.clear();
   new_blacklisted_.reset();
-  blacklisted_origin_found_ = false;
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
@@ -628,15 +621,6 @@ void PasswordFormManager::ProcessMatches(
   std::copy_if(non_federated.begin(), non_federated.end(), matches.begin(),
                [this](const PasswordForm* form) { return IsMatch(*form); });
   ScoreMatches(matches);
-
-  auto find_blacklisted_match_it = std::find_if(
-      non_federated.begin(), non_federated.end(),
-      [this](const PasswordForm* form) {
-        return form->blacklisted_by_user &&
-               form->origin.GetOrigin() == observed_form_.origin.GetOrigin();
-      });
-  blacklisted_origin_found_ =
-      (find_blacklisted_match_it != non_federated.end());
 
   // Copy out blacklisted matches.
   blacklisted_matches_.resize(std::count_if(
@@ -689,7 +673,7 @@ void PasswordFormManager::ProcessFrameInternal(
   if (!driver)
     return;
 
-  if (blacklisted_origin_found_)
+  if (IsBlacklisted())
     driver->MatchingBlacklistedFormFound();
 
   driver->AllowPasswordGenerationForForm(observed_form_);
@@ -1271,25 +1255,11 @@ bool PasswordFormManager::IsMatch(const autofill::PasswordForm& form) const {
 
 bool PasswordFormManager::IsBlacklistMatch(
     const autofill::PasswordForm& blacklisted_form) const {
-  if (!blacklisted_form.blacklisted_by_user ||
-      blacklisted_form.is_public_suffix_match ||
-      blacklisted_form.scheme != observed_form_.scheme ||
-      blacklisted_form.origin.GetOrigin() !=
-          observed_form_.origin.GetOrigin()) {
-    return false;
-  }
-
-  if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
-    return (blacklisted_form.origin.path_piece() ==
-            observed_form_.origin.path_piece()) ||
-           (AreStringsEqualOrEmpty(blacklisted_form.submit_element,
-                                   observed_form_.submit_element) &&
-            AreStringsEqualOrEmpty(blacklisted_form.password_element,
-                                   observed_form_.password_element) &&
-            AreStringsEqualOrEmpty(blacklisted_form.username_element,
-                                   observed_form_.username_element));
-  }
-  return true;
+  return blacklisted_form.blacklisted_by_user &&
+         !blacklisted_form.is_public_suffix_match &&
+         blacklisted_form.scheme == observed_form_.scheme &&
+         blacklisted_form.origin.GetOrigin() ==
+             observed_form_.origin.GetOrigin();
 }
 
 const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
