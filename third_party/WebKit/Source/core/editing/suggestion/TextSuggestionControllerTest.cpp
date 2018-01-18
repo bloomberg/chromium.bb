@@ -29,7 +29,7 @@ TEST_F(TextSuggestionControllerTest, ApplySpellCheckSuggestion) {
       EphemeralRange(Position(text, 0), Position(text, 8)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before misspelling
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
@@ -106,7 +106,7 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
           .Build());
 
   // Select immediately before word2.
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 6), Position(text, 6))
           .Build());
@@ -184,7 +184,7 @@ TEST_F(TextSuggestionControllerTest,
       ToSuggestionMarker(GetDocument().Markers().MarkersFor(text)[0])->Tag();
 
   // Select immediately before "mispelled".
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
@@ -210,7 +210,7 @@ TEST_F(TextSuggestionControllerTest, DeleteActiveSuggestionRange_DeleteAtEnd) {
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word2
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 6), Position(text, 6))
           .Build());
@@ -236,7 +236,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word2
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 6), Position(text, 6))
           .Build());
@@ -263,7 +263,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word1
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
@@ -291,7 +291,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word1
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
@@ -322,7 +322,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 5), Position(text, 10)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word2
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 5), Position(text, 5))
           .Build());
@@ -348,7 +348,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word2
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 6), Position(text, 6))
           .Build());
@@ -374,7 +374,7 @@ TEST_F(TextSuggestionControllerTest,
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
   // Select immediately before word1
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
@@ -399,7 +399,7 @@ TEST_F(TextSuggestionControllerTest,
   GetDocument().Markers().AddSpellingMarker(
       EphemeralRange(Position(text, 0), Position(text, 8)));
   // Select inside before "embiggen"
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 1), Position(text, 1))
           .Build());

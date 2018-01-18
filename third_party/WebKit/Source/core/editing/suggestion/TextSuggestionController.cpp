@@ -592,7 +592,7 @@ void TextSuggestionController::AttemptToDeleteActiveSuggestionRange() {
 
 void TextSuggestionController::ReplaceRangeWithText(const EphemeralRange& range,
                                                     const String& replacement) {
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build());
 
   // Dispatch 'beforeinput'.

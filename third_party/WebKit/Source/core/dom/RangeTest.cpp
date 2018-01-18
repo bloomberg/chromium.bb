@@ -260,9 +260,10 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
   const FloatRect rect_before = range->BoundingRect();
   EXPECT_GT(rect_before.Width(), 0);
   EXPECT_GT(rect_before.Height(), 0);
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .SetBaseAndExtent(EphemeralRange(range))
-                               .Build());
+  Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange(range))
+          .Build());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(Selection().SelectedText(), "x x");
   const FloatRect rect_after = range->BoundingRect();

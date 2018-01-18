@@ -54,7 +54,7 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
   VisibleSelection ComputeVisibleSelectionInDOMTree() const;
   VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
-  void SetSelection(const SelectionInDOMTree&);
+  void SetSelectionAndEndTyping(const SelectionInDOMTree&);
 
   void DocumentAttached(Document*);
 

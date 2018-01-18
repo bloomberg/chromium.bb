@@ -36,7 +36,7 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   GetDocument().body()->InsertBefore(empty_text,
                                      GetDocument().body()->firstChild());
   UpdateAllLifecyclePhases();
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))
           .Extend(Position(GetDocument().body(), 2))
@@ -53,7 +53,7 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
 // Refer https://crbug.com/794356
 TEST_F(InsertListCommandTest, UnlistifyParagraphCrashOnVisuallyEmptyParagraph) {
   GetDocument().setDesignMode("on");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SetSelectionTextToBody("^<dl>"
                              "<textarea style='float:left;'></textarea>"
                              "</dl>|"));
@@ -75,7 +75,7 @@ TEST_F(InsertListCommandTest, CleanupNodeSameAsDestinationNode) {
       "* { -webkit-appearance:checkbox; }"
       "br { visibility:hidden; }"
       "colgroup { -webkit-column-count:2; }");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SetSelectionTextToBody("^<table><col></table>"
                              "<button></button>|"));
 
@@ -97,7 +97,8 @@ TEST_F(InsertListCommandTest, CleanupNodeSameAsDestinationNode) {
 TEST_F(InsertListCommandTest, InsertListOnEmptyHiddenElements) {
   GetDocument().setDesignMode("on");
   InsertStyleElement("br { visibility:hidden; }");
-  Selection().SetSelection(SetSelectionTextToBody("^<button></button>|"));
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("^<button></button>|"));
   InsertListCommand* command = InsertListCommand::Create(
       GetDocument(), InsertListCommand::kUnorderedList);
 
@@ -117,7 +118,7 @@ TEST_F(InsertListCommandTest, InsertListWithCollapsedVisibility) {
       "ul { visibility:collapse; }"
       "dl { visibility:visible; }");
 
-  Selection().SetSelection(SetSelectionTextToBody("^<dl>a</dl>|"));
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody("^<dl>a</dl>|"));
   InsertListCommand* command =
       InsertListCommand::Create(GetDocument(), InsertListCommand::kOrderedList);
 

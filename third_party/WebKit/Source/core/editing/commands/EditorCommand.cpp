@@ -2058,7 +2058,7 @@ static bool ExecuteTranspose(LocalFrame& frame,
   // Select the two characters.
   if (CreateVisibleSelection(new_selection) !=
       frame.Selection().ComputeVisibleSelectionInDOMTree())
-    frame.Selection().SetSelection(new_selection);
+    frame.Selection().SetSelectionAndEndTyping(new_selection);
 
   // Insert the transposed characters.
   editor.ReplaceSelectionWithText(new_transposed, false, false,

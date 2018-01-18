@@ -45,10 +45,10 @@ TEST_F(TypingCommandTest, insertLineBreakWithIllFormedHTML) {
   div->AppendChild(tr);
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelection(SelectionInDOMTree::Builder()
-                                      .Collapse(Position(form, 0))
-                                      .Extend(Position(header, 0))
-                                      .Build());
+  frame->Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
+                                                  .Collapse(Position(form, 0))
+                                                  .Extend(Position(header, 0))
+                                                  .Build());
 
   // Inserting line break should not crash or hit assertion.
   TypingCommand::InsertLineBreak(GetDocument());
@@ -57,7 +57,7 @@ TEST_F(TypingCommandTest, insertLineBreakWithIllFormedHTML) {
 // http://crbug.com/767599
 TEST_F(TypingCommandTest,
        DontCrashWhenReplaceSelectionCommandLeavesBadSelection) {
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SetSelectionTextToBody("<div contenteditable>^<h1>H1</h1>ello|</div>"));
 
   // This call shouldn't crash.
@@ -71,7 +71,7 @@ TEST_F(TypingCommandTest,
 // crbug.com/794397
 TEST_F(TypingCommandTest, ForwardDeleteInvalidatesSelection) {
   GetDocument().setDesignMode("on");
-  Selection().SetSelection(SetSelectionTextToBody(
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
       "<blockquote>^"
       "<q>"
       "<table contenteditable=\"false\"><colgroup width=\"-1\">\n</table>|"

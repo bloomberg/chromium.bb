@@ -35,7 +35,7 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
   Element* li = GetDocument().QuerySelector("li");
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelection(
+  frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(li, PositionAnchorType::kBeforeAnchor))
           .Build());

@@ -17,10 +17,11 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsReplace) {
   SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
   Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(Position(sample->lastChild(), 1))
-                               .Extend(Position(sample->lastChild(), 3))
-                               .Build());
+  Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->lastChild(), 1))
+          .Extend(Position(sample->lastChild(), 3))
+          .Build());
   CompositeEditCommand* const command =
       InsertIncrementalTextCommand::Create(GetDocument(), new_text);
   command->Apply();
@@ -34,10 +35,11 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsNoReplace) {
   SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
   Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE3A});  // U+1F63A
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(Position(sample->lastChild(), 1))
-                               .Extend(Position(sample->lastChild(), 3))
-                               .Build());
+  Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->lastChild(), 1))
+          .Extend(Position(sample->lastChild(), 3))
+          .Build());
   CompositeEditCommand* const command =
       InsertIncrementalTextCommand::Create(GetDocument(), new_text);
   command->Apply();
@@ -53,10 +55,11 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsTwo) {
       "<div id=sample contenteditable><a>a</a>b&#x1F63A;&#x1F63A;</div>");
   Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(Position(sample->lastChild(), 1))
-                               .Extend(Position(sample->lastChild(), 5))
-                               .Build());
+  Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->lastChild(), 1))
+          .Extend(Position(sample->lastChild(), 5))
+          .Build());
   CompositeEditCommand* const command =
       InsertIncrementalTextCommand::Create(GetDocument(), new_text);
   command->Apply();

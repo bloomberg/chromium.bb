@@ -14,7 +14,8 @@ namespace blink {
 enum class CursorAlignOnScroll { kIfNeeded, kAlways };
 enum class SetSelectionBy { kSystem = 0, kUser = 1 };
 
-// This class represents parameters of |FrameSelection::SetSelection()|.
+// This class represents parameters of
+// |FrameSelection::SetSelectionAndEndTyping()|.
 class CORE_EXPORT SetSelectionOptions final {
   STACK_ALLOCATED();
 

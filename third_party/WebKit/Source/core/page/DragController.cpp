@@ -486,7 +486,7 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
                                     VisibleSelection& drag_caret,
                                     Range*& range,
                                     const LayoutPoint& point) {
-  frame->Selection().SetSelection(drag_caret.AsSelection());
+  frame->Selection().SetSelectionAndEndTyping(drag_caret.AsSelection());
   if (frame->Selection()
           .ComputeVisibleSelectionInDOMTreeDeprecated()
           .IsNone()) {
@@ -499,7 +499,7 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
     if (!position.IsConnected())
       return false;
 
-    frame->Selection().SetSelection(
+    frame->Selection().SetSelectionAndEndTyping(
         SelectionInDOMTree::Builder().Collapse(position).Build());
     drag_caret =
         frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
@@ -649,7 +649,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
               delete_mode, drag_caret.Base()))
         return false;
 
-      inner_frame->Selection().SetSelection(
+      inner_frame->Selection().SetSelectionAndEndTyping(
           SelectionInDOMTree::Builder()
               .SetBaseAndExtent(EphemeralRange(range))
               .Build());
@@ -912,7 +912,7 @@ static void PrepareDataTransferForImageDrag(LocalFrame* source,
     // TODO(editing-dev): We should use |EphemeralRange| instead of |Range|.
     Range* range = source->GetDocument()->createRange();
     range->selectNode(node, ASSERT_NO_EXCEPTION);
-    source->Selection().SetSelection(
+    source->Selection().SetSelectionAndEndTyping(
         SelectionInDOMTree::Builder()
             .SetBaseAndExtent(EphemeralRange(range))
             .Build());
@@ -1250,7 +1250,7 @@ bool DragController::StartDrag(LocalFrame* src,
               src->Selection()
                   .ComputeVisibleSelectionInDOMTreeDeprecated()
                   .Base())) {
-        src->Selection().SetSelection(
+        src->Selection().SetSelectionAndEndTyping(
             SelectionInDOMTree::Builder().SelectAllChildren(*node).Build());
       }
     }
