@@ -32,6 +32,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -195,7 +196,8 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
 }
 
-std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
+std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
+                                    bool is_affiliated) {
   base::DictionaryValue filtered_policies;
   // Parse ArcPolicy as JSON string before adding other policies to the
   // dictionary.
@@ -237,6 +239,9 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
 
   // Add CA certificates.
   AddOncCaCertsToPolicies(policy_map, &filtered_policies);
+
+  if (!is_affiliated)
+    filtered_policies.RemoveKey("apkCacheEnabled");
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);
@@ -408,7 +413,12 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
                                                  std::string());
   const policy::PolicyMap& policy_map =
       policy_service_->GetPolicies(policy_namespace);
-  return GetFilteredJSONPolicies(policy_map);
+
+  const Profile* const profile = Profile::FromBrowserContext(context_);
+  const user_manager::User* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
+  return GetFilteredJSONPolicies(policy_map, user->IsAffiliated());
 }
 
 void ArcPolicyBridge::OnReportComplianceParseSuccess(
