@@ -158,7 +158,7 @@ class AppListSyncableService : public syncer::SyncableService,
       const syncer::SyncChangeList& change_list) override;
 
  private:
-  class ModelObserver;
+  class ModelUpdaterDelegate;
 
   // Builds the model once ExtensionService is ready.
   void BuildModel();
@@ -209,10 +209,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Handles an existing sync item.
   void ProcessExistingSyncItem(SyncItem* sync_item);
-
-  // Updates |app_item| from |sync_item| (e.g. updates item positions).
-  void UpdateAppItemFromSyncItem(const SyncItem* sync_item,
-                                 AppListItem* app_item);
 
   // Sends ADD or CHANGED for sync item.
   void SendSyncChange(SyncItem* sync_item,
@@ -268,7 +264,7 @@ class AppListSyncableService : public syncer::SyncableService,
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<ChromeAppListModelUpdater> model_updater_;
-  std::unique_ptr<ModelObserver> model_observer_;
+  std::unique_ptr<ModelUpdaterDelegate> model_updater_delegate_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;

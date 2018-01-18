@@ -246,7 +246,7 @@ void AppListModel::DeleteItem(const std::string& id) {
       observer.OnAppListItemWillBeDeleted(item);
     top_level_item_list_->DeleteItem(id);
     for (auto& observer : observers_)
-      observer.OnAppListItemDeleted();
+      observer.OnAppListItemDeleted(id);
     return;
   }
   AppListFolderItem* folder = FindFolderItem(item->folder_id());
@@ -257,7 +257,7 @@ void AppListModel::DeleteItem(const std::string& id) {
     observer.OnAppListItemWillBeDeleted(item);
   child_item.reset();  // Deletes item.
   for (auto& observer : observers_)
-    observer.OnAppListItemDeleted();
+    observer.OnAppListItemDeleted(id);
 }
 
 void AppListModel::DeleteUninstalledItem(const std::string& id) {

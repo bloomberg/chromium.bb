@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_model_updater_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/common/chrome_switches.h"
@@ -215,23 +216,24 @@ AppListSyncableService::SyncItem::SyncItem(
 AppListSyncableService::SyncItem::~SyncItem() {
 }
 
-// AppListSyncableService::ModelObserver
+// AppListSyncableService::ModelUpdaterDelegate
 
-class AppListSyncableService::ModelObserver : public AppListModelObserver {
+class AppListSyncableService::ModelUpdaterDelegate
+    : public ChromeAppListModelUpdaterDelegate {
  public:
-  explicit ModelObserver(AppListSyncableService* owner) : owner_(owner) {
-    DVLOG(2) << owner_ << ": ModelObserver Added";
-    owner_->GetModel()->AddObserver(this);
+  explicit ModelUpdaterDelegate(AppListSyncableService* owner) : owner_(owner) {
+    DVLOG(2) << owner_ << ": ModelUpdaterDelegate Added";
+    owner_->GetModelUpdater()->SetDelegate(this);
   }
 
-  ~ModelObserver() override {
-    owner_->GetModel()->RemoveObserver(this);
-    DVLOG(2) << owner_ << ": ModelObserver Removed";
+  ~ModelUpdaterDelegate() override {
+    owner_->GetModelUpdater()->SetDelegate(nullptr);
+    DVLOG(2) << owner_ << ": ModelUpdaterDelegate Removed";
   }
 
  private:
-  // AppListModelObserver
-  void OnAppListItemAdded(AppListItem* item) override {
+  // ChromeAppListModelUpdaterDelegate
+  void OnAppListItemAdded(ChromeAppListItem* item) override {
     DCHECK(adding_item_id_.empty());
     adding_item_id_ = item->id();  // Ignore updates while adding an item.
     VLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
@@ -239,7 +241,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     adding_item_id_.clear();
   }
 
-  void OnAppListItemWillBeDeleted(AppListItem* item) override {
+  void OnAppListItemWillBeDeleted(ChromeAppListItem* item) override {
     DCHECK(adding_item_id_.empty());
     VLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
     // Don't sync folder removal in case the folder still exists on another
@@ -257,7 +259,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     owner_->RemoveSyncItem(item->id());
   }
 
-  void OnAppListItemUpdated(AppListItem* item) override {
+  void OnAppListItemUpdated(ChromeAppListItem* item) override {
     if (!adding_item_id_.empty()) {
       // Adding an item may trigger update notifications which should be
       // ignored.
@@ -271,7 +273,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
   AppListSyncableService* owner_;
   std::string adding_item_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(ModelUpdaterDelegate);
 };
 
 // AppListSyncableService
@@ -314,7 +316,7 @@ AppListSyncableService::AppListSyncableService(
 
 AppListSyncableService::~AppListSyncableService() {
   // Remove observers.
-  model_observer_.reset();
+  model_updater_delegate_.reset();
 }
 
 bool AppListSyncableService::IsExtensionServiceReady() const {
@@ -438,7 +440,7 @@ SearchModel* AppListSyncableService::GetSearchModel() {
 
 void AppListSyncableService::HandleUpdateStarted() {
   // Don't observe the model while processing update changes.
-  model_observer_.reset();
+  model_updater_delegate_.reset();
 }
 
 void AppListSyncableService::HandleUpdateFinished() {
@@ -449,7 +451,7 @@ void AppListSyncableService::HandleUpdateFinished() {
   RemoveDriveAppItems();
 
   // Resume or start observing app list model changes.
-  model_observer_.reset(new ModelObserver(this));
+  model_updater_delegate_ = std::make_unique<ModelUpdaterDelegate>(this);
 
   NotifyObserversSyncUpdated();
 }

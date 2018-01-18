@@ -10,8 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/app_list_model_observer.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_model_updater_delegate.h"
 
 namespace ui {
 class MenuModel;
@@ -20,7 +22,8 @@ class MenuModel;
 class ChromeAppListItem;
 class SearchModel;
 
-class ChromeAppListModelUpdater : public AppListModelUpdater {
+class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
+                                  public AppListModelUpdater {
  public:
   ChromeAppListModelUpdater();
   ~ChromeAppListModelUpdater() override;
@@ -47,6 +50,20 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                        bool initiated_by_user) override;
   void PublishSearchResults(
       std::vector<std::unique_ptr<app_list::SearchResult>> results) override;
+
+  // Methods only used by ChromeAppListItem that talk to ash directly.
+  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
+  void SetItemName(const std::string& id, const std::string& name) override;
+  void SetItemNameAndShortName(const std::string& id,
+                               const std::string& name,
+                               const std::string& short_name) override;
+  void SetItemPosition(const std::string& id,
+                       const syncer::StringOrdinal& new_position) override;
+  void SetItemFolderId(const std::string& id,
+                       const std::string& folder_id) override;
+  void SetItemIsInstalling(const std::string& id, bool is_installing) override;
+  void SetItemPercentDownloaded(const std::string& id,
+                                int32_t percent_downloaded) override;
 
   // Methods only for visiting Chrome items that never talk to ash.
   void ActivateChromeItem(const std::string& id, int event_flags);
@@ -79,21 +96,15 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
       bool update_name,
       bool update_folder);
 
- protected:
-  // AppListModelUpdater:
-  // Methods only used by ChromeAppListItem that talk to ash directly.
-  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
-  void SetItemName(const std::string& id, const std::string& name) override;
-  void SetItemNameAndShortName(const std::string& id,
-                               const std::string& name,
-                               const std::string& short_name) override;
-  void SetItemPosition(const std::string& id,
-                       const syncer::StringOrdinal& new_position) override;
-  void SetItemFolderId(const std::string& id,
-                       const std::string& folder_id) override;
-  void SetItemIsInstalling(const std::string& id, bool is_installing) override;
-  void SetItemPercentDownloaded(const std::string& id,
-                                int32_t percent_downloaded) override;
+  // Overridden frome app_list::AppListModelObserver:
+  // TODO(hejq): We temporarily put them here to make tests happy.
+  void OnAppListItemAdded(app_list::AppListItem* item) override;
+  void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
+  void OnAppListItemUpdated(app_list::AppListItem* item) override;
+
+  void SetDelegate(ChromeAppListModelUpdaterDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
  private:
   // TODO(hejq): Remove this friend. Currently |model_| and |search_model_| are
@@ -110,6 +121,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
 
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<app_list::SearchModel> search_model_;
+  ChromeAppListModelUpdaterDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListModelUpdater);
 };
