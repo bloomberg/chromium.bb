@@ -159,22 +159,28 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
 
 class CustomWindowTargeter : public aura::WindowTargeter {
  public:
-  CustomWindowTargeter(views::Widget* widget) : widget_(widget) {}
+  CustomWindowTargeter(views::Widget* widget,
+                       bool client_controlled_move_resize)
+      : widget_(widget),
+        client_controlled_move_resize_(client_controlled_move_resize) {}
   ~CustomWindowTargeter() override {}
 
   // Overridden from aura::WindowTargeter:
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override {
-    Surface* surface = ShellSurfaceBase::GetMainSurface(window);
-    if (!surface)
-      return false;
-
     gfx::Point local_point = event.location();
 
     if (window->parent()) {
       aura::Window::ConvertPointToTarget(window->parent(), window,
                                          &local_point);
     }
+
+    if (IsInResizeHandle(window, event, local_point))
+      return true;
+
+    Surface* surface = ShellSurfaceBase::GetMainSurface(window);
+    if (!surface)
+      return false;
 
     int component = widget_->non_client_view()->NonClientHitTest(local_point);
     if (component != HTNOWHERE && component != HTCLIENT)
@@ -185,7 +191,52 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
+  bool IsInResizeHandle(aura::Window* window,
+                        const ui::LocatedEvent& event,
+                        const gfx::Point& local_point) const {
+    if (window != widget_->GetNativeWindow() ||
+        !widget_->widget_delegate()->CanResize()) {
+      return false;
+    }
+
+    // Use ash's resize handle detection logic if
+    // a) ClientControlledShellSurface uses server side resize or
+    // b) xdg shell is using the server side decoration.
+    if (ash::wm::GetWindowState(widget_->GetNativeWindow())
+                ->allow_set_bounds_direct()
+            ? client_controlled_move_resize_
+            : !widget_->non_client_view()->frame_view()->enabled()) {
+      return false;
+    }
+
+    ui::EventTarget* parent =
+        static_cast<ui::EventTarget*>(window)->GetParentTarget();
+    if (parent) {
+      aura::WindowTargeter* parent_targeter =
+          static_cast<aura::WindowTargeter*>(parent->GetEventTargeter());
+
+      if (parent_targeter) {
+        gfx::Rect mouse_rect;
+        gfx::Rect touch_rect;
+
+        if (parent_targeter->GetHitTestRects(window, &mouse_rect,
+                                             &touch_rect)) {
+          const gfx::Vector2d offset = -window->bounds().OffsetFromOrigin();
+          mouse_rect.Offset(offset);
+          touch_rect.Offset(offset);
+          if (event.IsTouchEvent() || event.IsGestureEvent()
+                  ? touch_rect.Contains(local_point)
+                  : mouse_rect.Contains(local_point)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   views::Widget* const widget_;
+  const bool client_controlled_move_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
@@ -1031,7 +1082,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // events.
   window->SetEventTargetingPolicy(
       ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
-  window->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter(widget_)));
+  window->SetEventTargeter(base::WrapUnique(
+      new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
   SetApplicationId(window, application_id_);
   SetMainSurface(window, root_surface());
 
