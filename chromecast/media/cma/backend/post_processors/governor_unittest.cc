@@ -5,13 +5,13 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromecast/media/cma/backend/post_processor_factory.h"
 #include "chromecast/media/cma/backend/post_processors/governor.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
@@ -26,7 +26,6 @@ namespace {
 const char* kConfigTemplate =
     R"config({"onset_volume": %f, "clamp_multiplier": %f})config";
 
-const char kLibraryPath[] = "libcast_governor_1.0.so";
 const float kDefaultClamp = 0.6f;
 const int kNumFrames = 100;
 const int kFrequency = 2000;
@@ -114,29 +113,25 @@ INSTANTIATE_TEST_CASE_P(GovernorClampVolumeTest,
 // Default tests from post_processor_test
 TEST_P(PostProcessorTest, GovernorDelay) {
   std::string config = MakeConfigString(1.0, 1.0);
-  PostProcessorFactory factory;
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<Governor>(config, kNumChannels);
   TestDelay(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, GovernorRinging) {
   std::string config = MakeConfigString(1.0, 1.0);
-  PostProcessorFactory factory;
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<Governor>(config, kNumChannels);
   TestRingingTime(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, GovernorPassthrough) {
   std::string config = MakeConfigString(1.0, 1.0);
-  PostProcessorFactory factory;
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<Governor>(config, kNumChannels);
   TestPassthrough(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, GovernorBenchmark) {
   std::string config = MakeConfigString(1.0, 1.0);
-  PostProcessorFactory factory;
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<Governor>(config, kNumChannels);
   AudioProcessorBenchmark(pp.get(), sample_rate_);
 }
 

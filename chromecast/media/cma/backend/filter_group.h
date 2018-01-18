@@ -78,7 +78,7 @@ class FilterGroup {
   // Returns the largest volume of all streams with data.
   //         return value will be zero IFF there is no data and
   //         the PostProcessingPipeline is not ringing.
-  float MixAndFilter(int chunk_size);
+  float MixAndFilter(int num_frames);
 
   // Gets the current delay of this filter group's AudioPostProcessors.
   // (Not recursive).
@@ -88,8 +88,10 @@ class FilterGroup {
   // on each mixing iteration.
   void ClearActiveInputs();
 
-  // Retrieves a pointer to the output buffer.
-  float* interleaved() { return interleaved_.get(); }
+  // Retrieves a pointer to the output buffer. This will crash if called before
+  // MixAndFilter(), and the data & memory location may change each time
+  // MixAndFilter() is called.
+  float* GetOutputBuffer();
 
   // Get the last used volume.
   float last_volume() const { return last_volume_; }
@@ -97,7 +99,7 @@ class FilterGroup {
   std::string name() const { return name_; }
 
   // Returns number of audio output channels from the filter group.
-  int GetOutputChannelCount() const;
+  int GetOutputChannelCount();
 
   // Sends configuration string |config| to all post processors with the given
   // |name|.
@@ -114,7 +116,9 @@ class FilterGroup {
   AudioContentType content_type() const { return content_type_; }
 
  private:
-  void ResizeBuffersIfNecessary(int chunk_size);
+  // Resizes temp_ and mixed_ if they are too small to hold |num_frames| frames.
+  // Returns |true| if |num_frames| is larger than all previous |num_frames|.
+  bool ResizeBuffersIfNecessary(int num_frames);
 
   const int num_channels_;
   const GroupType type_;
