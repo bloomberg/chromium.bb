@@ -249,7 +249,9 @@ typedef struct AV1Common {
   // support additional planes.
   int subsampling_x;
   int subsampling_y;
+
   int largest_tile_id;
+  size_t largest_tile_size;
 
   // Scale of the current frame with respect to itself.
   struct scale_factors sf_identity;

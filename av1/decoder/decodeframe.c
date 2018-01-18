@@ -1838,8 +1838,11 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int tile_group_start_row = 0;
 #endif
 
-  size_t max_tile_size = 0;
-  cm->largest_tile_id = 0;
+  if (startTile == 0) {
+    cm->largest_tile_size = 0;
+    cm->largest_tile_id = 0;
+  }
+
   for (int r = 0; r < tile_rows; ++r) {
     for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
@@ -1884,8 +1887,8 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
       cm->tile_group_start_row[r][c] = tile_group_start_row;
       cm->tile_group_start_col[r][c] = tile_group_start_col;
 #endif
-      if (buf->size > max_tile_size) {
-        max_tile_size = buf->size;
+      if (buf->size > cm->largest_tile_size) {
+        cm->largest_tile_size = buf->size;
         cm->largest_tile_id = r * tile_cols + c;
       }
     }
