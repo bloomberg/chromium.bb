@@ -89,10 +89,10 @@ void BoxModelObjectPainter::PaintFillLayerTextFillBox(
   GraphicsContextStateSaver background_clip_state_saver(context, false);
   background_clip_state_saver.Save();
   context.Clip(mask_rect);
-  context.BeginLayer();
+  context.BeginLayer(1, composite_op);
 
-  PaintFillLayerBackground(context, info, image, composite_op, geometry,
-                           scrolled_paint_rect);
+  PaintFillLayerBackground(context, info, image, SkBlendMode::kSrcOver,
+                           geometry, scrolled_paint_rect);
 
   // Create the text mask layer and draw the text into the mask. We do this by
   // painting using a special paint phase that signals to InlineTextBoxes that
