@@ -82,6 +82,8 @@ public class ApplicationTestUtils {
         ApplicationData.clearAppData(context);
     }
 
+    // TODO(bauerb): make this function throw more specific exception and update
+    // StartupLoadingMetricsTest correspondingly.
     /** Send the user to the Android home screen. */
     public static void fireHomeScreenIntent(Context context) throws Exception {
         Intent intent = new Intent(Intent.ACTION_MAIN);

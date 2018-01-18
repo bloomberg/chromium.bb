@@ -67,7 +67,7 @@ public class UmaUtils {
     public static void registerFinishNavigation(boolean isTrackedPage) {
         if (!isRunningApplicationStart()) return;
 
-        if (isTrackedPage) {
+        if (isTrackedPage && hasComeToForeground() && !hasComeToBackground()) {
             sFirstCommitTimeMs = SystemClock.uptimeMillis() - sApplicationStartTimeMs;
             RecordHistogram.recordLongTimesHistogram100(
                     "Startup.Android.Experimental.Cold.TimeToFirstNavigationCommit",
@@ -86,9 +86,11 @@ public class UmaUtils {
         // record if the first commit time wasn't recorded.
         if (sFirstCommitTimeMs == 0) return;
 
-        RecordHistogram.recordLongTimesHistogram100(
-                "Startup.Android.Experimental.Cold.TimeToFirstContentfulPaint",
-                firstContentfulPaintMs - sApplicationStartTimeMs, TimeUnit.MILLISECONDS);
+        if (hasComeToForeground() && !hasComeToBackground()) {
+            RecordHistogram.recordLongTimesHistogram100(
+                    "Startup.Android.Experimental.Cold.TimeToFirstContentfulPaint",
+                    firstContentfulPaintMs - sApplicationStartTimeMs, TimeUnit.MILLISECONDS);
+        }
     }
 
     /**
@@ -96,6 +98,13 @@ public class UmaUtils {
      */
     public static boolean hasComeToForeground() {
         return sForegroundStartTimeMs != 0;
+    }
+
+    /**
+     * Determines if Chrome was brought to background.
+     */
+    public static boolean hasComeToBackground() {
+        return sBackgroundTimeMs != 0;
     }
 
     /**
