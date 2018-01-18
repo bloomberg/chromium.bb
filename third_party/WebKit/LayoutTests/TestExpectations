@@ -3517,3 +3517,6 @@ crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui
 
 # This test has been flaky for some time on Win 7 (dgb)
 crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
+
+# This test is flaking on mac_chromium_rel_ng.
+crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Failure ]
