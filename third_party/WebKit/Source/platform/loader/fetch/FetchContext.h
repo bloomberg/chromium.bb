@@ -203,11 +203,9 @@ class PLATFORM_EXPORT FetchContext
   virtual bool IsMainFrame() const { return true; }
   virtual bool DefersLoading() const { return false; }
   virtual bool IsLoadComplete() const { return false; }
-  virtual bool PageDismissalEventBeingDispatched() const { return false; }
   virtual bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) {
     return false;
   }
-  virtual void SendImagePing(const KURL&);
 
   virtual void AddWarningConsoleMessage(const String&, LogSource) const;
   virtual void AddErrorConsoleMessage(const String&, LogSource) const;

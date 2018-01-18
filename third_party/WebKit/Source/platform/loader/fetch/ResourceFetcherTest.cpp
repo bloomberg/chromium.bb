@@ -469,6 +469,19 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
             resource->GetResourceRequest().Priority());
 }
 
+TEST_F(ResourceFetcherTest, PingPriority) {
+  KURL url("http://127.0.0.1:8000/foo.png");
+  RegisterMockedURLLoad(url);
+
+  ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextPing);
+  FetchParameters fetch_params(resource_request);
+  Resource* resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
+            resource->GetResourceRequest().Priority());
+}
+
 TEST_F(ResourceFetcherTest, PreloadResourceTwice) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
