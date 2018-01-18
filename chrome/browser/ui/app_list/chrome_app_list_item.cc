@@ -32,9 +32,7 @@ gfx::ImageSkia ChromeAppListItem::CreateDisabledIcon(
 
 ChromeAppListItem::ChromeAppListItem(Profile* profile,
                                      const std::string& app_id)
-    : app_list::AppListItem(app_id),
-      profile_(profile)  {
-}
+    : app_list::AppListItem(app_id), profile_(profile) {}
 
 ChromeAppListItem::~ChromeAppListItem() {
 }

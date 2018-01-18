@@ -338,7 +338,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
-  ArcAppItem item(profile(), nullptr, app_id, std::string());
+  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
 
   ui::MenuModel* menu = item.GetContextMenuModel();
   ASSERT_NE(nullptr, menu);
@@ -413,7 +413,7 @@ TEST_F(AppContextMenuTest, ArcMenuShortcut) {
 
   arc_test.app_instance()->SendInstallShortcuts(arc_test.fake_shortcuts());
 
-  ArcAppItem item(profile(), nullptr, app_id, std::string());
+  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
 
   ui::MenuModel* menu = item.GetContextMenuModel();
   ASSERT_NE(nullptr, menu);
@@ -457,7 +457,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     const std::string store_id = ArcAppTest::GetAppId(store_info);
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
-    ArcAppItem item(profile(), nullptr, store_id, std::string());
+    ArcAppItem item(profile(), nullptr, nullptr, store_id, std::string());
     ui::MenuModel* menu = item.GetContextMenuModel();
     ASSERT_NE(nullptr, menu);
 
