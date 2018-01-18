@@ -22,7 +22,8 @@ class ExtensionRegistry;
 class NotificationUIManager;
 
 // The content::NotificationObserver observes system status change and sends
-// events to NotificationUIManager.
+// events to NotificationUIManager. NOTE: NotificationUIManager is deprecated,
+// to be replaced by NotificationDisplayService, so this class should go away.
 class NotificationSystemObserver : public content::NotificationObserver,
                                    extensions::ExtensionRegistryObserver {
  public:
