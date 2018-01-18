@@ -9,6 +9,7 @@ cr.exportPath('print_preview_new');
  * serialized state.
  * @typedef {{
  *   value: *,
+ *   unavailableValue: *,
  *   valid: boolean,
  *   available: boolean,
  *   key: string,
@@ -35,6 +36,7 @@ print_preview_new.Setting;
  *   rasterize: !print_preview_new.Setting,
  *   vendorItems: !print_preview_new.Setting,
  *   otherOptions: !print_preview_new.Setting,
+ *   ranges: !print_preview_new.Setting,
  * }}
  */
 print_preview_new.Settings;
@@ -58,6 +60,15 @@ const SettingsBehavior = {
         this.get(settingName, this.settings));
     assert(!!setting, 'Setting is missing: ' + settingName);
     return setting;
+  },
+
+  /**
+   * @param {string} settingName Name of the setting to get the value for.
+   * @return {*} The value of the setting, accounting for availability.
+   */
+  getSettingValue: function(settingName) {
+    const setting = this.getSetting(settingName);
+    return setting.available ? setting.value : setting.unavailableValue;
   },
 
   /**

@@ -59,6 +59,14 @@ cr.define('settings_sections_tests', function() {
       page.set('documentInfo_', info);
     }
 
+    function addSelection() {
+      // Add a selection.
+      let info = new print_preview.DocumentInfo();
+      info.init(page.documentInfo_.isModifiable, 'title', true);
+      page.set('documentInfo_', info);
+      Polymer.dom.flush();
+    }
+
     function setPdfDestination() {
       const saveAsPdfDestination = new print_preview.Destination(
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
@@ -333,7 +341,8 @@ cr.define('settings_sections_tests', function() {
         expectEquals(valid, hint.hidden);
       };
       validateInputState(true, '', true);
-      expectEquals(0, page.settings.pages.value.length);
+      expectEquals(0, page.settings.ranges.value.length);
+      expectEquals(3, page.settings.pages.value.length);
       expectEquals(true, page.settings.pages.valid);
 
       // Set selection of pages 1 and 2.
@@ -342,20 +351,22 @@ cr.define('settings_sections_tests', function() {
       pagesInput.value = '1-2';
       pagesInput.dispatchEvent(new CustomEvent('input'));
       validateInputState(false, '1-2', true);
-      assertEquals(1, page.settings.pages.value.length);
-      expectEquals(1, page.settings.pages.value[0].from);
-      expectEquals(2, page.settings.pages.value[0].to);
+      assertEquals(1, page.settings.ranges.value.length);
+      expectEquals(1, page.settings.ranges.value[0].from);
+      expectEquals(2, page.settings.ranges.value[0].to);
+      expectEquals(2, page.settings.pages.value.length);
       expectEquals(true, page.settings.pages.valid);
 
       // Select pages 1 and 3
       pagesInput.value = '1, 3';
       pagesInput.dispatchEvent(new CustomEvent('input'));
       validateInputState(false, '1, 3', true);
-      assertEquals(2, page.settings.pages.value.length);
-      expectEquals(1, page.settings.pages.value[0].from);
-      expectEquals(1, page.settings.pages.value[0].to);
-      expectEquals(3, page.settings.pages.value[1].from);
-      expectEquals(3, page.settings.pages.value[1].to);
+      assertEquals(2, page.settings.ranges.value.length);
+      expectEquals(1, page.settings.ranges.value[0].from);
+      expectEquals(1, page.settings.ranges.value[0].to);
+      expectEquals(3, page.settings.ranges.value[1].from);
+      expectEquals(3, page.settings.ranges.value[1].to);
+      expectEquals(2, page.settings.pages.value.length);
       expectEquals(true, page.settings.pages.valid);
 
       // Enter an out of bounds value.
@@ -564,7 +575,7 @@ cr.define('settings_sections_tests', function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
       expectEquals(false, optionsElement.hidden);
 
-      // HTML - Header/footer, duplex, and CSS background. Also add seleciton.
+      // HTML - Header/footer, duplex, and CSS background. Also add selection.
       initDocumentInfo(false, true);
 
       const testOptionCheckbox = (element, defaultValue, optionSetting) => {

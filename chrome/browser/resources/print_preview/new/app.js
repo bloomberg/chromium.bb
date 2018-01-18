@@ -45,6 +45,7 @@ Polymer({
         cloudPrintError: '',
         privetExtensionError: '',
         invalidSettings: false,
+        initialized: false,
         cancelled: false,
       },
     },
@@ -104,12 +105,7 @@ Polymer({
     this.documentInfo_.init(
         settings.previewModifiable, settings.documentTitle,
         settings.documentHasSelection);
-    // Temporary setting, will be replaced when page count is known from
-    // the page-count-ready webUI event.
-    this.documentInfo_.updatePageCount(5);
     this.notifyPath('documentInfo_.isModifiable');
-    // Before triggering the final notification for settings availability,
-    // set initialized = true.
     this.notifyPath('documentInfo_.hasSelection');
     this.notifyPath('documentInfo_.title');
     this.notifyPath('documentInfo_.pageCount');
@@ -134,6 +130,8 @@ Polymer({
     this.set(
         'destination_.capabilities',
         this.destinationStore_.selectedDestination.capabilities);
+    if (!this.state_.initialized)
+      this.set('state_.initialized', true);
   },
 
   /** @private */

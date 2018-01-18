@@ -11,6 +11,7 @@
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="model.html">
 <link rel="import" href="header.html">
+<link rel="import" href="preview_area.html">
 <link rel="import" href="destination_settings.html">
 <link rel="import" href="pages_settings.html">
 <link rel="import" href="copies_settings.html">
@@ -47,13 +48,11 @@
         overflow: auto;
       }
 
-      #previewArea {
+      #preview-area {
         -webkit-border-start: 1px solid #dcdcdc;
         align-items: center;
         background-color: #e6e6e6;
-        display: flex;
         flex: 1;
-        justify-content: center;
       }
     </style>
     <print-preview-model id="model" settings="{{settings}}"
@@ -103,7 +102,12 @@
         </print-preview-advanced-options-settings>
       </div>
     </div>
-    <div id="previewArea">preview area</div>
+    <div id="preview-area">
+      <print-preview-preview-area settings="{{settings}}"
+          destination="[[destination_]]" document-info="{{documentInfo_}}"
+          state="{{state_}}">
+      </print-preview-preview-area>
+    </div>
   </template>
   <script src="app.js"></script>
 </dom-module>

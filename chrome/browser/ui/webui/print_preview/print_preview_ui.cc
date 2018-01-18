@@ -417,6 +417,19 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean("isEnterpriseManaged", enterprise_managed);
 }
 
+void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
+  source->AddResourcePath("pdf_preview.html",
+                          IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML);
+  source->SetRequestFilter(base::BindRepeating(&HandleRequestCallback));
+  source->OverrideContentSecurityPolicyScriptSrc(
+      base::StringPrintf("script-src chrome://resources 'self' 'unsafe-eval' "
+                         "chrome-extension://%s;",
+                         extension_misc::kPdfExtensionId));
+  source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
+  source->DisableDenyXFrameOptions();
+  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+}
+
 content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
@@ -428,6 +441,7 @@ content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   }
   AddPrintPreviewImages(source);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
+  SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;
 }
@@ -438,18 +452,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   AddPrintPreviewStrings(source);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
-  source->AddResourcePath("pdf_preview.html",
-                          IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML);
   AddPrintPreviewImages(source);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
-  source->SetRequestFilter(base::Bind(&HandleRequestCallback));
-  source->OverrideContentSecurityPolicyScriptSrc(
-      base::StringPrintf("script-src chrome://resources 'self' 'unsafe-eval' "
-                         "chrome-extension://%s;",
-                         extension_misc::kPdfExtensionId));
-  source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
-  source->DisableDenyXFrameOptions();
-  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+  SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;
 }
