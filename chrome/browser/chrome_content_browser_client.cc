@@ -3843,7 +3843,7 @@ bool ChromeContentBrowserClient::HandleWebUI(
 bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool, int, int)> callback) {
 #if defined(OS_ANDROID)
   return false;
 #else

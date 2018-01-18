@@ -174,7 +174,7 @@ void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
   if (dialog_)
     dialog_->ShowPaymentHandlerScreen(url, std::move(callback));
   else
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, 0, 0);
 }
 
 }  // namespace payments

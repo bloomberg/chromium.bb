@@ -21,7 +21,9 @@ class PaymentRequest;
 // when a window was/failed to open following an openWindow call. The parameter
 // indicates whether the call was successful or not.
 using PaymentHandlerOpenWindowCallback =
-    base::OnceCallback<void(bool /* success */)>;
+    base::OnceCallback<void(bool /* success */,
+                            int /* render_process_id */,
+                            int /* render_frame_id */)>;
 
 // This KeyedService is responsible for displaying and hiding Payment Request
 // UI. It ensures that only one Payment Request is showing per profile.
@@ -37,7 +39,7 @@ class PaymentRequestDisplayManager : public KeyedService {
     // |callback| after navigation is completed, passing true/false to indicate
     // success/failure.
     void DisplayPaymentHandlerWindow(const GURL& url,
-                                     base::OnceCallback<void(bool)> callback);
+                                     PaymentHandlerOpenWindowCallback callback);
 
    private:
     PaymentRequestDisplayManager* display_manager_;

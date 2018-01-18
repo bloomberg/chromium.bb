@@ -9,6 +9,9 @@
 #include "base/base64.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -39,19 +42,21 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   std::unique_ptr<views::WebView> web_view =
       std::make_unique<views::WebView>(profile_);
 
-  web_view->LoadInitialURL(target_);
   // TODO(anthonyvd): Size to the actual available size in the dialog.
   web_view->SetPreferredSize(gfx::Size(100, 300));
+  Observe(web_view->GetWebContents());
+  web_view->LoadInitialURL(target_);
+
   content_view->AddChildView(web_view.release());
 }
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(crbug.com/802261): Investigate failure cases (for example, what
-  // happens when the first navigation ends on a 404?)
   if (first_navigation_complete_callback_) {
-    std::move(first_navigation_complete_callback_).Run(true);
-    first_navigation_complete_callback_ = base::OnceCallback<void(bool)>();
+    std::move(first_navigation_complete_callback_)
+        .Run(true, web_contents()->GetMainFrame()->GetProcess()->GetID(),
+             web_contents()->GetMainFrame()->GetRoutingID());
+    first_navigation_complete_callback_ = PaymentHandlerOpenWindowCallback();
   }
 }
 

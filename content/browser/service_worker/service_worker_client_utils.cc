@@ -257,48 +257,6 @@ void NavigateClientOnUI(const GURL& url,
   new OpenURLObserver(web_contents, frame_tree_node_id, callback);
 }
 
-void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
-                 const GURL& origin,
-                 const NavigationCallback& callback,
-                 int render_process_id,
-                 int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!context) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT,
-                 blink::mojom::ServiceWorkerClientInfo());
-    return;
-  }
-
-  if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
-      render_frame_id == MSG_ROUTING_NONE) {
-    callback.Run(SERVICE_WORKER_ERROR_FAILED,
-                 blink::mojom::ServiceWorkerClientInfo());
-    return;
-  }
-
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetClientProviderHostIterator(origin);
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    if (provider_host->process_id() != render_process_id ||
-        provider_host->frame_id() != render_frame_id) {
-      continue;
-    }
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
-                   provider_host->route_id(), provider_host->create_time(),
-                   provider_host->client_uuid()),
-        base::Bind(callback, SERVICE_WORKER_OK));
-    return;
-  }
-
-  // If here, it means that no provider_host was found, in which case, the
-  // renderer should still be informed that the window was opened.
-  callback.Run(SERVICE_WORKER_OK, blink::mojom::ServiceWorkerClientInfo());
-}
-
 void AddWindowClient(
     ServiceWorkerProviderHost* host,
     std::vector<std::tuple<int, int, base::TimeTicks, std::string>>*
@@ -567,6 +525,48 @@ void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 
   GetNonWindowClients(controller, std::move(options), callback,
                       std::move(clients));
+}
+
+void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
+                 const GURL& origin,
+                 const NavigationCallback& callback,
+                 int render_process_id,
+                 int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!context) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT,
+                 blink::mojom::ServiceWorkerClientInfo());
+    return;
+  }
+
+  if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
+      render_frame_id == MSG_ROUTING_NONE) {
+    callback.Run(SERVICE_WORKER_ERROR_FAILED,
+                 blink::mojom::ServiceWorkerClientInfo());
+    return;
+  }
+
+  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context->GetClientProviderHostIterator(origin);
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
+    if (provider_host->process_id() != render_process_id ||
+        provider_host->frame_id() != render_frame_id) {
+      continue;
+    }
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
+                   provider_host->route_id(), provider_host->create_time(),
+                   provider_host->client_uuid()),
+        base::Bind(callback, SERVICE_WORKER_OK));
+    return;
+  }
+
+  // If here, it means that no provider_host was found, in which case, the
+  // renderer should still be informed that the window was opened.
+  callback.Run(SERVICE_WORKER_OK, blink::mojom::ServiceWorkerClientInfo());
 }
 
 }  // namespace service_worker_client_utils
