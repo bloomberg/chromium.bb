@@ -270,7 +270,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
       if (element.IsFocusable()) {
         // Found a focusable parent node. Set the active match as the
         // selection and focus to the focusable node.
-        GetFrame()->Selection().SetSelection(
+        GetFrame()->Selection().SetSelectionAndEndTyping(
             SelectionInDOMTree::Builder()
                 .SetBaseAndExtent(active_match_range)
                 .Build());
@@ -302,9 +302,10 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   // you'll have the last thing you found highlighted) and make sure that
   // we have nothing focused (otherwise you might have text selected but
   // a link focused, which is weird).
-  GetFrame()->Selection().SetSelection(SelectionInDOMTree::Builder()
-                                           .SetBaseAndExtent(active_match_range)
-                                           .Build());
+  GetFrame()->Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(active_match_range)
+          .Build());
   GetFrame()->GetDocument()->ClearFocusedElement();
 
   // Finally clear the active match, for two reasons:

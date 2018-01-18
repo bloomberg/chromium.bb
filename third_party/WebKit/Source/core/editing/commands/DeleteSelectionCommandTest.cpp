@@ -37,7 +37,7 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
   Element* br = GetDocument().QuerySelector("br");
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelection(
+  frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(br, PositionAnchorType::kBeforeAnchor))
           .Extend(Position(table, PositionAnchorType::kAfterAnchor))

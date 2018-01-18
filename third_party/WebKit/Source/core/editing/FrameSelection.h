@@ -94,12 +94,7 @@ class CORE_EXPORT FrameSelection final
   VisibleSelection ComputeVisibleSelectionInDOMTreeDeprecated() const;
 
   void SetSelection(const SelectionInDOMTree&, const SetSelectionOptions&);
-
-  // TODO(editing-dev): We should rename this function to
-  // SetSelectionAndEndTyping()
-  // Set selection with end of typing processing == close typing and clear
-  // typing style.
-  void SetSelection(const SelectionInDOMTree&);
+  void SetSelectionAndEndTyping(const SelectionInDOMTree&);
   void SelectAll(SetSelectionBy);
   void SelectAll();
   void Clear();

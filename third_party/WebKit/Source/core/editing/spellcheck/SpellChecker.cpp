@@ -218,9 +218,10 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
     const EphemeralRange misspelling_range = CalculateCharacterSubrange(
         EphemeralRange(spelling_search_start, spelling_search_end),
         misspelling_offset, misspelled_word.length());
-    GetFrame().Selection().SetSelection(SelectionInDOMTree::Builder()
-                                            .SetBaseAndExtent(misspelling_range)
-                                            .Build());
+    GetFrame().Selection().SetSelectionAndEndTyping(
+        SelectionInDOMTree::Builder()
+            .SetBaseAndExtent(misspelling_range)
+            .Build());
     GetFrame().Selection().RevealSelection();
     SpellCheckPanelHostClient().UpdateSpellingUIWithMisspelledWord(
         misspelled_word);
@@ -487,7 +488,7 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
   Node* const container_node = node_and_marker.first;
   const SpellCheckMarker* const marker = node_and_marker.second;
 
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(container_node, marker->StartOffset()))
           .Extend(Position(container_node, marker->EndOffset()))

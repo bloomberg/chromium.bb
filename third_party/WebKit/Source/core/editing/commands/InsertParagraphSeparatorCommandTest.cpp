@@ -15,7 +15,7 @@ class InsertParagraphSeparatorCommandTest : public EditingTestBase {};
 // http://crbug.com/777378
 TEST_F(InsertParagraphSeparatorCommandTest,
        CrashWithAppearanceStyleOnEmptyColgroup) {
-  Selection().SetSelection(SetSelectionTextToBody(
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
       "<table contenteditable>"
       "    <colgroup style='-webkit-appearance:radio;'><!--|--></colgroup>"
       "</table>"));
@@ -35,7 +35,7 @@ TEST_F(InsertParagraphSeparatorCommandTest,
 // http://crbug.com/777378
 TEST_F(InsertParagraphSeparatorCommandTest,
        CrashWithAppearanceStyleOnEmptyColumn) {
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SetSelectionTextToBody("<table contenteditable>"
                              "    <colgroup style='-webkit-appearance:radio;'>"
                              "        <col><!--|--></col>"

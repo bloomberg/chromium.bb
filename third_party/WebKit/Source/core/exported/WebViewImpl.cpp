@@ -2179,7 +2179,7 @@ void WebViewImpl::SetFocus(bool enable) {
           // instead. Note that this has the side effect of moving the
           // caret back to the beginning of the text.
           Position position(element, 0);
-          focused_frame->Selection().SetSelection(
+          focused_frame->Selection().SetSelectionAndEndTyping(
               SelectionInDOMTree::Builder().Collapse(position).Build());
         }
       }

@@ -40,7 +40,7 @@ class GranularityStrategyTest : public PageTestBase {
  protected:
   void SetUp() override;
 
-  void SetSelection(const VisibleSelection&);
+  void SetSelectionAndEndTyping(const VisibleSelection&);
   Text* AppendTextNode(const String& data);
   int LayoutCount() const {
     return GetDummyPageHolder().GetFrameView().LayoutCount();
@@ -87,9 +87,9 @@ void GranularityStrategyTest::SetUp() {
   GetFrame().GetSettings()->SetSelectionStrategy(SelectionStrategy::kDirection);
 }
 
-void GranularityStrategyTest::SetSelection(
+void GranularityStrategyTest::SetSelectionAndEndTyping(
     const VisibleSelection& new_selection) {
-  Selection().SetSelection(new_selection.AsSelection());
+  Selection().SetSelectionAndEndTyping(new_selection.AsSelection());
 }
 
 Text* GranularityStrategyTest::AppendTextNode(const String& data) {
@@ -261,7 +261,7 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
   else
     p2 = Position(text3, sel_end - str1.length() - str2.length());
 
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().SetBaseAndExtent(p1, p2).Build());
 }
 
@@ -488,7 +488,7 @@ TEST_F(GranularityStrategyTest, Character) {
 
   // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
   // means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 5), Position(text, 6))
           .Build());
@@ -509,7 +509,7 @@ TEST_F(GranularityStrategyTest, DirectionRotate) {
   Text* text = SetupRotate("Foo Bar Baz,");
   // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
   // means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 5), Position(text, 6))
           .Build());
@@ -532,7 +532,7 @@ TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ) {
   Text* text = SetupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
   // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
   // < means start, and > means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 19))
           .Build());
@@ -544,7 +544,7 @@ TEST_F(GranularityStrategyTest, DirectionExpandTransform) {
   Text* text = SetupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
   // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
   // < means start, and > means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 19))
           .Build());
@@ -568,7 +568,7 @@ TEST_F(GranularityStrategyTest, DirectionExpandFontSizes) {
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTranslateZ) {
   Text* text = SetupTranslateZ("abcdef ghij kl mnopqr iiinmni, abc");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 21))
           .Build());
@@ -578,7 +578,7 @@ TEST_F(GranularityStrategyTest, DirectionShrinkTranslateZ) {
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTransform) {
   Text* text = SetupTransform("abcdef ghij kl mnopqr iiinmni, abc");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 21))
           .Build());
@@ -600,7 +600,7 @@ TEST_F(GranularityStrategyTest, DirectionShrinkFontSizes) {
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTranslateZ) {
   Text* text = SetupTranslateZ("abcd efgh ijkl mnopqr iiinmni, abc");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 21))
           .Build());
@@ -610,7 +610,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideTranslateZ) {
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTransform) {
   Text* text = SetupTransform("abcd efgh ijkl mnopqr iiinmni, abc");
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 21))
           .Build());
@@ -645,7 +645,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink) {
 
   // "abcd efgh ijkl mno^pqr|> iiin, abc" (^ means base, | means extent, < means
   // start, and > means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 18), Position(text, 21))
           .Build());
@@ -683,7 +683,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
 
   // "ab cd efghijkl ^mnopqr |>stuvwi inm," (^ means base and | means extent,
   // > means end).
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 15), Position(text, 22))
           .Build());

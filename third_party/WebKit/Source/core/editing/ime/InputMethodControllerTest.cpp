@@ -2352,7 +2352,7 @@ TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
   GetDocument().body()->focus();
 
   // Set selection before BODY(editable).
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().documentElement(), 0))
           .Build());
@@ -2414,7 +2414,7 @@ TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupBeforeText) {
   Element* div = InsertHTMLElement(
       "<div id='div' contenteditable='true'><img />test</div>", "div");
   // Select the contents of the div element.
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
           .Build());
@@ -2430,7 +2430,7 @@ TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupAfterText) {
   Element* div = InsertHTMLElement(
       "<div id='div' contenteditable='true'>test<img /></div>", "div");
   // Select the contents of the div element.
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
           .Build());
@@ -2447,7 +2447,7 @@ TEST_F(InputMethodControllerTest,
   Element* div = InsertHTMLElement(
       "<div id='div' contenteditable='true'><img />test<img /></div>", "div");
   // Select the contents of the div element.
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
           .Build());
@@ -2573,7 +2573,7 @@ TEST_F(InputMethodControllerTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Select "hello".
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange(Position(div->firstChild(), 0),
                                            Position(div->firstChild(), 5)))
@@ -2745,7 +2745,7 @@ TEST_F(InputMethodControllerTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Select "world".
-  GetFrame().Selection().SetSelection(
+  GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange(Position(div->firstChild(), 6),
                                            Position(div->firstChild(), 11)))

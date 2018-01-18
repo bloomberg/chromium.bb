@@ -1549,7 +1549,7 @@ bool Editor::FindString(const String& target, FindOptions options) {
   if (!result_range)
     return false;
 
-  GetFrameSelection().SetSelection(
+  GetFrameSelection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange(result_range))
           .Build());

@@ -61,7 +61,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   body->setAttribute(HTMLNames::contenteditableAttr, "true");
   body->focus();
   frame.GetDocument()->UpdateStyleAndLayout();
-  frame.Selection().SetSelection(
+  frame.Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().SelectAllChildren(*body).Build());
   EXPECT_TRUE(frame.Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
   EXPECT_TRUE(

@@ -1117,7 +1117,8 @@ bool SelectionController::HandleMouseReleaseEvent(
     const SelectionInFlatTree new_selection = builder.Build();
     if (Selection().ComputeVisibleSelectionInFlatTree() !=
         CreateVisibleSelection(new_selection)) {
-      Selection().SetSelection(ConvertToSelectionInDOMTree(new_selection));
+      Selection().SetSelectionAndEndTyping(
+          ConvertToSelectionInDOMTree(new_selection));
     }
 
     handled = true;
@@ -1275,10 +1276,10 @@ void SelectionController::PassMousePressEventToSubframe(
   const VisiblePositionInFlatTree& visible_pos =
       VisiblePositionOfHitTestResult(mev.GetHitTestResult());
   if (visible_pos.IsNull()) {
-    Selection().SetSelection(SelectionInDOMTree());
+    Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
     return;
   }
-  Selection().SetSelection(ConvertToSelectionInDOMTree(
+  Selection().SetSelectionAndEndTyping(ConvertToSelectionInDOMTree(
       SelectionInFlatTree::Builder()
           .Collapse(visible_pos.ToPositionWithAffinity())
           .Build()));

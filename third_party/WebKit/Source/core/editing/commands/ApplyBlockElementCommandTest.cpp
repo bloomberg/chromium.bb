@@ -37,7 +37,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
   GetDocument().body()->setContentEditable("false", ASSERT_NO_EXCEPTION);
   GetDocument().setDesignMode("on");
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(
               Position(GetDocument().documentElement(), 1),
@@ -63,7 +63,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
   GetDocument().setDesignMode("on");
 
   UpdateAllLifecyclePhases();
-  Selection().SetSelection(
+  Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().QuerySelector("li"), 0))
           .Build());
@@ -87,10 +87,10 @@ TEST_F(ApplyBlockElementCommandTest, IndentHeadingIntoBlockquote) {
       "</div>");
   Element* button = GetDocument().QuerySelector("button");
   Element* object = GetDocument().QuerySelector("object");
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(Position(button, 0))
-                               .Extend(Position(object, 0))
-                               .Build());
+  Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
+                                           .Collapse(Position(button, 0))
+                                           .Extend(Position(object, 0))
+                                           .Build());
 
   IndentOutdentCommand* command = IndentOutdentCommand::Create(
       GetDocument(), IndentOutdentCommand::kIndent);

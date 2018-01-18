@@ -33,7 +33,7 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
   SetBodyContent("foo");
 
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelection(
+  frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))
           .Build());
@@ -64,7 +64,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 
   Element* b_element = GetDocument().QuerySelector("b");
   LocalFrame* frame = GetDocument().GetFrame();
-  frame->Selection().SetSelection(
+  frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(b_element->firstChild(), 1))
           .Build());
@@ -85,7 +85,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   GetDocument().setDesignMode("on");
   UpdateAllLifecyclePhases();
-  GetDummyPageHolder().GetFrame().Selection().SetSelection(
+  GetDummyPageHolder().GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))
           .Build());
@@ -135,7 +135,7 @@ TEST_F(ReplaceSelectionCommandTest, TextAutosizingDoesntInflateText) {
   Element* span = GetDocument().QuerySelector("span");
 
   // Select "bar".
-  GetDocument().GetFrame()->Selection().SetSelection(
+  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(span->firstChild(), 4))
           .Extend(Position(span->firstChild(), 7))
@@ -158,7 +158,8 @@ TEST_F(ReplaceSelectionCommandTest, TextAutosizingDoesntInflateText) {
 // This is a regression test for https://crbug.com/781282
 TEST_F(ReplaceSelectionCommandTest, TrailingNonVisibleTextCrash) {
   GetDocument().setDesignMode("on");
-  Selection().SetSelection(SetSelectionTextToBody("<div>^foo|</div>"));
+  Selection().SetSelectionAndEndTyping(
+      SetSelectionTextToBody("<div>^foo|</div>"));
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
   fragment->ParseHTML("<div>bar</div> ", GetDocument().QuerySelector("div"));

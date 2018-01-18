@@ -179,7 +179,8 @@ void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
     DidSetSelectionDeprecated(data);
 }
 
-void FrameSelection::SetSelection(const SelectionInDOMTree& selection) {
+void FrameSelection::SetSelectionAndEndTyping(
+    const SelectionInDOMTree& selection) {
   SetSelection(selection, SetSelectionOptions::Builder()
                               .SetShouldCloseTyping(true)
                               .SetShouldClearTypingStyle(true)
@@ -220,7 +221,7 @@ bool FrameSelection::SetSelectionDeprecated(
       is_directional_ == options.IsDirectional())
     return false;
   if (is_changed)
-    selection_editor_->SetSelection(new_selection);
+    selection_editor_->SetSelectionAndEndTyping(new_selection);
   is_directional_ = options.IsDirectional();
   should_shrink_next_tap_ = options.ShouldShrinkNextTap();
   is_handle_visible_ = should_show_handle;
@@ -395,7 +396,7 @@ void FrameSelection::Clear() {
   granularity_ = TextGranularity::kCharacter;
   if (granularity_strategy_)
     granularity_strategy_->Clear();
-  SetSelection(SelectionInDOMTree());
+  SetSelectionAndEndTyping(SelectionInDOMTree());
   is_handle_visible_ = false;
   is_directional_ = ShouldAlwaysUseDirectionalSelection(frame_);
 }
@@ -663,8 +664,10 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   // setFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
   if (!new_selection.IsNone() &&
-      new_selection.IsValidFor(*(ToLocalFrame(parent)->GetDocument())))
-    ToLocalFrame(parent)->Selection().SetSelection(new_selection.AsSelection());
+      new_selection.IsValidFor(*(ToLocalFrame(parent)->GetDocument()))) {
+    ToLocalFrame(parent)->Selection().SetSelectionAndEndTyping(
+        new_selection.AsSelection());
+  }
 }
 
 // Returns a shadow tree node for legacy shadow trees, a child of the
@@ -1013,9 +1016,9 @@ void FrameSelection::SetSelectionFromNone() {
     return;
   if (HTMLBodyElement* body =
           Traversal<HTMLBodyElement>::FirstChild(*document_element)) {
-    SetSelection(SelectionInDOMTree::Builder()
-                     .Collapse(FirstPositionInOrBeforeNode(*body))
-                     .Build());
+    SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
+                                 .Collapse(FirstPositionInOrBeforeNode(*body))
+                                 .Build());
   }
 }
 

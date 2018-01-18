@@ -2078,7 +2078,7 @@ bool AXLayoutObject::OnNativeSetSelectionAction(const AXRange& selection) {
   if (anchor_visible_position.IsNull() || focus_visible_position.IsNull())
     return false;
 
-  frame->Selection().SetSelection(
+  frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(anchor_visible_position.ToPositionWithAffinity())
           .Extend(focus_visible_position.DeepEquivalent())
