@@ -42,8 +42,6 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
         ::switches::kEnableTranslateNewUX);
     // Enable toolkit-views bubbles on Mac (otherwise Cocoa bubbles are used).
     feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-#else
-    feature_list_.InitAndDisableFeature(translate::kTranslateUI2016Q2);
 #endif
     set_open_about_blank_on_browser_launch(true);
     translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);

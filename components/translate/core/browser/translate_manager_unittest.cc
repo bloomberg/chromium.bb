@@ -155,15 +155,8 @@ class TranslateManagerTest : public ::testing::Test {
   }
 
   void SetLanguageTooOftenDenied(const std::string& language) {
-    if (base::FeatureList::IsEnabled(kTranslateUI2016Q2)) {
-      translate_prefs_.ResetDenialState();
-      for (int i = 0; i < 4; i++) {
-        translate_prefs_.IncrementTranslationDeniedCount(language);
-      }
-    } else {
-      translate_prefs_.UpdateLastDeniedTime(language);
-      translate_prefs_.UpdateLastDeniedTime(language);
-    }
+    translate_prefs_.UpdateLastDeniedTime(language);
+    translate_prefs_.UpdateLastDeniedTime(language);
 
     EXPECT_TRUE(translate_prefs_.IsTooOftenDenied(language));
     EXPECT_FALSE(translate_prefs_.IsTooOftenDenied("other_language"));
@@ -385,16 +378,6 @@ TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_HasLanguageChangedFalse) {
       translate::TranslateBrowserMetrics::
           INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE,
       2);
-}
-
-TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_NewUI) {
-  PrepareTranslateManager();
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::HistogramTester histogram_tester;
-  scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
-  SetHasLanguageChanged(false);
-  EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
-  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_IsTooOftenDenied) {
