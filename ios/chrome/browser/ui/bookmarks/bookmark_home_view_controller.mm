@@ -14,11 +14,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
@@ -28,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -45,6 +44,18 @@
 using bookmarks::BookmarkNode;
 
 namespace {
+typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
+  BookmarksContextBarNone,            // No state.
+  BookmarksContextBarDefault,         // No selection is possible in this state.
+  BookmarksContextBarBeginSelection,  // This is the clean start state,
+  // selection is possible, but nothing is
+  // selected yet.
+  BookmarksContextBarSingleURLSelection,       // Single URL selected state.
+  BookmarksContextBarMultipleURLSelection,     // Multiple URLs selected state.
+  BookmarksContextBarSingleFolderSelection,    // Single folder selected.
+  BookmarksContextBarMultipleFolderSelection,  // Multiple folders selected.
+  BookmarksContextBarMixedSelection,  // Multiple URL / Folders selected.
+};
 
 // Returns a vector of all URLs in |nodes|.
 std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
@@ -67,8 +78,60 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkTableViewDelegate,
     ContextBarDelegate,
     SigninPresenter,
-    UIGestureRecognizerDelegate>
+    UIGestureRecognizerDelegate> {
+  // Bridge to register for bookmark changes.
+  std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 
+  // The root node, whose child nodes are shown in the bookmark table view.
+  const bookmarks::BookmarkNode* _rootNode;
+}
+
+// The bookmark model used.
+@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
+
+// The user's browser state model used.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// The main view showing all the bookmarks.
+@property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
+
+// The view controller used to pick a folder in which to move the selected
+// bookmarks.
+@property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
+
+// Object to load URLs.
+@property(nonatomic, weak) id<UrlLoader> loader;
+
+// The app bar for the bookmarks.
+@property(nonatomic, strong) MDCAppBar* appBar;
+
+// The context bar at the bottom of the bookmarks.
+@property(nonatomic, strong) BookmarkContextBar* contextBar;
+
+// This view is created and used if the model is not fully loaded yet by the
+// time this controller starts.
+@property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
+
+// The view controller used to view and edit a single bookmark.
+@property(nonatomic, strong) BookmarkEditViewController* editViewController;
+
+// The view controller to present when editing the current folder.
+@property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
+
+// The controller managing the display of the promo cell and the promo view
+// controller.
+@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
+
+// The current state of the context bar UI.
+@property(nonatomic, assign) BookmarksContextBarState contextBarState;
+
+// When the view is first shown on the screen, this property represents the
+// cached value of the y of the content offset of the table view. This
+// property is set to nil after it is used.
+@property(nonatomic, strong) NSNumber* cachedContentPosition;
+
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 @end
 
 @implementation BookmarkHomeViewController
@@ -126,6 +189,16 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - UIViewController
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  if (self.bookmarks->loaded()) {
+    [self loadBookmarkViews];
+  } else {
+    [self loadWaitingView];
+  }
+}
+
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   // Set the delegate here to make sure it is working when navigating in the
@@ -146,6 +219,24 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // The height of contextBar might change due to word wrapping of buttons
   // after titleLabel or orientation changed.
   [self.contextBar updateHeight];
+}
+
+- (BOOL)prefersStatusBarHidden {
+  return NO;
+}
+
+- (NSArray*)keyCommands {
+  __weak BookmarkHomeViewController* weakSelf = self;
+  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                   modifierFlags:Cr_UIKeyModifierNone
+                                           title:nil
+                                          action:^{
+                                            [weakSelf navigationBarCancel:nil];
+                                          }] ];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleDefault;
 }
 
 #pragma mark - Protected
@@ -173,6 +264,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (self.isReconstructingFromCache) {
     [self setupUIStackCacheIfApplicable];
   }
+  DCHECK(self.bookmarks->loaded());
+  DCHECK([self isViewLoaded]);
 }
 
 - (void)loadWaitingView {
@@ -729,16 +822,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BookmarkHomeViewController*)createControllerWithRootFolder:
     (const bookmarks::BookmarkNode*)folder {
-  // TODO(crbug.com/753599) : Remove bookmarkControllerFactory and create
-  // BookmarkHomeViewController directly after BookmarkHomeHandsetViewController
-  // merged into BookmarkHomeViewController.
-  BookmarkControllerFactory* bookmarkControllerFactory =
-      [[BookmarkControllerFactory alloc] init];
   BookmarkHomeViewController* controller =
-      (BookmarkHomeViewController*)[bookmarkControllerFactory
-          bookmarkControllerWithBrowserState:self.browserState
-                                      loader:_loader
-                                  dispatcher:self.dispatcher];
+      [[BookmarkHomeViewController alloc] initWithLoader:_loader
+                                            browserState:self.browserState
+                                              dispatcher:self.dispatcher];
   [controller setRootNode:folder];
   controller.homeDelegate = self.homeDelegate;
   return controller;

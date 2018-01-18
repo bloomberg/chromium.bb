@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -19,7 +19,7 @@ const CGFloat kImageViewOffsetFromText = 5.0;
 const CGFloat kToolbarHeight = 48.0;
 }  // namespace
 
-@interface BookmarkCollectionViewBackground ()
+@interface BookmarkEmptyBackground ()
 
 // Star image view shown on top of the label.
 @property(nonatomic, retain) UIImageView* emptyBookmarksImageView;
@@ -28,7 +28,7 @@ const CGFloat kToolbarHeight = 48.0;
 
 @end
 
-@implementation BookmarkCollectionViewBackground
+@implementation BookmarkEmptyBackground
 
 @synthesize emptyBookmarksImageView = _emptyBookmarksImageView;
 @synthesize emptyBookmarksLabel = _emptyBookmarksLabel;

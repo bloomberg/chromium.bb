@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
@@ -171,15 +170,10 @@ using bookmarks::BookmarkNode;
 
 - (void)presentBookmarks {
   DCHECK(!self.bookmarkBrowser && !self.bookmarkEditor);
-  // TODO(crbug.com/753599) : Remove bookmarkControllerFactory and create
-  // BookmarkHomeViewController directly after BookmarkHomeHandsetViewController
-  // merged into BookmarkHomeViewController.
-  BookmarkControllerFactory* bookmarkControllerFactory =
-      [[BookmarkControllerFactory alloc] init];
-  self.bookmarkBrowser = [bookmarkControllerFactory
-      bookmarkControllerWithBrowserState:_currentBrowserState
-                                  loader:_loader
-                              dispatcher:self.dispatcher];
+  self.bookmarkBrowser =
+      [[BookmarkHomeViewController alloc] initWithLoader:_loader
+                                            browserState:_currentBrowserState
+                                              dispatcher:self.dispatcher];
   self.bookmarkBrowser.homeDelegate = self;
 
   [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];

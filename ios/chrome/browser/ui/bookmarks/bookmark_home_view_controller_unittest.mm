@@ -7,7 +7,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,8 +28,8 @@ TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
     EXPECT_EQ(nil, controller.contextBar);
     EXPECT_EQ(nil, controller.bookmarksTableView);
 
-    [controller view];
     [controller setRootNode:_bookmarkModel->mobile_node()];
+    [controller view];
     [controller loadBookmarkViews];
 
     EXPECT_NE(nil, controller);
@@ -49,6 +48,7 @@ TEST_F(BookmarkHomeViewControllerTest, LoadWaitingView) {
 
     EXPECT_TRUE(controller.waitForModelView == nil);
 
+    [controller setRootNode:_bookmarkModel->mobile_node()];
     [controller view];
     [controller loadWaitingView];
 
