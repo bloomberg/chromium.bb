@@ -8404,6 +8404,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BookmarkManager.CommandMenuOpened"
+    enum="BookmarkManagerMenuSource">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Logs where the menu was opened from when a user action opens the command
+    menu in the bookmark manager.
+  </summary>
+</histogram>
+
 <histogram name="BookmarkManager.NumDragged" units="bookmarks">
   <owner>calamity@chromium.org</owner>
   <summary>

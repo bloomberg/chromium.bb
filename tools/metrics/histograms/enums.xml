@@ -3256,6 +3256,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="20" label="Help center"/>
 </enum>
 
+<enum name="BookmarkManagerMenuSource">
+  <int value="0" label="None"/>
+  <int value="1" label="Item"/>
+  <int value="2" label="Tree"/>
+  <int value="3" label="Toolbar"/>
+  <int value="4" label="List"/>
+</enum>
+
 <enum name="BookmarksEntryPoint">
   <int value="0" label="Accelerator(Ctrl+D)"/>
   <int value="1" label="Gesture"/>
