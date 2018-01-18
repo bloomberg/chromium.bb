@@ -60,6 +60,20 @@ class AppListModelUpdater {
   virtual void PublishSearchResults(
       std::vector<std::unique_ptr<app_list::SearchResult>> results) {}
 
+  // Item field setters only used by ChromeAppListItem and its derived classes.
+  virtual void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) {}
+  virtual void SetItemName(const std::string& id, const std::string& name) {}
+  virtual void SetItemNameAndShortName(const std::string& id,
+                                       const std::string& name,
+                                       const std::string& short_name) {}
+  virtual void SetItemPosition(const std::string& id,
+                               const syncer::StringOrdinal& new_position) {}
+  virtual void SetItemFolderId(const std::string& id,
+                               const std::string& folder_id) {}
+  virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
+  virtual void SetItemPercentDownloaded(const std::string& id,
+                                        int32_t percent_downloaded) {}
+
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
   virtual size_t ItemCount() = 0;
@@ -76,21 +90,6 @@ class AppListModelUpdater {
 
  protected:
   virtual ~AppListModelUpdater() {}
-
-  // Item field setters only used by ChromeAppListItem and its derived classes.
-  virtual void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) {}
-  virtual void SetItemName(const std::string& id, const std::string& name) {}
-  virtual void SetItemNameAndShortName(const std::string& id,
-                                       const std::string& name,
-                                       const std::string& short_name) {}
-  virtual void SetItemPosition(const std::string& id,
-                               const syncer::StringOrdinal& new_position) {}
-  virtual void SetItemFolderId(const std::string& id,
-                               const std::string& folder_id) {}
-  virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
-  virtual void SetItemPercentDownloaded(const std::string& id,
-                                        int32_t percent_downloaded) {}
 };
-
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_

@@ -17,9 +17,13 @@
 
 ChromeAppListModelUpdater::ChromeAppListModelUpdater()
     : model_(std::make_unique<app_list::AppListModel>()),
-      search_model_(std::make_unique<app_list::SearchModel>()) {}
+      search_model_(std::make_unique<app_list::SearchModel>()) {
+  model_->AddObserver(this);
+}
 
-ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
+ChromeAppListModelUpdater::~ChromeAppListModelUpdater() {
+  model_->RemoveObserver(this);
+}
 
 void ChromeAppListModelUpdater::AddItem(
     std::unique_ptr<ChromeAppListItem> app_item) {
@@ -263,6 +267,28 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
     VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     model_->MoveItemToFolder(app_item, sync_item->parent_id);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods called from Ash:
+
+void ChromeAppListModelUpdater::OnAppListItemAdded(
+    app_list::AppListItem* item) {
+  if (delegate_)
+    delegate_->OnAppListItemAdded(static_cast<ChromeAppListItem*>(item));
+}
+
+void ChromeAppListModelUpdater::OnAppListItemWillBeDeleted(
+    app_list::AppListItem* item) {
+  if (delegate_)
+    delegate_->OnAppListItemWillBeDeleted(
+        static_cast<ChromeAppListItem*>(item));
+}
+
+void ChromeAppListModelUpdater::OnAppListItemUpdated(
+    app_list::AppListItem* item) {
+  if (delegate_)
+    delegate_->OnAppListItemUpdated(static_cast<ChromeAppListItem*>(item));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
