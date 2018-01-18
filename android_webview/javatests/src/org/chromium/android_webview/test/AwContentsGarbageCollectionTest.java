@@ -29,6 +29,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 /**
@@ -142,8 +143,8 @@ public class AwContentsGarbageCollectionTest {
             // Instead, we simply emulate Android's behavior by keeping strong references.
             // See crbug.com/595613 for details.
             resultReceivers[i] = ThreadUtils.runOnUiThreadBlocking(
-                    () -> containerView.getContentViewCore()
-                                       .getImeAdapterForTest()
+                    ()
+                            -> ImeAdapter.fromWebContents(containerView.getWebContents())
                                        .getNewShowKeyboardReceiver());
         }
 

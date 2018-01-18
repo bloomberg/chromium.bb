@@ -20,7 +20,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
@@ -111,6 +110,7 @@ import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -1870,24 +1870,22 @@ public class Tab
             // web views.
             mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
 
-            mContentViewCore.addImeEventObserver(new ImeEventObserver() {
-                @Override
-                public void onImeEvent() {
-                    // Some text was set in the page. Don't reuse it if a tab is
-                    // open from the same external application, we might lose some
-                    // user data.
-                    mAppAssociatedWith = null;
-                }
+            ImeAdapter.fromWebContents(mContentViewCore.getWebContents())
+                    .addEventObserver(new ImeEventObserver() {
+                        @Override
+                        public void onImeEvent() {
+                            // Some text was set in the page. Don't reuse it if a tab is
+                            // open from the same external application, we might lose some
+                            // user data.
+                            mAppAssociatedWith = null;
+                        }
 
-                @Override
-                public void onNodeAttributeUpdated(boolean editable, boolean password) {
-                    if (getFullscreenManager() == null) return;
-                    updateFullscreenEnabledState();
-                }
-
-                @Override
-                public void onBeforeSendKeyEvent(KeyEvent event) {}
-            });
+                        @Override
+                        public void onNodeAttributeUpdated(boolean editable, boolean password) {
+                            if (getFullscreenManager() == null) return;
+                            updateFullscreenEnabledState();
+                        }
+                    });
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
                     this));

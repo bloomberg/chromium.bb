@@ -95,7 +95,7 @@ public class ThreadedInputConnectionFactoryTest {
     }
 
     @Mock
-    private ImeAdapter mImeAdapter;
+    private ImeAdapterImpl mImeAdapter;
     @Mock
     private View mContainerView;
     @Mock
@@ -123,7 +123,7 @@ public class ThreadedInputConnectionFactoryTest {
 
         mContext = Mockito.mock(Context.class);
         mContainerView = Mockito.mock(View.class);
-        mImeAdapter = Mockito.mock(ImeAdapter.class);
+        mImeAdapter = Mockito.mock(ImeAdapterImpl.class);
         mInputMethodManager = Mockito.mock(InputMethodManager.class);
 
         mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));

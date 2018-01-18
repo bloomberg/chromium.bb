@@ -15,15 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
-import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -117,12 +113,6 @@ public interface ContentViewCore {
      * @param observer Observer instance to remove.
      */
     void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer);
-
-    /**
-     * Add {@link ImeEventObserver} object to {@link ImeAdapter}.
-     * @param observer imeEventObserver instance to add.
-     */
-    void addImeEventObserver(ImeEventObserver imeEventObserver);
 
     /**
      * Initialize {@link ContentViewCore} object.
@@ -247,16 +237,6 @@ public interface ContentViewCore {
      * @see View#onDetachedFromWindow()
      */
     void onDetachedFromWindow();
-
-    /**
-     * @see View#onCreateInputConnection(EditorInfo)
-     */
-    InputConnection onCreateInputConnection(EditorInfo outAttrs);
-
-    /**
-     * @see View#onCheckIsTextEditor()
-     */
-    boolean onCheckIsTextEditor();
 
     /**
      * @see View#onConfigurationChanged(Configuration)
@@ -491,12 +471,6 @@ public interface ContentViewCore {
 
     @VisibleForTesting
     void setTextSuggestionHostForTesting(TextSuggestionHost textSuggestionHost);
-
-    @VisibleForTesting
-    void setImeAdapterForTest(ImeAdapter imeAdapter);
-
-    @VisibleForTesting
-    ImeAdapter getImeAdapterForTest();
 
     @VisibleForTesting
     void setPopupZoomerForTest(PopupZoomer popupZoomer);

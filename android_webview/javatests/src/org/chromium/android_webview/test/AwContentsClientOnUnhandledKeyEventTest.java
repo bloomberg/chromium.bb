@@ -19,7 +19,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.content.browser.input.ImeAdapter;
+import org.chromium.content_public.browser.ImeAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -160,4 +160,3 @@ public class AwContentsClientOnUnhandledKeyEventTest {
         mHelper.clearUnhandledKeyEventList();
     }
 }
-

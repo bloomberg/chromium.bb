@@ -12,8 +12,6 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
@@ -21,10 +19,8 @@ import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.PopupZoomer;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
-import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -69,18 +65,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
-
-    @Override
-    public void addImeEventObserver(ImeEventObserver imeEventObserver) {}
-
-    @Override
-    public void setImeAdapterForTest(ImeAdapter imeAdapter) {}
-
-    @VisibleForTesting
-    @Override
-    public ImeAdapter getImeAdapterForTest() {
-        return null;
-    }
 
     @Override
     public void initialize(ViewAndroidDelegate viewDelegate,
@@ -153,16 +137,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void onDetachedFromWindow() {}
-
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return null;
-    }
-
-    @Override
-    public boolean onCheckIsTextEditor() {
-        return false;
-    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {}

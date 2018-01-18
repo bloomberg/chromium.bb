@@ -23,6 +23,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.ui.base.EventForwarder;
 
 /**
@@ -130,12 +131,13 @@ public class ContentView extends FrameLayout
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return mContentViewCore.onCreateInputConnection(outAttrs);
+        return ImeAdapter.fromWebContents(mContentViewCore.getWebContents())
+                .onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        return mContentViewCore.onCheckIsTextEditor();
+        return ImeAdapter.fromWebContents(mContentViewCore.getWebContents()).onCheckIsTextEditor();
     }
 
     @Override
