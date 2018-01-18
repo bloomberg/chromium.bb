@@ -957,7 +957,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
             new_tab->GetMainFrame()->GetEnabledBindings());
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUISettings) {
+// http://crbug.com/803510 : Flaky on Win7 Tests (dbg)
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RestoreWebUISettings DISABLED_RestoreWebUISettings
+#else
+#define MAYBE_RestoreWebUISettings RestoreWebUISettings
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreWebUISettings) {
   const GURL webui_url("chrome://settings");
   ui_test_utils::NavigateToURL(browser(), webui_url);
   content::WebContents* old_tab =
