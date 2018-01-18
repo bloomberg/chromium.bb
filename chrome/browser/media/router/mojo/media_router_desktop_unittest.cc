@@ -72,6 +72,8 @@ class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
       cast_media_sink_service = std::make_unique<MockCastMediaSinkService>(
           profile()->GetRequestContext());
       cast_media_sink_service_ = cast_media_sink_service.get();
+    } else {
+      feature_list_.InitWithFeatures({}, {kEnableCastDiscovery});
     }
 
     media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
