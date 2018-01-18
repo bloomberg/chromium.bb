@@ -697,7 +697,7 @@ void EmbeddedWorkerInstance::RequestTermination() {
 void EmbeddedWorkerInstance::OnReadyForInspection() {
   if (devtools_proxy_) {
     blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info;
-    client_->GetDevToolsAgent(mojo::MakeRequest(&devtools_agent_ptr_info));
+    client_->BindDevToolsAgent(mojo::MakeRequest(&devtools_agent_ptr_info));
     devtools_proxy_->NotifyWorkerReadyForInspection(
         std::move(devtools_agent_ptr_info));
   }

@@ -84,7 +84,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     void ResumeAfterDownload() override;
     void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                              const std::string& message) override;
-    void GetDevToolsAgent(
+    void BindDevToolsAgent(
         blink::mojom::DevToolsAgentAssociatedRequest request) override {}
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;

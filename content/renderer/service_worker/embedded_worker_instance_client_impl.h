@@ -83,7 +83,7 @@ class EmbeddedWorkerInstanceClientImpl
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message) override;
-  void GetDevToolsAgent(
+  void BindDevToolsAgent(
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   // Handler of connection error bound to |binding_|.

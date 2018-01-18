@@ -70,7 +70,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
-  void GetDevToolsAgent(
+  void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   void PostMessageToPageInspector(int session_id, const WTF::String&);

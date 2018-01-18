@@ -70,7 +70,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   // Returns true if any clients live in a different process from this worker.
   bool ServesExternalClient();
 
-  void GetDevToolsAgent(blink::mojom::DevToolsAgentAssociatedRequest request);
+  void BindDevToolsAgent(blink::mojom::DevToolsAgentAssociatedRequest request);
 
   SharedWorkerInstance* instance() { return instance_.get(); }
   int process_id() const { return process_id_; }

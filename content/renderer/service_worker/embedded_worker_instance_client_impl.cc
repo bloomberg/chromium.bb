@@ -100,11 +100,11 @@ void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
       blink::WebConsoleMessage(level, blink::WebString::FromUTF8(message)));
 }
 
-void EmbeddedWorkerInstanceClientImpl::GetDevToolsAgent(
+void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
   DCHECK(wrapper_);
   DCHECK(wrapper_->worker());
-  wrapper_->worker()->GetDevToolsAgent(request.PassHandle());
+  wrapper_->worker()->BindDevToolsAgent(request.PassHandle());
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(

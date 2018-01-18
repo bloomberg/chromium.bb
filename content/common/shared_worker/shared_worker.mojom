@@ -17,7 +17,7 @@ interface SharedWorker {
   // closing its end of the mojo connection.
   Terminate();
 
-  // Returns a DevToolsAgent interface for this shared worker, used for
+  // Binds a DevToolsAgent interface for this shared worker, used for
   // remote debugging. See DevToolsAgent for details.
-  GetDevToolsAgent(associated blink.mojom.DevToolsAgent& devtools_agent);
+  BindDevToolsAgent(associated blink.mojom.DevToolsAgent& devtools_agent);
 };

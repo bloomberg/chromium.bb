@@ -90,7 +90,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void TerminateWorkerContext() override;
 
   void PauseWorkerContextOnStart() override;
-  void GetDevToolsAgent(
+  void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   // Callback methods for SharedWorkerReportingProxy.

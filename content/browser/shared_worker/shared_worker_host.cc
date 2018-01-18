@@ -239,9 +239,9 @@ bool SharedWorkerHost::ServesExternalClient() {
   return false;
 }
 
-void SharedWorkerHost::GetDevToolsAgent(
+void SharedWorkerHost::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
-  worker_->GetDevToolsAgent(std::move(request));
+  worker_->BindDevToolsAgent(std::move(request));
 }
 
 void SharedWorkerHost::OnClientConnectionLost() {
