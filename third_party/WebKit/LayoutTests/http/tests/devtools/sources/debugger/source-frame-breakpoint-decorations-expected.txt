@@ -18,12 +18,8 @@ Toggle breakpoint
 Running: testDecorationInGutter
 Adding regular disabled breakpoint
 breakpoint at 2 disabled
-  inline breakpoint at (2, 4) disabled
-  inline breakpoint at (2, 13) disabled
 Adding conditional disabled breakpoint
 breakpoint at 2 disabled conditional
-  inline breakpoint at (2, 4) disabled
-  inline breakpoint at (2, 13) disabled
 Adding regular enabled breakpoint
 breakpoint at 2
   inline breakpoint at (2, 4)
@@ -34,8 +30,6 @@ breakpoint at 2 conditional
   inline breakpoint at (2, 13) disabled
 Disable breakpoints
 breakpoint at 2 disabled conditional
-  inline breakpoint at (2, 4) disabled
-  inline breakpoint at (2, 13) disabled
 Enable breakpoints
 breakpoint at 2 conditional
   inline breakpoint at (2, 4)

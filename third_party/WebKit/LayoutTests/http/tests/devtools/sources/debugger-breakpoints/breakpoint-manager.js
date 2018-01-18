@@ -42,39 +42,6 @@
   }
 
   TestRunner.runTestSuite([
-    function testSetBreakpoint(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, '', true);
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
-    function testSetDisabledBreakpoint(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      var breakpoint = SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, '', false);
-      SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-      SourcesTestRunner.dumpBreakpointStorage(breakpointManager);
-      TestRunner.addResult('  Enabling breakpoint');
-      breakpoint.setEnabled(true);
-      SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-    },
-
-    function testSetConditionalBreakpoint(next) {
-      var breakpointManager = createBreakpointManager();
-      var uiSourceCode = addUISourceCode(breakpointManager, 'a.js');
-      var breakpoint =
-          SourcesTestRunner.BreakpointManager.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, 'condition', true, step2);
-
-      function step2() {
-        SourcesTestRunner.dumpBreakpointLocations(breakpointManager);
-        SourcesTestRunner.dumpBreakpointStorage(breakpointManager);
-        TestRunner.addResult('  Updating condition');
-        breakpoint.setCondition('');
-        SourcesTestRunner.finishBreakpointTest(breakpointManager, next);
-      }
-    },
-
     function testRestoreBreakpoints(next) {
       var breakpointManager = createBreakpointManager(serializedBreakpoints);
       addUISourceCode(breakpointManager, 'a.js');
