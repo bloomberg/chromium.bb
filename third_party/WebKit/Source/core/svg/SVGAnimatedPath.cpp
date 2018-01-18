@@ -44,11 +44,11 @@ SVGAnimatedPath::SVGAnimatedPath(SVGElement* context_element,
 
 SVGAnimatedPath::~SVGAnimatedPath() = default;
 
-const CSSValue* SVGAnimatedPath::CssValue() const {
+const CSSValue& SVGAnimatedPath::CssValue() const {
   const cssvalue::CSSPathValue* path_value = CurrentValue()->PathValue();
   if (path_value->GetStylePath()->ByteStream().IsEmpty())
-    return CSSIdentifierValue::Create(CSSValueNone);
-  return path_value;
+    return *CSSIdentifierValue::Create(CSSValueNone);
+  return *path_value;
 }
 
 }  // namespace blink
