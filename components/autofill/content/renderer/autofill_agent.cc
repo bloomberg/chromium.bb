@@ -204,6 +204,7 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
 
   form_cache_.Reset();
   ResetLastInteractedElements();
+  OnFormNoLongerSubmittable();
 }
 
 void AutofillAgent::DidFinishDocumentLoad() {
@@ -283,18 +284,24 @@ void AutofillAgent::OnDestruct() {
 }
 
 void AutofillAgent::FireHostSubmitEvents(const WebFormElement& form,
-                                         bool known_success) {
+                                         bool known_success,
+                                         SubmissionSource source) {
   FormData form_data;
   if (!form_util::ExtractFormData(form, &form_data))
     return;
 
-  FireHostSubmitEvents(form_data, known_success);
+  FireHostSubmitEvents(form_data, known_success, source);
 }
 
 void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
-                                         bool /*known_success*/) {
-  GetAutofillDriver()->WillSubmitForm(form_data, base::TimeTicks::Now());
-  GetAutofillDriver()->FormSubmitted(form_data);
+                                         bool known_success,
+                                         SubmissionSource source) {
+  // We don't want to fire duplicate submission event.
+  if (!submitted_forms_.insert(form_data).second)
+    return;
+
+  GetAutofillDriver()->FormSubmitted(form_data, known_success, source,
+                                     base::TimeTicks::Now());
 }
 
 void AutofillAgent::Shutdown() {
@@ -793,10 +800,18 @@ void AutofillAgent::AjaxSucceeded() {
 void AutofillAgent::OnProvisionallySaveForm(const WebFormElement& form,
                                             const WebInputElement& element,
                                             ElementChangeSource source) {
-  // Remember the last form the user interacted with.
   if (source == ElementChangeSource::WILL_SEND_SUBMIT_EVENT) {
-    UpdateLastInteractedForm(form);
+    // Fire the form submission event to avoid missing submission when web site
+    // handles the onsubmit event, this also gets the form before Javascript
+    // could change it.
+    // We don't clear submitted_forms_ because OnFormSubmitted will normally be
+    // invoked afterwards and we don't want to fire the same event twice.
+    FireHostSubmitEvents(form, /*known_success=*/false,
+                         SubmissionSource::FORM_SUBMISSION);
+    ResetLastInteractedElements();
+    return;
   } else if (source == ElementChangeSource::TEXTFIELD_CHANGED) {
+    // Remember the last form the user interacted with.
     if (!element.Form().IsNull()) {
       UpdateLastInteractedForm(element.Form());
     } else {
@@ -822,18 +837,22 @@ void AutofillAgent::OnProvisionallySaveForm(const WebFormElement& form,
 }
 
 void AutofillAgent::OnProbablyFormSubmitted() {
-  // Uncomment below code once we check whether form submission
-  // is successful in browser side.
-  // FormData form_data;
-  // if (GetSubmittedForm(&form_data)) {
-  //   FireHostSubmitEvents(form_data, /*known_success=*/false);
-  // }
+  FormData form_data;
+  if (GetSubmittedForm(&form_data)) {
+    FireHostSubmitEvents(form_data, /*known_success=*/false,
+                         SubmissionSource::PROBABLY_FORM_SUBMITTED);
+  }
   ResetLastInteractedElements();
+  OnFormNoLongerSubmittable();
 }
 
 void AutofillAgent::OnFormSubmitted(const WebFormElement& form) {
-  FireHostSubmitEvents(form, /*known_success=*/false);
+  // Fire the submission event here because WILL_SEND_SUBMIT_EVENT is skipped
+  // if javascript calls submit() directly.
+  FireHostSubmitEvents(form, /*known_success=*/false,
+                       SubmissionSource::FORM_SUBMISSION);
   ResetLastInteractedElements();
+  OnFormNoLongerSubmittable();
 }
 
 void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
@@ -843,6 +862,8 @@ void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
        !render_frame()->GetWebFrame()->Parent()) ||
       (source == SubmissionSource::SAME_DOCUMENT_NAVIGATION &&
        render_frame()->GetWebFrame()->Parent())) {
+    ResetLastInteractedElements();
+    OnFormNoLongerSubmittable();
     return;
   }
 
@@ -850,13 +871,15 @@ void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
     // Should not access the frame because it is now detached. Instead, use
     // |provisionally_saved_form_|.
     if (provisionally_saved_form_)
-      FireHostSubmitEvents(*provisionally_saved_form_, /*known_success=*/true);
+      FireHostSubmitEvents(*provisionally_saved_form_, /*known_success=*/true,
+                           source);
   } else {
     FormData form_data;
     if (GetSubmittedForm(&form_data))
-      FireHostSubmitEvents(form_data, /*known_success=*/true);
+      FireHostSubmitEvents(form_data, /*known_success=*/true, source);
   }
   ResetLastInteractedElements();
+  OnFormNoLongerSubmittable();
 }
 
 void AutofillAgent::AddFormObserver(Observer* observer) {
@@ -905,6 +928,10 @@ void AutofillAgent::UpdateLastInteractedForm(blink::WebFormElement form) {
                                   provisionally_saved_form_.get())) {
     provisionally_saved_form_.reset();
   }
+}
+
+void AutofillAgent::OnFormNoLongerSubmittable() {
+  submitted_forms_.clear();
 }
 
 const mojom::AutofillDriverPtr& AutofillAgent::GetAutofillDriver() {

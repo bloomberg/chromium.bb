@@ -160,11 +160,11 @@ class CreditCardSaveManagerTest : public testing::Test {
 
   void FormSubmitted(const FormData& form) {
     autofill_manager_->ResetRunLoop();
-    if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()) &&
-        (!personal_data_.GetProfiles().empty() ||
-         !personal_data_.GetCreditCards().empty()))
+    if (autofill_manager_->OnFormSubmitted(form, false,
+                                           SubmissionSource::FORM_SUBMISSION,
+                                           base::TimeTicks::Now())) {
       autofill_manager_->WaitForAsyncUploadProcess();
-    autofill_manager_->OnFormSubmitted(form);
+    }
   }
 
   // Populates |form| with data corresponding to a simple credit card form.

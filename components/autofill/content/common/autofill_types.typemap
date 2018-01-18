@@ -12,6 +12,7 @@ public_headers = [
   "//components/autofill/core/common/password_form_field_prediction_map.h",
   "//components/autofill/core/common/password_form_fill_data.h",
   "//components/autofill/core/common/password_form_generation_data.h",
+  "//components/autofill/core/common/submission_source.h",
 ]
 traits_headers =
     [ "//components/autofill/content/common/autofill_types_struct_traits.h" ]
@@ -44,4 +45,5 @@ type_mappings = [
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
   "autofill.mojom.PossibleUsernamePair=autofill::PossibleUsernamePair",
   "autofill.mojom.PasswordFormSubmissionIndicatorEvent=autofill::PasswordForm::SubmissionIndicatorEvent",
+  "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
 ]

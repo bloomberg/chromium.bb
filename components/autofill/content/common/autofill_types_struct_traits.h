@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/submission_source.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "url/origin.h"
 
@@ -94,6 +95,15 @@ struct EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
   static bool FromMojom(
       autofill::mojom::PasswordFormSubmissionIndicatorEvent input,
       autofill::PasswordForm::SubmissionIndicatorEvent* output);
+};
+
+template <>
+struct EnumTraits<autofill::mojom::SubmissionSource,
+                  autofill::SubmissionSource> {
+  static autofill::mojom::SubmissionSource ToMojom(
+      autofill::SubmissionSource input);
+  static bool FromMojom(autofill::mojom::SubmissionSource input,
+                        autofill::SubmissionSource* output);
 };
 
 template <>

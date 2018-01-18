@@ -40,9 +40,11 @@ class AutofillProviderAndroid : public AutofillProvider {
                             const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box) override;
-  bool OnWillSubmitForm(AutofillHandlerProxy* handler,
-                        const FormData& form,
-                        const base::TimeTicks timestamp) override;
+  bool OnFormSubmitted(AutofillHandlerProxy* handler,
+                       const FormData& form,
+                       bool known_success,
+                       SubmissionSource source,
+                       base::TimeTicks timestamp) override;
   void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) override;
   void OnFocusOnFormField(AutofillHandlerProxy* handler,
                           const FormData& form,
@@ -51,12 +53,17 @@ class AutofillProviderAndroid : public AutofillProvider {
   void OnDidFillAutofillFormData(AutofillHandlerProxy* handler,
                                  const FormData& form,
                                  base::TimeTicks timestamp) override;
+  void OnFormsSeen(AutofillHandlerProxy* handler,
+                   const std::vector<FormData>& forms,
+                   const base::TimeTicks timestamp) override;
+
   void Reset(AutofillHandlerProxy* handler) override;
 
   // Methods called by Java.
   void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
 
  private:
+  void FireSuccessfulSubmission();
   void OnFocusChanged(bool focus_on_form,
                       size_t index,
                       const gfx::RectF& bounding_box);
@@ -74,6 +81,7 @@ class AutofillProviderAndroid : public AutofillProvider {
   base::WeakPtr<AutofillHandlerProxy> handler_;
   JavaObjectWeakGlobalRef java_ref_;
   content::WebContents* web_contents_;
+  bool check_submission_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProviderAndroid);
 };

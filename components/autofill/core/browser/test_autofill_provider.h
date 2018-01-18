@@ -28,9 +28,11 @@ class TestAutofillProvider : public AutofillProvider {
                             const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box) override;
-  bool OnWillSubmitForm(AutofillHandlerProxy* handler,
-                        const FormData& form,
-                        const base::TimeTicks timestamp) override;
+  bool OnFormSubmitted(AutofillHandlerProxy* handler,
+                       const FormData& form,
+                       bool known_success,
+                       SubmissionSource source,
+                       base::TimeTicks timestamp) override;
   void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) override;
   void OnFocusOnFormField(AutofillHandlerProxy* handler,
                           const FormData& form,
@@ -39,6 +41,9 @@ class TestAutofillProvider : public AutofillProvider {
   void OnDidFillAutofillFormData(AutofillHandlerProxy* handler,
                                  const FormData& form,
                                  base::TimeTicks timestamp) override;
+  void OnFormsSeen(AutofillHandlerProxy* handler,
+                   const std::vector<FormData>& forms,
+                   const base::TimeTicks timestamp) override;
   void Reset(AutofillHandlerProxy* handler) override;
 };
 

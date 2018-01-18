@@ -417,6 +417,56 @@ bool EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
 }
 
 // static
+autofill::mojom::SubmissionSource EnumTraits<
+    autofill::mojom::SubmissionSource,
+    autofill::SubmissionSource>::ToMojom(autofill::SubmissionSource input) {
+  switch (input) {
+    case autofill::SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+      return autofill::mojom::SubmissionSource::SAME_DOCUMENT_NAVIGATION;
+    case autofill::SubmissionSource::XHR_SUCCEEDED:
+      return autofill::mojom::SubmissionSource::XHR_SUCCEEDED;
+    case autofill::SubmissionSource::FRAME_DETACHED:
+      return autofill::mojom::SubmissionSource::FRAME_DETACHED;
+    case autofill::SubmissionSource::DOM_MUTATION_AFTER_XHR:
+      return autofill::mojom::SubmissionSource::DOM_MUTATION_AFTER_XHR;
+    case autofill::SubmissionSource::PROBABLY_FORM_SUBMITTED:
+      return autofill::mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED;
+    case autofill::SubmissionSource::FORM_SUBMISSION:
+      return autofill::mojom::SubmissionSource::FORM_SUBMISSION;
+  }
+  NOTREACHED();
+  return autofill::mojom::SubmissionSource::FORM_SUBMISSION;
+}
+
+// static
+bool EnumTraits<autofill::mojom::SubmissionSource, autofill::SubmissionSource>::
+    FromMojom(autofill::mojom::SubmissionSource input,
+              autofill::SubmissionSource* output) {
+  switch (input) {
+    case autofill::mojom::SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+      *output = autofill::SubmissionSource::SAME_DOCUMENT_NAVIGATION;
+      return true;
+    case autofill::mojom::SubmissionSource::XHR_SUCCEEDED:
+      *output = autofill::SubmissionSource::XHR_SUCCEEDED;
+      return true;
+    case autofill::mojom::SubmissionSource::FRAME_DETACHED:
+      *output = autofill::SubmissionSource::FRAME_DETACHED;
+      return true;
+    case autofill::mojom::SubmissionSource::DOM_MUTATION_AFTER_XHR:
+      *output = autofill::SubmissionSource::DOM_MUTATION_AFTER_XHR;
+      return true;
+    case autofill::mojom::SubmissionSource::PROBABLY_FORM_SUBMITTED:
+      *output = autofill::SubmissionSource::PROBABLY_FORM_SUBMITTED;
+      return true;
+    case autofill::mojom::SubmissionSource::FORM_SUBMISSION:
+      *output = autofill::SubmissionSource::FORM_SUBMISSION;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<
     autofill::mojom::FormFieldDataDataView,
     autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,

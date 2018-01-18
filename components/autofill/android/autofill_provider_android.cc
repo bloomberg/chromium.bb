@@ -31,7 +31,7 @@ namespace autofill {
 AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
     content::WebContents* web_contents)
-    : id_(kNoQueryId), web_contents_(web_contents) {
+    : id_(kNoQueryId), web_contents_(web_contents), check_submission_(false) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_ = JavaObjectWeakGlobalRef(env, jcaller);
   Java_AutofillProvider_setNativeAutofillProvider(
@@ -147,20 +147,28 @@ void AutofillProviderAndroid::OnTextFieldDidScroll(
       transformed_bounding.width(), transformed_bounding.height());
 }
 
-bool AutofillProviderAndroid::OnWillSubmitForm(
-    AutofillHandlerProxy* handler,
-    const FormData& form,
-    const base::TimeTicks timestamp) {
+void AutofillProviderAndroid::FireSuccessfulSubmission() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AutofillProvider_onWillSubmitForm(env, obj);
+  Reset();
+}
+
+bool AutofillProviderAndroid::OnFormSubmitted(AutofillHandlerProxy* handler,
+                                              const FormData& form,
+                                              bool known_success,
+                                              SubmissionSource source,
+                                              base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsCurrentlyLinkedHandler(handler) || !IsCurrentlyLinkedForm(form))
     return false;
 
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  Java_AutofillProvider_onWillSubmitForm(env, obj);
-  Reset();
+  if (known_success || source == SubmissionSource::FORM_SUBMISSION)
+    FireSuccessfulSubmission();
+
+  check_submission_ = true;
   return true;
 }
 
@@ -222,6 +230,27 @@ void AutofillProviderAndroid::OnDidFillAutofillFormData(
   Java_AutofillProvider_onDidFillAutofillFormData(env, obj);
 }
 
+void AutofillProviderAndroid::OnFormsSeen(AutofillHandlerProxy* handler,
+                                          const std::vector<FormData>& forms,
+                                          const base::TimeTicks) {
+  if (!check_submission_)
+    return;
+
+  if (handler != handler_.get())
+    return;
+
+  if (form_.get() == nullptr)
+    return;
+
+  for (auto const& form : forms) {
+    if (form_->SimilarFormAs(form))
+      return;
+  }
+  // The form_ disappeared after it was submitted, we consider the submission
+  // succeeded.
+  FireSuccessfulSubmission();
+}
+
 void AutofillProviderAndroid::Reset(AutofillHandlerProxy* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler == handler_.get()) {
@@ -255,6 +284,7 @@ gfx::RectF AutofillProviderAndroid::ToClientAreaBound(
 void AutofillProviderAndroid::Reset() {
   form_.reset(nullptr);
   id_ = kNoQueryId;
+  check_submission_ = false;
 }
 
 }  // namespace autofill

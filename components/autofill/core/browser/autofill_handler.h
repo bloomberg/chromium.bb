@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/submission_source.h"
 
 namespace gfx {
 class RectF;
@@ -52,22 +53,18 @@ class AutofillHandler {
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box);
 
-  // Invoked when the specified form will be submitted, returns false if this
-  // form is not relevant for Autofill.
-  //
-  // IMPORTANT: On iOS, this method is called when the form is submitted,
-  // immediately before OnFormSubmitted() is called. Do not assume that
-  // OnWillSubmitForm() will run before the form submits.
-  // TODO(mathp): Revisit this and use a single method to track form submission.
-  //
-  // Processes the about-to-be-submitted |form|, uploading the possible field
-  // types for the submitted fields to the crowdsourcing server.
-  bool OnWillSubmitForm(const FormData& form, const base::TimeTicks timestamp);
-
   // Invoked when |form|'s |field| has focus.
   void OnFocusOnFormField(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box);
+
+  // Invoked when |form| has been submitted.
+  // Processes the submitted |form|, saving any new Autofill data to the user's
+  // personal profile. Returns false if this form is not relevant for Autofill.
+  bool OnFormSubmitted(const FormData& form,
+                       bool known_success,
+                       SubmissionSource source,
+                       base::TimeTicks timestamp);
 
   // Invoked when focus is no longer on form.
   virtual void OnFocusNoLongerOnForm() = 0;
@@ -83,11 +80,6 @@ class AutofillHandler {
   // Invoked when |forms| has been detected.
   virtual void OnFormsSeen(const std::vector<FormData>& forms,
                            const base::TimeTicks timestamp) = 0;
-
-  // Invoked when |form| has been submitted.
-  // Processes the submitted |form|, saving any new Autofill data to the user's
-  // personal profile. Returns false if this form is not relevant for Autofill.
-  virtual bool OnFormSubmitted(const FormData& form) = 0;
 
   // Invoked when textfeild editing ended
   virtual void OnDidEndTextFieldEditing() = 0;
@@ -110,8 +102,10 @@ class AutofillHandler {
  protected:
   AutofillHandler(AutofillDriver* driver);
 
-  virtual bool OnWillSubmitFormImpl(const FormData& form,
-                                    const base::TimeTicks timestamp) = 0;
+  virtual bool OnFormSubmittedImpl(const FormData& form,
+                                   bool known_success,
+                                   SubmissionSource source,
+                                   base::TimeTicks timestamp) = 0;
 
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
                                         const FormFieldData& field,

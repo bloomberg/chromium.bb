@@ -31,7 +31,7 @@ class FormTracker::FormElementObserverCallback
 
   void ElementWasHiddenOrRemoved() override {
     tracker_->FireInferredFormSubmission(
-        Observer::SubmissionSource::DOM_MUTATION_AFTER_XHR);
+        SubmissionSource::DOM_MUTATION_AFTER_XHR);
   }
 
  private:
@@ -64,7 +64,7 @@ void FormTracker::RemoveObserver(Observer* observer) {
 
 void FormTracker::AjaxSucceeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  FireSubmissionIfFormDisappear(Observer::SubmissionSource::XHR_SUCCEEDED);
+  FireSubmissionIfFormDisappear(SubmissionSource::XHR_SUCCEEDED);
 }
 
 void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
@@ -89,6 +89,10 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FormTracker::TextFieldDidChangeImpl,
                             weak_ptr_factory_.GetWeakPtr(), element));
+}
+
+void FormTracker::FireProbablyFormSubmittedForTesting() {
+  FireProbablyFormSubmitted();
 }
 
 void FormTracker::TextFieldDidChangeImpl(const WebFormControlElement& element) {
@@ -121,8 +125,7 @@ void FormTracker::DidCommitProvisionalLoad(bool is_new_navigation,
   if (!is_same_document_navigation)
     return;
 
-  FireSubmissionIfFormDisappear(
-      Observer::SubmissionSource::SAME_DOCUMENT_NAVIGATION);
+  FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }
 
 void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader) {
@@ -159,7 +162,7 @@ void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader) {
 
 void FormTracker::FrameDetached() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  FireInferredFormSubmission(Observer::SubmissionSource::FRAME_DETACHED);
+  FireInferredFormSubmission(SubmissionSource::FRAME_DETACHED);
 }
 
 void FormTracker::WillSendSubmitEvent(const WebFormElement& form) {
@@ -194,16 +197,14 @@ void FormTracker::FireProbablyFormSubmitted() {
   ResetLastInteractedElements();
 }
 
-void FormTracker::FireInferredFormSubmission(
-    Observer::SubmissionSource source) {
+void FormTracker::FireInferredFormSubmission(SubmissionSource source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   for (auto& observer : observers_)
     observer.OnInferredFormSubmission(source);
   ResetLastInteractedElements();
 }
 
-void FormTracker::FireSubmissionIfFormDisappear(
-    Observer::SubmissionSource source) {
+void FormTracker::FireSubmissionIfFormDisappear(SubmissionSource source) {
   if (CanInferFormSubmitted()) {
     FireInferredFormSubmission(source);
     return;

@@ -76,10 +76,10 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
       forms_.reset(new std::vector<FormData>(forms));
   }
 
-  void WillSubmitForm(const FormData& form,
-                      base::TimeTicks timestamp) override {}
-
-  void FormSubmitted(const FormData& form) override {}
+  void FormSubmitted(const FormData& form,
+                     bool known_success,
+                     SubmissionSource source,
+                     base::TimeTicks timestamp) override {}
 
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,

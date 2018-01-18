@@ -11,6 +11,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_provider.h"
+#include "components/autofill/core/common/submission_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -20,35 +21,25 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+
 namespace autofill {
 namespace {
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-// The workaround class for MSVC warning C4373
-// see
-// https://github.com/google/googlemock/blob/master/googlemock/docs/v1_5/FrequentlyAskedQuestions.md
-class MockableAutofillProvider : public TestAutofillProvider {
- public:
-  ~MockableAutofillProvider() override {}
-  bool OnWillSubmitForm(AutofillHandlerProxy* handler,
-                        const FormData& form,
-                        const base::TimeTicks timestamp) override {
-    return MockableOnWillSubmitForm(handler, form);
-  }
-
-  virtual bool MockableOnWillSubmitForm(AutofillHandlerProxy* handler,
-                                        const FormData& form) = 0;
-};
-
-class MockAutofillProvider : public MockableAutofillProvider {
+class MockAutofillProvider : public TestAutofillProvider {
  public:
   MockAutofillProvider() {}
   ~MockAutofillProvider() override {}
 
-  MOCK_METHOD2(MockableOnWillSubmitForm,
-               bool(AutofillHandlerProxy* handler, const FormData& form));
+  MOCK_METHOD5(OnFormSubmitted,
+               bool(AutofillHandlerProxy* handler,
+                    const FormData& form,
+                    bool,
+                    SubmissionSource,
+                    base::TimeTicks));
 };
 
 }  // namespace
@@ -119,7 +110,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        FrameDetachedOnFormlessSubmission) {
   EXPECT_CALL(autofill_provider_,
-              MockableOnWillSubmitForm(testing::_, testing::_))
+              OnFormSubmitted(_, _, _, SubmissionSource::FRAME_DETACHED, _))
       .Times(1);
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -153,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        FrameDetachedOnFormSubmission) {
   EXPECT_CALL(autofill_provider_,
-              MockableOnWillSubmitForm(testing::_, testing::_))
+              OnFormSubmitted(_, _, _, SubmissionSource::FORM_SUBMISSION, _))
       .Times(1);
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(

@@ -341,11 +341,9 @@ void GetFormAndField(autofill::FormData* form,
   // Exactly one form should be extracted.
   DCHECK_EQ(1U, forms.size());
   autofill::FormData form = forms[0];
-
-  // iOS doesn't get a separate "will submit form" notification so call
-  // OnWillSubmitForm() here.
-  autofillManager->OnWillSubmitForm(form, base::TimeTicks::Now());
-  autofillManager->OnFormSubmitted(form);
+  autofillManager->OnFormSubmitted(form, false,
+                                   autofill::SubmissionSource::FORM_SUBMISSION,
+                                   base::TimeTicks::Now());
   autofill::KeyboardAccessoryMetricsLogger::OnFormSubmitted();
 }
 

@@ -297,11 +297,12 @@ class MockAutofillManager : public autofill::AutofillManager {
   }
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
-  void StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
+  bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
                           const base::TimeTicks& timestamp,
                           bool observed_submission) {
     StartUploadProcessPtr(form_structure.release(), timestamp,
                           observed_submission);
+    return true;
   }
 
   MOCK_METHOD3(StartUploadProcessPtr,

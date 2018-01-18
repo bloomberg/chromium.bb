@@ -26,9 +26,11 @@ void TestAutofillProvider::OnTextFieldDidScroll(
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {}
 
-bool TestAutofillProvider::OnWillSubmitForm(AutofillHandlerProxy* handler,
-                                            const FormData& form,
-                                            const base::TimeTicks timestamp) {
+bool TestAutofillProvider::OnFormSubmitted(AutofillHandlerProxy* handler,
+                                           const FormData& form,
+                                           bool known_success,
+                                           SubmissionSource source,
+                                           base::TimeTicks timestamp) {
   return false;
 }
 
@@ -44,6 +46,10 @@ void TestAutofillProvider::OnDidFillAutofillFormData(
     AutofillHandlerProxy* handler,
     const FormData& form,
     base::TimeTicks timestamp) {}
+
+void TestAutofillProvider::OnFormsSeen(AutofillHandlerProxy* handler,
+                                       const std::vector<FormData>& forms,
+                                       const base::TimeTicks timestamp) {}
 
 void TestAutofillProvider::Reset(AutofillHandlerProxy* handler) {}
 

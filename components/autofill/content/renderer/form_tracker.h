@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "components/autofill/core/common/submission_source.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
@@ -26,14 +27,6 @@ class FormTracker : public content::RenderFrameObserver {
   // and submission.
   class Observer {
    public:
-    // Probably should merge with PasswordForm::SubmissionIndicatorEvent.
-    enum class SubmissionSource {
-      SAME_DOCUMENT_NAVIGATION,
-      XHR_SUCCEEDED,
-      FRAME_DETACHED,
-      DOM_MUTATION_AFTER_XHR,
-    };
-
     enum class ElementChangeSource {
       TEXTFIELD_CHANGED,
       WILL_SEND_SUBMIT_EVENT,
@@ -83,7 +76,12 @@ class FormTracker : public content::RenderFrameObserver {
     user_gesture_required_ = required;
   }
 
+  void FireProbablyFormSubmittedForTesting();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest,
+                           FormSubmittedBySameDocumentNavigation);
+
   class FormElementObserverCallback;
 
   // content::RenderFrameObserver:
@@ -101,8 +99,8 @@ class FormTracker : public content::RenderFrameObserver {
   void TextFieldDidChangeImpl(const blink::WebFormControlElement& element);
   void FireProbablyFormSubmitted();
   void FireFormSubmitted(const blink::WebFormElement& form);
-  void FireInferredFormSubmission(Observer::SubmissionSource source);
-  void FireSubmissionIfFormDisappear(Observer::SubmissionSource source);
+  void FireInferredFormSubmission(SubmissionSource source);
+  void FireSubmissionIfFormDisappear(SubmissionSource source);
   bool CanInferFormSubmitted();
   void TrackElement();
 

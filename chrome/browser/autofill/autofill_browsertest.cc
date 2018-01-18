@@ -261,10 +261,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
   ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
 }
 
-// Form submitted via JavaScript, with an event handler on the submit event
-// which prevents submission of the form. Will not update the user's personal
-// data.
-IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithSubmitHandler) {
+// Form submitted via JavaScript, the user's personal data is updated even
+// if the event handler on the submit event prevents submission of the form.
+IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesAggregatedWithSubmitHandler) {
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -280,28 +279,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithSubmitHandler) {
   FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
                                false, false);
 
-  // The AutofillManager will NOT update the user's profile.
-  EXPECT_EQ(0u, personal_data_manager()->GetProfiles().size());
+  // The AutofillManager will update the user's profile.
+  EXPECT_EQ(1u, personal_data_manager()->GetProfiles().size());
 
-  // We remove the submit handler and resubmit the form. This time the profile
-  // will be updated. This is to guard against the underlying mechanics changing
-  // and to try to avoid flakiness if this happens. We submit slightly different
-  // data to make sure the expected data is saved.
-  data["NAME_FIRST"] = "John";
-  data["NAME_LAST"] = "Doe";
-  std::string change_and_resubmit =
-      GetJSToFillForm(data) +
-      "document.forms[0].removeEventListener('submit', preventFunction);"
-      "document.querySelector('input[type=submit]').click();";
-  WindowedPersonalDataManagerObserver observer(browser());
-  ASSERT_TRUE(content::ExecuteScript(render_view_host(), change_and_resubmit));
-  observer.Wait();
-
-  // The AutofillManager will update the user's profile this time.
-  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
-  EXPECT_EQ(ASCIIToUTF16("John"),
+  EXPECT_EQ(ASCIIToUTF16("Bob"),
             personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(ASCIIToUTF16("Doe"),
+  EXPECT_EQ(ASCIIToUTF16("Smith"),
             personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_LAST));
 }
 

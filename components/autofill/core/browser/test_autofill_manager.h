@@ -76,12 +76,9 @@ class TestAutofillManager : public AutofillManager {
 
   void AddSeenFormStructure(std::unique_ptr<FormStructure> form_structure);
 
-  // Calls AutofillManager::OnWillSubmitForm and waits for it to complete.
-  void WillSubmitForm(const FormData& form, const TimeTicks& timestamp);
-
-  // Calls both AutofillManager::OnWillSubmitForm and
-  // AutofillManager::OnFormSubmitted.
+  // Calls AutofillManager::OnFormSubmitted and waits for it to complete.
   void SubmitForm(const FormData& form, const TimeTicks& timestamp);
+  void SubmitForm(const FormData& form);
 
   void ClearFormStructures();
 
