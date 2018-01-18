@@ -17,13 +17,6 @@ namespace device {
 
 class U2fRequest : public U2fDiscovery::Observer {
  public:
-  // Response and key_handle are optional, depending on the status and
-  // the type of request being served.
-  using ResponseCallback =
-      base::RepeatingCallback<void(U2fReturnCode status_code,
-                                   const std::vector<uint8_t>& response,
-                                   const std::vector<uint8_t>& key_handle)>;
-
   // U2fRequest will register itself as an observer for each entry in
   // |discoveries|. Clients need to ensure that each discovery outlives this
   // request.

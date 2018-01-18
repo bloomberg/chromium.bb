@@ -13,6 +13,7 @@
 #include "content/browser/webauth/collected_client_data.h"
 #include "content/common/content_export.h"
 #include "device/u2f/register_response_data.h"
+#include "device/u2f/sign_response_data.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h"
 #include "url/origin.h"
@@ -52,6 +53,9 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void Bind(webauth::mojom::AuthenticatorRequest request);
 
  private:
+  webauth::mojom::AuthenticatorStatus InitializeAndValidateRequest(
+      const std::string& relying_party_id);
+
   // mojom:Authenticator
   void MakeCredential(webauth::mojom::MakePublicKeyCredentialOptionsPtr options,
                       MakeCredentialCallback callback) override;
@@ -64,6 +68,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void OnRegisterResponse(
       device::U2fReturnCode status_code,
       base::Optional<device::RegisterResponseData> response_data);
+
+  // Callback to handle the async response from a U2fDevice.
+  void OnSignResponse(device::U2fReturnCode status_code,
+                      base::Optional<device::SignResponseData> response_data);
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();

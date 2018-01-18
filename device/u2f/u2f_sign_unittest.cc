@@ -4,7 +4,6 @@
 
 #include "device/u2f/u2f_sign.h"
 
-#include <tuple>
 #include <utility>
 
 #include "base/run_loop.h"
@@ -29,15 +28,6 @@ constexpr char kTestRelyingPartyId[] = "google.com";
 constexpr uint8_t kTestSignatureCounter[] = {0x00, 0x00, 0x00, 0x25};
 
 // Test data specific to GetAssertion/Sign.
-constexpr uint8_t kTestU2fSignResponse[] = {
-    0x01, 0x00, 0x00, 0x00, 0x25, 0x30, 0x45, 0x02, 0x21, 0x00, 0xCA,
-    0xA5, 0x3E, 0x91, 0x0D, 0xB7, 0x5E, 0xDE, 0xAF, 0x72, 0xCF, 0x9F,
-    0x6F, 0x54, 0xE5, 0x20, 0x5B, 0xBB, 0xB9, 0x2F, 0x0B, 0x9F, 0x7D,
-    0xC6, 0xF8, 0xD4, 0x7B, 0x19, 0x70, 0xED, 0xFE, 0xBC, 0x02, 0x20,
-    0x06, 0x32, 0x83, 0x65, 0x26, 0x4E, 0xBE, 0xFE, 0x35, 0x3C, 0x95,
-    0x91, 0xDF, 0xCE, 0x7D, 0x73, 0x15, 0x98, 0x64, 0xDF, 0xEA, 0xB7,
-    0x87, 0xF1, 0x5D, 0xF8, 0xA5, 0x97, 0xD0, 0x85, 0x0C, 0xA2};
-
 constexpr uint8_t kTestAssertionSignature[] = {
     0x30, 0x45, 0x02, 0x21, 0x00, 0xCA, 0xA5, 0x3E, 0x91, 0x0D, 0xB7, 0x5E,
     0xDE, 0xAF, 0x72, 0xCF, 0x9F, 0x6F, 0x54, 0xE5, 0x20, 0x5B, 0xBB, 0xB9,
@@ -64,8 +54,8 @@ std::vector<uint8_t> GetTestCredentialRawIdBytes() {
 }
 
 std::vector<uint8_t> GetTestSignResponse() {
-  return std::vector<uint8_t>(std::begin(kTestU2fSignResponse),
-                              std::end(kTestU2fSignResponse));
+  return std::vector<uint8_t>(std::begin(test_data::kTestU2fSignResponse),
+                              std::end(test_data::kTestU2fSignResponse));
 }
 
 std::vector<uint8_t> GetTestAuthenticatorData() {
@@ -85,8 +75,9 @@ std::vector<uint8_t> GetTestSignatureCounter() {
 
 // Get a subset of the response for testing error handling.
 std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
-  return std::vector<uint8_t>(kTestU2fSignResponse,
-                              kTestU2fSignResponse + length);
+  DCHECK_LE(length, arraysize(test_data::kTestU2fSignResponse));
+  return std::vector<uint8_t>(test_data::kTestU2fSignResponse,
+                              test_data::kTestU2fSignResponse + length);
 }
 
 }  // namespace
@@ -109,75 +100,71 @@ class TestSignCallback {
   ~TestSignCallback() = default;
 
   void ReceivedCallback(U2fReturnCode status_code,
-                        const std::vector<uint8_t>& response,
-                        const std::vector<uint8_t>& key_handle) {
-    response_ = std::make_tuple(status_code, response, key_handle);
+                        base::Optional<SignResponseData> response_data) {
+    response_ = std::make_pair(status_code, std::move(response_data));
     closure_.Run();
   }
 
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-  WaitForCallback() {
+  void WaitForCallback() {
     closure_ = run_loop_.QuitClosure();
     run_loop_.Run();
-    return response_;
   }
 
-  const U2fRequest::ResponseCallback& callback() { return callback_; }
+  U2fReturnCode GetReturnCode() { return std::get<0>(response_); }
+
+  const base::Optional<SignResponseData>& GetResponseData() {
+    return std::get<1>(response_);
+  }
+
+  U2fSign::SignResponseCallback& callback() { return callback_; }
 
  private:
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>
-      response_;
+  std::pair<U2fReturnCode, base::Optional<SignResponseData>> response_;
   base::Closure closure_;
-  U2fRequest::ResponseCallback callback_;
+  U2fSign::SignResponseCallback callback_;
   base::RunLoop run_loop_;
 };
 
 TEST_F(U2fSignTest, TestSignSuccess) {
-  std::vector<uint8_t> key(32, 0xA);
-  std::vector<std::vector<uint8_t>> handles = {key};
-  std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
+  auto device = std::make_unique<MockU2fDevice>();
   MockU2fDiscovery discovery;
 
-  EXPECT_CALL(*device.get(), GetId()).WillOnce(testing::Return("device"));
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device.get(), TryWinkRef(_))
+  EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(discovery, Start())
       .WillOnce(
           testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
   TestSignCallback cb;
 
+  std::vector<uint8_t> key(32, 0xA);
   std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kTestRelyingPartyId, {&discovery}, cb.callback());
-
+      kTestRelyingPartyId, {&discovery},
+      std::vector<std::vector<uint8_t>>({key}), std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
   discovery.AddDevice(std::move(device));
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-      response = cb.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
+  cb.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, cb.GetReturnCode());
 
   // Correct key was sent so a sign response is expected
-  ASSERT_GE(1u, std::get<1>(response).size());
-  EXPECT_EQ(static_cast<uint8_t>(MockU2fDevice::kSign),
-            std::get<1>(response)[0]);
+  EXPECT_EQ(GetTestAssertionSignature(), cb.GetResponseData()->signature());
 
-  // Verify that we get the key handle used for signing.
-  EXPECT_EQ(key, std::get<2>(response));
+  // Verify that we get the key handle used for signing
+  EXPECT_EQ(key, cb.GetResponseData()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestDelayedSuccess) {
-  std::vector<uint8_t> key(32, 0xA);
-  std::vector<std::vector<uint8_t>> handles = {key};
-  std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
+  auto device = std::make_unique<MockU2fDevice>();
   MockU2fDiscovery discovery;
 
   // Go through the state machine twice before success
   EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device.get(), TryWinkRef(_))
+  EXPECT_CALL(*device, TryWinkRef(_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(discovery, Start())
@@ -185,23 +172,22 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
           testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
   TestSignCallback cb;
 
+  std::vector<uint8_t> key(32, 0xA);
   std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kTestRelyingPartyId, {&discovery}, cb.callback());
+      kTestRelyingPartyId, {&discovery},
+      std::vector<std::vector<uint8_t>>({key}), std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
   request->Start();
   discovery.AddDevice(std::move(device));
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-      response = cb.WaitForCallback();
 
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
+  cb.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, cb.GetReturnCode());
 
   // Correct key was sent so a sign response is expected
-  ASSERT_GE(1u, std::get<1>(response).size());
-  EXPECT_EQ(static_cast<uint8_t>(MockU2fDevice::kSign),
-            std::get<1>(response)[0]);
+  EXPECT_EQ(GetTestAssertionSignature(), cb.GetResponseData()->signature());
 
-  // Verify that we get the key handle used for signing.
-  EXPECT_EQ(key, std::get<2>(response));
+  // Verify that we get the key handle used for signing
+  EXPECT_EQ(key, cb.GetResponseData()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleHandles) {
@@ -212,18 +198,18 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
   // Put wrong key first to ensure that it will be tested before the correct key
   std::vector<std::vector<uint8_t>> handles = {wrong_key0, wrong_key1,
                                                wrong_key2, key};
-  std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
+  auto device = std::make_unique<MockU2fDevice>();
   MockU2fDiscovery discovery;
 
   // Wrong key would respond with SW_WRONG_DATA
-  EXPECT_CALL(*device.get(), GetId()).WillOnce(testing::Return("device"));
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
   // Only one wink expected per device
-  EXPECT_CALL(*device.get(), TryWinkRef(_))
+  EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(discovery, Start())
       .WillOnce(
@@ -231,20 +217,18 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
 
   TestSignCallback cb;
   std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kTestRelyingPartyId, {&discovery}, cb.callback());
+      kTestRelyingPartyId, {&discovery}, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
   discovery.AddDevice(std::move(device));
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-      response = cb.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
+
+  cb.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, cb.GetReturnCode());
 
   // Correct key was sent so a sign response is expected
-  ASSERT_GE(1u, std::get<1>(response).size());
-  EXPECT_EQ(static_cast<uint8_t>(MockU2fDevice::kSign),
-            std::get<1>(response)[0]);
+  EXPECT_EQ(GetTestAssertionSignature(), cb.GetResponseData()->signature());
 
-  // Verify that we get the key handle used for signing.
-  EXPECT_EQ(key, std::get<2>(response));
+  // Verify that we get the key handle used for signing
+  EXPECT_EQ(key, cb.GetResponseData()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleDevices) {
@@ -252,22 +236,22 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   std::vector<uint8_t> key1(32, 0xB);
   // Second device will have a successful touch
   std::vector<std::vector<uint8_t>> handles = {key0, key1};
-  std::unique_ptr<MockU2fDevice> device0(new MockU2fDevice());
-  std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
+  auto device0 = std::make_unique<MockU2fDevice>();
+  auto device1 = std::make_unique<MockU2fDevice>();
   MockU2fDiscovery discovery;
 
   EXPECT_CALL(*device0, GetId()).WillOnce(testing::Return("device0"));
   EXPECT_CALL(*device1, GetId()).WillOnce(testing::Return("device1"));
 
-  EXPECT_CALL(*device0.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device
-  EXPECT_CALL(*device0.get(), TryWinkRef(_))
+  EXPECT_CALL(*device0, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*device1.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device1.get(), TryWinkRef(_))
+  EXPECT_CALL(*device1, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(discovery, Start())
       .WillOnce(
@@ -275,21 +259,19 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
 
   TestSignCallback cb;
   std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kTestRelyingPartyId, {&discovery}, cb.callback());
+      kTestRelyingPartyId, {&discovery}, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
   discovery.AddDevice(std::move(device0));
   discovery.AddDevice(std::move(device1));
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-      response = cb.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
+
+  cb.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, cb.GetReturnCode());
 
   // Correct key was sent so a sign response is expected
-  ASSERT_GE(1u, std::get<1>(response).size());
-  EXPECT_EQ(static_cast<uint8_t>(MockU2fDevice::kSign),
-            std::get<1>(response)[0]);
+  EXPECT_EQ(GetTestAssertionSignature(), cb.GetResponseData()->signature());
 
-  // Verify that we get the key handle used for signing.
-  EXPECT_EQ(key0, std::get<2>(response));
+  // Verify that we get the key handle used for signing
+  EXPECT_EQ(key0, cb.GetResponseData()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestFakeEnroll) {
@@ -297,24 +279,24 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   std::vector<uint8_t> key1(32, 0xB);
   // Second device will be have a successful touch
   std::vector<std::vector<uint8_t>> handles = {key0, key1};
-  std::unique_ptr<MockU2fDevice> device0(new MockU2fDevice());
-  std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
+  auto device0 = std::make_unique<MockU2fDevice>();
+  auto device1 = std::make_unique<MockU2fDevice>();
   MockU2fDiscovery discovery;
 
-  EXPECT_CALL(*device0.get(), GetId()).WillOnce(testing::Return("device0"));
-  EXPECT_CALL(*device1.get(), GetId()).WillOnce(testing::Return("device1"));
-  EXPECT_CALL(*device0.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device0, GetId()).WillOnce(testing::Return("device0"));
+  EXPECT_CALL(*device1, GetId()).WillOnce(testing::Return("device1"));
+  EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device
-  EXPECT_CALL(*device0.get(), TryWinkRef(_))
+  EXPECT_CALL(*device0, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   // Both keys will be tried, when both fail, register is tried on that device
-  EXPECT_CALL(*device1.get(), DeviceTransactPtr(_, _))
+  EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
-  EXPECT_CALL(*device1.get(), TryWinkRef(_))
+  EXPECT_CALL(*device1, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(discovery, Start())
       .WillOnce(
@@ -322,24 +304,17 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
 
   TestSignCallback cb;
   std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
-      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kTestRelyingPartyId, {&discovery}, cb.callback());
+      kTestRelyingPartyId, {&discovery}, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
   request->Start();
   discovery.AddDevice(std::move(device0));
   discovery.AddDevice(std::move(device1));
-  std::tuple<U2fReturnCode, std::vector<uint8_t>, std::vector<uint8_t>>&
-      response = cb.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
 
-  // Device that responded had no correct keys, so a registration response is
-  // expected.
-  EXPECT_EQ(
-      std::vector<uint8_t>(std::begin(test_data::kTestU2fRegisterResponse),
-                           std::end(test_data::kTestU2fRegisterResponse)),
-      std::get<1>(response));
+  cb.WaitForCallback();
 
-  // Verify that we get a blank key handle for the key that was registered.
-  EXPECT_TRUE(std::get<2>(response).empty());
+  // Device that responded had no correct keys.
+  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, cb.GetReturnCode());
+  EXPECT_FALSE(cb.GetResponseData());
 }
 
 TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
@@ -367,7 +342,7 @@ TEST_F(U2fSignTest, TestNullKeyHandle) {
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
           kTestRelyingPartyId, GetTestSignResponse(), std::vector<uint8_t>());
-  EXPECT_EQ(base::nullopt, response);
+  EXPECT_FALSE(response);
 }
 
 TEST_F(U2fSignTest, TestNullResponse) {
@@ -375,7 +350,7 @@ TEST_F(U2fSignTest, TestNullResponse) {
       SignResponseData::CreateFromU2fSignResponse(
           kTestRelyingPartyId, std::vector<uint8_t>(),
           GetTestCredentialRawIdBytes());
-  EXPECT_EQ(base::nullopt, response);
+  EXPECT_FALSE(response);
 }
 
 TEST_F(U2fSignTest, TestCorruptedCounter) {
@@ -384,7 +359,7 @@ TEST_F(U2fSignTest, TestCorruptedCounter) {
       SignResponseData::CreateFromU2fSignResponse(
           kTestRelyingPartyId, GetTestCorruptedSignResponse(3),
           GetTestCredentialRawIdBytes());
-  EXPECT_EQ(base::nullopt, response);
+  EXPECT_FALSE(response);
 }
 
 TEST_F(U2fSignTest, TestCorruptedSignature) {
@@ -393,6 +368,32 @@ TEST_F(U2fSignTest, TestCorruptedSignature) {
       SignResponseData::CreateFromU2fSignResponse(
           kTestRelyingPartyId, GetTestCorruptedSignResponse(5),
           GetTestCredentialRawIdBytes());
-  EXPECT_EQ(base::nullopt, response);
+  EXPECT_FALSE(response);
+}
+
+// Device returns success, but the response is unparse-able.
+TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
+  auto device = std::make_unique<MockU2fDevice>();
+  MockU2fDiscovery discovery;
+
+  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, DeviceTransactPtr(_, _))
+      .WillOnce(testing::Invoke(MockU2fDevice::SignWithCorruptedResponse));
+  EXPECT_CALL(*device, TryWinkRef(_))
+      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+  EXPECT_CALL(discovery, Start())
+      .WillOnce(
+          testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccessAsync));
+  TestSignCallback cb;
+
+  std::vector<uint8_t> key(32, 0xA);
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      kTestRelyingPartyId, {&discovery},
+      std::vector<std::vector<uint8_t>>({key}), std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), std::move(cb.callback()));
+  discovery.AddDevice(std::move(device));
+  cb.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::FAILURE, cb.GetReturnCode());
+  EXPECT_FALSE(cb.GetResponseData());
 }
 }  // namespace device

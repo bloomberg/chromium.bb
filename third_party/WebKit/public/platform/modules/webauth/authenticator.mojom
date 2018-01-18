@@ -108,7 +108,7 @@ struct PublicKeyCredentialRequestOptions {
   mojo.common.mojom.TimeDelta adjusted_timeout;
 
   // An ASCII serialization of the origin claimed by the relying party.
-  string? relying_party_id;
+  string relying_party_id;
 
   // A list of credentials the relying party knows about and would
   // accept as the signing credential.

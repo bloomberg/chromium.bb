@@ -16,6 +16,7 @@ namespace content {
 
 namespace client_data {
 CONTENT_EXPORT extern const char kCreateType[];
+CONTENT_EXPORT extern const char kGetType[];
 }  // namespace client_data
 
 // Represents the contextual bindings of both the Relying Party and the
