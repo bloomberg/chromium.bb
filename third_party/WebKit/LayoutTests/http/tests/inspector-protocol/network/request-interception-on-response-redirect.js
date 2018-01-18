@@ -65,7 +65,8 @@
   await new Promise(resolve => {
     session.protocol.Network.onResponseReceived(resolve);
     session.evaluate(`
-      fetch('${testRunner.url('../resources/ping-redirect.php')}');
+      fetch('${testRunner.url('../resources/ping-redirect.php')}')
+        .then(response => response.arrayBuffer());
     `);
   });
 

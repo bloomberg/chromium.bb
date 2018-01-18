@@ -18,7 +18,8 @@
   ]});
   testRunner.log('Request interception patterns sent.');
 
-  session.evaluate(`fetch('${testRunner.url('../resources/redirect1.php')}')`);
+  session.evaluate(`fetch('${testRunner.url('../resources/redirect1.php')}')
+                      .then(response => response.arrayBuffer())`);
 
   // Should be redirect1.php as request.
   var interceptionEvent = await waitForInterceptionEvent();
