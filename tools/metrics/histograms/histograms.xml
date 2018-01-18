@@ -111648,13 +111648,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="TaskSchedulerMayBlock" separator=".">
+  <obsolete>
+    Deprecated 1/2018. Merged with TaskSchedulerTaskPriority into
+    TaskSchedulerTaskType to reduce suffixing.
+  </obsolete>
   <suffix name="MayBlock"
       label="Applies to tasks posted with MayBlock() or
              WithBaseSyncPrimitives()."/>
-  <affected-histogram name="TaskScheduler.TaskLatency.BackgroundTaskPriority"/>
-  <affected-histogram
-      name="TaskScheduler.TaskLatency.UserBlockingTaskPriority"/>
-  <affected-histogram name="TaskScheduler.TaskLatency.UserVisibleTaskPriority"/>
+  <affected-histogram name="TaskScheduler.TaskLatency.BackgroundTaskPriority">
+    <obsolete>
+      Deprecated 4/2017. Units changed from milliseconds to microseconds.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="TaskScheduler.TaskLatency.UserBlockingTaskPriority">
+    <obsolete>
+      Deprecated 4/2017. Units changed from milliseconds to microseconds.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="TaskScheduler.TaskLatency.UserVisibleTaskPriority">
+    <obsolete>
+      Deprecated 4/2017. Units changed from milliseconds to microseconds.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram
       name="TaskScheduler.TaskLatencyMicroseconds.BackgroundTaskPriority"/>
   <affected-histogram
@@ -111663,14 +111678,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="TaskScheduler.TaskLatencyMicroseconds.UserVisibleTaskPriority"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="TaskSchedulerName" separator=".">
+  <suffix base="true" name="Renderer"
+      label="TaskSchedulers for renderer processes."/>
+  <suffix base="true" name="ContentChild"
+      label="TaskSchedulers for various instantiations of
+             content::ChildProcess."/>
+  <affected-histogram name="TaskScheduler.DetachDuration"/>
+  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach"/>
+  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits"/>
+  <affected-histogram name="TaskScheduler.TaskLatencyMicroseconds"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="TaskSchedulerTaskPriority" separator=".">
+  <obsolete>
+    Deprecated 1/2018. Merged with TaskSchedulerMayBlock into
+    TaskSchedulerTaskType to reduce suffixing.
+  </obsolete>
   <suffix name="BackgroundTaskPriority"
       label="Applies to tasks posted with a BACKGROUND priority."/>
   <suffix name="UserVisibleTaskPriority"
       label="Applies to tasks posted with a USER_VISIBLE priority."/>
   <suffix name="UserBlockingTaskPriority"
       label="Applies to tasks posted with a USER_BLOCKING priority."/>
-  <affected-histogram name="TaskScheduler.TaskLatency"/>
+  <affected-histogram name="TaskScheduler.TaskLatency">
+    <obsolete>
+      Deprecated 4/2017. Units changed from milliseconds to microseconds.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="TaskScheduler.TaskLatency.BackgroundFileIOPool">
     <obsolete>
       Deprecated 12/2016. Pool name removed from task latency histogram name.
@@ -111694,6 +111729,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="TaskScheduler.TaskLatencyMicroseconds"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="TaskSchedulerTaskType" separator=".">
+  <suffix name="BackgroundTaskPriority"
+      label="Applies to tasks posted with a BACKGROUND priority and neither
+             of MayBlock() nor WithBaseSyncPrimitives()."/>
+  <suffix name="UserVisibleTaskPriority"
+      label="Applies to tasks posted with a USER_VISIBLE priority and neither
+             of MayBlock() nor WithBaseSyncPrimitives()."/>
+  <suffix name="UserBlockingTaskPriority"
+      label="Applies to tasks posted with a USER_BLOCKING priority and
+             neither of MayBlock() nor WithBaseSyncPrimitives()."/>
+  <suffix name="BackgroundTaskPriority_MayBlock"
+      label="Applies to tasks posted with a BACKGROUND priority and
+             MayBlock() or WithBaseSyncPrimitives()."/>
+  <suffix name="UserVisibleTaskPriority_MayBlock"
+      label="Applies to tasks posted with a USER_VISIBLE priority and
+             MayBlock() or WithBaseSyncPrimitives()."/>
+  <suffix name="UserBlockingTaskPriority_MayBlock"
+      label="Applies to tasks posted with a USER_BLOCKING priority and
+             MayBlock() or WithBaseSyncPrimitives()."/>
+  <affected-histogram name="TaskScheduler.TaskLatencyMicroseconds"/>
+  <affected-histogram
+      name="TaskScheduler.TaskLatencyMicroseconds.ContentChild"/>
+  <affected-histogram name="TaskScheduler.TaskLatencyMicroseconds.Renderer"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="TaskSchedulerWorkerPool" separator=".">
   <suffix name="BackgroundBlockingPool"
       label="Applies to the BackgroundBlocking worker pool."/>
@@ -111714,16 +111774,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </suffix>
   <suffix name="ForegroundPool" label="Applies to the Foreground worker pool."/>
   <suffix name="RendererBackgroundBlockingPool"
-      label="Applies to the RendererBackgroundBlocking worker pool."/>
+      label="Applies to the RendererBackgroundBlocking worker pool.">
+    <obsolete>
+      Deprecated 01/2018. In favor of TaskSchedulerName suffix.
+    </obsolete>
+  </suffix>
   <suffix name="RendererBackgroundPool"
-      label="Applies to the RendererBackground worker pool."/>
+      label="Applies to the RendererBackground worker pool.">
+    <obsolete>
+      Deprecated 01/2018. In favor of TaskSchedulerName suffix.
+    </obsolete>
+  </suffix>
   <suffix name="RendererForegroundBlockingPool"
-      label="Applies to the RendererForegroundBlocking worker pool."/>
+      label="Applies to the RendererForegroundBlocking worker pool.">
+    <obsolete>
+      Deprecated 01/2018. In favor of TaskSchedulerName suffix.
+    </obsolete>
+  </suffix>
   <suffix name="RendererForegroundPool"
-      label="Applies to the RendererForeground worker pool."/>
+      label="Applies to the RendererForeground worker pool.">
+    <obsolete>
+      Deprecated 01/2018. In favor of TaskSchedulerName suffix.
+    </obsolete>
+  </suffix>
   <affected-histogram name="TaskScheduler.DetachDuration"/>
+  <affected-histogram name="TaskScheduler.DetachDuration.ContentChild"/>
+  <affected-histogram name="TaskScheduler.DetachDuration.Renderer"/>
   <affected-histogram name="TaskScheduler.NumTasksBeforeDetach"/>
+  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach.ContentChild"/>
+  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach.Renderer"/>
   <affected-histogram name="TaskScheduler.NumTasksBetweenWaits"/>
+  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits.ContentChild"/>
+  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits.Renderer"/>
   <affected-histogram name="TaskScheduler.TaskLatency">
     <obsolete>
       Deprecated 12/2016. Pool name removed from task latency histogram name.

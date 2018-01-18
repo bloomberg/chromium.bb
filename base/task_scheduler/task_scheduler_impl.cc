@@ -18,6 +18,9 @@
 namespace base {
 namespace internal {
 
+TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
+    : TaskSchedulerImpl(name, std::make_unique<TaskTrackerImpl>(name)) {}
+
 TaskSchedulerImpl::TaskSchedulerImpl(
     StringPiece name,
     std::unique_ptr<TaskTrackerImpl> task_tracker)
@@ -35,7 +38,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(
   for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
        ++environment_type) {
     worker_pools_[environment_type] = std::make_unique<SchedulerWorkerPoolImpl>(
-        name_ + kEnvironmentParams[environment_type].name_suffix,
+        (name_.empty() ? "" : name_ + ".") +
+            kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint, task_tracker_.get(),
         &delayed_task_manager_);
   }

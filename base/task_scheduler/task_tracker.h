@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task_scheduler/scheduler_lock.h"
@@ -84,9 +85,11 @@ namespace internal {
 // TaskPriority::USER_BLOCKING.
 class BASE_EXPORT TaskTracker {
  public:
+  // |name| is used as a suffix for histograms (optional)
   // |max_num_scheduled_background_sequences| is the maximum number of
-  // background sequences that be scheduled concurrently.
-  TaskTracker(int max_num_scheduled_background_sequences =
+  // background sequences that can be scheduled concurrently (default to max())
+  TaskTracker(StringPiece name = StringPiece(),
+              int max_num_scheduled_background_sequences =
                   std::numeric_limits<int>::max());
   virtual ~TaskTracker();
 

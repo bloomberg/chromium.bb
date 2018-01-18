@@ -50,12 +50,14 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
       TaskTracker;
 #endif
 
-  // |name| is used to label threads and histograms. |task_tracker| can be used
-  // for tests that need more execution control. By default, the production
-  // TaskTracker is used.
-  explicit TaskSchedulerImpl(StringPiece name,
-                             std::unique_ptr<TaskTrackerImpl> task_tracker =
-                                 std::make_unique<TaskTrackerImpl>());
+  // Creates a TaskSchedulerImpl with a production TaskTracker.
+  //|name| is used to label threads and histograms.
+  explicit TaskSchedulerImpl(StringPiece name);
+
+  // For testing only. Creates a TaskSchedulerImpl with a custom TaskTracker.
+  TaskSchedulerImpl(StringPiece name,
+                    std::unique_ptr<TaskTrackerImpl> task_tracker);
+
   ~TaskSchedulerImpl() override;
 
   // TaskScheduler:

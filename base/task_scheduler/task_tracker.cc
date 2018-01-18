@@ -73,16 +73,22 @@ const char kQueueFunctionName[] = "base::PostTask";
 // its implementation details.
 const char kRunFunctionName[] = "TaskSchedulerRunTask";
 
-HistogramBase* GetTaskLatencyHistogram(const char* suffix) {
+HistogramBase* GetTaskLatencyHistogram(StringPiece name_suffix,
+                                       StringPiece task_type_suffix) {
   // Mimics the UMA_HISTOGRAM_TIMES macro except we don't specify bounds with
   // TimeDeltas as FactoryTimeGet assumes millisecond granularity. The minimums
   // and maximums were chosen to place the 1ms mark at around the 70% range
   // coverage for buckets giving us good info for tasks that have a latency
   // below 1ms (most of them) and enough info to assess how bad the latency is
   // for tasks that exceed this threshold.
-  return Histogram::FactoryGet(
-      std::string("TaskScheduler.TaskLatencyMicroseconds.") + suffix, 1, 20000,
-      50, HistogramBase::kUmaTargetedHistogramFlag);
+  std::string histogram_name = "TaskScheduler.TaskLatencyMicroseconds.";
+  if (!name_suffix.empty()) {
+    name_suffix.AppendToString(&histogram_name);
+    histogram_name.push_back('.');
+  }
+  task_type_suffix.AppendToString(&histogram_name);
+  return Histogram::FactoryGet(histogram_name, 1, 20000, 50,
+                               HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 // Upper bound for the
@@ -214,19 +220,21 @@ struct TaskTracker::PreemptedBackgroundSequence {
   CanScheduleSequenceObserver* observer = nullptr;
 };
 
-TaskTracker::TaskTracker(int max_num_scheduled_background_sequences)
+TaskTracker::TaskTracker(StringPiece name,
+                         int max_num_scheduled_background_sequences)
     : state_(new State),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
       max_num_scheduled_background_sequences_(
           max_num_scheduled_background_sequences),
       task_latency_histograms_{
-          {GetTaskLatencyHistogram("BackgroundTaskPriority"),
-           GetTaskLatencyHistogram("BackgroundTaskPriority.MayBlock")},
-          {GetTaskLatencyHistogram("UserVisibleTaskPriority"),
-           GetTaskLatencyHistogram("UserVisibleTaskPriority.MayBlock")},
-          {GetTaskLatencyHistogram("UserBlockingTaskPriority"),
-           GetTaskLatencyHistogram("UserBlockingTaskPriority.MayBlock")}} {
+          {GetTaskLatencyHistogram(name, "BackgroundTaskPriority"),
+           GetTaskLatencyHistogram(name, "BackgroundTaskPriority_MayBlock")},
+          {GetTaskLatencyHistogram(name, "UserVisibleTaskPriority"),
+           GetTaskLatencyHistogram(name, "UserVisibleTaskPriority_MayBlock")},
+          {GetTaskLatencyHistogram(name, "UserBlockingTaskPriority"),
+           GetTaskLatencyHistogram(name,
+                                   "UserBlockingTaskPriority_MayBlock")}} {
   // Confirm that all |task_latency_histograms_| have been initialized above.
   DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
                                      1][0] -
