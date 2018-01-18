@@ -31,7 +31,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "ui/message_center/message_center.h"
 
 namespace {
 

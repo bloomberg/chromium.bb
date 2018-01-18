@@ -36,7 +36,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
