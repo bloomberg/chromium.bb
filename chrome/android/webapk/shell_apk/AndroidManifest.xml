@@ -83,25 +83,6 @@
               <category android:name="android.intent.category.WEBAPK_API" />
             </intent-filter>
         </service>
-        <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
-            android:value="3"/>
-        <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME"
-            android:value="org.chromium.webapk.shell_apk.WebApkSandboxedProcessService"/>
-        <service android:name="org.chromium.webapk.shell_apk.WebApkSandboxedProcessService0"
-            android:isolatedProcess="true"
-            android:process=":webapk_sandboxed_process0"
-            android:exported="true"
-            tools:ignore="ExportedService"/>
-        <service android:name="org.chromium.webapk.shell_apk.WebApkSandboxedProcessService1"
-            android:isolatedProcess="true"
-            android:process=":webapk_sandboxed_process1"
-            android:exported="true"
-            tools:ignore="ExportedService"/>
-        <service android:name="org.chromium.webapk.shell_apk.WebApkSandboxedProcessService2"
-            android:isolatedProcess="true"
-            android:process=":webapk_sandboxed_process2"
-            android:exported="true"
-            tools:ignore="ExportedService"/>
         <service
             android:name="org.chromium.webapk.shell_apk.IdentityService"
             android:exported="true"

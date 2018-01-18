@@ -156,7 +156,7 @@ jumbo_component("base") {
     "android/build_info.h",
     "android/callback_android.cc",
     "android/callback_android.h",
-    "android/child_process_service_impl.cc",
+    "android/child_process_service.cc",
     "android/command_line_android.cc",
     "android/content_uri_utils.cc",
     "android/content_uri_utils.h",
@@ -2606,7 +2606,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
-      "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceImpl.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
     ]
 
     public_deps = [
@@ -2709,7 +2709,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/process_launcher/ChildProcessConstants.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessLauncher.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
-      "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceImpl.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceDelegate.java",
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
     ]

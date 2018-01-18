@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/posix/global_descriptors.h"
-#include "jni/ChildProcessServiceImpl_jni.h"
+#include "jni/ChildProcessService_jni.h"
 
 using base::android::JavaIntArrayToIntVector;
 using base::android::JavaParamRef;
@@ -18,7 +18,7 @@ using base::android::JavaParamRef;
 namespace base {
 namespace android {
 
-void JNI_ChildProcessServiceImpl_RegisterFileDescriptors(
+void JNI_ChildProcessService_RegisterFileDescriptors(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobjectArray>& j_keys,
@@ -67,10 +67,10 @@ void JNI_ChildProcessServiceImpl_RegisterFileDescriptors(
   }
 }
 
-void JNI_ChildProcessServiceImpl_ExitChildProcess(
+void JNI_ChildProcessService_ExitChildProcess(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  VLOG(0) << "ChildProcessServiceImpl: Exiting child process.";
+  VLOG(0) << "ChildProcessService: Exiting child process.";
   base::android::LibraryLoaderExitHook();
   _exit(0);
 }
