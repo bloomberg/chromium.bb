@@ -11,10 +11,16 @@
 namespace ui {
 
 DummyTextInputClient::DummyTextInputClient()
-    : text_input_type_(TEXT_INPUT_TYPE_NONE), insert_char_count_(0) {}
+    : DummyTextInputClient(TEXT_INPUT_TYPE_NONE) {}
 
 DummyTextInputClient::DummyTextInputClient(TextInputType text_input_type)
-    : text_input_type_(text_input_type), insert_char_count_(0) {}
+    : DummyTextInputClient(text_input_type, TEXT_INPUT_MODE_DEFAULT) {}
+
+DummyTextInputClient::DummyTextInputClient(TextInputType text_input_type,
+                                           TextInputMode text_input_mode)
+    : text_input_type_(text_input_type),
+      text_input_mode_(text_input_mode),
+      insert_char_count_(0) {}
 
 DummyTextInputClient::~DummyTextInputClient() {
 }
@@ -45,7 +51,7 @@ TextInputType DummyTextInputClient::GetTextInputType() const {
 }
 
 TextInputMode DummyTextInputClient::GetTextInputMode() const {
-  return TEXT_INPUT_MODE_DEFAULT;
+  return text_input_mode_;
 }
 
 base::i18n::TextDirection DummyTextInputClient::GetTextDirection() const {
