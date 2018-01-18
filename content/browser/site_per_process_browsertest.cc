@@ -6767,16 +6767,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   EXPECT_EQ(nullptr, router->wheel_target_.target);
 }
 
-// TODO: Flaking test crbug.com/802828
 // Ensure that a cross-process subframe with a touch-handler can receive touch
 // events.
-#if defined(OS_WIN)
-#define MAYBE_SubframeTouchEventRouting DISABLED_SubframeTouchEventRouting
-#else
-#define MAYBE_SubframeTouchEventRouting SubframeTouchEventRouting
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_SubframeTouchEventRouting) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeTouchEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6806,6 +6799,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(cc::kTouchActionAuto,
             child_render_widget_host->input_router()->AllowedTouchAction());
 
+  InputEventAckWaiter waiter(child_render_widget_host,
+                             blink::WebInputEvent::kTouchStart);
+
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
   auto* rwhv = static_cast<RenderWidgetHostViewAura*>(
@@ -6825,6 +6821,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                          /* radius_y */ 30.0f,
                          /* force */ 0.0f));
   rwhv->OnTouchEvent(&touch_event);
+  waiter.Wait();
   {
     MainThreadFrameObserver observer(child_render_widget_host);
     observer.Wait();
