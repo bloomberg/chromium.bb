@@ -146,6 +146,7 @@ void SyncErrorNotifier::OnErrorChanged() {
           message_center::RichNotificationData(),
           new SyncNotificationDelegate(profile_), kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
+  notification->set_clickable(true);
 
   display_service->Display(NotificationHandler::Type::TRANSIENT, *notification);
   notification_displayed_ = true;
