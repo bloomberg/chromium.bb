@@ -11,7 +11,7 @@ iterNotStarted: type = object, subtype = generator
           yield 3;
       }
 [[GeneratorReceiver]] = Window
-lineNumber = 16
+lineNumber = 17
 columnNumber = 19
 script is valid: yes
 [[Scopes]] = Scopes[2]
@@ -26,7 +26,7 @@ iterSuspended: type = object, subtype = generator
           yield 3;
       }
 [[GeneratorReceiver]] = Window
-lineNumber = 18
+lineNumber = 19
 columnNumber = 10
 script is valid: yes
 [[Scopes]] = Scopes[2]
@@ -41,21 +41,21 @@ iterClosed: type = object, subtype = generator
           yield 3;
       }
 [[GeneratorReceiver]] = Window
-lineNumber = 16
+lineNumber = 17
 columnNumber = 19
 script is valid: yes
 
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function* ()
+[[GeneratorFunction]] = function*()
           {
               yield 11;
               yield 12;
               yield 13;
           }
 [[GeneratorReceiver]] = Object
-lineNumber = 27
+lineNumber = 28
 columnNumber = 14
 script is valid: yes
 [[Scopes]] = Scopes[2]
@@ -63,13 +63,13 @@ script is valid: yes
 Running: testAnonymousGenIter
 anonymousGenIter: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function* () {
+[[GeneratorFunction]] = function*() {
           yield 21;
           yield 22;
           yield 23;
       }
 [[GeneratorReceiver]] = Window
-lineNumber = 41
+lineNumber = 42
 columnNumber = 10
 script is valid: yes
 [[Scopes]] = Scopes[2]
