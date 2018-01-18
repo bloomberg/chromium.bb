@@ -151,13 +151,11 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 }  // namespace
 
-// TODO(crbug.com/753599): Rename this file as bookmarks_egtest.mm and this
-// class as BookmarksTestCase.
 // Bookmark integration tests for Chrome.
-@interface BookmarksNewGenTestCase : ChromeTestCase
+@interface BookmarksTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksNewGenTestCase
+@implementation BookmarksTestCase
 
 - (void)setUp {
   [super setUp];
@@ -196,11 +194,10 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notNil()];
 
   // Add the bookmark from the UI.
-  [BookmarksNewGenTestCase bookmarkCurrentTabWithTitle:bookmarkTitle];
+  [BookmarksTestCase bookmarkCurrentTabWithTitle:bookmarkTitle];
 
   // Verify the bookmark is set.
-  [BookmarksNewGenTestCase assertBookmarksWithTitle:bookmarkTitle
-                                      expectedCount:1];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   NSString* const kStarLitLabel =
       !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
@@ -223,8 +220,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                             nil)] performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
-  [BookmarksNewGenTestCase assertBookmarksWithTitle:bookmarkTitle
-                                      expectedCount:0];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   NSString* const kStarUnlitLabel =
       !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
@@ -258,9 +254,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:secondURL];
 
-  [BookmarksNewGenTestCase bookmarkCurrentTabWithTitle:@"my bookmark"];
-  [BookmarksNewGenTestCase assertBookmarksWithTitle:@"my bookmark"
-                                      expectedCount:1];
+  [BookmarksTestCase bookmarkCurrentTabWithTitle:@"my bookmark"];
+  [BookmarksTestCase assertBookmarksWithTitle:@"my bookmark" expectedCount:1];
 }
 
 // Test the creation of a bookmark and new folder (by tapping on the star).
@@ -274,7 +269,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                           expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Verify the snackbar title.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Bookmarked")]
@@ -287,7 +282,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify that the newly-created bookmark is in the BookmarkModel.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       assertBookmarksWithTitle:base::SysUTF8ToNSString(expectedURLContent)
                  expectedCount:1];
 
@@ -296,29 +291,29 @@ id<GREYMatcher> CloseToolsMenuButton() {
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase assertFolderName:@"Mobile Bookmarks"];
+  [BookmarksTestCase assertFolderName:@"Mobile Bookmarks"];
 
   // Tap the Folder button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
       performAction:grey_tap()];
 
   // Create a new folder with default name.
-  [BookmarksNewGenTestCase addFolderWithName:nil];
+  [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase assertFolderExists:@"New Folder"];
+  [BookmarksTestCase assertFolderExists:@"New Folder"];
 }
 
 // Tests that the default folder bookmarks are saved in is updated to the last
 // used folder.
 - (void)testStickyDefaultFolder {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -333,7 +328,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Create a new folder.
-  [BookmarksNewGenTestCase addFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
 
   // Verify that the editor is present.
   [[EarlGrey
@@ -359,8 +354,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
       "http://ios/testing/data/http_server_files/fullscreen.html");
   NSString* const bookmarkedURLString =
       base::SysUTF8ToNSString(bookmarkedURL.spec());
-  [BookmarksNewGenTestCase assertBookmarksWithTitle:bookmarkedURLString
-                                      expectedCount:0];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:0];
   // Open the page.
   std::string expectedURLContent = bookmarkedURL.GetContent();
   [ChromeEarlGrey loadURL:bookmarkedURL];
@@ -369,11 +364,10 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the folder has only one element.
-  [BookmarksNewGenTestCase assertChildCount:1
-                           ofFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Sticky Folder"];
 
   // Bookmark the page.
-  [BookmarksNewGenTestCase starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Verify the snackbar title.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
@@ -381,20 +375,19 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify that the newly-created bookmark is in the BookmarkModel.
-  [BookmarksNewGenTestCase assertBookmarksWithTitle:bookmarkedURLString
-                                      expectedCount:1];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:1];
 
   // Verify that the folder has now two elements.
-  [BookmarksNewGenTestCase assertChildCount:2
-                           ofFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Sticky Folder"];
 }
 
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -409,7 +402,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Create a new folder.
-  [BookmarksNewGenTestCase addFolderWithName:nil];
+  [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
   [[EarlGrey
@@ -417,7 +410,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Check that the new folder doesn't contain the bookmark.
-  [BookmarksNewGenTestCase assertChildCount:0 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"New Folder"];
 
   // Tap the Done button.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
@@ -427,21 +420,21 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Check that the new folder contains the bookmark.
-  [BookmarksNewGenTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
 
   // Close bookmarks
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 
   // Check that the new folder still contains the bookmark.
-  [BookmarksNewGenTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
 }
 
 // Tests moving bookmarks into a new folder created in the moving process.
 - (void)testCreateNewFolderWhileMovingBookmarks {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -457,9 +450,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on Move.
@@ -473,7 +466,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder (Change Folder) is Bookmarks folder.
@@ -493,7 +486,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify Folder 2 only has one item.
-  [BookmarksNewGenTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 
   // Select Folder 2 as new Change Folder.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
@@ -525,18 +518,18 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Verify new folder has been created under Folder 2.
-  [BookmarksNewGenTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
 
   // Verify new folder has two bookmarks.
-  [BookmarksNewGenTestCase assertChildCount:2
-                           ofFolderWithName:@"Title For New Folder"];
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
 }
 
 // Tests that keyboard commands are registered when a bookmark is added as it
 // shows only a snackbar.
 - (void)testKeyboardCommandsRegistered_AddBookmark {
   // Add the bookmark.
-  [BookmarksNewGenTestCase starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
   GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() > 0,
                  @"Some keyboard commands are registered.");
 }
@@ -544,9 +537,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Select single URL.
   [[EarlGrey
@@ -580,9 +573,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   }
 #endif
 
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Make sure the Mobile Bookmarks is not present.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Mobile Bookmarks")]
@@ -609,9 +602,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -627,7 +620,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -651,9 +644,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   FLAKY_testSwipeToDeleteDisabledInEditMode
 #endif
 - (void)MAYBE_testSwipeToDeleteDisabledInEditMode {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -687,7 +680,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_nil()];
 
   // Cancel edit mode
-  [BookmarksNewGenTestCase closeContextBarEditMode];
+  [BookmarksTestCase closeContextBarEditMode];
 
   // Swipe action on the URL.
   [[EarlGrey
@@ -703,9 +696,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
@@ -721,9 +714,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testBookmarkContextBarInVariousSelectionModes {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
@@ -736,23 +729,23 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single URL.
@@ -761,17 +754,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -781,23 +774,23 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single Folder.
@@ -806,17 +799,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -826,23 +819,23 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Multi select URL and folders.
@@ -854,17 +847,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect Folder 1, so that Second URL is selected.
@@ -874,17 +867,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all, but one Folder - Folder 1 is selected.
@@ -897,17 +890,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
@@ -917,36 +910,36 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
   // "Cancel".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Cancel edit mode
-  [BookmarksNewGenTestCase closeContextBarEditMode];
+  [BookmarksTestCase closeContextBarEditMode];
 
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
                                        newFolderEnabled:YES];
 }
 
 - (void)testContextMenuForSingleURLSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -959,9 +952,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [self verifyContextMenuForSingleURL];
@@ -969,9 +962,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Edit functionality on single URL selection.
 - (void)testEditFunctionalityOnSingleURL {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // 1. Edit the bookmark title at edit page.
 
@@ -985,12 +978,11 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Modify the title.
-  [BookmarksNewGenTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:@"Single Bookmark Editor"
-             modifyTextField:@"Title Field_textField"
-                          to:@"n5"
-                 dismissWith:@"Done"];
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:@"Single Bookmark Editor"
+                            modifyTextField:@"Title Field_textField"
+                                         to:@"n5"
+                                dismissWith:@"Done"];
 
   // Verify that the bookmark was updated.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"n5")]
@@ -1018,21 +1010,20 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Modify the url.
-  [BookmarksNewGenTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:@"Single Bookmark Editor"
-             modifyTextField:@"URL Field_textField"
-                          to:@"www.b.fr"
-                 dismissWith:@"Done"];
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:@"Single Bookmark Editor"
+                            modifyTextField:@"URL Field_textField"
+                                         to:@"www.b.fr"
+                                dismissWith:@"Done"];
 
   // Verify that the bookmark was updated.
-  [BookmarksNewGenTestCase assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
-                                                       name:@"French URL"];
+  [BookmarksTestCase assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
+                                                 name:@"French URL"];
 
   // Press undo and verify the edit is undone.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
       performAction:grey_tap()];
-  [BookmarksNewGenTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode is closed (context bar back to default state).
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
@@ -1051,17 +1042,16 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Move the "Second URL" to "Folder 1.1".
-  [BookmarksNewGenTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:@"Single Bookmark Editor"
-           setParentFolderTo:@"Folder 1.1"
-                        from:@"Mobile Bookmarks"];
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:@"Single Bookmark Editor"
+                          setParentFolderTo:@"Folder 1.1"
+                                       from:@"Mobile Bookmarks"];
 
   // Verify edit mode is stayed.
   [self verifyContextBarInEditMode];
 
   // Close edit mode.
-  [BookmarksNewGenTestCase closeContextBarEditMode];
+  [BookmarksTestCase closeContextBarEditMode];
 
   // Navigate to "Folder 1.1" and verify "Second URL" is under it.
   [[EarlGrey
@@ -1086,15 +1076,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap cancel after modifying the url.
-  [BookmarksNewGenTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:@"Single Bookmark Editor"
-             modifyTextField:@"URL Field_textField"
-                          to:@"www.b.fr"
-                 dismissWith:@"Cancel"];
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:@"Single Bookmark Editor"
+                            modifyTextField:@"URL Field_textField"
+                                         to:@"www.b.fr"
+                                dismissWith:@"Cancel"];
 
   // Verify that the bookmark was not updated.
-  [BookmarksNewGenTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode is stayed.
   [self verifyContextBarInEditMode];
@@ -1102,9 +1091,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1116,9 +1105,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Invoke Copy through context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Select Copy URL.
@@ -1140,9 +1129,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForMultipleURLSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1158,9 +1147,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Verify it shows the context menu.
@@ -1185,13 +1174,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify the Open All functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAll {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Open 3 normal tabs from a normal session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 3 normal tabs.
   [ChromeEarlGrey waitForMainTabCount:3];
@@ -1199,16 +1188,16 @@ id<GREYMatcher> CloseToolsMenuButton() {
                  @"Incognito tab count should be 0");
 
   // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
   // Switch to Incognito mode by adding a new incognito tab.
   chrome_test_util::OpenNewIncognitoTab();
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open 3 normal tabs from a incognito session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 6 normal tabs and no new incognito tabs.
   [ChromeEarlGrey waitForMainTabCount:6];
@@ -1222,18 +1211,18 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // in folder.
 
   // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
 }
 
 // Verify the Open All in Incognito functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAllInIncognito {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Open 3 incognito tabs from a normal session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
 
   // Verify there are 3 incognito tabs and no new normal tab.
   [ChromeEarlGrey waitForIncognitoTabCount:3];
@@ -1245,13 +1234,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
                  @"Failed to switch to incognito mode");
 
   // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open 3 incognito tabs from a incognito session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
 
   // The 3rd tab will be re-used to open one of the selected bookmarks.  So
   // there will be 2 new tabs only.
@@ -1262,14 +1251,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
                  @"Main tab count should be 1");
 
   // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
 }
 
 // Verify the Open and Open in Incognito functionality on single url.
 - (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Open a bookmark in current tab in a normal session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
@@ -1280,7 +1269,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                           getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open a bookmark in new tab from a normal session (through a long press).
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
@@ -1300,7 +1289,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                           getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open a bookmark in an incognito tab from a normal session (through a long
   // press).
@@ -1325,7 +1314,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                           getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open a bookmark in current tab from a incognito session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
@@ -1346,7 +1335,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
   GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
                  @"Main tab count should be 2");
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open a bookmark in new incognito tab from a incognito session (through a
   // long press).
@@ -1371,7 +1360,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                           getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Open a bookmark in a new normal tab from a incognito session (through a
   // long press).
@@ -1398,9 +1387,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextBarForSingleFolderSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1413,9 +1402,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap Edit Folder.
@@ -1430,9 +1419,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testContextMenuForMultipleFolderSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1448,18 +1437,18 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [self verifyContextMenuForMultiAndMixedSelection];
 }
 
 - (void)testContextMenuForMixedSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1475,18 +1464,18 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [self verifyContextMenuForMultiAndMixedSelection];
 }
 
 - (void)testLongPressOnSingleURL {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
@@ -1497,9 +1486,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testLongPressOnSingleFolder {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
@@ -1543,9 +1532,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Edit functionality for single folder selection.
 - (void)testEditFunctionalityOnSingleFolder {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // 1. Edit the folder title at edit page.
 
@@ -1564,9 +1553,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notNil()];
   NSString* existingFolderTitle = @"Folder 1";
   NSString* newFolderTitle = @"New Folder Title";
-  [BookmarksNewGenTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
+  [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
 
-  [BookmarksNewGenTestCase closeEditBookmarkFolder];
+  [BookmarksTestCase closeEditBookmarkFolder];
 
   // Verify that the change has been made.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(existingFolderTitle)]
@@ -1591,7 +1580,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Move the "New Folder Title" to "Folder 1.1".
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
                   openEditor:@"Folder Editor"
            setParentFolderTo:@"Folder 1.1"
@@ -1601,7 +1590,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [self verifyContextBarInEditMode];
 
   // Close edit mode.
-  [BookmarksNewGenTestCase closeContextBarEditMode];
+  [BookmarksTestCase closeContextBarEditMode];
 
   // Navigate to "Folder 1.1" and verify "New Folder Title" is under it.
   [[EarlGrey
@@ -1622,7 +1611,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap cancel after modifying the title.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
                   openEditor:@"Folder Editor"
              modifyTextField:@"Title_textField"
@@ -1639,9 +1628,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // 4. Test the delete button at edit page.
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [[EarlGrey
@@ -1658,7 +1647,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 
   // Verify that the folder is deleted.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
@@ -1668,8 +1657,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // back (crbug.com/781783).
 
   // Create a new folder.
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:YES];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
 
   // Tap on the new folder.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
@@ -1681,9 +1670,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on single folder through long press.
 - (void)testMoveFunctionalityOnSingleFolder {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -1700,7 +1689,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
@@ -1721,7 +1710,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify Folder 2 only has one item.
-  [BookmarksNewGenTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 
   // Select Folder 2 as new parent folder for "Title For New Folder".
   [[EarlGrey
@@ -1749,11 +1738,11 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [self verifyFolderFlowIsClosed];
 
   // Verify new folder "Title For New Folder" has been created under Folder 2.
-  [BookmarksNewGenTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
 
   // Verify new folder "Title For New Folder" has one bookmark folder.
-  [BookmarksNewGenTestCase assertChildCount:1
-                           ofFolderWithName:@"Title For New Folder"];
+  [BookmarksTestCase assertChildCount:1
+                     ofFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Folder 1.1" has been moved and assert it's presence.
   [[EarlGrey
@@ -1771,9 +1760,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on multiple folder selection.
 - (void)testMoveFunctionalityOnMultipleFolder {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1789,9 +1778,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -1804,7 +1793,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
@@ -1824,15 +1813,15 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [self verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
                                        newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark folder.
-  [BookmarksNewGenTestCase assertChildCount:2
-                           ofFolderWithName:@"Title For New Folder"];
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Folder 1.1" and "Folder 1" have been moved and assert
   // it's presence.
@@ -1847,9 +1836,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on mixed folder / url selection.
 - (void)testMoveFunctionalityOnMixedSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1868,9 +1857,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -1886,7 +1875,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Delete the First URL programmatically in background.  Folder picker will
   // not close as the selected nodes "Second URL" and "Folder 1" still exist.
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"First URL"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"First URL"];
 
   // Choose to move into a new folder.
   [[EarlGrey
@@ -1894,7 +1883,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarksNewGenTestCase
+  [BookmarksTestCase
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
@@ -1914,15 +1903,15 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [self verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
                                        newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark nodes.
-  [BookmarksNewGenTestCase assertChildCount:2
-                           ofFolderWithName:@"Title For New Folder"];
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Second URL" and "Folder 1" have been moved and assert
   // it's presence.
@@ -1937,9 +1926,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify Move functionality on multiple url selection.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -1955,9 +1944,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -1974,14 +1963,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [self verifyFolderFlowIsClosed];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
                                        newFolderEnabled:YES];
 
   // Verify Folder 1 has three bookmark nodes.
-  [BookmarksNewGenTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
+  [BookmarksTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
 
   // Drill down to where "Second URL" and "First URL" have been moved and assert
   // it's presence.
@@ -1997,9 +1986,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Verify Move is cancelled when all selected folder/url are deleted in
 // background.
 - (void)testMoveCancelledWhenAllSelectionDeleted {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode, using context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2015,9 +2004,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on move, from context menu.
@@ -2032,8 +2021,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Delete the selected URL and folder programmatically.
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Second URL"];
 
   // Verify folder picker is exited.
   [self verifyFolderFlowIsClosed];
@@ -2041,9 +2030,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2056,9 +2045,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap Edit Folder.
@@ -2093,9 +2082,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify Delete is disabled (with visible Delete, it also means edit mode is
   // stayed).
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitNotEnabled),
@@ -2103,9 +2092,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteSingleURLNode {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2118,13 +2107,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -2140,9 +2129,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteSingleFolderNode {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2155,13 +2144,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -2177,9 +2166,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testDeleteMultipleNodes {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2195,14 +2184,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -2222,27 +2211,27 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
 - (void)testPromoViewIsSeenOnlyInRootNode {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // We are going to set the PromoAlreadySeen preference. Set a teardown handler
   // to reset it.
   [self setTearDownHandler:^{
-    [BookmarksNewGenTestCase setPromoAlreadySeen:NO];
+    [BookmarksTestCase setPromoAlreadySeen:NO];
   }];
   // Check that sign-in promo view is visible.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Go to child node.
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Wait until promo is gone.
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is not updated.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
 
   // Come back to root node, and the promo view should appear.
   [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
@@ -2255,16 +2244,16 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // We are going to set the PromoAlreadySeen preference. Set a teardown handler
   // to reset it.
   [self setTearDownHandler:^{
-    [BookmarksNewGenTestCase setPromoAlreadySeen:NO];
+    [BookmarksTestCase setPromoAlreadySeen:NO];
   }];
   // Check that sign-in promo view is visible.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
@@ -2277,17 +2266,17 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is updated.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:YES];
+  [BookmarksTestCase verifyPromoAlreadySeen:YES];
 }
 
 // Tests the tapping on the primary button of sign-in promo view in a cold
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithColdStateUsingPrimaryButton {
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Check that sign-in promo view are visible.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
@@ -2300,7 +2289,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }
@@ -2309,8 +2298,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // state makes the confirmaiton sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Set up a fake identity.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -2318,7 +2307,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       identity);
 
   // Check that promo is visible.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
@@ -2339,22 +2328,22 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
 }
 
 // Tests the tapping on the secondary button of sign-in promo view in a warm
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
   // Set up a fake identity.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
   // Check that sign-in promo view are visible.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
@@ -2371,7 +2360,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
                      uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 }
@@ -2382,19 +2371,19 @@ id<GREYMatcher> CloseToolsMenuButton() {
       chrome_test_util::GetOriginalBrowserState();
   PrefService* prefs = browser_state->GetPrefs();
   prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
   // Check the sign-in promo view is visible.
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Check the sign-in promo already-seen state didn't change.
-  [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   GREYAssertEqual(
       20, prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount),
       @"Should have incremented the display count");
   // Close the bookmark view and open it again.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Check that the sign-in promo is not visible anymore.
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
@@ -2403,25 +2392,25 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests the creation of new folders by tapping on 'New Folder' button of the
 // context bar.
 - (void)testCreateNewFolderWithContextBar {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Create a new folder and name it "New Folder 1".
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:YES];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
 
   // Verify "New Folder 1" is created.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Create a new folder and name it "New Folder 2".
   newFolderTitle = @"New Folder 2";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:YES];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
 
   // Verify "New Folder 2" is created.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Verify context bar does not change after editing folder name.
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
@@ -2430,9 +2419,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests when total height of bookmarks exceeds screen height.
 - (void)testBookmarksExceedsScreenHeight {
-  [BookmarksNewGenTestCase setupBookmarksWhichExceedsScreenHeight];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupBookmarksWhichExceedsScreenHeight];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify bottom URL is not visible before scrolling to bottom (make sure
   // setupBookmarksWhichExceedsScreenHeight works as expected).
@@ -2446,53 +2435,53 @@ id<GREYMatcher> CloseToolsMenuButton() {
   // Test new folder could be created.  This verifies bookmarks scrolled to
   // bottom successfully for folder name editng.
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:YES];
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAway {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Create a new folder and type "New Folder 1" without pressing return.
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:NO];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on back.
   [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
       performAction:grey_tap()];
   // Come back to Mobile Bookmarks.
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify folder name "New Folder 1" was committed.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Create a new folder and type "New Folder 2" without pressing return.
   newFolderTitle = @"New Folder 2";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:NO];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on done.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Verify folder name "New Folder 2" was committed.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Create a new folder and type "New Folder 3" without pressing return.
   newFolderTitle = @"New Folder 3";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:NO];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
 
   // Interrupt the folder name editing by entering Folder 1
-  [BookmarksNewGenTestCase scrollToTop];
+  [BookmarksTestCase scrollToTop];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
   // Come back to Mobile Bookmarks.
@@ -2500,22 +2489,22 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Verify folder name "New Folder 3" was committed.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Create a new folder and type "New Folder 4" without pressing return.
   newFolderTitle = @"New Folder 4";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:NO];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on First URL.
-  [BookmarksNewGenTestCase scrollToTop];
+  [BookmarksTestCase scrollToTop];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       performAction:grey_tap()];
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Verify folder name "New Folder 4" was committed.
-  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
 // TODO(crbug.com/801453): Folder name is not commited as expected in this test.
@@ -2526,14 +2515,14 @@ id<GREYMatcher> CloseToolsMenuButton() {
   if (!IsIPadIdiom()) {
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Create a new folder and type "New Folder 1" without pressing return.
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                      pressReturn:NO];
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
 
   // Tap on the "hide keyboard" button.
   id<GREYMatcher> hideKeyboard = grey_accessibilityLabel(@"Hide keyboard");
@@ -2550,9 +2539,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Enter Folder 1.1 (which is empty)
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
@@ -2583,13 +2572,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap delete on context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is close automatically (context bar switched back to
   // default state) and select button is disabled.
@@ -2603,9 +2592,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Test when current navigating folder is deleted in background, empty
 // background should be shown with context bar buttons disabled.
 - (void)testWhenCurrentFolderDeletedInBackground {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Enter Folder 1
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -2621,8 +2610,8 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete the Folder 1 and Folder 2 programmatically in background.
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 2"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
 
   // Verify edit mode is close automatically (context bar switched back to
   // default state) and both select and new folder button are disabled.
@@ -2647,13 +2636,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
   // Bookmarks.
-  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Folder 1.1"];
+  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 1.1"];
 }
 
 - (void)testCachePositionIsRecreated {
-  [BookmarksNewGenTestCase setupBookmarksWhichExceedsScreenHeight];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupBookmarksWhichExceedsScreenHeight];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -2665,7 +2654,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Scroll to the bottom so that Bottom 1 is visible.
-  [BookmarksNewGenTestCase scrollToBottom];
+  [BookmarksTestCase scrollToBottom];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Bottom 1")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -2674,7 +2663,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Ensure the Bottom 1 of Folder 1 is visible.  That means both folder and
   // scroll position are restored successfully.
@@ -2684,9 +2673,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verify root node is opened when cache position is deleted.
 - (void)testCachePositionIsResetWhenNodeIsDeleted {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -2701,46 +2690,46 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete Folder 2.
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 2"];
 
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in a
   // table cell.
-  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
 // Verify root node is opened when cache position is a permanent node and is
 // empty.
 - (void)testCachePositionIsResetWhenNodeIsPermanentAndEmpty {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Close bookmarks, it will store Mobile Bookmarks as the cache position.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
       performAction:grey_tap()];
 
   // Delete all bookmarks and folders under Mobile Bookmarks.
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1.1"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"French URL"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Second URL"];
-  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"First URL"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1.1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"French URL"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"First URL"];
 
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in a
   // table cell.
-  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsMoved {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Select Folder 1.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -2759,42 +2748,42 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Move Folder 3 under Folder 1.
-  [BookmarksNewGenTestCase moveBookmarkWithTitle:@"Folder 3"
-                               toFolderWithTitle:@"Folder 1"];
+  [BookmarksTestCase moveBookmarkWithTitle:@"Folder 3"
+                         toFolderWithTitle:@"Folder 1"];
 
   // Reopen bookmarks.
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   // Go back 1 level.
   [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
       performAction:grey_tap()];
 
   // Ensure Folder 1 is seen, by verifying folders at this level.
-  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
+  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
 }
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that all elements on mobile bookmarks are accessible.
 - (void)testAccessibilityOnMobileBookmarks {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that all elements on the bookmarks folder Edit page are accessible.
 - (void)testAccessibilityOnBookmarksFolderEditPage {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -2814,9 +2803,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -2831,9 +2820,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -2850,9 +2839,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tests that all elements on the bookmarks Move to New Folder page are
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -2873,9 +2862,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2888,22 +2877,22 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarDeleteString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Change to edit mode
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2956,7 +2945,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Loads a set of default bookmarks in the model for the tests to use.
 + (void)setupStandardBookmarks {
-  [BookmarksNewGenTestCase waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
 
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -2999,7 +2988,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Loads a large set of bookmarks in the model which is longer than the screen
 // height.
 + (void)setupBookmarksWhichExceedsScreenHeight {
-  [BookmarksNewGenTestCase waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
 
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -3031,7 +3020,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Selects MobileBookmarks to open.
 + (void)openMobileBookmarks {
-  [BookmarksNewGenTestCase openBookmarkFolder:@"Mobile Bookmarks"];
+  [BookmarksTestCase openBookmarkFolder:@"Mobile Bookmarks"];
 }
 
 // Asserts that |expectedCount| bookmarks exist with the corresponding |title|
@@ -3054,9 +3043,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Tap on the star to bookmark a page, then edit the bookmark to change the
 // title to |title|.
 + (void)bookmarkCurrentTabWithTitle:(NSString*)title {
-  [BookmarksNewGenTestCase waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
   // Add the bookmark from the UI.
-  [BookmarksNewGenTestCase starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Set the bookmark name.
   [[EarlGrey selectElementWithMatcher:EditBookmarkButton()]
@@ -3244,9 +3233,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Close edit mode.
 + (void)closeContextBarEditMode {
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarCancelString])]
       performAction:grey_tap()];
 }
 
@@ -3266,9 +3255,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   // Tap on Open All.
@@ -3371,7 +3360,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
   // Verify context bar shows enabled "New Folder" and enabled "Select".
   [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
+                                          [BookmarksTestCase
                                               contextBarNewFolderString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    newFolderEnabled
@@ -3379,13 +3368,13 @@ id<GREYMatcher> CloseToolsMenuButton() {
                                        : grey_accessibilityTrait(
                                              UIAccessibilityTraitNotEnabled),
                                    nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarSelectString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarSelectString])]
       assertWithMatcher:grey_allOf(grey_notNil(),
                                    selectEnabled
                                        ? grey_enabled()
@@ -3399,9 +3388,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -3496,7 +3485,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
 // Verify a folder with given name is created and it is not being edited.
 + (void)verifyFolderCreatedWithTitle:(NSString*)folderTitle {
   // scroll to bottom to make sure new folder appears.
-  [BookmarksNewGenTestCase scrollToBottom];
+  [BookmarksTestCase scrollToBottom];
   // verify the folder is created.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(folderTitle)]
       assertWithMatcher:grey_notNil()];
@@ -3511,9 +3500,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
              setParentFolderTo:(NSString*)destinationFolder
                           from:(NSString*)sourceFolder {
   // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
 
   [[EarlGrey
@@ -3563,7 +3552,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       assertWithMatcher:grey_notVisible()];
 
   // Wait for Undo toast to go away from screen.
-  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+  [BookmarksTestCase waitForUndoToastToGoAway];
 }
 
 + (void)tapOnContextMenuButton:(int)menuButtonId
@@ -3572,9 +3561,9 @@ id<GREYMatcher> CloseToolsMenuButton() {
                             to:(NSString*)newName
                    dismissWith:(NSString*)dismissButtonId {
   // Invoke Edit through context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(menuButtonId)]
@@ -3641,8 +3630,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
         performAction:grey_typeText(@"\n")];
 
     // Wait until the editing textfield is gone.
-    [BookmarksNewGenTestCase
-        waitForDeletionOfBookmarkWithTitle:titleIdentifier];
+    [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:titleIdentifier];
   }
 }
 

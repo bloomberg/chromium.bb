@@ -42,7 +42,7 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
       [[[self class] alloc] initWithStyle:UITableViewCellStyleDefault
                           reuseIdentifier:[self folderCellReuseIdentifier]];
   folderCell.indentationWidth = kFolderCellIndentationWidth;
-  // TODO(crbug.com/753599): Replace bookmark_gray_folder by
+  // TODO(crbug.com/787668): Replace bookmark_gray_folder by
   // bookmark_gray_folder_new and use bookmark_gray_folder below.
   folderCell.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
   return folderCell;
@@ -68,7 +68,7 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
     self.textLabel.textColor = bookmark_utils_ios::darkTextColor();
     self.selectionStyle = UITableViewCellSelectionStyleGray;
 
-    // TODO(crbug.com/753599): Replace bookmark_gray_folder by
+    // TODO(crbug.com/787668): Replace bookmark_gray_folder by
     // bookmark_gray_folder_new and use bookmark_gray_folder below.
     self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
     self.accessibilityTraits |= UIAccessibilityTraitButton;

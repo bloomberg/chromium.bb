@@ -5,27 +5,20 @@
 source_set("bookmarks") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "bookmark_collection_view_background.h",
-    "bookmark_collection_view_background.mm",
-    "bookmark_controller_factory.h",
-    "bookmark_controller_factory.mm",
     "bookmark_edit_view_controller.h",
     "bookmark_edit_view_controller.mm",
     "bookmark_elevated_toolbar.h",
     "bookmark_elevated_toolbar.mm",
-    "bookmark_extended_button.h",
-    "bookmark_extended_button.mm",
+    "bookmark_empty_background.h",
+    "bookmark_empty_background.mm",
     "bookmark_folder_editor_view_controller.h",
     "bookmark_folder_editor_view_controller.mm",
     "bookmark_folder_table_view_cell.h",
     "bookmark_folder_table_view_cell.mm",
     "bookmark_folder_view_controller.h",
     "bookmark_folder_view_controller.mm",
-    "bookmark_home_handset_view_controller.h",
-    "bookmark_home_handset_view_controller.mm",
     "bookmark_home_view_controller.h",
     "bookmark_home_view_controller.mm",
-    "bookmark_home_view_controller_protected.h",
     "bookmark_home_waiting_view.h",
     "bookmark_home_waiting_view.mm",
     "bookmark_interaction_controller.h",
@@ -165,7 +158,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "bookmarks_new_generation_egtest.mm",
+    "bookmarks_egtest.mm",
   ]
   deps = [
     "//base",

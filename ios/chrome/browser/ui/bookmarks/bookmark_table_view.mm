@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -126,8 +126,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 @property(nonatomic, weak) id<BookmarkTableViewDelegate> delegate;
 // Background shown when there is no bookmarks or folders at the current root
 // node.
-@property(nonatomic, strong)
-    BookmarkCollectionViewBackground* emptyTableBackgroundView;
+@property(nonatomic, strong) BookmarkEmptyBackground* emptyTableBackgroundView;
 // The loading spinner background which appears when syncing.
 @property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
 
@@ -841,8 +840,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)showEmptyBackground {
   if (!self.emptyTableBackgroundView) {
     // Set up the background view shown when the table is empty.
-    self.emptyTableBackgroundView = [[BookmarkCollectionViewBackground alloc]
-        initWithFrame:self.tableView.bounds];
+    self.emptyTableBackgroundView =
+        [[BookmarkEmptyBackground alloc] initWithFrame:self.tableView.bounds];
     self.emptyTableBackgroundView.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.emptyTableBackgroundView.text =
