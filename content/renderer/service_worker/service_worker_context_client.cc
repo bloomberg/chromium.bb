@@ -40,7 +40,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_impl.h"
-#include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
@@ -926,18 +925,6 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
   (*instance_host_)
       ->OnReportConsoleMessage(source, level, message.Utf16(), line_number,
                                blink::WebStringToGURL(source_url));
-}
-
-void ServiceWorkerContextClient::SendDevToolsMessage(
-    int session_id,
-    int call_id,
-    const blink::WebString& message,
-    const blink::WebString& state_cookie) {
-  // Return if this context has been stopped.
-  if (!embedded_worker_client_)
-    return;
-  embedded_worker_client_->devtools_agent()->SendMessage(
-      sender_.get(), session_id, call_id, message.Utf8(), state_cookie.Utf8());
 }
 
 void ServiceWorkerContextClient::DidHandleActivateEvent(

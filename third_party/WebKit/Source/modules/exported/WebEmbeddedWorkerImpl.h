@@ -69,14 +69,9 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void StartWorkerContext(const WebEmbeddedWorkerStartData&) override;
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
-  void AttachDevTools(int session_id) override;
-  void ReattachDevTools(int session_id, const WebString& saved_state) override;
-  void DetachDevTools(int session_id) override;
-  void DispatchDevToolsMessage(int session_id,
-                               int call_id,
-                               const WebString& method,
-                               const WebString& message) override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
+  void GetDevToolsAgent(
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   void PostMessageToPageInspector(int session_id, const WTF::String&);
 
@@ -94,10 +89,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
  private:
   // WebDevToolsAgentImpl::Client overrides.
-  bool SendProtocolMessage(int session_id,
-                           int call_id,
-                           const String&,
-                           const String&) override;
   void ResumeStartup() override;
   const WebString& GetDevToolsFrameToken() override;
 

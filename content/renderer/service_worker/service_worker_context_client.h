@@ -152,10 +152,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                             const blink::WebString& message,
                             int line_number,
                             const blink::WebString& source_url) override;
-  void SendDevToolsMessage(int session_id,
-                           int call_id,
-                           const blink::WebString& message,
-                           const blink::WebString& state) override;
   void DidHandleActivateEvent(int request_id,
                               blink::mojom::ServiceWorkerEventStatus status,
                               double dispatch_event_time) override;

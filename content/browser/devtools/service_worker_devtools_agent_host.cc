@@ -118,17 +118,15 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
 void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (state_ == WORKER_READY) {
     if (sessions().size() == 1) {
-      AttachToWorker();
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                               base::BindOnce(&SetDevToolsAttachedOnIO,
                                              context_weak_, version_id_, true));
     }
-    if (RenderProcessHost* host =
-            RenderProcessHost::FromID(worker_process_id_)) {
-      session->SetRenderer(host, nullptr);
-      host->Send(
-          new DevToolsAgentMsg_Attach(worker_route_id_, session->session_id()));
-    }
+    // RenderProcessHost should not be null here, but even if it _is_ null,
+    // session does not depend on the process to do messaging.
+    session->SetRenderer(RenderProcessHost::FromID(worker_process_id_),
+                         nullptr);
+    session->AttachToAgent(agent_ptr_);
   }
   session->SetFallThroughForNotFound(true);
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
@@ -137,16 +135,11 @@ void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 }
 
 void ServiceWorkerDevToolsAgentHost::DetachSession(int session_id) {
-  if (state_ == WORKER_READY) {
-    if (RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_))
-      host->Send(new DevToolsAgentMsg_Detach(worker_route_id_, session_id));
-    if (sessions().empty()) {
-      DetachFromWorker();
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
-                         false));
-    }
+  // Destroying session automatically detaches in renderer.
+  if (state_ == WORKER_READY && sessions().empty()) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&SetDevToolsAttachedOnIO,
+                                           context_weak_, version_id_, false));
   }
 }
 
@@ -160,50 +153,33 @@ bool ServiceWorkerDevToolsAgentHost::DispatchProtocolMessage(
     return true;
   }
 
-  if (state_ == WORKER_READY) {
-    if (RenderProcessHost* host =
-            RenderProcessHost::FromID(worker_process_id_)) {
-      host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-          worker_route_id_, session->session_id(), call_id, method, message));
-    }
-  }
+  session->DispatchProtocolMessageToAgent(call_id, method, message);
   session->waiting_messages()[call_id] = {method, message};
   return true;
 }
 
-bool ServiceWorkerDevToolsAgentHost::OnMessageReceived(
-    const IPC::Message& msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDevToolsAgentHost, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection() {
+void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
+    blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
+  agent_ptr_.Bind(std::move(devtools_agent_ptr_info));
   if (!sessions().empty()) {
-    AttachToWorker();
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::BindOnce(&SetDevToolsAttachedOnIO,
                                            context_weak_, version_id_, true));
   }
-  if (RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_)) {
-    for (DevToolsSession* session : sessions()) {
-      session->SetRenderer(host, nullptr);
-      host->Send(new DevToolsAgentMsg_Reattach(
-          worker_route_id_, session->session_id(), session->state_cookie()));
-      for (const auto& pair : session->waiting_messages()) {
-        int call_id = pair.first;
-        const DevToolsSession::Message& message = pair.second;
-        host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-            worker_route_id_, session->session_id(), call_id, message.method,
-            message.message));
-      }
+
+  // RenderProcessHost should not be null here, but even if it _is_ null,
+  // session does not depend on the process to do messaging.
+  RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_);
+  for (DevToolsSession* session : sessions()) {
+    session->SetRenderer(host, nullptr);
+    session->ReattachToAgent(agent_ptr_);
+    for (const auto& pair : session->waiting_messages()) {
+      int call_id = pair.first;
+      const DevToolsSession::Message& message = pair.second;
+      session->DispatchProtocolMessageToAgent(call_id, message.method,
+                                              message.message);
     }
   }
 }
@@ -222,29 +198,11 @@ void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
 void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   state_ = WORKER_TERMINATED;
+  agent_ptr_.reset();
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   for (DevToolsSession* session : sessions())
     session->SetRenderer(nullptr, nullptr);
-  if (!sessions().empty())
-    DetachFromWorker();
-}
-
-void ServiceWorkerDevToolsAgentHost::AttachToWorker() {
-  if (RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_))
-    host->AddRoute(worker_route_id_, this);
-}
-
-void ServiceWorkerDevToolsAgentHost::DetachFromWorker() {
-  if (RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_))
-    host->RemoveRoute(worker_route_id_);
-}
-
-void ServiceWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    const DevToolsMessageChunk& message) {
-  DevToolsSession* session = SessionById(message.session_id);
-  if (session)
-    session->ReceiveMessageChunk(message);
 }
 
 }  // namespace content

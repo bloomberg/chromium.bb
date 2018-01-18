@@ -14,14 +14,13 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
-#include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 
 namespace content {
 
 class BrowserContext;
 
-class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
-                                       public IPC::Listener {
+class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
  public:
   using List = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
   using Map = std::map<std::string,
@@ -53,11 +52,9 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   bool DispatchProtocolMessage(DevToolsSession* session,
                                const std::string& message) override;
 
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
   void WorkerRestarted(int worker_process_id, int worker_route_id);
-  void WorkerReadyForInspection();
+  void WorkerReadyForInspection(
+      blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info);
   void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
@@ -80,10 +77,6 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
  private:
   ~ServiceWorkerDevToolsAgentHost() override;
 
-  void AttachToWorker();
-  void DetachFromWorker();
-  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
-
   enum WorkerState {
     WORKER_NOT_READY,
     WORKER_READY,
@@ -100,6 +93,7 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   GURL scope_;
   base::Time version_installed_time_;
   base::Time version_doomed_time_;
+  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsAgentHost);
 };

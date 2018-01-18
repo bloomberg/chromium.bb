@@ -23,7 +23,6 @@ class WebEmbeddedWorker;
 
 namespace content {
 
-class EmbeddedWorkerDevToolsAgent;
 class ServiceWorkerContextClient;
 
 // This class exposes interfaces of WebEmbeddedWorker to the browser process.
@@ -58,28 +57,20 @@ class EmbeddedWorkerInstanceClientImpl
 
   // Called from ServiceWorkerContextClient.
   void WorkerContextDestroyed();
-  EmbeddedWorkerDevToolsAgent* devtools_agent() {
-    return wrapper_->devtools_agent();
-  };
 
  private:
   // A thin wrapper of WebEmbeddedWorker which also adds and releases process
   // references automatically.
   class WorkerWrapper {
    public:
-    WorkerWrapper(std::unique_ptr<blink::WebEmbeddedWorker> worker,
-                  int devtools_agent_route_id);
+    explicit WorkerWrapper(std::unique_ptr<blink::WebEmbeddedWorker> worker);
     ~WorkerWrapper();
 
     blink::WebEmbeddedWorker* worker() { return worker_.get(); }
-    EmbeddedWorkerDevToolsAgent* devtools_agent() {
-      return devtools_agent_.get();
-    }
 
    private:
     ScopedChildProcessReference process_ref_;
     std::unique_ptr<blink::WebEmbeddedWorker> worker_;
-    std::unique_ptr<EmbeddedWorkerDevToolsAgent> devtools_agent_;
   };
 
   EmbeddedWorkerInstanceClientImpl(
@@ -92,6 +83,8 @@ class EmbeddedWorkerInstanceClientImpl
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message) override;
+  void GetDevToolsAgent(
+      blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   // Handler of connection error bound to |binding_|.
   void OnError();
