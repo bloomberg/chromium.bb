@@ -175,8 +175,9 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
   // until all delegated frames are ready. This improves the resume transition,
   // preventing flashes. Set a 5 second timeout to prevent locking up the
   // browser in cases where the renderer hangs or another factor prevents a
-  // frame from being produced.
-  if (compositor->IsDrawingFirstVisibleFrame()) {
+  // frame from being produced. If we already have delegated content, no need
+  // to take the lock.
+  if (compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
     compositor_attach_until_frame_lock_ =
         compositor->GetCompositorLock(this, base::TimeDelta::FromSeconds(5));
   }
