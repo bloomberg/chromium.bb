@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/presentation/browser_presentation_connection_proxy.h"
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
@@ -41,7 +43,7 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
 
   void SetUp() override {
     mock_controller_connection_proxy_ =
-        base::MakeUnique<MockPresentationConnectionProxy>();
+        std::make_unique<MockPresentationConnectionProxy>();
     blink::mojom::PresentationConnectionPtr controller_connection_ptr;
     binding_.reset(new mojo::Binding<blink::mojom::PresentationConnection>(
         mock_controller_connection_proxy_.get(),
@@ -55,7 +57,7 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
 
     base::RunLoop run_loop;
     browser_connection_proxy_ =
-        base::MakeUnique<BrowserPresentationConnectionProxy>(
+        std::make_unique<BrowserPresentationConnectionProxy>(
             &mock_router_, "MockRouteId",
             mojo::MakeRequest(&receiver_connection_ptr),
             std::move(controller_connection_ptr));

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
@@ -63,7 +64,7 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
           std::move(request).Run();
         }));
 
-    provider_proxy_ = base::MakeUnique<ExtensionMediaRouteProviderProxy>(
+    provider_proxy_ = std::make_unique<ExtensionMediaRouteProviderProxy>(
         &profile_, mojo::MakeRequest(&provider_proxy_ptr_));
     RegisterMockMediaRouteProvider();
   }
@@ -86,7 +87,7 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
     mock_provider_.SetRouteToReturn(route_);
 
     mojom::MediaRouteProviderPtr mock_provider_ptr;
-    binding_ = base::MakeUnique<mojo::Binding<mojom::MediaRouteProvider>>(
+    binding_ = std::make_unique<mojo::Binding<mojom::MediaRouteProvider>>(
         &mock_provider_, mojo::MakeRequest(&mock_provider_ptr));
     provider_proxy_->RegisterMediaRouteProvider(std::move(mock_provider_ptr));
   }

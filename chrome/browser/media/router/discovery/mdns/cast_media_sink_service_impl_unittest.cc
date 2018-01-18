@@ -84,7 +84,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    auto mock_timer = base::MakeUnique<base::MockTimer>(
+    auto mock_timer = std::make_unique<base::MockTimer>(
         true /*retain_user_task*/, false /*is_repeating*/);
     mock_timer_ = mock_timer.get();
     media_sink_service_impl_.SetTimerForTest(std::move(mock_timer));

@@ -127,7 +127,7 @@ TEST_F(MediaRouterDialogControllerTest, ShowDialogForPresentation) {
 }
 
 TEST_F(MediaRouterDialogControllerTest, StartPresentationContext) {
-  auto context = base::MakeUnique<StartPresentationContext>(
+  auto context = std::make_unique<StartPresentationContext>(
       content::PresentationRequest(
           {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
           url::Origin::Create(GURL("http://google.com"))),

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
@@ -126,7 +125,7 @@ void SafeDialAppInfoParser::OnXmlParsingDone(
 
   // Read optional @dialVer.
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      base::MakeUnique<ParsedDialAppInfo>();
+      std::make_unique<ParsedDialAppInfo>();
   app_info->dial_version =
       data_decoder::GetXmlElementAttribute(*service_element, "dialVer");
 

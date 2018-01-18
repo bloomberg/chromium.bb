@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -172,7 +171,7 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
 std::unique_ptr<content::MediaStreamUI>
 MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
     const content::MediaStreamDevices& devices) {
-  return base::MakeUnique<UIDelegate>(weak_factory_.GetWeakPtr(), devices);
+  return std::make_unique<UIDelegate>(weak_factory_.GetWeakPtr(), devices);
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
@@ -248,7 +247,7 @@ MediaStreamCaptureIndicator::RegisterMediaStream(
     const content::MediaStreamDevices& devices) {
   auto& usage = usage_map_[web_contents];
   if (!usage)
-    usage = base::MakeUnique<WebContentsDeviceUsage>(this, web_contents);
+    usage = std::make_unique<WebContentsDeviceUsage>(this, web_contents);
 
   return usage->RegisterMediaStream(devices);
 }

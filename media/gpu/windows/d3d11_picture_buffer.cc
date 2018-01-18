@@ -8,7 +8,8 @@
 #include <d3d11_1.h>
 #include <windows.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/gpu/gles2_decoder_helper.h"
@@ -70,7 +71,7 @@ bool D3D11PictureBuffer::Init(
   // device for decoding.  Sharing seems not to work very well.  Otherwise, we
   // would create the texture with KEYED_MUTEX and NTHANDLE, then send along
   // a handle that we get from |texture| as an IDXGIResource1.
-  gpu_resources_ = base::MakeUnique<GpuResources>();
+  gpu_resources_ = std::make_unique<GpuResources>();
   if (!gpu_resources_->Init(std::move(get_stub_cb), level_,
                             std::move(mailboxes), target_, size_, texture,
                             textures_per_picture))

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/media/router/media_router_base.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,7 +62,7 @@ MediaRouterBase::AddPresentationConnectionStateChangedCallback(
 
   auto& callbacks = presentation_connection_state_callbacks_[route_id];
   if (!callbacks) {
-    callbacks = base::MakeUnique<PresentationConnectionStateChangedCallbacks>();
+    callbacks = std::make_unique<PresentationConnectionStateChangedCallbacks>();
     callbacks->set_removal_callback(base::Bind(
         &MediaRouterBase::OnPresentationConnectionStateCallbackRemoved,
         base::Unretained(this), route_id));

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/common/media/media_player_messages_android.h"
@@ -143,7 +142,7 @@ void RemoteMediaPlayerManager::DidDownloadPoster(
 
 RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
     int player_id) {
-  alternative_players_.push_back(base::MakeUnique<RemoteMediaPlayerBridge>(
+  alternative_players_.push_back(std::make_unique<RemoteMediaPlayerBridge>(
       player_id, GetUserAgent(), this));
   RemoteMediaPlayerBridge* remote =
       static_cast<RemoteMediaPlayerBridge*>(alternative_players_.back().get());

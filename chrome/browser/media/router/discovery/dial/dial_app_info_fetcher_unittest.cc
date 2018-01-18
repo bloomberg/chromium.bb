@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,7 +39,7 @@ class DialAppInfoFetcherTest : public testing::Test {
   }
 
   net::TestURLFetcher* StartRequest() {
-    fetcher_ = base::MakeUnique<DialAppInfoFetcher>(
+    fetcher_ = std::make_unique<DialAppInfoFetcher>(
         url_, profile_.GetRequestContext(), std::move(success_cb_),
         std::move(error_cb_));
     fetcher_->Start();

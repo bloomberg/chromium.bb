@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/cast_remoting_connector.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -213,7 +215,7 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
 void CastRemotingConnector::CreateBridge(media::mojom::RemotingSourcePtr source,
                                          media::mojom::RemoterRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<RemotingBridge>(std::move(source), this),
+      std::make_unique<RemotingBridge>(std::move(source), this),
       std::move(request));
 }
 

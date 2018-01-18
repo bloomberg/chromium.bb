@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
@@ -173,7 +172,7 @@ void DnsSdRegistry::RegisterDnsSdListener(const std::string& service_type) {
                               service_discovery_client_.get()));
   dns_sd_device_lister->Discover();
   service_data_map_[service_type] =
-      base::MakeUnique<ServiceTypeData>(std::move(dns_sd_device_lister));
+      std::make_unique<ServiceTypeData>(std::move(dns_sd_device_lister));
   DispatchApiEvent(service_type);
 }
 

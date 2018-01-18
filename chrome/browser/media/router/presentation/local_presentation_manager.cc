@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +26,7 @@ LocalPresentationManager::GetOrCreateLocalPresentation(
     it = local_presentations_
              .insert(std::make_pair(
                  presentation_info.presentation_id,
-                 base::MakeUnique<LocalPresentation>(presentation_info)))
+                 std::make_unique<LocalPresentation>(presentation_info)))
              .first;
   }
   return it->second.get();
@@ -119,7 +118,7 @@ void LocalPresentationManager::LocalPresentation::RegisterController(
                            std::move(receiver_connection_request));
   } else {
     pending_controllers_.insert(std::make_pair(
-        render_frame_host_id, base::MakeUnique<ControllerConnection>(
+        render_frame_host_id, std::make_unique<ControllerConnection>(
                                   std::move(controller_connection_ptr),
                                   std::move(receiver_connection_request))));
   }

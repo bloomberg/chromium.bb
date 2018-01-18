@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
 
+#include <memory>
+
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -75,12 +77,12 @@ class DiscoveryNetworkMonitorMetricObserverTest : public ::testing::Test {
  public:
   DiscoveryNetworkMonitorMetricObserverTest()
       : mock_network_change_notifier_(
-            base::MakeUnique<MockNetworkChangeNotifier>()),
+            std::make_unique<MockNetworkChangeNotifier>()),
         task_runner_(new base::TestMockTimeTaskRunner()),
         task_runner_handle_(task_runner_),
         mock_clock_(task_runner_->GetMockTickClock()),
         start_ticks_(mock_clock_->NowTicks()),
-        metrics_(base::MakeUnique<MockMetrics>()),
+        metrics_(std::make_unique<MockMetrics>()),
         mock_metrics_(metrics_.get()),
         clock_(task_runner_->GetMockTickClock()),
         metric_observer_(clock_.get(), std::move(metrics_)) {}

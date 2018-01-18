@@ -4,13 +4,13 @@
 
 #include "media/cast/net/udp_packet_pipe.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +26,9 @@ class UdpPacketPipeTest : public ::testing::Test {
  public:
   UdpPacketPipeTest() {
     mojo::DataPipe data_pipe(kDefaultDataPipeCapacityBytes);
-    writer_ = base::MakeUnique<UdpPacketPipeWriter>(
+    writer_ = std::make_unique<UdpPacketPipeWriter>(
         std::move(data_pipe.producer_handle));
-    reader_ = base::MakeUnique<UdpPacketPipeReader>(
+    reader_ = std::make_unique<UdpPacketPipeReader>(
         std::move(data_pipe.consumer_handle));
   }
 

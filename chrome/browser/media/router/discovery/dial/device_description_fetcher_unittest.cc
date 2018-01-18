@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
@@ -44,7 +43,7 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   }
 
   net::TestURLFetcher* StartRequest() {
-    fetcher_ = base::MakeUnique<DeviceDescriptionFetcher>(
+    fetcher_ = std::make_unique<DeviceDescriptionFetcher>(
         url_, profile_.GetRequestContext(), std::move(success_cb_),
         std::move(error_cb_));
     fetcher_->Start();

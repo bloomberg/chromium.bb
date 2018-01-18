@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 
+#include <memory>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
@@ -433,7 +435,7 @@ void MediaEngagementContentsObserver::UpdatePlayerTimer(
       return;
 
     std::unique_ptr<base::Timer> new_timer =
-        base::MakeUnique<base::Timer>(true, false);
+        std::make_unique<base::Timer>(true, false);
     if (task_runner_)
       new_timer->SetTaskRunner(task_runner_);
 
