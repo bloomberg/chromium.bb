@@ -17,6 +17,7 @@ enum AuthenticatorStatus {
   PENDING_REQUEST,
   NOT_ALLOWED_ERROR,
   NOT_SUPPORTED_ERROR,
+  INVALID_DOMAIN,
   UNKNOWN_ERROR,
 };
 
@@ -60,7 +61,7 @@ struct GetAssertionResponse {
 // Information about the relying party. These fields take arbitrary input.
 struct PublicKeyCredentialRpEntity {
   // An ASCII serialization of an origin.
-  string? id;
+  string id;
 
   // Friendly name associated with the relying party intended for display.
   // e.g. "Acme Corporation".

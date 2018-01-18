@@ -31,6 +31,7 @@
 #include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
+#include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "third_party/WebKit/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
@@ -148,6 +149,58 @@ void AssertSecurityRequirementsBeforeResponse(
                  IsSameOriginWithAncestors(resolver->GetFrame()));
 }
 
+bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
+                                        const String& relying_party_id) {
+  const SecurityOrigin* origin =
+      resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin();
+
+  if (origin->IsUnique()) {
+    String error_message =
+        "The origin ' " + origin->ToRawString() +
+        "' is an opaque origin and hence not allowed to access " +
+        "'PublicKeyCredential' objects.";
+    resolver->Reject(DOMException::Create(kNotAllowedError, error_message));
+    return false;
+  }
+
+  DCHECK_NE(origin->Protocol(), url::kAboutScheme);
+  DCHECK_NE(origin->Protocol(), url::kFileScheme);
+
+  // Validate the effective domain.
+  // For step 6 of both
+  // https://w3c.github.io/webauthn/#createCredential and
+  // https://w3c.github.io/webauthn/#discover-from-external-source.
+  String effective_domain = origin->Domain();
+
+  // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
+  // for the IP address check.
+  OriginAccessEntry access_entry(origin->Protocol(), effective_domain,
+                                 blink::OriginAccessEntry::kAllowSubdomains);
+  if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
+    resolver->Reject(DOMException::Create(
+        kSecurityError, "Effective domain is not a valid domain."));
+    return false;
+  }
+
+  // For the steps detailed in
+  // https://w3c.github.io/webauthn/#CreateCred-DetermineRpId and
+  // https://w3c.github.io/webauthn/#GetAssn-DetermineRpId.
+  if (!relying_party_id.IsNull()) {
+    OriginAccessEntry access_entry(origin->Protocol(), relying_party_id,
+                                   blink::OriginAccessEntry::kAllowSubdomains);
+    if (access_entry.MatchesDomain(*origin) !=
+        blink::OriginAccessEntry::kMatchesOrigin) {
+      resolver->Reject(DOMException::Create(
+          kSecurityError,
+          "The relying party ID '" + relying_party_id +
+              "' is not a registrable domain suffix of, nor equal to '" +
+              origin->ToRawString() + "'."));
+      return false;
+    }
+  }
+  return true;
+}
+
 // Checks if the icon URL of |credential| is an a-priori authenticated URL.
 // https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
 bool IsIconURLEmptyOrSecure(const Credential* credential) {
@@ -186,6 +239,8 @@ DOMException* CredentialManagerErrorToDOMException(
       return DOMException::Create(
           kNotSupportedError,
           "Parameters for this operation are not supported.");
+    case CredentialManagerError::INVALID_DOMAIN:
+      return DOMException::Create(kSecurityError, "This is an invalid domain.");
     case CredentialManagerError::UNKNOWN:
       return DOMException::Create(kNotReadableError,
                                   "An unknown error occurred while talking "
@@ -243,6 +298,8 @@ void OnMakePublicKeyCredentialComplete(
   auto* resolver = scoped_resolver->Release();
   const auto required_origin_type = RequiredOriginType::kSecure;
 
+  // TODO(crbug.com/803080): Introduce the assert counterpart of
+  // CheckPublicKeySecurityRequirements().
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status == AuthenticatorStatus::SUCCESS) {
     DCHECK(credential);
@@ -392,9 +449,19 @@ ScriptPromise CredentialsContainer::create(
         FederatedCredential::Create(options.federated(), exception_state));
   } else {
     DCHECK(options.hasPublicKey());
+    const String& relying_party_id = options.publicKey().rp().id();
+    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id)) {
+      return promise;
+    }
     auto mojo_options =
         MojoMakePublicKeyCredentialOptions::From(options.publicKey());
     if (mojo_options) {
+      if (!mojo_options->relying_party->id) {
+        mojo_options->relying_party->id = resolver->GetFrame()
+                                              ->GetSecurityContext()
+                                              ->GetSecurityOrigin()
+                                              ->Domain();
+      }
       auto* authenticator =
           CredentialManagerProxy::From(script_state)->Authenticator();
       authenticator->MakeCredential(

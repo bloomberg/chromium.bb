@@ -2898,6 +2898,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="192" label="RDH_NULL_CLIENT"/>
   <int value="193" label="RVH_WEB_UI_BINDINGS_MISMATCH"/>
   <int value="194" label="WCI_NEW_WIDGET_PROCESS_MISMATCH"/>
+  <int value="195" label="AUTH_INVALID_EFFECTIVE_DOMAIN"/>
+  <int value="196" label="AUTH_INVALID_RELYING_PARTY"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
