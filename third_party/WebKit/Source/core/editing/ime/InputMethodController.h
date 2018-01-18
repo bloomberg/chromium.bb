@@ -154,6 +154,9 @@ class CORE_EXPORT InputMethodController final
       int relative_caret_position,
       const Vector<ImeTextSpan>& ime_text_spans);
 
+  // Returns false if the frame was destroyed, true otherwise.
+  bool DeleteSelection() WARN_UNUSED_RESULT;
+
   // Returns true if moved caret successfully.
   bool MoveCaret(int new_caret_position);
 

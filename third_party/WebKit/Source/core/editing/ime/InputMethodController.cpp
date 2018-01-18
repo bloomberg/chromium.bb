@@ -801,7 +801,8 @@ void InputMethodController::SetComposition(
       // It's weird to call |setComposition()| with empty text outside
       // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so
       // we simply delete selection without sending extra events.
-      TypingCommand::DeleteSelection(GetDocument());
+      if (!DeleteSelection())
+        return;
     }
 
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -1088,6 +1089,27 @@ PlainTextRange InputMethodController::CreateRangeForSelection(
   return PlainTextRange(start, end);
 }
 
+bool InputMethodController::DeleteSelection() {
+  if (!GetFrame().Selection().ComputeVisibleSelectionInDOMTree().IsRange())
+    return true;
+
+  Node* target = GetFrame().GetDocument()->FocusedElement();
+  if (target) {
+    DispatchBeforeInputEditorCommand(
+        target, InputEvent::InputType::kDeleteContentBackward,
+        TargetRangesForInputEvent(*target));
+
+    // Frame could have been destroyed by the beforeinput event.
+    if (!IsAvailable())
+      return false;
+  }
+
+  TypingCommand::DeleteSelection(GetDocument());
+
+  // Frame could have been destroyed by the input event.
+  return IsAvailable();
+}
+
 bool InputMethodController::MoveCaret(int new_caret_position) {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   PlainTextRange selected_range =
@@ -1133,13 +1155,7 @@ void InputMethodController::ExtendSelectionAndDelete(int before, int after) {
                                    .End() &&
            before <= static_cast<int>(selection_offsets.Start()));
   // TODO(chongz): Find a way to distinguish Forward and Backward.
-  Node* target = GetDocument().FocusedElement();
-  if (target) {
-    DispatchBeforeInputEditorCommand(
-        target, InputEvent::InputType::kDeleteContentBackward,
-        TargetRangesForInputEvent(*target));
-  }
-  TypingCommand::DeleteSelection(GetDocument());
+  ignore_result(DeleteSelection());
 }
 
 // TODO(yabinh): We should reduce the number of selectionchange events.
@@ -1177,7 +1193,8 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
     const int adjusted_start = start - static_cast<int>(diff);
     if (!SetSelectionOffsets(PlainTextRange(adjusted_start, selection_start)))
       return;
-    TypingCommand::DeleteSelection(GetDocument());
+    if (!DeleteSelection())
+      return;
 
     selection_end = selection_end - (selection_start - adjusted_start);
     selection_start = adjusted_start;
@@ -1203,7 +1220,8 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
     const int adjusted_end = end + static_cast<int>(diff);
     if (!SetSelectionOffsets(PlainTextRange(selection_end, adjusted_end)))
       return;
-    TypingCommand::DeleteSelection(GetDocument());
+    if (!DeleteSelection())
+      return;
   }
 
   SetSelectionOffsets(PlainTextRange(selection_start, selection_end));
