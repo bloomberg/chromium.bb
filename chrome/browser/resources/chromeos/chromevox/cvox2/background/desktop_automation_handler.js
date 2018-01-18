@@ -346,6 +346,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
+    // We are only interested in load completes on top level roots.
+    if (AutomationUtil.getTopLevelRoot(evt.target) != evt.target.root)
+      return;
+
     this.lastRootUrl_ = '';
     chrome.automation.getFocus(function(focus) {
       // In some situations, ancestor windows get focused before a descendant
