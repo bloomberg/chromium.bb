@@ -51,10 +51,15 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   void ContextDestroyed(ExecutionContext*) override;
   void Dispose();
 
+  void LogGetDisplayResult();
+
   Member<NavigatorVR> navigator_vr_;
   VRDisplayVector displays_;
 
   bool display_synced_;
+
+  bool has_presentation_capable_display_ = false;
+  bool has_display_ = false;
 
   Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
   device::mojom::blink::VRServicePtr service_;

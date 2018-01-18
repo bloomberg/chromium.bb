@@ -35,6 +35,7 @@
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 #include <array>
 #include "core/dom/ExecutionContext.h"
@@ -161,6 +162,15 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
 }
 
 bool VRDisplay::getFrameData(VRFrameData* frame_data) {
+  if (!did_log_getFrameData_ && GetDocument() &&
+      GetDocument()->IsInMainFrame()) {
+    did_log_getFrameData_ = true;
+
+    ukm::builders::XR_WebXR(GetDocument()->UkmSourceID())
+        .SetDidRequestPose(1)
+        .Record(GetDocument()->UkmRecorder());
+  }
+
   if (!FocusedOrPresenting() || !frame_pose_ || display_blurred_)
     return false;
 
@@ -326,6 +336,14 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   if (!execution_context->IsSecureContext()) {
     UseCounter::Count(execution_context,
                       WebFeature::kVRRequestPresentInsecureOrigin);
+  }
+
+  if (!did_log_requestPresent_ && GetDocument() &&
+      GetDocument()->IsInMainFrame()) {
+    did_log_requestPresent_ = true;
+    ukm::builders::XR_WebXR(GetDocument()->UkmSourceID())
+        .SetDidRequestPresentation(1)
+        .Record(GetDocument()->UkmRecorder());
   }
 
   ReportPresentationResult(PresentationResult::kRequested);
