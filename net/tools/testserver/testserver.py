@@ -39,21 +39,9 @@ import zlib
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
 
-# Temporary hack to deal with tlslite 0.3.8 -> 0.4.6 upgrade.
-#
-# TODO(davidben): Remove this when it has cycled through all the bots and
-# developer checkouts or when http://crbug.com/356276 is resolved.
-try:
-  os.remove(os.path.join(ROOT_DIR, 'third_party', 'tlslite',
-                         'tlslite', 'utils', 'hmac.pyc'))
-except Exception:
-  pass
-
-# Append at the end of sys.path, it's fine to use the system library.
-sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'pyftpdlib', 'src'))
-
 # Insert at the beginning of the path, we want to use our copies of the library
-# unconditionally.
+# unconditionally (since they contain modifications from anything that might be
+# obtained from e.g. PyPi).
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
 
