@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 
-datadir_amdgpu = join_paths(get_option('datadir'), 'libdrm', 'amdgpu.ids')
+datadir_amdgpu = join_paths(get_option('prefix'), get_option('datadir'), 'libdrm')
 
 libdrm_amdgpu = shared_library(
   'drm_amdgpu',
@@ -33,7 +33,7 @@ libdrm_amdgpu = shared_library(
   ],
   c_args : [
     warn_c_args,
-    '-DAMDGPU_ASIC_ID_TABLE="@0@"'.format(datadir_amdgpu),
+    '-DAMDGPU_ASIC_ID_TABLE="@0@"'.format(join_paths(datadir_amdgpu, 'amdgpu.ids')),
   ],
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
