@@ -630,7 +630,7 @@ public class ContentViewCoreImpl
         mAttachedToWindow = true;
         addDisplayAndroidObserverIfNeeded();
         setAccessibilityState(mAccessibilityManager.isEnabled());
-        updateTextSelectionUI(true);
+        if (mWebContents != null) updateTextSelectionUI(true);
         GamepadList.onAttachedToWindow(mContext);
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.addListener(this);
@@ -665,7 +665,7 @@ public class ContentViewCoreImpl
         // Override the handle visibility explicitly to address this, but
         // preserve the underlying selection for detachment cases like screen
         // locking and app switching.
-        if (isAlive()) updateTextSelectionUI(false);
+        if (mWebContents != null) updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
         if (mWebContentsAccessibility != null) {
             mWebContentsAccessibility.onDetachedFromWindow();
