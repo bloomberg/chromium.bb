@@ -63,6 +63,10 @@ int TabIdFromMediaSource(const MediaSource& source);
 // Does not deeper protocol-level syntax checks.
 bool IsValidMediaSource(const MediaSource& source);
 
+// Returns true if |url| represents a legacy Cast presentation URL, i.e., it
+// starts with |kLegacyCastPresentationUrlPrefix|.
+bool IsLegacyCastPresentationUrl(const GURL& url);
+
 // Returns true if |url| is a valid presentation URL.
 bool IsValidPresentationUrl(const GURL& url);
 

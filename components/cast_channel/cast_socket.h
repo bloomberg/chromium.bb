@@ -44,13 +44,14 @@ class Logger;
 struct LastError;
 
 // Cast device capabilities.
-enum CastDeviceCapability {
+enum CastDeviceCapability : int {
   NONE = 0,
   VIDEO_OUT = 1 << 0,
   VIDEO_IN = 1 << 1,
   AUDIO_OUT = 1 << 2,
   AUDIO_IN = 1 << 3,
-  DEV_MODE = 1 << 4
+  DEV_MODE = 1 << 4,
+  MULTIZONE_GROUP = 1 << 5
 };
 
 // Public interface of the CastSocket class.
