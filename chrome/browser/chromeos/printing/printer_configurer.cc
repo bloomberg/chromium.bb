@@ -46,6 +46,15 @@ namespace chromeos {
 
 namespace {
 
+// Get the URI that we want for talking to cups.
+std::string URIForCups(const Printer& printer) {
+  if (!printer.effective_uri().empty()) {
+    return printer.effective_uri();
+  } else {
+    return printer.uri();
+  }
+}
+
 // Configures printers by downloading PPDs then adding them to CUPS through
 // debugd.  This class must be used on the UI thread.
 class PrinterConfigurerImpl : public PrinterConfigurer {
@@ -95,7 +104,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
     client->CupsAddAutoConfiguredPrinter(
-        printer.id(), printer.UriForCups(),
+        printer.id(), URIForCups(printer),
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer,
                        std::move(callback)));
@@ -167,7 +176,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
 
     client->CupsAddManuallyConfiguredPrinter(
-        printer.id(), printer.UriForCups(), ppd_contents,
+        printer.id(), URIForCups(printer), ppd_contents,
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer, std::move(cb)));
   }
@@ -257,7 +266,7 @@ std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   base::MD5Update(&ctx, printer.id());
-  base::MD5Update(&ctx, printer.UriForCups());
+  base::MD5Update(&ctx, URIForCups(printer));
   base::MD5Update(&ctx, printer.ppd_reference().user_supplied_ppd_url);
   base::MD5Update(&ctx, printer.ppd_reference().effective_make_and_model);
   char autoconf = printer.ppd_reference().autoconf ? 1 : 0;
