@@ -33,6 +33,10 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'ArgumentSelectionDefectChecker',
   # TODO(crbug.com/801268): Follow steps in bug.
   'NarrowingCompoundAssignment',
+  # TODO(crbug.com/802073): Follow steps in bug.
+  'TypeParameterUnusedInFormals',
+  # TODO(crbug.com/802075): Follow steps in bug
+  'ReferenceEquality',
   # Android platform default is always UTF-8.
   # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
   'DefaultCharset',
@@ -46,8 +50,34 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'OperatorPrecedence',
   # Just false positives in our code.
   'ThreadJoinLoop',
-  # Alias of ParameterName warning
+  # Alias of ParameterName warning.
   'NamedParameters',
+  # Low priority corner cases with String.split.
+  'StringSplitter',
+  # Preferred to use another method since it propagates exceptions better.
+  'ClassNewInstance',
+  # Nice to have static inner classes but not necessary.
+  'ClassCanBeStatic',
+  # Explicit is better than implicit.
+  'FloatCast',
+  # Results in false positives.
+  'ThreadLocalUsage',
+  # Also just false positives.
+  'Finally',
+  # False positives for Chromium.
+  'FragmentNotInstantiable',
+  # Low priority to fix.
+  'HidingField',
+  # Low priority.
+  'IntLongMath',
+  # Low priority.
+  'BadComparable',
+  # Low priority.
+  'EqualsHashCode',
+  # Nice to fix but low priority.
+  'TypeParameterShadowing',
+  # Good to have immutable enums, also low priority.
+  'ImmutableEnumChecker',
 ]
 
 ERRORPRONE_WARNINGS_TO_ERROR = [
