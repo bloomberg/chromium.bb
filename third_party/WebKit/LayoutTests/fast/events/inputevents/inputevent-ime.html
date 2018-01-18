@@ -125,7 +125,7 @@
       'beforeinput: isComposing=true, data=""',
       'compositionupdate: data=""',
       'textInput: data=""',
-      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+      'input: isComposing=true, data="null", inputType=insertCompositionText',
       'compositionend: data=""',
     ]);
   }, 'setComposition with open composition, empty text');
@@ -185,7 +185,7 @@
       'beforeinput: isComposing=true, data=""',
       'compositionupdate: data=""',
       'textInput: data=""',
-      'input: isComposing=false, data="null", inputType=deleteContentBackward',
+      'input: isComposing=true, data="null", inputType=insertCompositionText',
       'compositionend: data=""',
     ]);
   }, 'insertText with open composition, empty text');

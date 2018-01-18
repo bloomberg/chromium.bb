@@ -374,8 +374,14 @@ void InputMethodController::SelectComposition() const {
 
   // The composition can start inside a composed character sequence, so we have
   // to override checks. See <http://bugs.webkit.org/show_bug.cgi?id=15781>
+
+  // The SetSelectionOptions() parameter is necessary because without it,
+  // FrameSelection::SetSelection() will actually call
+  // SetShouldClearTypingStyle(true), which will cause problems applying
+  // formatting during composition. See https://crbug.com/803278.
   GetFrame().Selection().SetSelection(
-      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build());
+      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
+      SetSelectionOptions());
 }
 
 bool IsTextTooLongAt(const Position& position) {
