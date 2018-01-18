@@ -12,6 +12,7 @@
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -259,13 +260,21 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       content_tex_physical_size_.width(), content_tex_physical_size_.height());
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
-  webvr_experimental_rendering_ =
-      base::FeatureList::IsEnabled(features::kWebVrExperimentalRendering);
 
-  // TODO(https://crbug.com/760389): force this on for S8 via whitelist?
-  if (gl::GLFence::IsGpuFenceSupported() && webvr_experimental_rendering_) {
-    webvr_use_gpu_fence_ = true;
+  VrMetricsUtil::XRRenderPath render_path =
+      VrMetricsUtil::XRRenderPath::kClientWait;
+
+  std::string render_path_string = base::GetFieldTrialParamValueByFeature(
+      features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
+  DVLOG(1) << __FUNCTION__ << ": WebXrRenderPath=" << render_path_string;
+  if (render_path_string == features::kWebXrRenderPathParamValueGpuFence) {
+    // TODO(https://crbug.com/760389): force this on for S8 via whitelist?
+    if (gl::GLFence::IsGpuFenceSupported()) {
+      webvr_use_gpu_fence_ = true;
+      render_path = VrMetricsUtil::XRRenderPath::kGpuFence;
+    }
   }
+  VrMetricsUtil::LogXrRenderPathUsed(render_path);
 
   // InitializeRenderer calls GvrDelegateReady which triggers actions such as
   // responding to RequestPresent. All member assignments or other

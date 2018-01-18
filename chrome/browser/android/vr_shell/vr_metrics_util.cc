@@ -5,6 +5,7 @@
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 
 static constexpr int kVersionEncodingError = -4;
 static constexpr int kVrNotSupported = -3;
@@ -80,6 +81,12 @@ device::VrViewerType VrMetricsUtil::GetVrViewerType(
       NOTREACHED();
       return device::VrViewerType::GVR_UNKNOWN;
   }
+}
+
+// static
+void VrMetricsUtil::LogXrRenderPathUsed(XRRenderPath path) {
+  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.RenderPath.Used", path,
+                            XRRenderPath::kCount);
 }
 
 }  // namespace vr_shell

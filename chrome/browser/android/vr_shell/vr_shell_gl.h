@@ -195,7 +195,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   // Set from feature flags.
   bool webvr_vsync_align_;
-  bool webvr_experimental_rendering_;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
@@ -225,8 +224,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // WebVR currently supports multiple render path choices, with runtime
   // selection based on underlying support being available and feature flags.
   // The webvr_use_* booleans choose among the implementations. Please don't
-  // check webvr_experimental_rendering_ or other feature flags in individual
-  // code paths directly to avoid inconsistent logic.
+  // check WebXrRenderPath or other feature flags in individual code paths
+  // directly to avoid inconsistent logic.
   bool webvr_use_gpu_fence_ = false;
 
   int webvr_unstuff_ratelimit_frames_ = 0;
