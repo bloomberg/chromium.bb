@@ -584,6 +584,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       support_copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
                                   !workarounds.disable_nv12_dxgi_video),
       support_delayed_copy_nv12_textures_(
+          !gpu_preferences.use_passthrough_cmd_decoder &&
           base::FeatureList::IsEnabled(kDelayCopyNV12Textures) &&
           !workarounds.disable_delayed_copy_nv12),
       use_dx11_(false),
