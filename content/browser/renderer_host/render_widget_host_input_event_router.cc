@@ -262,6 +262,10 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
                  ->delegate()
                  ->GetMouseLockWidget()
                  ->GetView();
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), target, &transformed_point)) {
+      return {nullptr, false, base::nullopt};
+    }
     return {target, false, transformed_point};
   }
 
@@ -272,7 +276,9 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
           viz::EventSource::MOUSE, &transformed_point);
       return {result.view, result.should_query_view, transformed_point};
     }
-    return {target, false, transformed_point};
+    // For non-begin events, the target found for the previous phaseBegan is
+    // used.
+    return {nullptr, false, base::nullopt};
   }
 
   auto result = FindViewAtLocation(root_view, event.PositionInWidget(),
@@ -386,15 +392,23 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebMouseWheelEvent& mouse_wheel_event,
-    const ui::LatencyInfo& latency) {
+    const ui::LatencyInfo& latency,
+    const base::Optional<gfx::PointF>& target_location) {
+  base::Optional<gfx::PointF> point_in_target = target_location;
   if (!root_view->IsMouseLocked() &&
       root_view->wheel_scroll_latching_enabled()) {
     if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       wheel_target_.target = target;
+      if (target_location.has_value()) {
+        wheel_target_.delta =
+            target_location.value() - mouse_wheel_event.PositionInWidget();
+      }
     } else {
       if (wheel_target_.target) {
-        DCHECK(!target);
+        DCHECK(!target && !target_location.has_value());
         target = wheel_target_.target;
+        point_in_target.emplace(mouse_wheel_event.PositionInWidget() +
+                                wheel_target_.delta);
       } else if ((mouse_wheel_event.phase ==
                       blink::WebMouseWheelEvent::kPhaseEnded ||
                   mouse_wheel_event.momentum_phase ==
@@ -419,17 +433,16 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
                              INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
-
-  gfx::PointF point_in_target;
-  if (!root_view->TransformPointToCoordSpaceForView(
-          mouse_wheel_event.PositionInWidget(), target, &point_in_target)) {
-    root_view->WheelEventAck(mouse_wheel_event,
-                             INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    return;
-  }
+  // If target_location doesn't have a value, it can be for two reasons:
+  // 1. |target| is null, in which case we would have early returned from the
+  // check above.
+  // 2. Wheel scroll latching is enabled and the event we are receiving is not
+  // a phaseBegan, in which case we should have got a valid |point_in_target|
+  // from wheel_target_.delta above.
+  DCHECK(point_in_target.has_value());
 
   blink::WebMouseWheelEvent event = mouse_wheel_event;
-  event.SetPositionInWidget(point_in_target.x(), point_in_target.y());
+  event.SetPositionInWidget(point_in_target->x(), point_in_target->y());
   target->ProcessMouseWheelEvent(event, latency);
 
   DCHECK(root_view->wheel_scroll_latching_enabled() || !wheel_target_.target);
@@ -1228,7 +1241,8 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
     const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency) {
+    const ui::LatencyInfo& latency,
+    const base::Optional<gfx::PointF>& target_location) {
   if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
     DispatchMouseEvent(root_view, target,
                        static_cast<const blink::WebMouseEvent&>(event),
@@ -1238,7 +1252,7 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
   if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
     DispatchMouseWheelEvent(
         root_view, target, static_cast<const blink::WebMouseWheelEvent&>(event),
-        latency);
+        latency, target_location);
     return;
   }
   if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
