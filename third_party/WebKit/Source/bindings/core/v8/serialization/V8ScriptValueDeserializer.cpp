@@ -215,7 +215,10 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!ReadUTF8String(&uuid) || !ReadUTF8String(&type) ||
           !ReadUint64(&size))
         return nullptr;
-      return Blob::Create(GetOrCreateBlobDataHandle(uuid, type, size));
+      auto blob_handle = GetOrCreateBlobDataHandle(uuid, type, size);
+      if (!blob_handle)
+        return nullptr;
+      return Blob::Create(std::move(blob_handle));
     }
     case kBlobIndexTag: {
       if (Version() < 6 || !blob_info_array_)
@@ -229,7 +232,9 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         blob_handle =
             GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size());
       }
-      return Blob::Create(blob_handle);
+      if (!blob_handle)
+        return nullptr;
+      return Blob::Create(std::move(blob_handle));
     }
     case kFileTag:
       return ReadFile();
@@ -518,10 +523,12 @@ File* V8ScriptValueDeserializer::ReadFile() {
   const File::UserVisibility user_visibility =
       is_user_visible ? File::kIsUserVisible : File::kIsNotUserVisible;
   const uint64_t kSizeForDataHandle = static_cast<uint64_t>(-1);
+  auto blob_handle = GetOrCreateBlobDataHandle(uuid, type, kSizeForDataHandle);
+  if (!blob_handle)
+    return nullptr;
   return File::CreateFromSerialization(
       path, name, relative_path, user_visibility, has_snapshot, size,
-      last_modified_ms,
-      GetOrCreateBlobDataHandle(uuid, type, kSizeForDataHandle));
+      last_modified_ms, std::move(blob_handle));
 }
 
 File* V8ScriptValueDeserializer::ReadFileIndex() {
@@ -538,6 +545,8 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
     blob_handle =
         GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size());
   }
+  if (!blob_handle)
+    return nullptr;
   return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
                                               info.size(), last_modified_ms,
                                               blob_handle);
@@ -563,6 +572,11 @@ V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(const String& uuid,
   BlobDataHandleMap::const_iterator it = handles.find(uuid);
   if (it != handles.end())
     return it->value;
+  // Creating a BlobDataHandle from an empty string will get this renderer
+  // killed, so since we're parsing untrusted data (from possibly another
+  // process/renderer) return null instead.
+  if (uuid.IsEmpty())
+    return nullptr;
   return BlobDataHandle::Create(uuid, type, size);
 }
 
