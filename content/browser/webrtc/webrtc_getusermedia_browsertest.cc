@@ -259,11 +259,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaAndClone();");
 }
 
-// Test fails under Android, http://crbug.com/524388
-// Test fails under MSan
-// Flaky everywhere else: http://crbug.com/523152
+// http://crbug.com/803516 : Flaky on Linux debug
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
+  DISABLED_RenderVideoTrackInMultipleTagsAndPause
+#else
+#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
+  RenderVideoTrackInMultipleTagsAndPause
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       RenderVideoTrackInMultipleTagsAndPause) {
+                       MAYBE_RenderVideoTrackInMultipleTagsAndPause) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
