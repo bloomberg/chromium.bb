@@ -7,12 +7,14 @@
 
 #include "content/common/content_export.h"
 
-namespace content {
-class NetworkService;
-
+namespace network {
 namespace mojom {
 class NetworkService;
 }
+}  // namespace network
+
+namespace content {
+class NetworkService;
 
 // Returns a pointer to the NetworkService, creating / re-creating it as needed.
 // NetworkService will be running in-process if
@@ -20,7 +22,7 @@ class NetworkService;
 //   2) kNetworkService and kNetworkServiceInProcess are enabled
 // Otherwise it runs out of process.
 // This method can only be called on the UI thread.
-CONTENT_EXPORT mojom::NetworkService* GetNetworkService();
+CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
 
 // When network service is disabled, returns the in-process NetworkService
 // pointer which is used to ease transition to network service.

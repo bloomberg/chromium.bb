@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/network/network_change_manager.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/network/network_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -37,20 +37,21 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // TODO(https://crbug.com/767450): Once the NetworkService can always create
   // its own NetLog in production, remove the |net_log| argument.
   NetworkServiceImpl(std::unique_ptr<service_manager::BinderRegistry> registry,
-                     mojom::NetworkServiceRequest request = nullptr,
+                     network::mojom::NetworkServiceRequest request = nullptr,
                      net::NetLog* net_log = nullptr);
 
   ~NetworkServiceImpl() override;
 
-  std::unique_ptr<mojom::NetworkContext> CreateNetworkContextWithBuilder(
-      mojom::NetworkContextRequest request,
-      mojom::NetworkContextParamsPtr params,
+  std::unique_ptr<network::mojom::NetworkContext>
+  CreateNetworkContextWithBuilder(
+      network::mojom::NetworkContextRequest request,
+      network::mojom::NetworkContextParamsPtr params,
       std::unique_ptr<URLRequestContextBuilderMojo> builder,
       net::URLRequestContext** url_request_context) override;
 
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
-  void Bind(mojom::NetworkServiceRequest request);
+  void Bind(network::mojom::NetworkServiceRequest request);
 
   static std::unique_ptr<NetworkServiceImpl> CreateForTesting();
 
@@ -59,10 +60,11 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   void RegisterNetworkContext(NetworkContext* network_context);
   void DeregisterNetworkContext(NetworkContext* network_context);
 
-  // mojom::NetworkService implementation:
-  void SetClient(mojom::NetworkServiceClientPtr client) override;
-  void CreateNetworkContext(mojom::NetworkContextRequest request,
-                            mojom::NetworkContextParamsPtr params) override;
+  // network::mojom::NetworkService implementation:
+  void SetClient(network::mojom::NetworkServiceClientPtr client) override;
+  void CreateNetworkContext(
+      network::mojom::NetworkContextRequest request,
+      network::mojom::NetworkContextParamsPtr params) override;
   void DisableQuic() override;
   void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
   void GetNetworkChangeManager(
@@ -71,7 +73,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
 
-  mojom::NetworkServiceClient* client() { return client_.get(); }
+  network::mojom::NetworkServiceClient* client() { return client_.get(); }
   net::NetLog* net_log() const;
 
  private:
@@ -89,7 +91,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // its own NetLog.
   net::NetLog* net_log_;
 
-  mojom::NetworkServiceClientPtr client_;
+  network::mojom::NetworkServiceClientPtr client_;
 
   // Observer that logs network changes to the NetLog. Must be below the NetLog
   // and the NetworkChangeNotifier (Once this class creates it), so it's
@@ -100,7 +102,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
-  mojo::Binding<mojom::NetworkService> binding_;
+  mojo::Binding<network::mojom::NetworkService> binding_;
 
   // NetworkContexts register themselves with the NetworkService so that they
   // can be cleaned up when the NetworkService goes away. This is needed as

@@ -261,7 +261,7 @@ class StoragePartitionImpl::NetworkContextOwner {
 
   ~NetworkContextOwner() { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
 
-  void Initialize(mojom::NetworkContextRequest network_context_request,
+  void Initialize(network::mojom::NetworkContextRequest network_context_request,
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context_getter_ = std::move(context_getter);
@@ -277,7 +277,7 @@ class StoragePartitionImpl::NetworkContextOwner {
   // needed to keep the URLRequestContext alive until the NetworkContext is
   // destroyed.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  std::unique_ptr<mojom::NetworkContext> network_context_;
+  std::unique_ptr<network::mojom::NetworkContext> network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextOwner);
 };
@@ -621,7 +621,7 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
   return media_url_request_context_.get();
 }
 
-mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
+network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   // Create the NetworkContext as needed, when the network service is disabled.
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     if (network_context_)

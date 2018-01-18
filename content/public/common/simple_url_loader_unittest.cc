@@ -25,7 +25,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/network/network_service.h"
@@ -45,6 +44,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -378,14 +378,14 @@ class SimpleURLLoaderTestBase {
   SimpleURLLoaderTestBase()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-    mojom::NetworkServicePtr network_service_ptr;
-    mojom::NetworkServiceRequest network_service_request =
+    network::mojom::NetworkServicePtr network_service_ptr;
+    network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
     network_service_ =
         NetworkService::Create(std::move(network_service_request),
                                /*netlog=*/nullptr);
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
+    network::mojom::NetworkContextParamsPtr context_params =
+        network::mojom::NetworkContextParams::New();
     context_params->enable_data_url_support = true;
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
@@ -429,8 +429,8 @@ class SimpleURLLoaderTestBase {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<mojom::NetworkService> network_service_;
-  mojom::NetworkContextPtr network_context_;
+  std::unique_ptr<network::mojom::NetworkService> network_service_;
+  network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;

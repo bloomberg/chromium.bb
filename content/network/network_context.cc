@@ -83,8 +83,8 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
 }  // namespace
 
 NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
-                               mojom::NetworkContextRequest request,
-                               mojom::NetworkContextParamsPtr params)
+                               network::mojom::NetworkContextRequest request,
+                               network::mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
@@ -102,8 +102,8 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
 // corresponding options to be overwritten.
 NetworkContext::NetworkContext(
     NetworkServiceImpl* network_service,
-    mojom::NetworkContextRequest request,
-    mojom::NetworkContextParamsPtr params,
+    network::mojom::NetworkContextRequest request,
+    network::mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
       params_(std::move(params)),
@@ -118,7 +118,7 @@ NetworkContext::NetworkContext(
 }
 
 NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
-                               mojom::NetworkContextRequest request,
+                               network::mojom::NetworkContextRequest request,
                                net::URLRequestContext* url_request_context)
     : network_service_(network_service),
       url_request_context_(url_request_context),
@@ -145,7 +145,7 @@ NetworkContext::~NetworkContext() {
 
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
   return base::WrapUnique(
-      new NetworkContext(mojom::NetworkContextParams::New()));
+      new NetworkContext(network::mojom::NetworkContextParams::New()));
 }
 
 void NetworkContext::SetCertVerifierForTesting(
@@ -205,7 +205,7 @@ void NetworkContext::Cleanup() {
   delete this;
 }
 
-NetworkContext::NetworkContext(mojom::NetworkContextParamsPtr params)
+NetworkContext::NetworkContext(network::mojom::NetworkContextParamsPtr params)
     : network_service_(nullptr), params_(std::move(params)), binding_(this) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -219,7 +219,7 @@ void NetworkContext::OnConnectionError() {
 }
 
 URLRequestContextOwner NetworkContext::MakeURLRequestContext(
-    mojom::NetworkContextParams* network_context_params) {
+    network::mojom::NetworkContextParams* network_context_params) {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -301,7 +301,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
 URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     URLRequestContextBuilderMojo* builder,
-    mojom::NetworkContextParams* network_context_params,
+    network::mojom::NetworkContextParams* network_context_params,
     bool quic_disabled,
     net::NetLog* net_log) {
   URLRequestContextOwner url_request_owner;
@@ -419,7 +419,7 @@ void NetworkContext::ClearNetworkingHistorySince(
 
 void NetworkContext::SetNetworkConditions(
     const std::string& profile_id,
-    mojom::NetworkConditionsPtr conditions) {
+    network::mojom::NetworkConditionsPtr conditions) {
   std::unique_ptr<NetworkConditions> network_conditions;
   if (conditions) {
     network_conditions.reset(new NetworkConditions(

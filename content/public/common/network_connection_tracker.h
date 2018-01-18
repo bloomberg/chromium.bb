@@ -15,10 +15,10 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
 
@@ -56,7 +56,7 @@ class CONTENT_EXPORT NetworkConnectionTracker
   // this class can be subclassed, and OnInitialConnectionType /
   // OnNetworkChanged may be called directly, instead of providing a
   // NetworkService.
-  void Initialize(mojom::NetworkService* network_service);
+  void Initialize(network::mojom::NetworkService* network_service);
 
   // If connection type can be retrieved synchronously, returns true and |type|
   // will contain the current connection type; Otherwise, returns false, in

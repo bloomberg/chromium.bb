@@ -34,7 +34,7 @@
 namespace content {
 
 class NetworkServiceTestHelper::NetworkServiceTestImpl
-    : public mojom::NetworkServiceTest {
+    : public network::mojom::NetworkServiceTest {
  public:
   NetworkServiceTestImpl() {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -48,8 +48,8 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     NetworkContext::SetCertVerifierForTesting(nullptr);
   }
 
-  // mojom::NetworkServiceTest:
-  void AddRules(std::vector<mojom::RulePtr> rules,
+  // network::mojom::NetworkServiceTest:
+  void AddRules(std::vector<network::mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
     for (const auto& rule : rules) {
       test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
@@ -92,12 +92,12 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
-  void BindRequest(mojom::NetworkServiceTestRequest request) {
+  void BindRequest(network::mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
  private:
-  mojo::BindingSet<mojom::NetworkServiceTest> bindings_;
+  mojo::BindingSet<network::mojom::NetworkServiceTest> bindings_;
   TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
@@ -138,7 +138,7 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
 }
 
 void NetworkServiceTestHelper::BindNetworkServiceTestRequest(
-    mojom::NetworkServiceTestRequest request) {
+    network::mojom::NetworkServiceTestRequest request) {
   network_service_test_impl_->BindRequest(std::move(request));
 }
 

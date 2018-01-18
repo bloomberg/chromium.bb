@@ -6,18 +6,18 @@
 #define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
 
-class NetworkServiceClient : public mojom::NetworkServiceClient {
+class NetworkServiceClient : public network::mojom::NetworkServiceClient {
  public:
-  explicit NetworkServiceClient(
-      mojom::NetworkServiceClientRequest network_service_client_request);
+  explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
+                                    network_service_client_request);
   ~NetworkServiceClient() override;
 
-  // mojom::NetworkServiceClient implementation:
+  // network::mojom::NetworkServiceClient implementation:
   void OnSSLCertificateError(int32_t resource_type,
                              const GURL& url,
                              uint32_t process_id,
@@ -27,7 +27,7 @@ class NetworkServiceClient : public mojom::NetworkServiceClient {
                              OnSSLCertificateErrorCallback response) override;
 
  private:
-  mojo::Binding<mojom::NetworkServiceClient> binding_;
+  mojo::Binding<network::mojom::NetworkServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);
 };

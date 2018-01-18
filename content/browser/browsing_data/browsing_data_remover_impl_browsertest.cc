@@ -12,7 +12,6 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/content_browser_test.h"
@@ -24,6 +23,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

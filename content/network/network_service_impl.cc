@@ -51,7 +51,7 @@ CreateNetworkChangeNotifierIfNeeded() {
 }  // namespace
 
 std::unique_ptr<NetworkService> NetworkService::Create(
-    mojom::NetworkServiceRequest request,
+    network::mojom::NetworkServiceRequest request,
     net::NetLog* net_log) {
   return std::make_unique<NetworkServiceImpl>(nullptr, std::move(request),
                                               net_log);
@@ -91,7 +91,7 @@ class NetworkServiceImpl::MojoNetLog : public net::NetLog {
 
 NetworkServiceImpl::NetworkServiceImpl(
     std::unique_ptr<service_manager::BinderRegistry> registry,
-    mojom::NetworkServiceRequest request,
+    network::mojom::NetworkServiceRequest request,
     net::NetLog* net_log)
     : registry_(std::move(registry)), binding_(this) {
   // |registry_| is nullptr when an in-process NetworkService is
@@ -100,7 +100,7 @@ NetworkServiceImpl::NetworkServiceImpl(
   // network service.
   if (registry_) {
     DCHECK(!request.is_pending());
-    registry_->AddInterface<mojom::NetworkService>(
+    registry_->AddInterface<network::mojom::NetworkService>(
         base::BindRepeating(&NetworkServiceImpl::Bind, base::Unretained(this)));
   } else if (request.is_pending()) {
     Bind(std::move(request));
@@ -135,10 +135,10 @@ NetworkServiceImpl::~NetworkServiceImpl() {
     (*network_contexts_.begin())->Cleanup();
 }
 
-std::unique_ptr<mojom::NetworkContext>
+std::unique_ptr<network::mojom::NetworkContext>
 NetworkServiceImpl::CreateNetworkContextWithBuilder(
-    mojom::NetworkContextRequest request,
-    mojom::NetworkContextParamsPtr params,
+    network::mojom::NetworkContextRequest request,
+    network::mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder,
     net::URLRequestContext** url_request_context) {
   std::unique_ptr<NetworkContext> network_context =
@@ -167,13 +167,14 @@ void NetworkServiceImpl::DeregisterNetworkContext(
   network_contexts_.erase(network_context);
 }
 
-void NetworkServiceImpl::SetClient(mojom::NetworkServiceClientPtr client) {
+void NetworkServiceImpl::SetClient(
+    network::mojom::NetworkServiceClientPtr client) {
   client_ = std::move(client);
 }
 
 void NetworkServiceImpl::CreateNetworkContext(
-    mojom::NetworkContextRequest request,
-    mojom::NetworkContextParamsPtr params) {
+    network::mojom::NetworkContextRequest request,
+    network::mojom::NetworkContextParamsPtr params) {
   // The NetworkContext will destroy itself on connection error, or when the
   // service is destroyed.
   new NetworkContext(this, std::move(request), std::move(params));
@@ -219,7 +220,7 @@ void NetworkServiceImpl::OnBindInterface(
   registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void NetworkServiceImpl::Bind(mojom::NetworkServiceRequest request) {
+void NetworkServiceImpl::Bind(network::mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }

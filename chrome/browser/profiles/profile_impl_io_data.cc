@@ -59,7 +59,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/network_service.mojom.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
@@ -76,6 +75,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

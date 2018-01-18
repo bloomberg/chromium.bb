@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 
 namespace net {
 class MockCertVerifier;
@@ -53,7 +53,7 @@ class CertVerifierBrowserTest : public InProcessBrowserTest {
     void EnsureNetworkServiceTestInitialized();
 
     net::MockCertVerifier* verifier_;
-    content::mojom::NetworkServiceTestPtr network_service_test_;
+    network::mojom::NetworkServiceTestPtr network_service_test_;
   };
 
   // Returns a pointer to the MockCertVerifier used by all profiles in

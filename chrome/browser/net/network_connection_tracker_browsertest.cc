@@ -13,12 +13,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_connection_tracker.h"
-#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -88,7 +88,7 @@ class NetworkConnectionTrackerBrowserTest
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
     if (network_service_enabled_ &&
         !content::IsNetworkServiceRunningInProcess()) {
-      mojom::NetworkServiceTestPtr network_service_test;
+      network::mojom::NetworkServiceTestPtr network_service_test;
       ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
           mojom::kNetworkServiceName, &network_service_test);
       base::RunLoop run_loop;

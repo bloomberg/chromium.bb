@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_NET_DEFAULT_NETWORK_CONTEXT_PARAMS_H_
 #define CHROME_BROWSER_NET_DEFAULT_NETWORK_CONTEXT_PARAMS_H_
 
-#include "content/public/common/network_service.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 // Returns default set of parameters for configuring the network service.
-content::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
+network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
 
 #endif  // CHROME_BROWSER_NET_DEFAULT_NETWORK_CONTEXT_PARAMS_H_

@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "net/base/mock_network_change_notifier.h"
@@ -19,6 +18,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -28,8 +28,9 @@ namespace content {
 
 namespace {
 
-mojom::NetworkContextParamsPtr CreateContextParams() {
-  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
+network::mojom::NetworkContextParamsPtr CreateContextParams() {
+  network::mojom::NetworkContextParamsPtr params =
+      network::mojom::NetworkContextParams::New();
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
   params->initial_proxy_config = net::ProxyConfig::CreateDirect();
@@ -56,7 +57,7 @@ class NetworkServiceTest : public testing::Test {
 // Test shutdown in the case a NetworkContext is destroyed before the
 // NetworkService.
 TEST_F(NetworkServiceTest, CreateAndDestroyContext) {
-  mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextPtr network_context;
   service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
                                   CreateContextParams());
   network_context.reset();
@@ -68,7 +69,7 @@ TEST_F(NetworkServiceTest, CreateAndDestroyContext) {
 // NetworkService is destroyed. The service should destroy the NetworkContext
 // itself.
 TEST_F(NetworkServiceTest, DestroyingServiceDestroysContext) {
-  mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextPtr network_context;
   service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
                                   CreateContextParams());
   base::RunLoop run_loop;
@@ -157,8 +158,8 @@ class NetworkServiceTestWithService
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   TestURLLoaderClient* client() { return client_.get(); }
   network::mojom::URLLoader* loader() { return loader_.get(); }
-  mojom::NetworkService* service() { return network_service_.get(); }
-  mojom::NetworkContext* context() { return network_context_.get(); }
+  network::mojom::NetworkService* service() { return network_service_.get(); }
+  network::mojom::NetworkContext* context() { return network_context_.get(); }
 
  private:
   std::unique_ptr<service_manager::Service> CreateService() override {
@@ -171,16 +172,16 @@ class NetworkServiceTestWithService
     ASSERT_TRUE(test_server_.Start());
     service_manager::test::ServiceTest::SetUp();
     connector()->BindInterface(mojom::kNetworkServiceName, &network_service_);
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
+    network::mojom::NetworkContextParamsPtr context_params =
+        network::mojom::NetworkContextParams::New();
     network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
                                            std::move(context_params));
   }
 
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<TestURLLoaderClient> client_;
-  mojom::NetworkServicePtr network_service_;
-  mojom::NetworkContextPtr network_context_;
+  network::mojom::NetworkServicePtr network_service_;
+  network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderPtr loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
@@ -279,8 +280,8 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
 }
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
-  mojom::NetworkConditionsPtr network_conditions =
-      mojom::NetworkConditions::New();
+  network::mojom::NetworkConditionsPtr network_conditions =
+      network::mojom::NetworkConditions::New();
   network_conditions->offline = true;
   context()->SetNetworkConditions("42", std::move(network_conditions));
 
@@ -299,14 +300,14 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
             client()->completion_status().error_code);
 
-  network_conditions = mojom::NetworkConditions::New();
+  network_conditions = network::mojom::NetworkConditions::New();
   network_conditions->offline = false;
   context()->SetNetworkConditions("42", std::move(network_conditions));
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 
-  network_conditions = mojom::NetworkConditions::New();
+  network_conditions = network::mojom::NetworkConditions::New();
   network_conditions->offline = true;
   context()->SetNetworkConditions("42", std::move(network_conditions));
 
@@ -326,7 +327,7 @@ class TestNetworkChangeManagerClient
     : public network::mojom::NetworkChangeManagerClient {
  public:
   explicit TestNetworkChangeManagerClient(
-      mojom::NetworkService* network_service)
+      network::mojom::NetworkService* network_service)
       : connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
         binding_(this) {
     network::mojom::NetworkChangeManagerPtr manager_ptr;
@@ -414,7 +415,7 @@ class NetworkServiceNetworkChangeTest
                     base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceNetworkChangeTest() override {}
 
-  mojom::NetworkService* service() { return network_service_.get(); }
+  network::mojom::NetworkService* service() { return network_service_.get(); }
 
  private:
   // A ServiceTestClient that broadcasts a network change notification in the
@@ -450,7 +451,7 @@ class NetworkServiceNetworkChangeTest
     connector()->BindInterface(mojom::kNetworkServiceName, &network_service_);
   }
 
-  mojom::NetworkServicePtr network_service_;
+  network::mojom::NetworkServicePtr network_service_;
 #if defined(OS_ANDROID)
   // On Android, NetworkChangeNotifier setup is more involved and needs
   // to be split between UI thread and network thread. Use a mock

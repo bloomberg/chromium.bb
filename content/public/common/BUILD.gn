@@ -369,8 +369,6 @@ mojom("interfaces") {
     "appcache_info.mojom",
     "download_stream.mojom",
     "fullscreen_video_element.mojom",
-    "network_service.mojom",
-    "network_service_test.mojom",
     "push_messaging_status.mojom",
     "webplugininfo.mojom",
     "window_container_type.mojom",
@@ -380,7 +378,6 @@ mojom("interfaces") {
     ":resource_type_bindings",
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",
-    "//services/proxy_resolver/public/interfaces",
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]

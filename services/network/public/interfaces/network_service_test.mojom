@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module network.mojom;
 
-import "services/network/public/interfaces/network_change_manager.mojom";
-import "services/network/public/interfaces/url_loader.mojom";
+import "network_change_manager.mojom";
+
+[Native]
+struct CertVerifyResult;
+
+[Native]
+struct X509Certificate;
 
 struct Rule {
   string host_pattern;
@@ -24,7 +29,7 @@ interface NetworkServiceTest {
   // Simulates a network connection type change. The new connection type will be
   // updated to |type| and broadcasts will be sent to
   // NetworkConnectionManagerClient implementations.
-  SimulateNetworkChange(network.mojom.ConnectionType type) => ();
+  SimulateNetworkChange(ConnectionType type) => ();
 
   // Crash the process where network service is running.
   SimulateCrash();
@@ -35,8 +40,8 @@ interface NetworkServiceTest {
 
   [Sync]
   MockCertVerifierAddResultForCertAndHost(
-      network.mojom.X509Certificate cert,
+      X509Certificate cert,
       string host_pattern,
-      network.mojom.CertVerifyResult verify_result,
+      CertVerifyResult verify_result,
       int32 rv) => ();
 };

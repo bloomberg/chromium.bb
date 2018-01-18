@@ -23,9 +23,9 @@
 #include "content/public/common/user_agent.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
-content::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
-  content::mojom::NetworkContextParamsPtr network_context_params =
-      content::mojom::NetworkContextParams::New();
+network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      network::mojom::NetworkContextParams::New();
 
   network_context_params->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);

@@ -22,7 +22,6 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
@@ -32,6 +31,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -95,6 +95,12 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
+
 namespace rappor {
 class RapporService;
 }
@@ -149,10 +155,6 @@ struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
 struct WebPreferences;
-
-namespace mojom {
-class NetworkContext;
-}
 
 CONTENT_EXPORT void OverrideOnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
@@ -973,7 +975,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // If |relative_partition_path| is the empty string, it means this needs to
   // create the default NetworkContext for the BrowserContext.
-  virtual mojom::NetworkContextPtr CreateNetworkContext(
+  virtual network::mojom::NetworkContextPtr CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path);

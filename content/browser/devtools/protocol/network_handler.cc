@@ -960,11 +960,11 @@ Response NetworkHandler::EmulateNetworkConditions(
     double download_throughput,
     double upload_throughput,
     Maybe<protocol::Network::ConnectionType>) {
-  mojom::NetworkConditionsPtr network_conditions;
+  network::mojom::NetworkConditionsPtr network_conditions;
   bool throttling_enabled = offline || latency > 0 || download_throughput > 0 ||
                             upload_throughput > 0;
   if (throttling_enabled) {
-    network_conditions = mojom::NetworkConditions::New();
+    network_conditions = network::mojom::NetworkConditions::New();
     network_conditions->offline = offline;
     network_conditions->latency = base::TimeDelta::FromMilliseconds(latency);
     network_conditions->download_throughput = download_throughput;
@@ -1395,11 +1395,11 @@ void NetworkHandler::RequestIntercepted(
 }
 
 void NetworkHandler::SetNetworkConditions(
-    mojom::NetworkConditionsPtr conditions) {
+    network::mojom::NetworkConditionsPtr conditions) {
   if (!process_)
     return;
   StoragePartition* partition = process_->GetStoragePartition();
-  mojom::NetworkContext* context = partition->GetNetworkContext();
+  network::mojom::NetworkContext* context = partition->GetNetworkContext();
   context->SetNetworkConditions(host_id_, std::move(conditions));
 }
 

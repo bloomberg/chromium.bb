@@ -100,7 +100,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/disable_reason.h"
@@ -138,6 +137,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/database/database_identifier.h"
@@ -5021,7 +5021,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin2));
 
-  content::mojom::NetworkContext* network_context =
+  network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile())
           ->GetNetworkContext();
   network::mojom::CookieManagerPtr cookie_manager_ptr;

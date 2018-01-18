@@ -32,6 +32,7 @@ class URLRequestContextGetter;
 namespace network {
 namespace mojom {
 class CookieManager;
+class NetworkContext;
 class URLLoaderFactory;
 }
 }  // namespace network
@@ -62,10 +63,6 @@ class HostZoomMap;
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 
-namespace mojom {
-class NetworkContext;
-}
-
 // Defines what persistent state a child process can access.
 //
 // The StoragePartition defines the view each child process has of the
@@ -77,7 +74,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
-  virtual mojom::NetworkContext* GetNetworkContext() = 0;
+  virtual network::mojom::NetworkContext* GetNetworkContext() = 0;
   // Returns a pointer to a URLLoaderFactory/CookieManager owned by the
   // storage partition.  Prefer to use this instead of creating a new
   // URLLoaderFactory when issuing requests from the Browser process, to

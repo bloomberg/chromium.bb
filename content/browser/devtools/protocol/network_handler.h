@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
-#include "content/public/common/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -147,7 +147,7 @@ class NetworkHandler : public DevToolsDomainHandler,
 
  private:
   void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
-  void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
+  void SetNetworkConditions(network::mojom::NetworkConditionsPtr conditions);
 
   std::unique_ptr<Network::Frontend> frontend_;
   RenderProcessHost* process_;

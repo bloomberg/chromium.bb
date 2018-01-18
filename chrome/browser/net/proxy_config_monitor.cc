@@ -62,7 +62,7 @@ ProxyConfigMonitor::~ProxyConfigMonitor() {
 }
 
 void ProxyConfigMonitor::AddToNetworkContextParams(
-    content::mojom::NetworkContextParams* network_context_params) {
+    network::mojom::NetworkContextParams* network_context_params) {
   network::mojom::ProxyConfigClientPtr proxy_config_client;
   network_context_params->proxy_config_client_request =
       mojo::MakeRequest(&proxy_config_client);

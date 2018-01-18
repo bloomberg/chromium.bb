@@ -22,7 +22,7 @@ TestStoragePartition::GetMediaURLRequestContext() {
   return media_url_request_context_getter_;
 }
 
-mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
+network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
   return network_context_;
 }
 

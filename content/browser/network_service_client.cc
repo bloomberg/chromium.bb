@@ -14,7 +14,8 @@ namespace {
 class SSLDelegate : public SSLErrorHandler::Delegate {
  public:
   explicit SSLDelegate(
-      mojom::NetworkServiceClient::OnSSLCertificateErrorCallback response)
+      network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback
+          response)
       : response_(std::move(response)), weak_factory_(this) {}
   ~SSLDelegate() override {}
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
@@ -28,14 +29,14 @@ class SSLDelegate : public SSLErrorHandler::Delegate {
   base::WeakPtr<SSLDelegate> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
-  mojom::NetworkServiceClient::OnSSLCertificateErrorCallback response_;
+  network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback response_;
   base::WeakPtrFactory<SSLDelegate> weak_factory_;
 };
 
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
-    mojom::NetworkServiceClientRequest network_service_client_request)
+    network::mojom::NetworkServiceClientRequest network_service_client_request)
     : binding_(this, std::move(network_service_client_request)) {}
 
 NetworkServiceClient::~NetworkServiceClient() = default;

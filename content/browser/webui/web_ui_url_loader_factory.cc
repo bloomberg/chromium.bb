@@ -29,9 +29,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/template_expressions.h"
 

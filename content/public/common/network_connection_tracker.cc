@@ -8,8 +8,8 @@
 
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/network_service.mojom.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
 
 namespace content {
 
@@ -44,7 +44,7 @@ NetworkConnectionTracker::NetworkConnectionTracker()
       binding_(this) {}
 
 void NetworkConnectionTracker::Initialize(
-    mojom::NetworkService* network_service) {
+    network::mojom::NetworkService* network_service) {
   DCHECK(!binding_.is_bound());
   DCHECK(network_service);
   // Get NetworkChangeManagerPtr.
