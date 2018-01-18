@@ -2,26 +2,26 @@
 <meta charset="utf-8">
 <title>StylePropertyMap iterable tests</title>
 <link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#the-stylepropertymap">
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script src="../../resources/testhelper.js"></script>
 <body>
 <script>
 'use strict';
 
 test(t => {
-  const styleMap = createInlineStyleMap(t, '');
+  const styleMap = createDeclaredStyleMap(t, '');
   assert_array_equals([...styleMap.entries()], []);
 }, 'Iterating over an empty StylePropertyMap gives a zero-length array');
 
 test(t => {
-  const styleMap = createInlineStyleMap(t, '--A: A; width: 10px; --C: C; transition-duration: 1s, 2s; color: red; --B: B;');
+  const styleMap = createDeclaredStyleMap(t, '--A: A; width: 10px; --C: C; transition-duration: 1s, 2s; color: red; --B: B;');
   assert_array_equals([...styleMap.keys()],
     ['color', 'transition-duration', 'width', '--A', '--B', '--C']);
 }, 'StylePropertyMap iterates properties in correct order');
 
 test(t => {
-  const styleMap = createInlineStyleMap(t, 'height: 5px; width: 10px;');
+  const styleMap = createDeclaredStyleMap(t, 'height: 5px; width: 10px;');
   const keys = [...styleMap.keys()], values = [...styleMap.values()];
 
   assert_array_equals(keys, ['height', 'width']);
@@ -29,7 +29,7 @@ test(t => {
 }, 'StylePropertyMap iterator returns CSS properties with the correct CSSStyleValue');
 
 test(t => {
-  const styleMap = createInlineStyleMap(t, 'transition-duration: 1s, 2s');
+  const styleMap = createDeclaredStyleMap(t, 'transition-duration: 1s, 2s');
   const keys = [...styleMap.keys()], values = [...styleMap.values()];
 
   assert_array_equals(keys, ['transition-duration']);
@@ -37,7 +37,7 @@ test(t => {
 }, 'StylePropertyMap iterator returns list-valued properties with the correct CSSStyleValue');
 
 test(t => {
-  const styleMap = createInlineStyleMap(t, '--A: A; --B: B; --C: C');
+  const styleMap = createDeclaredStyleMap(t, '--A: A; --B: B; --C: C');
   const keys = [...styleMap.keys()], values = [...styleMap.values()];
 
   assert_array_equals(keys, ['--A', '--B', '--C']);
