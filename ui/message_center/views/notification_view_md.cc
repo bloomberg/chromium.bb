@@ -710,30 +710,17 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
           : notification.accent_color());
   header_row_->SetTimestamp(notification.timestamp());
 
-#if defined(OS_CHROMEOS)
-  // If |origin_url| and |display_source| are both empty, assume it is
-  // system notification, and use default |display_source| and
-  // |accent_color| for system notification.
-  // TODO(tetsui): Remove this after all system notification transition is
-  // completed.
-  // All system notification should use Notification::CreateSystemNotification()
-  if (notification.display_source().empty() &&
-      notification.origin_url().is_empty()) {
-    header_row_->SetAppName(l10n_util::GetStringFUTF16(
-        IDS_MESSAGE_CENTER_NOTIFICATION_CHROMEOS_SYSTEM,
-        MessageCenter::Get()->GetProductOSName()));
-    return;
-  }
-#endif
-
+  base::string16 app_name = notification.display_source();
   if (notification.origin_url().is_valid() &&
       notification.origin_url().SchemeIsHTTPOrHTTPS()) {
-    header_row_->SetAppName(url_formatter::FormatUrlForSecurityDisplay(
+    app_name = url_formatter::FormatUrlForSecurityDisplay(
         notification.origin_url(),
-        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-  } else {
-    header_row_->SetAppName(notification.display_source());
+        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  } else if (app_name.empty() &&
+             notification.notifier_id().type == NotifierId::SYSTEM_COMPONENT) {
+    app_name = MessageCenter::Get()->GetSystemNotificationAppName();
   }
+  header_row_->SetAppName(app_name);
 }
 
 void NotificationViewMD::CreateOrUpdateTitleView(

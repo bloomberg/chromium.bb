@@ -184,10 +184,12 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // example, after the mouse leaves the popup.)
   virtual void RestartPopupTimers() = 0;
 
-  // "Chromium OS" or "Chrome OS" in the current locale.
-  // Return empty string if not on these platforms.
-  virtual const base::string16& GetProductOSName() const = 0;
-  virtual void SetProductOSName(const base::string16& product_os_name) = 0;
+  // The user-visible "app name" for system-generated notifications, which is
+  // used to identify the application that generated a notification. Only used
+  // for MD style notifications, which means that currently it's only set and
+  // used on Chrome OS. On Chrome OS, this is "Chrome OS".
+  virtual const base::string16& GetSystemNotificationAppName() const = 0;
+  virtual void SetSystemNotificationAppName(const base::string16& name) = 0;
 
  protected:
   friend class ::DownloadNotification;

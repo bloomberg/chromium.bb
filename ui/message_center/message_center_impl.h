@@ -82,8 +82,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void RestartPopupTimers() override;
   void PausePopupTimers() override;
-  const base::string16& GetProductOSName() const override;
-  void SetProductOSName(const base::string16& product_os_name) override;
+  const base::string16& GetSystemNotificationAppName() const override;
+  void SetSystemNotificationAppName(const base::string16& name) override;
 
   // NotificationBlocker::Observer overrides:
   void OnBlockingStateChanged(NotificationBlocker* blocker) override;
@@ -120,7 +120,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   // modified by ScopedNotificationsIterationLock.
   bool iterating_ = false;
 
-  base::string16 product_os_name_;
+  base::string16 system_notification_app_name_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

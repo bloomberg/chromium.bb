@@ -45,7 +45,7 @@ void ShowNotification(const base::DictionaryValue* message,
       base::CollapseWhitespace(base::UTF8ToUTF16(message_text),
                                false /* trim_sequences_with_line_breaks */),
       gfx::Image(), base::string16(), GURL(),
-      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierSms),
       message_center::RichNotificationData(), nullptr, kNotificationSmsSyncIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);

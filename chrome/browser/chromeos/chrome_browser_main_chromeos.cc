@@ -835,9 +835,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
             << " with hash: " << user_id_hash;
   }
 
-  // Set product name ("Chrome OS" or "Chromium OS") to be used in context
-  // header of new-style notification.
-  message_center::MessageCenter::Get()->SetProductOSName(
+  // Set the system notification source display name ("Chrome OS" or "Chromium
+  // OS").
+  message_center::MessageCenter::Get()->SetSystemNotificationAppName(
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 
   g_browser_process->platform_part()->InitializeCrosComponentManager();
